@@ -28,9 +28,9 @@
 #include <PgsExt\BridgeDescription.h>
 
 
-BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
+BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
                               CString& leftConnEntry, CString& rightConnEntry,
-                              CString& projectCriteriaEntry)
+                              CString& projectCriteriaEntry, CString& folderName)
 {
    // Read girder type, connection types, and pgsuper template file name
    std::_tifstream ifile(lpszPathName);
@@ -65,6 +65,16 @@ BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
    leftConnEntry = tokenizer[1].c_str();
    rightConnEntry = tokenizer[2].c_str();
    projectCriteriaEntry = tokenizer[3].c_str();
+
+   if (nitems==5)
+   {
+      folderName= tokenizer[4].c_str();
+   }
+   else
+   {
+      // Folder name not spec'd in template file. Give it a default
+      folderName = _T("Unnamed");
+   }
 
    return TRUE;
 }

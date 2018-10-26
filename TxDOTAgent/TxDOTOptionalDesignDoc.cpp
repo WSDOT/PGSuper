@@ -494,8 +494,8 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(bool isNewFileFromTemplate)
 BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName, bool isNewFileFromTemplate)
 {
    // Read girder type, connection types, and pgsuper template file name
-   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry;
-   if(!::ParseTemplateFile(lpszPathName, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry))
+   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName;
+   if(!::DoParseTemplateFile(lpszPathName, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName))
    {
       ASSERT(0);
       return FALSE;

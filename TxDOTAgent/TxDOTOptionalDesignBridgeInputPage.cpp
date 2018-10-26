@@ -313,8 +313,8 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
 
    CString template_name = GetTOGAFolder() + CString(_T("\\")) + m_BeamType + _T(".") + suffix;
 
-   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry;
-   if(!::ParseTemplateFile(template_name, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry))
+   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName;
+   if(!::DoParseTemplateFile(template_name, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName))
    {
       return false;
    }

@@ -128,9 +128,10 @@ inline CString get_strand_size( matPsStrand::Size size )
 }
 
 
-BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
+BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
                               CString& leftConnEntry, CString& rightConnEntry,
-                              CString& projectCriteriaEntry);
+                              CString& projectCriteriaEntry,
+                              CString& folderName);
 
 class OptionalDesignHarpedFillUtil
 {
