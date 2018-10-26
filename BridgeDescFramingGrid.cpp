@@ -797,7 +797,7 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
    CPierData* pPrevPier = pSpanData->GetPrevPier();
    CPierData* pNextPier = pSpanData->GetNextPier();
 
-   CSpanDetailsDlg dlg(pSpanData);
+   CSpanDetailsDlg dlg(pSpanData,pDlg->GetExtensionPages());
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -878,7 +878,7 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
 
    CPierData* pPierData = pDlg->m_BridgeDesc.GetPier(pierIdx);
 
-   CPierDetailsDlg dlg(pPierData);
+   CPierDetailsDlg dlg(pPierData,pDlg->GetExtensionPages());
 
    Float64 oldStation = pPierData->GetStation();
 

@@ -797,6 +797,7 @@ interface IBarriers : public IUnknown
 
    virtual bool HasInteriorBarrier(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual Float64 GetInteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation) = 0;
+   virtual Float64 GetInteriorBarrierWidth(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual Float64 GetInteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation) = 0;
 
    virtual pgsTypes::TrafficBarrierOrientation GetNearestBarrier(SpanIndexType span,GirderIndexType gdr) = 0;

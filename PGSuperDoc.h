@@ -79,6 +79,9 @@ public:
    virtual CATID GetExtensionAgentCategoryID();
    virtual BOOL Init();
    virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit); 
+   virtual void OnChangedFavoriteReports(bool isFavorites);
+   virtual void OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName);
+   virtual void OnCustomReportHelp(custRepportHelpType helpType);
 
 // CEAFAutoCalcDocMixin over-rides
 public:
@@ -255,6 +258,10 @@ protected:
    CSelection m_Selection;
 
    bool m_bDesignSlabOffset;
+
+   // callback IDs for any status callbacks we register
+   StatusCallbackIDType m_scidInformationalError;
+   StatusGroupIDType m_StatusGroupID;
 
    friend CCopyGirderDlg;
    void OnApplyCopyGirder(SpanGirderHashType fromHash,std::vector<SpanGirderHashType> toHash,BOOL bGirder,BOOL bTransverse,BOOL bLongitudinalRebar,BOOL bPrestress,BOOL bHandling, BOOL bMaterial, BOOL bSlabOffset);

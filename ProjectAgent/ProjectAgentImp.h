@@ -70,6 +70,7 @@ class ATL_NO_VTABLE CProjectAgentImp :
    public CProxyIRatingSpecificationEventSink<CProjectAgentImp>,
    public CProxyILibraryConflictEventSink<CProjectAgentImp>,
    public CProxyILoadModifiersEventSink<CProjectAgentImp>,
+   public CProxyIEventsEventSink<CProjectAgentImp>,
    public IAgentEx,
    public IAgentPersist,
    public IProjectProperties,
@@ -138,6 +139,7 @@ BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
    CONNECTION_POINT_ENTRY( IID_IRatingSpecificationEventSink )
    CONNECTION_POINT_ENTRY( IID_ILibraryConflictEventSink )
    CONNECTION_POINT_ENTRY( IID_ILoadModifiersEventSink )
+   CONNECTION_POINT_ENTRY( IID_IEventsSink )
 END_CONNECTION_POINT_MAP()
 
    StatusCallbackIDType m_scidGirderDescriptionWarning;

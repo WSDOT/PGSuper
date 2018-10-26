@@ -99,7 +99,8 @@ public:
 	CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,LPCTSTR strGirderName,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
    // IEditGirderData
-   virtual void EGDummy() {};
+   virtual SpanIndexType GetSpan() { return m_CurrentSpanIdx; }
+   virtual GirderIndexType GetGirder() { return m_CurrentGirderIdx; }
 
 // Attributes
 public:
@@ -130,7 +131,12 @@ public:
 // Implementation
 public:
 	virtual ~CGirderDescDlg();
-	virtual INT_PTR DoModal();
+
+   virtual INT_PTR DoModal();
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
 
    void DoUpdate();
 
@@ -139,6 +145,9 @@ public:
 
 protected:
    void Init();
+   void CreateExtensionPages();
+   void DestroyExtensionPages();
+
    StrandIndexType GetStraightStrandCount();
    StrandIndexType GetHarpedStrandCount();
    void SetDebondTabName();
@@ -146,6 +155,10 @@ protected:
 
    void AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool bIsDebonding);
 
+
+   txnMacroTxn m_Macro;
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>> m_ExtensionPages;
+   void NotifyExtensionPages();
 
    friend CGirderDescGeneralPage;
    friend CGirderDescLiftingPage;

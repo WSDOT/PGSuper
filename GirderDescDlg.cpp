@@ -60,6 +60,18 @@ CGirderDescDlg::CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,LPCT
 
 CGirderDescDlg::~CGirderDescDlg()
 {
+   DestroyExtensionPages();
+}
+
+INT_PTR CGirderDescDlg::DoModal()
+{
+   INT_PTR result = CPropertySheet::DoModal();
+   if ( result == IDOK )
+   {
+      NotifyExtensionPages();
+   }
+
+   return result;
 }
 
 void CGirderDescDlg::Init()
@@ -86,6 +98,64 @@ void CGirderDescDlg::Init()
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    this->AddAdditionalPropertyPages( pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_CurrentSpanIdx,m_CurrentGirderIdx,pgsTypes::Straight) );
+
+   CreateExtensionPages();
+}
+
+void CGirderDescDlg::CreateExtensionPages()
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
+
+   std::map<IDType,IEditGirderCallback*> callbacks = pDoc->GetEditGirderCallbacks();
+   std::map<IDType,IEditGirderCallback*>::iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditGirderCallback*>::iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditGirderCallback* pCallback = callbackIter->second;
+      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
+      if ( pPage )
+      {
+         m_ExtensionPages.push_back( std::make_pair(pCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+}
+
+void CGirderDescDlg::DestroyExtensionPages()
+{
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      CPropertyPage* pPage = pageIter->second;
+      delete pPage;
+   }
+   m_ExtensionPages.clear();
+}
+
+txnTransaction* CGirderDescDlg::GetExtensionPageTransaction()
+{
+   if ( 0 < m_Macro.GetTxnCount() )
+      return m_Macro.CreateClone();
+   else
+      return NULL;
+}
+
+void CGirderDescDlg::NotifyExtensionPages()
+{
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      IEditGirderCallback* pCallback = pageIter->first;
+      CPropertyPage* pPage = pageIter->second;
+      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      if ( pTxn )
+      {
+         m_Macro.AddTransaction(pTxn);
+      }
+   }
 }
 
 BEGIN_MESSAGE_MAP(CGirderDescDlg, CPropertySheet)
@@ -115,41 +185,6 @@ LRESULT CGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	}
 	else
 		return 0;
-}
-
-INT_PTR CGirderDescDlg::DoModal()
-{
-   CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
-   
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>> extensionPages;
-
-   std::map<IDType,IEditGirderCallback*> callbacks = pDoc->GetEditGirderCallbacks();
-   std::map<IDType,IEditGirderCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditGirderCallback*>::iterator callbackIterEnd(callbacks.end());
-   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
-   {
-      IEditGirderCallback* pCallback = callbackIter->second;
-      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
-      if ( pPage )
-      {
-         extensionPages.push_back( std::make_pair(pCallback,pPage) );
-         AddPage(pPage);
-      }
-   }
-
-   INT_PTR result = CPropertySheet::DoModal();
-
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIter(extensionPages.begin());
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIterEnd(extensionPages.end());
-   for ( ; pageIter != pageIterEnd; pageIter++ )
-   {
-      IEditGirderCallback* pCallback = pageIter->first;
-      CPropertyPage* pPage = pageIter->second;
-      pCallback->DestroyPropertyPage(result,pPage,this);
-   }
-
-   return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////

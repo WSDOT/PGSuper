@@ -2016,6 +2016,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\MacroTxn.cpp"
+				>
+			</File>
+			<File
 				RelativePath="main.cpp"
 				>
 				<FileConfiguration
@@ -3184,6 +3188,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\LongRebarInstance.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\MacroTxn.h"
 				>
 			</File>
 			<File

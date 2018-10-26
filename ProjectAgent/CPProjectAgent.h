@@ -500,3 +500,73 @@ public:
 		return ret;
 	}
 };
+
+//////////////////////////////////////////////////////////////////////////////
+// CProxyIEventsEventSink
+template <class T>
+class CProxyIEventsEventSink : public IConnectionPointImpl<T, &IID_IEventsSink, CComDynamicUnkArray>
+{
+public:
+
+//IEventsSink : IUnknown
+public:
+	HRESULT Fire_OnHoldEvents()
+	{
+		T* pT = (T*)this;
+
+      pT->Lock();
+		HRESULT ret;
+		IUnknown** pp = m_vec.begin();
+		while (pp < m_vec.end())
+		{
+			if (*pp != NULL)
+			{
+				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
+				ret = pEventSink->OnHoldEvents();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+	}
+
+	HRESULT Fire_OnFirePendingEvents()
+	{
+		T* pT = (T*)this;
+
+      pT->Lock();
+		HRESULT ret;
+		IUnknown** pp = m_vec.begin();
+		while (pp < m_vec.end())
+		{
+			if (*pp != NULL)
+			{
+				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
+				ret = pEventSink->OnFirePendingEvents();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+	}
+
+	HRESULT Fire_OnCancelPendingEvents()
+	{
+		T* pT = (T*)this;
+
+      pT->Lock();
+		HRESULT ret;
+		IUnknown** pp = m_vec.begin();
+		while (pp < m_vec.end())
+		{
+			if (*pp != NULL)
+			{
+				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
+				ret = pEventSink->OnCancelPendingEvents();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+	}
+};

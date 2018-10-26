@@ -13716,6 +13716,34 @@ Float64 CBridgeAgentImp::GetInteriorBarrierWeight(pgsTypes::TrafficBarrierOrient
    return Wint;
 }
 
+Float64 CBridgeAgentImp::GetInteriorBarrierWidth(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   const CRailingSystem* pRailingSystem = NULL;
+   if ( orientation == pgsTypes::tboLeft )
+      pRailingSystem = pBridgeDesc->GetLeftRailingSystem();
+   else
+      pRailingSystem = pBridgeDesc->GetRightRailingSystem();
+
+   Float64 width = 0.0;
+   if ( pRailingSystem->bUseInteriorRailing )
+   {
+      CComPtr<IPolyShape> polyshape;
+      pRailingSystem->GetInteriorRailing()->CreatePolyShape(orientation,&polyshape);
+
+      CComQIPtr<IShape> shape(polyshape);
+
+      CComPtr<IRect2d> box;
+      shape->get_BoundingBox(&box);
+
+      box->get_Width(&width);
+   }
+
+   return width;
+}
+
 bool CBridgeAgentImp::HasInteriorBarrier(pgsTypes::TrafficBarrierOrientation orientation)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);

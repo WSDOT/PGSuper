@@ -50,6 +50,18 @@ CBridgeDescDlg::CBridgeDescDlg(CWnd* pParentWnd, UINT iSelectPage)
 
 CBridgeDescDlg::~CBridgeDescDlg()
 {
+   DestroyExtensionPages();
+}
+
+INT_PTR CBridgeDescDlg::DoModal()
+{
+   INT_PTR result = CPropertySheet::DoModal();
+   if ( result == IDOK )
+   {
+      NotifyExtensionPages();
+   }
+
+   return result;
 }
 
 void CBridgeDescDlg::SetBridgeDescription(const CBridgeDescription& bridgeDesc)
@@ -81,6 +93,78 @@ void CBridgeDescDlg::Init()
    AddPage( &m_DeckRebarPage );
    AddPage( &m_RatingPage );
    AddPage( &m_EnvironmentalPage );
+
+   CreateExtensionPages();
+}
+
+void CBridgeDescDlg::CreateExtensionPages()
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
+
+   std::map<IDType,IEditBridgeCallback*> callbacks = pDoc->GetEditBridgeCallbacks();
+   std::map<IDType,IEditBridgeCallback*>::iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditBridgeCallback*>::iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditBridgeCallback* pCallback = callbackIter->second;
+      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
+      if ( pPage )
+      {
+         EditBridgeExtension extension;
+         extension.callbackID = callbackIter->first;
+         extension.pCallback = pCallback;
+         extension.pPage = pPage;
+         m_ExtensionPages.insert(extension);
+         AddPage(pPage);
+      }
+   }
+}
+
+void CBridgeDescDlg::DestroyExtensionPages()
+{
+   std::set<EditBridgeExtension>::iterator extIter(m_ExtensionPages.begin());
+   std::set<EditBridgeExtension>::iterator extIterEnd(m_ExtensionPages.end());
+   for ( ; extIter != extIterEnd; extIter++ )
+   {
+      CPropertyPage* pPage = extIter->pPage;
+      delete pPage;
+   }
+   m_ExtensionPages.clear();
+}
+
+const std::set<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages() const
+{
+   return m_ExtensionPages;
+}
+
+std::set<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages()
+{
+   return m_ExtensionPages;
+}
+
+txnTransaction* CBridgeDescDlg::GetExtensionPageTransaction()
+{
+   if ( 0 < m_Macro.GetTxnCount() )
+      return m_Macro.CreateClone();
+   else
+      return NULL;
+}
+
+void CBridgeDescDlg::NotifyExtensionPages()
+{
+   std::set<EditBridgeExtension>::iterator pageIter(m_ExtensionPages.begin());
+   std::set<EditBridgeExtension>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      IEditBridgeCallback* pCallback = pageIter->pCallback;
+      CPropertyPage* pPage = pageIter->pPage;
+      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      if ( pTxn )
+      {
+         m_Macro.AddTransaction(pTxn);
+      }
+   }
 }
 
 BEGIN_MESSAGE_MAP(CBridgeDescDlg, CPropertySheet)
@@ -111,41 +195,6 @@ LRESULT CBridgeDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 	}
 	else
 		return 0;
-}
-
-INT_PTR CBridgeDescDlg::DoModal()
-{
-   CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
-   
-   std::vector<std::pair<IEditBridgeCallback*,CPropertyPage*>> extensionPages;
-
-   std::map<IDType,IEditBridgeCallback*> callbacks = pDoc->GetEditBridgeCallbacks();
-   std::map<IDType,IEditBridgeCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditBridgeCallback*>::iterator callbackIterEnd(callbacks.end());
-   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
-   {
-      IEditBridgeCallback* pCallback = callbackIter->second;
-      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
-      if ( pPage )
-      {
-         extensionPages.push_back( std::make_pair(pCallback,pPage) );
-         AddPage(pPage);
-      }
-   }
-
-   INT_PTR result = CPropertySheet::DoModal();
-
-   std::vector<std::pair<IEditBridgeCallback*,CPropertyPage*>>::iterator pageIter(extensionPages.begin());
-   std::vector<std::pair<IEditBridgeCallback*,CPropertyPage*>>::iterator pageIterEnd(extensionPages.end());
-   for ( ; pageIter != pageIterEnd; pageIter++ )
-   {
-      IEditBridgeCallback* pCallback = pageIter->first;
-      CPropertyPage* pPage = pageIter->second;
-      pCallback->DestroyPropertyPage(result,pPage,this);
-   }
-
-   return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////

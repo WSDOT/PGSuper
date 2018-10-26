@@ -1560,6 +1560,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CPPGSuperDocProxyAgent.h"
+				>
+			</File>
+			<File
 				RelativePath="..\CrownSlopeGrid.h"
 				>
 			</File>
@@ -1629,10 +1633,6 @@
 			</File>
 			<File
 				RelativePath="..\EnvironmentDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\ExtendUI.h"
 				>
 			</File>
 			<File
@@ -2646,6 +2646,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\IFace\EditByUI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\ExtendUI.h"
 				>
 			</File>
 			<File

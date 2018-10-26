@@ -6650,6 +6650,8 @@ void CProjectAgentImp::HoldEvents()
 {
    m_bHoldingEvents = true;
 
+   Fire_OnHoldEvents();
+
    GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->HoldEvents(true);
 }
@@ -6729,6 +6731,8 @@ void CProjectAgentImp::FirePendingEvents()
    m_PendingEventsHash.clear();
    m_PendingEvents = 0;
 
+   Fire_OnFirePendingEvents();
+
    GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->FirePendingEvents();
 }
@@ -6738,6 +6742,11 @@ void CProjectAgentImp::CancelPendingEvents()
    m_bHoldingEvents = false;
    m_PendingEventsHash.clear();
    m_PendingEvents = 0;
+
+   Fire_OnCancelPendingEvents();
+
+   GET_IFACE(IUIEvents,pUIEvents);
+   pUIEvents->CancelPendingEvents();
 }
 
 ////////////////////////////////////////////////////////////////////////

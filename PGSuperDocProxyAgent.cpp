@@ -462,6 +462,11 @@ long CPGSuperDocProxyAgent::GetReportViewKey()
    return m_ReportViewKey;
 }
 
+void CPGSuperDocProxyAgent::OnResetHints()
+{
+   Fire_OnHintsReset();
+}
+
 //////////////////////////////////////////////////////////
 // IAgentEx
 STDMETHODIMP CPGSuperDocProxyAgent::SetBroker(IBroker* pBroker)
@@ -961,6 +966,12 @@ void CPGSuperDocProxyAgent::FirePendingEvents()
       }
       m_UIEvents.clear();
    }
+}
+
+void CPGSuperDocProxyAgent::CancelPendingEvents()
+{
+   m_UIEvents.clear();
+   m_bHoldingEvents = false;
 }
 
 void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_ptr<CObject> pHint)

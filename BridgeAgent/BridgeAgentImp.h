@@ -620,6 +620,7 @@ public:
    virtual Float64 GetExteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation);
    virtual bool HasInteriorBarrier(pgsTypes::TrafficBarrierOrientation orientation);
    virtual Float64 GetInteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation);
+   virtual Float64 GetInteriorBarrierWidth(pgsTypes::TrafficBarrierOrientation orientation);
    virtual Float64 GetInteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation);
    virtual pgsTypes::TrafficBarrierOrientation GetNearestBarrier(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation orientation);

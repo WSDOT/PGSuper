@@ -106,3 +106,5 @@ IDH_DIALOG_LIBIMPORTENTRYCONFLICT=Dialogs\Library_Import_Entry_Conflict.htm
 IDH_SPEC_DESIGN=User's Guide\Appendix B - PGSuper Library Dialogs\Design_Tab.htm
 IDH_MOMENT_TAB=User's Guide\Appendix B - PGSuper Library Dialogs\Moment_Capacity_Tab.htm
 IDH_GIRDER_DIRECT_STRAND_FILL=Dialogs\Direct_Selection_of_Strand_Fill.htm
+IDH_CUSTOM_REPORT=User's Guide\Appendix A - PGSuper Dialogs\Custom_Reports.htm
+IDH_FAVORITE_REPORT=User's Guide\Appendix A - PGSuper Dialogs\FavoriteReports.htm

@@ -174,6 +174,7 @@
 #include <algorithm>
 
 #include <PgsExt\StatusItem.h>
+#include <PgsExt\MacroTxn.h>
 
 #include <MFCTools\Prompts.h>
 
@@ -460,9 +461,20 @@ void CPGSuperDoc::EditBridgeDescription(int nPage)
    if ( dlg.DoModal() == IDOK )
    {
 
-      txnEditBridge* pTxn = new txnEditBridge(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
-                                              oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? expNormal : expSevere,
-                                              oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity);
+      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
+                                               oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? expNormal : expSevere,
+                                               oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity);
+
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
@@ -486,7 +498,18 @@ bool CPGSuperDoc::EditPierDescription(PierIndexType pierIdx, int nPage)
       txnEditPierData oldPierData(pPierData);
       txnEditPierData newPierData = dlg.GetEditPierData();
 
-      txnEditPier* pTxn = new txnEditPier(pierIdx,oldPierData,newPierData,dlg.GetMovePierOption());
+      txnTransaction* pTxn = new txnEditPier(pierIdx,oldPierData,newPierData,dlg.GetMovePierOption());
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn != NULL )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
+
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -510,7 +533,18 @@ bool CPGSuperDoc::EditSpanDescription(SpanIndexType spanIdx, int nPage)
    if ( dlg.DoModal() == IDOK )
    {
       txnEditSpanData newData = dlg.GetEditSpanData();
-      txnEditSpan* pTxn = new txnEditSpan(spanIdx,oldData,newData);
+      txnTransaction* pTxn = new txnEditSpan(spanIdx,oldData,newData);
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
+
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -582,19 +616,29 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    INT_PTR st = dlg.DoModal();
    if ( st == IDOK )
    {
-      txnEditGirder* pTxn = new txnEditGirder(spanIdx,gdrIdx,
-                                              bUseSameGirder,   dlg.m_General.m_bUseSameGirderType,
-                                              strGirderName,    dlg.m_strGirderName,
-                                              girderData,       dlg.m_GirderData,
-                                              shearData,        dlg.m_Shear.m_ShearData, 
-                                              rebarData,        dlg.m_LongRebar.m_RebarData ,
-                                              liftingLocation,  dlg.m_Lifting.m_LiftingLocation ,
-                                              trailingOverhang, dlg.m_Lifting.m_TrailingOverhang,
-                                              leadingOverhang,  dlg.m_Lifting.m_LeadingOverhang,
-                                              slabOffsetType,   dlg.m_General.m_SlabOffsetType,
-                                              slabOffset[pgsTypes::metStart], dlg.m_General.m_SlabOffset[pgsTypes::metStart],
-                                              slabOffset[pgsTypes::metEnd], dlg.m_General.m_SlabOffset[pgsTypes::metEnd]
-                                              );
+      txnTransaction* pTxn = new txnEditGirder(spanIdx,gdrIdx,
+                                               bUseSameGirder,   dlg.m_General.m_bUseSameGirderType,
+                                               strGirderName,    dlg.m_strGirderName,
+                                               girderData,       dlg.m_GirderData,
+                                               shearData,        dlg.m_Shear.m_ShearData, 
+                                               rebarData,        dlg.m_LongRebar.m_RebarData ,
+                                               liftingLocation,  dlg.m_Lifting.m_LiftingLocation ,
+                                               trailingOverhang, dlg.m_Lifting.m_TrailingOverhang,
+                                               leadingOverhang,  dlg.m_Lifting.m_LeadingOverhang,
+                                               slabOffsetType,   dlg.m_General.m_SlabOffsetType,
+                                               slabOffset[pgsTypes::metStart], dlg.m_General.m_SlabOffset[pgsTypes::metStart],
+                                               slabOffset[pgsTypes::metEnd], dlg.m_General.m_SlabOffset[pgsTypes::metEnd]
+                                               );
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
@@ -1174,6 +1218,22 @@ BOOL CPGSuperDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 
 void CPGSuperDoc::OnCloseDocument()
 {
+   // Put report favorites options back into CPGSuperBaseAppPlugin
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+
+   bool doDisplayFavorites = GetDoDisplayFavoriteReports();
+   std::vector<std::_tstring> Favorites = GetFavoriteReports();
+
+   pPGSuper->SetDoDisplayFavoriteReports(doDisplayFavorites);
+   pPGSuper->SetFavoriteReports(Favorites);
+
+   // user-defined custom reports
+   CEAFCustomReports reports = GetCustomReports();
+   pPGSuper->SetCustomReports(reports);
+
    CEAFBrokerDocument::OnCloseDocument();
 
    CBeamFamilyManager::Reset();
@@ -1215,9 +1275,15 @@ void CPGSuperDoc::OnCreateInitialize()
 
 void CPGSuperDoc::OnCreateFinalize()
 {
+   // Register callbacks for status items
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   m_scidInformationalError  = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+   m_StatusGroupID = pStatusCenter->CreateStatusGroupID();
+
    CEAFBrokerDocument::OnCreateFinalize();
 
    PopulateReportMenu();
+
 /* This option works if Outlook and PGSuper are running at the same UAC level
 
    // if user is on Windows Vista or Windows 7, the Send Email feature doesn't work
@@ -1522,6 +1588,16 @@ BOOL CPGSuperDoc::Init()
    CComPtr<IAppUnitSystem> appUnitSystem;
    pPGSuper->GetAppUnitSystem(&appUnitSystem);
    CreateDocUnitSystem(appUnitSystem,&m_DocUnitSystem);
+
+   // Transfer report favorites and custom reports data from CPGSuperBaseAppPlugin to CEAFBrokerDocument (this)
+   bool doDisplayFavorites = pPGSuper->GetDoDisplayFavoriteReports();
+   std::vector<std::_tstring> Favorites = pPGSuper->GetFavoriteReports();
+
+   SetDoDisplayFavoriteReports(doDisplayFavorites);
+   SetFavoriteReports(Favorites);
+
+   CEAFCustomReports customs = pPGSuper->GetCustomReports();
+   SetCustomReports(customs);
 
    return TRUE;
 }
@@ -3419,8 +3495,7 @@ BOOL CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
 
    CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
 
-
-   BuildReportMenu(&contextMenu,false);
+   CEAFBrokerDocument::PopulateReportMenu(&contextMenu);
 
    GET_IFACE(IEAFToolbars,pToolBars);
 #if defined _EAF_USING_MFC_FEATURE_PACK
@@ -3599,6 +3674,10 @@ UINT CPGSuperDoc::GetUIHintSettings() const
 void CPGSuperDoc::SetUIHintSettings(UINT settings)
 {
    m_UIHintSettings = settings;
+   if ( m_UIHintSettings == UIHINT_ENABLE_ALL )
+   {
+      m_pPGSuperDocProxyAgent->OnResetHints();
+   }
 }
 
 bool CPGSuperDoc::IsDesignFlexureEnabled() const
@@ -3639,4 +3718,42 @@ bool CPGSuperDoc::ShowProjectPropertiesOnNewProject()
 void CPGSuperDoc::ShowProjectPropertiesOnNewProject(bool bShow)
 {
    m_bShowProjectProperties = bShow;
+}
+
+void CPGSuperDoc::OnChangedFavoriteReports(bool isFavorites)
+{
+   // update main menu submenu
+   PopulateReportMenu();
+}
+
+void CPGSuperDoc::OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName)
+{
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   std::_tostringstream os;
+
+   switch(error)
+   {
+      case creParentMissingAtLoad:
+         os << _T("For custom report ")<<reportName<<_T(": the parent report ")<<otherName<<_T(" could not be found at program load time. The custom report was deleted.");
+         break;
+      case creParentMissingAtImport:
+         os << _T("For custom report ")<<reportName<<_T(": the parent report ")<<otherName<<_T(" could not be found. The report may have depended on one of PGSuper's plug-ins. The custom report was deleted.");
+         break;
+      case creChapterMissingAtLoad:
+      case creChapterMissingAtImport:
+         os << _T("For custom report ")<<reportName<<_T(": the following chapter ")<<otherName<<_T(" does not exist in the pareent report. The chapter was removed. Perhaps the chapter name changed? You may want to edit the report.");
+         break;
+      default:
+         ATLASSERT(0);
+   };
+
+   pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,os.str().c_str());
+   pStatusCenter->Add(pStatusItem);
+}
+
+void CPGSuperDoc::OnCustomReportHelp(custRepportHelpType helpType)
+{
+   UINT helpID = helpType==crhCustomReport ? IDH_CUSTOM_REPORT : IDH_FAVORITE_REPORT;
+
+   ::HtmlHelp( NULL, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
 }

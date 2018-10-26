@@ -592,6 +592,19 @@
         </object>
         </ul>
       <li><object type="text/sitemap">
+        <param name="Name" value="Custom and Favorite Reports">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Favorite Reports">
+          <param name="Local" value="User's Guide\Appendix A - PGSuper Dialogs\FavoriteReports.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Custom Reports">
+          <param name="Local" value="User's Guide\Appendix A - PGSuper Dialogs\Custom_Reports.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
         <param name="Name" value="Pier Details">
         <param name="Local" value="PierDetails\General.htm">
       </object>

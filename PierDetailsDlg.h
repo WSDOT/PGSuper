@@ -45,7 +45,8 @@ class CPierDetailsDlg : public CPropertySheet, public IPierConnectionsParent, pu
 
 // Construction
 public:
-	CPierDetailsDlg(const CPierData* pPierData = NULL,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CPierDetailsDlg(const CPierData* pPier,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CPierDetailsDlg(const CPierData* pPier,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
    void SetPierData(const CPierData* pPier);
    txnEditPierData GetEditPierData();
@@ -58,6 +59,8 @@ public:
    virtual const CBridgeDescription* GetBridgeDescription();
 
 // interface IEditPierData
+   virtual PierIndexType GetPierCount() { return m_pBridge->GetPierCount(); }
+   virtual PierIndexType GetPier() { return m_pPierData->GetPierIndex(); }
    virtual pgsTypes::PierConnectionType GetConnectionType();
    virtual GirderIndexType GetGirderCount(pgsTypes::PierFaceType face);
 
@@ -97,6 +100,9 @@ public:
 
 // Operations
 public:
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -106,7 +112,8 @@ public:
 // Implementation
 public:
 	virtual ~CPierDetailsDlg();
-	virtual INT_PTR DoModal();
+
+   virtual INT_PTR DoModal();
 
 	// Generated message map functions
 protected:
@@ -117,6 +124,11 @@ protected:
 	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 
    void Init();
+   void Init(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void CommonInit();
+   void CreateExtensionPages();
+   void CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void DestroyExtensionPages();
 
    const CBridgeDescription* m_pBridge;
    const CSpanData* m_pPrevSpan;
@@ -134,6 +146,12 @@ private:
    CPierLayoutPage            m_PierLayoutPage;
    CPierConnectionsPage       m_PierConnectionsPage;
    CPierGirderSpacingPage     m_PierGirderSpacingPage;
+
+   txnMacroTxn m_Macro;
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>> m_ExtensionPages;
+   std::set<EditBridgeExtension> m_BridgeExtensionPages;
+   void NotifyExtensionPages();
+   void NotifyBridgeExtensionPages();
 };
 
 /////////////////////////////////////////////////////////////////////////////

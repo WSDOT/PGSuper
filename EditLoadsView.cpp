@@ -719,7 +719,7 @@ BOOL CEditLoadsView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD
 
    CEAFApp* pApp = EAFGetApp();
    m_SortColIdx = pApp->GetProfileInt(_T("Settings"),_T("LoadViewSortColumn"),-1);
-   m_bSortAscending = (bool)pApp->GetProfileInt(_T("Settings"),_T("LoadViewSortAscending"),1);
+   m_bSortAscending = pApp->GetProfileInt(_T("Settings"),_T("LoadViewSortAscending"),1) == 1 ? true : false;
 
    return TRUE;
 }

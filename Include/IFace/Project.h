@@ -744,6 +744,25 @@ interface IEvents : IUnknown
 
 /*****************************************************************************
 INTERFACE
+   IEventsSink
+
+   Interface to control events
+
+DESCRIPTION
+   Interface to control events
+*****************************************************************************/
+// {0538457E-9446-4a35-8B60-1263F4156763}
+DEFINE_GUID(IID_IEventsSink, 
+0x538457e, 0x9446, 0x4a35, 0x8b, 0x60, 0x12, 0x63, 0xf4, 0x15, 0x67, 0x63);
+interface IEventsSink : IUnknown
+{
+   virtual HRESULT OnHoldEvents() = 0;
+   virtual HRESULT OnFirePendingEvents() = 0;
+   virtual HRESULT OnCancelPendingEvents() = 0;
+};
+
+/*****************************************************************************
+INTERFACE
    IUIEvents
 
    Interface to control events in the user interface
@@ -757,6 +776,8 @@ interface IUIEvents : IUnknown
 {
    virtual void HoldEvents(bool bHold=true) = 0;
    virtual void FirePendingEvents() = 0;
+   virtual void CancelPendingEvents() = 0;
+   virtual void FireEvent(CView* pSender = NULL,LPARAM lHint = 0,boost::shared_ptr<CObject> pHint = boost::shared_ptr<CObject>()) = 0;
 };
 
 /*****************************************************************************

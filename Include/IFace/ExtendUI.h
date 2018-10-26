@@ -22,6 +22,19 @@
 
 #pragma once
 
+class txnTransaction;
+
+interface IEditBridgeCallback;
+
+struct EditBridgeExtension
+{
+   IDType callbackID;
+   IEditBridgeCallback* pCallback;
+   CPropertyPage* pPage;
+
+   bool operator<(const EditBridgeExtension& other) const { return callbackID < other.callbackID; }
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // User interface extension callback interfaces are defined in this header file. 
 //
@@ -35,19 +48,35 @@
 // Extend the Edit Pier Dialog
 interface IEditPierData
 {
+   virtual PierIndexType GetPierCount() = 0;
+   virtual PierIndexType GetPier() = 0;
    virtual pgsTypes::PierConnectionType GetConnectionType() = 0;
    virtual GirderIndexType GetGirderCount(pgsTypes::PierFaceType face) = 0;
 };
 
 interface IEditPierCallback
 {
-   virtual CPropertyPage* CreatePropertyPage(IEditPierData* pPierData) = 0;
-   virtual void DestroyPropertyPage(INT_PTR result,CPropertyPage* pPage,IEditPierData* pPierData) = 0;
+   // Called by the framework to create the property page for the Pier dialog is opened for stand alone editing
+   virtual CPropertyPage* CreatePropertyPage(IEditPierData* pEditPierData) = 0;
+
+   // Called by the framework when stand alone editing is complete. Return a transaction object if you
+   // want the editing the occured on this extension page to be in the transaction queue for undo/redo,
+   // otherwise return NULL
+   virtual txnTransaction* OnOK(CPropertyPage* pPropertyPage,IEditPierData* pEditPierData) = 0;
+
+   // Return the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to
+   // the Pier dialog
+   virtual IDType GetEditBridgeCallbackID() = 0;
+
+   // Called by the framework to create a propery page for the Pier dialog when the Pier dialog is created from the Bridge dialog
+   virtual CPropertyPage* CreatePropertyPage(IEditPierData* pEditPierData,CPropertyPage* pBridgePropertyPage) = 0;
 };
 
 // Extend the Edit Span Dialog
 interface IEditSpanData
 {
+   virtual SpanIndexType GetSpanCount() = 0;
+   virtual SpanIndexType GetSpan() = 0;
    virtual pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end) = 0;
    virtual GirderIndexType GetGirderCount() = 0;
 };
@@ -55,19 +84,27 @@ interface IEditSpanData
 interface IEditSpanCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditSpanData* pSpanData) = 0;
-   virtual void DestroyPropertyPage(INT_PTR result,CPropertyPage* pPage,IEditSpanData* pSpanData) = 0;
+   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData) = 0;
+
+   // Return the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to
+   // the Span dialog
+   virtual IDType GetEditBridgeCallbackID() = 0;
+
+   // Called by the framework to create a propery page for the Span dialog when the Pier dialog is created from the Bridge dialog
+   virtual CPropertyPage* CreatePropertyPage(IEditSpanData* pEditSpanData,CPropertyPage* pBridgePropertyPage) = 0;
 };
 
 // Extend the Edit Girder Dialog
 interface IEditGirderData
 {
-   virtual void EGDummy() = 0;
+   virtual SpanIndexType GetSpan() = 0;
+   virtual GirderIndexType GetGirder() = 0;
 };
 
 interface IEditGirderCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditGirderData* pGirderData) = 0;
-   virtual void DestroyPropertyPage(INT_PTR result,CPropertyPage* pPage,IEditGirderData* pGirderData) = 0;
+   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) = 0;
 };
 
 // Extend the Edit Bridge Dialog
@@ -79,7 +116,15 @@ interface IEditBridgeData
 interface IEditBridgeCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditBridgeData* pBridgeData) = 0;
-   virtual void DestroyPropertyPage(INT_PTR result,CPropertyPage* pPage,IEditBridgeData* pBridgeData) = 0;
+   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData) = 0;
+
+   // Called by the framework after editing pier data from the Framing page completes successfully
+   // so that data from the Pier and Bridge editing dialogs can be made consistent with each other
+   virtual void EditPier_OnOK(CPropertyPage* pBridgePropertyPage,CPropertyPage* pPierPropertyPage) = 0;
+
+   // Called by the framework after editing span data from the Framing page completes successfully
+   // so that data from the Span and Bridge editing dialogs can be made consistent with each other
+   virtual void EditSpan_OnOK(CPropertyPage* pBridgePropertyPage,CPropertyPage* pSpanPropertyPage) = 0;
 };
 
 
@@ -102,4 +147,12 @@ interface IExtendUI : IUnknown
    virtual bool UnregisterEditSpanCallback(IDType ID) = 0;
    virtual bool UnregisterEditGirderCallback(IDType ID) = 0;
    virtual bool UnregisterEditBridgeCallback(IDType ID) = 0;
+};
+
+// {7FB4E6EF-0639-47dc-AE76-0948F9184291}
+DEFINE_GUID(IID_IExtendUIEventSink, 
+0x7fb4e6ef, 0x639, 0x47dc, 0xae, 0x76, 0x9, 0x48, 0xf9, 0x18, 0x42, 0x91);
+interface IExtendUIEventSink : IUnknown
+{
+   virtual HRESULT OnHintsReset() = 0;
 };

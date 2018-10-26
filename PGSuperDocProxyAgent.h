@@ -39,6 +39,8 @@
 #include "PGSuperStatusBar.h"
 #include <EAF\EAFStatusBar.h>
 
+#include "CPPGSuperDocProxyAgent.h"
+
 
 class CPGSuperDoc;
 struct IBroker;
@@ -73,6 +75,8 @@ LOG
 class CPGSuperDocProxyAgent :
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CPGSuperDocProxyAgent,&CLSID_PGSuperDocProxyAgent>,
+	public IConnectionPointContainerImpl<CPGSuperDocProxyAgent>,
+   public CProxyIExtendUIEventSink<CPGSuperDocProxyAgent>,
    public IAgentEx,
    public IAgentUIIntegration,
    public IBridgeDescriptionEventSink,
@@ -99,6 +103,7 @@ public:
    ~CPGSuperDocProxyAgent();
 
 BEGIN_COM_MAP(CPGSuperDocProxyAgent)
+	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
    COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
    COM_INTERFACE_ENTRY(IAgentUIIntegration)
@@ -123,10 +128,16 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IExtendUI)
 END_COM_MAP()
 
+BEGIN_CONNECTION_POINT_MAP(CPGSuperDocProxyAgent)
+   CONNECTION_POINT_ENTRY( IID_IExtendUIEventSink )
+END_CONNECTION_POINT_MAP()
+
 public:
    void SetDocument(CPGSuperDoc* pDoc);
    void OnStatusChanged();
    long GetReportViewKey();
+
+   void OnResetHints();
 
 // IAgentEx
 public:
@@ -190,6 +201,8 @@ public:
 public:
    virtual void HoldEvents(bool bHold=true);
    virtual void FirePendingEvents();
+   virtual void CancelPendingEvents();
+   virtual void FireEvent(CView* pSender = NULL,LPARAM lHint = 0,boost::shared_ptr<CObject> pHint = boost::shared_ptr<CObject>());
 
 // IVersionInfo
 public:
@@ -302,7 +315,6 @@ private:
       boost::shared_ptr<CObject> pHint;
    };
    std::vector<UIEvent> m_UIEvents;
-   void FireEvent(CView* pSender,LPARAM lHint,boost::shared_ptr<CObject> pHint);
 
 
    // look up keys for extra views associated with our document

@@ -78,11 +78,22 @@ public:
 // Implementation
 public:
 	virtual ~CBridgeDescDlg();
-	virtual INT_PTR DoModal();
+
+   virtual INT_PTR DoModal();
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
+
+   const std::set<EditBridgeExtension>& GetExtensionPages() const;
+   std::set<EditBridgeExtension>& GetExtensionPages();
 
 	// Generated message map functions
 protected:
    void Init();
+   void CreateExtensionPages();
+   void DestroyExtensionPages();
+
    CBridgeDescription m_BridgeDesc;
 
    friend CBridgeDescGeneralPage;
@@ -94,6 +105,11 @@ protected:
    friend CBridgeDescDeckRebarGrid;
    friend CBridgeDescFramingGrid;
    friend CBridgeDescRatingPage;
+
+
+   txnMacroTxn m_Macro;
+   std::set<EditBridgeExtension> m_ExtensionPages;
+   void NotifyExtensionPages();
 
 	//{{AFX_MSG(CBridgeDescDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.

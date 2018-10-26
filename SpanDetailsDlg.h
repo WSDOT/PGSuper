@@ -45,7 +45,8 @@ class CSpanDetailsDlg : public CPropertySheet, public IPierConnectionsParent, pu
 
 // Construction
 public:
-	CSpanDetailsDlg(const CSpanData* pSpanData = NULL,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CSpanDetailsDlg(const CSpanData* pSpan,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CSpanDetailsDlg(const CSpanData* pSpan,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
    void SetSpanData(const CSpanData* pSpan);
 
    //interface IPierConnectionsParent
@@ -56,6 +57,8 @@ public:
    virtual const CBridgeDescription* GetBridgeDescription();
 
    // IEditSpanData
+   virtual SpanIndexType GetSpanCount() { return m_pBridgeDesc->GetSpanCount(); }
+   virtual SpanIndexType GetSpan() { return m_pSpanData->GetSpanIndex(); }
    virtual pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
    virtual GirderIndexType GetGirderCount();
 
@@ -108,8 +111,12 @@ public:
 // Implementation
 public:
 	virtual ~CSpanDetailsDlg();
-	virtual INT_PTR DoModal();
 
+   virtual INT_PTR DoModal();
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
 
    // Generated message map functions
 protected:
@@ -121,6 +128,12 @@ protected:
 	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 
    void Init();
+   void Init(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void CommonInit();
+   void CreateExtensionPages();
+   void CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void DestroyExtensionPages();
+
    bool AllowConnectionChange(pgsTypes::MemberEndType end, const CString& conectionName);
 
 
@@ -145,6 +158,12 @@ protected:
    CPierConnectionsPage m_StartPierPage;
    CPierConnectionsPage m_EndPierPage;
    CSpanGirderLayoutPage m_GirderLayoutPage;
+
+   txnMacroTxn m_Macro;
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>> m_ExtensionPages;
+   std::set<EditBridgeExtension> m_BridgeExtensionPages;
+   void NotifyExtensionPages();
+   void NotifyBridgeExtensionPages();
 
    CString m_strStartPierTitle;
    CString m_strEndPierTitle;

@@ -59,6 +59,8 @@ CPGSuperBaseAppPlugin::CPGSuperBaseAppPlugin()
 {
    m_CacheUpdateFrequency = Daily;
    m_SharedResourceType = srtInternetFtp;
+
+   m_DisplayFavoriteReports = FALSE;
 }
 
 HRESULT CPGSuperBaseAppPlugin::OnFinalConstruct()
@@ -165,6 +167,25 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
    // Cache file/folder for Internet or Local Network resources
    m_MasterLibraryFileCache       = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache"),     GetCacheFolder()+GetMasterLibraryFileName());
    m_WorkgroupTemplateFolderCache = pApp->GetProfileString(_T("Options"),_T("WorkgroupTemplatesCache"),GetCacheFolder()+GetTemplateSubFolderName()+"\\");
+
+   // Favorite reports
+   m_DisplayFavoriteReports = pApp->GetProfileInt(_T("Options"),_T("DoDisplayFavoriteReports"),FALSE);
+
+   // favorite report names are stored as CSV's
+   CString ReportList = pApp->GetProfileString(_T("Options"),_T("FavoriteReportsList"),_T(""));
+   m_FavoriteReports.clear();
+   sysTokenizer tokenizer(_T(","));
+   tokenizer.push_back(ReportList);
+   sysTokenizer::iterator it = tokenizer.begin();
+   while( it != tokenizer.end() )
+   {
+      m_FavoriteReports.push_back( *it );
+      it++;
+   }
+
+   // Custom Reports
+   m_CustomReports.LoadFromRegistry(pApp);
+
 }
 
 void CPGSuperBaseAppPlugin::SaveRegistryValues()
@@ -191,6 +212,29 @@ void CPGSuperBaseAppPlugin::SaveRegistryValues()
    // Cache file/folder for Internet or Local Network resources
    pApp->WriteProfileString(_T("Options"),_T("MasterLibraryCache"),     m_MasterLibraryFileCache);
    pApp->WriteProfileString(_T("Options"),_T("WorkgroupTemplatesCache"),m_WorkgroupTemplateFolderCache);
+
+   // Favorite reports
+   pApp->WriteProfileInt(_T("Options"),_T("DoDisplayFavoriteReports"),m_DisplayFavoriteReports);
+
+   // report names are stored as CSV's
+   CString Favorites;
+   std::vector<std::_tstring>::const_iterator it = m_FavoriteReports.begin();
+   while (it != m_FavoriteReports.end())
+   {
+      if (it!= m_FavoriteReports.begin())
+      {
+         Favorites += _T(",");
+      }
+
+      Favorites += it->c_str();
+
+      it++;
+   }
+
+   pApp->WriteProfileString(_T("Options"),_T("FavoriteReportsList"),Favorites);
+
+   // Custom Reports
+   m_CustomReports.SaveToRegistry(pApp);
 
    m_CatalogServers.SaveToRegistry(pApp);
 }
@@ -308,6 +352,37 @@ SharedResourceType CPGSuperBaseAppPlugin::GetSharedResourceType()
 {
    return m_SharedResourceType;
 }
+
+bool CPGSuperBaseAppPlugin::GetDoDisplayFavoriteReports() const
+{
+   return m_DisplayFavoriteReports!=FALSE;
+}
+
+void CPGSuperBaseAppPlugin::SetDoDisplayFavoriteReports(bool doDisplay)
+{
+   m_DisplayFavoriteReports = doDisplay ? TRUE : FALSE;
+}
+
+std::vector<std::_tstring> CPGSuperBaseAppPlugin::GetFavoriteReports() const
+{
+   return m_FavoriteReports;
+}
+
+void CPGSuperBaseAppPlugin::SetFavoriteReports( std::vector<std::_tstring> reports)
+{
+   m_FavoriteReports = reports;
+}
+
+CEAFCustomReports CPGSuperBaseAppPlugin::GetCustomReports() const
+{
+   return m_CustomReports;
+}
+
+void CPGSuperBaseAppPlugin::SetCustomReports(const CEAFCustomReports& reports)
+{
+   m_CustomReports = reports;
+}
+
 
 CString CPGSuperBaseAppPlugin::GetMasterLibraryPublisher() const
 {
