@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,4,0,3
- PRODUCTVERSION 2,4,0,3
+ FILEVERSION 2,4,0,4
+ PRODUCTVERSION 2,4,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "2.4.0.3"
+            VALUE "FileVersion", "2.4.0.4"
             VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.4.0.3"
+            VALUE "ProductVersion", "2.4.0.4"
         END
     END
     BLOCK "VarFileInfo"
@@ -147,10 +147,10 @@ BEGIN
     EDITTEXT        IDC_EC_SLAB,60,204,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EC_BEAM,202,205,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_FC_SLAB,347,205,40,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_FT,149,246,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FT,156,246,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_FB,347,247,40,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_MU,149,265,40,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_W_NONCOMP_DC,73,310,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MU,156,265,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_W_NONCOMP_DC,75,310,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_W_COMP_DC,202,310,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_W_COMP_DW,347,310,40,14,ES_AUTOHSCROLL
     RTEXT           "Bridge",IDC_STATIC,24,27,24,8
@@ -181,18 +181,18 @@ BEGIN
     RTEXT           "f'c, Slab",IDC_STATIC,302,208,40,8
     LTEXT           "ksi",IDC_FC_SLAB_UNITS,390,208,15,8
     GROUPBOX        "Design Data",IDC_STATIC,7,235,410,53
-    RTEXT           "* ft, Design Compressive Stress, Top CL",IDC_STATIC,9,250,136,8
-    LTEXT           "ksi",IDC_FT_UNITS,191,249,15,8
-    RTEXT           "* fb, Design Tensile Stress, Bottom CL",IDC_STATIC,216,250,126,8
+    RTEXT           "* ft, Design Compressive Stress, Top CL",IDC_STATIC,18,250,136,8
+    LTEXT           "ksi",IDC_FT_UNITS,198,249,15,8
+    RTEXT           "* fb, Design Tensile Stress, Bottom CL",IDC_STATIC,218,249,126,8
     LTEXT           "ksi",IDC_FB_UNITS,396,250,15,8
-    RTEXT           "Mu, Required Ultimate Moment",IDC_STATIC,17,268,126,8
-    LTEXT           "kip-ft",IDC_MU_UNITS,191,268,25,8
+    RTEXT           "Mu, Required Ultimate Moment Capacity",IDC_STATIC,14,268,140,8
+    LTEXT           "kip-ft",IDC_MU_UNITS,198,268,25,8
     GROUPBOX        "Optional Uniform Design Loads",IDC_STATIC,7,294,410,40
-    RTEXT           "w non-comp, dc",IDC_STATIC,12,313,60,8
-    LTEXT           "kip/ft",IDC_W_NONCOMP_DC_UNITS,115,313,23,8
-    RTEXT           "w comp, dc",IDC_STATIC,156,313,40,8
+    RTEXT           "W non-comp, DC",IDC_STATIC,12,313,60,8
+    LTEXT           "kip/ft",IDC_W_NONCOMP_DC_UNITS,117,313,23,8
+    RTEXT           "W comp, DC",IDC_STATIC,147,313,49,8
     LTEXT           "kip/ft",IDC_W_COMP_DC_UNITS,244,313,26,8
-    RTEXT           "w comp, dw",IDC_STATIC,289,313,51,8
+    RTEXT           "W Overlay",IDC_STATIC,289,313,51,8
     LTEXT           "kip/ft",IDC_W_COMP_DW_UNITS,390,313,21,8
     RTEXT           "* Note: Tension is negative",IDC_STATIC,232,268,135,8
     GROUPBOX        "Analysis Options",IDC_STATIC,7,343,410,33
@@ -264,7 +264,7 @@ BEGIN
     COMBOBOX        IDC_OPT_NUM_STRANDS,104,34,48,424,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_OPT_TO,104,66,40,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Compute Eccentricity",IDC_OPT_COMPUTE,79,113,81,14
-    RTEXT           "Total No. Strands",IDC_STATIC,42,36,57,8
+    RTEXT           "No. Strands",IDC_STATIC,60,36,39,8
     LTEXT           "No. Depressed Strands  ??",IDC_OPT_NO_DEPRESSED,104,52,123,11
     RTEXT           "Girder Bottom to Topmost Strand (To)",IDC_OPT_TO_TAG,27,64,72,19
     LTEXT           "in",IDC_OPT_TO_UNITS,146,69,15,8

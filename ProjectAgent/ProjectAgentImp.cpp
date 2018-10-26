@@ -6266,6 +6266,13 @@ void CProjectAgentImp::FirePendingEvents()
    pUIEvents->FirePendingEvents();
 }
 
+void CProjectAgentImp::CancelPendingEvents()
+{
+   m_bHoldingEvents = false;
+   m_PendingEventsHash.clear();
+   m_PendingEvents = 0;
+}
+
 ////////////////////////////////////////////////////////////////////////
 // ILimits
 double CProjectAgentImp::GetMaxSlabFc()

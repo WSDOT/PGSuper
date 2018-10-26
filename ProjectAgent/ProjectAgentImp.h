@@ -436,6 +436,7 @@ public:
 public:
    virtual void HoldEvents();
    virtual void FirePendingEvents();
+   virtual void CancelPendingEvents();
 
 // ILimits
 public:

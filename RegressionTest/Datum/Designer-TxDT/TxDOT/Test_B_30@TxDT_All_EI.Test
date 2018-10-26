@@ -1,14 +1,14 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.00   4  8.00     1     1     B  *     8   1/2  270 12.43 10.43   4  8.0  4.000  5.000    0.710   -1.161    989  0.795  0.04 -0.00 -0.00 -0.00 -0.00  15.21  46.41   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.00   4  8.00     1     1     B  *     8   1/2  270 12.43 10.43   4  8.0  4.000  5.000    0.710   -1.161    989  0.795  0.814  0.04 -0.00 -0.00 -0.00 -0.00  15.21  46.41   0.00   0.00   0.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.00   4  8.00     1     2     B  *     8   1/2  270 12.43 10.43   4  8.0  4.000  5.000    0.749   -1.198    985  0.795  0.04 -0.00 -0.00 -0.00 -0.01  15.21  46.13   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.00   4  8.00     1     2     B  *     8   1/2  270 12.43 10.43   4  8.0  4.000  5.000    0.749   -1.198    985  0.795  0.814  0.04 -0.00 -0.00 -0.00 -0.01  15.21  46.13   0.00   0.00   0.00
 
 
 The Specification Check was Successful

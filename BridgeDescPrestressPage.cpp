@@ -942,8 +942,40 @@ Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    if ( strandType == pgsTypes::Permanent )
       strandType = pgsTypes::Straight;
 
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   return pPrestress->GetPjackMax(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,*pParent->m_GirderData.Material.pStrandMaterial[strandType], nStrands);
+
+   // TRICK CODE
+   // If strand stresses are limited immediate prior to transfer, prestress losses must be computed between jacking and prestress transfer in 
+   // order to compute PjackMax. Losses are computed from transfer to final in one shot. The side of effect of this is that a bridge analysis
+   // model must be built and in doing so, live load distribution factors must be computed. If the live load distribution factors cannot
+   // be computed because of a range of applicability issue, an exception will be thrown.
+   //
+   // This exception adversely impacts the behavior of this dialog. To prevent these problems, capture the current ROA setting, change ROA to
+   // "Ignore", compute PjackMax, and then restore the ROA setting.
+
+   GET_IFACE2(pBroker,IEvents,pEvents);
+   pEvents->HoldEvents();
+
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   LldfRangeOfApplicabilityAction action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+   pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+
+   Float64 PjackMax;
+   try
+   {
+      CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+      PjackMax = pPrestress->GetPjackMax(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,*pParent->m_GirderData.Material.pStrandMaterial[strandType], nStrands);
+   }
+   catch (... )
+   {
+      pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+      pEvents->CancelPendingEvents();
+      throw;
+   }
+
+   pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+   pEvents->CancelPendingEvents();
+
+   return PjackMax;
 }
 
 Float64 CGirderDescPrestressPage::GetUltPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)

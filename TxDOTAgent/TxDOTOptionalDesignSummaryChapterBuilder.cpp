@@ -261,13 +261,13 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row,0) <<"M"<<Sub("u")<< ", Required Ultimate Moment Capacity";
    (*p_table)(row++,1) << moment.SetValue( pProjectData->GetMu() );
 
-   (*p_table)(row,0) << "w"<<Sub("non-comp DC");
+   (*p_table)(row,0) << "W"<<Sub("non-comp DC");
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWNonCompDc());
 
-   (*p_table)(row,0) << "w"<<Sub("comp DC");
+   (*p_table)(row,0) << "W"<<Sub("comp DC");
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWCompDc());
 
-   (*p_table)(row,0) << "w"<<Sub("Overlay");
+   (*p_table)(row,0) << "W"<<Sub("Overlay");
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWCompDw());
 
    GET_IFACE2(pBroker,ILibrary,pLib);

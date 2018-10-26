@@ -1,22 +1,22 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 37.19   6  0.06     1     1 Entry       22   1/2  270  8.35  8.11   4  2.50  22   4  4  0  0  0  0  0  0  0  0  0  4.300  5.000    1.326   -2.037   1538  0.640  0.08 -0.02 -0.00 -0.00 -0.02  31.44 102.46   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 37.19   6  0.06     1     1 Entry       22   1/2  270  8.35  8.11   4  2.50  22   4  4  0  0  0  0  0  0  0  0  0  4.300  5.000    1.326   -2.037   1538  0.640  0.640  0.08 -0.02 -0.00 -0.00 -0.02  31.44 102.46   0.00   0.00   0.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 37.19   6  0.06     1     2 Entry       22   1/2  270  8.31  8.07   4  2.50  22   4  4  0  0  0  0  0  0  0  0  0  4.400  5.000    1.335   -2.038   1536  0.640  0.08 -0.02 -0.00 -0.00 -0.02  31.26 102.40   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 37.19   6  0.06     1     2 Entry       22   1/2  270  8.31  8.07   4  2.50  22   4  4  0  0  0  0  0  0  0  0  0  4.400  5.000    1.335   -2.038   1536  0.640  0.640  0.08 -0.02 -0.00 -0.00 -0.02  31.26 102.40   0.00   0.00   0.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 37.19   6  0.06     1     4 Entry       22   1/2  270  8.31  8.07   4  2.50  22   4  4  0  0  0  0  0  0  0  0  0  4.400  5.000    1.335   -2.038   1536  0.640  0.08 -0.02 -0.00 -0.00 -0.02  31.26 102.40   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 37.19   6  0.06     1     4 Entry       22   1/2  270  8.31  8.07   4  2.50  22   4  4  0  0  0  0  0  0  0  0  0  4.400  5.000    1.335   -2.038   1536  0.640  0.640  0.08 -0.02 -0.00 -0.00 -0.02  31.26 102.40   0.00   0.00   0.00
 
 
 The Specification Check was Successful

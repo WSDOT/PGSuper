@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1587>
-<meta name=layout-width content=768>
+<meta name=layout-height content=1718>
+<meta name=layout-width content=661>
 
 
 <!--(Links)=========================================================-->
@@ -43,10 +43,13 @@
 
 <p>This tab contains bridge-level data related to the project.</p>
 
+<p class=Tip>Note: All data on this tab must be filled in prior to visiting 
+ other tabs.</p>
+
 <h2>General Information</h2>
 
-<p>The General Information group contains textual data to contained in 
- TOGA reports. None of this data affects the analysis.</p>
+<p>The General Information group contains textual data used to describe 
+ the current project in TOGA reports. None of this data affects the analysis.</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
@@ -122,7 +125,7 @@
 			border-bottom-style: None;
 			border-right-style: None;"
 	width=412px>
-<p>Job ID</td></tr>
+<p>CSJ</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -273,6 +276,33 @@
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
+<td colspan=1
+	rowspan=1
+	style="width: 112px;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: None;
+			border-right-style: None;
+			border-left-style: None;"
+	width=112px>
+<p style="font-weight: bold; text-align: right;"
+	align=right><span style="font-weight: bold;">Span Length</span></p>
+<p>&nbsp;</td>
+<td colspan=1
+	rowspan=1
+	style="width: 412px;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: None;
+			border-right-style: None;"
+	width=412px>
+<p>Length of span as measured between bearing centerlines in feet. <span 
+ style="font-style: italic;">Note that the overall girder length is determined 
+ by the default connection type used by TOGA for the girder in question. 
+ This may not reflect the plan or as-fabricated girder length.</span></td></tr>
+
+<tr style="x-cell-content-align: top;"
+	valign=top>
 <td style="width: 112px;
 			padding-right: 10px;
 			padding-left: 10px;
@@ -290,29 +320,7 @@
 			border-bottom-style: None;
 			border-right-style: None;"
 	width=412px>
-<p>CL to CL spacing of beams.</td></tr>
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="width: 112px;
-			padding-right: 10px;
-			padding-left: 10px;
-			border-bottom-style: None;
-			border-right-style: None;
-			border-left-style: None;"
-	width=112px>
-<p style="font-weight: bold; text-align: right;"
-	align=right>Span Length</td>
-<td style="width: 412px;
-			padding-right: 10px;
-			padding-left: 10px;
-			border-bottom-style: None;
-			border-right-style: None;"
-	width=412px>
-<p>Length of span as measured between bearing centerlines. <span style="font-style: italic;">Note 
- that the overall girder length is determined by the default connection 
- type used by TOGA for the girder in question. This may not reflect the 
- plan or as-fabricated girder length.</span></td></tr>
+<p>CL to CL spacing of beams in feet.</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -337,9 +345,9 @@
 			border-bottom-style: None;
 			border-right-style: None;"
 	width=412px>
-<p>Equivalent slab thickness used to compute composite section properties 
- and weight of slab. <span style="font-style: italic;">Slab density is 
- assumed to be 150 pcf.</span></td></tr>
+<p>Equivalent slab thickness in inches used to compute composite section 
+ properties and weight of slab. <span style="font-style: italic;">Slab 
+ density is assumed to be 150 pcf.</span></td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -449,7 +457,7 @@
 			border-right-style: None;
 			border-top-style: None;"
 	width=412px>
-<p>Modulus of elasticity of slab concrete</td></tr>
+<p>Modulus of elasticity of slab concrete. Default is 5000.0 KSI.</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -470,7 +478,8 @@
 			border-bottom-style: None;
 			border-right-style: None;"
 	width=412px>
-<p>Modulus of elasticity of beam concrete</td></tr>
+<p>Modulus of elasticity of beam concrete for final condition in KSI. Default 
+ is 5000.0 KSI.</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -491,7 +500,7 @@
 			border-bottom-style: None;
 			border-right-style: None;"
 	width=412px>
-<p>Final concrete strength of slab concrete</td></tr>
+<p>Final concrete strength of slab concrete. Default is 4.0 KSI.</td></tr>
 </table>
 
 <h2>Design Data</h2>
@@ -533,7 +542,7 @@
 			border-left-style: none;"
 	width=391px>
 <p>Beam top fiber stress at centerline, due to total external load. (Service 
- I, Final Stage)</td></tr>
+ I, Final Stage) in KSI</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -556,7 +565,8 @@
 			border-left-style: none;"
 	width=391px>
 <p>Beam bottom fiber stress at centerline, due to total external load. 
- A negative sign {-} must be entered for tension. (Service III, Final Stage)</td></tr>
+ A negative sign {-} must be entered for tension. (Service III, Final Stage) 
+ in KSI</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -578,7 +588,7 @@
 			border-bottom-style: None;
 			border-left-style: none;"
 	width=391px>
-<p>Ultimate moment capacity required</td></tr>
+<p>Ultimate moment capacity required in kip-ft</td></tr>
 </table>
 
 <p>* Note: Tension is negative</p>
@@ -586,7 +596,8 @@
 <h2><a name=Uniform_Design_Loads></a>Optional Uniform Design Loads</h2>
 
 <p>This group contains equivalent uniform design loads to be applied to 
- the girder in the associated stages/load combinations.</p>
+ the girder in the associated stages/load combinations. Default is 0.0 
+ kip/ft. Input is not required</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
@@ -612,7 +623,7 @@
 <p style="text-align: right;
 			font-style: normal;
 			font-weight: bold;"
-	align=right>w non-comp, dc</td>
+	align=right>W non-comp, DC</td>
 <td style="width: 412px;
 			padding-right: 10px;
 			padding-left: 10px;
@@ -621,7 +632,7 @@
 			border-top-style: None;"
 	width=412px>
 <p>Uniform dead load, in addition to weight of beam and slab, applied to 
- non-composite section in the DC load case. (e.g. diaphragms).</td></tr>
+ non-composite section in the DC load case. (e.g. diaphragms) in kip/ft</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -633,7 +644,7 @@
 			border-left-style: None;"
 	width=112px>
 <p style="text-align: right; font-weight: bold;"
-	align=right>w comp, dc</td>
+	align=right>W comp, DC</td>
 <td style="width: 412px;
 			padding-right: 10px;
 			padding-left: 10px;
@@ -641,7 +652,7 @@
 			border-right-style: None;"
 	width=412px>
 <p>Uniform dead load, applied to composite section in the DC load case 
- (e.g., barrier)</td></tr>
+ (e.g., rail) in kip/ft</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -655,7 +666,7 @@
 <p style="text-align: right;
 			font-style: normal;
 			font-weight: bold;"
-	align=right>w Overlay</td>
+	align=right>W Overlay</td>
 <td style="width: 412px;
 			padding-right: 10px;
 			padding-left: 10px;
@@ -663,7 +674,8 @@
 			border-right-style: None;"
 	width=412px>
 <p>Uniform dead load, applied to composite section in the DW load case 
- after all losses. This is equivalent to a future overlay in PGSuper.</td></tr>
+ after all losses in kip/ft. This is equivalent to a future overlay in 
+ PGSuper.</td></tr>
 </table>
 
 <h2>Analysis Options</h2>
@@ -692,7 +704,7 @@
 			border-left-style: none;"
 	width=133px>
 <p style="text-align: right; font-weight: bold;"
-	align=right>Use Higher 0.65 f'ci allowable compressive stress factor 
+	align=right>Use Higher 0.65 f'ci Allowable Compressive Stress Limit 
  at release</td>
 <td style="width: 391px;
 			padding-right: 10px;
