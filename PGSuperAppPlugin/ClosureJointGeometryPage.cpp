@@ -228,8 +228,17 @@ BOOL CClosureJointGeometryPage::OnInitDialog()
       CDataExchange dx(this,FALSE);
       DDX_CBItemData(&dx,IDC_CONNECTION_TYPE,connectionType);
 
-      EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastClosureJointEventIndex(m_ClosureID);
-      pcbEvent->SetCurSel((int)eventIdx);
+      if ( connectionType == pgsTypes::tsctClosureJoint )
+      {
+         ATLASSERT(m_ClosureID != INVALID_ID);
+         EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastClosureJointEventIndex(m_ClosureID);
+         pcbEvent->SetCurSel((int)eventIdx);
+      }
+      else
+      {
+         ATLASSERT(m_ClosureID == INVALID_ID);
+         pcbEvent->SetCurSel(0);
+      }
 
       GetDlgItem(IDC_DIAPHRAGM_GROUP)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_HEIGHT_LABEL)->ShowWindow(SW_HIDE);
@@ -283,6 +292,8 @@ void CClosureJointGeometryPage::OnConnectionTypeChanged()
       else
       {
          // segment connection type changed in such a way that there is no longer a closure
+         CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+         pParent->m_pPier->SetSegmentConnectionType(connectionType,INVALID_INDEX);
          m_ClosureID = INVALID_ID;
       }
    }
@@ -292,7 +303,18 @@ void CClosureJointGeometryPage::OnConnectionTypeChanged()
       showWindow = (connectionType == pgsTypes::tsctClosureJoint ? SW_SHOW : SW_HIDE);
 
       CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
-      pParent->m_pTS->SetConnectionType(connectionType,castClosureEventIdx);
+      if ( connectionType == pgsTypes::tsctClosureJoint )
+      {
+         pParent->m_pTS->SetConnectionType(connectionType,castClosureEventIdx);
+         CClosureJointData* pClosure = pParent->m_pTS->GetClosureJoint(0);
+         m_ClosureID = pClosure->GetID();
+      }
+      else
+      {
+         ATLASSERT(connectionType == pgsTypes::tsctContinuousSegment);
+         pParent->m_pTS->SetConnectionType(connectionType,INVALID_INDEX);
+         m_ClosureID = INVALID_ID;
+      }
    }
 
    GetDlgItem(IDC_BEARING_OFFSET_LABEL)->ShowWindow(showWindow);
@@ -549,11 +571,21 @@ BOOL CClosureJointGeometryPage::OnSetActive()
    }
    else
    {
-      CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
-
       CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
-      EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastClosureJointEventIndex(m_ClosureID);
-      pcbEvent->SetCurSel((int)eventIdx);
+      pgsTypes::TempSupportSegmentConnectionType connectionType = pParent->m_pTS->GetConnectionType();
+
+      CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
+      if ( connectionType == pgsTypes::tsctClosureJoint )
+      {
+         ATLASSERT(m_ClosureID != INVALID_ID);
+         EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastClosureJointEventIndex(m_ClosureID);
+         pcbEvent->SetCurSel((int)eventIdx);
+      }
+      else
+      {
+         ATLASSERT(m_ClosureID == INVALID_ID);
+         pcbEvent->SetCurSel(0);
+      }
 
       // This is a temporary support... we need to update the temporary support type because it could
       // have changed since this dialog page was created

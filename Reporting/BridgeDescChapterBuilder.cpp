@@ -830,7 +830,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
             write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,pSegment->Material.Concrete,row);
             row++;
 
-            const CClosureJointData* pClosure = pSegment->GetRightClosure();
+            const CClosureJointData* pClosure = pSegment->GetEndClosure();
             if ( pClosure )
             {
                ATLASSERT(false); // this should never happen because the basic concrete model
@@ -1020,7 +1020,7 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
             write_aci209_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pSegment->Material.Concrete,row,bAASHTOParameters);
             row++;
 
-            const CClosureJointData* pClosure = pSegment->GetRightClosure();
+            const CClosureJointData* pClosure = pSegment->GetEndClosure();
             if ( pClosure )
             {
                Float64 fc28 = pMaterials->GetClosureJointFc28(thisSegmentKey);
@@ -1174,7 +1174,7 @@ void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
             write_cebfip_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pSegment->Material.Concrete,row);
             row++;
 
-            const CClosureJointData* pClosure = pSegment->GetRightClosure();
+            const CClosureJointData* pClosure = pSegment->GetEndClosure();
             if ( pClosure )
             {
                Float64 fc28 = pMaterials->GetClosureJointFc28(thisSegmentKey);
@@ -1766,7 +1766,7 @@ void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
       {
          const CPierData2* pPier = NULL;
          const CTemporarySupportData* pTS = NULL;
-         const CClosureJointData* pClosure = pSegment->GetRightClosure();
+         const CClosureJointData* pClosure = pSegment->GetEndClosure();
          if ( pClosure == NULL )
          {
             pPier = pGirder->GetPier(pgsTypes::metEnd);

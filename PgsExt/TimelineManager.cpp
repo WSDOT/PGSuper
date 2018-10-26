@@ -2178,7 +2178,7 @@ int CTimelineManager::Validate() const
                   }
                }
 
-               const CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+               const CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
                if ( pClosureJoint )
                {
                   // if there is a closure joint....

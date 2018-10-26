@@ -123,7 +123,7 @@ void CCastClosureJointDlg::FillLists()
    {
       const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(0);
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
-      const CClosureJointData* pClosure = pSegment->GetRightClosure();
+      const CClosureJointData* pClosure = pSegment->GetEndClosure();
 
       while ( pClosure )
       {
@@ -170,7 +170,7 @@ void CCastClosureJointDlg::FillLists()
 
          if ( pClosure->GetRightSegment() )
          {
-            pClosure = pClosure->GetRightSegment()->GetRightClosure();
+            pClosure = pClosure->GetRightSegment()->GetEndClosure();
          }
          else
          {

@@ -209,7 +209,6 @@ void CPierDetailsDlg::CreateExtensionPages()
    {
       IEditPierCallback* pEditPierCallback = callbackIter->second;
       CPropertyPage* pPage = pEditPierCallback->CreatePropertyPage(this);
-      ATLASSERT(pPage != NULL);
       m_ExtensionPages.push_back( std::make_pair(pEditPierCallback,pPage) );
       if ( pPage )
       {

@@ -6083,11 +6083,11 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
       // Get allowable stress 
       if ( designParams.stress_type == pgsTypes::Compression )
       {
-         designParams.fAllow = pAllowStress->GetSegmentAllowableCompressionStress(poi,liveLoadIntervalIdx,designParams.limit_state,m_StrandDesignTool.GetConcreteStrength());
+         designParams.fAllow = pAllowStress->GetSegmentAllowableCompressionStress(poi,designParams.intervalIdx,designParams.limit_state,m_StrandDesignTool.GetConcreteStrength());
       }
       else
       {
-         designParams.fAllow = pAllowStress->GetSegmentAllowableTensionStress(poi,liveLoadIntervalIdx,designParams.limit_state,m_StrandDesignTool.GetConcreteStrength(),false);
+         designParams.fAllow = pAllowStress->GetSegmentAllowableTensionStress(poi,designParams.intervalIdx,designParams.limit_state,m_StrandDesignTool.GetConcreteStrength(),false);
       }
       LOG(_T("Allowable stress (") << designParams.strLimitState << _T(") = ") << ::ConvertFromSysUnits(designParams.fAllow,unitMeasure::KSI)  << _T(" KSI"));
 

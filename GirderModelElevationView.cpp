@@ -680,7 +680,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
 
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
-   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetLeftClosure() : pSegment->GetRightClosure());
+   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetStartClosure() : pSegment->GetEndClosure());
    const CPierData2* pPier = NULL;
    const CTemporarySupportData* pTS = NULL;
 
@@ -2803,7 +2803,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDocBase* pDoc
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
-   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
 
    // assume a typical cover
    Float64 top_cover = ::ConvertToSysUnits(2.0,unitMeasure::Inch);

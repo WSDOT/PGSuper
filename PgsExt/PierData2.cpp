@@ -514,8 +514,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Back]).c_str()) );
    pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Back]));
 
-   // added IsBoundaryPier() requirement in version 2
-   if ( IsBoundaryPier() && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   if ( HasSpacing() )
    {
       m_GirderSpacing[pgsTypes::Back].Save(pStrSave,pProgress);
    }
@@ -553,8 +552,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Ahead]).c_str()) );
    pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Ahead]));
 
-   // added IsBoundaryPier() requirement in version 2
-   if ( IsBoundaryPier() && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   if ( HasSpacing() )
    {
       m_GirderSpacing[pgsTypes::Ahead].Save(pStrSave,pProgress);
    }
@@ -822,7 +820,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
       else
       {
-         if ( vbIsBoundaryPier == VARIANT_TRUE && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+         if ( HasSpacing(vbIsBoundaryPier) )
          {
             hr = m_GirderSpacing[pgsTypes::Back].Load(pStrLoad,pProgress);
          }
@@ -908,7 +906,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
       else
       {
-         if ( vbIsBoundaryPier == VARIANT_TRUE && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+         if ( HasSpacing(vbIsBoundaryPier) )
          {
             hr = m_GirderSpacing[pgsTypes::Ahead].Load(pStrLoad,pProgress);
          }
@@ -1560,7 +1558,7 @@ CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx)
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      CClosureJointData* pClosure = pSegment->GetRightClosure();
+      CClosureJointData* pClosure = pSegment->GetEndClosure();
       if ( pClosure->GetPier() == this )
       {
          return pClosure;
@@ -1599,7 +1597,7 @@ const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) con
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      const CClosureJointData* pClosure = pSegment->GetRightClosure();
+      const CClosureJointData* pClosure = pSegment->GetEndClosure();
       if ( pClosure->GetPier() == this )
       {
          return pClosure;
@@ -1952,6 +1950,39 @@ bool CPierData2::IsInteriorPier() const
 bool CPierData2::IsBoundaryPier() const
 {
    return !IsInteriorPier();
+}
+
+bool CPierData2::HasSpacing() const
+{
+   // use this version for all cases except when loading the file
+
+   // there is spacing data at a pier if it
+   if ( ::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   {
+      return false; // spacing data is at the bridge level
+   }
+   else
+   {
+      // spacing data is at the ends of segments, which is at the piers and temporary supports
+      // there is spacing data if this is a boundary pier or if this is an interior pier and there is a closure joint
+      return ( IsBoundaryPier() || (IsInteriorPier() && GetClosureJoint(0) != NULL) ) ? true : false;
+   }
+}
+
+bool CPierData2::HasSpacing(VARIANT_BOOL vbIsBoundaryPier) const
+{
+   // use this version when loading the file
+
+   if ( ::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   {
+      return false; // spacing data is at the bridge level
+   }
+   else
+   {
+      return ( vbIsBoundaryPier == VARIANT_TRUE || 
+                  (m_SegmentConnectionType == pgsTypes::psctContinousClosureJoint || m_SegmentConnectionType == pgsTypes::psctIntegralClosureJoint)
+         ) ? true : false;
+   }
 }
 
 CPierData2::LLDF& CPierData2::GetLLDF(GirderIndexType igs) const

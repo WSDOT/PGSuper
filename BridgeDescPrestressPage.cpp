@@ -2567,6 +2567,7 @@ void CGirderDescPrestressPage::EditDirectInput()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CPropertySheet dlg(_T("Define Strands"),this);
+   dlg.m_psh.dwFlags |= PSH_NOAPPLYNOW;
    CGirderSegmentStrandsPage page;
    page.Init(pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex));
    dlg.AddPage(&page);

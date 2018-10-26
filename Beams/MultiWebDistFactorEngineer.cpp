@@ -56,7 +56,6 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
 {
    // Grab the interfaces that are needed
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(ILiveLoads,pLiveLoads);
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());

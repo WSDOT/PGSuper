@@ -49,10 +49,12 @@ protected:
 
    // Resolves girder spacing from however it is input into an array of distances measured from the
    // alignment to the girder line, measured along the support direction.
-   void ResolveGirderSpacing(IAlignment* pAlignment,Float64 alignmentOffset,Float64 supportStation,IDirection* pSupportDirection,const CGirderSpacing2* pSpacing,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry);
+   void ResolveGirderSpacing(IAlignment* pAlignment,Float64 alignmentOffset,Float64 measureStation,IDirection* pMeasureDirection,IDirection* pSupportDirection,const CGirderSpacing2* pSpacing,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry);
 
    void GetPierID(const CPrecastSegmentData* pSegment,PierIDType* pStartID,PierIDType* pEndID);
-   void GetPierSkewAngle(IAlignment* pAlignment,const CPierData2* pPier,IAngle** ppSkew);
+   void GetPierDirection(IAlignment* pAlignment,const CPierData2* pPier,IAngle** ppSkew,IDirection** ppDirection);
+   void GetTempSupportDirection(IAlignment* pAlignment,const CTemporarySupportData* pTS,IAngle** ppSkew,IDirection** ppDirection);
+   void GetSkewAndDirection(IAlignment* pAlignment,Float64 station,LPCTSTR strOrientation,IAngle** ppSkew,IDirection** ppDirection);
 
    const CGirderGroupData* GetGirderGroup(const CGirderSpacing2* pSpacing);
    Float64 GetGirderWidth(const CSplicedGirderData* pGirder);

@@ -342,7 +342,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
             (*p_table)(row,col++) << shear.SetValue( maxTrafficBarrier[index] );
             (*p_table)(row,col++) << shear.SetValue( minTrafficBarrier[index] );
 
-            if ( overlayIntervalIdx != INVALID_INDEX )
+            if ( bHasOverlay && overlayIntervalIdx != INVALID_INDEX )
             {
                (*p_table)(row,col++) << shear.SetValue( maxOverlay[index] );
                (*p_table)(row,col++) << shear.SetValue( minOverlay[index] );
@@ -357,7 +357,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
             (*p_table)(row,col++) << shear.SetValue( maxTrafficBarrier[index] );
 
-            if ( overlayIntervalIdx != INVALID_INDEX )
+            if ( bHasOverlay && overlayIntervalIdx != INVALID_INDEX )
             {
                (*p_table)(row,col++) << shear.SetValue( maxOverlay[index] );
             }

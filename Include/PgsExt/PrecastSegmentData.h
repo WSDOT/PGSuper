@@ -101,13 +101,13 @@ public:
    CSplicedGirderData* GetGirder();
    const CSplicedGirderData* GetGirder() const;
 
-   void SetLeftClosure(CClosureJointData* pClosure);
-   const CClosureJointData* GetLeftClosure() const;
-   CClosureJointData* GetLeftClosure();
+   void SetStartClosure(CClosureJointData* pClosure);
+   const CClosureJointData* GetStartClosure() const;
+   CClosureJointData* GetStartClosure();
 
-   void SetRightClosure(CClosureJointData* pClosure);
-   const CClosureJointData* GetRightClosure() const;
-   CClosureJointData* GetRightClosure();
+   void SetEndClosure(CClosureJointData* pClosure);
+   const CClosureJointData* GetEndClosure() const;
+   CClosureJointData* GetEndClosure();
 
    const CPrecastSegmentData* GetPrevSegment() const;
    const CPrecastSegmentData* GetNextSegment() const;
@@ -166,8 +166,8 @@ protected:
    // Temporary supports are acceesed through the closure joint object
 
    // pointers to the closure joint data objects that are on the left and right of this segment.
-   CClosureJointData* m_pLeftClosure;  // weak reference, owned by CSplicedGirderData
-   CClosureJointData* m_pRightClosure; // weak reference, owned by CSplicedGirderData
+   CClosureJointData* m_pStartClosure;  // weak reference, owned by CSplicedGirderData
+   CClosureJointData* m_pEndClosure; // weak reference, owned by CSplicedGirderData
 
    pgsTypes::SegmentVariationType m_VariationType;
    Float64 m_VariationLength[4]; // index is the SegmentZoneType enum

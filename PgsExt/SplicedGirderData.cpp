@@ -447,7 +447,7 @@ HRESULT CSplicedGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
          if ( segIdx != 0 )
          {
-            pSegment->SetLeftClosure(m_Closures.back());
+            pSegment->SetStartClosure(m_Closures.back());
             m_Closures.back()->SetRightSegment(pSegment);
          }
 
@@ -460,7 +460,7 @@ HRESULT CSplicedGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             CClosureJointData* pClosure = new CClosureJointData(this);
 
-            pSegment->SetRightClosure(pClosure);
+            pSegment->SetEndClosure(pClosure);
             pClosure->SetLeftSegment(pSegment);
 
             hr = pClosure->Load(pStrLoad,pProgress);
@@ -611,20 +611,20 @@ void CSplicedGirderData::UpdateLinks()
 
       if ( segIdx == 0 )
       {
-         m_Segments[segIdx]->SetLeftClosure(NULL);
+         m_Segments[segIdx]->SetStartClosure(NULL);
       }
       else
       {
-         m_Segments[segIdx]->SetLeftClosure(m_Closures[segIdx-1]);
+         m_Segments[segIdx]->SetStartClosure(m_Closures[segIdx-1]);
       }
 
       if ( segIdx == nSegments-1 )
       {
-         m_Segments[segIdx]->SetRightClosure(NULL);
+         m_Segments[segIdx]->SetEndClosure(NULL);
       }
       else
       {
-         m_Segments[segIdx]->SetRightClosure(m_Closures[segIdx]);
+         m_Segments[segIdx]->SetEndClosure(m_Closures[segIdx]);
       }
 
       if ( segIdx < nSegments-1 )
@@ -665,18 +665,18 @@ void CSplicedGirderData::UpdateSegments()
       CPrecastSegmentData* pSegment = m_Segments[segIdx];
       pSegment->SetIndex(segIdx);
 
-      CClosureJointData* pLeftClosure  = pSegment->GetLeftClosure();
-      CClosureJointData* pRightClosure = pSegment->GetRightClosure();
+      CClosureJointData* pStartClosure  = pSegment->GetStartClosure();
+      CClosureJointData* pEndClosure = pSegment->GetEndClosure();
 
       pSegment->ResolveReferences();
-      if ( pLeftClosure )
+      if ( pStartClosure )
       {
-         pLeftClosure->ResolveReferences();
+         pStartClosure->ResolveReferences();
       }
 
-      if ( pRightClosure )
+      if ( pEndClosure )
       {
-         pRightClosure->ResolveReferences();
+         pEndClosure->ResolveReferences();
       }
 
       Float64 segmentStartStation, segmentEndStation;
@@ -939,8 +939,8 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
          // Segment starts and ends in the span that is being removed
          // Remove the segment and closures
          SegmentIndexType segIdx = pSegment->GetIndex();
-         CClosureJointData* pLeftClosure = pSegment->GetLeftClosure();
-         CClosureJointData* pRightClosure = pSegment->GetRightClosure();
+         CClosureJointData* pStartClosure = pSegment->GetStartClosure();
+         CClosureJointData* pEndClosure = pSegment->GetEndClosure();
 
          RemoveSegmentFromTimelineManager(pSegment);
 
@@ -948,20 +948,20 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
          delete pSegment;
          *segIter = NULL;
 
-         if ( pLeftClosure )
+         if ( pStartClosure )
          {
-            pLeftClosure->GetLeftSegment()->SetRightClosure(NULL);
-            m_Closures[pLeftClosure->GetIndex()] = NULL;
-            RemoveClosureJointFromTimelineManager(pLeftClosure);
-            delete pLeftClosure;
+            pStartClosure->GetLeftSegment()->SetEndClosure(NULL);
+            m_Closures[pStartClosure->GetIndex()] = NULL;
+            RemoveClosureJointFromTimelineManager(pStartClosure);
+            delete pStartClosure;
          }
 
-         if ( pRightClosure )
+         if ( pEndClosure )
          {
-            pRightClosure->GetRightSegment()->SetLeftClosure(NULL);
-            m_Closures[pRightClosure->GetIndex()] = NULL;
-            RemoveClosureJointFromTimelineManager(pRightClosure);
-            delete pRightClosure;
+            pEndClosure->GetRightSegment()->SetStartClosure(NULL);
+            m_Closures[pEndClosure->GetIndex()] = NULL;
+            RemoveClosureJointFromTimelineManager(pEndClosure);
+            delete pEndClosure;
          }
       }
       else if (startSpanIdx == spanIdx )
@@ -1023,12 +1023,12 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 
          // the right hand segment is going away (the segments cannot be merged)
 
-         pLeftSegment->SetRightClosure( pRightSegment->GetRightClosure() );
+         pLeftSegment->SetEndClosure( pRightSegment->GetEndClosure() );
          pLeftSegment->SetSpan(pgsTypes::metEnd,pRightSegment->GetSpan(pgsTypes::metEnd));
          
-         if ( pRightSegment->GetRightClosure() )
+         if ( pRightSegment->GetEndClosure() )
          {
-            pRightSegment->GetRightClosure()->SetLeftSegment(pLeftSegment);
+            pRightSegment->GetEndClosure()->SetLeftSegment(pLeftSegment);
          }
 
          delete pClosure;
@@ -1084,8 +1084,8 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
    for ( ; segIter != segIterEnd; segIter++, closureIter++ )
    {
       CPrecastSegmentData* pSegment = *segIter;
-      CClosureJointData* pLeftClosure = pSegment->GetLeftClosure();
-      CClosureJointData* pRightClosure = pSegment->GetRightClosure();
+      CClosureJointData* pStartClosure = pSegment->GetStartClosure();
+      CClosureJointData* pEndClosure = pSegment->GetEndClosure();
 
       Float64 startStation, endStation;
       pSegment->GetStations(&startStation,&endStation);
@@ -1105,18 +1105,18 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 
          SplitSegmentRight(pSegment,pNewSegment,tsStation);
 
-         pNewSegment->SetRightClosure(pSegment->GetRightClosure());
+         pNewSegment->SetEndClosure(pSegment->GetEndClosure());
 
-         if ( pSegment->GetRightClosure() )
+         if ( pSegment->GetEndClosure() )
          {
-            pSegment->GetRightClosure()->SetLeftSegment(pNewSegment);
+            pSegment->GetEndClosure()->SetLeftSegment(pNewSegment);
          }
 
          pSegment->SetSpan(pgsTypes::metEnd,pTS->GetSpan());
-         pSegment->SetRightClosure(pNewClosure);
+         pSegment->SetEndClosure(pNewClosure);
          pNewClosure->SetLeftSegment(pSegment);
 
-         pNewSegment->SetLeftClosure(pNewClosure);
+         pNewSegment->SetStartClosure(pNewClosure);
          pNewClosure->SetRightSegment(pNewSegment);
 
          pNewClosure->SetTemporarySupport(pTS);
@@ -1196,11 +1196,11 @@ void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
 
          // the right hand segment is going away (the segments cannot be merged)
 
-         pLeftSegment->SetRightClosure( pRightSegment->GetRightClosure() );
+         pLeftSegment->SetEndClosure( pRightSegment->GetEndClosure() );
          
-         if ( pRightSegment->GetRightClosure() )
+         if ( pRightSegment->GetEndClosure() )
          {
-            pRightSegment->GetRightClosure()->SetLeftSegment(pLeftSegment);
+            pRightSegment->GetEndClosure()->SetLeftSegment(pLeftSegment);
          }
 
          // the left segment now ends in the span where the right segment used to end
@@ -1260,8 +1260,8 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
    for ( ; segIter != segIterEnd; segIter++, closureIter++ )
    {
       CPrecastSegmentData* pSegment = *segIter;
-      CClosureJointData* pLeftClosure = pSegment->GetLeftClosure();
-      CClosureJointData* pRightClosure = pSegment->GetRightClosure();
+      CClosureJointData* pStartClosure = pSegment->GetStartClosure();
+      CClosureJointData* pEndClosure = pSegment->GetEndClosure();
 
       Float64 startStation, endStation;
       pSegment->GetStations(&startStation,&endStation);
@@ -1279,18 +1279,18 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
 
          SplitSegmentRight(pSegment,pNewSegment,pierStation);
 
-         pNewSegment->SetRightClosure(pSegment->GetRightClosure());
+         pNewSegment->SetEndClosure(pSegment->GetEndClosure());
 
-         if ( pSegment->GetRightClosure() )
+         if ( pSegment->GetEndClosure() )
          {
-            pSegment->GetRightClosure()->SetLeftSegment(pNewSegment);
+            pSegment->GetEndClosure()->SetLeftSegment(pNewSegment);
          }
 
          pSegment->SetSpan(pgsTypes::metEnd,pPier->GetPrevSpan());
-         pSegment->SetRightClosure(pNewClosure);
+         pSegment->SetEndClosure(pNewClosure);
          pNewClosure->SetLeftSegment(pSegment);
 
-         pNewSegment->SetLeftClosure(pNewClosure);
+         pNewSegment->SetStartClosure(pNewClosure);
          pNewClosure->SetRightSegment(pNewSegment);
 
          pNewClosure->SetPier(pPier);
@@ -1598,13 +1598,16 @@ void CSplicedGirderData::RemoveClosureJointFromTimelineManager(const CClosureJoi
 {
    if ( m_pGirderGroup )
    {
-      if ( 1 < m_pGirderGroup->GetGirderCount() )
+      if ( m_GirderIndex < m_pGirderGroup->GetGirderCount()-1 )
       {
-         // The cast closure joint activity for this closure applies to all girders in the group.
-         // That is, the first closure in the group for all girders are cast together, the second
-         // closure in the group for all girders are cast together, and so on.
-         // Remove this closure from the timeline if it is for the last girder in the group, otherwise
-         // simply return and do noting
+         // Any particular closure joint is cast for all girders at the same time. Even though we
+         // model every closure joint individually in the physical model, they are cast at the same time.
+         // For example, the closure between segment 2 and 3 for all girders are cast at the same time.
+         // The closure between segment 3 and 4 for all girders are also cast at the same time, but not
+         // necessarily at the same time as the closure between segments 2 and 3.
+         //
+         // For this reason, we only remove the closure from the timeline when this is the last
+         // (right-most) girder
          return;
       }
 
@@ -1731,21 +1734,21 @@ void CSplicedGirderData::AssertValid()
          }
       }
 
-      CClosureJointData* pLeftClosure  = pSegment->GetLeftClosure();
-      CClosureJointData* pRightClosure = pSegment->GetRightClosure();
+      CClosureJointData* pStartClosure  = pSegment->GetStartClosure();
+      CClosureJointData* pEndClosure = pSegment->GetEndClosure();
 
-      if ( pLeftClosure )
+      if ( pStartClosure )
       {
-         _ASSERT( pLeftClosure->GetGirder() == this );
-         _ASSERT( pLeftClosure->GetRightSegment() == pSegment );
-         pLeftClosure->AssertValid();
+         _ASSERT( pStartClosure->GetGirder() == this );
+         _ASSERT( pStartClosure->GetRightSegment() == pSegment );
+         pStartClosure->AssertValid();
       }
 
-      if ( pRightClosure )
+      if ( pEndClosure )
       {
-         _ASSERT( pRightClosure->GetGirder() == this );
-         _ASSERT( pRightClosure->GetLeftSegment() == pSegment );
-         pRightClosure->AssertValid();
+         _ASSERT( pEndClosure->GetGirder() == this );
+         _ASSERT( pEndClosure->GetLeftSegment() == pSegment );
+         pEndClosure->AssertValid();
       }
    }
 
@@ -1765,13 +1768,13 @@ void CSplicedGirderData::AssertValid()
       if ( pLeftSegment )
       {
          _ASSERT( pLeftSegment->GetGirder() == this );
-         _ASSERT( pLeftSegment->GetRightClosure() == pClosure );
+         _ASSERT( pLeftSegment->GetEndClosure() == pClosure );
       }
 
       if ( pRightSegment )
       {
          _ASSERT( pRightSegment->GetGirder() == this );
-         _ASSERT( pRightSegment->GetLeftClosure() == pClosure );
+         _ASSERT( pRightSegment->GetStartClosure() == pClosure );
       }
    }
 }

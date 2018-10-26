@@ -76,7 +76,7 @@ if (!FSO.FileExists(Application))
    CleanUpTest();
    WScript.Quit(1);
 }
-
+/*
 // Ensure TxDOT Extension Agent is enabled. It is required for the /Tx commands
 var OldTxDOTAgentState = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{3700B253-8489-457c-8A6D-D174F95C457C}");
 if (OldTxDOTAgentState == "Disabled") {
@@ -90,7 +90,7 @@ if (OldTxDOTAgentState == "Disabled") {
     DisplayMessage("********");
     WScript.Quit(1);
 }
-
+*/
 // First clean up results from any old runs and set up environment
 var CurrentFolder = StartFolderSpec;
 InitTest(CurrentFolder);

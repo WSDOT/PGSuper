@@ -346,7 +346,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
             (*p_table)(row,col++) << deflection.SetValue( maxTrafficBarrier[index] );
             (*p_table)(row,col++) << deflection.SetValue( minTrafficBarrier[index] );
 
-            if ( overlayIntervalIdx != INVALID_INDEX )
+            if ( bHasOverlay && overlayIntervalIdx != INVALID_INDEX )
             {
                (*p_table)(row,col++) << deflection.SetValue( maxOverlay[index] );
                (*p_table)(row,col++) << deflection.SetValue( minOverlay[index] );
@@ -361,7 +361,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
 
             (*p_table)(row,col++) << deflection.SetValue( maxTrafficBarrier[index] );
 
-            if ( overlayIntervalIdx != INVALID_INDEX )
+            if ( bHasOverlay && overlayIntervalIdx != INVALID_INDEX )
             {
                (*p_table)(row,col++) << deflection.SetValue( maxOverlay[index] );
             }

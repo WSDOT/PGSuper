@@ -61,7 +61,12 @@ CBridgeDescription2::CBridgeDescription2()
 
    m_pGirderLibraryEntry = NULL;
 
+   // Set some reasonable defaults
    m_nGirders = 0;
+   m_bSameNumberOfGirders = true;
+   m_GirderSpacingType = pgsTypes::sbsUniform;
+   m_GirderSpacing = 0.0;
+   m_GirderOrientation = pgsTypes::Plumb;
 
    m_TempSupportID = 0;
    m_SegmentID     = 0;
@@ -2144,6 +2149,14 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
    // remove temporary support from the timeline
    // (note that the closure joint was removed from the timeline when the segments were joined)
    SupportIDType tsID = pTS->GetID();
+   //const CClosureJointData* pClosure = pTS->GetClosureJoint(0);
+   //if ( pClosure )
+   //{
+   //   IDType id = pClosure->GetID();
+   //   EventIndexType castClosureEventIdx = m_TimelineManager.GetCastClosureJointEventIndex(id);
+   //   m_TimelineManager.GetEventByIndex(castClosureEventIdx)->GetCastClosureJointActivity().RemoveTempSupport(tsID);
+   //}
+
    EventIndexType erectEventIdx, removeEventIdx;
    m_TimelineManager.GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
    m_TimelineManager.GetEventByIndex(erectEventIdx)->GetErectPiersActivity().RemoveTempSupport(tsID);
@@ -2816,7 +2829,7 @@ CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType closureID
          for (SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
          {
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-            CClosureJointData* pClosure = pSegment->GetRightClosure();
+            CClosureJointData* pClosure = pSegment->GetEndClosure();
             if ( pClosure->GetID() == closureID )
             {
                return pClosure;
@@ -2841,10 +2854,15 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         if ( nSegments == 0 )
+         {
+            continue;
+         }
+
          for (SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
          {
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-            const CClosureJointData* pClosure = pSegment->GetRightClosure();
+            const CClosureJointData* pClosure = pSegment->GetEndClosure();
             if ( pClosure->GetID() == closureID )
             {
                return pClosure;

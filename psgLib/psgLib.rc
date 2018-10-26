@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,29
- PRODUCTVERSION 3,0,0,29
+ FILEVERSION 3,0,0,30
+ PRODUCTVERSION 3,0,0,30
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.29"
+            VALUE "FileVersion", "3.0.0.30"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.29"
+            VALUE "ProductVersion", "3.0.0.30"
         END
     END
     BLOCK "VarFileInfo"
@@ -633,54 +633,54 @@ BEGIN
     GROUPBOX        "Loss Method",IDC_STATIC,7,7,266,210
     LTEXT           "Select method for computing losses",IDC_STATIC,18,22,112,8
     COMBOBOX        IDC_LOSS_METHOD,18,33,231,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Static",IDC_SHIPPING_TIME_TAG,148,54,19,8
+    LTEXT           "Assume shipping to occur at",IDC_SHIPPING_TIME_LABEL,20,51,90,8
     LTEXT           "Shipping is assumed to occur 10 days after prestress transfer",IDC_APPROXIMATE_SHIPPING_TIME_NOTE,29,54,213,8
-    EDITTEXT        IDC_SHIPPING,96,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_SHIPPING_TAG,141,69,98,8
     COMBOBOX        IDC_SHIPPING_LOSS_METHOD,31,51,218,42,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_SHIPPING_TIME,114,52,33,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Assume shipping to occur at",IDC_SHIPPING_TIME_LABEL,20,51,90,8
-    LTEXT           "Shipping Losses",IDC_SHIPPING_LABEL,31,65,64,11
+    LTEXT           "Static",IDC_SHIPPING_TIME_TAG,148,54,19,8
+    LTEXT           "Shipping Losses",IDC_SHIPPING_LABEL,31,68,64,11
+    EDITTEXT        IDC_SHIPPING,96,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_SHIPPING_TAG,141,69,98,8
+    LTEXT           "Relaxation Loss Method",IDC_RELAXATION_LOSS_METHOD_LABEL,18,80,77,8
+    COMBOBOX        IDC_RELAXATION_LOSS_METHOD,18,90,185,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Compute concrete stress at the c.g. of prestressing tendons (fcpg) using:",IDC_FCPG_STATIC,18,105,228,8
+    COMBOBOX        IDC_FCPG_COMBO,29,118,216,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Elastic Gains",IDC_ELASTIC_GAINS_GROUP,279,7,208,210
     LTEXT           "Define the percentage of load used to compute elastic gains",IDC_EG_LABEL,288,22,189,8
+    LTEXT           "Slab",IDC_EG_SLAB_LABEL,290,40,15,8
     EDITTEXT        IDC_EG_SLAB,404,37,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_SLAB_UNIT,431,40,8,8
-    LTEXT           "Slab",IDC_EG_SLAB_LABEL,290,40,15,8
+    LTEXT           "Haunch",IDC_EG_SLABPAD_LABEL,290,56,26,8
     EDITTEXT        IDC_EG_SLABPAD,404,53,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_SLABPAD_UNIT,431,56,8,8
-    LTEXT           "Haunch",IDC_EG_SLABPAD_LABEL,290,56,26,8
+    LTEXT           "Diaphragms",IDC_EG_DIAPHRAGM_LABEL,290,72,38,8
     EDITTEXT        IDC_EG_DIAPHRAGM,404,69,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_DIAPHRAGM_UNIT,431,72,8,8
-    LTEXT           "Diaphragms",IDC_EG_DIAPHRAGM_LABEL,290,72,38,8
+    LTEXT           "User DC (Before Slab Placement)",IDC_EG_DC_BS2_LABEL,290,89,106,8
     EDITTEXT        IDC_EG_DC_BS2,404,86,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_DC_BS2_UNIT,431,89,8,8
-    LTEXT           "User DC (Before Slab Placement)",IDC_EG_DC_BS2_LABEL,290,89,106,8
+    LTEXT           "User DW (Before Slab Placement)",IDC_EG_DW_BS2_LABEL,290,106,108,8
     EDITTEXT        IDC_EG_DW_BS2,404,103,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_DW_BS2_UNIT,431,106,8,8
-    LTEXT           "User DW (Before Slab Placement)",IDC_EG_DW_BS2_LABEL,290,106,108,8
+    LTEXT           "Railing System",IDC_EG_RAILING_LABEL,290,121,47,8
     EDITTEXT        IDC_EG_RAILING,404,118,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_RAILING_UNIT,431,121,8,8
-    LTEXT           "Railing System",IDC_EG_RAILING_LABEL,290,121,47,8
-    EDITTEXT        IDC_EG_DC_BS3,404,150,24,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_EG_DC_BS3_UNIT,431,153,8,8
-    LTEXT           "User DC (After Slab Placement)",IDC_EG_DC_BS3_LABEL,290,153,100,8
-    EDITTEXT        IDC_EG_DW_BS3,404,166,24,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_EG_DW_BS3_UNIT,431,169,8,8
-    LTEXT           "User DW (After Slab Placement)",IDC_EG_DW_BS3_LABEL,290,169,102,8
-    EDITTEXT        IDC_EG_SHRINKAGE,404,182,24,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_EG_SHRINKAGE_UNIT,431,185,8,8
-    LTEXT           "Slab Shrinkage",IDC_EG_SHRINKAGE_LABEL,290,185,49,8
+    LTEXT           "Overlay",IDC_EG_OVERLAY_LABEL,290,137,25,8
     EDITTEXT        IDC_EG_OVERLAY,404,134,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_OVERLAY_UNIT,431,137,8,8
-    LTEXT           "Overlay",IDC_EG_OVERLAY_LABEL,290,137,25,8
-    COMBOBOX        IDC_RELAXATION_LOSS_METHOD,18,77,185,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Relaxation Loss Method",IDC_RELAXATION_LOSS_METHOD_LABEL,18,67,77,8
-    COMBOBOX        IDC_TIME_DEPENDENT_MODEL,31,51,218,42,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "User DC (After Slab Placement)",IDC_EG_DC_BS3_LABEL,290,153,100,8
+    EDITTEXT        IDC_EG_DC_BS3,404,150,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_DC_BS3_UNIT,431,153,8,8
+    LTEXT           "User DW (After Slab Placement)",IDC_EG_DW_BS3_LABEL,290,169,102,8
+    EDITTEXT        IDC_EG_DW_BS3,404,166,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_DW_BS3_UNIT,431,169,8,8
+    LTEXT           "Slab Shrinkage",IDC_EG_SHRINKAGE_LABEL,290,185,49,8
+    EDITTEXT        IDC_EG_SHRINKAGE,404,182,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_SHRINKAGE_UNIT,431,185,8,8
+    LTEXT           "Live Load",IDC_EG_LIVELOAD_LABEL,290,202,32,8
     EDITTEXT        IDC_EG_LIVELOAD,404,199,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_LIVELOAD_UNIT,431,202,8,8
-    LTEXT           "Live Load",IDC_EG_LIVELOAD_LABEL,290,202,32,8
-    LTEXT           "Compute concrete stress at the c.g. of prestressing tendons (fcpg) using:",IDC_FCPG_STATIC,18,92,228,8
-    COMBOBOX        IDC_FCPG_COMBO,29,105,216,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TIME_DEPENDENT_MODEL,31,51,218,42,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPEC_LIFTING DIALOGEX 0, 0, 420, 290

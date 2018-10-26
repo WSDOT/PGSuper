@@ -6876,7 +6876,7 @@ void CGirderModelManager::GetLBAMBoundaryConditions(bool bContinuous,const CTime
    CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
    // Determine boundary conditions at end of segment
-   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetLeftClosure() : pSegment->GetRightClosure());
+   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetStartClosure() : pSegment->GetEndClosure());
    const CPierData2* pPier = NULL;
    const CTemporarySupportData* pTS = NULL;
    if ( pClosure )
@@ -8875,11 +8875,12 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
                strainLoad->put_MemberID(startSSMbrID);
                strainLoad->put_StartLocation(startSSMbrLoc);
                strainLoad->put_EndLocation(endSSMbrLoc);
-               strainLoad->put_AxialStrain(0);
 
-               // right now, the LBAM model only supports a constant curvature... just use the average value
+               // right now, the LBAM model only supports a constant strain... just use the average value
                // the POI are closely spaced so this is a good approximate. The same thing is done
                // in the Time-Step stress analysis when analyzing initial strains
+               Float64 e = 0.5*(load.eStart + load.eEnd);
+               strainLoad->put_AxialStrain(e);
                Float64 r = 0.5*(load.rStart + load.rEnd);
                strainLoad->put_CurvatureStrain(r);
                
@@ -8902,9 +8903,10 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
                startStrainLoad->put_MemberID(startSSMbrID);
                startStrainLoad->put_StartLocation(startSSMbrLoc);
                startStrainLoad->put_EndLocation(ssmbrLength);
-               startStrainLoad->put_AxialStrain(0.0);
 
-               // right now, our loading only supports a constant curvature... just use the average value
+               // right now, our loading only supports a constant strain... just use the average value
+               Float64 e = 0.5*(load.eStart + load.eEnd);
+               startStrainLoad->put_AxialStrain(e);
                Float64 r = 0.5*(load.rStart + load.rEnd);
                startStrainLoad->put_CurvatureStrain(r);
                
@@ -8924,9 +8926,10 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
                   strainLoad->put_MemberID(ssmbrID);
                   strainLoad->put_StartLocation(0.0);
                   strainLoad->put_EndLocation(ssmbrLength);
-                  strainLoad->put_AxialStrain(0.0);
 
-                  // right now, our loading only supports a constant curvature... just use the average value
+                  // right now, our loading only supports a constant strain... just use the average value
+                  e = 0.5*(load.eStart + load.eEnd);
+                  strainLoad->put_AxialStrain(e);
                   r = 0.5*(load.rStart + load.rEnd);
                   strainLoad->put_CurvatureStrain(r);
                
@@ -8941,9 +8944,10 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
                endStrainLoad->put_MemberID(endSSMbrID);
                endStrainLoad->put_StartLocation(0.0);
                endStrainLoad->put_EndLocation(endSSMbrLoc);
-               endStrainLoad->put_AxialStrain(0.0);
 
-               // right now, our loading only supports a constant curvature... just use the average value
+               // right now, our loading only supports a constant strain... just use the average value
+               e = 0.5*(load.eStart + load.eEnd);
+               endStrainLoad->put_AxialStrain(e);
                r = 0.5*(load.rStart + load.rEnd);
                endStrainLoad->put_CurvatureStrain(r);
 
@@ -10294,6 +10298,12 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       Float64 E1 = (bIsInClosure1 ? pMaterials->GetClosureJointAgeAdjustedEc(closureKey1,stressTendonIntervalIdx) : pMaterials->GetSegmentAgeAdjustedEc(segmentKey1,stressTendonIntervalIdx));
       Float64 E2 = (bIsInClosure2 ? pMaterials->GetClosureJointAgeAdjustedEc(closureKey2,stressTendonIntervalIdx) : pMaterials->GetSegmentAgeAdjustedEc(segmentKey2,stressTendonIntervalIdx));
 
+      Float64 A1 = pSectProps->GetAg(stressTendonIntervalIdx,poi1);
+      Float64 A2 = pSectProps->GetAg(stressTendonIntervalIdx,poi2);
+
+      Float64 ecc1 = -P1/(E1*A1);
+      Float64 ecc2 = -P2/(E2*A2);
+
       Float64 I1 = pSectProps->GetIx(stressTendonIntervalIdx,poi1);
       Float64 I2 = pSectProps->GetIx(stressTendonIntervalIdx,poi2);
 
@@ -10305,6 +10315,8 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       strainLoad.endSpanIdx   = spanKey2.spanIndex;
       strainLoad.Xstart = Xspan1;
       strainLoad.Xend   = Xspan2;
+      strainLoad.eStart = ecc1;
+      strainLoad.eEnd   = ecc2;
       strainLoad.rStart = r1;
       strainLoad.rEnd   = r2;
 

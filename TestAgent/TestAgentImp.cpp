@@ -829,8 +829,6 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    GET_IFACE( IReactions,         pReactions);
    GET_IFACE( ICombinedForces,    pForces);
    GET_IFACE( ISpecification,     pSpec);
-   GET_IFACE( IStrandGeometry,    pStrandGeom);
-   GET_IFACE( IBridge,            pBridge);
    GET_IFACE( IIntervals,         pIntervals);
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -1155,11 +1153,10 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 {
    GET_IFACE( IPointOfInterest,   pIPoi);
    GET_IFACE( ILimitStateForces,  pLsForces);
-   GET_IFACE( ICombinedForces,    pCombinedForces);
    GET_IFACE( IReactions,         pReactions);
    GET_IFACE( ISpecification,     pSpec);
    GET_IFACE( IBearingDesign,     pBearingDesign);
-   GET_IFACE( IIntervals, pIntervals);
+   GET_IFACE( IIntervals,         pIntervals);
 
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -1465,15 +1462,14 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
 bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey)
 {
-   GET_IFACE( IPointOfInterest,   pIPoi);
-   GET_IFACE( ISectionProperties, pSp2 );
-   GET_IFACE( IPretensionForce, pPrestressForce );
+   GET_IFACE( IPointOfInterest,    pIPoi);
+   GET_IFACE( ISectionProperties,  pSp2               );
+   GET_IFACE( IPretensionForce,    pPrestressForce    );
    GET_IFACE( IPretensionStresses, pPrestressStresses );
    GET_IFACE( ILosses, pLosses );
    GET_IFACE( ILimitStateForces,pLsForces);
    GET_IFACE( IMomentCapacity,pMomentCapacity);
    GET_IFACE( IShearCapacity,pShearCapacity);
-   GET_IFACE( IBridge, pBridge);
    GET_IFACE( IArtifact,pIArtifact);
    GET_IFACE( IProductForces, pProdForce);
    GET_IFACE( IIntervals, pIntervals);
@@ -1565,8 +1561,8 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    // compare results.
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
    std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
-   pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
-   pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_RELEASED_SEGMENT | POI_0L);
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_RELEASED_SEGMENT | POI_10L);
    std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_CRITSECTSHEAR1 | POI_PSXFER | POI_HARPINGPOINT | POI_BARDEVELOP | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM) );
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
@@ -1776,7 +1772,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       if ( idx < pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount( liveLoadIntervalIdx,pgsTypes::StrengthI ) )
       {
          psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifactAtPOI( liveLoadIntervalIdx, pgsTypes::StrengthI, poi.GetID() );
-         ATLASSERT(psArtifact != NULL);
+//         ATLASSERT(psArtifact != NULL);
          if ( psArtifact )
          {
             ATLASSERT(poi == psArtifact->GetPointOfInterest());
@@ -1823,11 +1819,14 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       }
 
       // pass/fail cases
-/*      if (pArtifact->IsApplicable())*/
+      if (pArtifact && pArtifact->IsApplicable())
          resultsFile<<bridgeId<<", "<<pid<<", 100202, "<<loc<<", "<<(int)(pArtifact->Passed()?1:0)<<", 15, "<<gdrIdx<<std::endl;
 
-      resultsFile<<bridgeId<<", "<<pid<<", 100203, "<<loc<<", "<<(int)(pSDArtifact->Passed()?1:0)<<", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 100204, "<<loc<<", "<<(int)(pAHsrtifact->Passed()?1:0)<<", 15, "<<gdrIdx<<std::endl;
+      if (pSDArtifact)
+         resultsFile<<bridgeId<<", "<<pid<<", 100203, "<<loc<<", "<<(int)(pSDArtifact->Passed()?1:0)<<", 15, "<<gdrIdx<<std::endl;
+
+      if (pAHsrtifact)
+         resultsFile<<bridgeId<<", "<<pid<<", 100204, "<<loc<<", "<<(int)(pAHsrtifact->Passed()?1:0)<<", 15, "<<gdrIdx<<std::endl;
 
 #pragma Reminder("UPDATE: this is a hack")
       // at one time, the number of stress check artifacts matched the number of POIs that were retreived above...

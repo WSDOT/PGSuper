@@ -285,15 +285,18 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             (*p_table)(row,col++) << RPT_NA;
          }
 
-         if ( reactionDecider.DoReport(overlayIntervalIdx) )
+         if ( bHasOverlay )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, reactionLocation, bRating && !bDesign ? pftOverlayRating : pftOverlay, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, reactionLocation, bRating && !bDesign ? pftOverlayRating : pftOverlay, minBAT ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
+            if ( reactionDecider.DoReport(overlayIntervalIdx) )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, reactionLocation, bRating && !bDesign ? pftOverlayRating : pftOverlay, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, reactionLocation, bRating && !bDesign ? pftOverlayRating : pftOverlay, minBAT ) );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
 
          Float64 min, max;

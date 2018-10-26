@@ -216,6 +216,9 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    if ( pBridge->HasOverlay() )
    {
       nCols++;
+
+      if ( analysisType == pgsTypes::Envelope )
+         nCols++;
    }
 
    // determine continuity stage
@@ -268,7 +271,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
 
    if ( analysisType == pgsTypes::Envelope )
    {
-      nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
+      nCols ++; // add for min/max traffic barrier
    }
 
    if ( bDesign )
@@ -653,7 +656,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
             (*p_table)(row,col++) << moment.SetValue( maxTrafficBarrier[index] );
             (*p_table)(row,col++) << moment.SetValue( minTrafficBarrier[index] );
 
-            if ( overlayIntervalIdx != INVALID_INDEX )
+            if ( bHasOverlay && overlayIntervalIdx != INVALID_INDEX )
             {
                (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
                (*p_table)(row,col++) << moment.SetValue( minOverlay[index] );
@@ -668,7 +671,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
 
             (*p_table)(row,col++) << moment.SetValue( maxTrafficBarrier[index] );
 
-            if ( overlayIntervalIdx != INVALID_INDEX )
+            if ( bHasOverlay && overlayIntervalIdx != INVALID_INDEX )
             {
                (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
             }

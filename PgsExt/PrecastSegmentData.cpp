@@ -56,8 +56,8 @@ CPrecastSegmentData::CPrecastSegmentData(CSplicedGirderData* pGirder)
    m_SpanIdx[pgsTypes::metStart] = INVALID_INDEX;
    m_SpanIdx[pgsTypes::metEnd] = INVALID_INDEX;
 
-   m_pLeftClosure = NULL;
-   m_pRightClosure = NULL;
+   m_pStartClosure = NULL;
+   m_pEndClosure = NULL;
 }
 
 CPrecastSegmentData::CPrecastSegmentData(const CPrecastSegmentData& rOther)
@@ -103,8 +103,8 @@ void CPrecastSegmentData::Init()
    m_SpanIdx[pgsTypes::metStart] = INVALID_INDEX;
    m_SpanIdx[pgsTypes::metEnd] = INVALID_INDEX;
 
-   m_pLeftClosure = NULL;
-   m_pRightClosure = NULL;
+   m_pStartClosure = NULL;
+   m_pEndClosure = NULL;
 }
 
 void CPrecastSegmentData::SetGirder(CSplicedGirderData* pGirder)
@@ -151,44 +151,44 @@ SpanIndexType CPrecastSegmentData::GetSpanIndex(pgsTypes::MemberEndType endType)
    return (m_pSpanData[endType] != NULL ? m_pSpanData[endType]->GetIndex() : m_SpanIdx[endType]);
 }
 
-void CPrecastSegmentData::SetLeftClosure(CClosureJointData* pClosure)
+void CPrecastSegmentData::SetStartClosure(CClosureJointData* pClosure)
 {
-   m_pLeftClosure = pClosure;
+   m_pStartClosure = pClosure;
 }
 
-const CClosureJointData* CPrecastSegmentData::GetLeftClosure() const
+const CClosureJointData* CPrecastSegmentData::GetStartClosure() const
 {
-   return m_pLeftClosure;
+   return m_pStartClosure;
 }
 
-CClosureJointData* CPrecastSegmentData::GetLeftClosure()
+CClosureJointData* CPrecastSegmentData::GetStartClosure()
 {
-   return m_pLeftClosure;
+   return m_pStartClosure;
 }
 
-void CPrecastSegmentData::SetRightClosure(CClosureJointData* pClosure)
+void CPrecastSegmentData::SetEndClosure(CClosureJointData* pClosure)
 {
-   m_pRightClosure = pClosure;
+   m_pEndClosure = pClosure;
 }
 
-const CClosureJointData* CPrecastSegmentData::GetRightClosure() const
+const CClosureJointData* CPrecastSegmentData::GetEndClosure() const
 {
-   return m_pRightClosure;
+   return m_pEndClosure;
 }
 
-CClosureJointData* CPrecastSegmentData::GetRightClosure()
+CClosureJointData* CPrecastSegmentData::GetEndClosure()
 {
-   return m_pRightClosure;
+   return m_pEndClosure;
 }
 
 const CPrecastSegmentData* CPrecastSegmentData::GetPrevSegment() const
 {
-   return m_pLeftClosure == NULL ? NULL : m_pLeftClosure->GetLeftSegment();
+   return m_pStartClosure == NULL ? NULL : m_pStartClosure->GetLeftSegment();
 }
 
 const CPrecastSegmentData* CPrecastSegmentData::GetNextSegment() const
 {
-   return m_pRightClosure == NULL ? NULL : m_pRightClosure->GetRightSegment();
+   return m_pEndClosure == NULL ? NULL : m_pEndClosure->GetRightSegment();
 }
 
 void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,const CPierData2** ppPier,const CTemporarySupportData** ppTS) const
@@ -197,15 +197,15 @@ void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,const CPier
    *ppTS = NULL;
    if ( endType == pgsTypes::metStart )
    {
-      if ( m_pLeftClosure )
+      if ( m_pStartClosure )
       {
-         if ( m_pLeftClosure->GetPier() )
+         if ( m_pStartClosure->GetPier() )
          {
-            *ppPier = m_pLeftClosure->GetPier();
+            *ppPier = m_pStartClosure->GetPier();
          }
          else
          {
-            *ppTS = m_pLeftClosure->GetTemporarySupport();
+            *ppTS = m_pStartClosure->GetTemporarySupport();
          }
       }
       else
@@ -215,15 +215,15 @@ void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,const CPier
    }
    else
    {
-      if ( m_pRightClosure )
+      if ( m_pEndClosure )
       {
-         if ( m_pRightClosure->GetPier() )
+         if ( m_pEndClosure->GetPier() )
          {
-            *ppPier = m_pRightClosure->GetPier();
+            *ppPier = m_pEndClosure->GetPier();
          }
          else
          {
-            *ppTS = m_pRightClosure->GetTemporarySupport();
+            *ppTS = m_pEndClosure->GetTemporarySupport();
          }
       }
       else
@@ -239,15 +239,15 @@ void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,CPierData2*
    *ppTS = NULL;
    if ( endType == pgsTypes::metStart )
    {
-      if ( m_pLeftClosure )
+      if ( m_pStartClosure )
       {
-         if ( m_pLeftClosure->GetPier() )
+         if ( m_pStartClosure->GetPier() )
          {
-            *ppPier = m_pLeftClosure->GetPier();
+            *ppPier = m_pStartClosure->GetPier();
          }
          else
          {
-            *ppTS = m_pLeftClosure->GetTemporarySupport();
+            *ppTS = m_pStartClosure->GetTemporarySupport();
          }
       }
       else
@@ -257,15 +257,15 @@ void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,CPierData2*
    }
    else
    {
-      if ( m_pRightClosure )
+      if ( m_pEndClosure )
       {
-         if ( m_pRightClosure->GetPier() )
+         if ( m_pEndClosure->GetPier() )
          {
-            *ppPier = m_pRightClosure->GetPier();
+            *ppPier = m_pEndClosure->GetPier();
          }
          else
          {
-            *ppTS = m_pRightClosure->GetTemporarySupport();
+            *ppTS = m_pEndClosure->GetTemporarySupport();
          }
       }
       else
@@ -302,15 +302,15 @@ void CPrecastSegmentData::GetStations(Float64* pStartStation,Float64* pEndStatio
 
 void CPrecastSegmentData::GetSpacing(const CGirderSpacing2** ppStartSpacing,const CGirderSpacing2** ppEndSpacing) const
 {
-   if ( m_pLeftClosure )
+   if ( m_pStartClosure )
    {
-      if ( m_pLeftClosure->GetPier() )
+      if ( m_pStartClosure->GetPier() )
       {
-         *ppStartSpacing = m_pLeftClosure->GetPier()->GetGirderSpacing(pgsTypes::Ahead);
+         *ppStartSpacing = m_pStartClosure->GetPier()->GetGirderSpacing(pgsTypes::Ahead);
       }
       else
       {
-         *ppStartSpacing = m_pLeftClosure->GetTemporarySupport()->GetSegmentSpacing();
+         *ppStartSpacing = m_pStartClosure->GetTemporarySupport()->GetSegmentSpacing();
       }
    }
    else
@@ -318,15 +318,15 @@ void CPrecastSegmentData::GetSpacing(const CGirderSpacing2** ppStartSpacing,cons
       *ppStartSpacing = m_pGirder->GetPier(pgsTypes::metStart)->GetGirderSpacing(pgsTypes::Ahead);
    }
 
-   if ( m_pRightClosure )
+   if ( m_pEndClosure )
    {
-      if ( m_pRightClosure->GetPier() )
+      if ( m_pEndClosure->GetPier() )
       {
-         *ppEndSpacing = m_pRightClosure->GetPier()->GetGirderSpacing(pgsTypes::Back);
+         *ppEndSpacing = m_pEndClosure->GetPier()->GetGirderSpacing(pgsTypes::Back);
       }
       else
       {
-         *ppEndSpacing = m_pRightClosure->GetTemporarySupport()->GetSegmentSpacing();
+         *ppEndSpacing = m_pEndClosure->GetTemporarySupport()->GetSegmentSpacing();
       }
    }
    else
@@ -445,9 +445,9 @@ std::vector<const CPierData2*> CPrecastSegmentData::GetPiers() const
    std::vector<const CPierData2*> vPiers;
 
    // get pier at start of segment (if there is one)
-   if ( m_pLeftClosure && m_pLeftClosure->GetPier() )
+   if ( m_pStartClosure && m_pStartClosure->GetPier() )
    {
-      vPiers.push_back( m_pLeftClosure->GetPier() );
+      vPiers.push_back( m_pStartClosure->GetPier() );
    }
    else if ( m_SegmentIndex == 0 )
    {
@@ -474,9 +474,9 @@ std::vector<const CPierData2*> CPrecastSegmentData::GetPiers() const
 
 
    // get pier at end of segment (if there is one)
-   if ( m_pRightClosure && m_pRightClosure->GetPier() )
+   if ( m_pEndClosure && m_pEndClosure->GetPier() )
    {
-      vPiers.push_back( m_pRightClosure->GetPier() );
+      vPiers.push_back( m_pEndClosure->GetPier() );
    }
    else if ( m_SegmentIndex == m_pGirder->GetSegmentCount()-1 )
    {
@@ -491,9 +491,9 @@ std::vector<const CTemporarySupportData*> CPrecastSegmentData::GetTemporarySuppo
    std::vector<const CTemporarySupportData*> tempSupports;
 
    // get temporary support at start of segment (if there is one)
-   if ( m_pLeftClosure && m_pLeftClosure->GetTemporarySupport() )
+   if ( m_pStartClosure && m_pStartClosure->GetTemporarySupport() )
    {
-      tempSupports.push_back( m_pLeftClosure->GetTemporarySupport() );
+      tempSupports.push_back( m_pStartClosure->GetTemporarySupport() );
    }
 
    // get intermediate temporary supports
@@ -523,9 +523,9 @@ std::vector<const CTemporarySupportData*> CPrecastSegmentData::GetTemporarySuppo
 
 
    // get temporary support at end of segment (if there is one)
-   if ( m_pRightClosure && m_pRightClosure->GetTemporarySupport() )
+   if ( m_pEndClosure && m_pEndClosure->GetTemporarySupport() )
    {
-      tempSupports.push_back( m_pRightClosure->GetTemporarySupport() );
+      tempSupports.push_back( m_pEndClosure->GetTemporarySupport() );
    }
 
    return tempSupports;
@@ -1072,14 +1072,14 @@ void CPrecastSegmentData::AdjustAdjacentSegment()
    // Force the ends of this segment and the adjacent segments to match in height
    CPrecastSegmentData* pPrevSegment = NULL;
    CPrecastSegmentData* pNextSegment = NULL;
-   if ( m_pLeftClosure )
+   if ( m_pStartClosure )
    {
-      pPrevSegment = m_pLeftClosure->GetLeftSegment();
+      pPrevSegment = m_pStartClosure->GetLeftSegment();
    }
 
-   if ( m_pRightClosure )
+   if ( m_pEndClosure )
    {
-      pNextSegment = m_pRightClosure->GetRightSegment();
+      pNextSegment = m_pEndClosure->GetRightSegment();
    }
 
    if ( pPrevSegment )

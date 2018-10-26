@@ -258,7 +258,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          (*pTable)(row,0) << _T("Left Joint Spacing\nEnd of Span");
       }
 
-      if ( 1 < pBridge->GetGirderCount(segmentKey.girderIndex) )
+      if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
          (*pTable)(row++,1) << pUnitValue->SetValue(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing(segmentKey.girderIndex-1));
       else
          (*pTable)(row++,1) << _T(" - ");

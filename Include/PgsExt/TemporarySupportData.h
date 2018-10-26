@@ -107,6 +107,7 @@ public:
    // Defines the segment spacing measured at the centerline of this temporary support.
    // Spacing is invalid (not used) if the connection type is sctContinuousSegment.
    // Spacing can only be defined at the ends of precast segments.
+   bool HasSpacing() const;
    void SetSegmentSpacing(const CGirderSpacing2& spacing);
    CGirderSpacing2* GetSegmentSpacing();
    const CGirderSpacing2* GetSegmentSpacing() const;

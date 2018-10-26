@@ -545,7 +545,7 @@ CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType gdrIdx
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      CClosureJointData* pClosure = pSegment->GetRightClosure();
+      CClosureJointData* pClosure = pSegment->GetEndClosure();
       if ( pClosure->GetTemporarySupport() == this )
       {
          return pClosure;
@@ -570,7 +570,7 @@ const CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType 
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      const CClosureJointData* pClosure = pSegment->GetRightClosure();
+      const CClosureJointData* pClosure = pSegment->GetEndClosure();
       if ( pClosure->GetTemporarySupport() == this )
       {
          return pClosure;
@@ -622,6 +622,12 @@ void CTemporarySupportData::SetElevationAdjustment(Float64 elevAdj)
 Float64 CTemporarySupportData::GetElevationAdjustment() const
 {
    return m_ElevationAdjustment;
+}
+
+bool CTemporarySupportData::HasSpacing() const
+{
+   // there is only spacing at a temporary support when the segment conneciton type has a closure joint
+   return (m_ConnectionType == pgsTypes::tsctClosureJoint ? true : false);
 }
 
 void CTemporarySupportData::SetSegmentSpacing(const CGirderSpacing2& spacing)

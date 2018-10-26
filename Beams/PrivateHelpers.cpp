@@ -37,8 +37,8 @@ void BuildSplicedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentData*
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    bool bHasClosure[2] = {
-                           pSegment->GetLeftClosure()  != NULL, 
-                           pSegment->GetRightClosure() != NULL
+                           pSegment->GetStartClosure()  != NULL, 
+                           pSegment->GetEndClosure() != NULL
                          };
 
    // If this is the first segment of a girder and there is a previous group -OR-

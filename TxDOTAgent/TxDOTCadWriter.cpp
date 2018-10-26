@@ -117,7 +117,6 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
    GET_IFACE2(pBroker, ISectionProperties, pSectProp);
 	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   GET_IFACE2(pBroker, ILibrary,pLibrary);
    GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
    GET_IFACE2(pBroker, IMaterials, pMaterial);

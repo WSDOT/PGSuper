@@ -210,16 +210,17 @@ void CSegmentSpacingGrid::UpdateGrid()
 
    m_MinGirderSpacing.clear();
    m_MaxGirderSpacing.clear();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nSpacingGroups; grpIdx++ )
+   for ( GroupIndexType spacingGrpIdx = 0; spacingGrpIdx < nSpacingGroups; spacingGrpIdx++ )
    {
       Float64 spacing;
       GirderIndexType firstGdrIdx, lastGdrIdx;
-      m_pSpacing->GetSpacingGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,&spacing);
+      m_pSpacing->GetSpacingGroup(spacingGrpIdx,&firstGdrIdx,&lastGdrIdx,&spacing);
 
-      // if this is the last group and the girder spacing is uniform
+      // if this is the last spacing group
       // then the last girder index needs to be forced to nGirders-1
-      if ( grpIdx == nSpacingGroups-1 && IsBridgeSpacing(spacingType) )
+      if ( spacingGrpIdx == nSpacingGroups-1 )
       {
+         ATLASSERT(lastGdrIdx == nGirders-1); // why is the last girder index not correct?
          lastGdrIdx = nGirders-1;
       }
 
@@ -235,12 +236,15 @@ void CSegmentSpacingGrid::UpdateGrid()
 
       CNameGroupData userData(firstGdrIdx,lastGdrIdx);
 
-      SetStyleRange(CGXRange(0,ROWCOL(grpIdx+1)), CGXStyle()
+      SetStyleRange(CGXRange(0,ROWCOL(spacingGrpIdx+1)), CGXStyle()
          .SetHorizontalAlignment(DT_CENTER)
          .SetEnabled(FALSE)
          .SetValue(strHeading)
          .SetUserAttribute(0,userData)
          );
+
+      const CGirderGroupData* pGroup = m_pSpacing->GetGirderGroup();
+      GroupIndexType grpIdx = pGroup->GetIndex();
 
       // get valid girder spacing for this group
       Float64 minGirderSpacing = -MAX_GIRDER_SPACING;
@@ -278,11 +282,11 @@ void CSegmentSpacingGrid::UpdateGrid()
       ATLASSERT( minGirderSpacing <= maxGirderSpacing );
 
       spacing = ForceIntoRange(minGirderSpacing,spacing,maxGirderSpacing);
-      m_pSpacing->SetGirderSpacing(grpIdx,spacing);
+      m_pSpacing->SetGirderSpacing(spacingGrpIdx,spacing);
 
       CString strSpacing;
       strSpacing.Format(_T("%s"),FormatDimension(spacing,spacingUnit,false));
-      SetStyleRange(CGXRange(1,ROWCOL(grpIdx+1)), CGXStyle()
+      SetStyleRange(CGXRange(1,ROWCOL(spacingGrpIdx+1)), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
          .SetEnabled(TRUE)
          .SetReadOnly(FALSE)
@@ -314,7 +318,7 @@ void CSegmentSpacingGrid::UpdateGrid()
             FormatDimension(minGirderSpacing,spacingUnit,false));
       }
 
-      SetStyleRange(CGXRange(2,ROWCOL(grpIdx+1)), CGXStyle()
+      SetStyleRange(CGXRange(2,ROWCOL(spacingGrpIdx+1)), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
          .SetEnabled(FALSE)
          .SetReadOnly(TRUE)

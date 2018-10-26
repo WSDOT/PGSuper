@@ -93,7 +93,8 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       pBridgeGeometry->get_BridgeAlignment(&alignment);
 
       CComPtr<IAngle> skew;
-      GetPierSkewAngle(alignment,pPier,&skew);
+      CComPtr<IDirection> direction;
+      GetPierDirection(alignment,pPier,&skew,&direction);
 
       Float64 skew_angle;
       skew->get_Value(&skew_angle);
@@ -557,7 +558,6 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-#pragma Reminder("Assuming same number of segments in all girders in a group")
       const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       std::vector<CComPtr<IPoint2dCollection>> girderPoints(nSegments+1); // spacing is measured at end of every segment
@@ -577,14 +577,15 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
       for ( SegmentIndexType segIdx = 1; segIdx < nSegments; segIdx++ )
       {
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-         const CClosureJointData* pClosure = pSegment->GetLeftClosure();
-         const CPierData2* pPier           = pClosure->GetPier();
-         const CTemporarySupportData* pTS = pClosure->GetTemporarySupport();
+         const CPierData2* pPier = NULL;
+         const CTemporarySupportData* pTS = NULL;
+         pSegment->GetSupport(pgsTypes::metStart,&pPier,&pTS);
+
          if ( pPier )
          {
             ResolveGirderSpacingAtPier(alignment,alignmentOffset,pPier,pgsTypes::Back,&girderPoints[segIdx],pBridgeGeometry);
          }
-         else
+         else if ( pTS )
          {
             ResolveGirderSpacingAtTempSupport(alignment,alignmentOffset,pTS,&girderPoints[segIdx],pBridgeGeometry);
          }
@@ -670,7 +671,6 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
             glFactory->Reset();
          }
       }
-
    } // end of group loop
 
    return true;
@@ -678,58 +678,69 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
 
 void CBridgeGeometryModelBuilder::GetPierID(const CPrecastSegmentData* pSegment,PierIDType* pStartID,PierIDType* pEndID)
 {
-   const CClosureJointData* pLeftClosure  = pSegment->GetLeftClosure();
-   const CClosureJointData* pRightClosure = pSegment->GetRightClosure();
+   const CClosureJointData* pStartClosure  = pSegment->GetStartClosure();
+   const CClosureJointData* pEndClosure = pSegment->GetEndClosure();
 
-   if ( pLeftClosure == NULL )
+   if ( pStartClosure == NULL )
    {
       *pStartID = ::GetPierLineID( pSegment->GetGirder()->GetPier(pgsTypes::metStart)->GetIndex() );
    }
    else
    {
-      if ( pLeftClosure->GetPier() )
+      if ( pStartClosure->GetPier() )
       {
-         *pStartID = ::GetPierLineID( pLeftClosure->GetPier()->GetIndex() );
+         *pStartID = ::GetPierLineID( pStartClosure->GetPier()->GetIndex() );
       }
       else
       {
-         *pStartID = ::GetTempSupportLineID( pLeftClosure->GetTemporarySupport()->GetIndex() );
+         *pStartID = ::GetTempSupportLineID( pStartClosure->GetTemporarySupport()->GetIndex() );
       }
    }
 
 
-   if ( pRightClosure == NULL )
+   if ( pEndClosure == NULL )
    {
       *pEndID = ::GetPierLineID( pSegment->GetGirder()->GetPier(pgsTypes::metEnd)->GetIndex() );
    }
    else
    {
-      if ( pRightClosure->GetPier() )
+      if ( pEndClosure->GetPier() )
       {
-         *pEndID = ::GetPierLineID( pRightClosure->GetPier()->GetIndex() );
+         *pEndID = ::GetPierLineID( pEndClosure->GetPier()->GetIndex() );
       }
       else
       {
-         *pEndID = ::GetTempSupportLineID( pRightClosure->GetTemporarySupport()->GetIndex() );
+         *pEndID = ::GetTempSupportLineID( pEndClosure->GetTemporarySupport()->GetIndex() );
       }
    }
 }
 
-void CBridgeGeometryModelBuilder::GetPierSkewAngle(IAlignment* pAlignment,const CPierData2* pPier,IAngle** ppSkew)
+void CBridgeGeometryModelBuilder::GetPierDirection(IAlignment* pAlignment,const CPierData2* pPier,IAngle** ppSkew,IDirection** ppDirection)
 {
    Float64 station = pPier->GetStation();
-   std::_tstring strOrientation = pPier->GetOrientation();
+   LPCTSTR strOrientation = pPier->GetOrientation();
 
+   GetSkewAndDirection(pAlignment,station,strOrientation,ppSkew,ppDirection);
+}
+
+void CBridgeGeometryModelBuilder::GetTempSupportDirection(IAlignment* pAlignment,const CTemporarySupportData* pTS,IAngle** ppSkew,IDirection** ppDirection)
+{
+   Float64 station = pTS->GetStation();
+   LPCTSTR strOrientation = pTS->GetOrientation();
+   GetSkewAndDirection(pAlignment,station,strOrientation,ppSkew,ppDirection);
+}
+
+void CBridgeGeometryModelBuilder::GetSkewAndDirection(IAlignment* pAlignment,Float64 station,LPCTSTR strOrientation,IAngle** ppSkew,IDirection** ppDirection)
+{
    // get pier direction and skew angle
    // this is needed to determine the pier width and offset measured along CL pier
-   CComPtr<IDirection> direction;
-   pAlignment->GetDirection(CComVariant(station),CComBSTR(strOrientation.c_str()),&direction);
+   pAlignment->GetDirection(CComVariant(station),CComBSTR(strOrientation),ppDirection);
 
    CComPtr<IDirection> normal; // normal to the alignment
    pAlignment->Normal(CComVariant(station),&normal);
    normal->IncrementBy(CComVariant(M_PI)); // We want the normal to the left... Increment by 180 degrees
 
-   direction->AngleBetween(normal,ppSkew);
+   (*ppDirection)->AngleBetween(normal,ppSkew);
 }
 
 bool CBridgeGeometryModelBuilder::LayoutDiaphragmLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
@@ -749,6 +760,11 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtPier(IAlignment* pAlignm
    const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pierFace);
    Float64 measureStation;
    Float64 pierStation = pPier->GetStation();
+
+   CComPtr<IAngle> skew;
+   CComPtr<IDirection> pierDirection;
+   GetPierDirection(pAlignment,pPier,&skew,&pierDirection);
+
    if ( pSpacing->GetMeasurementLocation() == pgsTypes::AtPierLine )
    {
       // Spacing measured at centerline of pier
@@ -766,8 +782,6 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtPier(IAlignment* pAlignm
       if ( measureType == ConnectionLibraryEntry::NormalToPier )
       {
          // Bearing offset measured normal to the pier
-         CComPtr<IAngle> skew;
-         GetPierSkewAngle(pAlignment,pPier,&skew);
 
          Float64 skew_angle;
          skew->get_Value(&skew_angle);
@@ -791,7 +805,7 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtPier(IAlignment* pAlignm
       pAlignment->GetDirection(CComVariant(pierStation),CComBSTR(pPier->GetOrientation()),&measureDirection);
    }
 
-   ResolveGirderSpacing(pAlignment,alignmentOffset,measureStation,measureDirection,pSpacing,ppPoints,pBridgeGeometry);
+   ResolveGirderSpacing(pAlignment,alignmentOffset,measureStation,measureDirection,pierDirection,pSpacing,ppPoints,pBridgeGeometry);
 }
 
 void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtTempSupport(IAlignment* pAlignment,Float64 alignmentOffset,const CTemporarySupportData* pTS,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry)
@@ -800,6 +814,10 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtTempSupport(IAlignment* 
 
    // spacing is always measured at CL temporary support
    ATLASSERT(pSpacing->GetMeasurementLocation() == pgsTypes::AtPierLine);
+
+   CComPtr<IAngle> skew;
+   CComPtr<IDirection> tsDirection;
+   GetTempSupportDirection(pAlignment,pTS,&skew,&tsDirection);
 
    Float64 measureStation = pTS->GetStation();
    CComPtr<IDirection> measureDirection;
@@ -810,14 +828,14 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtTempSupport(IAlignment* 
    }
    else
    {
-      // spacing is measured along CL Pier or CL Bearing
-      pAlignment->GetDirection(CComVariant(measureStation),CComBSTR(pTS->GetOrientation()),&measureDirection);
+      // spacing is measured along CL Temp Support
+      measureDirection = tsDirection;
    }
 
-   ResolveGirderSpacing(pAlignment,alignmentOffset,measureStation,measureDirection,pSpacing,ppPoints,pBridgeGeometry);
+   ResolveGirderSpacing(pAlignment,alignmentOffset,measureStation,measureDirection,tsDirection,pSpacing,ppPoints,pBridgeGeometry);
 }
 
-void CBridgeGeometryModelBuilder::ResolveGirderSpacing(IAlignment* pAlignment,Float64 alignmentOffset,Float64 measureStation,IDirection* pMeasureDirection,const CGirderSpacing2* pSpacing,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry)
+void CBridgeGeometryModelBuilder::ResolveGirderSpacing(IAlignment* pAlignment,Float64 alignmentOffset,Float64 measureStation,IDirection* pMeasureDirection,IDirection* pSupportDirection,const CGirderSpacing2* pSpacing,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry)
 {
    // NOTE: supportStation is the station where the girder spacing is measured. It could be at the
    // center of the support or at the centerline of bearing. You must check the girder spacing object
@@ -886,7 +904,7 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacing(IAlignment* pAlignment,Fl
    // if the ref girder is measured from the bridge, convert it to being measured from the alignment
    if ( refGirderOffsetType == pgsTypes::omtBridge )
    {
-      refGirderOffset -= alignmentOffset;
+      refGirderOffset += alignmentOffset;
    }
    
    //
@@ -906,8 +924,20 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacing(IAlignment* pAlignment,Fl
    CComPtr<IPoint2d> alignmentPnt;
    pAlignment->LocatePoint(CComVariant(measureStation),omtNormal,0.0,CComVariant(0),&alignmentPnt);
 
+   CComPtr<IPoint2d> pntOnMeasurementLine;
+   locate->ByDistDir(alignmentPnt,-refGirderOffset,CComVariant(pMeasureDirection),0.0,&pntOnMeasurementLine);
+
+   CComPtr<IDirection> normalToMeasurementLine;
+   pMeasureDirection->Clone(&normalToMeasurementLine);
+   normalToMeasurementLine->IncrementBy(CComVariant(-PI_OVER_2));
+
    CComPtr<IPoint2d> pnt;
-   locate->ByDistDir(alignmentPnt,-refGirderOffset,CComVariant(pMeasureDirection),0.0,&pnt);
+   CComPtr<IIntersect2> intersect;
+   cogoEngine->get_Intersect(&intersect);
+   // intersect a line passing through the point on the measurement line direct perpendicular to the measurement line
+   // with a line passing throught the alignment at the direction of the bearing line... the intersection point
+   // is where the girder line touches the bearing line
+   intersect->Bearings(pntOnMeasurementLine,CComVariant(normalToMeasurementLine),0.0,alignmentPnt,CComVariant(pSupportDirection),0.0,&pnt);
    (*ppPoints)->Add(pnt);
 
    const CBridgeDescription2* pBridgeDesc = pSpacing->GetBridgeDescription();
@@ -940,8 +970,12 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacing(IAlignment* pAlignment,Fl
          offset += width/cosine_skew;
       }
 
+      pntOnMeasurementLine.Release();
+      locate->ByDistDir(alignmentPnt,-offset,CComVariant(pMeasureDirection),0.0,&pntOnMeasurementLine);
+
       pnt.Release();
-      locate->ByDistDir(alignmentPnt,-offset,CComVariant(pMeasureDirection),0.0,&pnt);
+      intersect->Bearings(pntOnMeasurementLine,CComVariant(normalToMeasurementLine),0.0,alignmentPnt,CComVariant(pSupportDirection),0.0,&pnt);
+
       (*ppPoints)->Add(pnt);
    }
 }

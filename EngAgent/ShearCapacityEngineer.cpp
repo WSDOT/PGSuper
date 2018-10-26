@@ -139,7 +139,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    // some lrfd-related values
-   GET_IFACE(IMaterials,pMaterial);
+   GET_IFACE_NOCHECK(IMaterials,pMaterial);
 
    // Strands
    if ( bAfter1999 )

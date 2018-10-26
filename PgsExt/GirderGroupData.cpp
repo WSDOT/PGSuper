@@ -1606,7 +1606,7 @@ void CGirderGroupData::AssertValid()
       ATLASSERT( m_pPier[pgsTypes::metEnd]->IsBoundaryPier() );
    }
 
-   ATLASSERT(m_pPier[pgsTypes::metStart]->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1 == m_Girders.size());
-   ATLASSERT(m_pPier[pgsTypes::metEnd  ]->GetGirderSpacing(pgsTypes::Back )->GetSpacingCount()+1 == m_Girders.size());
+   ATLASSERT(m_Girders.size()<=1 || m_pPier[pgsTypes::metStart]->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1 == m_Girders.size());
+   ATLASSERT(m_Girders.size()<=1 || m_pPier[pgsTypes::metEnd  ]->GetGirderSpacing(pgsTypes::Back )->GetSpacingCount()+1 == m_Girders.size());
 }
 #endif // _DEBUG

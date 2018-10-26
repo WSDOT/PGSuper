@@ -510,7 +510,7 @@ void CBridgeDescFramingGrid::CustomInit()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-			.SetValue(_T("Spans"))
+			.SetValue(_T("Piers\\Spans"))
       );
 
 	SetStyleRange(CGXRange(0,col++), CGXStyle()
@@ -519,7 +519,7 @@ void CBridgeDescFramingGrid::CustomInit()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-			.SetValue(_T("Spans"))
+			.SetValue(_T("Piers\\Spans"))
 		);
 
 	SetStyleRange(CGXRange(0,col++), CGXStyle()
@@ -889,19 +889,19 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
          ROWCOL startRow;
          CString strStartSupportLabel;
          Float64 startStation;
-         if ( pSegment->GetLeftClosure() )
+         if ( pSegment->GetStartClosure() )
          {
-            if ( pSegment->GetLeftClosure()->GetTemporarySupport() )
+            if ( pSegment->GetStartClosure()->GetTemporarySupport() )
             {
-               startRow = GetTemporarySupportRow(pSegment->GetLeftClosure()->GetTemporarySupport()->GetIndex());
-               strStartSupportLabel.Format(_T("TS %d"),LABEL_TEMPORARY_SUPPORT(pSegment->GetLeftClosure()->GetTemporarySupport()->GetIndex()));
-               startStation = pSegment->GetLeftClosure()->GetTemporarySupport()->GetStation();
+               startRow = GetTemporarySupportRow(pSegment->GetStartClosure()->GetTemporarySupport()->GetIndex());
+               strStartSupportLabel.Format(_T("TS %d"),LABEL_TEMPORARY_SUPPORT(pSegment->GetStartClosure()->GetTemporarySupport()->GetIndex()));
+               startStation = pSegment->GetStartClosure()->GetTemporarySupport()->GetStation();
             }
             else
             {
-               startRow = GetPierRow(pSegment->GetLeftClosure()->GetPier()->GetIndex());
-               strStartSupportLabel.Format(_T("Pier %d"),LABEL_PIER(pSegment->GetLeftClosure()->GetPier()->GetIndex()));
-               startStation = pSegment->GetLeftClosure()->GetPier()->GetStation();
+               startRow = GetPierRow(pSegment->GetStartClosure()->GetPier()->GetIndex());
+               strStartSupportLabel.Format(_T("Pier %d"),LABEL_PIER(pSegment->GetStartClosure()->GetPier()->GetIndex()));
+               startStation = pSegment->GetStartClosure()->GetPier()->GetStation();
             }
          }
          else
@@ -914,19 +914,19 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
          ROWCOL endRow;
          CString strEndSupportLabel;
          Float64 endStation;
-         if ( pSegment->GetRightClosure() )
+         if ( pSegment->GetEndClosure() )
          {
-            if ( pSegment->GetRightClosure()->GetTemporarySupport() )
+            if ( pSegment->GetEndClosure()->GetTemporarySupport() )
             {
-               endRow = GetTemporarySupportRow(pSegment->GetRightClosure()->GetTemporarySupport()->GetIndex());
-               strEndSupportLabel.Format(_T("TS %d"),LABEL_TEMPORARY_SUPPORT(pSegment->GetRightClosure()->GetTemporarySupport()->GetIndex()));
-               endStation = pSegment->GetRightClosure()->GetTemporarySupport()->GetStation();
+               endRow = GetTemporarySupportRow(pSegment->GetEndClosure()->GetTemporarySupport()->GetIndex());
+               strEndSupportLabel.Format(_T("TS %d"),LABEL_TEMPORARY_SUPPORT(pSegment->GetEndClosure()->GetTemporarySupport()->GetIndex()));
+               endStation = pSegment->GetEndClosure()->GetTemporarySupport()->GetStation();
             }
             else
             {
-               endRow = GetPierRow(pSegment->GetRightClosure()->GetPier()->GetIndex());
-               strEndSupportLabel.Format(_T("Pier %d"),LABEL_PIER(pSegment->GetRightClosure()->GetPier()->GetIndex()));
-               endStation = pSegment->GetRightClosure()->GetPier()->GetStation();
+               endRow = GetPierRow(pSegment->GetEndClosure()->GetPier()->GetIndex());
+               strEndSupportLabel.Format(_T("Pier %d"),LABEL_PIER(pSegment->GetEndClosure()->GetPier()->GetIndex()));
+               endStation = pSegment->GetEndClosure()->GetPier()->GetStation();
             }
          }
          else

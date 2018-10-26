@@ -270,7 +270,7 @@ void CConcretePropertyGraphController::FillClosureControl()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(GroupIndexType(0))->GetGirder(0);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
-   const CClosureJointData* pClosure = pSegment->GetRightClosure();
+   const CClosureJointData* pClosure = pSegment->GetEndClosure();
 
    if ( pClosure == NULL )
    {
@@ -302,7 +302,7 @@ void CConcretePropertyGraphController::FillClosureControl()
 
          if ( pClosure->GetRightSegment() )
          {
-            pClosure = pClosure->GetRightSegment()->GetRightClosure();
+            pClosure = pClosure->GetRightSegment()->GetEndClosure();
          }
          else
          {

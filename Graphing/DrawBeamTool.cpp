@@ -290,7 +290,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
 
    CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
-   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetLeftClosure() : pSegment->GetRightClosure());
+   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetStartClosure() : pSegment->GetEndClosure());
    const CPierData2* pPier = NULL;
    const CTemporarySupportData* pTS = NULL;
 

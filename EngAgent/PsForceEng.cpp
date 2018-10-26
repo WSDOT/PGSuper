@@ -44,6 +44,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
 /****************************************************************************
 CLASS
    pgsPsForceEng
@@ -1355,7 +1356,14 @@ Float64 pgsPsForceEng::GetElasticEffects(const pgsPointOfInterest& poi,pgsTypes:
 
    Float64 gain = 0;
 
-   if ( pDetails->LossMethod == pgsTypes::TIME_STEP )
+   if ( pDetails->LossMethod == pgsTypes::GENERAL_LUMPSUM )
+   {
+      // all changes to effective prestress are included in general lump sum losses
+      // since the TimeDependentEffects returns the user input value for loss,
+      // we return 0 here.
+      return 0;
+   }
+   else if ( pDetails->LossMethod == pgsTypes::TIME_STEP )
    {
       // effective loss = time-dependent loss - elastic effects
       // effective loss is on the strand objects, just look it up
@@ -1581,7 +1589,15 @@ Float64 pgsPsForceEng::GetElasticEffectsWithLiveLoad(const pgsPointOfInterest& p
    }
    else
    {
-      Float64 llGain = pDetails->pLosses->ElasticGainDueToLiveLoad();
+      Float64 llGain;
+      if ( pDetails->LossMethod == pgsTypes::GENERAL_LUMPSUM )
+   	  {
+         llGain = 0.0;
+   	  }
+      else
+      {
+         llGain = pDetails->pLosses->ElasticGainDueToLiveLoad();
+      }
       gain += gLL*llGain;
       return gain;
    }

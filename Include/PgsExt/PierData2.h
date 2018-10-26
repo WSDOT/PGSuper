@@ -108,6 +108,8 @@ public:
    bool IsInteriorPier() const; // returns true if the pier is interior to a girder group
    bool IsBoundaryPier() const; // returns true if the pier is at a boundary of a girder group
 
+   bool HasSpacing() const; // returns true if there is spacing data at this pier
+
    // =================================================================================
    // Configuration information
    // =================================================================================
@@ -367,6 +369,8 @@ private:
 
    // safe internal function for getting lldfs in lieue of girder count changes
    LLDF& GetLLDF(GirderIndexType gdrIdx) const;
+
+   bool HasSpacing(VARIANT_BOOL vbIsBoundaryPier) const;
 
    GirderIndexType GetLldfGirderCount() const;
 

@@ -4470,7 +4470,7 @@ void CProjectAgentImp::UpdateConcreteMaterial()
                pSegment->Material.Concrete.Ec = lrfdConcreteUtil::ModE(pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
-            CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+            CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
             if ( pClosureJoint )
             {
                if ( !pClosureJoint->GetConcrete().bUserEci )
@@ -4626,7 +4626,7 @@ void CProjectAgentImp::VerifyRebarGrade()
                pSegment->ShearData.ShearBarGrade = matRebar::Grade60;
             }
 
-            CClosureJointData* pClosure = pSegment->GetRightClosure();
+            CClosureJointData* pClosure = pSegment->GetEndClosure();
             if ( pClosure )
             {
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == matRebar::Grade100 )
@@ -5683,7 +5683,7 @@ const CClosureJointData* CProjectAgentImp::GetClosureJointData(const CSegmentKey
    const CGirderGroupData*   pGroup    = m_BridgeDescription.GetGirderGroup(closureKey.groupIndex);
    const CSplicedGirderData* pGirder   = pGroup->GetGirder(closureKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(closureKey.segmentIndex);
-   return pSegment->GetRightClosure();
+   return pSegment->GetEndClosure();
 }
 
 void CProjectAgentImp::SetClosureJointData(const CSegmentKey& closureKey,const CClosureJointData& closure)
@@ -5691,7 +5691,7 @@ void CProjectAgentImp::SetClosureJointData(const CSegmentKey& closureKey,const C
    CGirderGroupData*    pGroup   = m_BridgeDescription.GetGirderGroup(closureKey.groupIndex);
    CSplicedGirderData*  pGirder  = pGroup->GetGirder(closureKey.girderIndex);
    CPrecastSegmentData* pSegment = pGirder->GetSegment(closureKey.segmentIndex);
-   CClosureJointData*    pClosure = pSegment->GetRightClosure();
+   CClosureJointData*    pClosure = pSegment->GetEndClosure();
 
    // this method sets the right closure joint data... there is not a closure
    // at the right end of the last segment
@@ -6816,7 +6816,7 @@ void CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closure
 void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
    if ( pClosureJoint->GetStirrups().ShearBarType != type || pClosureJoint->GetStirrups().ShearBarGrade != grade)
    {
       pClosureJoint->GetStirrups().ShearBarType = type;
@@ -6828,7 +6828,7 @@ void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closure
 const CShearData2* CProjectAgentImp::GetClosureJointShearData(const CClosureKey& closureKey) const
 {
    const CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   const CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   const CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
    if ( pClosureJoint == NULL )
    {
       return NULL;
@@ -6840,7 +6840,7 @@ const CShearData2* CProjectAgentImp::GetClosureJointShearData(const CClosureKey&
 void CProjectAgentImp::SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& shearData)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
    if ( pClosureJoint && pClosureJoint->GetStirrups() != shearData )
    {
       pClosureJoint->SetStirrups(shearData);
@@ -6906,7 +6906,7 @@ void CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKe
 void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
    if ( pClosureJoint->GetRebar().BarGrade != grade || pClosureJoint->GetRebar().BarType != type )
    {
       pClosureJoint->GetRebar().BarGrade = grade;
@@ -6918,14 +6918,14 @@ void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKe
 const CLongitudinalRebarData* CProjectAgentImp::GetClosureJointLongitudinalRebarData(const CClosureKey& closureKey) const
 {
    const CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   const CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   const CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
    return &pClosureJoint->GetRebar();
 }
 
 void CProjectAgentImp::SetClosureJointLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
    if ( pClosureJoint->GetRebar() != data )
    {
       pClosureJoint->GetRebar() = data;
@@ -8505,25 +8505,10 @@ void CProjectAgentImp::FirePendingEvents()
 	      {
 	         CBridgeChangedHint* pHint = *iter;
 	         Fire_BridgeChanged(pHint);
-	
-	
-	
-	
-	
-	
-	
 	      }
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	      m_PendingBridgeChangedHints.clear();
 	   }
+
 	//
 	// pretty much all the event handers do the same thing when the bridge or girder family changes
 	// no sence firing two events
@@ -9832,7 +9817,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDescription(_T("Final without Live Load (Bridge Site 2)"));
    pTimelineEvent->GetApplyLoadActivity().Enable();
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad(true);
-   pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad();
+   pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(true);
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
    // live load

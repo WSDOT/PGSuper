@@ -340,6 +340,7 @@ private:
    {
       SpanIndexType startSpanIdx, endSpanIdx;
       Float64 Xstart, Xend;
+      Float64 eStart, eEnd;
       Float64 rStart, rEnd;
    } PostTensionStrainLoad;
    void GetPostTensionDeformationLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<PostTensionStrainLoad>& strainLoads);

@@ -541,16 +541,18 @@ void CGirderSpacingData2::AddGirders(GirderIndexType nGirders)
    {
       SpacingGroup group;
       group.first = 0;
-      group.second = nGirders;
+      group.second = nGirders-1;
 
       m_SpacingGroups.push_back(group);
 
-      m_GirderSpacing.insert(m_GirderSpacing.end(),nGirders,m_DefaultSpacing);
+      SpacingIndexType nSpaces = nGirders-1; // there is one fewer spaces then girders
+      m_GirderSpacing.insert(m_GirderSpacing.end(),nSpaces,m_DefaultSpacing);
    }
    else
    {
+      SpacingIndexType nSpaces = nGirders; // adding the same number of spaces as girders
       Float64 spacing = m_GirderSpacing.back();
-      m_GirderSpacing.insert(m_GirderSpacing.end(),nGirders, spacing );
+      m_GirderSpacing.insert(m_GirderSpacing.end(),nSpaces, spacing );
 
       SpacingGroup& group = m_SpacingGroups.back();
       group.second += nGirders;
@@ -1029,7 +1031,23 @@ void CGirderSpacing2::AssertValid() const
    const CGirderGroupData* pGroup = GetGirderGroup();
    if ( pGroup )
    {
-      ATLASSERT(pGroup->m_Girders.size() == m_GirderSpacing.size()+1);
+      GirderIndexType nGirders = pGroup->m_Girders.size();
+      bool bIsSpacingHere = false;
+      if ( m_pPier )
+      {
+         bIsSpacingHere = m_pPier->HasSpacing();
+      }
+      else
+      {
+         bIsSpacingHere = m_pTempSupport->HasSpacing();
+      }
+
+      if ( bIsSpacingHere )
+      {
+         ATLASSERT(nGirders == m_GirderSpacing.size()+1);
+         ATLASSERT(m_SpacingGroups.front().first == 0);
+         ATLASSERT(m_SpacingGroups.back().second == nGirders-1);
+      }
    }
 }
 #endif

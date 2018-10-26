@@ -4112,7 +4112,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
       // of the segment, then add a closure POI
       if ( i == nPnts )
       {
-         const CClosureJointData*   pClosure = pSegment->GetRightClosure();
+         const CClosureJointData*   pClosure = pSegment->GetEndClosure();
          if ( pClosure != NULL )
          {
             Float64 closure_left, closure_right;
@@ -4608,11 +4608,11 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
    // ends of a segment (See LayoutPoiForPier for shear POIs that occur near
    // intermediate supports for segments that span over a pier)
 
-   Float64 left_end_dist    = GetSegmentStartEndDistance(segmentKey);
-   Float64 right_end_dist   = GetSegmentEndEndDistance(segmentKey);
-   Float64 left_brg_offset  = GetSegmentStartBearingOffset(segmentKey);
-   Float64 right_brg_offset = GetSegmentEndBearingOffset(segmentKey);
-   Float64 start_offset     = left_brg_offset - left_end_dist;
+   Float64 start_end_dist   = GetSegmentStartEndDistance(segmentKey);
+   Float64 end_end_dist     = GetSegmentEndEndDistance(segmentKey);
+   Float64 start_brg_offset = GetSegmentStartBearingOffset(segmentKey);
+   Float64 end_brg_offset   = GetSegmentEndBearingOffset(segmentKey);
+   Float64 start_offset     = start_brg_offset - start_end_dist;
    Float64 segment_length   = GetSegmentLength(segmentKey);
 
    CSegmentKey firstSegmentKey(segmentKey);
@@ -4630,7 +4630,7 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       // this is a pier at the start of this segment
       Float64 XsCLPier;
       GetPierLocation(pPier->GetIndex(),segmentKey,&XsCLPier); // location of CL pier in segment coordinates
-      Float64 XsCLBrg = XsCLPier + left_brg_offset; // location of CL brg in segment coordinates
+      Float64 XsCLBrg = XsCLPier + start_brg_offset; // location of CL brg in segment coordinates
       Float64 Hg = GetHeight(pgsPointOfInterest(segmentKey,XsCLBrg));
 
 #pragma Reminder("UPDATE: support width doesn't have to be symmetrical")
@@ -4639,36 +4639,36 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
 
       // If "H" from the end of the girder is at the point of bearing
       // make sure there isn't any "noise" in the data
-      if ( IsEqual(Hg,left_end_dist) )
+      if ( IsEqual(Hg,start_end_dist) )
       {
-         Hg = left_end_dist;
+         Hg = start_end_dist;
       }
 
       Float64 Xs, Xsp, Xg, Xgp;
 
       // POI between FOS and 1.5H for purposes of computing critical section
-      Xs  = left_end_dist + /*support_width/2 +*/ 0.75*Hg; // support width was not used in Version 2.x
+      Xs  = start_end_dist + /*support_width/2 +*/ 0.75*Hg; // support width was not used in Version 2.x
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_075h( segmentKey, Xs, Xsp, Xg, Xgp);
       m_PoiMgr.AddPointOfInterest(poi_075h);
 
-      Xs  = left_end_dist + support_width/2 + Hg;
+      Xs  = start_end_dist + support_width/2 + Hg;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_h( segmentKey, Xs, Xsp, Xg, Xgp, POI_H);
       m_PoiMgr.AddPointOfInterest(poi_h);
 
-      Xs  = left_end_dist + support_width/2 + 1.5*Hg;
+      Xs  = start_end_dist + support_width/2 + 1.5*Hg;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_15h( segmentKey, Xs, Xsp, Xg, Xgp, POI_15H);
       m_PoiMgr.AddPointOfInterest(poi_15h);
 
-      Xs  = left_end_dist + support_width/2;
+      Xs  = start_end_dist + support_width/2;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
@@ -4682,45 +4682,44 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       // this is a pier at the end of this segment
       Float64 XsCLPier;
       GetPierLocation(pPier->GetIndex(),segmentKey,&XsCLPier); // CL pier in segment coordinates
-      Float64 XsCLBrg = XsCLPier - right_brg_offset; // CL brg in segment coordinates
-      ATLASSERT( XsCLBrg <= segment_length );
+      Float64 XsCLBrg = XsCLPier - end_brg_offset; // CL brg in segment coordinates
+      ATLASSERT( ::IsLE(XsCLBrg,segment_length) );
 
       Float64 Hg = GetHeight(pgsPointOfInterest(segmentKey,XsCLBrg));
 
       Float64 support_width = GetSegmentEndSupportWidth(segmentKey);
-      Float64 end_size = GetSegmentEndEndDistance(segmentKey);
 
       // If "H" from the end of the girder is at the point of bearing
       // make sure there isn't any "noise" in the data
-      if ( IsEqual(Hg,end_size) )
+      if ( IsEqual(Hg,end_end_dist) )
       {
-         Hg = end_size;
+         Hg = end_end_dist;
       }
 
       Float64 Xs, Xsp, Xg, Xgp;
       // add a POI at 0.75H for purposes of computing critical section
-      Xs  = segment_length - (end_size + /*support_width/2 +*/ 0.75*Hg); // support width was not used in Version 2.x
+      Xs  = segment_length - (end_end_dist + /*support_width/2 +*/ 0.75*Hg); // support width was not used in Version 2.x
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_075h( segmentKey, Xs, Xsp, Xg, Xgp);
       m_PoiMgr.AddPointOfInterest(poi_075h);
 
-      Xs  = segment_length - (end_size + support_width/2 + Hg);
+      Xs  = segment_length - (end_end_dist + support_width/2 + Hg);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_h( segmentKey, Xs, Xsp, Xg, Xgp, POI_H);
       m_PoiMgr.AddPointOfInterest(poi_h);
 
-      Xs  = segment_length - (end_size + support_width/2 + 1.5*Hg);
+      Xs  = segment_length - (end_end_dist + support_width/2 + 1.5*Hg);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_15h( segmentKey, Xs, Xsp, Xg, Xgp, POI_15H);
       m_PoiMgr.AddPointOfInterest(poi_15h);
 
-      Xs  = segment_length - (end_size + support_width/2);
+      Xs  = segment_length - (end_end_dist + support_width/2);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
@@ -4730,7 +4729,7 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
 
 
    // POI's at stirrup zone boundaries
-   Float64 right_support_loc = segment_length - right_end_dist;
+   Float64 end_support_loc = segment_length - end_end_dist;
    Float64 midLen = segment_length/2.0;
 
    ZoneIndexType nZones = GetPrimaryZoneCount(segmentKey);
@@ -4742,7 +4741,7 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       // Nudge poi toward mid-span as this is where smaller Av/s will typically lie
       zStart += (zStart < midLen ? 0.001 : -0.001);
 
-      if (left_end_dist < zStart && zStart < right_support_loc)
+      if (start_end_dist < zStart && zStart < end_support_loc)
       {
          Float64 Xs, Xsp, Xg, Xgp;
          Xs  = zStart;
@@ -5143,7 +5142,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
    }
 
    // add POI at centerline of pier between groups
-   if ( pSegment->GetRightClosure() == NULL )
+   if ( pSegment->GetEndClosure() == NULL )
    {
       const CPierData2* pPier;
       const CTemporarySupportData* pTS;
@@ -6554,7 +6553,7 @@ std::vector<std::pair<SegmentIndexType,Float64>> CBridgeAgentImp::GetSegmentLeng
                distance -= brg_offset;
             }
          }
-         else if ( spanKey.spanIndex < startSpanIdx && endSpanIdx < spanKey.spanIndex )
+         else if ( startSpanIdx < spanKey.spanIndex && spanKey.spanIndex < endSpanIdx )
          {
             // Segments starts in a previous span and end in a later span
 
@@ -7241,7 +7240,7 @@ Float64 CBridgeAgentImp::GetSegmentStartSupportWidth(const CSegmentKey& segmentK
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-   const CClosureJointData* pClosure = pSegment->GetLeftClosure();
+   const CClosureJointData* pClosure = pSegment->GetStartClosure();
    if ( pClosure )
    {
       if ( pClosure->GetPier() )
@@ -7270,7 +7269,7 @@ Float64 CBridgeAgentImp::GetSegmentEndSupportWidth(const CSegmentKey& segmentKey
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-   const CClosureJointData* pClosure = pSegment->GetRightClosure();
+   const CClosureJointData* pClosure = pSegment->GetEndClosure();
    if ( pClosure )
    {
       if ( pClosure->GetPier() )
@@ -8835,10 +8834,18 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
 
       CComPtr<ILine2d> line;
       line.CoCreateInstance(CLSID_Line2d);
-      line->ThroughPoints(p1,p2);
+      HRESULT hr = line->ThroughPoints(p1,p2);
 
       CComPtr<IPoint2d> pntIntersect;
-      alignment->IntersectEx(line,p1,VARIANT_TRUE,VARIANT_TRUE,&pntIntersect);
+      if ( SUCCEEDED(hr) )
+      {
+         alignment->IntersectEx(line,p1,VARIANT_TRUE,VARIANT_TRUE,&pntIntersect);
+      }
+      else
+      {
+         // p1 and p2 are at the same point... can't create a line
+         alignment->ProjectPoint(p1,&pntIntersect);
+      }
 
       CComPtr<IStation> objStation;
       Float64 offset;
@@ -8877,10 +8884,18 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
 
       CComPtr<ILine2d> line;
       line.CoCreateInstance(CLSID_Line2d);
-      line->ThroughPoints(p1,p2);
+      HRESULT hr = line->ThroughPoints(p1,p2);
 
       CComPtr<IPoint2d> pntIntersect;
-      alignment->IntersectEx(line,p1,VARIANT_TRUE,VARIANT_TRUE,&pntIntersect);
+      if ( SUCCEEDED(hr) )
+      {
+         alignment->IntersectEx(line,p1,VARIANT_TRUE,VARIANT_TRUE,&pntIntersect);
+      }
+      else
+      {
+         // p1 and p2 are at the same point... can't create a line
+         alignment->ProjectPoint(p1,&pntIntersect);
+      }
 
       CComPtr<IStation> objStation;
       Float64 offset;
@@ -20435,8 +20450,8 @@ void CBridgeAgentImp::GetSegmentEndDistance(const CSegmentKey& segmentKey,Float6
 void CBridgeAgentImp::GetSegmentEndDistance(const CSegmentKey& segmentKey,const CSplicedGirderData* pGirder,Float64* pStartEndDistance,Float64* pEndEndDistance)
 {
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-   const CClosureJointData* pLeftClosure  = pSegment->GetLeftClosure();
-   const CClosureJointData* pRightClosure = pSegment->GetRightClosure();
+   const CClosureJointData* pStartClosure  = pSegment->GetStartClosure();
+   const CClosureJointData* pEndClosure = pSegment->GetEndClosure();
 
    // Assume pGirder is not associated with our bridge, but rather a detached copy that is
    // being used in an editing situation.
@@ -20448,10 +20463,10 @@ void CBridgeAgentImp::GetSegmentEndDistance(const CSegmentKey& segmentKey,const 
    Float64 leftEndDistance;
    ConnectionLibraryEntry::EndDistanceMeasurementType leftMeasureType;
    CComPtr<IAngle> leftSkewAngle;
-   if ( pLeftClosure )
+   if ( pStartClosure )
    {
-      const CTemporarySupportData* pTS = pLeftClosure->GetTemporarySupport();
-      const CPierData2* pPier = pLeftClosure->GetPier();
+      const CTemporarySupportData* pTS = pStartClosure->GetTemporarySupport();
+      const CPierData2* pPier = pStartClosure->GetPier();
       ATLASSERT( pTS != NULL || pPier != NULL );
 
       if ( pTS )
@@ -20507,10 +20522,10 @@ void CBridgeAgentImp::GetSegmentEndDistance(const CSegmentKey& segmentKey,const 
    Float64 rightEndDistance;
    ConnectionLibraryEntry::EndDistanceMeasurementType rightMeasureType;
    CComPtr<IAngle> rightSkewAngle;
-   if ( pRightClosure )
+   if ( pEndClosure )
    {
-      const CTemporarySupportData* pTS = pRightClosure->GetTemporarySupport();
-      const CPierData2* pPier = pRightClosure->GetPier();
+      const CTemporarySupportData* pTS = pEndClosure->GetTemporarySupport();
+      const CPierData2* pPier = pEndClosure->GetPier();
       ATLASSERT( pTS != NULL || pPier != NULL );
 
       if ( pTS )
@@ -25652,6 +25667,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
       pntEnd.CoCreateInstance(CLSID_Point3d);
       pntEnd->Move(x2,y2,z2);
 
+      ATLASSERT(z1 < z2);
       parabolicTendonSegment->put_Start(pntStart);
       parabolicTendonSegment->put_End(pntEnd);
       parabolicTendonSegment->put_Slope(0.0);
@@ -25714,6 +25730,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
          pntInflection.CoCreateInstance(CLSID_Point3d);
          pntInflection->Move(x2,y2,z2);
 
+         ATLASSERT(z1 < z2);
          leftParabolicTendonSegment->put_Start(pntStart);
          leftParabolicTendonSegment->put_End(pntInflection);
          leftParabolicTendonSegment->put_Slope(0.0);
@@ -25728,6 +25745,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
          pntEnd.CoCreateInstance(CLSID_Point3d);
          pntEnd->Move(x3,y3,z3);
 
+         ATLASSERT(z2 < z3);
          rightParabolicTendonSegment->put_Start(pntInflection);
          rightParabolicTendonSegment->put_End(pntEnd);
          rightParabolicTendonSegment->put_Slope(0.0);
@@ -25785,6 +25803,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
          pntInflection.CoCreateInstance(CLSID_Point3d);
          pntInflection->Move(x2,y2,z2);
 
+         ATLASSERT(z1 < z2);
          leftParabolicTendonSegment->put_Start(pntStart);
          leftParabolicTendonSegment->put_End(pntInflection);
          leftParabolicTendonSegment->put_Slope(0.0);
@@ -25855,6 +25874,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
       pntEnd.CoCreateInstance(CLSID_Point3d);
       pntEnd->Move(x2,y2,z2);
 
+      ATLASSERT(z1 < z2);
       parabolicTendonSegment->put_Start(pntStart);
       parabolicTendonSegment->put_End(pntEnd);
       parabolicTendonSegment->put_Slope(0.0);

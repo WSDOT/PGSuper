@@ -703,7 +703,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
       bOverlayDepthAndDensity = FALSE;
 
       // no overlay so remove the overlay loading event from the time line
-      pTimelineMgr->RemoveOverlayLoadEvent();
+      pTimelineMgr->SetOverlayLoadEventByIndex(INVALID_INDEX);
    }
    else if ( ws == pgsTypes::wstFutureOverlay )
    {
@@ -715,7 +715,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
 
       // create a loading event in the timeline for the overlay load
-      pTimelineMgr->SetOverlayLoadEventByIndex(pTimelineMgr->GetLiveLoadEventIndex());
+      pTimelineMgr->SetOverlayLoadEventByIndex(pTimelineMgr->GetRailingSystemLoadEventIndex());
    }
    else
    {

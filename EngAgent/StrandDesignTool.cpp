@@ -3195,8 +3195,16 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
    std::vector<pgsPointOfInterest> vPoi3;
    m_PoiMgr.GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, POIMGR_AND, &vPoi3);
 
+   // also want prestress xfer locations
+   std::vector<pgsPointOfInterest> vPoi4;
+   m_PoiMgr.GetPointsOfInterest(segmentKey, POI_PSXFER, POIMGR_AND, &vPoi4);
+
    vPoi2.insert(vPoi2.end(),vPoi3.begin(),vPoi3.end());
+   vPoi2.insert(vPoi2.end(),vPoi4.begin(),vPoi4.end());
    std::sort(vPoi2.begin(),vPoi2.end());
+
+   // eliminate duplicates
+   vPoi2.erase(std::unique(vPoi2.begin(),vPoi2.end()), vPoi2.end() );
 
    return vPoi2;
 }

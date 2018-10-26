@@ -147,6 +147,8 @@ public:
 
    const CBridgeDescription2* GetBridgeDescription() const;
 
+   const CGirderGroupData* GetGirderGroup() const;
+
    virtual pgsTypes::MeasurementType GetMeasurementType() const;
    virtual pgsTypes::MeasurementLocation GetMeasurementLocation() const;
    virtual GirderIndexType GetRefGirder() const;
@@ -165,6 +167,7 @@ public:
    // the specified girder index (summation of the individual spaces)
    Float64 GetSpacingWidthToGirder(GirderIndexType gdrIdx) const; 
 
+
 protected:
    const CPierData2* m_pPier;
    const CTemporarySupportData* m_pTempSupport;
@@ -173,7 +176,6 @@ protected:
    virtual void MakeAssignment(const CGirderSpacing2& rOther);
 
    GirderIndexType GetGirderCount() const;
-   const CGirderGroupData* GetGirderGroup() const;
    Float64 GetGirderWidth(const CSplicedGirderData* pGirder) const;
 
 #if defined _DEBUG

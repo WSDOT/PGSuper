@@ -477,7 +477,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 
    if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
    {
-      GET_IFACE(ILongRebarGeometry, pLongRebarGeom);
+      GET_IFACE_NOCHECK(ILongRebarGeometry, pLongRebarGeom);
 
       if ( pConfig )
       {

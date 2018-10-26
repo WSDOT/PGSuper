@@ -16,14 +16,14 @@
 IMPLEMENT_DYNAMIC(CTemporarySupportDlg, CPropertySheet)
 
 CTemporarySupportDlg::CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx, CWnd* pParentWnd, UINT iSelectPage)
-:CPropertySheet(tsIdx == INVALID_INDEX ? _T("Add Temporary Support") : _T("Edit Temporary Support"), pParentWnd, iSelectPage)
+:CPropertySheet(tsIdx == INVALID_INDEX ? _T("Add Temporary Support") : _T("Temporary Support Details"), pParentWnd, iSelectPage)
 {
    Init(pBridgeDesc,tsIdx);
    InitPages();
 }
 
 CTemporarySupportDlg::CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx,const std::set<EditBridgeExtension>& editBridgeExtensions, CWnd* pParentWnd, UINT iSelectPage)
-:CPropertySheet(tsIdx == INVALID_INDEX ? _T("Add Temporary Support") : _T("Edit Temporary Support"), pParentWnd, iSelectPage)
+:CPropertySheet(tsIdx == INVALID_INDEX ? _T("Add Temporary Support") : _T("Temporary Support Details"), pParentWnd, iSelectPage)
 {
    Init(pBridgeDesc,tsIdx);
    InitPages(editBridgeExtensions);

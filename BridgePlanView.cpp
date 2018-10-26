@@ -1510,19 +1510,19 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
             pIGirder->GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
 
             const CPrecastSegmentData* pSegment   = pGirder->GetSegment(segIdx);
-            const CClosureJointData* pLeftClosure  = pSegment->GetLeftClosure();
-            const CClosureJointData* pRightClosure = pSegment->GetRightClosure();
+            const CClosureJointData* pStartClosure  = pSegment->GetStartClosure();
+            const CClosureJointData* pEndClosure = pSegment->GetEndClosure();
 
             CComPtr<IDirection> objStartDirection,objEndDirection;
-            if( pLeftClosure )
+            if( pStartClosure )
             {
-               if ( pLeftClosure->GetTemporarySupport() )
+               if ( pStartClosure->GetTemporarySupport() )
                {
-                  pTempSupport->GetDirection(pLeftClosure->GetTemporarySupport()->GetIndex(),&objStartDirection);
+                  pTempSupport->GetDirection(pStartClosure->GetTemporarySupport()->GetIndex(),&objStartDirection);
                }
                else
                {
-                  pBridge->GetPierDirection(pLeftClosure->GetPier()->GetIndex(),&objStartDirection);
+                  pBridge->GetPierDirection(pStartClosure->GetPier()->GetIndex(),&objStartDirection);
                }
             }
             else
@@ -1530,15 +1530,15 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
                pBridge->GetPierDirection(pGirder->GetPier(pgsTypes::metStart)->GetIndex(),&objStartDirection);
             }
 
-            if( pRightClosure )
+            if( pEndClosure )
             {
-               if ( pRightClosure->GetTemporarySupport() )
+               if ( pEndClosure->GetTemporarySupport() )
                {
-                  pTempSupport->GetDirection(pRightClosure->GetTemporarySupport()->GetIndex(),&objEndDirection);
+                  pTempSupport->GetDirection(pEndClosure->GetTemporarySupport()->GetIndex(),&objEndDirection);
                }
                else
                {
-                  pBridge->GetPierDirection(pRightClosure->GetPier()->GetIndex(),&objEndDirection);
+                  pBridge->GetPierDirection(pEndClosure->GetPier()->GetIndex(),&objEndDirection);
                }
             }
             else
