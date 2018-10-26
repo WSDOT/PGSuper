@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -133,6 +133,7 @@ public:
    virtual void GetConstructionLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ConstructionLoad>* pConstructionLoads);
 
    virtual void GetCantileverSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
+   virtual void GetCantileverSlabPadLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
    virtual void GetIntermediateDiaphragmLoads(pgsTypes::Stage stage, SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<DiaphragmLoad>* pLoads);
    virtual void GetEndDiaphragmLoads(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
 

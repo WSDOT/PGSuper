@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -974,9 +974,9 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          }
          else
          {
-            Float64 fc  = ::ConvertFromSysUnits(pscd->fc,  unitMeasure::KSI);
-            Float64 fpc = ::ConvertFromSysUnits(pscd->fpc, unitMeasure::KSI);
-            Float64 fct = ::ConvertFromSysUnits(pscd->fct, unitMeasure::KSI);
+            fc  = ::ConvertFromSysUnits(pscd->fc,  unitMeasure::KSI);
+            fpc = ::ConvertFromSysUnits(pscd->fpc, unitMeasure::KSI);
+            fct = ::ConvertFromSysUnits(pscd->fct, unitMeasure::KSI);
             Kfct = 4.7;
             K = 3.0;
          }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2021,6 +2021,16 @@ bool CBridgeAgentImp::BuildCogoModel()
 
          if ( IsZero(L1) && IsZero(L2) )
          {
+            // zero length vertical curve.... this is ok as it creates
+            // a profile point. It isn't common so warn the user
+            std::_tostringstream os;
+            os << _T("Vertical curve ") << curveID << _T(" is a zero length curve.");
+            std::_tstring strMsg = os.str();
+
+            pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            pStatusCenter->Add(p_status_item);
+
             // add a profile point
             if ( iter == profile_data.VertCurves.begin() )
             {

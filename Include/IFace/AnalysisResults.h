@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -190,6 +190,10 @@ interface IProductLoads : IUnknown
    // point loads due to portion of slab out on cantilever. 
    // + force is up, + moment is ccw.
    virtual void GetCantileverSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2)=0;
+   
+   // point loads due to portion of slab pad out on cantilever. 
+   // + force is up, + moment is ccw.
+   virtual void GetCantileverSlabPadLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2)=0;
 
    // diaphragm loads
    // + force is up, + moment is ccw.

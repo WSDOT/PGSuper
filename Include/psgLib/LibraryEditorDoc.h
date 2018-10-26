@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify

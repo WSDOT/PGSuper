@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -728,7 +728,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30072, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30270, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftShearKey, span, gdr, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
        
-      // slab
+      // slab + slab pad
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30012, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite1, pftSlab,poi, bat )         + pForce->GetMoment( pgsTypes::BridgeSite1, pftSlabPad,poi, bat ),         unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite1, pftSlab, poi, bat ).Left()  + pForce->GetShear( pgsTypes::BridgeSite1, pftSlabPad, poi, bat ).Left(),  unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, poi, bat )  + pForce->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, poi, bat ),  unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;

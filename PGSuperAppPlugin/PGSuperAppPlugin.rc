@@ -1077,10 +1077,10 @@ BEGIN
     LTEXT           "North (Y)",IDC_STATIC,205,166,29,8
 END
 
-IDD_PROFILE_PAGE DIALOG  0, 0, 275, 185
+IDD_PROFILE_PAGE DIALOGEX 0, 0, 275, 185
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Profile"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Station",IDC_STATIC,7,37,23,8
     EDITTEXT        IDC_STATION,39,37,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1090,12 +1090,13 @@ BEGIN
     LTEXT           "Unit",IDC_ELEVATION_UNIT,162,37,14,8
     EDITTEXT        IDC_GRADE,211,37,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,255,37,8,8
-    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,58,260,66
+    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,62,260,62
     PUSHBUTTON      "Add",IDC_ADD,59,128,50,14
     PUSHBUTTON      "Remove",IDC_REMOVE,113,128,50,14
     PUSHBUTTON      "Sort",IDC_SORT,167,128,50,14
     LTEXT           "Reference Point - Enter a point on the profile defined by its station, elevation, and grade. This point may be the PVI point of the first vertical curve and the entry grade.",IDC_STATIC,7,7,256,26
-    LTEXT           "Enter L1 and L2 for unsymmetrical vertical curves.\n\nFor symmetrical vertical curves L1 will be taken as the full curve length if L2 is blank or zero",IDC_STATIC,7,145,261,33
+    LTEXT           "Symmetrical curves: Enter curve length as L1 and leave L2 blank or enter zero.\n\nUnsymmetrical curves: Enter left and right curve lengths in L1 and L2, respectively.",IDC_STATIC,7,147,261,31
+    LTEXT           "Vertical Curves",IDC_STATIC,7,52,48,8
 END
 
 IDD_SUPERELEVATIONS DIALOG  0, 0, 274, 185
@@ -2250,12 +2251,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.8.0.0"
+            VALUE "FileVersion", "2.8.0.1"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.8.0.0"
+            VALUE "ProductVersion", "2.8.0.1"
         END
     END
     BLOCK "VarFileInfo"
