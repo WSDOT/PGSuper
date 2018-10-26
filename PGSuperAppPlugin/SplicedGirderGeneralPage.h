@@ -35,7 +35,7 @@
 
 // CSplicedGirderGeneralPage dialog
 
-class CSplicedGirderGeneralPage : public CPropertyPage, public IGirderSegmentDataSource
+class CSplicedGirderGeneralPage : public CPropertyPage
 {
 	DECLARE_DYNAMIC(CSplicedGirderGeneralPage)
 
@@ -53,10 +53,6 @@ public:
 
    const matPsStrand* GetStrand();
 
-   // IGirderSegmentDataSource
-   virtual const CSplicedGirderData* GetGirder();
-   virtual const CGirderKey& GetGirderKey();
-
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
@@ -64,6 +60,8 @@ protected:
    void FillStrandList(UINT nIDC);
    void FillStrandList(CComboBox* pList,matPsStrand::Grade grade,matPsStrand::Type type);
    void SetStrand();
+
+   void FillDuctType();
 
    CSlabOffsetHyperLink m_ctrlSlabOffsetHyperLink;
    void UpdateSlabOffsetHyperLink();
@@ -79,7 +77,6 @@ public:
    virtual BOOL OnInitDialog();
    afx_msg void OnAddDuct();
    afx_msg void OnDeleteDuct();
-   afx_msg void OnStrandSizeChanged();
    afx_msg void OnStrandChanged();
    afx_msg void OnConditionFactorTypeChanged();
    afx_msg LRESULT OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam);

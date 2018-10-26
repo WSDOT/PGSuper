@@ -41,7 +41,7 @@ m_SectionSpacing(0.0)
 
 
 
-DebondSectionComputer::DebondSectionComputer(const std::vector<DEBONDCONFIG>& rDebondInfo, Float64 girderLength)
+CDebondSectionCalculator::CDebondSectionCalculator(const std::vector<DEBONDCONFIG>& rDebondInfo, Float64 girderLength)
 {
    // set up section locations
    for (std::vector<DEBONDCONFIG>::const_iterator it=rDebondInfo.begin(); it!=rDebondInfo.end(); it++)
@@ -101,12 +101,12 @@ DebondSectionComputer::DebondSectionComputer(const std::vector<DEBONDCONFIG>& rD
    }
 }
 
-SectionIndexType DebondSectionComputer::GetNumLeftSections()
+SectionIndexType CDebondSectionCalculator::GetNumLeftSections()
 {
    return m_LeftSections.size();
 }
 
-void DebondSectionComputer::GetLeftSectionInfo(SectionIndexType idx, Float64* pLocation, IndexType* numStrandsDebonded)
+void CDebondSectionCalculator::GetLeftSectionInfo(SectionIndexType idx, Float64* pLocation, IndexType* numStrandsDebonded)
 {
    std::set<DbSection>::iterator sec_it = m_LeftSections.begin();
    for(SectionIndexType is=0; is<idx; is++)
@@ -117,12 +117,12 @@ void DebondSectionComputer::GetLeftSectionInfo(SectionIndexType idx, Float64* pL
    *pLocation = sec.m_Location;
 }
 
-SectionIndexType DebondSectionComputer::GetNumRightSections()
+SectionIndexType CDebondSectionCalculator::GetNumRightSections()
 {
    return m_RightSections.size();
 }
 
-void DebondSectionComputer::GetRightSectionInfo(SectionIndexType idx, Float64* pLocation, IndexType* numStrandsDebonded)
+void CDebondSectionCalculator::GetRightSectionInfo(SectionIndexType idx, Float64* pLocation, IndexType* numStrandsDebonded)
 {
    std::set<DbSection>::iterator sec_it = m_RightSections.begin();
    for(SectionIndexType is=0; is<idx; is++)

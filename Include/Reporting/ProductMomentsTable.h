@@ -97,10 +97,12 @@ protected:
 };
 
 template <class M,class T>
-RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bIsFutureOverlay,
+RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bOverlay,bool bIsFutureOverlay,
                                      bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,IntervalIndexType continuityInterval,IntervalIndexType castDeckIntervalIdx,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    p_table->SetNumberOfHeaderRows(2);
+
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    //
    // Set up table headings
@@ -111,24 +113,28 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    p_table->SetRowSpan(0,row1col,2);
    p_table->SetRowSpan(1,row2col++,SKIP_CELL);
    if ( bPierTable )
+   {
       (*p_table)(0,row1col++) << _T("");
+   }
    else
+   {
       (*p_table)(0,row1col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   }
 
    p_table->SetRowSpan(0,row1col,2);
    p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-   (*p_table)(0,row1col++) << COLHDR(_T("Girder"),          M, unitT );
+   (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftGirder).c_str(),          M, unitT );
 
    p_table->SetRowSpan(0,row1col,2);
    p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-   (*p_table)(0,row1col++) << COLHDR(_T("Diaphragm"),       M, unitT );
+   (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftDiaphragm).c_str(),       M, unitT );
 
    if ( bShearKey )
    {
       if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
       {
          p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("Shear Key");
+         (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftShearKey).c_str();
          (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
          (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
       }
@@ -136,7 +142,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       {
          p_table->SetRowSpan(0,row1col,2);
          p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-         (*p_table)(0,row1col++) << COLHDR(_T("Shear") << rptNewLine << _T("Key"), M, unitT );
+         (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftShearKey).c_str(), M, unitT );
       }
    }
 
@@ -145,7 +151,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
       {
          p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("Construction");
+         (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftConstruction).c_str();
          (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
          (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
       }
@@ -153,19 +159,19 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       {
          p_table->SetRowSpan(0,row1col,2);
          p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-         (*p_table)(0,row1col++) << COLHDR(_T("Construction"), M, unitT );
+         (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftConstruction).c_str(), M, unitT );
       }
    }
 
    if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
    {
       p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << _T("Slab");
+      (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftSlab).c_str();
       (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
       (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
 
       p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << _T("Haunch");
+      (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftSlabPad).c_str();
       (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
       (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
    }
@@ -173,11 +179,11 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    {
       p_table->SetRowSpan(0,row1col,2);
       p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(_T("Slab"), M, unitT );
+      (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftSlab).c_str(), M, unitT );
 
       p_table->SetRowSpan(0,row1col,2);
       p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(_T("Haunch"), M, unitT );
+      (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftSlabPad).c_str(), M, unitT );
    }
 
    if ( bSlabShrinkage )
@@ -192,7 +198,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
       {
          p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("Deck Panel");
+         (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftSlabPanel).c_str();
          (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
          (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
       }
@@ -200,7 +206,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       {
          p_table->SetRowSpan(0,row1col,2);
          p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-         (*p_table)(0,row1col++) << COLHDR(_T("Deck") << rptNewLine << _T("Panel"), M, unitT );
+         (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftSlabPanel).c_str(), M, unitT );
       }
    }
 
@@ -209,27 +215,30 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       if ( bSidewalk )
       {
          p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("Sidewalk");
+         (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftSidewalk).c_str();
          (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
          (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
       }
 
       p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << _T("Traffic Barrier");
+      (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftTrafficBarrier).c_str();
       (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
       (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
 
-      p_table->SetColumnSpan(0,row1col,2);
-      if (bIsFutureOverlay)
+      if ( bOverlay )
       {
-         (*p_table)(0,row1col++) << _T("Future") << rptNewLine << _T("Overlay");
+         p_table->SetColumnSpan(0,row1col,2);
+         if (bIsFutureOverlay)
+         {
+            (*p_table)(0,row1col++) << _T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pftOverlay).c_str();
+         }
+         else
+         {
+            (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftOverlay).c_str();
+         }
+         (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
+         (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
       }
-      else
-      {
-         (*p_table)(0,row1col++) << _T("Overlay");
-      }
-      (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-      (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
    }
    else
    {
@@ -237,22 +246,25 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       {
          p_table->SetRowSpan(0,row1col,2);
          p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-         (*p_table)(0,row1col++) << COLHDR(_T("Sidewalk"), M, unitT );
+         (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftSidewalk).c_str(), M, unitT );
       }
 
       p_table->SetRowSpan(0,row1col,2);
       p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(_T("Traffic") << rptNewLine << _T("Barrier"), M, unitT );
+      (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftTrafficBarrier).c_str(), M, unitT );
 
-      p_table->SetRowSpan(0,row1col,2);
-      p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      if (bIsFutureOverlay)
+      if ( bOverlay )
       {
-         (*p_table)(0,row1col++) << _T("Future") << rptNewLine << _T("Overlay");
-      }
-      else
-      {
-         (*p_table)(0,row1col++) << COLHDR(_T("Overlay"), M, unitT );
+         p_table->SetRowSpan(0,row1col,2);
+         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
+         if (bIsFutureOverlay)
+         {
+            (*p_table)(0,row1col++) << _T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pftOverlay).c_str();
+         }
+         else
+         {
+            (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pftOverlay).c_str(), M, unitT );
+         }
       }
    }
 

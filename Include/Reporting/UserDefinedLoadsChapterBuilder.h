@@ -67,17 +67,17 @@ public:
    virtual CChapterBuilder* Clone() const;
 
    static rptParagraph* CreatePointLoadTable(IBroker* pBroker,
-                           const CSpanGirderKey& spanGirderKey,
+                           const CSpanKey& spanKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 
    static rptParagraph* CreateDistributedLoadTable(IBroker* pBroker,
-                           const CSpanGirderKey& spanGirderKey,
+                           const CSpanKey& spanKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 
    static rptParagraph* CreateMomentLoadTable(IBroker* pBroker,
-                           const CSpanGirderKey& spanGirderKey,
+                           const CSpanKey& spanKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 

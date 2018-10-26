@@ -662,6 +662,7 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    textBlock.CoCreateInstance(CLSID_TextBlock);
    strDim = FormatDimension(height,length_unit);
    textBlock->SetText(strDim);
+   textBlock->SetBkMode(TRANSPARENT);
    doDimLineHeight->SetTextBlock(textBlock);
 
    if (settings & IDG_SV_SHOW_PS_CG)

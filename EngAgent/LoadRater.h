@@ -38,10 +38,10 @@ public:
 protected:
    IBroker* m_pBroker;
 
-   void MomentRating(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact);
-   void ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact);
-   void StressRating(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact);
-   void CheckReinforcementYielding(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact);
+   void MomentRating(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact);
+   void ShearRating(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact);
+   void StressRating(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact);
+   void CheckReinforcementYielding(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact);
 
    pgsTypes::LimitState GetStrengthLimitStateType(pgsTypes::LoadRatingType ratingType);
    pgsTypes::LimitState GetServiceLimitStateType(pgsTypes::LoadRatingType ratingType);

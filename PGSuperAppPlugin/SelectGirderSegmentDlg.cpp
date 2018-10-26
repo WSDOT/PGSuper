@@ -1,3 +1,25 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2014  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 // SelectGirderSegmentDlg.cpp : implementation file
 //
 
@@ -57,10 +79,15 @@ BOOL CSelectGirderSegmentDlg::OnInitDialog()
       strGroup.Format(_T("Group %d"),LABEL_GROUP(grpIdx));
       pcbGroup->AddString(strGroup);
    }
+
    if ( m_Group != INVALID_INDEX )
+   {
       pcbGroup->SetCurSel((int)m_Group);
+   }
    else
+   {
       pcbGroup->SetCurSel(0);
+   }
 
    OnGroupChanged();
 
@@ -91,13 +118,17 @@ void CSelectGirderSegmentDlg::OnGroupChanged()
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(selGrpIdx);
    GirderIndexType nGirders = pGroup->GetGirderCount();
    if ( nGirders <= selGdrIdx )
+   {
       selGdrIdx = 0; // there are fewer girders in this group
+   }
 
    const CSplicedGirderData* pGirder = pGroup->GetGirder(selGrpIdx);
 
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
    if ( nSegments <= selSegIdx )
+   {
       selSegIdx = 0; // there are fewer segments in this girder
+   }
 
    pcbGirder->ResetContent();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )

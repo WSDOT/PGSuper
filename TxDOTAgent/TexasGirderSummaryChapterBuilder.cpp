@@ -339,7 +339,6 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
    }
 
-#pragma Reminder("UPDATE: Assumes constant slab thickness")   
    pgsPointOfInterest poi(segmentKey,0.00);
    (*pTable)(row,0) << _T("Slab Thickness for Design");
    (*pTable)(row++,1) << component.SetValue(pBridge->GetStructuralSlabDepth( poi ));
@@ -356,14 +355,6 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,0) << _T("Overlay");
    (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
 
-#pragma Reminder("#*#*#*#*#*# TXDOT girder summary - Diaphragms #*#*#*#*#*#")
-//   (*pTable)(row,0) << _T("Intermediate Diaphragm (H x W)");
-//   (*pTable)(row,1) << component.SetValue( pXSectData->pGirderEntry->GetDiaphragmHeight() );
-//   (*pTable)(row,1) << _T(" x ");
-//   (*pTable)(row++,1) << component.SetValue( pXSectData->pGirderEntry->GetDiaphragmWidth() );
-
-
-#pragma Reminder("UPDATE:: Update for new railing/sidewalk system")
    (*pTable)(row,0) << _T("Left Traffic Barrier");
    (*pTable)(row++,1) << pBridgeDesc->GetLeftRailingSystem()->strExteriorRailing;
 

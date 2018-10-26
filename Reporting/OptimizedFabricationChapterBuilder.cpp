@@ -63,30 +63,38 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara <<color(Red)<<_T("Fabrication optimization analysis not performed for time step loss method.")<<color(Black)<<rptNewLine;
+      return pChapter;
+   }
+
+
    // don't do report if shipping or lifting are disabled
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   if (!pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   if (!pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara <<color(Red)<<_T("Lifting analysis disabled in Project Criteria library entry. Fabrication analysis not performed.")<<color(Black)<<rptNewLine;
+      *pPara <<color(Red)<<_T("Lifting analysis disabled in Project Criteria library entry. Fabrication optimization analysis not performed.")<<color(Black)<<rptNewLine;
       return pChapter;
    }
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   if (!pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. Fabrication analysis not performed.")<<color(Black)<<rptNewLine;
+      *pPara <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. Fabrication optimization analysis not performed.")<<color(Black)<<rptNewLine;
       return pChapter;
    }
 
-   if (pGirderHaulingSpecCriteria->GetHaulingAnalysisMethod() != pgsTypes::hmWSDOT)
+   if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() != pgsTypes::hmWSDOT)
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
@@ -96,6 +104,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    bool bUSUnits = IS_US_UNITS(pDisplayUnits);
 
@@ -103,7 +112,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit() , true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit() , true );
 
-   GET_IFACE2(pBroker,IFabricationOptimization,pFabOp);
+   GET_IFACE2_NOCHECK(pBroker,IFabricationOptimization,pFabOp);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )

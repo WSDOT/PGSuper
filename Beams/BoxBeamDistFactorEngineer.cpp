@@ -865,13 +865,9 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,BOXBEAM_LLDFDETAILS* plldf)
 {
    GET_IFACE(ISectionProperties, pSectProp);
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IGirder,pGirder);
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   GET_IFACE(IBarriers,pBarriers);
-   GET_IFACE(IPointOfInterest,pPOI);
+   GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(ILiveLoads,pLiveLoads);
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -897,7 +893,7 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
 
    if ( nGirders <= gdrIdx )
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       gdrIdx = nGirders-1;
    }
 
@@ -905,10 +901,9 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    // Determine overhang and spacing information
    GetGirderSpacingAndOverhang(span,gdrIdx,dfType, plldf);
 
-   // put a poi at controlling location from spacing comp
-#pragma Reminder("UPDATE: need to figure out the actual group, girder, and segment")
-   CSegmentKey segmentKey(span,gdrIdx,0);
-   pgsPointOfInterest poi(segmentKey,plldf->ControllingLocation);
+   // get poi at controlling location
+   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(span,gdrIdx,plldf->ControllingLocation);
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
@@ -1157,7 +1152,7 @@ std::_tstring CBoxBeamDistFactorEngineer::GetComputationDescription(const CGirde
       else if (decktype == pgsTypes::sdtNone)
          descr += std::_tstring(_T(" type (g) cross section"));
       else
-         ATLASSERT(0);
+         ATLASSERT(false);
 
       if (connect == pgsTypes::atcConnectedAsUnit)
          descr += std::_tstring(_T(" connected transversely sufficiently to act as a unit."));

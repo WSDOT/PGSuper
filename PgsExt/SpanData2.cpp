@@ -140,13 +140,17 @@ void CSpanData2::CopySpanData(const CSpanData2* pSpan)
 bool CSpanData2::operator==(const CSpanData2& rOther) const
 {
    if ( m_SpanIdx != rOther.m_SpanIdx )
+   {
       return false;
+   }
 
 
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
       if (m_LLDFs != rOther.m_LLDFs)
+      {
          return false;
+      }
    }
 
    return true;
@@ -326,7 +330,7 @@ HRESULT CSpanData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
@@ -511,7 +515,9 @@ std::vector<CTemporarySupportData*> CSpanData2::GetTemporarySupports()
       {
          CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
          if ( pTS->GetSpan() == this )
+         {
             vTS.push_back(pTS);
+         }
       }
    }
    return vTS;
@@ -565,12 +571,12 @@ CSpanData2::LLDF& CSpanData2::GetLLDF(GirderIndexType gdrIdx) const
    // Next: let's deal with retrieval
    if (gdrIdx < 0)
    {
-      ATLASSERT(0); // problemo in calling routine - let's not crash
+      ATLASSERT(false); // problemo in calling routine - let's not crash
       return m_LLDFs[0];
    }
    else if (nGirders <= gdrIdx)
    {
-      ATLASSERT(0); // problemo in calling routine - let's not crash
+      ATLASSERT(false); // problemo in calling routine - let's not crash
       return m_LLDFs.back();
    }
    else

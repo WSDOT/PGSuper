@@ -181,6 +181,9 @@ public:
 
    // returns the number of piers in this group
    PierIndexType GetPierCount() const;
+
+   // returns the number of spans in this group
+   SpanIndexType GetSpanCount() const;
    
    // returns the length of the girder measured between the end pier stations
    Float64 GetLength() const;

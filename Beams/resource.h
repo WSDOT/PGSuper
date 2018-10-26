@@ -50,14 +50,15 @@
 #define IDR_DECKEDSLABBEAMFAMILY        228
 #define IDR_BOXBEAMFACTORY2             229
 #define IDR_PSBEAMLOSSENGINEER          231
-#define IDR_SPLICEDIBEAMFAMILY          232
-#define IDR_SPLICEDUBEAMFAMILY          233
+#define IDR_TIMESTEPLOSSENGINEER        232
+#define IDR_SPLICEDIBEAMFAMILY          233
+#define IDR_SPLICEDUBEAMFAMILY          234
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        223
+#define _APS_NEXT_RESOURCE_VALUE        235
 #define _APS_NEXT_COMMAND_VALUE         32768
 #define _APS_NEXT_CONTROL_VALUE         201
 #define _APS_NEXT_SYMED_VALUE           113

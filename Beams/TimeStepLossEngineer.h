@@ -23,15 +23,42 @@
 
 #include <IFace\PsLossEngineer.h>
 #include <IFace\AnalysisResults.h>
-#include <PgsExt\PoiKey.h>
+#include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
+#include <IFace\Project.h>
+#include <IFace\PrestressForce.h>
+#include <EAF\EAFDisplayUnits.h>
 
+#include <PgsExt\PoiKey.h>
 #include <PgsExt\PTData.h>
 
 #include <Math\LinFunc2d.h>
 
-// {26275720-66E8-40f6-A4C3-79404FB64968}
-DEFINE_GUID(CLSID_TimeStepLossEngineer, 
-0x26275720, 0x66e8, 0x40f6, 0xa4, 0xc3, 0x79, 0x40, 0x4f, 0xb6, 0x49, 0x68);
+#include <Plugins\CLSID.h>
+
+class ComparePoi
+{
+public:
+   bool operator()(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2) const
+   {
+      if ( poi1.AtSamePlace(poi2) )
+      {
+         if ( poi1.GetID() == INVALID_ID || poi2.GetID() == INVALID_ID )
+         {
+            // never match an invalid ID
+            return false;
+         }
+
+         return poi1.GetID() < poi2.GetID();
+      }
+      else
+      {
+         return poi1 < poi2;
+      }
+   }
+};
+
+typedef std::map<pgsPointOfInterest,LOSSDETAILS,ComparePoi> SectionLossContainer;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimeStepLossEngineer
@@ -46,6 +73,9 @@ public:
 	}
 
    HRESULT FinalConstruct();
+   void FinalRelease();
+
+DECLARE_REGISTRY_RESOURCEID(IDR_TIMESTEPLOSSENGINEER)
 
 BEGIN_COM_MAP(CTimeStepLossEngineer)
    COM_INTERFACE_ENTRY(IPsLossEngineer)
@@ -53,41 +83,75 @@ END_COM_MAP()
 
 public:
    virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi);
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx);
    virtual void ClearDesignLosses();
    virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
+   virtual void GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA);
 
 private:
-   IBroker* m_pBroker;
+   pgsTypes::BridgeAnalysisType m_Bat;
+
+   // This are interfaces that are used over and over and over
+   // Get them once so we don't have to call GET_IFACE so many times
+   CComPtr<IProgress>          m_pProgress;
+   CComPtr<IBridgeDescription> m_pBridgeDesc;
+   CComPtr<IBridge>            m_pBridge;
+   CComPtr<IStrandGeometry>    m_pStrandGeom;
+   CComPtr<ITendonGeometry>    m_pTendonGeom;
+   CComPtr<IIntervals>         m_pIntervals;
+   CComPtr<ISectionProperties> m_pSectProp;
+   CComPtr<IGirder>            m_pGirder;
+   CComPtr<IMaterials>         m_pMaterials;
+   CComPtr<IPretensionForce>   m_pPSForce;
+   CComPtr<IPosttensionForce>  m_pPTForce;
+   CComPtr<ILossParameters>    m_pLossParams;
+   CComPtr<IPointOfInterest>   m_pPoi;
+   CComPtr<ILongRebarGeometry> m_pRebarGeom;
+   CComPtr<IProductLoads>      m_pProductLoads;
+   CComPtr<IProductForces>     m_pProductForces;
+   CComPtr<ICombinedForces>    m_pCombinedForces;
+   CComPtr<IExternalLoading>   m_pExternalLoading;
+   CComPtr<IVirtualWork>       m_pVirtualWork;
+   CComPtr<IEAFDisplayUnits>   m_pDisplayUnits;
+
+
+   std::map<CSegmentKey,std::vector<pgsTypes::StrandType>> m_StrandTypes; // keeps track of the strand types we are analyzing
+   // no need to analyze types of strands that have a strand count of zero
+   void InitializeStrandTypes(const CSegmentKey& segmentKey);
+   const std::vector<pgsTypes::StrandType>& GetStrandTypes(const CSegmentKey& segmentKey);
+
+   IBroker* m_pBroker; // must be a weak reference
    StatusGroupIDType m_StatusGroupID;
 
    struct LOSSES
    {
       std::vector<ANCHORSETDETAILS> AnchorSet;
-      std::map<pgsPointOfInterest,LOSSDETAILS> SectionLosses;
+      SectionLossContainer SectionLosses;
    };
 
    std::map<CGirderKey,LOSSES> m_Losses;
 
+   std::map<CTendonKey,std::pair<Float64,Float64>> m_AvgFrictionAndAnchorSetLoss;
 
-   void ComputeLosses(const CGirderKey& girderKey);
+   void ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx);
+   void ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx,LOSSES* pLosses);
    void ComputeFrictionLosses(const CGirderKey& girderKey,LOSSES* pLosses);
    void ComputeAnchorSetLosses(const CGirderKey& girderKey,LOSSES* pLosses);
-   void ComputeSectionLosses(const CGirderKey& girderKey,LOSSES* pLosses);
+   void ComputeSectionLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx,LOSSES* pLosses);
    void InitializeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
    void AnalyzeInitialStrains(IntervalIndexType intervalIdx,const CGirderKey& girderKey,LOSSES* pLosses);
    void FinalizeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
    void ComputeDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSES* pLosses);
-   void ComputeIncrementalDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vAllPoi,const std::vector<Float64>& unitLoadMomentsPreviousInterval,const std::vector<Float64>& unitLoadMomentsThisInterval,LOSSES* pLosses);
-   void ComputeIncrementalDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vAllPoi,const std::vector<Float64>& unitLoadMoments,LOSSES* pLosses);
+   void ComputeIncrementalDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vAllPoi,const std::vector<Float64>& unitLoadMomentsPreviousInterval,const std::vector<Float64>& unitLoadMomentsThisInterval,const std::vector<sysSectionValue>& unitCoupleMomentsPreviousInterval,const std::vector<sysSectionValue>& unitCoupleMomentsThisInterval,LOSSES* pLosses);
+   void ComputeIncrementalDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vAllPoi,const std::vector<Float64>& unitLoadMoments,const std::vector<sysSectionValue>& unitCoupleMoments,LOSSES* pLosses);
 
-   void ComputeAnchorSetLosses(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 Lg,std::map<pgsPointOfInterest,LOSSDETAILS>::iterator& frMinIter,Float64* pdfpA,Float64* pdfpS,Float64* pXSet);
-   void BoundAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,Float64 Dset,LOSSES* pLosses,Float64 fpj,Float64 Lg,std::map<pgsPointOfInterest,LOSSDETAILS>::iterator& frMinIter,Float64* pXsetMin,Float64* pDsetMin,Float64* pdfpATMin,Float64* pdfpSMin,Float64* pXsetMax,Float64* pDsetMax,Float64* pdfpATMax,Float64* pdfpSMax);
-   Float64 EvaluateAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 fpj,Float64 Lg,std::map<pgsPointOfInterest,LOSSDETAILS>::iterator& frMinIter,Float64 Xset,Float64* pdfpAT,Float64* pdfpS);
+   void ComputeAnchorSetLosses(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pdfpA,Float64* pdfpS,Float64* pXSet);
+   void BoundAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,Float64 Dset,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pXsetMin,Float64* pDsetMin,Float64* pdfpATMin,Float64* pdfpSMin,Float64* pXsetMax,Float64* pDsetMax,Float64* pdfpATMax,Float64* pdfpSMax);
+   Float64 EvaluateAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64 Xset,Float64* pdfpAT,Float64* pdfpS);
    LOSSDETAILS* GetLossDetails(LOSSES* pLosses,const pgsPointOfInterest& poi);
    std::vector<ProductForceType> GetApplicableProductLoads(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bExternalForcesOnly=false);
    void MakeClosureJointAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& leftPoi,const pgsPointOfInterest& closurePoi,const pgsPointOfInterest& rightPoi,LOSSES* pLosses);
@@ -95,9 +159,10 @@ private:
 
    void InitializeDeflectionCalculations();
    void InitializeErectionAdjustments(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,LOSSES* pLosses);
-   Float64 GetErectionAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType);
+   void GetErectionAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,Float64* pD,Float64* pR);
+
+   int GetProductForceCount();
 
    CSegmentKey m_SegmentKey; // segment for which we are currently computing deflections
-   mathLinFunc2d m_ErectionAdjustment[3]; // adjusts to inelastic deformations due to rigid body movement during erection
-                                          // access the arrary with 0 = creep, 1 = shrinkage, 2 = relaxation
+   mathLinFunc2d m_ErectionAdjustment[19]; // adjusts deformations due to rigid body movement during erection
 };

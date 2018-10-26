@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\TimeStepParametersChapterBuilder.h>
 
+#include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\PrestressForce.h>
@@ -75,8 +76,14 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   {
+      *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
+      return pChapter;
+   }
+
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    GET_IFACE2(pBroker,ILosses,pLosses);
@@ -84,21 +91,25 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    GET_IFACE2(pBroker,IMaterials,pMaterials);
    GET_IFACE2(pBroker,ILongRebarGeometry,pRebarGeom);
 
+#if !defined LUMP_STRANDS
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+#endif
+
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
 
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false);
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,        ecc,      pDisplayUnits->GetComponentDimUnit(), false);
-   INIT_UV_PROTOTYPE( rptStressUnitValue,        stress,   pDisplayUnits->GetStressUnit(), false);
-   INIT_UV_PROTOTYPE( rptLength2UnitValue,       area,     pDisplayUnits->GetAreaUnit(), false);
-   INIT_UV_PROTOTYPE( rptLength4UnitValue,       momI,     pDisplayUnits->GetMomentOfInertiaUnit(), false);
-   INIT_UV_PROTOTYPE( rptStressUnitValue,        modE,     pDisplayUnits->GetModEUnit(), false);
-   INIT_UV_PROTOTYPE( rptForceUnitValue,         force,    pDisplayUnits->GetGeneralForceUnit(), false);
-   INIT_UV_PROTOTYPE( rptMomentUnitValue,        moment,   pDisplayUnits->GetMomentUnit(), false);
-   INIT_UV_PROTOTYPE( rptPerLengthUnitValue,     curvature, pDisplayUnits->GetCurvatureUnit(), false);
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,        length,   pDisplayUnits->GetSpanLengthUnit(), false);
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,        deflection,   pDisplayUnits->GetDeflectionUnit(), false);
+   INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue,    ecc,        pDisplayUnits->GetComponentDimUnit(),    false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
+   INIT_UV_PROTOTYPE(rptLength2UnitValue,   area,       pDisplayUnits->GetAreaUnit(),            false);
+   INIT_UV_PROTOTYPE(rptLength4UnitValue,   momI,       pDisplayUnits->GetMomentOfInertiaUnit(), false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue,    modE,       pDisplayUnits->GetModEUnit(),            false);
+   INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
+   INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetMomentUnit(),          false);
+   INIT_UV_PROTOTYPE(rptPerLengthUnitValue, curvature,  pDisplayUnits->GetCurvatureUnit(),       false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue,    length,     pDisplayUnits->GetSpanLengthUnit(),      false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue,    deflection, pDisplayUnits->GetDeflectionUnit(),      false);
 
    location.IncludeSpanAndGirder(true);
 
@@ -444,27 +455,27 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       // total cross section restraining force
       (*pTable2)(0,col2++) << COLHDR(Overline(_T("Ncr")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
       (*pTable2)(0,col2++) << COLHDR(Overline(_T("Nsh")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-      (*pTable2)(0,col2++) << COLHDR(Overline(_T("Nps")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0,col2++) << COLHDR(Overline(_T("Nre")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
       (*pTable2)(0,col2++) << COLHDR(Overline(_T("Mcr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
       (*pTable2)(0,col2++) << COLHDR(Overline(_T("Msh")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
-      (*pTable2)(0,col2++) << COLHDR(Overline(_T("Mps")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+      (*pTable2)(0,col2++) << COLHDR(Overline(_T("Mre")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
 
       // initial strains
       (*pTable2)(0,col2++) << Overline(symbol(epsilon) << _T("cr"));
       (*pTable2)(0,col2++) << Overline(symbol(epsilon) << _T("sh"));
-      (*pTable2)(0,col2++) << Overline(symbol(epsilon) << _T("ps"));
+      (*pTable2)(0,col2++) << Overline(symbol(epsilon) << _T("re"));
       (*pTable2)(0,col2++) << COLHDR(Overline(symbol(phi)) << _T("cr"), rptPerLengthUnitTag, pDisplayUnits->GetCurvatureUnit());
       (*pTable2)(0,col2++) << COLHDR(Overline(symbol(phi)) << _T("sh"), rptPerLengthUnitTag, pDisplayUnits->GetCurvatureUnit());
-      (*pTable2)(0,col2++) << COLHDR(Overline(symbol(phi)) << _T("ps"), rptPerLengthUnitTag, pDisplayUnits->GetCurvatureUnit());
+      (*pTable2)(0,col2++) << COLHDR(Overline(symbol(phi)) << _T("re"), rptPerLengthUnitTag, pDisplayUnits->GetCurvatureUnit());
 
       // cross section forces in this interval due to initial strains
       (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"),_T("i cr")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
       (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"),_T("i sh")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-      (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"),_T("i ps")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"),_T("i re")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
       (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("M"),_T("i cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
       (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("M"),_T("i sh")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
-      (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("M"),_T("i ps")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+      (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("M"),_T("i re")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
 
       // Deformations due to externally applied loads and restraining forces (symbols might not be exactly correct)
       (*pTable2)(0,col2++) << symbol(DELTA) << symbol(epsilon) << _T("(i)");
@@ -573,13 +584,16 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("M"),_T("int")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
       (*pTable2)(0,col2++) << COLHDR(Sub2(_T("M"),_T("int")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
 
-      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
+      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
 
       RowIndexType row2 = pTable2->GetNumberOfHeaderRows();
 
       for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row2++ )
       {
          const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
+
+         int N = sizeof(tsDetails.Girder.dP)/sizeof(tsDetails.Girder.dP[0]);
+
          col2 = 0;
          (*pTable2)(row2,col2++) << LABEL_INTERVAL(intervalIdx);
 
@@ -587,16 +601,19 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.Ytr);
          (*pTable2)(row2,col2++) << momI.SetValue(tsDetails.Itr);
 
-         Float64 P = 0;
-         Float64 M = 0;
-         for ( int i = 0; i < 16; i++ )
+         //GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+         Float64 dP = 0;
+         Float64 dM = 0;
+         for ( int i = 0; i < N-3; i++ )
          {
-            P += tsDetails.dP[i];
-            M += tsDetails.dM[i];
+            //(*pTable2)(row2,col2  ) << pProductLoads->GetProductLoadName((ProductForceType)i).c_str() << _T(" ") << force.SetValue(tsDetails.dP[i]) << rptNewLine;
+            //(*pTable2)(row2,col2+1) << pProductLoads->GetProductLoadName((ProductForceType)i).c_str() << _T(" ") << moment.SetValue(tsDetails.dM[i]) << rptNewLine;
+            dP += tsDetails.dP[i];
+            dM += tsDetails.dM[i];
          }
 
-         (*pTable2)(row2,col2++) << force.SetValue(P);
-         (*pTable2)(row2,col2++) << moment.SetValue(M);
+         (*pTable2)(row2,col2++) << force.SetValue(dP);
+         (*pTable2)(row2,col2++) << moment.SetValue(dM);
 
          (*pTable2)(row2,col2++) << area.SetValue(tsDetails.Girder.An);
          (*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.Girder.Yn);
@@ -612,9 +629,13 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             const TIME_STEP_CONCRETE::CREEP_STRAIN& creepStrain(*creepStrainIter);
             (*pTable2)(row2,col2) << _T("[") << force.SetValue(creepStrain.P) << _T("/((") << modE.SetValue(creepStrain.E) << _T(")(") << area.SetValue(creepStrain.A) << _T("))](") << creepStrain.Ce << _T(" - ") << creepStrain.Cs << _T(")");
             if ( i != 0 )
+            {
                (*pTable2)(row2,col2) << _T(" + ") << rptNewLine;
+            }
             else
+            {
                (*pTable2)(row2,col2) << _T(" = ") << rptNewLine;
+            }
          }
 #endif // REPORT_INITIAL_STRAIN_DETAILS
          (*pTable2)(row2,col2++) << tsDetails.Girder.e;
@@ -629,9 +650,13 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             const TIME_STEP_CONCRETE::CREEP_CURVATURE& creepCurvature(*creepCurvatureIter);
             (*pTable2)(row2,col2) << _T("[(") << moment.SetValue(creepCurvature.M) << _T(")(12)/((") << modE.SetValue(creepCurvature.E) << _T(")(") << momI.SetValue(creepCurvature.I) << _T("))](") << creepCurvature.Ce << _T(" - ") << creepCurvature.Cs << _T(")");
             if ( i != 0 )
+            {
                (*pTable2)(row2,col2) << _T(" + ") << rptNewLine;
+            }
             else
+            {
                (*pTable2)(row2,col2) << _T(" = ") << rptNewLine;
+            }
          }
 #endif // REPORT_INITIAL_STRAIN_DETAILS
          (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.Girder.r);
@@ -656,9 +681,13 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             const TIME_STEP_CONCRETE::CREEP_STRAIN& creepStrain(*creepStrainIter);
             (*pTable2)(row2,col2) << _T("[") << force.SetValue(creepStrain.P) << _T("/((") << modE.SetValue(creepStrain.E) << _T(")(") << area.SetValue(creepStrain.A) << _T("))](") << creepStrain.Ce << _T(" - ") << creepStrain.Cs << _T(")");
             if ( i != 0 )
+            {
                (*pTable2)(row2,col2) << _T(" + ") << rptNewLine;
+            }
             else
+            {
                (*pTable2)(row2,col2) << _T(" = ") << rptNewLine;
+            }
          }
 #endif // REPORT_INITIAL_STRAIN_DETAILS
          (*pTable2)(row2,col2++) << tsDetails.Deck.e;
@@ -673,9 +702,13 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             const TIME_STEP_CONCRETE::CREEP_CURVATURE& creepCurvature(*creepCurvatureIter);
             (*pTable2)(row2,col2) << _T("[(") << moment.SetValue(creepCurvature.M) << _T(")(12)/((") << modE.SetValue(creepCurvature.E) << _T(")(") << momI.SetValue(creepCurvature.I) << _T("))](") << creepCurvature.Ce << _T(" - ") << creepCurvature.Cs << _T(")");
             if ( i != 0 )
+            {
                (*pTable2)(row2,col2) << _T(" + ") << rptNewLine;
+            }
             else
+            {
                (*pTable2)(row2,col2) << _T(" = ") << rptNewLine;
+            }
          }
 #endif // REPORT_INITIAL_STRAIN_DETAILS
          (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.Deck.r);
@@ -738,25 +771,25 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
          (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pr[TIMESTEP_CR] );
          (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pr[TIMESTEP_SH] );
-         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pr[TIMESTEP_PS] );
+         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pr[TIMESTEP_RE] );
 
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_CR] );
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_SH] );
-         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_PS] );
+         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_RE] );
 
          (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead];
          (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead];
-         (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_PS][pgsTypes::Ahead];
+         (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead];
          (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead]);
          (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead]);
-         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_PS][pgsTypes::Ahead]);
+         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead]);
 
          (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_CR] );
          (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_SH] );
-         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_PS] );
+         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_RE] );
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_CR]);
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_SH]);
-         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_PS]);
+         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_RE]);
 
          Float64 der = 0;
          Float64 drr = 0;
@@ -764,7 +797,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          Float64 dMgirder = 0;
          Float64 dPdeck = 0;
          Float64 dMdeck = 0;
-         for ( int i = 0; i < 19; i++ )
+
+         for ( int i = 0; i < N; i++ )
          {
             der += tsDetails.der[i];
             drr += tsDetails.drr[i];
@@ -816,10 +850,19 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          }
          col2 += 1;
 
-         (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Girder.P);
-         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Girder.M);
-         (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Deck.P);
-         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Deck.M);
+         Float64 Pgirder(0), Mgirder(0), Pdeck(0), Mdeck(0);
+         for ( int i = 0; i < N; i++ )
+         {
+            Pgirder += tsDetails.Girder.P[i];
+            Mgirder += tsDetails.Girder.M[i];
+
+            Pdeck += tsDetails.Deck.P[i];
+            Mdeck += tsDetails.Deck.M[i];
+         }
+         (*pTable2)(row2,col2++) << force.SetValue(Pgirder);
+         (*pTable2)(row2,col2++) << moment.SetValue(Mgirder);
+         (*pTable2)(row2,col2++) << force.SetValue(Pdeck);
+         (*pTable2)(row2,col2++) << moment.SetValue(Mdeck);
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].P);
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].P);
 
@@ -883,11 +926,11 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          Float64 fBotGirder = 0;
          Float64 fTopGirder = 0;
          Float64 fTopDeck   = 0;
-         for ( int i = 0; i < 19; i++ )
+         for ( int i = 0; i < N; i++ )
          {
-            fBotGirder += tsDetails.Girder.f[pgsTypes::BottomFace][i][ctCumulative];
-            fTopGirder += tsDetails.Girder.f[pgsTypes::TopFace][i][ctCumulative];
-            fTopDeck   += tsDetails.Deck.f[pgsTypes::TopFace][i][ctCumulative];
+            fBotGirder += tsDetails.Girder.f[pgsTypes::BottomFace][i][rtCumulative];
+            fTopGirder += tsDetails.Girder.f[pgsTypes::TopFace][i][rtCumulative];
+            fTopDeck   += tsDetails.Deck.f[pgsTypes::TopFace][i][rtCumulative];
          }
 
          (*pTable2)(row2,col2++) << stress.SetValue(fBotGirder);
@@ -977,24 +1020,24 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pr[TIMESTEP_CR] );
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pr[TIMESTEP_SH] );
-      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pr[TIMESTEP_PS] );
+      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pr[TIMESTEP_RE] );
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_CR] );
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_SH] );
-      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_PS] );
+      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_RE] );
 
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead];
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead];
-      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_PS][pgsTypes::Ahead];
+      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead];
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead]);
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead]);
-      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_PS][pgsTypes::Ahead]);
+      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead]);
 
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_CR] );
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_SH] );
-      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_PS] );
+      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_RE] );
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_CR]);
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_SH]);
-      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_PS]);
+      (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_RE]);
 
       (*pTable2)(row2,col2++) << _T(""); //tsDetails.er;
       (*pTable2)(row2,col2++) << _T(""); //::ConvertFromSysUnits(tsDetails.rr,pDisplayUnits->GetCurvatureUnit().UnitOfMeasure);
@@ -1121,19 +1164,19 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       col3 = 0;
 
       pgsPointOfInterest& poi = *iter;
-      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
+      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
 
-      (*pTable3)(row3,col3++) << location.SetValue(POI_GIRDER,poi,0.0);
+      (*pTable3)(row3,col3++) << location.SetValue(POI_SPAN,poi,0.0);
 
       for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
       {
          const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
-         (*pTable3)(row3,col3++) << force.SetValue(tsDetails.Pr[TIMESTEP_CR]+tsDetails.Pr[TIMESTEP_SH]+tsDetails.Pr[TIMESTEP_PS]);
-         (*pTable3)(row3,col3++) << moment.SetValue(tsDetails.Mr[TIMESTEP_CR]+tsDetails.Mr[TIMESTEP_SH]+tsDetails.Mr[TIMESTEP_PS]);
-         (*pTable3)(row3,col3++) << tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_PS][pgsTypes::Ahead];
-         (*pTable3)(row3,col3++) << ::ConvertFromSysUnits(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_PS][pgsTypes::Ahead],pDisplayUnits->GetCurvatureUnit().UnitOfMeasure);
-         (*pTable3)(row3,col3++) << force.SetValue(tsDetails.Pre[TIMESTEP_CR]+tsDetails.Pre[TIMESTEP_SH]+tsDetails.Pre[TIMESTEP_PS]);
-         (*pTable3)(row3,col3++) << moment.SetValue(tsDetails.Mre[TIMESTEP_CR]+tsDetails.Mre[TIMESTEP_SH]+tsDetails.Mre[TIMESTEP_PS]);
+         (*pTable3)(row3,col3++) << force.SetValue(tsDetails.Pr[TIMESTEP_CR]+tsDetails.Pr[TIMESTEP_SH]+tsDetails.Pr[TIMESTEP_RE]);
+         (*pTable3)(row3,col3++) << moment.SetValue(tsDetails.Mr[TIMESTEP_CR]+tsDetails.Mr[TIMESTEP_SH]+tsDetails.Mr[TIMESTEP_RE]);
+         (*pTable3)(row3,col3++) << tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead];
+         (*pTable3)(row3,col3++) << ::ConvertFromSysUnits(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead],pDisplayUnits->GetCurvatureUnit().UnitOfMeasure);
+         (*pTable3)(row3,col3++) << force.SetValue(tsDetails.Pre[TIMESTEP_CR]+tsDetails.Pre[TIMESTEP_SH]+tsDetails.Pre[TIMESTEP_RE]);
+         (*pTable3)(row3,col3++) << moment.SetValue(tsDetails.Mre[TIMESTEP_CR]+tsDetails.Mre[TIMESTEP_SH]+tsDetails.Mre[TIMESTEP_RE]);
       }
 
       row3++;
@@ -1151,7 +1194,10 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       pgsPointOfInterest& poi = *iter;
       *pPara << location.SetValue(POI_ERECTED_SEGMENT,poi,0.0) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
 
-      ColumnIndexType nColumns = 1 + 18*2 + 2;
+      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
+      int N = sizeof(pDetails->TimeStepDetails[0].D)/sizeof(pDetails->TimeStepDetails[0].D[0]);
+
+      ColumnIndexType nColumns = 1 + N*2 + 2;
       rptRcTable* pDeflectionTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Deflections"));
       *pPara << pDeflectionTable << rptNewLine << rptNewLine;
 
@@ -1162,13 +1208,13 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       pDeflectionTable->SetRowSpan(0,0,2);
       pDeflectionTable->SetRowSpan(1,0,SKIP_CELL);
 
-      for ( int i = 0; i < 18; i++ )
+      for ( int i = 0; i < N; i++ )
       {
          ProductForceType pfType = (ProductForceType)i;
-         CComBSTR bstrName = pProdLoads->GetProductLoadName(pfType);
+         std::_tstring strName = pProdLoads->GetProductLoadName(pfType);
 
          pDeflectionTable->SetColumnSpan(0,col,2);
-         (*pDeflectionTable)(0,col) << OLE2T(bstrName);
+         (*pDeflectionTable)(0,col) << strName;
          pDeflectionTable->SetColumnSpan(0,col+1,SKIP_CELL);
          (*pDeflectionTable)(1,col++) << COLHDR(symbol(delta),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
          (*pDeflectionTable)(1,col++) << COLHDR(symbol(DELTA),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
@@ -1179,8 +1225,6 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pDeflectionTable)(1,col++) << COLHDR(symbol(delta),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
       (*pDeflectionTable)(1,col++) << COLHDR(symbol(DELTA),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
 
-      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
-
       RowIndexType row = pDeflectionTable->GetNumberOfHeaderRows();
 
       for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
@@ -1189,7 +1233,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          col = 0;
          (*pDeflectionTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
 
-         for ( int i = 0; i < 18; i++ )
+         for ( int i = 0; i < N; i++ )
          {
             ProductForceType pfType = (ProductForceType)i;
             Float64 dD = tsDetails.dD[pfType];

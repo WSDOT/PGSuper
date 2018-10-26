@@ -38,7 +38,7 @@ class CGirderModelChildFrame;
 class CGirderDropSite : public CCmdTarget  
 {
 public:
-	CGirderDropSite(CPGSuperDocBase* pDoc, const CSpanGirderKey& spanGirderKey, CGirderModelChildFrame* pFrame);
+	CGirderDropSite(CPGSuperDocBase* pDoc, const CSpanKey& spanKey, CGirderModelChildFrame* pFrame);
 	virtual ~CGirderDropSite();
 
    virtual void OnFinalRelease();
@@ -58,7 +58,7 @@ private:
    CPGSuperDocBase* m_pDoc;
    CGirderModelChildFrame* m_pFrame;
    CComPtr<iDisplayObject> m_DispObj;
-   CSpanGirderKey m_SpanGirderKey;
+   CSpanKey m_spanKey;
 };
 
 #endif // !defined(AFX_GIRDERDROPSITE_H__1F8A97C9_F789_11D4_8B9B_006097C68A9C__INCLUDED_)

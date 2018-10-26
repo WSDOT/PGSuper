@@ -67,34 +67,54 @@ bool CTimelineEvent::operator<(const CTimelineEvent& rOther) const
 bool CTimelineEvent::operator==(const CTimelineEvent& rOther) const
 {
    if ( m_Day != rOther.m_Day )
+   {
       return false;
+   }
 
    if ( m_Description != rOther.m_Description )
+   {
       return false;
+   }
 
    if ( m_ConstructSegments != rOther.m_ConstructSegments )
+   {
       return false;
+   }
 
    if ( m_ErectPiers != rOther.m_ErectPiers )
+   {
       return false;
+   }
 
    if ( m_ErectSegments != rOther.m_ErectSegments ) 
+   {
       return false;
+   }
 
    if ( m_RemoveTempSupports != rOther.m_RemoveTempSupports )
+   {
       return false;
+   }
 
    if ( m_CastClosureJoints != rOther.m_CastClosureJoints )
+   {
       return false;
+   }
 
    if ( m_CastDeck != rOther.m_CastDeck )
+   {
       return false;
+   }
 
    if ( m_ApplyLoads != rOther.m_ApplyLoads )
+   {
       return false;
+   }
 
    if ( m_StressTendons != rOther.m_StressTendons )
+   {
       return false;
+   }
 
    return true;
 }
@@ -143,7 +163,9 @@ void CTimelineEvent::SetDay(Float64 day)
 {
    m_Day = day;
    if ( m_pTimelineMgr )
+   {
       m_pTimelineMgr->Sort();
+   }
 }
 
 Float64 CTimelineEvent::GetDay() const
@@ -403,7 +425,9 @@ void CTimelineEvent::MakeCopy(const CTimelineEvent& rOther)
    m_StressTendons      = rOther.m_StressTendons;
 
    if ( m_pTimelineMgr )
+   {
       m_pTimelineMgr->Sort();
+   }
 }
 
 void CTimelineEvent::MakeAssignment(const CTimelineEvent& rOther)

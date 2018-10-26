@@ -36,7 +36,7 @@ class PGSEXTCLASS pgsSpanGirderRelatedStatusItem : public CEAFStatusItem
 {
 public:
    pgsSpanGirderRelatedStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                                  const CSpanGirderKey& spanGirderKey);
+                                  const CSpanKey& spanKey);
 
    bool IsRelatedTo(SpanIndexType span,GirderIndexType gdr);
 
@@ -47,7 +47,7 @@ private:
    bool m_EntireBridge;
    std::vector<SpanIndexType> m_EntireSpans;
    std::vector<GirderIndexType> m_EntireGirderLines;
-   std::set<CSpanGirderKey> m_SpanGirders;
+   std::set<CSpanKey> m_SpanGirders;
 };
 
 

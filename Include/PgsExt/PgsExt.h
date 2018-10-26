@@ -24,7 +24,8 @@
 
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\ConstructabilityArtifact.h>
-#include <PgsExt\DesignArtifact.h>
+#include <PgsExt\GirderDesignArtifact.h>
+#include <PgsExt\SegmentDesignArtifact.h>
 #include <PgsExt\FlexuralCapacityArtifact.h>
 #include <PgsExt\FlexuralStressArtifact.h>
 #include <PgsExt\GirderArtifact.h>

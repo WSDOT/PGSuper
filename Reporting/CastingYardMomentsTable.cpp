@@ -72,55 +72,44 @@ CCastingYardMomentsTable& CCastingYardMomentsTable::operator= (const CCastingYar
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
+rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LPCTSTR strTableTitle,
                                             IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
-   
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
-   p_table->SetNumberOfHeaderRows(2);
+   ATLASSERT( intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx );
 
-   if ( segmentKey.groupIndex == ALL_GROUPS )
+   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS ? true : false);
+
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,strTableTitle);
+
+   if (segmentKey.groupIndex == ALL_GROUPS)
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    // Set up table headings
-   p_table->SetRowSpan(0,0,2);
-   p_table->SetRowSpan(1,0,SKIP_CELL);
    (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   
-   p_table->SetColumnSpan(0,1,2);
-   (*p_table)(0,1) << _T("Release");
-   p_table->SetColumnSpan(0,2,SKIP_CELL);
-
-   (*p_table)(1,1) << COLHDR(_T("Moment"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table)(1,2) << COLHDR(_T("Shear"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
-   
-   p_table->SetColumnSpan(0,3,2);
-   (*p_table)(0,3) << _T("Storage");
-   p_table->SetColumnSpan(0,4,SKIP_CELL);
-
-   (*p_table)(1,3) << COLHDR(_T("Moment"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table)(1,4) << COLHDR(_T("Shear"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+   (*p_table)(0,1) << COLHDR(_T("Moment"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,2) << COLHDR(_T("Shear"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    // Get the interface pointers we need
+   PoiAttributeType poiAttribute = (intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_STORAGE_SEGMENT);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiAttribute) );
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
-   pgsTypes::BridgeAnalysisType bat = pForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
+
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -129,12 +118,10 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
+      (*p_table)(row,0) << location.SetValue( poiAttribute, poi );
 
-      (*p_table)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
-      (*p_table)(row,1) << moment.SetValue( pForces->GetMoment( releaseIntervalIdx, pftGirder, poi, bat, ctIncremental ) );
-      (*p_table)(row,2) << shear.SetValue(  pForces->GetShear(  releaseIntervalIdx, pftGirder, poi, bat, ctIncremental ) );
-      (*p_table)(row,3) << moment.SetValue( pForces->GetMoment( storageIntervalIdx, pftGirder, poi, bat, ctIncremental ) );
-      (*p_table)(row,4) << shear.SetValue(  pForces->GetShear(  storageIntervalIdx, pftGirder, poi, bat, ctIncremental ) );
+      (*p_table)(row,1) << moment.SetValue( pProductForces->GetMoment( intervalIdx, pftGirder, poi, bat, rtCumulative ) );
+      (*p_table)(row,2) << shear.SetValue(  pProductForces->GetShear(  intervalIdx, pftGirder, poi, bat, rtCumulative ) );
 
       row++;
    }

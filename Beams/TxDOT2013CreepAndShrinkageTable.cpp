@@ -73,9 +73,9 @@ CTxDOT2013CreepAndShrinkageTable* CTxDOT2013CreepAndShrinkageTable::PrepareTable
 
    GET_IFACE2(pBroker,IEnvironment,pEnv);
    *pParagraph << _T("H = ") << pEnv->GetRelHumidity() << _T("%") << rptNewLine;
-   *pParagraph << RPT_FCI << stress.SetValue( pDetails->pLosses->GetFci() ) << rptNewLine;
-   *pParagraph << RPT_ECI << stress.SetValue( pDetails->pLosses->GetEci() ) << rptNewLine;
-   *pParagraph << RPT_EP << stress.SetValue( pDetails->pLosses->GetEp() )   << rptNewLine;
+   *pParagraph << RPT_FCI << _T(" = ") << stress.SetValue( pDetails->pLosses->GetFci() ) << rptNewLine;
+   *pParagraph << RPT_ECI << _T(" = ") << stress.SetValue( pDetails->pLosses->GetEci() ) << rptNewLine;
+   *pParagraph << RPT_EP  << _T(" = ") << stress.SetValue( pDetails->pLosses->GetEp() )   << rptNewLine;
 
    *pParagraph << table << rptNewLine;
 
@@ -94,12 +94,12 @@ void CTxDOT2013CreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBro
    boost::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return;
    }
 
    (*this)(row,1) << stress.SetValue( ptl->ShrinkageLosses() );
    (*this)(row,2) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
-   (*this)(row,3) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
+   (*this)(row,3) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() );
    (*this)(row,4) << stress.SetValue( ptl->CreepLosses() );
 }

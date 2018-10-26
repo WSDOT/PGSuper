@@ -65,7 +65,8 @@ m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pXFormat(0),
 m_pYFormat(0),
 m_pGraphController(0),
-m_bShowBeam(true)
+m_bShowBeam(true),
+m_bShift(false)
 {
 }
 
@@ -114,7 +115,9 @@ int CGirderGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
    m_pGraphController = CreateGraphController();
 
    if ( CEAFAutoCalcGraphBuilder::InitializeGraphController(pParent,nID) < 0 )
+   {
       return -1;
+   }
 
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
@@ -179,10 +182,30 @@ void CGirderGraphBuilderBase::ShowGrid(bool bShow)
    GetView()->Invalidate();
 }
 
+bool CGirderGraphBuilderBase::ShowGrid() const
+{
+   return m_Graph.GetDoDrawGrid();
+}
+
 void CGirderGraphBuilderBase::ShowBeam(bool bShow)
 {
    m_bShowBeam = bShow;
    GetView()->Invalidate();
+}
+
+bool CGirderGraphBuilderBase::ShowBeam() const
+{
+   return m_bShowBeam;
+}
+
+void CGirderGraphBuilderBase::Shift(bool bShift)
+{
+   m_bShift = bShift;
+}
+
+bool CGirderGraphBuilderBase::Shift() const
+{
+   return m_bShift;
 }
 
 bool CGirderGraphBuilderBase::UpdateNow()
@@ -190,12 +213,38 @@ bool CGirderGraphBuilderBase::UpdateNow()
    return true;
 }
 
-void CGirderGraphBuilderBase::GetXValues(const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>& xVals)
+Float64 CGirderGraphBuilderBase::ComputeShift(const CGirderKey& girderKey)
 {
-   GET_IFACE(IBridge,pBridge);
+   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.groupIndex == 0 )
+   {
+      // we are showing the first group so there isn't a shift
+      return 0;
+   }
+
+   GET_IFACE(IPointOfInterest,pPoi);
+   pgsPointOfInterest poi(CSegmentKey(girderKey,0),0.0);
+   Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+
+   poi.SetSegmentKey(CSegmentKey(0,girderKey.girderIndex,0));
+   Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+
+   Float64 shift = Xstart - Xgl;
+   return shift;
+}
+
+void CGirderGraphBuilderBase::GetXValues(const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pXVals)
+{
    GET_IFACE(IPointOfInterest,pPoi);
 
-   xVals.clear();
+   pXVals->clear();
+   pXVals->reserve(vPoi.size());
+
+   Float64 shift = 0;
+   if ( m_bShift )
+   {
+      const CGirderKey& girderKey(vPoi.front().GetSegmentKey());
+      shift = ComputeShift(girderKey);
+   }
 
    std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
@@ -204,7 +253,10 @@ void CGirderGraphBuilderBase::GetXValues(const std::vector<pgsPointOfInterest>& 
       const pgsPointOfInterest& poi(*poiIter);
 
       Float64 Xg = pPoi->ConvertPoiToGirderlineCoordinate(poi);
-      xVals.push_back(Xg);
+      
+      Xg += shift;
+
+      pXVals->push_back(Xg);
    }
 }
 
@@ -259,20 +311,64 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    CRect rect = GetView()->GetDrawingRect();
 
    m_Graph.SetOutputRect(rect);
-   m_Graph.UpdateGraphMetrics(pDC->GetSafeHdc());
-   m_Graph.DrawBackground(pDC->GetSafeHdc());
 
-   // superimpose beam on graph
-   // do it before the graph so the graph draws on top of it
-   if ( m_bShowBeam && 0 < m_Graph.GetDataSeriesCount() )
+   // before drawing the graph background, which also draws the axes
+   // make sure the graph is big enough to hold the beam
+   if ( m_bShowBeam )
    {
       CGirderKey girderKey(m_pGraphController->GetGirderGroup(),m_pGraphController->GetGirder());
+
+      Float64 shift = 0;
+      if ( m_bShift )
+      {
+         shift = ComputeShift(girderKey);
+      }
+
+      // make the minimum size of the graph include the size of the girder. this makes the girder display
+      // properly when there aren't any points to graph
+      GET_IFACE(IPointOfInterest,pPoi);
+      pgsPointOfInterest startPoi(CSegmentKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex,0),0.0);
+      Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(startPoi);
+
+      GET_IFACE(IBridge,pBridge);
+      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+      CGirderKey thisGirderKey(girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : girderKey.groupIndex,girderKey.girderIndex);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+      CSegmentKey thisSegmentKey(thisGirderKey,nSegments-1);
+      Float64 Ls = pBridge->GetSegmentLength(thisSegmentKey);
+      pgsPointOfInterest endPoi(thisSegmentKey,Ls);
+      Float64 Xend = pPoi->ConvertPoiToGirderlineCoordinate(endPoi);
+
+      Xstart += shift;
+      Xend   += shift;
+      Xstart = m_pXFormat->Convert(Xstart);
+      Xend   = m_pXFormat->Convert(Xend);
+      m_Graph.SetMinimumSize(Xstart,Xend,0,1.0e-06);
+   }
+
+   m_Graph.UpdateGraphMetrics(pDC->GetSafeHdc());
+
+   // draw the background
+   m_Graph.DrawBackground(pDC->GetSafeHdc());
+
+   // superimpose the beam on the background
+   if ( m_bShowBeam )
+   {
+      CGirderKey girderKey(m_pGraphController->GetGirderGroup(),m_pGraphController->GetGirder());
+
+      Float64 shift = 0;
+      if ( m_bShift )
+      {
+         shift = ComputeShift(girderKey);
+      }
+
       IntervalIndexType intervalIdx = GetBeamDrawInterval();
       grlibPointMapper mapper( m_Graph.GetClientAreaPointMapper(pDC->GetSafeHdc()) );
       CDrawBeamTool drawBeam;
-      drawBeam.DrawBeam(m_pBroker,pDC,mapper,m_pXFormat,intervalIdx,girderKey);
+      drawBeam.DrawBeam(m_pBroker,pDC,mapper,m_pXFormat,intervalIdx,girderKey,shift);
    }
 
+   // draw the data series
    m_Graph.DrawDataSeries(pDC->GetSafeHdc());
 
    pDC->RestoreDC(save);

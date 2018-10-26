@@ -56,7 +56,7 @@ DECLARE_LOGFILE;
 //
 STDMETHODIMP CSpecAgentImp::SetBroker(IBroker* pBroker)
 {
-   AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_SET_BROKER(pBroker);
    return S_OK;
 }
 
@@ -69,8 +69,8 @@ STDMETHODIMP CSpecAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IAllowableConcreteStress,     this );
    pBrokerInit->RegInterface( IID_ITransverseReinforcementSpec, this );
    pBrokerInit->RegInterface( IID_IPrecastIGirderDetailsSpec,   this );
-   pBrokerInit->RegInterface( IID_IGirderLiftingSpecCriteria,   this );
-   pBrokerInit->RegInterface( IID_IGirderHaulingSpecCriteria,   this );
+   pBrokerInit->RegInterface( IID_ISegmentLiftingSpecCriteria,   this );
+   pBrokerInit->RegInterface( IID_ISegmentHaulingSpecCriteria,   this );
    pBrokerInit->RegInterface( IID_IKdotGirderHaulingSpecCriteria, this );
    pBrokerInit->RegInterface( IID_IDebondLimits,                this );
    pBrokerInit->RegInterface( IID_IResistanceFactors,           this );
@@ -81,7 +81,7 @@ STDMETHODIMP CSpecAgentImp::RegInterfaces()
 STDMETHODIMP CSpecAgentImp::Init()
 {
    CREATE_LOGFILE("SpecAgent");
-   AGENT_INIT;
+   EAF_AGENT_INIT;
    return S_OK;
 }
 
@@ -103,8 +103,8 @@ STDMETHODIMP CSpecAgentImp::Reset()
 
 STDMETHODIMP CSpecAgentImp::ShutDown()
 {
+   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
-   AGENT_CLEAR_INTERFACE_CACHE;
    return S_OK;
 }
 
@@ -138,7 +138,9 @@ bool CSpecAgentImp::CheckStressAfterLosses()
 Float64 CSpecAgentImp::GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
 {
    if ( !CheckStressAtJacking() )
+   {
       return 0.0;
+   }
 
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
@@ -154,7 +156,9 @@ Float64 CSpecAgentImp::GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTy
 Float64 CSpecAgentImp::GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
 {
    if ( !CheckStressBeforeXfer() )
+   {
       return 0.0;
+   }
 
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
@@ -170,7 +174,9 @@ Float64 CSpecAgentImp::GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsT
 Float64 CSpecAgentImp::GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
 {
    if ( !CheckStressAfterXfer() )
+   {
       return 0.0;
+   }
 
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
@@ -186,7 +192,9 @@ Float64 CSpecAgentImp::GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTy
 Float64 CSpecAgentImp::GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
 {
    if ( !CheckStressAfterLosses() )
+   {
       return 0.0;
+   }
 
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
@@ -217,7 +225,9 @@ bool CSpecAgentImp::CheckTendonStressPriorToSeating()
 Float64 CSpecAgentImp::GetAllowableAtJacking(const CGirderKey& girderKey)
 {
    if ( !CheckTendonStressAtJacking() )
+   {
       return 0.0;
+   }
 
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -233,7 +243,9 @@ Float64 CSpecAgentImp::GetAllowableAtJacking(const CGirderKey& girderKey)
 Float64 CSpecAgentImp::GetAllowablePriorToSeating(const CGirderKey& girderKey)
 {
    if ( !CheckTendonStressPriorToSeating() )
+   {
       return 0.0;
+   }
 
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -292,7 +304,8 @@ Float64 CSpecAgentImp::GetAllowableCompressionStress(const pgsPointOfInterest& p
 {
    if ( IsGirderStressLocation(stressLocation) )
    {
-      if ( poi.HasAttribute(POI_CLOSURE) )
+      GET_IFACE(IPointOfInterest,pPoi);
+      if ( pPoi->IsInClosureJoint(poi) )
       {
          return GetClosureJointAllowableCompressionStress(poi,intervalIdx,ls);
       }
@@ -312,7 +325,8 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(const pgsPointOfInterest& poi,p
 {
    if ( IsGirderStressLocation(stressLocation) )
    {
-      if ( poi.HasAttribute(POI_CLOSURE) )
+      GET_IFACE(IPointOfInterest,pPoi);
+      if ( pPoi->IsInClosureJoint(poi) )
       {
          return GetClosureJointAllowableTensionStress(poi,intervalIdx,ls,bWithBondedReinforcement,bInPrecompressedTensileZone);
       }
@@ -332,7 +346,8 @@ Float64 CSpecAgentImp::GetAllowableCompressionStressCoefficient(const pgsPointOf
 {
    if ( IsGirderStressLocation(stressLocation) )
    {
-      if ( poi.HasAttribute(POI_CLOSURE) )
+      GET_IFACE(IPointOfInterest,pPoi);
+      if ( pPoi->IsInClosureJoint(poi) )
       {
          return GetClosureJointAllowableCompressionStressCoefficient(poi,intervalIdx,ls);
       }
@@ -352,7 +367,8 @@ void CSpecAgentImp::GetAllowableTensionStressCoefficient(const pgsPointOfInteres
 {
    if ( IsGirderStressLocation(stressLocation) )
    {
-      if ( poi.HasAttribute(POI_CLOSURE) )
+      GET_IFACE(IPointOfInterest,pPoi);
+      if ( pPoi->IsInClosureJoint(poi) )
       {
          GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,ls,bWithBondedReinforcement,bInPrecompressedTensileZone,pCoeff,pbMax,pMaxValue);
       }
@@ -418,7 +434,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
 
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Tension));
 
-   if ( IsLoadRatingLimitState(ls) )
+   if ( IsLoadRatingServiceIIILimitState(ls) )
    {
 #if defined _DEBUG
       GET_IFACE(IIntervals,pIntervals);
@@ -442,7 +458,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
 
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Tension));
 
-   if ( IsLoadRatingLimitState(ls) )
+   if ( IsLoadRatingServiceIIILimitState(ls) )
    {
 #if defined _DEBUG
       GET_IFACE(IIntervals,pIntervals);
@@ -466,7 +482,7 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
 
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Tension));
 
-   if ( IsLoadRatingLimitState(ls) )
+   if ( IsLoadRatingServiceIIILimitState(ls) )
    {
 #if defined _DEBUG
       GET_IFACE(IIntervals,pIntervals);
@@ -488,13 +504,15 @@ std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const st
 {
    ATLASSERT(IsStressCheckApplicable(vPoi.front().GetSegmentKey(),intervalIdx,ls,pgsTypes::Compression));
 
+   GET_IFACE(IPointOfInterest,pPoi);
+
    std::vector<Float64> vStress;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; iter != end; iter++ )
    {
       const pgsPointOfInterest& poi = *iter;
-      if ( poi.HasAttribute(POI_CLOSURE) )
+      if ( pPoi->IsInClosureJoint(poi) )
       {
          vStress.push_back( GetClosureJointAllowableCompressionStress(poi,intervalIdx,ls));
       }
@@ -527,13 +545,15 @@ std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const std::v
 {
    ATLASSERT(IsStressCheckApplicable(vPoi.front().GetSegmentKey(),intervalIdx,ls,pgsTypes::Tension));
 
+   GET_IFACE(IPointOfInterest,pPoi);
+
    std::vector<Float64> vStress;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; iter != end; iter++ )
    {
       const pgsPointOfInterest& poi = *iter;
-      if ( poi.HasAttribute(POI_CLOSURE) )
+      if ( pPoi->IsInClosureJoint(poi) )
       {
          vStress.push_back( GetClosureJointAllowableTensionStress(poi,intervalIdx,ls,bWithBondededReinforcement,bInPrecompressedTensileZone));
       }
@@ -592,7 +612,9 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
 
    Float64 f = x * sqrt( fc );
    if ( bCheckMax )
+   {
       f = Min(f,fmax);
+   }
 
    return f;
 }
@@ -606,7 +628,9 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
 
    Float64 f = x * sqrt( fc );
    if ( bCheckMax )
+   {
       f = Min(f,fmax);
+   }
 
    return f;
 }
@@ -620,7 +644,9 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
 
    Float64 f = x * sqrt( fc );
    if ( bCheckMax )
+   {
       f = Min(f,fmax);
+   }
 
    return f;
 }
@@ -787,8 +813,6 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(cons
 
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Compression));
 
-   ATLASSERT(poi.HasAttribute(POI_CLOSURE));
-
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
@@ -893,7 +917,6 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
 
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Tension));
 
-   GET_IFACE(IEnvironment,pEnv);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -963,6 +986,7 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
          else 
          {
             ATLASSERT( ls == pgsTypes::ServiceIII  );
+            GET_IFACE(IEnvironment,pEnv);
             int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
             x = pSpec->GetFinalTensionStressFactor(exposureCondition);
             pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
@@ -983,8 +1007,6 @@ void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPo
    bool bCheckMax = false;
    Float64 fmax = -99999;
 
-   ATLASSERT(poi.HasAttribute(POI_CLOSURE));
-
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Tension));
@@ -1002,16 +1024,24 @@ void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPo
       if ( bInPrecompressedTensileZone )
       {
          if ( bWithBondedReinforcement )
+         {
             x = pSpec->GetAtStressingPrecompressedTensileZoneTensionStressFactorWithRebar();
+         }
          else
+         {
             x = pSpec->GetAtStressingPrecompressedTensileZoneTensionStressFactor();
+         }
       }
       else
       {
          if ( bWithBondedReinforcement )
+         {
             x = pSpec->GetAtStressingOtherLocationTensionStressFactorWithRebar();
+         }
          else
+         {
             x = pSpec->GetAtStressingOtherLocationTensionStressFactor();
+         }
       }
    }
    else
@@ -1020,16 +1050,24 @@ void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPo
       if ( bInPrecompressedTensileZone )
       {
          if ( bWithBondedReinforcement )
+         {
             x = pSpec->GetAtServicePrecompressedTensileZoneTensionStressFactorWithRebar();
+         }
          else
+         {
             x = pSpec->GetAtServicePrecompressedTensileZoneTensionStressFactor();
+         }
       }
       else
       {
          if ( bWithBondedReinforcement )
+         {
             x = pSpec->GetAtServiceOtherLocationTensionStressFactorWithRebar();
+         }
          else
+         {
             x = pSpec->GetAtServiceOtherLocationTensionStressFactor();
+         }
       }
    }
 
@@ -1048,8 +1086,6 @@ void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInt
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Tension));
-
-   GET_IFACE(IEnvironment,pEnv);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
@@ -1088,6 +1124,7 @@ void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInt
       else
       {
          ATLASSERT( (ls == pgsTypes::ServiceIII)  );
+         GET_IFACE(IEnvironment,pEnv);
          int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
          x = pSpec->GetFinalTensionStressFactor(exposureCondition);
          pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
@@ -1228,17 +1265,21 @@ void CSpecAgentImp::GetMaxStirrupSpacing(Float64* sUnderLimit, Float64* sOverLim
 
 Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter)
 {
-   CHECK(maxAggregateSize>0.0);
-   CHECK(barDiameter>0.0);
+   ATLASSERT(maxAggregateSize>0.0);
+   ATLASSERT(barDiameter>0.0);
 
    Float64 min_spc = Max(1.33*maxAggregateSize, barDiameter);
 
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 abs_min_spc;
    if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+   {
       abs_min_spc = ::ConvertToSysUnits(25., unitMeasure::Millimeter);
+   }
    else
+   {
       abs_min_spc = ::ConvertToSysUnits(1., unitMeasure::Inch);
+   }
 
    // lrfd requirements are for clear distance, we want cl-to-cl spacing
    min_spc += barDiameter;
@@ -1254,9 +1295,13 @@ Float64 CSpecAgentImp::GetMinTopFlangeThickness() const
 
    Float64 dim;
    if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+   {
       dim = ::ConvertToSysUnits(50., unitMeasure::Millimeter);
+   }
    else
+   {
       dim = ::ConvertToSysUnits(2., unitMeasure::Inch);
+   }
 
    return dim;
 }
@@ -1287,16 +1332,24 @@ Float64 CSpecAgentImp::GetMinWebThickness() const
    if ( bPostTension )
    {
       if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+      {
          dim = ::ConvertToSysUnits(165., unitMeasure::Millimeter);
+      }
       else
+      {
          dim = ::ConvertToSysUnits(6.5, unitMeasure::Inch);
+      }
    }
    else
    {
       if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+      {
          dim = ::ConvertToSysUnits(125., unitMeasure::Millimeter);
+      }
       else
+      {
          dim = ::ConvertToSysUnits(5., unitMeasure::Inch);
+      }
    }
 
    return dim;
@@ -1308,15 +1361,19 @@ Float64 CSpecAgentImp::GetMinBottomFlangeThickness() const
 
    Float64 dim;
    if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+   {
       dim = ::ConvertToSysUnits(125., unitMeasure::Millimeter);
+   }
    else
+   {
       dim = ::ConvertToSysUnits(5., unitMeasure::Inch);
+   }
 
    return dim;
 }
 
 /////////////////////////////////////////////////////////////////////
-//  IGirderLiftingSpecCriteria
+//  ISegmentLiftingSpecCriteria
 bool CSpecAgentImp::IsLiftingAnalysisEnabled() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
@@ -1367,7 +1424,9 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStress(const CSegmentKe
 
    pSpec->GetLiftingMaximumTensionStress(&is_max,&maxval);
    if (is_max)
+   {
       f = Min(f, maxval);
+   }
 
    return f;
 }
@@ -1423,7 +1482,9 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(Float64 fci, b
       Float64 f = x * sqrt( fci );
 
       if ( bCheckMax )
+      {
          f = Min(f,fmax);
+      }
 
       return f;
    }
@@ -1500,9 +1561,13 @@ Float64 CSpecAgentImp::GetMinimumLiftingPointLocation(const CSegmentKey& segment
 
       PoiAttributeType searchAttribute = POI_RELEASED_SEGMENT;
       if ( end == pgsTypes::metStart )
+      {
          searchAttribute |= POI_0L;
+      }
       else
+      {
          searchAttribute |= POI_10L;
+      }
 
       std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(segmentKey,searchAttribute,POIFIND_AND));
       ATLASSERT(vPoi.size() == 1);
@@ -1525,7 +1590,7 @@ Float64 CSpecAgentImp::GetLiftingPointLocationAccuracy() const
 }
 
 //////////////////////////////////////////////////////////////////////
-// IGirderHaulingSpecCriteria
+// ISegmentHaulingSpecCriteria
 bool CSpecAgentImp::IsHaulingAnalysisEnabled() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
@@ -1581,7 +1646,9 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStress(const CSegmentKe
    Float64 maxval;
    pSpec->GetHaulingMaximumTensionStress(&is_max,&maxval);
    if (is_max)
+   {
       allow = Min(allow, maxval);
+   }
 
    return allow;
 }
@@ -1634,7 +1701,9 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bo
       Float64 f = x * sqrt( fc );
 
       if ( bCheckMax )
+      {
          f = Min(f,fmax);
+      }
 
       return f;
    }
@@ -1647,10 +1716,10 @@ Float64 CSpecAgentImp::GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc
    return x*fc;
 }
 
-IGirderHaulingSpecCriteria::RollStiffnessMethod CSpecAgentImp::GetRollStiffnessMethod() const
+ISegmentHaulingSpecCriteria::RollStiffnessMethod CSpecAgentImp::GetRollStiffnessMethod() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return (pSpec->GetTruckRollStiffnessMethod() == ROLLSTIFFNESS_LUMPSUM ? IGirderHaulingSpecCriteria::LumpSum : IGirderHaulingSpecCriteria::PerAxle );
+   return (pSpec->GetTruckRollStiffnessMethod() == ROLLSTIFFNESS_LUMPSUM ? ISegmentHaulingSpecCriteria::LumpSum : ISegmentHaulingSpecCriteria::PerAxle );
 }
 
 Float64 CSpecAgentImp::GetLumpSumRollStiffness() const
@@ -1749,9 +1818,13 @@ Float64 CSpecAgentImp::GetMinimumHaulingSupportLocation(const CSegmentKey& segme
 
       PoiAttributeType searchAttribute = POI_RELEASED_SEGMENT;
       if ( end == pgsTypes::metStart )
+      {
          searchAttribute |= POI_0L;
+      }
       else
+      {
          searchAttribute |= POI_10L;
+      }
 
       std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(segmentKey,searchAttribute,POIFIND_AND));
       ATLASSERT(vPoi.size() == 1);
@@ -1894,7 +1967,7 @@ void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* p
    Float64 gdrlength = pBridge->GetSegmentLength(segmentKey);
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_MIDSPAN) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L) );
    ATLASSERT(vPOI.size() == 1);
    pgsPointOfInterest poi( vPOI[0] );
 
@@ -2021,16 +2094,8 @@ const GirderLibraryEntry* CSpecAgentImp::GetGirderEntry(const CSegmentKey& segme
    return pGirderEntry;
 }
 
-bool CSpecAgentImp::IsLoadRatingLimitState(pgsTypes::LimitState ls)
+bool CSpecAgentImp::IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls)
 {
-#pragma Reminder("REVIEW AND UPDATE")
-   // there is a IsRatingLimitState function in PGSuperTypes.h that returns true/false
-   // if the limit state is a load rating strength limit state. this method
-   // evaluates only Service III. Do they need to be combined? At the minimum
-   // they need to be renamed so that they are more clear. Judging by just the name
-   // both functions should return true if the limit state is any of the load rating limit states
-   // and that isn't the case
-
    return ( ls == pgsTypes::ServiceIII_Inventory ||
             ls == pgsTypes::ServiceIII_Operating ||
             ls == pgsTypes::ServiceIII_LegalRoutine ||
@@ -2041,16 +2106,24 @@ Float64 CSpecAgentImp::GetLoadRatingAllowableTension(const CSegmentKey& segmentK
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( ls == pgsTypes::ServiceIII_Inventory )
+   {
       return pRatingSpec->GetAllowableTension(pgsTypes::lrDesign_Inventory,segmentKey);
+   }
 
    if ( ls == pgsTypes::ServiceIII_Operating )
+   {
       return pRatingSpec->GetAllowableTension(pgsTypes::lrDesign_Operating,segmentKey);
+   }
 
    if ( ls == pgsTypes::ServiceIII_LegalRoutine )
+   {
       return pRatingSpec->GetAllowableTension(pgsTypes::lrLegal_Routine,segmentKey);
+   }
 
    if ( ls == pgsTypes::ServiceIII_LegalSpecial )
+   {
       return pRatingSpec->GetAllowableTension(pgsTypes::lrLegal_Special,segmentKey);
+   }
 
    ATLASSERT(false); // should never get here
    return -1;

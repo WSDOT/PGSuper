@@ -27,7 +27,7 @@
 #include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DocumentType.h>
+#include <IFace\Intervals.h>
 
 
 #ifdef _DEBUG
@@ -76,17 +76,14 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed );
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   bool bTempStrands = (0 < pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary) ? true : false);
+   bool bTempStrands = (0 < pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary) ? true : false);
 
    // Setup table
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::_tostringstream os;
-   if ( pDocType->IsPGSuperDocument() )
-      os << "Strand Eccentricity for Span " << LABEL_GROUP(segmentKey.groupIndex) << " Girder " << LABEL_GIRDER(segmentKey.girderIndex);
-   else
-      os << "Strand Eccentricity for Group " << LABEL_GROUP(segmentKey.groupIndex) << " Girder " << LABEL_GIRDER(segmentKey.girderIndex) << " Segment " << LABEL_SEGMENT(segmentKey.segmentIndex);
+   os << _T("Strand Eccentricity: Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(segmentKey,intervalIdx);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 9 : 7,os.str().c_str());
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 9 : 7, os.str().c_str() );
 
    p_table->SetNumberOfHeaderRows(2);
 
@@ -109,7 +106,9 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
 
    ColumnIndexType i;
    for ( i = col; i < p_table->GetNumberOfColumns(); i++ )
+   {
       p_table->SetColumnSpan(0,i,SKIP_CELL);
+   }
 
    // build second hearing row
    col = 0;
@@ -133,8 +132,8 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    (*p_table)(1,col++) << _T("Average") << rptNewLine << _T("(1:n)");
    (*p_table)(1,col++) << _T("Maximum") << rptNewLine << _T("(1:n)");
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, gdrloc, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, spanloc, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, rptReleasePoi, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, rptErectedPoi, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, ecc,    pDisplayUnits->GetComponentDimUnit(),  false );
 
    GET_IFACE2( pBroker, IPointOfInterest, pPoi );
@@ -147,96 +146,92 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
    Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   std::vector<pgsPointOfInterest> pois(pPoi->GetPointsOfInterest(segmentKey));
-   pPoi->RemovePointsOfInterest(pois,POI_CLOSURE);
-   pPoi->RemovePointsOfInterest(pois,POI_BOUNDARY_PIER);
+   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT));
+   std::vector<pgsPointOfInterest> vPoi2(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT));
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
+   pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
-   pgsPointOfInterest prev_poi(segmentKey,0);
-   bool bSkipToNextRow = false;
-
-   RowIndexType firstRow = p_table->GetNumberOfHeaderRows();
-   RowIndexType row = firstRow;
-   std::vector<pgsPointOfInterest>::iterator iter(pois.begin());
-   std::vector<pgsPointOfInterest>::iterator end(pois.end());
+   RowIndexType row = p_table->GetNumberOfHeaderRows();
+   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
    for ( ; iter != end; iter++ )
    {
-      bSkipToNextRow = false;
-
       const pgsPointOfInterest& poi = *iter;
 
       col = 0;
 
-      if ( row != firstRow && IsEqual(poi.GetDistFromStart(),prev_poi.GetDistFromStart()) )
+      (*p_table)(row,col++) << rptReleasePoi.SetValue(POI_RELEASED_SEGMENT,poi);
+      (*p_table)(row,col++) << rptErectedPoi.SetValue(POI_ERECTED_SEGMENT, poi,end_size);
+
+      Float64 nEff;
+      if ( 0 < Ns )
       {
-         row--;
-         bSkipToNextRow = true;
+         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetSsEccentricity( spType, intervalIdx, poi, &nEff ) );
+      }
+      else
+      {
+         (*p_table)(row,col++) << _T("-");
       }
 
-#pragma Reminder("UPDATE: review")
-      // does the eccentricity table need two typs of poi location objects?
-      //if ( stage == pgsTypes::CastingYard )
-      //{
-         //(*p_table)(row,col++) << gdrloc.SetValue(stage, poi);
-         (*p_table)(row,col++) << gdrloc.SetValue(POI_RELEASED_SEGMENT, poi);
-         (*p_table)(row,col++) << _T("");
-      //}
-      //else
-      //{
-      //   (*p_table)(row,col++) << _T("");
-      //   (*p_table)(row,col++) << spanloc.SetValue( stage, poi, end_size );
-      //}
-
-      if ( !bSkipToNextRow )
+      if ( 0 < Nh )
       {
-         Float64 nEff;
-         if ( 0 < Ns )
-            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetSsEccentricity( spType, intervalIdx, poi, &nEff ) );
-         else
-            (*p_table)(row,col++) << _T("-");
+         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetHsEccentricity( spType, intervalIdx, poi, &nEff ) );
+      }
+      else
+      {
+         (*p_table)(row,col++) << _T("-");
+      }
 
-         if ( 0 < Nh )
-            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetHsEccentricity( spType, intervalIdx, poi, &nEff ) );
-         else
-            (*p_table)(row,col++) << _T("-");
-
-         if ( bTempStrands )
+      if ( bTempStrands )
+      {
+         if ( 0 < Nt )
          {
-            if ( 0 < Nt )
-               (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetTempEccentricity( spType, intervalIdx, poi, &nEff ) );
-            else
-               (*p_table)(row,col++) << _T("-");
-
-            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, true, &nEff ) );
-         }
-
-         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, false, &nEff ) );
-
-         if ( 0 < Nh )
-         {
-            Float64 avg_slope = pStrandGeom->GetAvgStrandSlope( poi );
-            avg_slope = fabs(avg_slope);
-
-            if ( IsZero( 1./avg_slope ) )
-               (*p_table)(row,col++) << symbol(INFINITY);
-            else
-               (*p_table)(row,col++) << avg_slope;
-
-            Float64 max_slope = pStrandGeom->GetMaxStrandSlope( poi );
-            max_slope = fabs(max_slope);
-            if ( IsZero( 1./max_slope ) )
-               (*p_table)(row,col++) << symbol(INFINITY);
-            else
-               (*p_table)(row,col++) << max_slope;
+            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetTempEccentricity( spType, intervalIdx, poi, &nEff ) );
          }
          else
          {
             (*p_table)(row,col++) << _T("-");
-            (*p_table)(row,col++) << _T("-");
          }
+
+         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, true, &nEff ) );
+      }
+
+      (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, false, &nEff ) );
+
+      if ( 0 < Nh )
+      {
+         Float64 avg_slope = pStrandGeom->GetAvgStrandSlope( poi );
+         avg_slope = fabs(avg_slope);
+
+         if ( IsZero( 1./avg_slope ) )
+         {
+            (*p_table)(row,col++) << symbol(INFINITY);
+         }
+         else
+         {
+            (*p_table)(row,col++) << avg_slope;
+         }
+
+         Float64 max_slope = pStrandGeom->GetMaxStrandSlope( poi );
+         max_slope = fabs(max_slope);
+         if ( IsZero( 1./max_slope ) )
+         {
+            (*p_table)(row,col++) << symbol(INFINITY);
+         }
+         else
+         {
+            (*p_table)(row,col++) << max_slope;
+         }
+      }
+      else
+      {
+         (*p_table)(row,col++) << _T("-");
+         (*p_table)(row,col++) << _T("-");
       }
 
       row++;
-      prev_poi = poi;
    }
 
    return p_table;

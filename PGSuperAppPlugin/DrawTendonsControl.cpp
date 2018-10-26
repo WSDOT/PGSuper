@@ -41,7 +41,7 @@ IMPLEMENT_DYNAMIC(CDrawTendonsControl, CWnd)
 
 CDrawTendonsControl::CDrawTendonsControl()
 {
-   m_pSource = NULL;
+   m_pGirder = NULL;
 }
 
 CDrawTendonsControl::~CDrawTendonsControl()
@@ -56,9 +56,10 @@ END_MESSAGE_MAP()
 
 
 // CDrawTendonsControl message handlers
-void CDrawTendonsControl::CustomInit(IGirderSegmentDataSource* pSource)
+void CDrawTendonsControl::CustomInit(const CGirderKey& girderKey,const CSplicedGirderData* pGirder)
 {
-   m_pSource = pSource;
+   m_GirderKey = girderKey;
+   m_pGirder = pGirder;
 }
 
 
@@ -72,18 +73,16 @@ void CDrawTendonsControl::OnPaint()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IGirder,pIGirder);
 
-   const CGirderKey& girderKey = m_pSource->GetGirderKey();
-   const CSplicedGirderData* pGirder = m_pSource->GetGirder();
-   SegmentIndexType nSegments = pGirder->GetSegmentCount();
+   SegmentIndexType nSegments = m_pGirder->GetSegmentCount();
 
    std::vector<CComPtr<IShape>> segmentShapes;
    CComPtr<IRect2d> bounding_box;
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      CSegmentKey segmentKey(girderKey,segIdx);
+      CSegmentKey segmentKey(m_GirderKey,segIdx);
 
       CComPtr<IShape> shape;
-      pIGirder->GetSegmentProfile( segmentKey, pGirder, true, &shape);
+      pIGirder->GetSegmentProfile( segmentKey, m_pGirder, true, &shape);
 
       if ( segIdx == 0 )
       {
@@ -101,13 +100,13 @@ void CDrawTendonsControl::OnPaint()
 
    // Create a poly line for each tendon. 
    std::vector<CComPtr<IPoint2dCollection>> ducts;
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeometry);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   CollectionIndexType nDucts = pGirder->GetPostTensioning()->GetDuctCount();
+   GET_IFACE2_NOCHECK(pBroker,ITendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there are ducts/tendons
+   CollectionIndexType nDucts = m_pGirder->GetPostTensioning()->GetDuctCount();
    for ( CollectionIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       CComPtr<IPoint2dCollection> ductPoints;
-      pTendonGeometry->GetDuctCenterline(girderKey,ductIdx,pGirder,&ductPoints);
+      pTendonGeometry->GetDuctCenterline(m_GirderKey,ductIdx,m_pGirder,&ductPoints);
 
       IndexType nPoints;
       ductPoints->get_Count(&nPoints);
@@ -117,7 +116,7 @@ void CDrawTendonsControl::OnPaint()
          ductPoints->get_Item(pntIdx,&pnt);
          Float64 X;
          pnt->get_X(&X);
-         X = pIPoi->ConvertGirderCoordinateToGirderPathCoordinate(girderKey,X);
+         X = pIPoi->ConvertGirderCoordinateToGirderPathCoordinate(m_GirderKey,X);
          pnt->put_X(X);
       }
 

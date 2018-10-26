@@ -52,11 +52,20 @@ library PGSuper
    [
       uuid(5656F52E-4DC8-4299-8AD1-23EB3AE46353)
    ]
-   coclass WSDOTComponentInfo
+   coclass PGSuperComponentInfo
    {
 		[default] interface IUnknown;
    };
-	[
+
+   [
+      uuid(E389A200-D722-4977-AE9F-939F9C121A1C)
+   ]
+   coclass PGSpliceComponentInfo
+   {
+		[default] interface IUnknown;
+   };
+
+   [
 		uuid(E89CC143-53C9-43df-B1B4-E522769DE29B),
 		helpstring("CurvelExporter Class")
 	]

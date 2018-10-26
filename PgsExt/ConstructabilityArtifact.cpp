@@ -39,12 +39,8 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 pgsConstructabilityArtifact::pgsConstructabilityArtifact():
-m_bIsSlabOffsetApplicable(false),m_bIsGlobalGirderStabilityApplicable(false)
+m_bIsSlabOffsetApplicable(false)
 {
-   m_Wbottom = 0;
-   m_Ybottom = 1;
-   m_Orientation = 0;
-
    m_Provided = 0;
    m_Required =0;
 }
@@ -105,23 +101,31 @@ bool pgsConstructabilityArtifact::IsSlabOffsetApplicable() const
 pgsConstructabilityArtifact::SlabOffsetStatusType pgsConstructabilityArtifact::SlabOffsetStatus() const
 {
    if (!m_bIsSlabOffsetApplicable)
+   {
       return NA;
+   }
 
    if ( IsEqual(m_Provided,m_Required) )
-      return Passed;
+   {
+      return Pass;
+   }
 
    if ( m_Provided < m_Required )
-      return Failed;
+   {
+      return Fail;
+   }
 
    if ( (m_Required + ::ConvertToSysUnits(0.25,unitMeasure::Inch)) < m_Provided )
+   {
       return Excessive;
+   }
 
-   return Passed;
+   return Pass;
 }
 
 bool pgsConstructabilityArtifact::SlabOffsetPassed() const
 {
-   return ( SlabOffsetStatus() == Failed ) ? false : true;
+   return ( SlabOffsetStatus() == Fail ) ? false : true;
 }
 
 void pgsConstructabilityArtifact::CheckStirrupLength(bool bCheck)
@@ -134,53 +138,12 @@ bool pgsConstructabilityArtifact::CheckStirrupLength() const
    return m_bIsSlabOffsetApplicable && m_bCheckStirrupLength;
 }
 
-void pgsConstructabilityArtifact::SetGlobalGirderStabilityApplicability(bool bSet)
-{
-   m_bIsGlobalGirderStabilityApplicable = bSet;
-}
-
-bool pgsConstructabilityArtifact::IsGlobalGirderStabilityApplicable() const
-{
-   return m_bIsGlobalGirderStabilityApplicable;
-}
-
-void pgsConstructabilityArtifact::SetGlobalGirderStabilityParameters(Float64 Wbottom,Float64 Ybottom,Float64 Orientation)
-{
-   m_Wbottom = Wbottom;
-   m_Ybottom = Ybottom;
-   m_Orientation = Orientation;
-}
-
-void pgsConstructabilityArtifact::GetGlobalGirderStabilityParameters(Float64 *Wbottom,Float64 *Ybottom,Float64 *Orientation) const
-{
-   *Wbottom     = m_Wbottom;
-   *Ybottom     = m_Ybottom;
-   *Orientation = m_Orientation;
-}
-
-Float64 pgsConstructabilityArtifact::GetMaxGirderIncline() const
-{
-   return fabs(m_Wbottom/(6*m_Ybottom)); // resultant in middle-1/3 of bottom
-}
-
-bool pgsConstructabilityArtifact::GlobalGirderStabilityPassed() const
-{
-   if ( !m_bIsGlobalGirderStabilityApplicable )
-      return true;
-
-   // maximum incline to have the result of the girder dead load reaction within
-   // the middle third of the girder
-   Float64 maxIncline = GetMaxGirderIncline();
-   return (maxIncline < m_Orientation) ? false : true;
-}
-
-bool pgsConstructabilityArtifact::Pass() const
+bool pgsConstructabilityArtifact::Passed() const
 {
    if ( !SlabOffsetPassed() )
+   {
       return false;
-
-   if ( !GlobalGirderStabilityPassed() )
-      return false;
+   }
 
    return true;
 }
@@ -198,11 +161,6 @@ void pgsConstructabilityArtifact::MakeCopy(const pgsConstructabilityArtifact& rO
    m_Required = rOther.m_Required;
    m_bCheckStirrupLength = rOther.m_bCheckStirrupLength;
    m_bIsSlabOffsetApplicable = rOther.m_bIsSlabOffsetApplicable;
-
-   m_bIsGlobalGirderStabilityApplicable = rOther.m_bIsGlobalGirderStabilityApplicable;
-   m_Wbottom = rOther.m_Wbottom;
-   m_Ybottom = rOther.m_Ybottom;
-   m_Orientation = rOther.m_Orientation;
 }
 
 void pgsConstructabilityArtifact::MakeAssignment(const pgsConstructabilityArtifact& rOther)

@@ -74,10 +74,8 @@ void txnEditBridge::Execute(int i)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IRoadwayData,pAlignment);
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    GET_IFACE2(pBroker,IEnvironment, pEnvironment );
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    GET_IFACE2(pBroker,IEvents, pEvents);
 
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done

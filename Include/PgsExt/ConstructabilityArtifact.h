@@ -68,14 +68,7 @@ class PGSEXTCLASS pgsConstructabilityArtifact
 {
 public:
    // GROUP: ENUM
-   enum SlabOffsetStatusType { Passed, Failed, Excessive, NA };
-
-   struct GlobalGirderStabilityParameters
-   {
-      Float64 Wbottom; // bottom width of the girder
-      Float64 Yb;      // distance from bottom to CG of noncomposite girder
-      Float64 Orientation; // orientation of the girder
-   };
+   enum SlabOffsetStatusType { Pass, Fail, Excessive, NA };
 
    // GROUP: LIFECYCLE
 
@@ -119,14 +112,7 @@ public:
    void CheckStirrupLength(bool bCheck);
    bool CheckStirrupLength() const;
 
-   void SetGlobalGirderStabilityApplicability(bool bSet);
-   bool IsGlobalGirderStabilityApplicable() const;
-   void SetGlobalGirderStabilityParameters(Float64 Wbottom,Float64 Ybottom,Float64 Orientation);
-   void GetGlobalGirderStabilityParameters(Float64 *Wbottom,Float64 *Ybottom,Float64 *Orientation) const;
-   Float64 GetMaxGirderIncline() const;
-   bool GlobalGirderStabilityPassed() const;
-
-   bool Pass() const;
+   bool Passed() const;
 
    // GROUP: INQUIRY
 
@@ -150,11 +136,6 @@ private:
    Float64 m_Required; // The required required slab offset
    bool m_bCheckStirrupLength;
    bool m_bIsSlabOffsetApplicable;
-
-   bool m_bIsGlobalGirderStabilityApplicable;
-   Float64 m_Wbottom;
-   Float64 m_Ybottom;
-   Float64 m_Orientation;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

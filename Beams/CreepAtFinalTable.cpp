@@ -75,7 +75,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    if ( 0 < NtMax )
    {
-      if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
+      if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
          numColumns++;
       else
          numColumns+=2;
@@ -103,7 +103,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    {
       if ( 0 < NtMax )
       {
-         if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+         if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
          {
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT_Gross.png")) << rptNewLine;
@@ -130,7 +130,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    {
       if ( 0 < NtMax )
       {
-         if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+         if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
          {
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT_Transformed.png")) << rptNewLine;
@@ -173,7 +173,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return table;
    }
 
@@ -220,7 +220,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*table)(0,col++) << Sub2(_T("K"),_T("df"));
 
   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   if ( 0 < NtMax &&  pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( 0 < NtMax &&  pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -242,7 +242,7 @@ void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsP
    boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return;
    }
 
@@ -250,7 +250,7 @@ void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsP
    (*this)(row,col++) << scalar.SetValue(ptl->GetKdf());
    (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
 
-   if ( 0 < m_NtMax && m_pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
       (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFpp() );
 
    if ( 0 < m_NtMax )

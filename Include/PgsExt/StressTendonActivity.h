@@ -58,6 +58,9 @@ public:
    // Removes a tendon from the stressing list
    void RemoveTendon(const CGirderKey& girderKey,DuctIndexType ductIdx);
 
+   // Removes all tendons for the specified girder from the stressing list
+   void RemoveTendons(const CGirderKey& girderKey);
+
    // Returns true if a specific tendon is stressed
    bool IsTendonStressed(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
 

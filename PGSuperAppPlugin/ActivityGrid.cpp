@@ -147,7 +147,9 @@ void CActivityGrid::Refresh()
    CTimelineEventDlg* pParent = (CTimelineEventDlg*)GetParent();
 
    if ( 0 < GetRowCount() )
+   {
       RemoveRows(1,GetRowCount());
+   }
 
    if ( pParent->m_TimelineEvent.GetConstructSegmentsActivity().IsEnabled() )
    {
@@ -224,7 +226,9 @@ void CActivityGrid::AddActivity(LPCTSTR strName,int activityKey)
 void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
 {
    if ( nCol != 2 )
+   {
       return;
+   }
 
    CTimelineEventDlg* pParent = (CTimelineEventDlg*)GetParent();
    EventIndexType eventIdx = pParent->m_EventIndex;
@@ -319,7 +323,9 @@ void CActivityGrid::RemoveActivity()
    ROWCOL nSelRows = GetSelectedRows(selection,TRUE);
 
    if ( nSelRows == 0 )
+   {
       return;
+   }
 
    for ( ROWCOL i = 0; i < nSelRows; i++ )
    {

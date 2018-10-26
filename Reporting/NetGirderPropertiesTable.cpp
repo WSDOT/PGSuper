@@ -61,6 +61,8 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    USES_CONVERSION;
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+
    std::_tostringstream os;
    os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(segmentKey,intervalIdx);
 
@@ -112,10 +114,10 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
-   // Get all the tabular poi's for flexure and shear
-   // Merge the two vectors to form one vector to report on.
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
+   PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
 
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 
@@ -128,13 +130,13 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
 
       const CSegmentKey& segKey = poi.GetSegmentKey();
 
-      //Float64 end_size = pBridge->GetSegmentStartEndDistance(segKey);
-      //if ( stage < castDeckStageIdx )
-      //   end_size = 0;
-      Float64 end_size = 0;
+      Float64 end_size = pBridge->GetSegmentStartEndDistance(segKey);
+      if ( intervalIdx < erectionIntervalIdx )
+      {
+         end_size = 0;
+      }
 
-#pragma Reminder("UPDATE: poi location reference")
-      (*xs_table)(row,col++) << location.SetValue( POI_RELEASED_SEGMENT, poi, end_size );
+      (*xs_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
 
       (*xs_table)(row,col++) << l2.SetValue(pSectProp->GetNetAg(intervalIdx,poi));
       (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetNetIg(intervalIdx,poi));

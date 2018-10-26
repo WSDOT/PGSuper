@@ -45,82 +45,22 @@ LPCTSTR CPointOfInterestChapterBuilder::GetName() const
 
 rptChapter* CPointOfInterestChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
 
-   GirderIndexType gdrIdx = pGdrRptSpec->GetGirderKey().girderIndex;
-
    GET_IFACE2(pBroker,IEAFDisplayUnits, pDisplayUnits );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-   rptParagraph* pPara = new rptParagraph;
 
-   (*pChapter) << pPara;
-
-   (*pPara) << _T("This is a dummy report... needs to be updated for new indexing scheme") << rptNewLine;
-
-   GET_IFACE2(pBroker,IPointOfInterest,pSegmentPOI);
-
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(6,_T("Segment POI"));
-   (*pPara) << pTable << rptNewLine;
-   (*pTable)(0,0) << _T("POI ID");
-   (*pTable)(0,1) << _T("Group");
-   (*pTable)(0,2) << _T("Girder");
-   (*pTable)(0,3) << _T("Segment");
-   (*pTable)(0,4) << COLHDR(_T("Location from start of Segment"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
-   (*pTable)(0,5) << _T("Mid-Span");
-
-   std::vector<pgsPointOfInterest> vPOI(pSegmentPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,gdrIdx,ALL_SEGMENTS)));
-
-   RowIndexType row = 1;
-   std::vector<pgsPointOfInterest>::iterator iter(vPOI.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPOI.end());
-   for ( ; iter != end; iter++, row++ )
-   {
-      pgsPointOfInterest& poi = *iter;
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      (*pTable)(row,0) << poi.GetID();
-      (*pTable)(row,1) << LABEL_GROUP(segmentKey.groupIndex);
-      (*pTable)(row,2) << LABEL_GIRDER(segmentKey.girderIndex);
-      (*pTable)(row,3) << LABEL_SEGMENT(segmentKey.segmentIndex);
-      (*pTable)(row,4) << location.SetValue( POI_RELEASED_SEGMENT | POI_STORAGE_SEGMENT | POI_ERECTED_SEGMENT | POI_GIRDER, poi );
-
-      if ( poi.IsMidSpan(POI_RELEASED_SEGMENT | POI_STORAGE_SEGMENT | POI_ERECTED_SEGMENT | POI_GIRDER) )
-      {
-         (*pTable)(row,5) << symbol(ROOT) << rptNewLine;
-      }
-      else
-      {
-         (*pTable)(row,5) << _T("");
-      }
-
-
-   //   pgsPointOfInterest segPoi( pSegmentPOI->GetPointOfInterest(poi.GetID()) );
-   //   if ( segPoi.GetID() != INVALID_ID )
-   //   {
-   //      GirderIndexType gdrIdx;
-   //      SegmentIndexType segIdx;
-   //      ::UnhashGirderSegment(segPoi.GetSuperstructureMemberID(),&gdrIdx,&segIdx);
-   //      (*pTable)(row,2) << _T("(") << segPoi.GetID() << _T(") ") << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx);
-   //      (*pTable)(row,3) << loc.SetValue(segPoi.GetDistFromStart());
-   //   }
-
-   //   pgsPointOfInterest cpPoi( pClosureJointPOI->GetClosureJointPointOfInterest(poi.GetID()) );
-   //   if ( cpPoi.GetID() != INVALID_ID )
-   //   {
-   //      GirderIndexType gdrIdx;
-   //      CollectionIndexType cpIdx;
-   //      ::UnhashGirderSegment(cpPoi.GetSuperstructureMemberID(),&gdrIdx,&cpIdx);
-
-   //      (*pTable)(row,2) << _T("(") << cpPoi.GetID() << _T(") ") << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" CJ ") << LABEL_SEGMENT(cpIdx);
-   //      (*pTable)(row,3) << loc.SetValue(cpPoi.GetDistFromStart());
-   //   }
-   }
-
-   (*pPara) << _T("Number of Segment POI = ") << (CollectionIndexType)vPOI.size() << rptNewLine;
+   ReportPoi(_T("All"),     0,                    pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
+   ReportPoi(_T("Release"), POI_RELEASED_SEGMENT, pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
+   ReportPoi(_T("Lifting"), POI_LIFT_SEGMENT,     pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
+   ReportPoi(_T("Storage"), POI_STORAGE_SEGMENT,  pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
+   ReportPoi(_T("Hauling"), POI_HAUL_SEGMENT,     pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
+   ReportPoi(_T("Erected"), POI_ERECTED_SEGMENT,  pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
+   ReportPoi(_T("Span"),    POI_SPAN,             pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
 
    return pChapter;
 }
@@ -128,4 +68,70 @@ rptChapter* CPointOfInterestChapterBuilder::Build(CReportSpecification* pRptSpec
 CChapterBuilder* CPointOfInterestChapterBuilder::Clone() const
 {
    return new CPointOfInterestChapterBuilder;
+}
+
+void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,IBroker* pBroker,IPointOfInterest* pPoi,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+{
+   GirderIndexType gdrIdx = girderKey.girderIndex;
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, coordinate, pDisplayUnits->GetSpanLengthUnit(), false );
+
+   rptParagraph* pPara = new rptParagraph;
+   (*pChapter) << pPara;
+
+   std::vector<pgsPointOfInterest> vPoi;
+   if ( attribute == POI_SPAN ) 
+   {
+      vPoi = pPoi->GetPointsOfInterest(CSpanKey(ALL_SPANS,gdrIdx),attribute);
+   }
+   else
+   {
+      vPoi = pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,gdrIdx,ALL_SEGMENTS),attribute);
+   }
+
+   (*pPara) << _T("Number of POI = ") << (CollectionIndexType)vPoi.size() << rptNewLine;
+
+   ColumnIndexType col = 0;
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(11,strName);
+   (*pPara) << pTable << rptNewLine;
+   (*pTable)(0,col++) << _T("POI ID");
+   (*pTable)(0,col++) << _T("Group");
+   (*pTable)(0,col++) << _T("Girder");
+   (*pTable)(0,col++) << _T("Segment");
+   (*pTable)(0,col++) << COLHDR(_T("Xs"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
+   (*pTable)(0,col++) << COLHDR(_T("Xsp"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
+   (*pTable)(0,col++) << COLHDR(_T("Xg"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
+   (*pTable)(0,col++) << COLHDR(_T("Xgp"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
+   (*pTable)(0,col++) << _T("Span");
+   (*pTable)(0,col++) << COLHDR(_T("Xspan"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
+   (*pTable)(0,col++) << _T("Attribute");
+
+   RowIndexType row = 1;
+   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; iter != end; iter++, row++ )
+   {
+      col = 0;
+
+      pgsPointOfInterest& poi = *iter;
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      (*pTable)(row,col++) << poi.GetID();
+      (*pTable)(row,col++) << LABEL_GROUP(segmentKey.groupIndex);
+      (*pTable)(row,col++) << LABEL_GIRDER(segmentKey.girderIndex);
+      (*pTable)(row,col++) << LABEL_SEGMENT(segmentKey.segmentIndex);
+      (*pTable)(row,col++) << coordinate.SetValue( poi.GetDistFromStart() );
+      (*pTable)(row,col++) << coordinate.SetValue( pPoi->ConvertPoiToSegmentPathCoordinate(poi) );
+      (*pTable)(row,col++) << coordinate.SetValue( pPoi->ConvertPoiToGirderCoordinate(poi) );
+      (*pTable)(row,col++) << coordinate.SetValue( pPoi->ConvertPoiToGirderPathCoordinate(poi) );
+
+      SpanIndexType spanIdx;
+      Float64 Xspan;
+      pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
+      (*pTable)(row,col++) << LABEL_SPAN(spanIdx);
+      (*pTable)(row,col++) << coordinate.SetValue(Xspan);
+
+      (*pTable)(row,col++) << poi.GetAttributes(attribute,false);
+   }
 }

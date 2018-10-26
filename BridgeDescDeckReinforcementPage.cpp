@@ -122,14 +122,16 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_LUMP_SUM,    IDC_TOP_MAT_LUMP_SUM_UNIT,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_LUMP_SUM, IDC_BOTTOM_MAT_LUMP_SUM_UNIT, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
 
-   DDV_UnitValueGreaterThanZero(pDX, IDC_TOP_MAT_LUMP_SUM,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_BOTTOM_MAT_LUMP_SUM, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_TOP_MAT_LUMP_SUM,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BOTTOM_MAT_LUMP_SUM, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
 
    DDV_GXGridWnd(pDX,&m_Grid);
    if ( pDX->m_bSaveAndValidate )
    {
       if ( !m_Grid.GetRebarData(m_RebarData.NegMomentRebar) )
+      {
          pDX->Fail();
+      }
 
       CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
       pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData = m_RebarData;
@@ -281,7 +283,9 @@ BOOL CBridgeDescDeckReinforcementPage::OnSetActive()
    GetDlgItem(IDC_BOTTOM_MAT_LUMP_SUM_UNIT)->EnableWindow(bEnableBottom);
 
    if ( !bEnableTop && !bEnableBottom )
+   {
       m_Grid.EnableWindow(FALSE);
+   }
 
    m_Grid.EnableMats(bEnableTop,bEnableBottom);
    GetDlgItem(IDC_ADD)->EnableWindow(bEnableTop || bEnableBottom);

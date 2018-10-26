@@ -53,7 +53,7 @@ HRESULT IBeamFamilyImpl::Init()
 
    CComPtr<ICatInformation> pICatInfo;
    pICatReg->QueryInterface(IID_ICatInformation,(void**)&pICatInfo);
-   IEnumCLSID* pIEnumCLSID = 0;
+   CComPtr<IEnumCLSID> pIEnumCLSID;
 
    const int nID = 1;
    CATID ID[nID];

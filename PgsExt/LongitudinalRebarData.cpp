@@ -335,7 +335,7 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 segmentLength, F
       }
       else
       {
-         ATLASSERT(0); // new bar layout type?
+         ATLASSERT(false); // new bar layout type?
       }
 
       ATLASSERT(*pBarStart<*pBarEnd);

@@ -69,20 +69,15 @@ void write_deflections(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* 
 void write_rating_criteria(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const RatingLibraryEntry* pRatingEntry);
 void write_load_factors(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,LPCTSTR lpszName,const CLiveLoadFactorModel& model);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
 // this information needs to be reported
 #pragma Reminder("UPDATE: need to include time-dependent material model, section property method, and time-step loss method")
 
-//======================== LIFECYCLE  =======================================
 CProjectCriteriaChapterBuilder::CProjectCriteriaChapterBuilder(bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CProjectCriteriaChapterBuilder::GetName() const
 {
    return TEXT("Project Criteria");
@@ -91,10 +86,22 @@ LPCTSTR CProjectCriteriaChapterBuilder::GetName() const
 rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
 
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CComPtr<IBroker> pBroker;
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
+
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -156,92 +163,112 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
    
    lrfdVersionMgr::Units units = pSpecEntry->GetSpecificationUnits();
    if (units==lrfdVersionMgr::SI)
+   {
       *pPara<<_T(" - SI Units")<<rptNewLine;
+   }
    else
+   {
       *pPara<<_T(" - US Units")<<rptNewLine;
+   }
 
 
    pPara = new rptParagraph;
    *pChapter << pPara;
    if ( pSpecEntry->GetSectionPropertyMode() == pgsTypes::spmGross )
+   {
       *pPara << Bold(_T("Section Properties: ")) << _T("Gross") << rptNewLine;
+   }
    else
+   {
       *pPara << Bold(_T("Section Properties: ")) << _T("Transformed") << rptNewLine;
+   }
 
    pPara = new rptParagraph;
    *pChapter << pPara;
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmLRFD )
+   {
       *pPara << Bold(_T("Effective Flange Width computed in accordance with LRFD 4.6.2.6")) << rptNewLine;
+   }
    else
+   {
       *pPara << Bold(_T("Effective Flange Width computed using tributary width")) << rptNewLine;
+   }
 
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateTableNoHeading(3);
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(3);
    *pPara << pLayoutTable << rptNewLine;
-   pLayoutTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
-   pLayoutTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
 
    write_load_modifiers(          &(*pLayoutTable)(0,0), pBroker, pDisplayUnits);
    write_environmental_conditions(&(*pLayoutTable)(0,1), pBroker, pDisplayUnits);
    write_structural_analysis(     &(*pLayoutTable)(0,2), pBroker, pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
-      if ( 1 < nSegments )
+      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         if ( 1 < nSegments )
+         {
+            pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            *pChapter << pPara;
+            *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         }
+
+         pPara = new rptParagraph;
          *pChapter << pPara;
-         *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-      }
 
-      pPara = new rptParagraph;
-      *pChapter << pPara;
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
+         if ( !bRating )
+         {
+            write_casting_yard(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+            
+            GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+            if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+            {
+               write_lifting(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+            }
 
-      CSegmentKey segmentKey(girderKey,segIdx);
-      if ( !bRating )
+            GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+            if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+            {
+               if( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT )
+               {
+                  write_wsdot_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+               }
+               else
+               {
+                  write_kdot_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+               }
+            }
+
+            write_temp_strand_removal(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+            write_bridge_site1(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+            write_bridge_site2(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+         }
+
+         write_bridge_site3(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+         write_moment_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+         write_shear_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+      } // next segment
+
+      write_creep(pChapter, pBroker, pDisplayUnits, pSpecEntry);
+      write_losses(pChapter, pBroker, pDisplayUnits, pSpecEntry);
+      write_strand_stress(pChapter, pBroker, pDisplayUnits, pSpecEntry);
+      write_deflections(pChapter, pBroker, pDisplayUnits, pSpecEntry);
+
+      if ( bRating )
       {
-         write_casting_yard(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
-         
-         GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-         if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
-         {
-            write_lifting(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
-         }
-
-         GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-         if (pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
-         {
-            if(pGirderHaulingSpecCriteria->GetHaulingAnalysisMethod()==pgsTypes::hmWSDOT)
-            {
-               write_wsdot_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
-            }
-            else
-            {
-               write_kdot_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
-            }
-         }
-
-         write_temp_strand_removal(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
-         write_bridge_site1(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
-         write_bridge_site2(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
+         write_rating_criteria(pChapter,pBroker,pDisplayUnits,pRatingEntry);
       }
-
-      write_bridge_site3(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
-      write_moment_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
-      write_shear_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
-   } // next segment
-
-   write_creep(pChapter, pBroker, pDisplayUnits, pSpecEntry);
-   write_losses(pChapter, pBroker, pDisplayUnits, pSpecEntry);
-   write_strand_stress(pChapter, pBroker, pDisplayUnits, pSpecEntry);
-   write_deflections(pChapter, pBroker, pDisplayUnits, pSpecEntry);
-
-   if ( bRating )
-      write_rating_criteria(pChapter,pBroker,pDisplayUnits,pRatingEntry);
+   } // next group
 
    return pChapter;
 }
@@ -251,25 +278,6 @@ CChapterBuilder* CProjectCriteriaChapterBuilder::Clone() const
 {
    return new CProjectCriteriaChapterBuilder(m_bRating);
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 void write_load_modifiers(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
 {
@@ -298,9 +306,13 @@ void write_environmental_conditions(rptParagraph* pPara,IBroker* pBroker, IEAFDi
    (*p_table)(0,0) << _T("Exposure Condition");
    enumExposureCondition cond = pEnvironment->GetExposureCondition();
    if (cond==expNormal)
+   {
       (*p_table)(0,1) << _T("Normal");
+   }
    else
+   {
       (*p_table)(0,1) << _T("Severe");
+   }
 
    (*p_table)(1,0) << _T("Relative Humidity");
    (*p_table)(1,1) <<  pEnvironment->GetRelHumidity()<<_T("%");
@@ -355,22 +367,34 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
       *pPara << _T("Max. slope for 0.7\" ") << symbol(phi) << _T(" strands = 1:") << slope07 << rptNewLine;
    }
    else
+   {
       *pPara << _T("Max. Strand slope is not checked") << rptNewLine;
+   }
 
    Float64 f;
    pSpecEntry->GetHoldDownForce(&do_check, &do_design, &f);
    if (do_check)
+   {
       *pPara << _T("Max. hold down force in casting yard = ") << force.SetValue(f) << rptNewLine;
+   }
    else
+   {
       *pPara << _T("Max. hold down force in casting yard  is not checked") << rptNewLine;
+   }
 
    int method = pSpecEntry->GetCuringMethod();
    if (method == CURING_NORMAL)
+   {
       *pPara << _T("Girder was cured using Normal method") << rptNewLine;
+   }
    else if (method == CURING_ACCELERATED)
+   {
       *pPara << _T("Girder was cured using Accelerated method") << rptNewLine;
+   }
    else
+   {
       ATLASSERT(false); // is there a new curing method
+   }
 
    *pPara << _T("Max stirrup spacing = ") << dim.SetValue(pSpecEntry->GetMaxStirrupSpacing())<<rptNewLine;
 
@@ -393,16 +417,24 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    if (pSpecEntry->IsSplittingCheckEnabled())
    {
       if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+      {
          *pPara << _T("Splitting zone length: h/") << pSpecEntry->GetSplittingZoneLengthFactor() << rptNewLine;
+      }
       else
+      {
          *pPara << _T("Bursting zone length: h/") << pSpecEntry->GetSplittingZoneLengthFactor() << rptNewLine;
+      }
    }
    else
    {
       if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+      {
          *pPara << _T("Splitting checks (5.10.10.1) are disabled.") << rptNewLine;
+      }
       else
+      {
          *pPara << _T("Bursting checks (5.10.10.1) are disabled.") << rptNewLine;
+      }
    }
 
    if (pSpecEntry->IsConfinementCheckEnabled())
@@ -442,15 +474,15 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    *pPara<<_T("Max. girder sweep tolerance = ")<<pSpecEntry->GetLiftingMaximumGirderSweepTolerance()<<rptNewLine;
    *pPara<<_T("Min. angle of inclination of lifting cables = ")<<angle.SetValue(pSpecEntry->GetMinCableInclination())<<rptNewLine;
 
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
 
 
-   Float64 fr = pGirderLiftingSpecCriteria->GetLiftingModulusOfRupture(segmentKey);
+   Float64 fr = pSegmentLiftingSpecCriteria->GetLiftingModulusOfRupture(segmentKey);
    *pPara << _T("Modulus of rupture = ") << stress.SetValue(fr) << rptNewLine;
    
-   Float64 fccy = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
-   Float64 ftcy = pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
-   Float64 ft   = pGirderLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
+   Float64 fccy = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
+   Float64 ftcy = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
+   Float64 ft   = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
    *pPara<<_T("Allowable Concrete Stresses - Lifting (5.9.4.1.1)")<<rptNewLine;
    *pPara<<_T("- Compressive Stress = ")<<stress.SetValue(fccy)<<rptNewLine;
    *pPara<<_T("- Tensile Stress (w/o mild rebar) = ")<<stress.SetValue(ftcy) << rptNewLine;
@@ -480,9 +512,9 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
    *pPara<<_T("- Upward   = ")<< pSpecEntry->GetHaulingUpwardImpactFactor()<<rptNewLine;
    *pPara<<_T("- Downward = ")<< pSpecEntry->GetHaulingDownwardImpactFactor()<<rptNewLine;
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pHauling);
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pHauling);
 
-   if ( pHauling->GetRollStiffnessMethod() == IGirderHaulingSpecCriteria::LumpSum )
+   if ( pHauling->GetRollStiffnessMethod() == ISegmentHaulingSpecCriteria::LumpSum )
    {
       *pPara<<_T("Roll stiffness of trailer = ")<<spring.SetValue(pHauling->GetLumpSumRollStiffness())<<rptNewLine;
    }
@@ -578,29 +610,30 @@ void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
 void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << pPara;
-   *pPara<<_T("Temporary Strand Removal Criteria")<<rptNewLine;
-
-   pPara = new rptParagraph;
-   *pChapter << pPara;
-
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
-
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
-
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   if ( tsRemovalIntervalIdx != INVALID_INDEX )
+   {
+      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *pChapter << pPara;
+      *pPara<<_T("Temporary Strand Removal Criteria")<<rptNewLine;
 
-    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-      
-   pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI);
-   *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
-   *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
+      pPara = new rptParagraph;
+      *pChapter << pPara;
 
-   Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, false);
-   *pPara<<_T("Allowable Tensile Concrete Stresses (5.9.4.2.2)")<<rptNewLine;
-   *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
+      INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
+
+      GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
+
+      pgsPointOfInterest poi(segmentKey,0.0);
+      Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI);
+      *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
+      *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
+
+      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, false);
+      *pPara<<_T("Allowable Tensile Concrete Stresses (5.9.4.2.2)")<<rptNewLine;
+      *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
+    }
 }
 
 void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
@@ -732,13 +765,21 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    Int16 method = pSpecEntry->GetLiveLoadDistributionMethod();
    if (method==LLDF_LRFD)
+   {
       *pPara<<_T("LL Distribution factors are calculated in accordance with LRFD 4.6.2.2")<<rptNewLine;
+   }
    else if (method==LLDF_WSDOT)
+   {
       *pPara<<_T("LL Distribution factors are calculated in accordance with WSDOT Bridge Design Manual")<<rptNewLine;
+   }
    else if (method==LLDF_TXDOT)
+   {
       *pPara<<_T("LL Distribution factors are calculated in accordance with TxDOT LRFD Bridge Design Manual")<<rptNewLine;
+   }
    else
-      CHECK(0); // new method?
+   {
+      ATLASSERT(false); // new method?
+   }
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    std::_tstring straction = pLiveLoads->GetLLDFSpecialActionText();
@@ -854,14 +895,18 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
 
    Int16 method = pSpecEntry->GetCreepMethod();
    if (method==CREEP_LRFD)
+   {
       *pPara<<_T("Creep is calculated in accordance with LRFD (5.4.2.3.2)")<<rptNewLine;
+   }
    else if (method==CREEP_WSDOT)
    {
       *pPara<<_T("Creep is calculated in accordance with WSDOT Bridge Design Manual (6.1.2c.2)")<<rptNewLine;
       *pPara<<_T("Creep factor = ")<<pSpecEntry->GetCreepFactor();
    }
    else
-      CHECK(0); // new method?
+   {
+      ATLASSERT(false); // new method?
+   }
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetLongTimeUnit(), true );
 
@@ -945,7 +990,7 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          *pPara<<_T("Time-dependent concrete properties based on ACI 209R-92") << rptNewLine;
          break;
       default:
-         CHECK(false); // Should never get here
+         ATLASSERT(false); // Should never get here
       }
 
       if ( loss_method != pgsTypes::TXDOT_REFINED_2013 && lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )

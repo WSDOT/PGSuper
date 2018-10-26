@@ -434,12 +434,8 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
 
 lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,MULTIWEB_LLDFDETAILS* plldf)
 {
-   GET_IFACE(IMaterials,    pMaterials);
    GET_IFACE(ISectionProperties,        pSectProp);
    GET_IFACE(IGirder,           pGirder);
-   GET_IFACE(ILibrary,          pLib);
-   GET_IFACE(ISpecification,    pSpec);
-   GET_IFACE(IRoadwayData,      pRoadway);
    GET_IFACE(IBridge,           pBridge);
    GET_IFACE(IBarriers,         pBarriers);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -464,7 +460,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
 
    if ( nGirders <= gdrIdx )
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       gdrIdx = nGirders-1;
    }
 
@@ -473,9 +469,9 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
 
    // put a poi at controlling location from spacing comp
    CSegmentKey segmentKey;
-   Float64 distFromStartOfSegment;
-   pBridge->GetSegmentLocation(span,gdrIdx,plldf->ControllingLocation,&segmentKey,&distFromStartOfSegment);
-   pgsPointOfInterest poi(segmentKey,distFromStartOfSegment);
+   Float64 Xs;
+   pBridge->GetSegmentLocation(span,gdrIdx,plldf->ControllingLocation,&segmentKey,&Xs);
+   pgsPointOfInterest poi(segmentKey,Xs);
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
@@ -513,7 +509,9 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    }
    else
    {
-      Float64 EcDeck    = pMaterials->GetDeckEc(segmentKey,llIntervalIdx);
+      GET_IFACE(IMaterials, pMaterials);
+
+      Float64 EcDeck = pMaterials->GetDeckEc(segmentKey,llIntervalIdx);
       if ( fcgdr < 0 )
       {
          // fcgdr < 0 means use the current bridge model
@@ -523,14 +521,13 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
       }
       else
       {
-         GET_IFACE(IMaterials,pMaterial);
-         Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
-                                             pMaterial->GetSegmentStrengthDensity(segmentKey),
-                                             pMaterial->GetSegmentEccK1(segmentKey),
-                                             pMaterial->GetSegmentEccK2(segmentKey)
-                                             );
+         Float64 Ecgdr = pMaterials->GetEconc(fcgdr,
+                                              pMaterials->GetSegmentStrengthDensity(segmentKey),
+                                              pMaterials->GetSegmentEccK1(segmentKey),
+                                              pMaterials->GetSegmentEccK2(segmentKey)
+                                              );
    
-         plldf->n     = Ecgdr / EcDeck;
+         plldf->n = Ecgdr / EcDeck;
       }
    }
 
@@ -1215,7 +1212,7 @@ std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(const CGird
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    // Special text if ROA is ignored

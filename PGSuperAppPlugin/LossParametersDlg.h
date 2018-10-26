@@ -24,6 +24,7 @@
 
 #include "PretensioningPage.h"
 #include "PostTensioningPage.h"
+#include "TimeStepPropertiesPage.h"
 
 // CLossParametersDlg
 
@@ -37,6 +38,7 @@ public:
 
    CPretensioningPage m_Pretensioning;
    CPostTensioningPage m_PostTensioning;
+   CTimeStepPropertiesPage m_TimeStepProperties;
 
 protected:
 	DECLARE_MESSAGE_MAP()

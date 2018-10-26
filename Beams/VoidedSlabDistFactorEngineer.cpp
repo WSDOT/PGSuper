@@ -430,16 +430,10 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
 
 lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,VOIDEDSLAB_LLDFDETAILS* plldf)
 {
-   GET_IFACE(IMaterials,        pMaterial);
-   GET_IFACE(ISectionProperties,        pSectProp);
-   GET_IFACE(IGirder,           pGirder);
-   GET_IFACE(ILibrary,          pLib);
-   GET_IFACE(ISpecification,    pSpec);
-   GET_IFACE(IRoadwayData,      pRoadway);
-   GET_IFACE(IBridge,           pBridge);
-   GET_IFACE(IPointOfInterest,  pPOI);
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   GET_IFACE(IBarriers,pBarriers);
+   GET_IFACE(ISectionProperties, pSectProp);
+   GET_IFACE(IGirder,            pGirder);
+   GET_IFACE(IBridge,            pBridge);
+   GET_IFACE(IBarriers,          pBarriers);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -463,7 +457,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
 
    if ( nGirders <= gdrIdx )
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       gdrIdx = nGirders-1;
    }
 
@@ -1231,7 +1225,7 @@ std::_tstring CVoidedSlabDistFactorEngineer::GetComputationDescription(const CGi
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    // Special text if ROA is ignored

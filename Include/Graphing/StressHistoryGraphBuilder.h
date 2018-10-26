@@ -31,11 +31,6 @@
 class CStressHistoryGraphController;
 class arvPhysicalConverter;
 
-// X-Axis Display Type
-#define X_AXIS_TIME_LINEAR  0
-#define X_AXIS_TIME_LOG     1
-#define X_AXIS_INTEGER      4
-
 class GRAPHINGCLASS CStressHistoryGraphBuilder : public CEAFAutoCalcGraphBuilder
 {
 public:

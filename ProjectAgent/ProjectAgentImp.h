@@ -62,6 +62,7 @@ class CBridgeChangedHint;
 // CProjectAgentImp
 class ATL_NO_VTABLE CProjectAgentImp : 
 	public CComObjectRootEx<CComSingleThreadModel>,
+   //public CComRefCountTracer<CProjectAgentImp,CComObjectRootEx<CComSingleThreadModel> >,
 	public CComCoClass<CProjectAgentImp, &CLSID_ProjectAgent>,
 	public IConnectionPointContainerImpl<CProjectAgentImp>,
    public CProxyIProjectPropertiesEventSink<CProjectAgentImp>,
@@ -86,8 +87,8 @@ class ATL_NO_VTABLE CProjectAgentImp :
    public ILibraryNames,
    public ILibrary,
    public ILoadModifiers,
-   public IGirderHauling,
-   public IGirderLifting,
+   public ISegmentHauling,
+   public ISegmentLifting,
    public IImportProjectLibrary,
    public IUserDefinedLoadData,
    public IEvents,
@@ -101,6 +102,10 @@ class ATL_NO_VTABLE CProjectAgentImp :
 public:
 	CProjectAgentImp(); 
    virtual ~CProjectAgentImp();
+
+   DECLARE_PROTECT_FINAL_CONSTRUCT();
+   HRESULT FinalConstruct();
+   void FinalRelease();
 
 DECLARE_REGISTRY_RESOURCEID(IDR_PROJECTAGENT)
 
@@ -121,8 +126,8 @@ BEGIN_COM_MAP(CProjectAgentImp)
    COM_INTERFACE_ENTRY(ILibrary)
    COM_INTERFACE_ENTRY(ILoadModifiers)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-   COM_INTERFACE_ENTRY(IGirderHauling)
-   COM_INTERFACE_ENTRY(IGirderLifting)
+   COM_INTERFACE_ENTRY(ISegmentHauling)
+   COM_INTERFACE_ENTRY(ISegmentLifting)
    COM_INTERFACE_ENTRY(IImportProjectLibrary)
    COM_INTERFACE_ENTRY(IUserDefinedLoadData)
    COM_INTERFACE_ENTRY(IEvents)
@@ -169,8 +174,8 @@ public:
 public:
    virtual std::_tstring GetBridgeName() const;
    virtual void SetBridgeName(const std::_tstring& name);
-   virtual std::_tstring GetBridgeId() const;
-   virtual void SetBridgeId(const std::_tstring& bid);
+   virtual std::_tstring GetBridgeID() const;
+   virtual void SetBridgeID(const std::_tstring& bid);
    virtual std::_tstring GetJobNumber() const;
    virtual void SetJobNumber(const std::_tstring& jid);
    virtual std::_tstring GetEngineer() const;
@@ -179,9 +184,6 @@ public:
    virtual void SetCompany(const std::_tstring& company);
    virtual std::_tstring GetComments() const;
    virtual void SetComments(const std::_tstring& comments);
-   virtual void EnableUpdate(bool bEnable);
-   virtual bool IsUpdatedEnabled();
-   virtual bool AreUpdatesPending();
 
 // IEnvironment
 public:
@@ -281,6 +283,7 @@ public:
    virtual void SetSegmentConstructionEventByID(const CSegmentKey& segmentKey,EventIDType eventID);
    virtual EventIndexType GetSegmentConstructionEventIndex(const CSegmentKey& segmentKey);
    virtual EventIDType GetSegmentConstructionEventID(const CSegmentKey& segmentKey);
+   virtual EventIndexType GetPierErectionEvent(PierIndexType pierIdx);
    virtual void SetPierErectionEventByIndex(PierIndexType pierIdx,EventIndexType eventIdx);
    virtual void SetPierErectionEventByID(PierIndexType pierIdx,IDType eventID);
    virtual void SetTempSupportEventsByIndex(SupportIndexType tsIdx,EventIndexType erectIdx,EventIndexType removeIdx);
@@ -468,13 +471,13 @@ public:
    virtual Level GetImportanceLevel();
    virtual Level GetRedundancyLevel();
 
-// IGirderLifting
+// ISegmentLifting
 public:
    virtual Float64 GetLeftLiftingLoopLocation(const CSegmentKey& segmentKey);
    virtual Float64 GetRightLiftingLoopLocation(const CSegmentKey& segmentKey);
    virtual void SetLiftingLoopLocations(const CSegmentKey& segmentKey, Float64 left,Float64 right);
 
-// IGirderHauling
+// ISegmentHauling
 public:
    virtual Float64 GetLeadingOverhang(const CSegmentKey& segmentKey);
    virtual Float64 GetTrailingOverhang(const CSegmentKey& segmentKey);
@@ -488,22 +491,22 @@ public:
 public:
    virtual CollectionIndexType GetPointLoadCount() const;
    virtual CollectionIndexType AddPointLoad(const CPointLoadData& pld);
-   virtual const CPointLoadData& GetPointLoad(CollectionIndexType idx) const;
-   virtual const CPointLoadData& FindPointLoad(LoadIDType loadID) const;
+   virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const;
+   virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const;
    virtual void UpdatePointLoad(CollectionIndexType idx, const CPointLoadData& pld);
    virtual void DeletePointLoad(CollectionIndexType idx);
 
    virtual CollectionIndexType GetDistributedLoadCount() const;
    virtual CollectionIndexType AddDistributedLoad(const CDistributedLoadData& pld);
-   virtual const CDistributedLoadData& GetDistributedLoad(CollectionIndexType idx) const;
-   virtual const CDistributedLoadData& FindDistributedLoad(LoadIDType loadID) const;
+   virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const;
+   virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const;
    virtual void UpdateDistributedLoad(CollectionIndexType idx, const CDistributedLoadData& pld);
    virtual void DeleteDistributedLoad(CollectionIndexType idx);
 
    virtual CollectionIndexType GetMomentLoadCount() const;
    virtual CollectionIndexType AddMomentLoad(const CMomentLoadData& pld);
-   virtual const CMomentLoadData& GetMomentLoad(CollectionIndexType idx) const;
-   virtual const CMomentLoadData& FindMomentLoad(LoadIDType loadID) const;
+   virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const;
+   virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const;
    virtual void UpdateMomentLoad(CollectionIndexType idx, const CMomentLoadData& pld);
    virtual void DeleteMomentLoad(CollectionIndexType idx);
 
@@ -561,6 +564,8 @@ public:
 // ILossParameters
 public:
    virtual pgsTypes::LossMethod GetLossMethod();
+   virtual void IgnoreTimeDependentEffects(bool bIgnore);
+   virtual bool IgnoreTimeDependentEffects();
    virtual void SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction);
    virtual void GetTendonPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction);
    virtual void SetTemporaryStrandPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction);
@@ -591,7 +596,7 @@ public:
 #endif//
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 
    // status items must be managed by span girder
    void AddSegmentStatusItem(const CSegmentKey& segmentKey, std::_tstring& message);
@@ -604,13 +609,11 @@ private:
    StatusContainer m_CurrentGirderStatusItems;
 
    std::_tstring m_BridgeName;
-   std::_tstring m_BridgeId;
+   std::_tstring m_BridgeID;
    std::_tstring m_JobNumber;
    std::_tstring m_Engineer;
    std::_tstring m_Company;
    std::_tstring m_Comments;
-   bool m_bPropertyUpdatesEnabled;
-   bool m_bPropertyUpdatesPending;
 
    pgsTypes::AnalysisType m_AnalysisType;
    bool m_bGetAnalysisTypeFromLibrary; // if true, we are reading old input... get the analysis type from the library entry
@@ -715,6 +718,9 @@ private:
    // Prestress Losses
    //
 
+   bool m_bIgnoreTimeDependentEffects; // if true, time dependent effects (creep, shrinkage, relaxation)
+   // are ignored in the time-step analysis
+
    // General Lump Sum Losses
    bool m_bGeneralLumpSum; // if true, the loss method specified in the project criteria is ignored
                            // and general lump sum losses are used
@@ -817,7 +823,7 @@ private:
    void RatingSpecificationChanged(bool bFireEvent);
    void InitRatingSpecification(const std::_tstring& spec);
 
-   HRESULT FireContinuityRelatedSpanChange(const CSpanGirderKey& spanGirderKey,Uint32 lHint); 
+   HRESULT FireContinuityRelatedSpanChange(const CSpanKey& spanKey,Uint32 lHint); 
 
    void UseBridgeLibraryEntries();
    void UseGirderLibraryEntries();

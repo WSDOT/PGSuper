@@ -26,7 +26,7 @@
 #define _PGSUPER_VERSION 300 // version 3.0.0
 #endif
 
-#define _BETA_VERSION
+#define _BETA_VERSION          // When defined, building beta versions
 
 // includes WBFL Version macro and
 // macros that define the minimum version of Windows and IE

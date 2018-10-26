@@ -119,6 +119,12 @@ static char THIS_FILE[] = __FILE__;
 
 HRESULT CPGSpliceReporterImp::InitReportBuilders()
 {
+   HRESULT hr = CReporterBase::InitCommonReportBuilders();
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
+
    GET_IFACE(IReportManager,pRptMgr);
 
    //
@@ -132,18 +138,20 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    boost::shared_ptr<CReportSpecificationBuilder> pBrokerRptSpecBuilder(  new CBrokerReportSpecificationBuilder(m_pBroker) );
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(  new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
    boost::shared_ptr<CReportSpecificationBuilder> pBridgeAnalysisRptSpecBuilder ( new CBridgeAnalysisReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pLoadRatingRptSpecBuilder(     new CLoadRatingReportSpecificationBuilder(m_pBroker) );
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
    boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder( new CMultiGirderReportSpecificationBuilder(m_pBroker) );
 
-   // Geometry Report
-   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Bridge Geometry Report"));
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSpliceTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pBrokerRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CPierGeometryChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderGeometryChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder );
+   CReportBuilder* pRptBuilder;
+   //// Geometry Report
+   //CReportBuilder* pRptBuilder = new CReportBuilder(_T("Bridge Geometry Report"));
+   //pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSpliceTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+   //pRptBuilder->SetReportSpecificationBuilder( pBrokerRptSpecBuilder );
+   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
+   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
+   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CPierGeometryChapterBuilder) );
+   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderGeometryChapterBuilder) );
+   //pRptMgr->AddReportBuilder( pRptBuilder );
 
    pRptBuilder = new CReportBuilder(_T("Details Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSpliceTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
@@ -188,16 +196,47 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBearingDesignParametersChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
-#pragma Reminder("UPDATE: this is a report for development purposes")
-   // either flesh out this report or eliminate it
-   pRptBuilder = new CReportBuilder(_T("Stage by Stage Details Report"));
+//#pragma Reminder("UPDATE: this is a report for development purposes")
+//   // either flesh out this report or eliminate it
+//   pRptBuilder = new CReportBuilder(_T("Stage by Stage Details Report"));
+//   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSpliceTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+//   pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
+//   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
+//   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDetailsChapterBuilder) );
+//   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLossesChapterBuilder) ); 
+//   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder) );
+//   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTimeStepParametersChapterBuilder) );
+//   pRptMgr->AddReportBuilder( pRptBuilder );
+
+   // Load Rating Report
+   pRptBuilder = new CReportBuilder(_T("Load Rating Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSpliceTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
-   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDetailsChapterBuilder) );
-   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLossesChapterBuilder) ); 
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTimeStepParametersChapterBuilder) );
+   pRptBuilder->SetReportSpecificationBuilder( pLoadRatingRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingDetailsChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder(true)) );
+   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder(false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder(false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CMVRChapterBuilder(false,true,false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CStressChapterBuilder(false,true,false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CPrestressForceChapterBuilder(false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBridgeDescDetailsChapterBuilder(true,false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CProjectCriteriaChapterBuilder(true,false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(false,true,true)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(false,true,true)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDevLengthDetailsChapterBuilder(false)) ); 
+   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLossesChapterBuilder(false)) ); 
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CFinalLossesChapterBuilder(false)) ); 
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CMomentCapacityDetailsChapterBuilder(false,false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(false,true,false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CCritSectionChapterBuilder(false,true,false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLongReinfShearCheckChapterBuilder(false,true,false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder(false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder(false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CCrackedSectionDetailsChapterBuilder(false)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLongitudinalReinforcementForShearLoadRatingChapterBuilder(false)) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Lifting Report
@@ -260,7 +299,8 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
 
 STDMETHODIMP CPGSpliceReporterImp::SetBroker(IBroker* pBroker)
 {
-   AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_SET_BROKER(pBroker);
+   CReporterBase::SetBroker(pBroker);
    return S_OK;
 }
 
@@ -278,7 +318,7 @@ STDMETHODIMP CPGSpliceReporterImp::RegInterfaces()
 STDMETHODIMP CPGSpliceReporterImp::Init()
 {
    /* Gets done at project load time */
-   AGENT_INIT;
+   EAF_AGENT_INIT;
 
    return InitReportBuilders();
 }
@@ -303,6 +343,11 @@ STDMETHODIMP CPGSpliceReporterImp::Reset()
 /*--------------------------------------------------------------------*/
 STDMETHODIMP CPGSpliceReporterImp::ShutDown()
 {
-   AGENT_CLEAR_INTERFACE_CACHE;
+   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    return S_OK;
+}
+
+CTitlePageBuilder* CPGSpliceReporterImp::CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion)
+{
+   return new CPGSpliceTitlePageBuilder(m_pBroker,strReportName,bFullVersion);
 }

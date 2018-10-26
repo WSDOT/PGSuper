@@ -106,40 +106,60 @@ CRailingSystem& CRailingSystem::operator= (const CRailingSystem& rOther)
 bool CRailingSystem::operator == (const CRailingSystem& rOther) const
 {
    if ( strExteriorRailing != rOther.strExteriorRailing )
+   {
       return false;
+   }
 
    if ( bUseSidewalk != rOther.bUseSidewalk )
+   {
       return false;
+   }
 
    if ( bUseSidewalk )
    {
       if ( !IsEqual(Width,rOther.Width) )
+      {
          return false;
+      }
 
       if ( !IsEqual(LeftDepth,rOther.LeftDepth) )
+      {
          return false;
+      }
 
       if ( !IsEqual(RightDepth,rOther.RightDepth) )
+      {
          return false;
+      }
 
       if ( bBarriersOnTopOfSidewalk != rOther.bBarriersOnTopOfSidewalk )
+      {
          return false;
+      }
    
       if ( bSidewalkStructurallyContinuous != rOther.bSidewalkStructurallyContinuous )
+      {
          return false;
+      }
 
       if ( bUseInteriorRailing != rOther.bUseInteriorRailing )
+      {
          return false;
+      }
 
       if ( bUseInteriorRailing )
       {
          if ( strInteriorRailing != rOther.strInteriorRailing )
+         {
             return false;
+         }
       }
    }
 
    if ( Concrete != rOther.Concrete )
+   {
       return false;
+   }
 
 
    return true;
@@ -323,7 +343,7 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
@@ -351,7 +371,9 @@ HRESULT CRailingSystem::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
       pStrSave->put_Property(_T("InteriorRailing"), CComVariant(bUseInteriorRailing));
       if ( bUseInteriorRailing )
+      {
          pStrSave->put_Property(_T("InteriorRailingName"), CComVariant(strInteriorRailing.c_str()));
+      }
    }
 
    // added in version 3, updated version 4, removed version 5, replaced with concrete object

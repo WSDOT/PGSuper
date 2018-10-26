@@ -58,7 +58,7 @@ inline int GetIntForDfMethod(pgsTypes::DistributionFactorMethod method)
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return 0;
    }
 }
@@ -79,7 +79,7 @@ inline pgsTypes::DistributionFactorMethod GetDfMethodForInt(int method)
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return pgsTypes::Calculated;
    }
 }
@@ -490,7 +490,7 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
          }
          catch(...)
          {
-            ATLASSERT(0); // shouldn't get here
+            ATLASSERT(false); // shouldn't get here
             ::AfxMessageBox(_T("An uknown error occurred while computing distribution factors. Grid input values will not be updated."), MB_OK);
          }
 

@@ -305,7 +305,7 @@ void CTOGAStrandFillGrid::FillGrid()
 */
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
       }
 
       CString strStrand;
@@ -314,7 +314,7 @@ void CTOGAStrandFillGrid::FillGrid()
       else if (oneOrTwo==2)
          strStrand.Format(_T("%d-%d"),currPositionNo+1,currPositionNo+2);
       else
-         ATLASSERT(0); // new fill type?
+         ATLASSERT(false); // new fill type?
 
       SetStyleRange(CGXRange(row,0), CGXStyle().SetValue(strStrand).SetHorizontalAlignment(DT_CENTER));
 
@@ -329,7 +329,7 @@ void CTOGAStrandFillGrid::FillGrid()
       }
       else if (strandType==GirderLibraryEntry::stHarped)
       {
-         ATLASSERT(0); // should never happen in toga
+         ATLASSERT(false); // should never happen in toga
 
          if(m_pGdrEntry->IsForceHarpedStrandsStraight())
             strType = _T("S-W");
@@ -434,7 +434,7 @@ void CTOGAStrandFillGrid::FillGrid()
    gridIdx = 0;
    while (gridIdx < nTemp)
    {
-      ATLASSERT(0); // should not happen in toga
+      ATLASSERT(false); // should not happen in toga
 
       Float64 xs, ys, xe, ye;
       m_pGdrEntry->GetTemporaryStrandCoordinates(gridIdx, &xs, &ys, &xe, &ye);
@@ -446,7 +446,7 @@ void CTOGAStrandFillGrid::FillGrid()
       else if (oneOrTwo==2)
          strStrand.Format(_T("%d-%d"),currPositionNo+1,currPositionNo+2);
       else
-         ATLASSERT(0); // new fill type?
+         ATLASSERT(false); // new fill type?
 
       SetStyleRange(CGXRange(row,0), CGXStyle().SetValue(strStrand));
       SetStyleRange(CGXRange(row,TYPE_COL), CGXStyle().SetValue(_T("T")));
@@ -653,7 +653,7 @@ void CTOGAStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 }
 
@@ -671,7 +671,7 @@ bool CTOGAStrandFillGrid::IsPermStrandFilled(GirderLibraryEntry::psStrandType st
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return false;
    }
 }
@@ -683,7 +683,7 @@ void CTOGAStrandFillGrid::RemoveStrandFill(const CUserData* pUserData)
       m_pParent->m_DirectFilledStraightStrands.RemoveFill(pUserData->strandTypeGridIdx);
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 }
 
 void CTOGAStrandFillGrid::AddStrandFill(const CUserData* pUserData)
@@ -695,7 +695,7 @@ void CTOGAStrandFillGrid::AddStrandFill(const CUserData* pUserData)
       m_pParent->m_DirectFilledStraightStrands.AddFill(fillinf);
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 }
 
 bool CTOGAStrandFillGrid::GetDebondInfo(StrandIndexType straightStrandGridIdx, Float64* pleftDebond, Float64* prightDebond)
@@ -744,7 +744,7 @@ void CTOGAStrandFillGrid::ToggleFill(ROWCOL rowNo)
 	   GetParam()->EnableUndo(TRUE);
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    ScrollCellInView(rowNo, SELECT_CHECK_COL);
 }

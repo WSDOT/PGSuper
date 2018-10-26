@@ -533,7 +533,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 

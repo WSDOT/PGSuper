@@ -94,7 +94,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*p_table)(0,7) << _T("Confinement") << rptNewLine << _T("Bar Size");
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   ZoneIndexType nz = pStirrupGeometry->GetNumPrimaryZones(segmentKey);
+   ZoneIndexType nz = pStirrupGeometry->GetPrimaryZoneCount(segmentKey);
    for (ZoneIndexType iz=0; iz<nz; iz++)
    {
       (*p_table)(row,0) << LABEL_STIRRUP_ZONE(iz);
@@ -156,7 +156,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*p_table)(0,5) << _T("# of")<< rptNewLine<<_T("Legs");
 
    row = p_table->GetNumberOfHeaderRows();
-   nz = pStirrupGeometry->GetNumHorizInterfaceZones(segmentKey);
+   nz = pStirrupGeometry->GetHorizInterfaceZoneCount(segmentKey);
    for (ZoneIndexType iz=0; iz<nz; iz++)
    {
       (*p_table)(row,0) << LABEL_STIRRUP_ZONE(iz);

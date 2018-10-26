@@ -135,53 +135,63 @@ struct pgsTypes
       sztRightPrismatic
    } SegmentZoneType;
 
-   enum DiaphragmType
+   typedef enum DiaphragmType
    {
       dtPrecast, // cast with the girder (like U beams or Box Beams)
       dtCastInPlace // cast with the deck
-   };
+   } DiaphragmType;
 
-   enum OptimizationType
+   typedef enum OptimizationType
    {
       Minimize,
       Maximize
-   };
+   } OptimizationType;
 
-   enum BridgeAnalysisType
+   typedef enum BridgeAnalysisType
    { 
       SimpleSpan, 
       ContinuousSpan, 
       MinSimpleContinuousEnvelope, 
       MaxSimpleContinuousEnvelope 
-   };
+   } BridgeAnalysisType;
 
-   enum TemporarySupportType
+   // Defines the meaning of a generic "SupportIndexType". Support indicies are used
+   // in some methods to represent either a pier or a temporary support. This enum is used
+   // to tell to what the support index refers
+   typedef enum SupportType
+   {
+      stPier,
+      stTemporary
+   } SupportType;
+
+   typedef enum TemporarySupportType
    {
       ErectionTower,
       StrongBack
-   };
+   } TemporarySupportType;
 
    // Defines segment to segment connection types
    // at a temporary support.
-   enum SegmentConnectionType
+   typedef enum SegmentConnectionType
    {
       sctClosureJoint,
       sctContinuousSegment
-   };
+   } SegmentConnectionType;
 
    // Defines segment to segment connection types
    // at an intermediate/permanent pier.
-   enum PierSegmentConnectionType
+   typedef enum PierSegmentConnectionType
    {
       psctContinousClosureJoint, // CIP closure joint that makes the adjacent segments continuous but there is no moment connection with the pier
       psctIntegralClosureJoint,  // CIP closure joint that makes the adjacent segments and pier integral
       psctContinuousSegment,    // Precast segment spans over pier with no moment connection to the pier
       psctIntegralSegment       // Precast segment spans over pier and has a moment connection with the pier
-   };
+   } PierSegmentConnectionType;
 
-   enum StressType { Tension, Compression };
+   typedef enum StressType { Tension, Compression } StressType;
    
-   enum LimitState { ServiceI   = 0,   // Full dead load and live load
+   typedef enum LimitState { 
+                     ServiceI   = 0,   // Full dead load and live load
                      ServiceIA  = 1,   // Half dead load and live load (Fatigue) - not used after LRFD 2008
                      ServiceIII = 2, 
                      StrengthI  = 3,
@@ -200,25 +210,25 @@ struct pgsTypes
                      StrengthII_PermitSpecial = 16,
                      ServiceI_PermitSpecial = 17,
                      LimitStateCount // this should always be the last one as it will define the total number of limit states
-                   }; 
+                   } LimitState; 
 
-   enum StressLocation { BottomGirder, TopGirder, BottomDeck, TopDeck };
+   typedef enum StressLocation { BottomGirder, TopGirder, BottomDeck, TopDeck } StressLocation;
 
    // Note that Permanent was added below when input for total permanent strands was added in 12/06
-   enum StrandType { Straight, Harped, Temporary, Permanent };
-   enum AnalysisType { Simple, Continuous, Envelope };
+   typedef enum StrandType { Straight, Harped, Temporary, Permanent } StrandType;
+   typedef enum AnalysisType { Simple, Continuous, Envelope } AnalysisType;
 
    // temporary top strand usage
-   enum TTSUsage
+   typedef enum TTSUsage
    {
       ttsPretensioned     = 0,
       ttsPTBeforeShipping = 1,
       ttsPTAfterLifting   = 2,
       ttsPTBeforeLifting  = 3,
-   };
+   } TTSUsage;
 
 
-   enum LiveLoadType
+   typedef enum LiveLoadType
    {
       lltDesign     = 0,   // for design limit states
       lltPermit     = 1,   // for permit limit state during design (Strength II)
@@ -228,25 +238,25 @@ struct pgsTypes
       lltLegalRating_Special = 5,  // for legal load ratings for specialized hauling vehicles
       lltPermitRating_Routine = 6,  // for routine permit load ratings
       lltPermitRating_Special = 7   // for special permit load ratings
-   };
+   } LiveLoadType;
 
-   enum DebondLengthControl   // which criteria controlled for max debond length
-   {mdbDefault, mbdFractional, mdbHardLength};
+   typedef enum DebondLengthControl   // which criteria controlled for max debond length
+   {mdbDefault, mbdFractional, mdbHardLength} DebondLengthControl;
 
 
-   enum EffectiveFlangeWidthMethod
+   typedef enum EffectiveFlangeWidthMethod
    {
       efwmLRFD,       // effective flange width is based on LRFD
       efwmTribWidth   // effective flange width is always the tributary width
-   };
+   } EffectiveFlangeWidthMethod;
 
-   enum MovePierOption
+   typedef enum MovePierOption
    {
       MoveBridge,
       AdjustPrevSpan,
       AdjustNextSpan,
       AdjustAdjacentSpans
-   };
+   } MovePierOption;
 
    typedef enum MeasurementType
    {
@@ -307,12 +317,12 @@ struct pgsTypes
       drmBottom // bottom mat
    } DeckRebarMatType;
 
-   enum WearingSurfaceType
+   typedef enum WearingSurfaceType
    {
       wstSacrificialDepth  = 0,
       wstOverlay           = 1,
       wstFutureOverlay     = 2
-   };
+   } WearingSurfaceType;
 
    typedef enum SupportedDeckType 
    {
@@ -359,21 +369,22 @@ struct pgsTypes
       NextPier
    } RemovePierType;
 
-   enum DistributionFactorMethod
-   { Calculated = 0, DirectlyInput = 1, LeverRule=2 };
+   typedef enum DistributionFactorMethod
+   { Calculated = 0, DirectlyInput = 1, LeverRule=2 } DistributionFactorMethod;
 
-   enum OverlayLoadDistributionType
-   { olDistributeEvenly=0, olDistributeTributaryWidth=1 };
+   typedef enum OverlayLoadDistributionType
+   { olDistributeEvenly=0, olDistributeTributaryWidth=1 } OverlayLoadDistributionType;
 
-   enum GirderLocation
-   { Interior = 0, Exterior = 1 };
+   typedef enum GirderLocation
+   { Interior = 0, Exterior = 1 } GirderLocation;
 
-   enum FaceType 
-   {TopFace, BottomFace};
+   typedef enum FaceType 
+   {TopFace, BottomFace} FaceType;
 
    // NOTE: Enum values are out of order so that they match values used in earlier
    // versions of the software
-   enum PierConnectionType { Hinge = 1, 
+   typedef enum PierConnectionType { 
+                             Hinge = 1, 
                              Roller = 6,
                              ContinuousAfterDeck = 2,        // continuous are for interior piers only
                              ContinuousBeforeDeck = 3, 
@@ -383,42 +394,43 @@ struct pgsTypes
                              IntegralBeforeDeckHingeBack = 8,
                              IntegralAfterDeckHingeAhead = 9,
                              IntegralBeforeDeckHingeAhead = 10
-   };
+   } PierConnectionType;
 
    // Method for computing prestress transfer length
-   enum PrestressTransferComputationType { ptUsingSpecification=60, // use current spec
-                                           ptMinuteValue=0 };       // As close to zero length as we are comfortable
+   typedef enum PrestressTransferComputationType { ptUsingSpecification=60, // use current spec
+                                                   ptMinuteValue=0          // As close to zero length as we are comfortable
+   } PrestressTransferComputationType;
 
-   enum TrafficBarrierOrientation
+   typedef enum TrafficBarrierOrientation
    {
       tboLeft,
       tboRight
-   };
+   } TrafficBarrierOrientation;
 
    // Defines how the traffic barrier/railing system loading is to be distributed
-   enum TrafficBarrierDistribution
+   typedef enum TrafficBarrierDistribution
    {
       tbdGirder,
       tbdMatingSurface,
       tbdWebs
-   };
+   } TrafficBarrierDistribution;
 
-   enum SplittingDirection
+   typedef enum SplittingDirection
    {
       sdVertical,
       sdHorizontal
-   };
+   } SplittingDirection;
 
    // enum to represent condition factors (MBE 6A.4.2.3)
-   enum ConditionFactorType
+   typedef enum ConditionFactorType
    {
       cfGood,
       cfFair,
       cfPoor,
       cfOther
-   };
+   } ConditionFactorType;
 
-   enum LoadRatingType
+   typedef enum LoadRatingType
    {
       lrDesign_Inventory,  // design rating at the inventory level
       lrDesign_Operating,  // design rating at the operating level
@@ -426,30 +438,30 @@ struct pgsTypes
       lrLegal_Special,     // legal rating for specialized hauling vehicles
       lrPermit_Routine,    // routine permit ratings
       lrPermit_Special     // special permit ratings
-   };
+   } LoadRatingType;
 
-   enum SpecialPermitType
+   typedef enum SpecialPermitType
    {
       ptSingleTripWithEscort,    // special or limited crossing permit
       ptSingleTripWithTraffic,   // special or limited crossing permit
       ptMultipleTripWithTraffic,  // special or limited crossing permit
-   };
+   } SpecialPermitType;
 
    // describes the model used for determining live load factors for rating
-   enum LiveLoadFactorType
+   typedef enum LiveLoadFactorType
    {
       gllSingleValue,  // a single constanst value is used
       gllStepped,      // ADTT < a1 gll = g1, otherwise gll = g2
       gllLinear,       // ADTT < a1 gll = g1, ADTT > a2 gll = g2
       gllBilinear,     // ADTT < a1 gll = g1, ADTT = a2, gll = g2, ADTT > a3, gll = g3
       gllBilinearWithWeight // same as glBilinear with second set of values base on vehicle weight
-   };
+   } LiveLoadFactorType;
 
-   enum LiveLoadFactorModifier
+   typedef enum LiveLoadFactorModifier
    {
       gllmInterpolate, // linear interpolate between ADTT values
       gllmRoundUp      // round up the ADTT value to match a control value
-   };
+   } LiveLoadFactorModifier;
 
    typedef enum ConcreteType
    {
@@ -459,18 +471,17 @@ struct pgsTypes
    } ConcreteType;
 
    // Rebar layout defines where longitudinal rebar is placed along girder. 
-   enum RebarLayoutType 
+   typedef enum RebarLayoutType 
    {
       blFullLength,      // extends full length
       blFromLeft,        // measured from left end of girder
       blFromRight,       // measured from right end of girder
       blMidGirderLength, // centered at mid-girder - fixed length
       blMidGirderEnds    // centered at mid-girder - measured from ends of girder
-   };
+   } RebarLayoutType;
 
    // Hauling analysis
-   enum HaulingAnalysisMethod {hmWSDOT,   // WashDOT
-                               hmKDOT };  // Kansas
+   typedef enum HaulingAnalysisMethod {hmWSDOT, hmKDOT } HaulingAnalysisMethod;
 
    typedef enum CureMethod
    {
@@ -515,6 +526,14 @@ struct pgsTypes
       jeRight,
       jeBoth
    } JackingEndType;
+
+   typedef enum DuctType
+   {
+      // See LRFD 5.6.4.1
+      dtMetal,   // galvanized ferrous metal
+      dtPlastic, // polyethylene
+      dtFormed   // formed in concrete with removable cores
+   } DuctType;
 };
 
 
@@ -743,7 +762,7 @@ struct PRESTRESSCONFIG
    void ClearStrandFill(pgsTypes::StrandType type); 
    const ConfigStrandFillVector& GetStrandFill(pgsTypes::StrandType type) const; 
 
-   StrandIndexType GetNStrands(pgsTypes::StrandType type) const; // Number of strands in current strand fill
+   StrandIndexType GetStrandCount(pgsTypes::StrandType type) const; // Number of strands in current strand fill
 
    static StrandIndexType CountStrandsInFill(const ConfigStrandFillVector& fillArray); 
 
@@ -844,7 +863,7 @@ inline const ConfigStrandFillVector&  PRESTRESSCONFIG::GetStrandFill(pgsTypes::S
    return StrandFill[type];
 }
 
-inline StrandIndexType PRESTRESSCONFIG::GetNStrands(pgsTypes::StrandType type) const
+inline StrandIndexType PRESTRESSCONFIG::GetStrandCount(pgsTypes::StrandType type) const
 {
    if ( type == pgsTypes::Permanent )
       return NstrandsCached[pgsTypes::Straight] + NstrandsCached[pgsTypes::Harped];

@@ -80,28 +80,44 @@ CGirderData& CGirderData::operator= (const CGirderData& rOther)
 bool CGirderData::operator==(const CGirderData& rOther) const
 {
    if ( m_GirderName != rOther.m_GirderName )
+   {
       return false;
+   }
 
    if ( Strands != rOther.Strands )
+   {
       return false;
+   }
 
    if ( Material != rOther.Material )
+   {
       return false;
+   }
 
    if ( ShearData != rOther.ShearData )
+   {
       return false;
+   }
 
    if ( LongitudinalRebarData != rOther.LongitudinalRebarData )
+   {
       return false;
+   }
 
    if ( HandlingData != rOther.HandlingData )
+   {
       return false;
+   }
 
    if ( Condition != rOther.Condition )
+   {
       return false;
+   }
 
    if ( !IsEqual(ConditionFactor,rOther.ConditionFactor) )
+   {
       return false;
+   }
 
    return true;
 }
@@ -111,16 +127,23 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
    int ct = ctNone;
 
    if (Strands != rOther.Strands)
+   {
          ct |= ctPrestress;
+   }
 
    for ( Uint16 i = 0; i < 3; i++ )
    {
-      if ( Strands.StrandMaterial[i] != rOther.Strands.StrandMaterial[i] )
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
+      if ( Strands.GetStrandMaterial(strandType) != rOther.Strands.GetStrandMaterial(strandType) )
+      {
             ct |= ctStrand;
+      }
    }
 
    if ( Material.Concrete != rOther.Material.Concrete )
+   {
       ct |= ctConcrete;
+   }
 
    if ( !IsEqual(HandlingData.LeftLiftPoint,  rOther.HandlingData.LeftLiftPoint) ||
         !IsEqual(HandlingData.RightLiftPoint, rOther.HandlingData.RightLiftPoint) )
@@ -376,7 +399,9 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
    }
 
    if ( SUCCEEDED(hr_girderDataUnit) )
+   {
       pStrLoad->EndUnit(); // GirderData
+   }
 
    return hr;
 }
@@ -437,7 +462,9 @@ void CGirderData::MakeAssignment(const CGirderData& rOther)
 void CGirderData::SetGirderName(LPCTSTR strName)
 {
    if ( m_GirderName != strName )
+   {
       Strands.ResetPrestressData();
+   }
 
    m_GirderName = strName;
 }

@@ -79,9 +79,9 @@ void COptionalDeflectionCheck::Build(rptChapter* pChapter, IBroker* pBroker,cons
    INIT_UV_PROTOTYPE( rptLengthUnitValue, defu,    pDisplayUnits->GetComponentDimUnit(), true );
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   pPara->SetName(_T("Optional Live Load Deflection Check"));
+   pPara->SetName(_T("Live Load Deflection Check"));
    *pChapter << pPara;
-   (*pPara) << _T("Optional Live Load Deflection Check (LRFD 2.5.2.6.2)") << rptNewLine;
+   (*pPara) << _T("Live Load Deflection Check [2.5.2.6.2]") << rptNewLine;
 
    rptParagraph* p = new rptParagraph;
    *pChapter<<p;

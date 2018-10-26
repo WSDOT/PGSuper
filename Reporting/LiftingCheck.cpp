@@ -37,6 +37,8 @@
 
 #include <PsgLib\SpecLibraryEntry.h>
 
+#include <limits>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -81,17 +83,17 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    *pTitle << _T("Lifting Stresses and Factor of Safety Against Cracking")<<rptNewLine;
 
    rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetFormat(    pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth(     pDisplayUnits->GetScalarFormat().Width );
    scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress_u, pDisplayUnits->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
+   INIT_UV_PROTOTYPE( rptPointOfInterest,   location,      pDisplayUnits->GetSpanLengthUnit(),         false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,    force,         pDisplayUnits->GetShearUnit(),              false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,   dim,           pDisplayUnits->GetComponentDimUnit(),       false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,   stress,        pDisplayUnits->GetStressUnit(),             false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,   stress_u,      pDisplayUnits->GetStressUnit(),             true  );
+   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,     area,          pDisplayUnits->GetAreaUnit(),               true  );
 
    rptCapacityToDemand cap_demand;
 
@@ -100,8 +102,8 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   if (!pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   if (!pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
       *p <<color(Red)<<_T("Lifting analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
       return;
@@ -149,19 +151,21 @@ void CLiftingCheck::Build(rptChapter* pChapter,
          *pTitle<<_T("Warning! - Girder is unstable - CG is higher than pick points")<<rptNewLine;
       }
 
-      Float64 capCompression = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(thisSegmentKey);
+      Float64 capCompression = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(thisSegmentKey);
 
       *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FCI << _T(" = ") << 
          stress.SetValue(capCompression)<< _T(" ") <<
          stress.GetUnitTag()<< rptNewLine;
       *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FCI;
       if ( b_t_max )
+      {
          *p << _T(" but not more than: ") << stress.SetValue(t_max);
-      *p << _T(" = ") << stress.SetValue(pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(thisSegmentKey))<< _T(" ") <<
+      }
+      *p << _T(" = ") << stress.SetValue(pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(thisSegmentKey))<< _T(" ") <<
          stress.GetUnitTag()<< rptNewLine;
 
       *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FCI
-         << _T(" = ") << stress.SetValue(pGirderLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(thisSegmentKey)) << _T(" ") << stress.GetUnitTag()
+         << _T(" = ") << stress.SetValue(pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(thisSegmentKey)) << _T(" ") << stress.GetUnitTag()
          << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
       *p <<_T("Allowable factor of safety against cracking = ")<<pLiftArtifact->GetAllowableFsForCracking()<<rptNewLine;
@@ -171,25 +175,33 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
       *p << RPT_FCI << _T(" required for Compressive stress = ");
       if ( 0 < fc_reqd_comp )
+      {
          *p << stress_u.SetValue( fc_reqd_comp ) << rptNewLine;
+      }
       else
+      {
          *p << symbol(INFINITY) << rptNewLine;
+      }
 
       *p << RPT_FCI << _T(" required for Tensile stress without sufficient reinforcement = ");
       if ( 0 < fc_reqd_tens )
+      {
          *p << stress_u.SetValue( fc_reqd_tens ) << rptNewLine;
+      }
       else
+      {
          *p << symbol(INFINITY) << rptNewLine;
+      }
 
       *p << RPT_FCI << _T(" required for Tensile stress with sufficient reinforcement to resist the tensile force in the concrete = ");
       if ( 0 < fc_reqd_tens_wrebar )
+      {
          *p << stress_u.SetValue( fc_reqd_tens_wrebar ) << rptNewLine;
+      }
       else
+      {
          *p << symbol(INFINITY) << rptNewLine;
-
-      GET_IFACE2(pBroker,IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
-      std::vector<pgsPointOfInterest> poi_vec;
-      poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(thisSegmentKey,0,POIFIND_OR);
+      }
 
       rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
       *p << p_table;
@@ -234,36 +246,41 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
       p_table->SetNumberOfHeaderRows(2);
       for ( ColumnIndexType i = col1; i < p_table->GetNumberOfColumns(); i++ )
+      {
          p_table->SetColumnSpan(0,i,SKIP_CELL);
+      }
 
       Float64 overhang = pLiftArtifact->GetLeftOverhang();
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
-      for (std::vector<pgsPointOfInterest>::const_iterator i = poi_vec.begin(); i!= poi_vec.end(); i++)
+
+      const std::vector<pgsPointOfInterest>& vPoi( pLiftArtifact->GetLiftingPointsOfInterest() );
+      std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+      for ( ; poiIter != poiIterEnd; poiIter++ )
       {
-         const pgsPointOfInterest& poi = *i;
+         const pgsPointOfInterest& poi = *poiIter;
 
-#pragma Reminder("UPDATE: GetLiftingStressAnalysisArtifact and GetLiftingCrackingAnalysisArtifact should be done by poi not distance")
-         const pgsLiftingStressAnalysisArtifact* stressArtifact = pLiftArtifact->GetLiftingStressAnalysisArtifact(poi.GetDistFromStart());
-         const pgsLiftingCrackingAnalysisArtifact* crackArtifact =  pLiftArtifact->GetLiftingCrackingAnalysisArtifact(poi.GetDistFromStart());
+         const pgsLiftingStressAnalysisArtifact*   pStressArtifact = pLiftArtifact->GetLiftingStressAnalysisArtifact(poi);
+         const pgsLiftingCrackingAnalysisArtifact* pCrackArtifact  = pLiftArtifact->GetLiftingCrackingAnalysisArtifact(poi);
 
-         if (stressArtifact==NULL || crackArtifact==NULL)
+         if (pStressArtifact == NULL || pCrackArtifact == NULL)
          {
-            ATLASSERT(0); // this should not happen
+            ATLASSERT(false); // this should not happen
             continue;
          }
          (*p_table)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi, overhang );
 
          // Tension
          Float64 fTensTop, fTensBottom, tensCapacityTop, tensCapacityBottom;
-         stressArtifact->GetMaxTensileStress(&fTensTop, &fTensBottom, &tensCapacityTop, &tensCapacityBottom);
+         pStressArtifact->GetMaxTensileStress(&fTensTop, &fTensBottom, &tensCapacityTop, &tensCapacityBottom);
 
          // Compression
          Float64 fPs, fTopUpward, fTopNoImpact, fTopDownward;
-         stressArtifact->GetTopFiberStress(&fPs, &fTopUpward, &fTopNoImpact, &fTopDownward);
+         pStressArtifact->GetTopFiberStress(&fPs, &fTopUpward, &fTopNoImpact, &fTopDownward);
 
          Float64 fBotUpward, fBotNoImpact, fBotDownward;
-         stressArtifact->GetBottomFiberStress(&fPs, &fBotUpward, &fBotNoImpact, &fBotDownward);
+         pStressArtifact->GetBottomFiberStress(&fPs, &fBotUpward, &fBotNoImpact, &fBotDownward);
 
          Float64 fTopMin = Min(fTopUpward, fTopNoImpact, fTopDownward);
          Float64 fBotMin = Min(fBotUpward, fBotNoImpact, fBotDownward);
@@ -305,22 +322,40 @@ void CLiftingCheck::Build(rptChapter* pChapter,
             capTens = tensCapacityBottom;
          }
 
-         if ( stressArtifact->TensionPassed() )
+         if ( pStressArtifact->TensionPassed() )
+         {
              (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,true)<<_T(")");
+         }
          else
+         {
              (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,false)<<_T(")");
+         }
 
          Float64 fComp = Min(fTopMin, fBotMin);
          
-         if ( stressArtifact->CompressionPassed() )
+         if ( pStressArtifact->CompressionPassed() )
+         {
              (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");
+         }
          else
+         {
              (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,false)<<_T(")");
+         }
 
-         (*p_table)(row,col++) << scalar.SetValue(crackArtifact->GetFsCracking());
+         Float64 FScr = pCrackArtifact->GetFsCracking();
+         if ( FScr == Float64_Inf )
+         {
+            (*p_table)(row,col++) << symbol(INFINITY);
+         }
+         else
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pCrackArtifact->GetFsCracking());
+         }
          
-         if (crackArtifact->Passed() )
+         if (pCrackArtifact->Passed() )
+         {
             (*p_table)(row,col++) << RPT_PASS;
+         }
          else
          {
             (*p_table)(row,col++) << RPT_FAIL;
@@ -349,9 +384,13 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       (*p_table)(1,1) << scalar.SetValue(pLiftArtifact->GetAllowableFsForFailure());
 
       if (pLiftArtifact->PassedFailureCheck())
+      {
          (*p_table)(2,1) << RPT_PASS;
+      }
       else
+      {
          (*p_table)(2,1) << RPT_FAIL;
+      }
    } // next segment
 }
 

@@ -102,13 +102,14 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
       CEAFAutoProgress ap(pProgress,0,mask); 
 
       if (bMultiGirderReport)
+      {
          pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
+      }
 
       // Build chapter and fill it
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pMultiGirderRptSpec,level);
 
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
-      GET_IFACE2(pBroker,IBridge,pBridge);
       GET_IFACE2(pBroker,IDocumentType,pDocType);
 
       for (std::vector<CGirderKey>::const_iterator it=girderKeys.begin(); it!=girderKeys.end(); it++)
@@ -121,21 +122,27 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
          *pChapter << pParagraph;
 
          if ( pDocType->IsPGSuperDocument() )
+         {
             *pParagraph << _T("Results for Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+         }
          else
+         {
             *pParagraph << _T("Results for Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+         }
 
          CreateContent(pChapter, pBroker, pGirderArtifact);
 
          if (bMultiGirderReport)
+         {
             pProgress->Increment();
+         }
       }
 
       return pChapter;
    }
 
 
-   ATLASSERT(0);
+   ATLASSERT(false);
    return NULL;
 }
 
@@ -183,20 +190,28 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
       // Moment Capacity Checks
       ListMomentCapacityFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
+      {
          ListMomentCapacityFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
+      }
 
       //Stirrup Checks
       ListVerticalShearFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
+      {
          ListVerticalShearFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
+      }
 
       ListHorizontalShearFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
+      {
          ListHorizontalShearFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
+      }
 
       ListStirrupDetailingFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
+      {
          ListStirrupDetailingFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
+      }
 
       ListDebondingFailures(pBroker,failures,pGirderArtifact);
       ListSplittingZoneFailures(pBroker,failures,pGirderArtifact);
@@ -213,19 +228,8 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    }
 
    // Stirrup lengths is not technically a spec check, but a warning
-   bool bCheckStirrups = false;
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   {
-      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
-      const pgsConstructabilityArtifact* pConstrArtifact = pSegmentArtifact->GetConstructabilityArtifact();
-      if ( pConstrArtifact->CheckStirrupLength() )
-      {
-         bCheckStirrups = true;
-      }
-   }
-   if ( bCheckStirrups )
+   const pgsConstructabilityArtifact* pConstrArtifact = pGirderArtifact->GetConstructabilityArtifact();
+   if ( pConstrArtifact->CheckStirrupLength() )
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
@@ -244,7 +248,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
 
    //// Negative camber is not technically a spec check, but a warning
    //GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   //std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, gdr ,pgsTypes::BridgeSite1, POI_MIDSPAN);
+   //std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, gdr ,pgsTypes::BridgeSite1, POI_5L);
    //ATLASSERT(pmid.size()==1);
    //pgsPointOfInterest poiMidSpan(pmid.front());
 
@@ -297,22 +301,3 @@ CChapterBuilder* CSpecCheckSummaryChapterBuilder::Clone() const
 {
    return new CSpecCheckSummaryChapterBuilder(m_ReferToDetailsReport);
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

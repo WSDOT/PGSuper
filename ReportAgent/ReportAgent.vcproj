@@ -862,6 +862,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ReporterBase.cpp"
+				>
+			</File>
+			<File
 				RelativePath="StdAfx.cpp"
 				>
 				<FileConfiguration
@@ -936,6 +940,10 @@
 			</File>
 			<File
 				RelativePath=".\PGSuperReporterImp.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ReporterBase.h"
 				>
 			</File>
 			<File

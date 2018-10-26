@@ -59,9 +59,13 @@ pgsRatingArtifact& pgsRatingArtifact::operator=(const pgsRatingArtifact& rOther)
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsMomentRatingArtifact& artifact,bool bPositiveMoment)
 {
    if ( bPositiveMoment )
+   {
       m_PositiveMomentRatings.push_back( std::make_pair(poi,artifact) );
+   }
    else
+   {
       m_NegativeMomentRatings.push_back( std::make_pair(poi,artifact) );
+   }
 }
 
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsShearRatingArtifact& artifact)
@@ -77,9 +81,13 @@ void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsStres
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsYieldStressRatioArtifact& artifact,bool bPositiveMoment)
 {
    if ( bPositiveMoment )
+   {
       m_PositiveMomentYieldStressRatios.push_back( std::make_pair(poi,artifact) );
+   }
    else
+   {
       m_NegativeMomentYieldStressRatios.push_back( std::make_pair(poi,artifact) );
+   }
 }
 
 pgsRatingArtifact::MomentRatings pgsRatingArtifact::GetMomentRatings(bool bPositiveMoment) const
@@ -353,8 +361,9 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
    else
    {
       // ??? rating wasn't done?
+      // all rating factors equally control
       ATLASSERT(false);
-      (*ppPositiveMoment)            = NULL;
+      //(*ppPositiveMoment)            = NULL;
       (*ppNegativeMoment)            = NULL;
       (*ppShear)                     = NULL;
       (*ppStress)                    = NULL;
@@ -378,7 +387,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       Float64 RF = artifact.GetRatingFactor();
       Float64 spl = W*(RF - 0.3)/0.7;
       if ( spl < 0 )
+      {
          spl = 0;
+      }
 
       if ( spl < posting_load )
       {
@@ -398,7 +409,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       Float64 RF = artifact.GetRatingFactor();
       Float64 spl = W*(RF - 0.3)/0.7;
       if ( spl < 0 )
+      {
          spl = 0;
+      }
 
       if ( spl < posting_load )
       {
@@ -419,7 +432,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       Float64 RF = artifact.GetRatingFactor();
       Float64 spl = W*(RF - 0.3)/0.7;
       if ( spl < 0 )
+      {
          spl = 0;
+      }
 
       if ( spl < posting_load )
       {
@@ -440,7 +455,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       Float64 RF = artifact.GetRatingFactor();
       Float64 spl = W*(RF - 0.3)/0.7;
       if ( spl < 0 )
+      {
          spl = 0;
+      }
 
       if ( spl < posting_load )
       {
@@ -461,7 +478,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       Float64 RF = artifact.GetStressRatio();
       Float64 spl = W*(RF - 0.3)/0.7;
       if ( spl < 0 )
+      {
          spl = 0;
+      }
 
       if ( spl < posting_load )
       {
@@ -481,7 +500,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       Float64 RF = artifact.GetStressRatio();
       Float64 spl = W*(RF - 0.3)/0.7;
       if ( spl < 0 )
+      {
          spl = 0;
+      }
 
       if ( spl < posting_load )
       {

@@ -49,8 +49,9 @@ public:
 
    void AddPoint();
    void DeletePoint();
+   void SetMeasurementType(CLinearDuctGeometry::MeasurementType mt);
    
-   CLinearDuctGeometry GetData();
+   void GetData(CLinearDuctGeometry& ductGeometry);
    void SetData(const CLinearDuctGeometry& ductGeometry);
 
 // Overrides
@@ -58,7 +59,10 @@ public:
 	//{{AFX_VIRTUAL(CLinearDuctGrid)
 	//}}AFX_VIRTUAL
    
-   BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
+   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
+   virtual BOOL OnEndEditing(ROWCOL nRow,ROWCOL nCol);
+   virtual void OnChangedSelection(const CGXRange* pRange,BOOL bIsDragging,BOOL bKey);
+
 
 // Implementation
 public:
@@ -73,8 +77,10 @@ protected:
 
    CLinearDuctGridCallback* m_pCallback;
 
-   void FillRow(ROWCOL row);
+   void FillRow(ROWCOL row,Float64 location,Float64 offset,CLinearDuctGeometry::OffsetType offsetType);
+   void GetPoint(ROWCOL row,Float64* pLocation,Float64* pOffset,CLinearDuctGeometry::OffsetType* pOffsetType);
+
    void SetRowStyle(ROWCOL nRow);
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
-
+   void SetDeleteButtonState();
 };

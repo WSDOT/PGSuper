@@ -20,15 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_ANALYSISRESULTS_H_
-#define INCLUDED_IFACE_ANALYSISRESULTS_H_
-
-/*****************************************************************************
-COPYRIGHT
-   Copyright © 1997-1998
-   Washington State Department Of Transportation
-   All Rights Reserved
-*****************************************************************************/
+#pragma once
 
 // SYSTEM INCLUDES
 //
@@ -50,7 +42,7 @@ class pgsPointOfInterest;
 // MISCELLANEOUS
 //
 
-enum ProductForceType 
+typedef enum ProductForceType 
 { 
    // externaly applied loads
    pftGirder,
@@ -66,11 +58,11 @@ enum ProductForceType
    pftUserDW, 
    pftUserLLIM,
    pftShearKey,
-   pftSecondaryEffects,
 
    // pseudo externally applied loads (really internal loads)
+   pftSecondaryEffects,
    pftPrimaryPostTensioning,
-   pftPrestress,
+   pftPretension,
 
    // time-depending effects
    pftCreep,
@@ -79,10 +71,12 @@ enum ProductForceType
 
    // special cases
    pftTotalPostTensioning,
-   pftOverlayRating
-};
+   pftOverlayRating,
 
-enum LoadingCombination
+   pftProductForceTypeCount
+} ProductForceType;
+
+typedef enum LoadingCombinationType
 { 
    lcDC, 
    lcDW,        // total DW
@@ -91,14 +85,16 @@ enum LoadingCombination
    lcDWf,       // DW for future loads only
    lcCR,
    lcSH,
-   lcPS
-};
+   lcRE,
+   lcPS,
+   lcLoadingCombinationTypeCount
+} LoadingCombinationType;
 
-enum CombinationType 
+typedef enum ResultsType 
 { 
-   ctCumulative, 
-   ctIncremental 
-};
+   rtCumulative, 
+   rtIncremental 
+} ResultsType;
 
 struct AxlePlacement
 {
@@ -151,21 +147,37 @@ typedef struct ShearKeyLoad
    Float64 EndJointLoad;
 } ShearKeyLoad;
 
-typedef struct EquivPTDistributedLoad
+typedef struct EquivPostTensionDistributedLoad
 {
    SpanIndexType spanIdx;
    Float64 Xstart, Xend;
    Float64 Wstart, Wend;
-} EquivPTDistributedLoad;
+   Float64 eStart, eEnd;
+   Float64 e_prime;
+   Float64 P;
+   Float64 x;
+} EquivPostTensionDistributedLoad;
 
-typedef struct EquivPTPointLoad
+typedef struct EquivPostTensionPointLoad
 {
    SpanIndexType spanIdx;
    Float64 X; // location from start of span
    Float64 P; // magnitude of equivalent load
-} EquivPTPointLoad;
+} EquivPostTensionPointLoad;
 
-typedef EquivPTPointLoad EquivPTMomentLoad;
+typedef struct EquivPostTensionMomentLoad
+{
+   SpanIndexType spanIdx;
+   Float64 X; // location from start of span
+   Float64 M; // magnitude of equivalent load
+} EquivPostTensionMomentLoad;
+
+typedef struct EquivPretensionLoad
+{
+   Float64 Xs; // location from start of segment
+   Float64 P;  // magnitude of equivalent vertical load
+   Float64 M;  // magnitude of equivalent moment
+} EquivPretensionLoad;
 
 typedef enum LoadType
 {
@@ -191,7 +203,8 @@ DEFINE_GUID(IID_IProductLoads,
 0x33fa7ee, 0xdaef, 0x42e0, 0x8f, 0x9, 0x1, 0x97, 0xc7, 0x7, 0x18, 0x10);
 interface IProductLoads : IUnknown
 {
-   virtual CComBSTR GetProductLoadName(ProductForceType pfType) = 0;
+   virtual std::_tstring GetProductLoadName(ProductForceType pfType) = 0;
+   virtual std::_tstring GetLoadCombinationName(LoadingCombinationType loadCombo) = 0;
 
    // product loads applied to girder
    virtual void GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad) = 0;
@@ -241,8 +254,11 @@ interface IProductLoads : IUnknown
    virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType) = 0;
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex) = 0;
 
-   // Equivalent loads for secondary effects
-   virtual void GetEquivPTLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<EquivPTPointLoad>& ptLoads,std::vector<EquivPTDistributedLoad>& distLoads,std::vector<EquivPTMomentLoad>& momentLoads) = 0;
+   // Equivalent loads for pretensioning
+   virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
+
+   // Equivalent loads for post-tensioning
+   virtual void GetEquivPostTensionLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<EquivPostTensionPointLoad>& ptLoads,std::vector<EquivPostTensionDistributedLoad>& distLoads,std::vector<EquivPostTensionMomentLoad>& momentLoads) = 0;
 };
 
 
@@ -267,33 +283,29 @@ interface IProductForces : IUnknown
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::AnalysisType analysisType,pgsTypes::OptimizationType optimization) = 0;
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::OptimizationType optimization) = 0;
 
-   virtual sysSectionValue GetShear(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType) = 0;
-   virtual Float64 GetMoment(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType) = 0;
-   virtual Float64 GetDeflection(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType) = 0;
-   virtual Float64 GetRotation(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType) = 0;
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,ProductForceType type,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,CombinationType comboType) = 0;
-   virtual void GetStress(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot) = 0;
+   virtual sysSectionValue GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual Float64 GetMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual Float64 GetDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment) = 0;
+   virtual Float64 GetRotation(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment) = 0;
+   virtual void GetStress(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot) = 0;
 
-   virtual void GetLiveLoadMoment(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,VehicleIndexType* pMminTruck = NULL,VehicleIndexType* pMmaxTruck = NULL) = 0;
-   virtual void GetLiveLoadShear(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,VehicleIndexType* pMminTruck = NULL,VehicleIndexType* pMmaxTruck = NULL) = 0;
-   virtual void GetLiveLoadDeflection(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pDmin,Float64* pDmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
-   virtual void GetLiveLoadRotation(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
-   virtual void GetLiveLoadRotation(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::PierFaceType pierFace,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinConfig,VehicleIndexType* pMaxConfig) = 0;
-   virtual void GetLiveLoadRotation(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::PierFaceType pierFace,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pTmin,Float64* pTmax,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig,VehicleIndexType* pMaxConfig) = 0;
-   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
-   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
-   virtual void GetLiveLoadStress(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,VehicleIndexType* pTopMinConfig=NULL,VehicleIndexType* pTopMaxConfig=NULL,VehicleIndexType* pBotMinConfig=NULL,VehicleIndexType* pBotMaxConfig=NULL) = 0;
+   virtual void GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,VehicleIndexType* pMminTruck = NULL,VehicleIndexType* pMmaxTruck = NULL) = 0;
+   virtual void GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,VehicleIndexType* pMminTruck = NULL,VehicleIndexType* pMmaxTruck = NULL) = 0;
+   virtual void GetLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pDmin,Float64* pDmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
+   virtual void GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
+   virtual void GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::PierFaceType pierFace,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinConfig,VehicleIndexType* pMaxConfig) = 0;
+   virtual void GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::PierFaceType pierFace,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pTmin,Float64* pTmax,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig,VehicleIndexType* pMaxConfig) = 0;
+   virtual void GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,VehicleIndexType* pTopMinConfig=NULL,VehicleIndexType* pTopMaxConfig=NULL,VehicleIndexType* pBotMinConfig=NULL,VehicleIndexType* pBotMaxConfig=NULL) = 0;
 
-   virtual void GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL) = 0;
-   virtual void GetVehicularLiveLoadShear(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,
+   virtual void GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL) = 0;
+   virtual void GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,
                                           AxleConfiguration* pMinLeftAxleConfig = NULL,
                                           AxleConfiguration* pMinRightAxleConfig = NULL,
                                           AxleConfiguration* pMaxLeftAxleConfig = NULL,
                                           AxleConfiguration* pMaxRightAxleConfig = NULL) = 0;
-   virtual void GetVehicularLiveLoadDeflection(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pDmin,Float64* pDmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL) = 0;
-   virtual void GetVehicularLiveLoadRotation(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL) = 0;
-   virtual void GetVehicularLiveLoadReaction(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL) = 0;
-   virtual void GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,AxleConfiguration* pMinAxleConfigTop=NULL,AxleConfiguration* pMaxAxleConfigTop=NULL,AxleConfiguration* pMinAxleConfigBot=NULL,AxleConfiguration* pMaxAxleConfigBot=NULL) = 0;
+   virtual void GetVehicularLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pDmin,Float64* pDmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL) = 0;
+   virtual void GetVehicularLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL) = 0;
+   virtual void GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,AxleConfiguration* pMinAxleConfigTop=NULL,AxleConfiguration* pMaxAxleConfigTop=NULL,AxleConfiguration* pMinAxleConfigBot=NULL,AxleConfiguration* pMaxAxleConfigBot=NULL) = 0;
 
    // This is the deflection due to self weight of the girder, when the girder
    // is in the casting yard, supported on its final bearing points. Modulus
@@ -343,27 +355,27 @@ DEFINE_GUID(IID_IProductForces2,
 0xe51ff04b, 0xb046, 0x43b9, 0x86, 0x96, 0x62, 0xab, 0x60, 0x6d, 0x2f, 0x4);
 interface IProductForces2 : IUnknown
 {
-   virtual std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType) = 0;
-   virtual std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType) = 0;
-   virtual std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType) = 0;
-   virtual std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType) = 0;
-   virtual void GetStress(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,CombinationType comboType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) = 0;
+   virtual std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment) = 0;
+   virtual std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment) = 0;
+   virtual void GetStress(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) = 0;
 
-   virtual void GetLiveLoadMoment(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<VehicleIndexType>* pMminTruck = NULL,std::vector<VehicleIndexType>* pMmaxTruck = NULL) = 0;
-   virtual void GetLiveLoadShear(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<VehicleIndexType>* pMminTruck = NULL,std::vector<VehicleIndexType>* pMmaxTruck = NULL) = 0;
-   virtual void GetLiveLoadDeflection(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<VehicleIndexType>* pMinConfig = NULL,std::vector<VehicleIndexType>* pMaxConfig = NULL) = 0;
-   virtual void GetLiveLoadRotation(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<VehicleIndexType>* pMinConfig = NULL,std::vector<VehicleIndexType>* pMaxConfig = NULL) = 0;
-   virtual void GetLiveLoadStress(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<VehicleIndexType>* pTopMinIndex=NULL,std::vector<VehicleIndexType>* pTopMaxIndex=NULL,std::vector<VehicleIndexType>* pBotMinIndex=NULL,std::vector<VehicleIndexType>* pBotMaxIndex=NULL) = 0;
+   virtual void GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<VehicleIndexType>* pMminTruck = NULL,std::vector<VehicleIndexType>* pMmaxTruck = NULL) = 0;
+   virtual void GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<VehicleIndexType>* pMminTruck = NULL,std::vector<VehicleIndexType>* pMmaxTruck = NULL) = 0;
+   virtual void GetLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<VehicleIndexType>* pMinConfig = NULL,std::vector<VehicleIndexType>* pMaxConfig = NULL) = 0;
+   virtual void GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<VehicleIndexType>* pMinConfig = NULL,std::vector<VehicleIndexType>* pMaxConfig = NULL) = 0;
+   virtual void GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<VehicleIndexType>* pTopMinIndex=NULL,std::vector<VehicleIndexType>* pTopMaxIndex=NULL,std::vector<VehicleIndexType>* pBotMinIndex=NULL,std::vector<VehicleIndexType>* pBotMaxIndex=NULL) = 0;
 
-   virtual void GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL) = 0;
-   virtual void GetVehicularLiveLoadShear(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,
+   virtual void GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL) = 0;
+   virtual void GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,
                                           std::vector<AxleConfiguration>* pMinLeftAxleConfig = NULL,
                                           std::vector<AxleConfiguration>* pMinRightAxleConfig = NULL,
                                           std::vector<AxleConfiguration>* pMaxLeftAxleConfig = NULL,
                                           std::vector<AxleConfiguration>* pMaxRightAxleConfig = NULL) = 0;
-   virtual void GetVehicularLiveLoadDeflection(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL) = 0;
-   virtual void GetVehicularLiveLoadRotation(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL) = 0;
-   virtual void GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigurationTop=NULL,std::vector<AxleConfiguration>* pMaxAxleConfigurationTop=NULL,std::vector<AxleConfiguration>* pMinAxleConfigurationBot=NULL,std::vector<AxleConfiguration>* pMaxAxleConfigurationBot=NULL) = 0;
+   virtual void GetVehicularLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL) = 0;
+   virtual void GetVehicularLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL) = 0;
+   virtual void GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigurationTop=NULL,std::vector<AxleConfiguration>* pMaxAxleConfigurationTop=NULL,std::vector<AxleConfiguration>* pMinAxleConfigurationBot=NULL,std::vector<AxleConfiguration>* pMaxAxleConfigurationBot=NULL) = 0;
 };
 
 /*****************************************************************************
@@ -383,17 +395,17 @@ DEFINE_GUID(IID_ICombinedForces,
 0xf32a1bfe, 0x7727, 0x11d2, 0x88, 0x51, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface ICombinedForces : IUnknown
 {
-   virtual sysSectionValue GetShear(LoadingCombination combo,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual Float64 GetMoment(LoadingCombination combo,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual Float64 GetDeflection(LoadingCombination combo,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual Float64 GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual void GetStress(LoadingCombination combo,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,CombinationType type,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot) = 0;
+   virtual sysSectionValue GetShear(IntervalIndexType intervalIdx,LoadingCombinationType combo,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual Float64 GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType combo,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual Float64 GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType combo,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment) = 0;
+   virtual Float64 GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType combo,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment) = 0;
+   virtual void GetStress(IntervalIndexType intervalIdx,LoadingCombinationType combo,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot) = 0;
 
-   virtual void GetCombinedLiveLoadMoment(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMmin,Float64* pMmax) = 0;
-   virtual void GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeShear,sysSectionValue* pVmin,sysSectionValue* pVmax) = 0;
-   virtual void GetCombinedLiveLoadDeflection(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pDmin,Float64* pDmax) = 0;
-   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) = 0;
-   virtual void GetCombinedLiveLoadStress(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax) = 0;
+   virtual void GetCombinedLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMmin,Float64* pMmax) = 0;
+   virtual void GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeShear,sysSectionValue* pVmin,sysSectionValue* pVmax) = 0;
+   virtual void GetCombinedLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pDmin,Float64* pDmax) = 0;
+   virtual void GetCombinedLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pRmin,Float64* pRmax) = 0;
+   virtual void GetCombinedLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax) = 0;
 };
 
 /*****************************************************************************
@@ -413,15 +425,17 @@ DEFINE_GUID(IID_ICombinedForces2,
 0xd8619cff, 0xb2da, 0x4f37, 0x9d, 0x34, 0xa3, 0xcd, 0xa1, 0x76, 0x0, 0xa7);
 interface ICombinedForces2 : IUnknown
 {
-   virtual std::vector<sysSectionValue> GetShear(LoadingCombination combo,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual std::vector<Float64> GetMoment(LoadingCombination combo,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual std::vector<Float64> GetDeflection(LoadingCombination combo,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual void GetStress(LoadingCombination combo,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,CombinationType type,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) = 0;
+   virtual std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment) = 0;
+   virtual std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment) = 0;
+   virtual void GetStress(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) = 0;
 
-   virtual void GetCombinedLiveLoadMoment(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax) = 0;
-   virtual void GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact, std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax) = 0;
-   virtual void GetCombinedLiveLoadDeflection(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax) = 0;
-   virtual void GetCombinedLiveLoadStress(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax) = 0;
+   virtual void GetCombinedLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax) = 0;
+   virtual void GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact, std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax) = 0;
+   virtual void GetCombinedLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax) = 0;
+   virtual void GetCombinedLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax) = 0;
+   virtual void GetCombinedLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax) = 0;
 };
 
 /*****************************************************************************
@@ -438,18 +452,19 @@ DEFINE_GUID(IID_ILimitStateForces,
 0xd458bb7a, 0x797c, 0x11d2, 0x88, 0x53, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface ILimitStateForces : IUnknown
 {
-   virtual void GetShear(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax) = 0;
-   virtual void GetMoment(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) = 0;
-   virtual void GetDeflection(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncludePrestress,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) = 0;
-   virtual void GetReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax) = 0;
-   virtual void GetStress(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,bool bIncludePrestress,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) = 0;
+   virtual void GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax) = 0;
+   virtual void GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) = 0;
+   virtual void GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeElevationAdjustment,Float64* pMin,Float64* pMax) = 0;
+   virtual void GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeSlopeAdjustment,Float64* pMin,Float64* pMax) = 0;
+   virtual void GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax) = 0;
+   virtual void GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,pgsTypes::StressLocation stressLocation,Float64* pMin,Float64* pMax) = 0;
 
-   virtual void GetDesignStress(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) = 0;
+   virtual void GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) = 0;
 
-   virtual void GetConcurrentShear(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax) = 0;
-   virtual void GetViMmax(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pVi,Float64* pMmax) = 0;
+   virtual void GetConcurrentShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax) = 0;
+   virtual void GetViMmax(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pVi,Float64* pMmax) = 0;
 
-   virtual Float64 GetSlabDesignMoment(pgsTypes::LimitState ls,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual Float64 GetSlabDesignMoment(pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat) = 0;
 
    // Return true if limit state is to be reported
    virtual bool IsStrengthIIApplicable(const CGirderKey& girderKey) = 0;
@@ -470,12 +485,13 @@ DEFINE_GUID(IID_ILimitStateForces2,
 0xdeedbffc, 0xe236, 0x4a24, 0xa7, 0x8a, 0xd5, 0x7, 0xb9, 0x65, 0x73, 0xa3);
 interface ILimitStateForces2 : IUnknown
 {
-   virtual void GetShear(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax) = 0;
-   virtual void GetMoment(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax) = 0;
-   virtual void GetDeflection(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,bool bIncludePrestress,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax) = 0;
-   virtual void GetStress(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludePrestress,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax) = 0;
+   virtual void GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax) = 0;
+   virtual void GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax) = 0;
+   virtual void GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeElevationAdjustment,std::vector<Float64>* pMin,std::vector<Float64>* pMax) = 0;
+   virtual void GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeSlopeAdjustment,std::vector<Float64>* pMin,std::vector<Float64>* pMax) = 0;
+   virtual void GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,pgsTypes::StressLocation stressLocation,std::vector<Float64>* pMin,std::vector<Float64>* pMax) = 0;
 
-   virtual std::vector<Float64> GetSlabDesignMoment(pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual std::vector<Float64> GetSlabDesignMoment(pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat) = 0;
 };
 
 /*****************************************************************************
@@ -502,7 +518,7 @@ interface IExternalLoading : IUnknown
    virtual bool CreateLoadGroup(LPCTSTR strLoadGroupName) = 0;
 
    // adds a load group to a load combination. returns true if successful
-   virtual bool AddLoadGroupToLoadingCombination(LPCTSTR strLoadGroupName,LoadingCombination lcCombo) = 0;
+   virtual bool AddLoadGroupToLoadCombinationType(LPCTSTR strLoadGroupName,LoadingCombinationType lcCombo) = 0;
 
    // creates a concentrated load
    virtual bool CreateLoad(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LoadType loadType,Float64 P,LPCTSTR strLoadGroupName) = 0;
@@ -510,19 +526,18 @@ interface IExternalLoading : IUnknown
    // creates an initial strain load between two POI.
    virtual bool CreateInitialStrainLoad(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r,LPCTSTR strLoadGroupName) = 0;
 
-   virtual Float64 GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual sysSectionValue GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual Float64 GetMoment(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual Float64 GetDeflection(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual Float64 GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual Float64 GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual sysSectionValue GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual Float64 GetMoment(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual Float64 GetDeflection(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment) = 0;
+   virtual Float64 GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment) = 0;
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
 
-   virtual std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual std::vector<Float64> GetReaction(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
+   virtual std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment) = 0;
+   virtual std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment) = 0;
 };
 
 /*****************************************************************************
@@ -540,12 +555,10 @@ DEFINE_GUID(IID_IPretensionStresses,
 interface IPretensionStresses : IUnknown
 {
    virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc) = 0;
+   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc) = 0;
    virtual Float64 GetStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e) = 0;
    virtual Float64 GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc) = 0;
-
    virtual Float64 GetDesignStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config) = 0;
-
-   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc) = 0;
 };
 
 /*****************************************************************************
@@ -682,10 +695,6 @@ interface ICamber : IUnknown
    // It is equal to the Total camber less the slab deflection.
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time) = 0;
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,const GDRCONFIG& config,Int16 time) = 0; 
-
-   virtual void GetHarpedStrandEquivLoading(const CSegmentKey& segmentKey,Float64* pMl,Float64* pMr,Float64* pNl,Float64* pNr,Float64* pXl,Float64* pXr) = 0;
-   virtual void GetTempStrandEquivLoading(const CSegmentKey& segmentKey,Float64* pMxferL,Float64* pMxferR,Float64* pMremoveL,Float64* pMremoveR) = 0;
-   virtual void GetStraightStrandEquivLoading(const CSegmentKey& segmentKey,std::vector< std::pair<Float64,Float64> >* loads) = 0;
 };
 
 
@@ -703,7 +712,7 @@ DEFINE_GUID(IID_IContraflexurePoints,
 0xa07dc9a0, 0x1dfa, 0x4a7c, 0xb8, 0x52, 0xab, 0xca, 0xf7, 0x19, 0x73, 0x6d);
 interface IContraflexurePoints : IUnknown
 {
-   virtual void GetContraflexurePoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* cfPoints,Uint32* nPoints) = 0;
+   virtual void GetContraflexurePoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* cfPoints,IndexType* nPoints) = 0;
 };
 
 
@@ -745,32 +754,32 @@ interface IBearingDesign : IUnknown
 
    // From IProductForces
    virtual void GetBearingProductReaction(IntervalIndexType intervalIdx,ProductForceType type,const CGirderKey& girderKey,
-                                          CombinationType cmbtype, pgsTypes::BridgeAnalysisType bat, Float64* pLftEnd,Float64* pRgtEnd)=0;
+                                          pgsTypes::BridgeAnalysisType bat, ResultsType cmbtype, Float64* pLftEnd,Float64* pRgtEnd)=0;
 
-   virtual void GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const CGirderKey& girderKey,
+   virtual void GetBearingLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,
                                            pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
                                            Float64* pLeftRmin,Float64* pLeftRmax,Float64* pLeftTmin,Float64* pLeftTmax,
                                            Float64* pRightRmin,Float64* pRightRmax,Float64* pRightTmin,Float64* pRightTmax,
                                            VehicleIndexType* pLeftMinVehIdx = NULL,VehicleIndexType* pLeftMaxVehIdx = NULL,
                                            VehicleIndexType* pRightMinVehIdx = NULL,VehicleIndexType* pRightMaxVehIdx = NULL)=0;
 
-   virtual void GetBearingLiveLoadRotation(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const CGirderKey& girderKey,
+   virtual void GetBearingLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,
                                            pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
                                            Float64* pLeftTmin,Float64* pLeftTmax,Float64* pLeftRmin,Float64* pLeftRmax,
                                            Float64* pRightTmin,Float64* pRightTmax,Float64* pRightRmin,Float64* pRightRmax,
                                            VehicleIndexType* pLeftMinVehIdx = NULL,VehicleIndexType* pLeftMaxVehIdx = NULL,
                                            VehicleIndexType* pRightMinVehIdx = NULL,VehicleIndexType* pRightMaxVehIdx = NULL)=0;
    // From ICombinedForces
-   virtual void GetBearingCombinedReaction(LoadingCombination combo,IntervalIndexType intervalIdx,const CGirderKey& girderKey,
-                                           CombinationType type,pgsTypes::BridgeAnalysisType bat, Float64* pLftEnd,Float64* pRgtEnd)=0;
+   virtual void GetBearingCombinedReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const CGirderKey& girderKey,
+                                           pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pLftEnd,Float64* pRgtEnd)=0;
 
-   virtual void GetBearingCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const CGirderKey& girderKey,
+   virtual void GetBearingCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,
                                                    pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,
                                                    Float64* pLeftRmin, Float64* pLeftRmax, 
                                                    Float64* pRightRmin,Float64* pRightRmax)=0;
 
    // From ILimitStateForces
-   virtual void GetBearingLimitStateReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const CGirderKey& girderKey,
+   virtual void GetBearingLimitStateReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const CGirderKey& girderKey,
                                              pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,
                                              Float64* pLeftRmin, Float64* pLeftRmax, 
                                              Float64* pRightRmin,Float64* pRightRmax)=0;
@@ -791,14 +800,10 @@ DEFINE_GUID(IID_IPrecompressedTensileZone,
 interface IPrecompressedTensileZone : IUnknown
 {
    // Returns true of the specified location is in the precompressed tensile zone
-   // stressingIntervalIdx is the interveral to consider for determining if the
-   // prestress causes compression
-   virtual bool IsInPrecompressedTensileZone(IntervalIndexType stressingIntervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat) = 0;
 
    // Returns true of the specified location is in the precompressed tensile zone
-   // stressingIntervalIdx is the interveral to consider for determining if the
-   // prestress causes compression
-   virtual bool IsInPrecompressedTensileZone(IntervalIndexType stressingIntervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat, const GDRCONFIG* pConfig) = 0;
+   virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat, const GDRCONFIG* pConfig) = 0;
 
    // Returns true if the deck is "precompressed". The deck is considered precompressed if
    // it experiences direct stresses due to post-tensioning applied after the deck
@@ -808,23 +813,65 @@ interface IPrecompressedTensileZone : IUnknown
 
 /*****************************************************************************
 INTERFACE
-   IInfluenceResults
-
-   Interface to get influence lines and related information.
+   IVirtualWork
 
 DESCRIPTION
-   Interface to get influence lines and related information.
+   Interface to get unit load reponses used for virtual work calculations
 *****************************************************************************/
 // {4C72198B-4DA4-424d-BD6F-12AD394D84B6}
-DEFINE_GUID(IID_IInfluenceResults, 
+DEFINE_GUID(IID_IVirtualWork, 
 0x4c72198b, 0x4da4, 0x424d, 0xbd, 0x6f, 0x12, 0xad, 0x39, 0x4d, 0x84, 0xb6);
-interface IInfluenceResults : IUnknown
+interface IVirtualWork : IUnknown
 {
    // Returns the moments due to a unit load applied at unitLoadPOI
    virtual std::vector<Float64> GetUnitLoadMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitLoadPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx) = 0;
 
-   // Other methods for getting influence lines will be added later
+   // Returns the moments due to a unit moment applied at unitMomentPOI
+   virtual std::vector<sysSectionValue> GetUnitCoupleMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitMomentPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx) = 0;
 };
 
-#endif // INCLUDED_IFACE_ANALYSISRESULTS_H_
+/*****************************************************************************
+INTERFACE
+   IReactions
 
+DESCRIPTION
+   Interface to get reactions
+*****************************************************************************/
+// {B1EA30D1-527C-4a44-AEA7-BE3F06145AC9}
+DEFINE_GUID(IID_IReactions, 
+0xb1ea30d1, 0x527c, 0x4a44, 0xae, 0xa7, 0xbe, 0x3f, 0x6, 0x14, 0x5a, 0xc9);
+interface IReactions : IUnknown
+{
+   // Gets segment end reactions prior to the segment being erected. Reactions are taken to be zero after the segment
+   // as been erected
+   virtual void GetSegmentReactions(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright) = 0;
+   virtual void GetSegmentReactions(const std::vector<CSegmentKey>& segmentKeys,IntervalIndexType intervalIdx,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,std::vector<Float64>* pRleft,std::vector<Float64>* pRright) = 0;
+
+   virtual void GetSegmentReactions(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LoadingCombinationType comboType,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright) = 0;
+   virtual void GetSegmentReactions(const std::vector<CSegmentKey>& segmentKeys,IntervalIndexType intervalIdx,LoadingCombinationType comboType,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,std::vector<Float64>* pRleft,std::vector<Float64>* pRright) = 0;
+
+   virtual void GetSegmentReactions(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64* pRleftMin,Float64* pRleftMax,Float64* pRrightMin,Float64* pRrightMax) = 0;
+   virtual void GetSegmentReactions(const std::vector<CSegmentKey>& segmentKeys,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pRleftMin,std::vector<Float64>* pRleftMax,std::vector<Float64>* pRrightMin,std::vector<Float64>* pRrightMax) = 0;
+
+   // Gets the reaction at a pier or temporary support. Reactions are taken to be zero prior to segments being erected and
+   // supported. Temporary support reactions are taken to be zero after the support is removed
+   virtual Float64 GetReaction(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) = 0;
+   virtual std::vector<Float64> GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) = 0;
+
+   virtual Float64 GetReaction(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,LoadingCombinationType comboType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) = 0;
+   virtual std::vector<Float64> GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,LoadingCombinationType comboType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) = 0;
+
+   virtual void GetReaction(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat, bool bIncludeImpact,Float64* pRmin,Float64* pRmax) = 0;
+   virtual void GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat, bool bIncludeImpact,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax) = 0;
+
+   virtual void GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL) = 0;
+   virtual void GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL) = 0;
+
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<VehicleIndexType>* pMinConfig = NULL,std::vector<VehicleIndexType>* pMaxConfig = NULL) = 0;
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<Float64>* pTmin,std::vector<Float64>* pTmax,std::vector<VehicleIndexType>* pMinConfig = NULL,std::vector<VehicleIndexType>* pMaxConfig = NULL) = 0;
+
+   virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) = 0;
+   virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax) = 0;
+};

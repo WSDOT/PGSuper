@@ -67,7 +67,9 @@ END_MESSAGE_MAP()
 int CBridgeDescDeckPointGrid::GetColWidth(ROWCOL nCol)
 {
    if ( nCol == 0 )
+   {
       return 0;
+   }
 
    return CGXGridWnd::GetColWidth(nCol);
 }
@@ -331,11 +333,17 @@ void CBridgeDescDeckPointGrid::SetTransitionRowData(ROWCOL row,const CDeckPoint&
    CString strChoices(_T("Parallel\nLinear\nSpline"));
    CString strChoice;
    if ( point.LeftTransitionType == pgsTypes::dptParallel )
+   {
       strChoice = _T("Parallel");
+   }
    else if ( point.LeftTransitionType == pgsTypes::dptLinear )
+   {
       strChoice = _T("Linear");
+   }
    else if ( point.LeftTransitionType == pgsTypes::dptSpline )
+   {
       strChoice = _T("Spline");
+   }
 
    SetStyleRange(CGXRange(row,3), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -345,11 +353,17 @@ void CBridgeDescDeckPointGrid::SetTransitionRowData(ROWCOL row,const CDeckPoint&
       );
 
    if ( point.RightTransitionType == pgsTypes::dptParallel )
+   {
       strChoice = _T("Parallel");
+   }
    else if ( point.RightTransitionType == pgsTypes::dptLinear )
+   {
       strChoice = _T("Linear");
+   }
    else if ( point.RightTransitionType == pgsTypes::dptSpline )
+   {
       strChoice = _T("Spline");
+   }
 
    SetStyleRange(CGXRange(row,4), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -363,19 +377,31 @@ void CBridgeDescDeckPointGrid::GetTransitionRowData(ROWCOL row,CDeckPoint *pPoin
 {
    CString strValue = GetCellValue(row,3);
    if ( strValue == _T("Parallel") )
+   {
       pPoint->LeftTransitionType = pgsTypes::dptParallel;
+   }
    else if ( strValue == _T("Linear") )
+   {
       pPoint->LeftTransitionType = pgsTypes::dptLinear;
+   }
    else
+   {
       pPoint->LeftTransitionType = pgsTypes::dptSpline;
+   }
 
    strValue = GetCellValue(row,4);
    if ( strValue == _T("Parallel") )
+   {
       pPoint->RightTransitionType = pgsTypes::dptParallel;
+   }
    else if ( strValue == _T("Linear") )
+   {
       pPoint->RightTransitionType = pgsTypes::dptLinear;
+   }
    else
+   {
       pPoint->RightTransitionType = pgsTypes::dptSpline;
+   }
 }
 
 void CBridgeDescDeckPointGrid::FillGrid(const CDeckDescription2* pDeck)
@@ -384,7 +410,9 @@ void CBridgeDescDeckPointGrid::FillGrid(const CDeckDescription2* pDeck)
    GetParam()->SetLockReadOnly(FALSE);
 
    if ( 1 <= GetRowCount() )
+   {
       RemoveRows(1,GetRowCount()); // clear the grid, except the header row
+   }
 
    std::vector<CDeckPoint>::const_iterator iter;
    CollectionIndexType cPoint = 0;
@@ -451,14 +479,18 @@ std::vector<CDeckPoint> CBridgeDescDeckPointGrid::GetEdgePoints()
 void CBridgeDescDeckPointGrid::SelectRow(ROWCOL nRow)
 {
    if ( GetRowCount() == 1 )
+   {
       return;
+   }
 
    SelectRange(CGXRange(0,0,GetRowCount(),GetColCount()),FALSE); // unselect everything
 
    ROWCOL firstRow = (nRow%2 == 0 ? nRow-1 : nRow);
 
    if ( nRow == GetRowCount() )
+   {
       firstRow--;
+   }
 
    SelectRange(CGXRange(firstRow,0,firstRow+1,GetColCount()),TRUE); // select this row
 

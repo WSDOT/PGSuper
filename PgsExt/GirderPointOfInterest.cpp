@@ -46,7 +46,9 @@ rptLengthUnitValue( rOther )
 rptPointOfInterest& rptPointOfInterest::operator = (const rptPointOfInterest& rOther)
 {
    if ( this != &rOther )
+   {
       MakeAssignment( rOther );
+   }
 
    return *this;
 }
@@ -73,7 +75,7 @@ rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference,const 
              sysFlags<PoiAttributeType>::IsSet(reference,POI_ERECTED_SEGMENT)  || 
              sysFlags<PoiAttributeType>::IsSet(reference,POI_LIFT_SEGMENT)     || 
              sysFlags<PoiAttributeType>::IsSet(reference,POI_HAUL_SEGMENT)     || 
-             sysFlags<PoiAttributeType>::IsSet(reference,POI_GIRDER));
+             sysFlags<PoiAttributeType>::IsSet(reference,POI_SPAN));
 
    m_POI = poi;
    m_Reference = reference;
@@ -106,9 +108,13 @@ std::_tstring rptPointOfInterest::AsString() const
    else
    {
       if ( m_bPrefixAttributes )
+      {
          str += _T("(") + strAttrib + _T(") ") + strValue;
+      }
       else
+      {
          str += strValue + _T(" (") + strAttrib + _T(")");
+      }
    }
 
    return str;

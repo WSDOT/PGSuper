@@ -86,7 +86,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    
    *pParagraph << _T("[5.9.5.4.2b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << rptNewLine;
 
-   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCRH_PT.png")) << rptNewLine;
    else
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCRH.png")) << rptNewLine;
@@ -98,7 +98,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return table;
    }
 
@@ -137,7 +137,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 
 
       col = 2;
-      if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
+      if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -155,7 +155,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    }
    else
    {
-      if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
+      if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -176,11 +176,11 @@ void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pg
    boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return;
    }
 
-   if ( m_pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
+   if ( m_pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
       (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
    else
       (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + pDetails->pLosses->GetDeltaFpp());

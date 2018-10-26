@@ -238,7 +238,7 @@ BOOL CTxDOTOptionalDesignGirderInputPage::UpdateData(BOOL bSaveAndValidate)
          return FALSE;
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    // original
    if (CTxDOTOptionalDesignGirderData::sfStandard == m_OrigStrandFillType)
@@ -260,7 +260,7 @@ BOOL CTxDOTOptionalDesignGirderInputPage::UpdateData(BOOL bSaveAndValidate)
          return FALSE;
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    return TRUE;
 }
@@ -620,7 +620,7 @@ BOOL CTxDOTOptionalDesignGirderInputPage::OnKillActive()
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    if (CTxDOTOptionalDesignGirderData::sfStandard == m_OrigStrandFillType)
@@ -646,7 +646,7 @@ BOOL CTxDOTOptionalDesignGirderInputPage::OnKillActive()
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    return CPropertyPage::OnKillActive();

@@ -488,5 +488,5 @@ void CShearSteelPage::OnRestoreDefaults()
 
 void CShearSteelPage::DoRestoreDefaults()
 {
-    ATLASSERT(0); // library should never want to do this
+    ATLASSERT(false); // library should never want to do this
 }

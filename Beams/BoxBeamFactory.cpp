@@ -543,7 +543,7 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
 
          if (itdF1==dimensions.end() || itdF2==dimensions.end())
          {
-            ATLASSERT(0); // should never happen F1 and F2 must be in list
+            ATLASSERT(false); // should never happen F1 and F2 must be in list
          }
          else
          {

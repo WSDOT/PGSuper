@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.TimeStepLossEngineer.1 = s 'Time Step Loss Engineer'
+	{
+		CLSID = s '{26275720-66E8-40f6-A4C3-79404FB64968}'
+   }
+	PGSuperBeamFactory.TimeStepLossEngineer = s 'Time Step Loss Engineer'
+	{
+		CLSID = s '{26275720-66E8-40f6-A4C3-79404FB64968}'
+		CurVer = s 'PGSuperBeamFactory.TimeStepLossEngineer.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {26275720-66E8-40f6-A4C3-79404FB64968} = s 'Time Step Loss Engineer'
+		{
+			ProgID = s 'PGSuperBeamFactory.TimeStepLossEngineer.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.TimeStepLossEngineer'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

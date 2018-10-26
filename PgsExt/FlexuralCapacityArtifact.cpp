@@ -157,13 +157,19 @@ bool pgsFlexuralCapacityArtifact::CapacityPassed() const
 bool pgsFlexuralCapacityArtifact::Passed() const
 {
    if ( IsOverReinforced() )
+   {
       return false;
+   }
 
    if ( IsUnderReinforced() )
+   {
       return false;
+   }
 
    if ( !CapacityPassed() )
+   {
       return false;
+   }
 
    return true;
 }

@@ -57,10 +57,14 @@ CCastDeckActivity& CCastDeckActivity::operator= (const CCastDeckActivity& rOther
 bool CCastDeckActivity::operator==(const CCastDeckActivity& rOther) const
 {
    if ( m_bEnabled != rOther.m_bEnabled )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_Age,rOther.m_Age) )
+   {
       return false;
+   }
 
    return true;
 }

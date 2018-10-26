@@ -49,7 +49,6 @@ rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, const 
 {
    rptParagraph* pParagraph = new rptParagraph;
 
-   GET_IFACE2(pBroker,ILibrary,pLibrary);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

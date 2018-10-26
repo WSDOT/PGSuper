@@ -156,7 +156,7 @@ public:
 
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 
    CTxDOTOptionalDesignDoc* m_pTxDOTOptionalDesignDoc;
 

@@ -250,12 +250,11 @@ public:
    void SetElasticModulusOfGirderConcrete(Float64 val);
 
    // points of interest used for this hauling analysis
-   void SetHaulingPointsOfInterest(const std::vector<pgsPointOfInterest>& rPois);
    std::vector<pgsPointOfInterest> GetHaulingPointsOfInterest() const;
 
-   void AddHaulingStressAnalysisArtifact(Float64 distFromStart,
+   void AddHaulingStressAnalysisArtifact(const pgsPointOfInterest& poi,
                                       const pgsKdotHaulingStressAnalysisArtifact& artifact);
-   const pgsKdotHaulingStressAnalysisArtifact* GetHaulingStressAnalysisArtifact(Float64 distFromStart) const;
+   const pgsKdotHaulingStressAnalysisArtifact* GetHaulingStressAnalysisArtifact(const pgsPointOfInterest& poi) const;
 
    // Outcome from design algorithm
    enum DesignOutcome {doNoDesignDone,      // No design was performed 
@@ -311,7 +310,7 @@ private:
    Float64 m_ElasticModulusOfGirderConcrete;
 
    std::vector<pgsPointOfInterest> m_HaulingPois; // sorted same as below collection
-   std::map<Float64,pgsKdotHaulingStressAnalysisArtifact,Float64_less> m_HaulingStressAnalysisArtifacts;
+   std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact> m_HaulingStressAnalysisArtifacts;
 
    DesignOutcome m_DesignOutcome;
    Float64 m_DesignOverhang;

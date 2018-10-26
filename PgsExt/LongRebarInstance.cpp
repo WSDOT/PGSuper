@@ -93,13 +93,13 @@ const matRebar* pgsLongRebarInstance::GetRebar() const
 }
 void pgsLongRebarInstance::SetRebar(const matRebar* prebar)
 {
-   CHECK(prebar!=0);
+   ATLASSERT(prebar!=0);
    m_pRebar = prebar;
 }
 
 Float64 pgsLongRebarInstance::GetMinCutoffLength() const
 {
-   CHECK(m_MinCutoffLength >0.0);
+   ATLASSERT(m_MinCutoffLength >0.0);
    return m_MinCutoffLength;
 }
 

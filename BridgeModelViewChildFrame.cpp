@@ -667,7 +667,7 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
          case IDM_CONTINUOUS_SEGMENT_AT_PIER:     newSegmentConnectionType = pgsTypes::psctContinuousSegment;     break;
          case IDM_INTEGRAL_SEGMENT_AT_PIER:       newSegmentConnectionType = pgsTypes::psctIntegralSegment;       break;
 
-         default: ATLASSERT(0); // is there a new connection type?
+         default: ATLASSERT(false); // is there a new connection type?
       }
 
       CComPtr<IBroker> pBroker;
@@ -792,7 +792,7 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
          case IDM_INTEGRAL_CLOSURE:               pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctIntegralClosureJoint);   break;
          case IDM_CONTINUOUS_SEGMENT_AT_PIER:     pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctContinuousSegment);     break;
          case IDM_INTEGRAL_SEGMENT_AT_PIER:       pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctIntegralSegment);       break;
-         default: ATLASSERT(0); // is there a new connection type?
+         default: ATLASSERT(false); // is there a new connection type?
       }
    }
 }

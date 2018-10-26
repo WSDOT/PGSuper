@@ -70,14 +70,14 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
             }
             else
             {
-               ATLASSERT(0);
+               ATLASSERT(false);
                return NULL;
             }
          }
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
          return NULL;
       }
    }
@@ -95,7 +95,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
          return NULL;
       }
    }
@@ -131,7 +131,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
          }
          else
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             return NULL;
          }
       }
@@ -149,7 +149,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
          return NULL;
       }
    }
@@ -587,7 +587,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdates(const CString& publisher, IProgre
    {
       // we are screwed if the publisher doesn't match. This probably will only
       // happen if registry values get trashed in the App class
-      ATLASSERT(0);
+      ATLASSERT(false);
       CString msg;
       msg.Format(_T("The publisher %s was not found in the current catalog. This appears to be a programing bug."), publisher);
       throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
@@ -1074,7 +1074,7 @@ bool CFtpPGSuperCatalogServer::IsNetworkError() const
    }
    catch(...)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       LOG(_T("Unknown network error in IsNetworkError"));
       return true;
    }
@@ -1228,7 +1228,7 @@ bool CHttpPGSuperCatalogServer::CheckForUpdates(const CString& publisher, IProgr
    {
       // we are screwed if the publisher doesn't match. This probably will only
       // happen if registry values get trashed in the App class
-      ATLASSERT(0);
+      ATLASSERT(false);
       CString msg;
       msg.Format(_T("The publisher %s was not found in the current catalog. This appears to be a programing bug."), publisher);
       throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);

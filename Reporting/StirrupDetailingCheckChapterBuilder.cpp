@@ -84,7 +84,9 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(CReportSpecification* pR
 
    build_max_spacing_paragraph(pBroker,pChapter,girderKey,intervalIdx,pgsTypes::StrengthI,pDisplayUnits);
    if ( bPermit )
+   {
       build_max_spacing_paragraph(pBroker,pChapter,girderKey,intervalIdx,pgsTypes::StrengthII,pDisplayUnits);
+   }
 
    return pChapter;
 }
@@ -135,16 +137,24 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 
       case pgsTypes::AllLightweight:
          if ( bHasAggSplittingStrength )
+         {
             strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
+         }
          else
+         {
             strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_ALWC_US.png") : _T("AvOverSMin_ALWC_SI.png"));
+         }
          break;
 
       case pgsTypes::SandLightweight:
          if ( bHasAggSplittingStrength )
+         {
             strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
+         }
          else
+         {
             strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_SLWC_US.png") : _T("AvOverSMin_SLWC_SI.png"));
+         }
          break;
 
       default:
@@ -192,16 +202,24 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 
          case pgsTypes::AllLightweight:
             if ( bHasAggSplittingStrength )
+            {
                strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
+            }
             else
+            {
                strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_ALWC_US.png") : _T("AvOverSMin_ALWC_SI.png"));
+            }
             break;
 
          case pgsTypes::SandLightweight:
             if ( bHasAggSplittingStrength )
+            {
                strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
+            }
             else
+            {
                strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_SLWC_US.png") : _T("AvOverSMin_SLWC_SI.png"));
+            }
             break;
 
          default:
@@ -271,15 +289,21 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 
          // Don't report values in end regions
          if (pArtifact->IsInCriticalSectionZone())
+         {
             continue;
+         }
 
          (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
          (*table)(row,1) << dim.SetValue(pArtifact->GetBv());
 
          if (pArtifact->IsApplicable())
+         {
             (*table)(row,2) << avs.SetValue(pArtifact->GetAvsMin());
+         }
          else
+         {
             (*table)(row,2) << RPT_NA;
+         }
 
          row++;
       } // next artifact
@@ -296,9 +320,13 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    *pChapter << pParagraph;
 
    if ( ls == pgsTypes::StrengthI )
+   {
       *pParagraph << _T("Strength I");
+   }
    else
+   {
       *pParagraph << _T("Strength II");
+   }
 
    *pParagraph <<_T(" - Details for Maximum Transverse Reinforcement Spacing Check - 5.8.2.7")<<rptNewLine;
 
@@ -332,9 +360,13 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
 
    if ( bAfter1999 )
+   {
       (*petable)(1,0) << _T("if V")<<Sub(_T("u"))<<_T(" < 0.125 ") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v"))<<_T(" : ");
+   }
    else
+   {
       (*petable)(1,0) << _T("if V")<<Sub(_T("u"))<<_T(" < 0.1 ") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v"))<<_T(" : ");
+   }
 
    (*petable)(1,1) << _T(" S")<<Sub(_T("max"))<<_T("= min(0.8 d")<<Sub(_T("v"))<<_T(", ")<<dim.SetValue(s_under)<<dim.GetUnitTag()<<_T(")");
    (*petable)(2,0) <<_T("Else : ");
@@ -347,9 +379,13 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    (*table)(0,1)  << COLHDR( Sub2(_T("V"),_T("u")),       rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    if ( bAfter1999 )
+   {
       (*table)(0,2)  << COLHDR(_T("0.125 ") << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+   }
    else
+   {
       (*table)(0,2)  << COLHDR(_T("0.1 ")   << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+   }
 
    (*table)(0,3)  << COLHDR(Sub2(_T("b"),_T("v")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,4)  << COLHDR(Sub2(_T("d"),_T("v")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -387,7 +423,9 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 
          // Don't report values between critical sections
          if (pArtifact->IsInCriticalSectionZone())
+         {
             continue;
+         }
 
          (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
          (*table)(row,1) << shear.SetValue(pArtifact->GetVu());
@@ -396,9 +434,13 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
          (*table)(row,4) << dim.SetValue(pArtifact->GetDv());
 
          if (pArtifact->IsApplicable())
+         {
             (*table)(row,5) << dim.SetValue(pArtifact->GetSMax());
+         }
          else
+         {
             (*table)(row,5) << RPT_NA;
+         }
 
          row++;
       } // next artifact

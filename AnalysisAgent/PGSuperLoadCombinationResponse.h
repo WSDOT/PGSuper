@@ -42,14 +42,14 @@ See MBE Table 6A.4.5.4.2a-1 for permit live load factors
 #include <WBFLLBAMLoadCombiner.h>
 #include <WBFLLBAMLiveLoader.h>
 
-interface ILibrary;
-interface IRatingSpecification;
+#include <IFace\Project.h>
+#include <IFace\RatingSpecification.h>
 
 // {169DC9D7-9EE2-42ff-BEDA-B8896A489C30}
 DEFINE_GUID(CLSID_PGSuperLoadCombinationResponse, 
 0x169dc9d7, 0x9ee2, 0x42ff, 0xbe, 0xda, 0xb8, 0x89, 0x6a, 0x48, 0x9c, 0x30);
 
-class CAnalysisAgentImp;
+class CGirderModelManager;
 
 class ATL_NO_VTABLE CPGSuperLoadCombinationResponse : 
 	public CComObjectRootEx<CComSingleThreadModel>,
@@ -65,7 +65,7 @@ public:
    {
    }
 
-   void Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,CAnalysisAgentImp* pAnalysisAgent);
+   void Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,CGirderModelManager* pModelManager);
 
    HRESULT FinalConstruct();
    void FinalRelease();
@@ -110,7 +110,7 @@ private:
    CComPtr<ILoadGroupResponse> m_LoadGroupResponse;
    CComPtr<ILBAMModel> m_Model;
    CComPtr<IPOIs> m_POIs;
-   CAnalysisAgentImp* m_pAnalysisAgent;
+   CGirderModelManager* m_pGirderModelManager;
    CComPtr<ILibrary> m_pLibrary;
    CComPtr<IRatingSpecification> m_pRatingSpec;
 

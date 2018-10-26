@@ -86,16 +86,15 @@ void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,con
    GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
 
-   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
 
    // Get the results
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec); // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoads, pUDL);           // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi);             // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker,IProductForces2,pForces2);           // only used if there are temporary supports to be removed
+
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
@@ -109,7 +108,9 @@ void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,con
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
       if ( tsrIntervals.size() == 0 )
+      {
          continue; // next group
+      }
 
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(thisGirderKey);
@@ -160,7 +161,7 @@ void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,con
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bIsFutureOverlay,false,bPedLoading,
                                                                                                  bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
                                                                                                  pRatingSpec,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
 
@@ -183,32 +184,32 @@ void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,con
          }
 
          CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-         std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );
+         std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );
 
          // Get the results for this span (it is faster to get them as a vector rather than individually)
-         std::vector<Float64> girder    = pForces2->GetDeflection(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, ctIncremental);
-         std::vector<Float64> diaphragm = pForces2->GetDeflection(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, ctIncremental);
+         std::vector<Float64> girder    = pForces2->GetDeflection(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, rtIncremental, false);
+         std::vector<Float64> diaphragm = pForces2->GetDeflection(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, rtIncremental, false);
 
          std::vector<Float64> minSlab, maxSlab;
          std::vector<Float64> minSlabPad, maxSlabPad;
-         maxSlab = pForces2->GetDeflection( tsrIntervalIdx, pftSlab, vPoi, maxBAT, ctIncremental );
-         minSlab = pForces2->GetDeflection( tsrIntervalIdx, pftSlab, vPoi, minBAT, ctIncremental );
+         maxSlab = pForces2->GetDeflection( tsrIntervalIdx, pftSlab, vPoi, maxBAT, rtIncremental, false );
+         minSlab = pForces2->GetDeflection( tsrIntervalIdx, pftSlab, vPoi, minBAT, rtIncremental, false );
 
-         maxSlabPad = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, ctIncremental );
-         minSlabPad = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, ctIncremental );
+         maxSlabPad = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, rtIncremental, false );
+         minSlabPad = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, rtIncremental, false );
 
          std::vector<Float64> minDeckPanel, maxDeckPanel;
          if ( bDeckPanels )
          {
-            maxDeckPanel = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, ctIncremental );
-            minDeckPanel = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, ctIncremental );
+            maxDeckPanel = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, rtIncremental, false );
+            minDeckPanel = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, rtIncremental, false );
          }
 
          std::vector<Float64> minConstruction, maxConstruction;
          if ( bConstruction )
          {
-            maxConstruction = pForces2->GetDeflection( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, ctIncremental );
-            minConstruction = pForces2->GetDeflection( tsrIntervalIdx, pftConstruction, vPoi, minBAT, ctIncremental );
+            maxConstruction = pForces2->GetDeflection( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, rtIncremental, false );
+            minConstruction = pForces2->GetDeflection( tsrIntervalIdx, pftConstruction, vPoi, minBAT, rtIncremental, false );
          }
 
          std::vector<Float64> minOverlay, maxOverlay;
@@ -218,30 +219,30 @@ void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,con
 
          if ( bSidewalk )
          {
-            maxSidewalk = pForces2->GetDeflection( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, ctIncremental );
-            minSidewalk = pForces2->GetDeflection( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, ctIncremental );
+            maxSidewalk = pForces2->GetDeflection( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, rtIncremental, false );
+            minSidewalk = pForces2->GetDeflection( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, rtIncremental, false );
          }
 
          if ( bShearKey )
          {
-            maxShearKey = pForces2->GetDeflection( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, ctIncremental );
-            minShearKey = pForces2->GetDeflection( tsrIntervalIdx, pftShearKey, vPoi, minBAT, ctIncremental );
+            maxShearKey = pForces2->GetDeflection( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, rtIncremental, false );
+            minShearKey = pForces2->GetDeflection( tsrIntervalIdx, pftShearKey, vPoi, minBAT, rtIncremental, false );
          }
 
-         maxTrafficBarrier = pForces2->GetDeflection( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, ctIncremental );
-         minTrafficBarrier = pForces2->GetDeflection( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, ctIncremental );
+         maxTrafficBarrier = pForces2->GetDeflection( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtIncremental, false );
+         minTrafficBarrier = pForces2->GetDeflection( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtIncremental, false );
          if ( overlayIntervalIdx != INVALID_INDEX )
          {
-            maxOverlay = pForces2->GetDeflection( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, ctIncremental );
-            minOverlay = pForces2->GetDeflection( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, ctIncremental );
+            maxOverlay = pForces2->GetDeflection( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, rtIncremental, false );
+            minOverlay = pForces2->GetDeflection( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, rtIncremental, false );
          }
 
          std::vector<Float64> userDC, userDW, userLLIM;
          if ( bAreThereUserLoads )
          {
-            userDC   = pForces2->GetDeflection(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT, ctIncremental);
-            userDW   = pForces2->GetDeflection(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT, ctIncremental);
-            userLLIM = pForces2->GetDeflection(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental);
+            userDC   = pForces2->GetDeflection(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT, rtIncremental, false);
+            userDW   = pForces2->GetDeflection(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT, rtIncremental, false);
+            userLLIM = pForces2->GetDeflection(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, rtIncremental, false);
          }
 
          // write out the results
@@ -326,8 +327,11 @@ void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,con
                (*p_table)(row,col++) << deflection.SetValue( maxTrafficBarrier[index] );
                (*p_table)(row,col++) << deflection.SetValue( minTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << deflection.SetValue( maxOverlay[index] );
-               (*p_table)(row,col++) << deflection.SetValue( minOverlay[index] );
+               if ( overlayIntervalIdx != INVALID_INDEX )
+               {
+                  (*p_table)(row,col++) << deflection.SetValue( maxOverlay[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( minOverlay[index] );
+               }
             }
             else
             {
@@ -338,7 +342,10 @@ void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,con
 
                (*p_table)(row,col++) << deflection.SetValue( maxTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << deflection.SetValue( maxOverlay[index] );
+               if ( overlayIntervalIdx != INVALID_INDEX )
+               {
+                  (*p_table)(row,col++) << deflection.SetValue( maxOverlay[index] );
+               }
             }
 
             if ( bAreThereUserLoads )

@@ -64,19 +64,22 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    CGirderKey girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   GET_IFACE2(pBroker,IPointOfInterest,pSegmentPOI);
-   GET_IFACE2(pBroker,ILosses,pLosses);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
    if ( pTendonGeom->GetDuctCount(girderKey) == 0 )
+   {
+      *pPara << _T("No tendons defined") << rptNewLine;
       return pChapter;
+   }
 
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false);
@@ -109,19 +112,19 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*pTable)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      std::vector<pgsPointOfInterest> vPOI(pSegmentPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
+      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
 
       RowIndexType row = 1;
-      std::vector<pgsPointOfInterest>::iterator iter(vPOI.begin());
-      std::vector<pgsPointOfInterest>::iterator end(vPOI.end());
+      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
+      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
       for ( ; iter != end; iter++, row++ )
       {
          col = 0;
 
          pgsPointOfInterest& poi = *iter;
-         (*pTable)(row,col++) << location.SetValue(POI_GIRDER,poi,0.0);
+         (*pTable)(row,col++) << location.SetValue(POI_SPAN,poi,0.0);
 
-         const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
+         const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,stressTendonIntervalIdx);
          const FRICTIONLOSSDETAILS& frDetails(pDetails->FrictionLossDetails[ductIdx]);
 
          (*pTable)(row,col++) << dist.SetValue( frDetails.X );
@@ -143,6 +146,9 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
 
       dist.ShowUnitTag(true);
+      Float64 Lduct = pTendonGeom->GetDuctLength(girderKey,ductIdx);
+      *pPara << _T("Duct Length = ") << dist.SetValue(Lduct) << rptNewLine;
+
       Float64 Lset = pLosses->GetAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metStart);
       *pPara << _T("Left End, ") << Sub2(_T("L"),_T("set")) << _T(" = ") << dist.SetValue(Lset) << rptNewLine;
 

@@ -151,8 +151,6 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    }
    IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(girderKey,continuityEventIndex);
 
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-
    RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,girderKey,_T("Shear"),false,bRating,intervalIdx,continunityIntervalIdx,
                                  analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
@@ -168,9 +166,9 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   GET_IFACE2(pBroker,ICombinedForces,pForces);
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
-   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
+   GET_IFACE2_NOCHECK(pBroker,ILimitStateForces2,pLsForces2); // only used if liveLoadIntervalIdx <= intervalIdx
+
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
@@ -179,7 +177,12 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
+
+#pragma Reminder("UPDATE: using a dummy segment index")
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(thisGirderKey,0));
+
+      PoiAttributeType poiRefAttribute = (intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),poiRefAttribute) );
 
       std::vector<sysSectionValue> dummy;
       std::vector<sysSectionValue> minServiceI, maxServiceI;
@@ -198,101 +201,101 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
       if ( minBAT == maxBAT )
       {
-         maxDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
+         maxDCinc = pForces2->GetShear( intervalIdx, lcDC, vPoi, maxBAT, rtIncremental );
          minDCinc = maxDCinc;
 
-         maxDWinc = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctIncremental, maxBAT );
+         maxDWinc = pForces2->GetShear( intervalIdx, lcDW, vPoi, maxBAT, rtIncremental );
          minDWinc = maxDWinc;
 
          if ( bRating )
          {
-            maxDWRatinginc = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctIncremental, maxBAT );
+            maxDWRatinginc = pForces2->GetShear( intervalIdx, lcDWRating, vPoi, maxBAT, rtIncremental );
             minDWRatinginc = maxDWRatinginc;
          }
 
-         maxDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCumulative, maxBAT );
+         maxDCcum = pForces2->GetShear( intervalIdx, lcDC, vPoi, maxBAT, rtCumulative );
          minDCcum = maxDCcum;
 
-         maxDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCumulative, maxBAT );
+         maxDWcum = pForces2->GetShear( intervalIdx, lcDW, vPoi, maxBAT, rtCumulative );
          minDWcum = maxDWcum;
 
          if ( bRating )
          {
-            maxDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCumulative, maxBAT );
+            maxDWRatingcum = pForces2->GetShear( intervalIdx, lcDWRating, vPoi, maxBAT, rtCumulative );
             minDWRatingcum = maxDWRatingcum;
          }
 
          if ( bTimeStepMethod )
          {
-            maxCRinc = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctIncremental, maxBAT );
+            maxCRinc = pForces2->GetShear( intervalIdx, lcCR, vPoi, maxBAT, rtIncremental );
             minCRinc = maxCRinc;
 
-            maxSHinc = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctIncremental, maxBAT );
+            maxSHinc = pForces2->GetShear( intervalIdx, lcSH, vPoi, maxBAT, rtIncremental );
             minSHinc = maxSHinc;
 
-            maxPSinc = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctIncremental, maxBAT );
+            maxPSinc = pForces2->GetShear( intervalIdx, lcPS, vPoi, maxBAT, rtIncremental );
             minPSinc = maxPSinc;
 
-            maxCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCumulative, maxBAT );
+            maxCRcum = pForces2->GetShear( intervalIdx, lcCR, vPoi, maxBAT, rtCumulative );
             minCRcum = maxCRcum;
 
-            maxSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCumulative, maxBAT );
+            maxSHcum = pForces2->GetShear( intervalIdx, lcSH, vPoi, maxBAT, rtCumulative );
             minSHcum = maxSHcum;
 
-            maxPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCumulative, maxBAT );
+            maxPScum = pForces2->GetShear( intervalIdx, lcPS, vPoi, maxBAT, rtCumulative );
             minPScum = minPScum;
          }
 
          if ( intervalIdx < liveLoadIntervalIdx )
          {
-            pLsForces2->GetShear( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &minServiceI, &maxServiceI );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &minServiceI, &maxServiceI );
          }
       }
       else
       {
-         maxDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
-         minDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, minBAT );
-         maxDWinc = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctIncremental, maxBAT );
-         minDWinc = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctIncremental, minBAT );
+         maxDCinc = pForces2->GetShear( intervalIdx, lcDC, vPoi, maxBAT, rtIncremental );
+         minDCinc = pForces2->GetShear( intervalIdx, lcDC, vPoi, minBAT, rtIncremental );
+         maxDWinc = pForces2->GetShear( intervalIdx, lcDW, vPoi, maxBAT, rtIncremental );
+         minDWinc = pForces2->GetShear( intervalIdx, lcDW, vPoi, minBAT, rtIncremental );
 
          if ( bRating )
          {
-            maxDWRatinginc = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctIncremental, maxBAT );
-            minDWRatinginc = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctIncremental, minBAT );
+            maxDWRatinginc = pForces2->GetShear( intervalIdx, lcDWRating, vPoi, maxBAT, rtIncremental );
+            minDWRatinginc = pForces2->GetShear( intervalIdx, lcDWRating, vPoi, minBAT, rtIncremental );
          }
 
-         maxDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCumulative, maxBAT );
-         minDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCumulative, minBAT );
-         maxDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCumulative, maxBAT );
-         minDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCumulative, minBAT );
+         maxDCcum = pForces2->GetShear( intervalIdx, lcDC, vPoi, maxBAT, rtCumulative );
+         minDCcum = pForces2->GetShear( intervalIdx, lcDC, vPoi, minBAT, rtCumulative );
+         maxDWcum = pForces2->GetShear( intervalIdx, lcDW, vPoi, maxBAT, rtCumulative );
+         minDWcum = pForces2->GetShear( intervalIdx, lcDW, vPoi, minBAT, rtCumulative );
 
          if(bRating)
          {
-            maxDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCumulative, maxBAT );
-            minDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCumulative, minBAT );
+            maxDWRatingcum = pForces2->GetShear( intervalIdx, lcDWRating, vPoi, maxBAT, rtCumulative );
+            minDWRatingcum = pForces2->GetShear( intervalIdx, lcDWRating, vPoi, minBAT, rtCumulative );
          }
 
          if ( bTimeStepMethod )
          {
-            maxCRinc = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctIncremental, maxBAT );
-            minCRinc = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctIncremental, minBAT );
-            maxSHinc = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctIncremental, maxBAT );
-            minSHinc = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctIncremental, minBAT );
-            maxPSinc = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctIncremental, maxBAT );
-            minPSinc = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctIncremental, minBAT );
+            maxCRinc = pForces2->GetShear( intervalIdx, lcCR, vPoi, maxBAT, rtIncremental );
+            minCRinc = pForces2->GetShear( intervalIdx, lcCR, vPoi, minBAT, rtIncremental );
+            maxSHinc = pForces2->GetShear( intervalIdx, lcSH, vPoi, maxBAT, rtIncremental );
+            minSHinc = pForces2->GetShear( intervalIdx, lcSH, vPoi, minBAT, rtIncremental );
+            maxPSinc = pForces2->GetShear( intervalIdx, lcPS, vPoi, maxBAT, rtIncremental );
+            minPSinc = pForces2->GetShear( intervalIdx, lcPS, vPoi, minBAT, rtIncremental );
 
-            maxCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCumulative, maxBAT );
-            minCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCumulative, minBAT );
-            maxSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCumulative, maxBAT );
-            minSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCumulative, minBAT );
-            maxPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCumulative, maxBAT );
-            minPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCumulative, minBAT );
+            maxCRcum = pForces2->GetShear( intervalIdx, lcCR, vPoi, maxBAT, rtCumulative );
+            minCRcum = pForces2->GetShear( intervalIdx, lcCR, vPoi, minBAT, rtCumulative );
+            maxSHcum = pForces2->GetShear( intervalIdx, lcSH, vPoi, maxBAT, rtCumulative );
+            minSHcum = pForces2->GetShear( intervalIdx, lcSH, vPoi, minBAT, rtCumulative );
+            maxPScum = pForces2->GetShear( intervalIdx, lcPS, vPoi, maxBAT, rtCumulative );
+            minPScum = pForces2->GetShear( intervalIdx, lcPS, vPoi, minBAT, rtCumulative );
          }
 
          if ( intervalIdx < liveLoadIntervalIdx )
          {
-            pLsForces2->GetShear( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
-            pLsForces2->GetShear( pgsTypes::ServiceI, intervalIdx, vPoi, minBAT, &minServiceI, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &dummy, &maxServiceI );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI, vPoi, minBAT, &minServiceI, &dummy );
          }
       }
 
@@ -316,7 +319,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
          }
 
-         (*p_table)(row,col++) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
 
          if ( analysisType == pgsTypes::Envelope /*&& continunityIntervalIdx == castDeckIntervalIdx*/ )
          {
@@ -464,9 +467,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,ICombinedForces,pForces);
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
-   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
@@ -475,7 +476,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS));
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT);
 
       std::vector<sysSectionValue> dummy;
       std::vector<sysSectionValue> minPedestrianLL, maxPedestrianLL;
@@ -489,25 +490,25 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
 
       if ( bPedLoading )
       {
-         pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, intervalIdx, vPoi, maxBAT, true, &dummy, &maxPedestrianLL );
-         pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, intervalIdx, vPoi, minBAT, true, &minPedestrianLL, &dummy );
+         pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltPedestrian, vPoi, maxBAT, true, &dummy, &maxPedestrianLL );
+         pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltPedestrian, vPoi, minBAT, true, &minPedestrianLL, &dummy );
       }
 
       if ( bDesign )
       {
-         pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, intervalIdx, vPoi, maxBAT, true, &dummy, &maxDesignLL );
-         pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, intervalIdx, vPoi, minBAT, true, &minDesignLL, &dummy );
+         pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, &dummy, &maxDesignLL );
+         pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, &minDesignLL, &dummy );
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltFatigue, intervalIdx, vPoi, maxBAT, true, &dummy, &maxFatigueLL );
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltFatigue, intervalIdx, vPoi, minBAT, true, &minFatigueLL, &dummy );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, &dummy, &maxFatigueLL );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, &minFatigueLL, &dummy );
          }
 
          if ( bPermit )
          {
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermit, intervalIdx, vPoi, maxBAT, true, &dummy, &maxPermitLL );
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermit, intervalIdx, vPoi, minBAT, true, &minPermitLL, &dummy );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltPermit, vPoi, maxBAT, true, &dummy, &maxPermitLL );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltPermit, vPoi, minBAT, true, &minPermitLL, &dummy );
          }
       }
 
@@ -515,32 +516,32 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
       {
          if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory)) )
          {
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, intervalIdx, vPoi, maxBAT, true, &dummy, &maxDesignLL );
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, intervalIdx, vPoi, minBAT, true, &minDesignLL, &dummy );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, &dummy, &maxDesignLL );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, &minDesignLL, &dummy );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
          {
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Routine, intervalIdx, vPoi, maxBAT, true, &dummy, &maxLegalRoutineLL );
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Routine, intervalIdx, vPoi, minBAT, true, &minLegalRoutineLL, &dummy );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, maxBAT, true, &dummy, &maxLegalRoutineLL );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, &minLegalRoutineLL, &dummy );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
          {
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Special, intervalIdx, vPoi, maxBAT, true, &dummy, &maxLegalSpecialLL );
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Special, intervalIdx, vPoi, minBAT, true, &minLegalSpecialLL, &dummy );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, &dummy, &maxLegalSpecialLL );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, &minLegalSpecialLL, &dummy );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
          {
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Routine, intervalIdx, vPoi, maxBAT, true, &dummy, &maxPermitRoutineLL );
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Routine, intervalIdx, vPoi, minBAT, true, &minPermitRoutineLL, &dummy );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, maxBAT, true, &dummy, &maxPermitRoutineLL );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, minBAT, true, &minPermitRoutineLL, &dummy );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
          {
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Special, intervalIdx, vPoi, maxBAT, true, &dummy, &maxPermitSpecialLL );
-            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Special, intervalIdx, vPoi, minBAT, true, &minPermitSpecialLL, &dummy );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltPermitRating_Special, vPoi, maxBAT, true, &dummy, &maxPermitSpecialLL );
+            pForces2->GetCombinedLiveLoadShear( intervalIdx, pgsTypes::lltPermitRating_Special, vPoi, minBAT, true, &minPermitSpecialLL, &dummy );
          }
       }
 
@@ -738,9 +739,6 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,ICombinedForces,pForces);
-   GET_IFACE2(pBroker,ICombinedForces2,pForces2);
-   GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
@@ -750,7 +748,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS));
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT);
 
       // create second table for BSS3 Limit states
       std::vector<sysSectionValue> dummy;
@@ -771,30 +769,30 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
 
       if ( bDesign )
       {
-         pLsForces2->GetShear( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
-         pLsForces2->GetShear( pgsTypes::ServiceI, intervalIdx, vPoi, minBAT, &minServiceI, &dummy );
+         pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &dummy, &maxServiceI );
+         pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI, vPoi, minBAT, &minServiceI, &dummy );
 
          if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
          {
-            pLsForces2->GetShear( pgsTypes::ServiceIA, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceIA );
-            pLsForces2->GetShear( pgsTypes::ServiceIA, intervalIdx, vPoi, minBAT, &minServiceIA, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceIA, vPoi, maxBAT, &dummy, &maxServiceIA );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceIA, vPoi, minBAT, &minServiceIA, &dummy );
          }
          else
          {
-            pLsForces2->GetShear( pgsTypes::FatigueI, intervalIdx, vPoi, maxBAT, &dummy, &maxFatigueI );
-            pLsForces2->GetShear( pgsTypes::FatigueI, intervalIdx, vPoi, minBAT, &minFatigueI, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::FatigueI, vPoi, maxBAT, &dummy, &maxFatigueI );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::FatigueI, vPoi, minBAT, &minFatigueI, &dummy );
          }
 
-         pLsForces2->GetShear( pgsTypes::ServiceIII, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceIII );
-         pLsForces2->GetShear( pgsTypes::ServiceIII, intervalIdx, vPoi, minBAT, &minServiceIII, &dummy );
+         pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceIII, vPoi, maxBAT, &dummy, &maxServiceIII );
+         pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceIII, vPoi, minBAT, &minServiceIII, &dummy );
 
-         pLsForces2->GetShear( pgsTypes::StrengthI, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI );
-         pLsForces2->GetShear( pgsTypes::StrengthI, intervalIdx, vPoi, minBAT, &minStrengthI, &dummy );
+         pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI, vPoi, maxBAT, &dummy, &maxStrengthI );
+         pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI, vPoi, minBAT, &minStrengthI, &dummy );
 
          if ( bPermit )
          {
-            pLsForces2->GetShear( pgsTypes::StrengthII, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthII );
-            pLsForces2->GetShear( pgsTypes::StrengthII, intervalIdx, vPoi, minBAT, &minStrengthII, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthII, vPoi, maxBAT, &dummy, &maxStrengthII );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthII, vPoi, minBAT, &minStrengthII, &dummy );
          }
       }
 
@@ -803,47 +801,47 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
          // Design - Inventory
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
          {
-            pLsForces2->GetShear( pgsTypes::StrengthI_Inventory, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Inventory );
-            pLsForces2->GetShear( pgsTypes::StrengthI_Inventory, intervalIdx, vPoi, minBAT, &minStrengthI_Inventory, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_Inventory, vPoi, maxBAT, &dummy, &maxStrengthI_Inventory );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_Inventory, vPoi, minBAT, &minStrengthI_Inventory, &dummy );
          }
 
          // Design - Operating
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
          {
-            pLsForces2->GetShear( pgsTypes::StrengthI_Operating, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Operating );
-            pLsForces2->GetShear( pgsTypes::StrengthI_Operating, intervalIdx, vPoi, minBAT, &minStrengthI_Operating, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_Operating, vPoi, maxBAT, &dummy, &maxStrengthI_Operating );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_Operating, vPoi, minBAT, &minStrengthI_Operating, &dummy );
          }
 
          // Legal - Routine
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
          {
-            pLsForces2->GetShear( pgsTypes::StrengthI_LegalRoutine, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Routine );
-            pLsForces2->GetShear( pgsTypes::StrengthI_LegalRoutine, intervalIdx, vPoi, minBAT, &minStrengthI_Legal_Routine, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_LegalRoutine, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Routine );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_LegalRoutine, vPoi, minBAT, &minStrengthI_Legal_Routine, &dummy );
          }
 
          // Legal - Special
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
          {
-            pLsForces2->GetShear( pgsTypes::StrengthI_LegalSpecial, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Special );
-            pLsForces2->GetShear( pgsTypes::StrengthI_LegalSpecial, intervalIdx, vPoi, minBAT, &minStrengthI_Legal_Special, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Special );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, minBAT, &minStrengthI_Legal_Special, &dummy );
          }
 
          // Permit Rating - Routine
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
          {
-            pLsForces2->GetShear( pgsTypes::StrengthII_PermitRoutine, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthII_Permit_Routine );
-            pLsForces2->GetShear( pgsTypes::StrengthII_PermitRoutine, intervalIdx, vPoi, minBAT, &minStrengthII_Permit_Routine, &dummy );
-            pLsForces2->GetShear( pgsTypes::ServiceI_PermitRoutine,   intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI_Permit_Routine );
-            pLsForces2->GetShear( pgsTypes::ServiceI_PermitRoutine,   intervalIdx, vPoi, minBAT, &minServiceI_Permit_Routine, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthII_PermitRoutine, vPoi, maxBAT, &dummy, &maxStrengthII_Permit_Routine );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthII_PermitRoutine, vPoi, minBAT, &minStrengthII_Permit_Routine, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI_PermitRoutine,   vPoi, maxBAT, &dummy, &maxServiceI_Permit_Routine );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI_PermitRoutine,   vPoi, minBAT, &minServiceI_Permit_Routine, &dummy );
          }
 
          // Permit Rating - Special
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
          {
-            pLsForces2->GetShear( pgsTypes::StrengthII_PermitSpecial, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthII_Permit_Special );
-            pLsForces2->GetShear( pgsTypes::StrengthII_PermitSpecial, intervalIdx, vPoi, minBAT, &minStrengthII_Permit_Special, &dummy );
-            pLsForces2->GetShear( pgsTypes::ServiceI_PermitSpecial,   intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI_Permit_Special );
-            pLsForces2->GetShear( pgsTypes::ServiceI_PermitSpecial,   intervalIdx, vPoi, minBAT, &minServiceI_Permit_Special, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthII_PermitSpecial, vPoi, maxBAT, &dummy, &maxStrengthII_Permit_Special );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthII_PermitSpecial, vPoi, minBAT, &minStrengthII_Permit_Special, &dummy );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI_PermitSpecial,   vPoi, maxBAT, &dummy, &maxServiceI_Permit_Special );
+            pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI_PermitSpecial,   vPoi, minBAT, &minServiceI_Permit_Special, &dummy );
          }
       }
 

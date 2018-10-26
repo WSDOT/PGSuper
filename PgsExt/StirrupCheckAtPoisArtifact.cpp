@@ -263,10 +263,14 @@ Float64 pgsLongReinfShearArtifact::GetCapacityForce() const
 bool pgsLongReinfShearArtifact::Passed() const
 {
    if ( !m_IsApplicable ) 
+   {
       return true;
+   }
 
    if ( m_Equation == 1 && fabs(m_Mu) <= fabs(m_Mr) && !IsZero(m_Mr) )
+   {
       return true;
+   }
 
    return m_DemandForce <= m_CapacityForce;
 }
@@ -473,7 +477,9 @@ bool pgsVerticalShearArtifact::IsInCriticalSectionZone() const
 bool pgsVerticalShearArtifact::DidAvsDecreaseAtEnd() const
 {
    if ( m_bEndSpacingApplicable && m_AvSprovided < m_AvSatCS )
+   {
       return true;
+   }
 
    return false;
 }
@@ -481,18 +487,26 @@ bool pgsVerticalShearArtifact::DidAvsDecreaseAtEnd() const
 bool pgsVerticalShearArtifact::Passed() const
 {
    if (DidAvsDecreaseAtEnd())
+   {
       return false;
+   }
 
    if ( m_bIsApplicable )
    {
       if ( m_bIsStrutAndTieRequired )
+      {
          return false;
+      }
 
       if (m_AreStirrupsReqd && ! m_AreStirrupsProvided)
+      {
          return false;
+      }
 
       if (m_Demand > m_Capacity)
+      {
          return false;
+      }
    }
 
    return true;
@@ -671,7 +685,9 @@ bool pgsHorizontalShearArtifact::StrengthPassed() const
 bool pgsHorizontalShearArtifact::Passed() const
 {
    if (DidAvsDecreaseAtEnd())
+   {
       return false;
+   }
 
    if (m_IsApplicable)
    {
@@ -680,9 +696,13 @@ bool pgsHorizontalShearArtifact::Passed() const
       int  avf = MinReinforcementPassed();
 
       if ( avf < 0 )
+      {
          return cap && spc;
+      }
       else
+      {
          return cap && avf && spc;
+      }
    }
    else
    {
@@ -718,9 +738,13 @@ Float64 pgsHorizontalShearArtifact::GetAvOverS() const
 Float64 pgsHorizontalShearArtifact::GetSMax() const
 {
    if (0.0 < m_AvfGirder && 0.0 < m_AvfAdditional)
+   {
       return Min(m_SGirder, m_SAdditional);
+   }
    else
+   {
       return Max(m_SGirder, m_SAdditional);
+   }
 }
 
 //======================== ACCESS     =======================================
@@ -993,7 +1017,9 @@ void pgsHorizontalShearArtifact::GetEndSpacing(Float64* pAvS_provided,Float64* p
 bool pgsHorizontalShearArtifact::DidAvsDecreaseAtEnd() const
 {
    if ( m_bEndSpacingApplicable && m_AvSprovided < m_AvSatCS )
+   {
       return true;
+   }
 
    return false;
 }
@@ -1004,13 +1030,19 @@ bool pgsHorizontalShearArtifact::DidAvsDecreaseAtEnd() const
 bool pgsHorizontalShearArtifact::AssertValid() const
 {
    if (m_Vn1 < 0)
+   {
       return false;
+   }
 
    if (m_Vn2 < 0)
+   {
       return false;
+   }
 
    if (m_Vn3 < 0)
+   {
       return false;
+   }
 
    return true;
 }
@@ -1130,15 +1162,21 @@ bool pgsStirrupDetailArtifact::Passed() const
    if ( IsApplicable() )
    {
       if (m_Avs < m_AvsMin)
+      {
          return false;
+      }
    }
 
    // always check spacing requirements
    if (m_SMax < m_S-TOLERANCE)
+   {
       return false;
+   }
 
    if (m_S+TOLERANCE < m_SMin)
+   {
       return false;
+   }
 
    return true;
 }
@@ -1296,16 +1334,24 @@ const pgsLongReinfShearArtifact* pgsStirrupCheckAtPoisArtifact::GetLongReinfShea
 bool pgsStirrupCheckAtPoisArtifact::Passed() const
 {
    if (!m_HorizontalShearArtifact.Passed())
+   {
       return false;
+   }
 
    if (!m_VerticalShearArtifact.Passed())
+   {
       return false;
+   }
 
    if (!m_StirrupDetailArtifact.Passed())
+   {
       return false;
+   }
 
    if (/*m_LongReinfShearArtifact.IsApplicable() &&*/ !m_LongReinfShearArtifact.Passed())
+   {
       return false;
+   }
 
    return true;
 }

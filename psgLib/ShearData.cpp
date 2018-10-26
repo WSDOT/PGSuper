@@ -94,46 +94,74 @@ CShearData2& CShearData2::operator= (const CShearData2& rOther)
 bool CShearData2::operator == (const CShearData2& rOther) const
 {
    if ( ShearZones != rOther.ShearZones )
+   {
       return false;
+   }
 
    if ( bIsRoughenedSurface != rOther.bIsRoughenedSurface )
+   {
       return false;
+   }
 
    if ( ShearBarGrade != rOther.ShearBarGrade )
+   {
       return false;
+   }
 
    if ( ShearBarType != rOther.ShearBarType )
+   {
       return false;
+   }
 
    if ( HorizontalInterfaceZones != rOther.HorizontalInterfaceZones )
+   {
       return false;
+   }
 
    if ( bAreZonesSymmetrical != rOther.bAreZonesSymmetrical )
+   {
       return false;
+   }
 
    if ( bUsePrimaryForSplitting != rOther.bUsePrimaryForSplitting )
+   {
       return false;
+   }
 
    if ( SplittingBarSize != rOther.SplittingBarSize )
+   {
       return false;
+   }
 
    if ( SplittingBarSpacing != rOther.SplittingBarSpacing )
+   {
       return false;
+   }
 
    if ( SplittingZoneLength != rOther.SplittingZoneLength )
+   {
       return false;
+   }
 
    if ( nSplittingBars != rOther.nSplittingBars )
+   {
       return false;
+   }
 
    if ( ConfinementBarSize != rOther.ConfinementBarSize )
+   {
       return false;
+   }
 
    if ( ConfinementBarSpacing != rOther.ConfinementBarSpacing )
+   {
       return false;
+   }
 
    if ( ConfinementZoneLength != rOther.ConfinementZoneLength )
+   {
       return false;
+   }
 
    return true;
 }
@@ -238,17 +266,20 @@ HRESULT CShearData2::Load(sysIStructuredLoad* pStrLoad)
    // Shear zones
    ShearZones.clear();
 
-   Int32 zcnt;
-   hr = pStrLoad->Property(_T("ZoneCount"), &zcnt );
-   if ( FAILED(hr) )
-      return hr;
+   ZoneIndexType nZones;
+   if ( !pStrLoad->Property(_T("ZoneCount"), &nZones ) )
+   {
+      return STRLOAD_E_INVALIDFORMAT;
+   }
 
-   for ( int i = 0; i < zcnt; i++ )
+   for ( ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++ )
    {
       CShearZoneData2 zd;
       hr = zd.Load(pStrLoad, bConvertToVersion9, legacy_ConfinementBarSize, NumConfinementZones, bDoStirrupsEngageDeck);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
       ShearZones.push_back( zd );
    }
@@ -272,16 +303,19 @@ HRESULT CShearData2::Load(sysIStructuredLoad* pStrLoad)
       // Horizontal interface shear zones
       HorizontalInterfaceZones.clear();
 
-      hr = pStrLoad->Property(_T("HorizZoneCount"), &zcnt );
-      if ( FAILED(hr) )
-         return hr;
+      if ( !pStrLoad->Property(_T("HorizZoneCount"), &nZones ) )
+      {
+         return STRLOAD_E_INVALIDFORMAT;
+      }
 
-      for ( int i = 0; i < zcnt; i++ )
+      for ( ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++ )
       {
          CHorizontalInterfaceZoneData zd;
          hr = zd.Load(pStrLoad);
          if ( FAILED(hr) )
+         {
             return hr;
+         }
 
          HorizontalInterfaceZones.push_back( zd );
       }
@@ -331,7 +365,9 @@ HRESULT CShearData2::Save(sysIStructuredSave* pStrSave)
       CShearZoneData2& pd = *i;
       hr = pd.Save( pStrSave);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
    }
 
    pStrSave->Property(_T("HorizZoneCount"), (Int32)HorizontalInterfaceZones.size() );
@@ -342,7 +378,9 @@ HRESULT CShearData2::Save(sysIStructuredSave* pStrSave)
       CHorizontalInterfaceZoneData& rd = *ih;
       hr = rd.Save( pStrSave);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
    }
 
    pStrSave->Property(_T("SplittingBarSize"), (Uint32)SplittingBarSize );
@@ -356,7 +394,7 @@ HRESULT CShearData2::Save(sysIStructuredSave* pStrSave)
 
    pStrSave->EndUnit();
 
-   return hr;
+   return S_OK;
 }
 
 void CShearData2::CopyGirderEntryData(const GirderLibraryEntry& rGird)
@@ -397,61 +435,3 @@ void CShearData2::MakeAssignment(const CShearData2& rOther)
 {
    MakeCopy( rOther );
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-/*
-HRESULT CShearData2::ShearProc(IStructuredSave* pSave,
-                              IStructuredLoad* pLoad,
-                              IProgress* pProgress,
-                              CShearData* pObj)
-{
-   HRESULT hr = S_OK;
-
-   if ( pSave )
-   {
-      CComVariant var( (Int32)pObj->ShearZones.size() );
-      hr = pSave->put_Property(_T("ZoneCount"), var );
-      if ( FAILED(hr) )
-         return hr;
-
-      ShearZoneIterator i;
-      for ( i = pObj->ShearZones.begin(); i != pObj->ShearZones.end(); i++ )
-      {
-         CShearZoneData& pd = *i;
-         hr = pd.Save( pSave );
-         if ( FAILED(hr) )
-            return hr;
-      }
-   }
-   else
-   {
-      pObj->ShearZones.clear();
-
-      CComVariant var;
-      var.vt = VT_I4;
-      hr = pLoad->Property(_T("ZoneCount"), &var );
-      if ( FAILED(hr) )
-         return hr;
-
-      for ( int i = 0; i < var.lVal; i++ )
-      {
-         CShearZoneData zd;
-         hr = zd.Load( pLoad, pProgress );
-         if ( FAILED(hr) )
-            return hr;
-
-         pObj->ShearZones.push_back( zd );
-      }
-      
-      std::sort( pObj->ShearZones.begin(), pObj->ShearZones.end(), ShearZoneData2Less() );
-   }
-   return hr;
-}
-*/

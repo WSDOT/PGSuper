@@ -65,6 +65,8 @@ rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(CReportSpecification* pRp
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -75,9 +77,8 @@ rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(CReportSpecification* pRp
    {
       CSegmentKey segmentKey(girderKey,segIdx);
 
-      GET_IFACE2(pBroker,ISegmentData,pSegmentData);
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-      bool bTempStrands = (0 < pStrands->Nstrands[pgsTypes::Temporary] && pStrands->TempStrandUsage != pgsTypes::ttsPTBeforeShipping) ? true : false;
+      bool bTempStrands = (0 < pStrands->GetStrandCount(pgsTypes::Temporary) && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPTBeforeShipping) ? true : false;
 
       switch( deckType )
       {
@@ -134,7 +135,6 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
    rptParagraph* pPara = new rptParagraph;
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -322,7 +322,6 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
    rptParagraph* pPara = new rptParagraph;
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -460,7 +459,6 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
    rptParagraph* pPara = new rptParagraph;
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);

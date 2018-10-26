@@ -302,10 +302,10 @@ inline Int16 TxDOTDebondTool::CountDebondsInRow(const RowData& row) const
 
 // local utility class for sorting and collection debond sections
 /////////////////////////////////////////////////////////////////
-class PGSEXTCLASS DebondSectionComputer
+class PGSEXTCLASS CDebondSectionCalculator
 {
 public:
-   DebondSectionComputer(const std::vector<DEBONDCONFIG>& rDebondInfo, Float64 girderLength);
+   CDebondSectionCalculator(const std::vector<DEBONDCONFIG>& rDebondInfo, Float64 girderLength);
 
    SectionIndexType GetNumLeftSections();
    void GetLeftSectionInfo(SectionIndexType idx, Float64* location, IndexType* numStrandsDebonded);

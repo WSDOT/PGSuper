@@ -80,8 +80,12 @@ public:
    //------------------------------------------------------------------------
    // Removes a point of interest. If bConsiderAttributes is true, removes the poi
    // that exactly matches the specified poi, otherwise it removes the poi if just the
-   // locations match.
+   // locations match. The poi IDs are not considered when matching poi. Returns true
+   // if successful
    bool RemovePointOfInterest(const pgsPointOfInterest& poi,bool bConsiderAttributes=true);
+
+   // Removes a point of interest that has the specified ID. Returns true if successful.
+   bool RemovePointOfInterest(PoiIDType poiID);
 
    // Removes all POIs that have the target attribute, except if it contains the exception attribute
    // in which case it is not removed

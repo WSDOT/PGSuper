@@ -91,7 +91,7 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
       const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
       EventIndexType liveLoadEventIdx = pTimelineMgr->GetLiveLoadEventIndex();
 
-      if ( m_Load.m_LoadCase == UserLoads::LL_IM && m_Load.m_EventIndex < liveLoadEventIdx )
+      if ( m_Load.m_LoadCase == UserLoads::LL_IM && m_Load.m_EventIndex != liveLoadEventIdx )
       {
          AfxMessageBox(_T("The LL+IM load case can only be used in the events when live load is defined.\n\nChange the Load Case or Event."));
          pDX->PrepareCtrl(IDC_LOADCASE);
@@ -115,8 +115,8 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
          gdrIdx = ival;
 
 
-      m_Load.m_SpanGirderKey.spanIndex   = spanIdx;
-      m_Load.m_SpanGirderKey.girderIndex = gdrIdx;
+      m_Load.m_spanKey.spanIndex   = spanIdx;
+      m_Load.m_spanKey.girderIndex = gdrIdx;
 
       // location takes some effort
       Float64 locval;
@@ -215,46 +215,46 @@ BOOL CEditPointLoadDlg::OnInitDialog()
 
    m_SpanCB.AddString(_T("All Spans"));
 
-    if (m_Load.m_SpanGirderKey.spanIndex == ALL_SPANS)
+    if (m_Load.m_spanKey.spanIndex == ALL_SPANS)
     {
        m_SpanCB.SetCurSel((int)nSpans);
     }
     else
     {
-      if ( 0 <= m_Load.m_SpanGirderKey.spanIndex && m_Load.m_SpanGirderKey.spanIndex < nSpans)
+      if ( 0 <= m_Load.m_spanKey.spanIndex && m_Load.m_spanKey.spanIndex < nSpans)
       {
-         m_SpanCB.SetCurSel((int)m_Load.m_SpanGirderKey.spanIndex);
+         m_SpanCB.SetCurSel((int)m_Load.m_spanKey.spanIndex);
       }
       else
       {
          ::AfxMessageBox(_T("Warning - The span for this load is out of range. Resetting to Span 1"));
 
-         m_Load.m_SpanGirderKey.spanIndex = 0;
-         m_SpanCB.SetCurSel((int)m_Load.m_SpanGirderKey.spanIndex);
+         m_Load.m_spanKey.spanIndex = 0;
+         m_SpanCB.SetCurSel((int)m_Load.m_spanKey.spanIndex);
       }
     }
 
    UpdateGirderList();
 
-    if (m_Load.m_SpanGirderKey.girderIndex == ALL_GIRDERS)
+    if (m_Load.m_spanKey.girderIndex == ALL_GIRDERS)
     {
        m_GirderCB.SetCurSel( m_GirderCB.GetCount()-1 );
     }
     else
     {
-      if (0 <= m_Load.m_SpanGirderKey.girderIndex && m_Load.m_SpanGirderKey.girderIndex < GirderIndexType(m_GirderCB.GetCount()-1) )
+      if (0 <= m_Load.m_spanKey.girderIndex && m_Load.m_spanKey.girderIndex < GirderIndexType(m_GirderCB.GetCount()-1) )
       {
-         m_GirderCB.SetCurSel((int)m_Load.m_SpanGirderKey.girderIndex);
+         m_GirderCB.SetCurSel((int)m_Load.m_spanKey.girderIndex);
       }
       else
       {
-         m_Load.m_SpanGirderKey.girderIndex = 0;
+         m_Load.m_spanKey.girderIndex = 0;
 
          CString strMsg;
-         strMsg.Format(_T("Warning - The Girder for this load is out of range. Resetting to Girder %s"),LABEL_GIRDER(m_Load.m_SpanGirderKey.girderIndex));
+         strMsg.Format(_T("Warning - The Girder for this load is out of range. Resetting to Girder %s"),LABEL_GIRDER(m_Load.m_spanKey.girderIndex));
          ::AfxMessageBox(strMsg);
 
-         m_GirderCB.SetCurSel((int)m_Load.m_SpanGirderKey.girderIndex);
+         m_GirderCB.SetCurSel((int)m_Load.m_spanKey.girderIndex);
       }
     }
 
@@ -474,7 +474,6 @@ void CEditPointLoadDlg::UpdateGirderList()
 
 void CEditPointLoadDlg::FillEventList()
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
@@ -489,6 +488,7 @@ void CEditPointLoadDlg::FillEventList()
 
       pcbEvent->ResetContent();
 
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
       const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
       EventIndexType nEvents = pTimelineMgr->GetEventCount();

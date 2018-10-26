@@ -27,6 +27,7 @@
 #include "DoubleTeeFactory.h"
 #include "MultiWebDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
+#include "TimeStepLossEngineer.h"
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
@@ -122,10 +123,9 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    }
    else
    {
-#pragma Reminder("UPDATE: Assuming uniform spacing")
-      // uniform spacing is required for this type of girder so maybe this is ok
+      // Assumes uniform girder spacing
 
-      // use raw input here because requesting it from the bridge will cause an infite loop.
+      // use raw input here because requesting it from the bridge will cause an infinite loop.
       // bridge agent calls this during validation
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -250,12 +250,24 @@ void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDT
 
 void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
 {
-    CComObject<CPsBeamLossEngineer>* pEngineer;
-    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(IBeam);
-    pEngineer->SetBroker(pBroker,statusGroupID);
-    (*ppEng) = pEngineer;
-    (*ppEng)->AddRef();
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      CComObject<CTimeStepLossEngineer>* pEngineer;
+      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
+   else
+   {
+       CComObject<CPsBeamLossEngineer>* pEngineer;
+       CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
+       pEngineer->Init(IBeam);
+       pEngineer->SetBroker(pBroker,statusGroupID);
+       (*ppEng) = pEngineer;
+       (*ppEng)->AddRef();
+   }
 }
 
 void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
@@ -451,7 +463,7 @@ Float64 CDoubleTeeFactory::GetVolume(IBroker* pBroker,const CSegmentKey& segment
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
@@ -490,7 +502,7 @@ Float64 CDoubleTeeFactory::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& se
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 S = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );

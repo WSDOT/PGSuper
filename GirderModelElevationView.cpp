@@ -345,7 +345,9 @@ void CGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObject* 
 {
    // block updates so this function is not reentrant
    if (m_DoBlockUpdate)
+   {
       return;
+   }
 
    SimpleMutex mutex(m_DoBlockUpdate);
 
@@ -421,6 +423,8 @@ void CGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObject* 
 
 void CGirderModelElevationView::UpdateDisplayObjects()
 {
+   // NOTE: Each girder in this view is in Girder Path Coordinates
+
    // get the display manager
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -523,7 +527,9 @@ void CGirderModelElevationView::Dump(CDumpContext& dc) const
 int CGirderModelElevationView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CDisplayView::OnCreate(lpCreateStruct) == -1)
+   {
 		return -1;
+   }
 	
    m_pFrame = (CGirderModelChildFrame*)GetParent()->GetParent();
    ASSERT( m_pFrame != 0 );
@@ -560,7 +566,9 @@ DROPEFFECT CGirderModelElevationView::CanDrop(COleDataObject* pDataObject,DWORD 
       source->Read(CSectionCutDisplayImpl::ms_Format,&threadl,sizeof(DWORD));
 
       if (threadl == threadid)
+      {
         return DROPEFFECT_MOVE;
+      }
    }
    else
    {
@@ -569,7 +577,9 @@ DROPEFFECT CGirderModelElevationView::CanDrop(COleDataObject* pDataObject,DWORD 
          CComQIPtr<iDraggable> drag(m_Legend);
          UINT format = drag->Format();
          if ( pDataObject->IsDataAvailable(format) )
+         {
             return DROPEFFECT_MOVE;
+         }
       }
    }
 
@@ -593,7 +603,9 @@ pgsPointOfInterest CGirderModelElevationView::GetCutLocation()
    pDL->FindDisplayObject(SECTION_CUT_ID,&dispObj);
 
    if ( dispObj == NULL )
+   {
       return pgsPointOfInterest();
+   }
 
    CComPtr<iDisplayObjectEvents> sink;
    dispObj->GetEventSink(&sink);
@@ -692,9 +704,6 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
@@ -723,13 +732,66 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       PierIDType pierID = pPier->GetID();
       EventIndexType erectionEventIdx = pTimelineMgr->GetPierErectionEventIndex(pierID);
       if ( eventIdx < erectionEventIdx )
+      {
          return; // pier is not erected in this event
+      }
 
       pbIsPier = new bool;
       *pbIsPier = true;
-      pierLocation = pBridge->GetPierLocation(pierIdx,segmentKey.girderIndex);
+
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      VERIFY(pBridge->GetPierLocation(segmentKey,pierIdx,&pierLocation));
       ID = (IDType)pierIdx;
 
+      // adjust location so that it is at the CL Bearing and not the pier reference line
+      if ( pPier->IsAbutment() )
+      {
+         if ( pPier->GetPrevSpan() == 0 )
+         {
+            Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+            pierLocation += brgOffset;
+         }
+         else
+         {
+            Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(segmentKey);
+            pierLocation -= brgOffset;
+         }
+      }
+      else if ( pPier->IsBoundaryPier() )
+      {
+         pgsTypes::PierConnectionType connectionType = pPier->GetPierConnectionType();
+         if ( connectionType != pgsTypes::ContinuousAfterDeck && 
+              connectionType != pgsTypes::ContinuousBeforeDeck &&
+              connectionType != pgsTypes::IntegralAfterDeck &&
+              connectionType != pgsTypes::IntegralBeforeDeck 
+            )
+         {
+            if ( endType == pgsTypes::metStart )
+            {
+               if ( connectionType == pgsTypes::Hinge ||
+                    connectionType == pgsTypes::Roller ||
+                    connectionType == pgsTypes::IntegralAfterDeckHingeAhead ||
+                    connectionType == pgsTypes::IntegralBeforeDeckHingeAhead)
+               {
+                  Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+                  pierLocation += brgOffset;
+               }
+            }
+            else
+            {
+               if (connectionType == pgsTypes::Hinge ||
+                   connectionType == pgsTypes::Roller ||
+                   connectionType == pgsTypes::IntegralAfterDeckHingeBack ||
+                   connectionType == pgsTypes::IntegralBeforeDeckHingeBack)
+               {
+                  Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(segmentKey);
+                  pierLocation -= brgOffset;
+               }
+            }
+         }
+      }
+
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       sectionHeight = pSectProp->GetSegmentHeightAtPier(segmentKey,pierIdx);
    }
    else
@@ -739,46 +801,34 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       EventIndexType erectionEventIdx, removalEventIdx;
       pTimelineMgr->GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removalEventIdx);
       if ( eventIdx < erectionEventIdx || removalEventIdx <= eventIdx )
+      {
          return;
+      }
 
       pbIsPier = new bool;
       *pbIsPier = false;
 
+      GET_IFACE2(pBroker,IBridge,pBridge);
       pierLocation = pBridge->GetTemporarySupportLocation(pTS->GetIndex(),segmentKey.girderIndex);
 
       ID = pTS->GetID();
 
-      GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
       GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
       PoiAttributeType poiReference = (pIntervals->GetErectSegmentInterval(segmentKey) <= intervalIdx ? POI_ERECTED_SEGMENT : POI_RELEASED_SEGMENT);
       PoiAttributeType attribute = (endType == pgsTypes::metStart ? POI_0L : POI_10L);
-      std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(segmentKey,poiReference | attribute,POIFIND_AND));
+      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,poiReference | attribute,POIFIND_AND));
       ATLASSERT(vPoi.size() == 1);
       pgsPointOfInterest poiCLBrg(vPoi.front());
 
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       sectionHeight = pSectProp->GetHg(pIntervals->GetPrestressReleaseInterval(segmentKey),poiCLBrg);
    }
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(CLSID_Point2d);
-   point->Move(pierLocation-groupOffset,-sectionHeight);
-
-   // offset the support so that it is at the CL Bearing
-   GET_IFACE2(pBroker,IGirder,pIGirder);
-   const CSplicedGirderData* pGirder = pSegment->GetGirder();
-   const CGirderGroupData* pGroup = pGirder->GetGirderGroup();
-   Float64 brgOffsetStart, brgOffsetEnd;
-   pIGirder->GetSegmentBearingOffset(segmentKey,&brgOffsetStart,&brgOffsetEnd);
-   if ( segmentKey.groupIndex == 0 && segmentKey.segmentIndex == 0 && endType == pgsTypes::metStart )
-   {
-      point->Offset(brgOffsetStart,0);
-   }
-
-   if ( segmentKey.groupIndex == pBridge->GetGirderGroupCount()-1 && segmentKey.segmentIndex == pGirder->GetSegmentCount()-1 && endType == pgsTypes::metEnd )
-   {
-      point->Offset(-brgOffsetEnd,0);
-   }
+   point->Move(pierLocation+groupOffset,-sectionHeight);
 
    // create display object
    CComPtr<iPointDisplayObject> ptDispObj;
@@ -795,6 +845,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
    }
    else
    {
+      GET_IFACE2(pBroker,IGirder,pIGirder);
       Float64 temp, leftBrgOffset, rightBrgOffset;
       pIGirder->GetSegmentBearingOffset(segmentKey,&temp,&leftBrgOffset);
       pIGirder->GetSegmentBearingOffset(CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex+1),&rightBrgOffset,&temp);
@@ -818,14 +869,14 @@ void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 grou
    const CSpanData2* pEndSpan   = pSegment->GetSpan(pgsTypes::metEnd);
 
    if ( pStartSpan == pEndSpan )
+   {
       return; // no intermediate pier
+   }
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    const CSpanData2* pSpan = pStartSpan;
    bool bDone = false;
@@ -843,8 +894,8 @@ void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 grou
                                 pSegment->GetIndex());
 
          Float64 sectionHeight = pSectProp->GetSegmentHeightAtPier(segmentKey,pierIdx);
-         Float64 pierLocation = pBridge->GetPierLocation(pierIdx,segmentKey.girderIndex);
-         //pierLocation = pIPoi->ConvertGirderPathCoordinateToGirderCoordinate(segmentKey,pierLocation);
+         Float64 pierLocation;
+         VERIFY( pBridge->GetPierLocation(segmentKey,pierIdx,&pierLocation) );
 
          CComPtr<IPoint2d> point;
          point.CoCreateInstance(CLSID_Point2d);
@@ -890,7 +941,9 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
    tempSupports.insert(tempSupports.begin(),endTempSupports.begin(),endTempSupports.end());
 
    if ( tempSupports.size() == 0 )
+   {
       return; // no temporary supports
+   }
 
    Float64 segment_start_station, segment_end_station;
    pSegment->GetStations(&segment_start_station,&segment_end_station);
@@ -901,20 +954,23 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
       const CTemporarySupportData* pTS = *iter;
       Float64 ts_station = pTS->GetStation();
       if ( ::IsEqual(segment_start_station,ts_station) || ::IsEqual(segment_end_station,ts_station) )
+      {
          continue; // temporary support display objects already created when creating DO's at ends of segment
+      }
 
       if ( ::InRange(segment_start_station,ts_station,segment_end_station) )
       {
          EventIndexType erectionEventIdx, removalEventIdx;
          pTimelineMgr->GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removalEventIdx);
          if ( eventIdx < erectionEventIdx || removalEventIdx <= eventIdx )
+         {
             return; // temp support does not exist in this event
+         }
 
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,ISectionProperties,pSectProp);
          GET_IFACE2(pBroker,IBridge,pBridge);
-         GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
          CSegmentKey segmentKey(pStartSpan->GetBridgeDescription()->GetGirderGroup(pStartSpan)->GetIndex(),
                                 pSegment->GetGirder()->GetIndex(),
@@ -922,7 +978,6 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
 
          Float64 sectionHeight = pSectProp->GetSegmentHeightAtTemporarySupport(segmentKey,pTS->GetIndex());
          Float64 pierLocation = pBridge->GetTemporarySupportLocation(pTS->GetIndex(),segmentKey.girderIndex);
-         //pierLocation = pIPoi->ConvertGirderPathCoordinateToGirderCoordinate(segmentKey,pierLocation);
 
          CComPtr<IPoint2d> point;
          point.CoCreateInstance(CLSID_Point2d);
@@ -965,15 +1020,16 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSuperDocBase* pDoc
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
 
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
-   Float64 groupOffset = pBridge->GetPierLocation(startPierIdx,girderKey.girderIndex);
+   Float64 groupOffset;
+   VERIFY( pBridge->GetPierLocation(CGirderKey(startGroupIdx,girderKey.girderIndex),startPierIdx,&groupOffset) );
 
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      CGirderKey gdrKey(girderKey);
-      gdrKey.groupIndex = grpIdx;
+      CGirderKey thisGirderKey(girderKey);
+      thisGirderKey.groupIndex = grpIdx;
 
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
@@ -988,6 +1044,9 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSuperDocBase* pDoc
          CreateIntermediatePierDisplayObject(groupOffset,pSegment,eventIdx,pTimelineMgr,pDL);
          CreateIntermediateTemporarySupportDisplayObject(groupOffset,pSegment,eventIdx,pTimelineMgr,pDL);
       } // next segment
+
+      Float64 girderLength = pBridge->GetGirderLayoutLength(thisGirderKey);
+      groupOffset += girderLength;
    } // group loop
 }
 
@@ -1045,7 +1104,7 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSuperDocBase* p
             line->Visible(FALSE);
 
             // create a drop site for drag and drop loads
-            CGirderDropSite* pDropSite = new CGirderDropSite(pDoc, CSpanGirderKey(spanIdx,girderKey.girderIndex), m_pFrame);
+            CGirderDropSite* pDropSite = new CGirderDropSite(pDoc, CSpanKey(spanIdx,girderKey.girderIndex), m_pFrame);
             CComPtr<iDropSite> dropSite;
             dropSite.Attach((iDropSite*)pDropSite->GetInterface(&IID_iDropSite));
             line->RegisterDropSite(dropSite);
@@ -1075,7 +1134,7 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSuperDocBase* pDoc
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder); // doesn't always get used
    Float64 group_offset = 0;
   
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
@@ -1246,12 +1305,13 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,IGirder,pIGirder);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
+
+   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
    Float64 group_offset = 0;
 
@@ -1275,155 +1335,166 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,
          // so that it goes to the left face of the current segment
          running_segment_length += start_offset;
 
-         Float64 lft_harp, rgt_harp;
-         pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+         SegmentIDType segID = pSegment->GetID();
 
-         CComPtr<IPoint2d> from_point, to_point;
-         from_point.CoCreateInstance(__uuidof(Point2d));
-         to_point.CoCreateInstance(__uuidof(Point2d));
-         from_point->put_X(group_offset + running_segment_length);
-         to_point->put_X(group_offset + running_segment_length + segment_length);
-
-
-         // Look up the POI so it is faster to get section properties
-         pgsPointOfInterest start_poi( pPOI->GetPointOfInterest(segmentKey,0.0) );
-         pgsPointOfInterest end_poi(   pPOI->GetPointOfInterest(segmentKey,segment_length) );
-
-         if ( start_poi.GetID() == INVALID_ID )
-            start_poi.SetDistFromStart(0.0);
-
-         if ( end_poi.GetID() == INVALID_ID )
-            end_poi.SetDistFromStart(segment_length);
-
-         std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
-         ATLASSERT( 0 <= vPOI.size() && vPOI.size() <= 2 );
-         pgsPointOfInterest hp1_poi;
-         pgsPointOfInterest hp2_poi;
-
-         if ( 0 < vPOI.size() )
+         EventIndexType erectSegmentEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(segID);
+         if ( erectSegmentEventIdx <= eventIdx )
          {
-            hp1_poi = vPOI.front();
-            hp2_poi = vPOI.back();
-         }
+            Float64 lft_harp, rgt_harp;
+            pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
 
-         // straight strands
-         CComPtr<IPoint2dCollection> spoints, epoints;
-         pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Straight,&spoints);
-         pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Straight,&epoints);
-         CollectionIndexType nStrandPoints;
-         spoints->get_Count(&nStrandPoints);
-         CollectionIndexType strandPointIdx;
-         for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
-         {
-            // strand points measured from bottom of girder
-            CComPtr<IPoint2d> pntStart, pntEnd;
-            spoints->get_Item(strandPointIdx,&pntStart);
-            epoints->get_Item(strandPointIdx,&pntEnd);
+            CComPtr<IPoint2d> from_point, to_point;
+            from_point.CoCreateInstance(__uuidof(Point2d));
+            to_point.CoCreateInstance(__uuidof(Point2d));
+            from_point->put_X(group_offset + running_segment_length);
+            to_point->put_X(group_offset + running_segment_length + segment_length);
 
-            Float64 yStart, yEnd;
-            pntStart->get_Y(&yStart);
-            pntEnd->get_Y(&yEnd);
 
-            from_point->put_Y(yStart);
-            to_point->put_Y(yEnd);
-            
-            BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+            // Look up the POI so it is faster to get section properties
+            pgsPointOfInterest start_poi( pPOI->GetPointOfInterest(segmentKey,0.0) );
+            pgsPointOfInterest end_poi(   pPOI->GetPointOfInterest(segmentKey,segment_length) );
 
-            Float64 start,end;
-            if ( pStrandGeometry->IsStrandDebonded(segmentKey,strandPointIdx,pgsTypes::Straight,&start,&end) )
+            if ( start_poi.GetID() == INVALID_ID )
             {
-               // Left debond point
-               CComPtr<IPoint2d> left_debond;
-               left_debond.CoCreateInstance(CLSID_Point2d);
-               left_debond->Move(start_offset + running_segment_length + start,yStart);
-
-               BuildLine(pDebondDL, from_point, left_debond, DEBOND_FILL_COLOR );
-               BuildDebondTick(pDebondDL, left_debond, DEBOND_FILL_COLOR );
-
-               CComPtr<IPoint2d> right_debond;
-               right_debond.CoCreateInstance(CLSID_Point2d);
-               right_debond->Move(start_offset + running_segment_length + end,yEnd);
-
-               BuildLine(pDebondDL, right_debond, to_point, DEBOND_FILL_COLOR);
-               BuildDebondTick(pDebondDL, right_debond, DEBOND_FILL_COLOR );
+               start_poi.SetDistFromStart(0.0);
             }
-         }
 
-         // harped strands
-         if ( 0 < vPOI.size() )
-         {
-            CComPtr<IPoint2dCollection> spoints, hp1points, hp2points, epoints;
-            pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Harped,&spoints);
-            pStrandGeometry->GetStrandPositions(hp1_poi,   pgsTypes::Harped,&hp1points);
-            pStrandGeometry->GetStrandPositions(hp2_poi,   pgsTypes::Harped,&hp2points);
-            pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Harped,&epoints);
+            if ( end_poi.GetID() == INVALID_ID )
+            {
+               end_poi.SetDistFromStart(segment_length);
+            }
+
+            std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
+            ATLASSERT( 0 <= vPOI.size() && vPOI.size() <= 2 );
+            pgsPointOfInterest hp1_poi;
+            pgsPointOfInterest hp2_poi;
+
+            if ( 0 < vPOI.size() )
+            {
+               hp1_poi = vPOI.front();
+               hp2_poi = vPOI.back();
+            }
+
+            // straight strands
+            CComPtr<IPoint2dCollection> spoints, epoints;
+            pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Straight,&spoints);
+            pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Straight,&epoints);
+            CollectionIndexType nStrandPoints;
+            spoints->get_Count(&nStrandPoints);
+            CollectionIndexType strandPointIdx;
+            for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
+            {
+               // strand points measured from bottom of girder
+               CComPtr<IPoint2d> pntStart, pntEnd;
+               spoints->get_Item(strandPointIdx,&pntStart);
+               epoints->get_Item(strandPointIdx,&pntEnd);
+
+               Float64 yStart, yEnd;
+               pntStart->get_Y(&yStart);
+               pntEnd->get_Y(&yEnd);
+
+               from_point->put_Y(yStart);
+               to_point->put_Y(yEnd);
+               
+               BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+
+               Float64 start,end;
+               if ( pStrandGeometry->IsStrandDebonded(segmentKey,strandPointIdx,pgsTypes::Straight,&start,&end) )
+               {
+                  // Left debond point
+                  CComPtr<IPoint2d> left_debond;
+                  left_debond.CoCreateInstance(CLSID_Point2d);
+                  left_debond->Move(start_offset + running_segment_length + start,yStart);
+
+                  BuildLine(pDebondDL, from_point, left_debond, DEBOND_FILL_COLOR );
+                  BuildDebondTick(pDebondDL, left_debond, DEBOND_FILL_COLOR );
+
+                  CComPtr<IPoint2d> right_debond;
+                  right_debond.CoCreateInstance(CLSID_Point2d);
+                  right_debond->Move(start_offset + running_segment_length + end,yEnd);
+
+                  BuildLine(pDebondDL, right_debond, to_point, DEBOND_FILL_COLOR);
+                  BuildDebondTick(pDebondDL, right_debond, DEBOND_FILL_COLOR );
+               }
+            }
+
+            // harped strands
+            if ( 0 < vPOI.size() )
+            {
+               CComPtr<IPoint2dCollection> spoints, hp1points, hp2points, epoints;
+               pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Harped,&spoints);
+               pStrandGeometry->GetStrandPositions(hp1_poi,   pgsTypes::Harped,&hp1points);
+               pStrandGeometry->GetStrandPositions(hp2_poi,   pgsTypes::Harped,&hp2points);
+               pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Harped,&epoints);
+               spoints->get_Count(&nStrandPoints);
+               for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
+               {
+                  CComPtr<IPoint2d> start_pos, hp1_pos, hp2_pos, end_pos;
+                  spoints->get_Item(strandPointIdx,&start_pos);
+                  hp1points->get_Item(strandPointIdx,&hp1_pos);
+                  hp2points->get_Item(strandPointIdx,&hp2_pos);
+                  epoints->get_Item(strandPointIdx,&end_pos);
+
+                  Float64 start_x, start_y;
+                  start_pos->Location(&start_x,&start_y);
+
+                  Float64 hp1_x, hp1_y;
+                  hp1_pos->Location(&hp1_x,&hp1_y);
+
+                  Float64 hp2_x, hp2_y;
+                  hp2_pos->Location(&hp2_x,&hp2_y);
+
+                  Float64 end_x, end_y;
+                  end_pos->Location(&end_x,&end_y);
+
+                  from_point->put_X(group_offset + running_segment_length);
+                  from_point->put_Y(start_y);
+                  to_point->put_X(group_offset + running_segment_length + lft_harp);
+                  to_point->put_Y(hp1_y);
+                  
+                  BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+
+                  from_point->put_X(group_offset + running_segment_length + lft_harp);
+                  from_point->put_Y(hp1_y);
+                  to_point->put_X(group_offset + running_segment_length + rgt_harp);
+                  to_point->put_Y(hp2_y);
+                  
+                  BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+
+                  from_point->put_X(group_offset + running_segment_length + rgt_harp);
+                  from_point->put_Y(hp2_y);
+                  to_point->put_X(group_offset + running_segment_length + segment_length);
+                  to_point->put_Y(end_y);
+
+                  BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+               }
+            }
+
+            // Temporary strands
+            spoints.Release();
+            epoints.Release();
+            pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Temporary,&spoints);
+            pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Temporary,&epoints);
             spoints->get_Count(&nStrandPoints);
             for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
             {
-               CComPtr<IPoint2d> start_pos, hp1_pos, hp2_pos, end_pos;
-               spoints->get_Item(strandPointIdx,&start_pos);
-               hp1points->get_Item(strandPointIdx,&hp1_pos);
-               hp2points->get_Item(strandPointIdx,&hp2_pos);
-               epoints->get_Item(strandPointIdx,&end_pos);
+               CComPtr<IPoint2d> pntStart, pntEnd;
+               spoints->get_Item(strandPointIdx, &pntStart);
+               epoints->get_Item(strandPointIdx, &pntEnd);
 
-               Float64 start_x, start_y;
-               start_pos->Location(&start_x,&start_y);
-
-               Float64 hp1_x, hp1_y;
-               hp1_pos->Location(&hp1_x,&hp1_y);
-
-               Float64 hp2_x, hp2_y;
-               hp2_pos->Location(&hp2_x,&hp2_y);
-
-               Float64 end_x, end_y;
-               end_pos->Location(&end_x,&end_y);
-
+               Float64 y;
                from_point->put_X(group_offset + running_segment_length);
-               from_point->put_Y(start_y);
-               to_point->put_X(group_offset + running_segment_length + lft_harp);
-               to_point->put_Y(hp1_y);
-               
-               BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+               pntStart->get_Y(&y);
+               from_point->put_Y(y);
 
-               from_point->put_X(group_offset + running_segment_length + lft_harp);
-               from_point->put_Y(hp1_y);
-               to_point->put_X(group_offset + running_segment_length + rgt_harp);
-               to_point->put_Y(hp2_y);
-               
-               BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
-
-               from_point->put_X(group_offset + running_segment_length + rgt_harp);
-               from_point->put_Y(hp2_y);
                to_point->put_X(group_offset + running_segment_length + segment_length);
-               to_point->put_Y(end_y);
-
+               pntEnd->get_Y(&y);
+               to_point->put_Y(y);
+               
                BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
             }
-         }
-
-         // Temporary strands
-         spoints.Release();
-         epoints.Release();
-         pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Temporary,&spoints);
-         pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Temporary,&epoints);
-         spoints->get_Count(&nStrandPoints);
-         for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
-         {
-            CComPtr<IPoint2d> pntStart, pntEnd;
-            spoints->get_Item(strandPointIdx, &pntStart);
-            epoints->get_Item(strandPointIdx, &pntEnd);
-
-            Float64 y;
-            from_point->put_X(group_offset + running_segment_length);
-            pntStart->get_Y(&y);
-            from_point->put_Y(y);
-
-            to_point->put_X(group_offset + running_segment_length + segment_length);
-            pntEnd->get_Y(&y);
-            to_point->put_Y(y);
-            
-            BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
-         }
+            }
 
          running_segment_length += segment_layout_length - start_offset;
       } // end of segment loop
@@ -1432,7 +1503,7 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,
    } // end of group loop
 }
 
-void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType /*eventIdx*/,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
 #pragma Reminder("UPDATE: this shows the geometric centroid of the strand, need to show location of resultant PS force")
 
@@ -1441,16 +1512,20 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
    ATLASSERT(pDL);
    pDL->Clear();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+
+   // this interfaces are need in the loop, and there are cases where they don't get used
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
+   GET_IFACE2_NOCHECK(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
+
+   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
    Float64 group_offset = 0;
 
@@ -1479,68 +1554,78 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
             running_segment_length += start_offset;
          }
 
-         StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
-         nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
-         nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
-         if (0 < nStrands)
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+         SegmentIDType segID = pSegment->GetID();
+
+         EventIndexType erectSegmentEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(segID);
+         if ( erectSegmentEventIdx <= eventIdx )
          {
-            CComPtr<IPoint2d> from_point, to_point;
-            from_point.CoCreateInstance(__uuidof(Point2d));
-            to_point.CoCreateInstance(__uuidof(Point2d));
-
-            Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
-
-            GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-            std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
-            ATLASSERT( 0 <= vPOI.size() && vPOI.size() <= 2 );
-
-            // Look up the POI so it is faster to get section properties
-            pgsPointOfInterest start_poi( pPOI->GetPointOfInterest(segmentKey,0.0) );
-            pgsPointOfInterest end_poi(   pPOI->GetPointOfInterest(segmentKey,segment_length) );
-
-            if ( start_poi.GetID() == INVALID_ID )
-               start_poi.SetDistFromStart(0.0);
-
-            if ( end_poi.GetID() == INVALID_ID )
-               end_poi.SetDistFromStart(segment_length);
-
-            vPOI.push_back(start_poi);
-            vPOI.push_back(end_poi);
-            std::sort(vPOI.begin(),vPOI.end());
-
-            Float64 from_y;
-            Float64 to_y;
-            std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
-            pgsPointOfInterest prev_poi = *iter;
-            iter++;
-
-            Float64 Ybg = pSectProp->GetY(intervalIdx,prev_poi,pgsTypes::BottomGirder);
-            Float64 Hg  = pSectProp->GetHg(intervalIdx,prev_poi);
-            Float64 nEff;
-            Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, prev_poi, false, &nEff);
-            from_y = Ybg - (Hg+ecc);
-
-            std::vector<pgsPointOfInterest>::iterator end( vPOI.end() );
-            for ( ; iter != end; iter++ )
+            StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
+            nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
+            nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
+            if (0 < nStrands)
             {
-               pgsPointOfInterest& poi = *iter;
-            
-               Ybg = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder);
-               Hg  = pSectProp->GetHg(intervalIdx,poi);
-               ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, false, &nEff);
-               to_y = Ybg - (Hg+ecc);
+               CComPtr<IPoint2d> from_point, to_point;
+               from_point.CoCreateInstance(__uuidof(Point2d));
+               to_point.CoCreateInstance(__uuidof(Point2d));
 
-               Float64 X = pIPoi->ConvertPoiToGirderPathCoordinate(prev_poi);
-               from_point->put_X(group_offset + X);
-               from_point->put_Y(from_y);
-               X = pIPoi->ConvertPoiToGirderPathCoordinate(poi);
-               to_point->put_X(group_offset + X);
-               to_point->put_Y(to_y);
+               Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
-               BuildLine(pDL, from_point, to_point, RED, WHITE);
+               std::vector<pgsPointOfInterest> vPOI( pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
+               ATLASSERT( 0 <= vPOI.size() && vPOI.size() <= 2 );
 
-               prev_poi = poi;
-               from_y = to_y;
+               // Look up the POI so it is faster to get section properties
+               pgsPointOfInterest start_poi( pPoi->GetPointOfInterest(segmentKey,0.0) );
+               pgsPointOfInterest end_poi(   pPoi->GetPointOfInterest(segmentKey,segment_length) );
+
+               if ( start_poi.GetID() == INVALID_ID )
+               {
+                  start_poi.SetDistFromStart(0.0);
+               }
+
+               if ( end_poi.GetID() == INVALID_ID )
+               {
+                  end_poi.SetDistFromStart(segment_length);
+               }
+
+               vPOI.push_back(start_poi);
+               vPOI.push_back(end_poi);
+               std::sort(vPOI.begin(),vPOI.end());
+
+               Float64 from_y;
+               Float64 to_y;
+               std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
+               pgsPointOfInterest prev_poi = *iter;
+               iter++;
+
+               Float64 Ybg = pSectProp->GetY(intervalIdx,prev_poi,pgsTypes::BottomGirder);
+               Float64 Hg  = pSectProp->GetHg(intervalIdx,prev_poi);
+               Float64 nEff;
+               Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, prev_poi, false, &nEff);
+               from_y = Ybg - (Hg+ecc);
+
+               std::vector<pgsPointOfInterest>::iterator end( vPOI.end() );
+               for ( ; iter != end; iter++ )
+               {
+                  pgsPointOfInterest& poi = *iter;
+               
+                  Ybg = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder);
+                  Hg  = pSectProp->GetHg(intervalIdx,poi);
+                  ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, false, &nEff);
+                  to_y = Ybg - (Hg+ecc);
+
+                  Float64 X = pPoi->ConvertPoiToGirderPathCoordinate(prev_poi);
+                  from_point->put_X(group_offset + X);
+                  from_point->put_Y(from_y);
+                  X = pPoi->ConvertPoiToGirderPathCoordinate(poi);
+                  to_point->put_X(group_offset + X);
+                  to_point->put_Y(to_y);
+
+                  BuildLine(pDL, from_point, to_point, RED, WHITE);
+
+                  prev_poi = poi;
+                  from_y = to_y;
+               }
             }
          }
 
@@ -1561,8 +1646,10 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,ITendonGeometry,pTendonGeometry); // not always used (this is because of the continue statement below)
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder); // not always used (this is because of the continue statement below)
 
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
@@ -1571,8 +1658,6 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
 
 
    Float64 group_offset = 0;
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeometry);
-   GET_IFACE2(pBroker,IGirder,pGirder);
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
@@ -1583,8 +1668,12 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
 #pragma Reminder("UPDATE: draw portion of strand in a segment")
       // this next block of code is a cop-out. it would be better to 
       // draw the duct in the segment if it is erected.
+      //
+      // IF THIS GETS FIXED, RE-EVALUATE THE USE OF GET_IFACE2_NOCHECK above
       if ( !pTimelineMgr->AreAllSegmentsErected(thisGirderKey,eventIdx) )
+      {
          continue; // if all segments are not erected, there is nothing to draw
+      }
 
       WebIndexType nWebs = pGirder->GetWebCount(thisGirderKey);
 
@@ -1595,7 +1684,9 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
          IndexType index = ductIdx/nWebs;
          EventIndexType ptEventIdx = pTimelineMgr->GetStressTendonEventIndex(thisGirderKey,index);
          if ( eventIdx < ptEventIdx || ptEventIdx == INVALID_INDEX )
+         {
             bIsTendonInstalled = false;
+         }
          
          CComPtr<IPoint2dCollection> ductPoints;
          pTendonGeometry->GetDuctCenterline(thisGirderKey,ductIdx,&ductPoints); // this is in Girder Coordinates (measured from face of girder)
@@ -1608,7 +1699,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
          ductPoints->get_Item(0,&from_point);
          Float64 X,Y;
          from_point->Location(&X,&Y);
-         X = pIPoi->ConvertGirderCoordinateToGirderPathCoordinate(thisGirderKey,X);
+         X = pPoi->ConvertGirderCoordinateToGirderPathCoordinate(thisGirderKey,X);
          X += group_offset;
          from_point->Move(X,Y);
 
@@ -1617,14 +1708,18 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
             CComPtr<IPoint2d> to_point;
             ductPoints->get_Item(pntIdx,&to_point);
             to_point->Location(&X,&Y);
-            X = pIPoi->ConvertGirderCoordinateToGirderPathCoordinate(thisGirderKey,X);
+            X = pPoi->ConvertGirderCoordinateToGirderPathCoordinate(thisGirderKey,X);
             X += group_offset;
             to_point->Move(X,Y);
 
             if ( bIsTendonInstalled )
+            {
                BuildLine(pDL, from_point, to_point, TENDON_LINE_COLOR);
+            }
             else
+            {
                BuildLine(pDL, from_point, to_point, DUCT_LINE_COLOR1, DUCT_LINE_COLOR2);
+            }
 
             from_point = to_point;
          }
@@ -1637,107 +1732,6 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
 
 void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
-#pragma Reminder("Remove obsolete code")
-   // the commented out code below is what the code was before merging RDP's code
-   // for partial length rebar. When the new code works, remove this code
-/*
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(REBAR_LIST,&pDL);
-   ATLASSERT(pDL);
-   pDL->Clear();
-
-   // if segment isn't constructed, don't display it
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   if ( m_pFrame->GetEvent() < pIBridgeDesc->GetSegmentConstructionEventIndex() )
-      return;
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   GET_IFACE2(pBroker,IGirder,pIGirder);
-
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
-
-   Float64 group_offset = 0;
-
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
-   {
-      Float64 running_segment_length = 0;
-
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
-      SegmentIndexType nSegments = pGirder->GetSegmentCount();
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-      {
-         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
-
-         Float64 start_brg_offset   = pBridge->GetSegmentStartBearingOffset(segmentKey);
-         Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(segmentKey);
-         Float64 start_offset       = start_brg_offset - start_end_distance;
-
-         Float64 segment_length        = pBridge->GetSegmentLength(segmentKey);
-         Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(segmentKey);
-
-         // Look up the POI so it is faster to get section properties
-         pgsPointOfInterest poiStart( pPOI->GetPointOfInterest(segmentKey,0.0) );
-         pgsPointOfInterest poiEnd(   pPOI->GetPointOfInterest(segmentKey,segment_length) );
-
-         if ( poiStart.GetID() == INVALID_ID )
-            poiStart.SetDistFromStart(0.0);
-
-         if ( poiEnd.GetID() == INVALID_ID )
-            poiEnd.SetDistFromStart(segment_length);
-
-
-         Float64 HgStart = pIGirder->GetHeight(poiStart);
-         Float64 HgEnd   = pIGirder->GetHeight(poiEnd);
-
-         CComPtr<IRebarSection> rebar_section_start, rebar_section_end;
-         pLongRebarGeometry->GetRebars(poiStart,&rebar_section_start);
-         pLongRebarGeometry->GetRebars(poiEnd,  &rebar_section_end);
-
-         CComPtr<IEnumRebarSectionItem> enum_start, enum_end;
-         rebar_section_start->get__EnumRebarSectionItem(&enum_start);
-         rebar_section_end->get__EnumRebarSectionItem(&enum_end);
-
-         CComPtr<IRebarSectionItem> startItem, endItem;
-         while ( enum_start->Next(1,&startItem,NULL) != S_FALSE && enum_end->Next(1,&endItem,NULL) != S_FALSE )
-         {
-            CComPtr<IPoint2d> startLocation, endLocation;
-            startItem->get_Location(&startLocation);
-            endItem->get_Location(&endLocation);
-
-            Float64 yStart;
-            startLocation->get_Y(&yStart);
-
-            Float64 yEnd;
-            endLocation->get_Y(&yEnd);
-
-            startItem.Release();
-            endItem.Release();
-
-            CComPtr<IPoint2d> from_point, to_point;
-            from_point.CoCreateInstance(__uuidof(Point2d));
-            to_point.CoCreateInstance(__uuidof(Point2d));
-
-            from_point->put_X(running_segment_length + start_offset);
-            from_point->put_Y(yStart-HgStart);
-
-            to_point->put_X(running_segment_length + start_offset + segment_length);
-            to_point->put_Y(yEnd-HgEnd);
-            
-            BuildLine(pDL, from_point, to_point, REBAR_COLOR);
-         }
-
-         running_segment_length += segment_layout_length;
-      }
-
-      group_offset += running_segment_length;
-   }
-*/
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(REBAR_LIST,&pDL);
    ATLASSERT(pDL);
@@ -1746,8 +1740,7 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // not used if there aren't any rebar
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -1769,7 +1762,9 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, 
 
          // if segment isn't constructed, don't display it
          if ( m_pFrame->GetEvent() < pIBridgeDesc->GetSegmentConstructionEventIndex(segmentKey) )
+         {
             continue;
+         }
 
          Float64 start_brg_offset      = pBridge->GetSegmentStartBearingOffset(segmentKey);
          Float64 start_end_distance    = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -1796,6 +1791,10 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, 
             Float64 startLoc, layoutLength, endLoc;
             rebarLayoutItem->get_Start(&startLoc);
             rebarLayoutItem->get_Length(&layoutLength);
+
+            startLoc = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,startLoc); 
+            startLoc = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,startLoc);
+
             endLoc = startLoc + layoutLength;
 
             if ( segment_length <= startLoc )
@@ -1859,10 +1858,12 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, 
    } // next group
 }
 
-template <class T> bool IsLoadApplicable(IBroker* pBroker,const T& load,EventIndexType eventIdx,const CGirderKey& girderKey)
+template <class T> bool IsLoadApplicable(IBroker* pBroker,const T* pLoad,EventIndexType eventIdx,const CGirderKey& girderKey)
 {
-   if ( load.m_EventIndex != eventIdx )
+   if ( pLoad->m_EventIndex != eventIdx )
+   {
       return false;
+   }
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType startPierIdx, endPierIdx;
@@ -1879,8 +1880,8 @@ template <class T> bool IsLoadApplicable(IBroker* pBroker,const T& load,EventInd
    SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
    SpanIndexType endSpanIdx   = (SpanIndexType)(endPierIdx-1);
 
-   bool bMatchSpan = ((startSpanIdx <= load.m_SpanGirderKey.spanIndex && load.m_SpanGirderKey.spanIndex <= endSpanIdx) || load.m_SpanGirderKey.spanIndex == ALL_SPANS) ? true : false;
-   bool bMatchGirder = (load.m_SpanGirderKey.girderIndex == girderKey.girderIndex || load.m_SpanGirderKey.girderIndex == ALL_GIRDERS) ? true : false;
+   bool bMatchSpan = ((startSpanIdx <= pLoad->m_spanKey.spanIndex && pLoad->m_spanKey.spanIndex <= endSpanIdx) || pLoad->m_spanKey.spanIndex == ALL_SPANS) ? true : false;
+   bool bMatchGirder = (pLoad->m_spanKey.girderIndex == girderKey.girderIndex || pLoad->m_spanKey.girderIndex == ALL_GIRDERS) ? true : false;
 
    return bMatchSpan && bMatchGirder;
 }
@@ -1902,11 +1903,11 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pD
    CollectionIndexType loadIdx;
    for (loadIdx = 0; loadIdx < nLoads; loadIdx++)
    {
-      const CPointLoadData& load = pUserDefinedLoadData->GetPointLoad(loadIdx);
+      const CPointLoadData* pLoad = pUserDefinedLoadData->GetPointLoad(loadIdx);
 
-      if (IsLoadApplicable(pBroker,load,eventIdx,girderKey))
+      if (IsLoadApplicable(pBroker,pLoad,eventIdx,girderKey))
       {
-         max = Max(fabs(load.m_Magnitude), max);
+         max = Max(fabs(pLoad->m_Magnitude), max);
       }
    }
 
@@ -1916,24 +1917,26 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pD
    // create load display objects from filtered list
    for (loadIdx = 0; loadIdx < nLoads; loadIdx++)
    {
-      const CPointLoadData& load = pUserDefinedLoadData->GetPointLoad(loadIdx);
-      if (IsLoadApplicable(pBroker,load,eventIdx,girderKey))
+      const CPointLoadData* pLoad = pUserDefinedLoadData->GetPointLoad(loadIdx);
+      if (IsLoadApplicable(pBroker,pLoad,eventIdx,girderKey))
       {
-         casesExist[load.m_LoadCase] = true;
+         casesExist[pLoad->m_LoadCase] = true;
 
-         COLORREF color = GetLoadGroupColor(load.m_LoadCase);
+         COLORREF color = GetLoadGroupColor(pLoad->m_LoadCase);
 
-         SpanIndexType startSpanIdx = (load.m_SpanGirderKey.spanIndex == ALL_SPANS ? 0 : load.m_SpanGirderKey.spanIndex);
-         SpanIndexType endSpanIdx   = (load.m_SpanGirderKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
+         SpanIndexType startSpanIdx = (pLoad->m_spanKey.spanIndex == ALL_SPANS ? 0 : pLoad->m_spanKey.spanIndex);
+         SpanIndexType endSpanIdx   = (pLoad->m_spanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
          for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
          {
-            CSpanGirderKey spanGirderKey(spanIdx,girderKey.girderIndex);
+            CSpanKey spanKey(spanIdx,girderKey.girderIndex);
 
-            Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
+            Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
-            Float64 location_from_left_end = load.m_Location;
-            if (load.m_Fractional)
+            Float64 location_from_left_end = pLoad->m_Location;
+            if (pLoad->m_Fractional)
+            {
                location_from_left_end *= span_length;
+            }
 
             CComPtr<iDisplayObject> disp_obj;
             factory->Create(CPointLoadDrawStrategyImpl::ms_Format,NULL,&disp_obj);
@@ -1944,9 +1947,9 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pD
             point_disp->GetDrawingStrategy(&pStrategy);
 
             CComQIPtr<iPointLoadDrawStrategy,&IID_iPointLoadDrawStrategy> pls(pStrategy);
-            pls->Init(point_disp, pBroker, load, loadIdx, span_length, max, color);
+            pls->Init(point_disp, pBroker, *pLoad, loadIdx, span_length, max, color);
 
-            Float64 x_position = GetSpanStartLocation(spanGirderKey);
+            Float64 x_position = GetSpanStartLocation(spanKey);
             x_position += location_from_left_end;
 
             CComPtr<IPoint2d> point;
@@ -1960,16 +1963,16 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pD
             CComPtr<IBroker> pBroker;
             EAFGetBroker(&pBroker);
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-            CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
+            CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
             CString strLocation  = FormatDimension(location_from_left_end,pDisplayUnits->GetSpanLengthUnit(),true);
 
             CString strToolTip;
             strToolTip.Format(_T("Point Load\r\nP = %s  L = %s from left end of span\r\n%s Load Case"),
-                               strMagnitude,strLocation,GetLoadGroupNameForUserLoad(load.m_LoadCase).c_str());
+                               strMagnitude,strLocation,GetLoadGroupNameForUserLoad(pLoad->m_LoadCase).c_str());
 
-            if ( load.m_Description != _T("") )
+            if ( pLoad->m_Description != _T("") )
             {
-               strToolTip += _T("\r\n") + CString(load.m_Description.c_str());
+               strToolTip += _T("\r\n") + CString(pLoad->m_Description.c_str());
             }
 
             point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -1990,7 +1993,6 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBa
    ATLASSERT(pDL);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
 
    CollectionIndexType nLoads =  pUserDefinedLoadData->GetDistributedLoadCount();
@@ -2001,12 +2003,12 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBa
    CollectionIndexType loadIdx;
    for (loadIdx = 0; loadIdx < nLoads; loadIdx++ )
    {
-      const CDistributedLoadData& load = pUserDefinedLoadData->GetDistributedLoad(loadIdx);
+      const CDistributedLoadData* pLoad = pUserDefinedLoadData->GetDistributedLoad(loadIdx);
 
-      if (IsLoadApplicable(pBroker,load,eventIdx,girderKey))
+      if (IsLoadApplicable(pBroker,pLoad,eventIdx,girderKey))
       {
-         max = Max(fabs(load.m_WStart), max);
-         max = Max(fabs(load.m_WEnd), max);
+         max = Max(fabs(pLoad->m_WStart), max);
+         max = Max(fabs(pLoad->m_WEnd), max);
       }
    }
 
@@ -2016,33 +2018,33 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBa
    // create load display objects from filtered list
    for (loadIdx = 0; loadIdx < nLoads; loadIdx++ )
    {
-      const CDistributedLoadData& load = pUserDefinedLoadData->GetDistributedLoad(loadIdx);
+      const CDistributedLoadData* pLoad = pUserDefinedLoadData->GetDistributedLoad(loadIdx);
 
-      if (IsLoadApplicable(pBroker,load,eventIdx,girderKey))
+      if (IsLoadApplicable(pBroker,pLoad,eventIdx,girderKey))
       {
-         casesExist[load.m_LoadCase] = true;
+         casesExist[pLoad->m_LoadCase] = true;
 
-         COLORREF color = GetLoadGroupColor(load.m_LoadCase);
+         COLORREF color = GetLoadGroupColor(pLoad->m_LoadCase);
 
-         SpanIndexType startSpanIdx = (load.m_SpanGirderKey.spanIndex == ALL_SPANS ? 0 : load.m_SpanGirderKey.spanIndex);
-         SpanIndexType endSpanIdx   = (load.m_SpanGirderKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
+         SpanIndexType startSpanIdx = (pLoad->m_spanKey.spanIndex == ALL_SPANS ? 0 : pLoad->m_spanKey.spanIndex);
+         SpanIndexType endSpanIdx   = (pLoad->m_spanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
          for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
          {
-            CSpanGirderKey spanGirderKey(spanIdx,girderKey.girderIndex);
+            CSpanKey spanKey(spanIdx,girderKey.girderIndex);
 
-            Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
+            Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
             Float64 wstart_loc, wend_loc;
-            if (load.m_Type == UserLoads::Uniform)
+            if (pLoad->m_Type == UserLoads::Uniform)
             {
                wstart_loc = 0.0;
                wend_loc   = span_length;
             }
             else
             {
-               wstart_loc = load.m_StartLocation;
-               wend_loc   = load.m_EndLocation;
-               if (load.m_Fractional)
+               wstart_loc = pLoad->m_StartLocation;
+               wend_loc   = pLoad->m_EndLocation;
+               if (pLoad->m_Fractional)
                {
                   wstart_loc *= span_length;
                   wend_loc   *= span_length;;
@@ -2052,11 +2054,11 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBa
             Float64 load_length = wend_loc - wstart_loc;
             if(load_length <= 0.0)
             {
-               ATLASSERT(0); // interface should be blocking this
+               ATLASSERT(false); // interface should be blocking this
                break;
             }
 
-            Float64 x_position = GetSpanStartLocation(spanGirderKey);
+            Float64 x_position = GetSpanStartLocation(spanKey);
 
             CComPtr<iDisplayObject> disp_obj;
             factory->Create(CDistributedLoadDrawStrategyImpl::ms_Format,NULL,&disp_obj);
@@ -2067,7 +2069,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBa
             point_disp->GetDrawingStrategy(&pStrategy);
 
             CComQIPtr<iDistributedLoadDrawStrategy,&IID_iDistributedLoadDrawStrategy> pls(pStrategy);
-            pls->Init(point_disp, pBroker, load, loadIdx, load_length, span_length, max, color);
+            pls->Init(point_disp, pBroker, *pLoad, loadIdx, load_length, span_length, max, color);
 
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
@@ -2080,19 +2082,19 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBa
             CComPtr<IBroker> pBroker;
             EAFGetBroker(&pBroker);
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-            CString strStartMagnitude = FormatDimension(load.m_WStart,pDisplayUnits->GetForcePerLengthUnit(),true);
-            CString strEndMagnitude   = FormatDimension(load.m_WEnd,pDisplayUnits->GetForcePerLengthUnit(),true);
+            CString strStartMagnitude = FormatDimension(pLoad->m_WStart,pDisplayUnits->GetForcePerLengthUnit(),true);
+            CString strEndMagnitude   = FormatDimension(pLoad->m_WEnd,pDisplayUnits->GetForcePerLengthUnit(),true);
             CString strStartLocation  = FormatDimension(wstart_loc,pDisplayUnits->GetSpanLengthUnit(),true);
             CString strEndLocation    = FormatDimension(wend_loc,pDisplayUnits->GetSpanLengthUnit(),true);
 
 
             CString strToolTip;
             strToolTip.Format(_T("Distributed Load\r\nWstart = %s  Wend = %s\r\nLstart = %s  Lend = %s from left end of span\r\n%s Load Case"),
-                               strStartMagnitude,strEndMagnitude,strStartLocation,strEndLocation,GetLoadGroupNameForUserLoad(load.m_LoadCase).c_str());
+                               strStartMagnitude,strEndMagnitude,strStartLocation,strEndLocation,GetLoadGroupNameForUserLoad(pLoad->m_LoadCase).c_str());
 
-            if ( load.m_Description != _T("") )
+            if ( pLoad->m_Description != _T("") )
             {
-               strToolTip += _T("\r\n") + CString(load.m_Description.c_str());
+               strToolTip += _T("\r\n") + CString(pLoad->m_Description.c_str());
             }
 
             point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -2105,7 +2107,6 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBa
       }
    }
 }
-
 
 void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey, EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
 {
@@ -2134,11 +2135,11 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDocBase* p
    CollectionIndexType ild;
    for (ild=0; ild<num_loads; ild++)
    {
-      const CMomentLoadData& load = pUserDefinedLoadData->GetMomentLoad(ild);
+      const CMomentLoadData* pLoad = pUserDefinedLoadData->GetMomentLoad(ild);
 
-      if (IsLoadApplicable(pBroker,load,eventIdx,girderKey))
+      if (IsLoadApplicable(pBroker,pLoad,eventIdx,girderKey))
       {
-         max = Max(fabs(load.m_Magnitude), max);
+         max = Max(fabs(pLoad->m_Magnitude), max);
       }
    }
 
@@ -2148,11 +2149,11 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDocBase* p
    // create load display objects from filtered list
    for (ild=0; ild<num_loads; ild++)
    {
-      const CMomentLoadData& load = pUserDefinedLoadData->GetMomentLoad(ild);
+      const CMomentLoadData* pLoad = pUserDefinedLoadData->GetMomentLoad(ild);
 
-      if (IsLoadApplicable(pBroker,load,eventIdx,girderKey))
+      if (IsLoadApplicable(pBroker,pLoad,eventIdx,girderKey))
       {
-         casesExist[load.m_LoadCase] = true;
+         casesExist[pLoad->m_LoadCase] = true;
 
          CComPtr<iDisplayObject> disp_obj;
          factory->Create(CMomentLoadDrawStrategyImpl::ms_Format,NULL,&disp_obj);
@@ -2162,18 +2163,22 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDocBase* p
          CComPtr<iDrawPointStrategy> pStrategy;
          point_disp->GetDrawingStrategy(&pStrategy);
 
-         COLORREF color = GetLoadGroupColor(load.m_LoadCase);
+         COLORREF color = GetLoadGroupColor(pLoad->m_LoadCase);
 
          Float64 location;
-         if (load.m_Fractional)
-            location = start_lgth + span_lgth * load.m_Location;
+         if (pLoad->m_Fractional)
+         {
+            location = start_lgth + span_lgth * pLoad->m_Location;
+         }
          else
-            location = start_lgth + load.m_Location;
+         {
+            location = start_lgth + pLoad->m_Location;
+         }
 
          Float64 gdr_hgt = pGirder->GetHeight( pgsPointOfInterest(segmentKey,location) );
 
          CComQIPtr<iMomentLoadDrawStrategy,&IID_iMomentLoadDrawStrategy> pls(pStrategy);
-         pls->Init(point_disp, pBroker, load, ild, gdr_hgt, span_lgth+start_lgth, max, color);
+         pls->Init(point_disp, pBroker, *pLoad, ild, gdr_hgt, span_lgth+start_lgth, max, color);
 
          CComPtr<IPoint2d> point;
          point.CoCreateInstance(__uuidof(Point2d));
@@ -2186,7 +2191,7 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDocBase* p
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-         CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
+         CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
          CString strLocation  = FormatDimension(location,pDisplayUnits->GetSpanLengthUnit(),true);
 
          std::_tostringstream os;
@@ -2195,12 +2200,12 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDocBase* p
          os << _T("   ");
          os << _T("L = ") << strLocation << _T(" from left end of girder");
          os << _T("\r\n");
-         os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << _T(" Load Case");
+         os << GetLoadGroupNameForUserLoad(pLoad->m_LoadCase) << _T(" Load Case");
 
-         if ( load.m_Description != _T("") )
+         if ( pLoad->m_Description != _T("") )
          {
             os << _T("\r\n");
-            os << load.m_Description;
+            os << pLoad->m_Description;
          }
 
          point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -2269,11 +2274,12 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSuperDocBase* pDoc,
 
       // now can change size and shape of legend
       if (nEntries != prevNumEntries)
+      {
          m_Legend->put_NumRows(nEntries);
+      }
 
       CSize size;
       m_Legend->GetMinCellSize(&size);
-//      size.cy += 60; // expand a bit (twips) to give border buffer
       m_Legend->put_CellSize(size);
    }
 }
@@ -2289,7 +2295,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IGirder,pIGirder);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    // need to layout dimension line witness lines in twips
    const long twip_offset = 1440/2;
@@ -2325,8 +2331,8 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
 
          // Use the real POI rather than ones created on the fly. It is faster to get section information
          // with real POI
-         pgsPointOfInterest poiStart = pIPoi->GetPointOfInterest(segmentKey,0.00);
-         pgsPointOfInterest poiEnd   = pIPoi->GetPointOfInterest(segmentKey,segment_length);
+         pgsPointOfInterest poiStart = pPoi->GetPointOfInterest(segmentKey,0.00);
+         pgsPointOfInterest poiEnd   = pPoi->GetPointOfInterest(segmentKey,segment_length);
          Float64 Hg_start = pIGirder->GetHeight(poiStart);
          Float64 Hg_end   = pIGirder->GetHeight(poiEnd);
          Hg = ::Max(Hg_start,Hg_end,Hg);
@@ -2354,16 +2360,16 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
 
          Float64 segment_length = pBridge->GetSegmentLength(segmentKey);       // end to end length of segment
 
-         poiStart = pIPoi->GetPointOfInterest(segmentKey,0.00);
-         poiEnd   = pIPoi->GetPointOfInterest(segmentKey,segment_length);
+         poiStart = pPoi->GetPointOfInterest(segmentKey,0.00);
+         poiEnd   = pPoi->GetPointOfInterest(segmentKey,segment_length);
 
          //
          // Top Dimension Lines
          //
 
          // segment length measure to end of segment
-         Xgs = pIPoi->ConvertPoiToGirderPathCoordinate(poiStart);
-         Xge = pIPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+         Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+         Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
 
          from_point->put_X(group_offset + Xgs);
          from_point->put_Y(0.0);
@@ -2383,29 +2389,29 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
             // segment length measured to CL of closure joint
             if ( segIdx == 0 )
             {
-               poiStart = pIPoi->GetPointOfInterest(segmentKey,0.00);
+               poiStart = pPoi->GetPointOfInterest(segmentKey,0.00);
             }
             else
             {
                CSegmentKey prevSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
-               std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(prevSegmentKey,POI_CLOSURE));
+               std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(prevSegmentKey,POI_CLOSURE));
                ATLASSERT(vPoi.size() == 1);
                poiStart = vPoi.front();
             }
 
             if ( segIdx < nSegments-1 )
             {
-               std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(segmentKey,POI_CLOSURE));
+               std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_CLOSURE));
                ATLASSERT(vPoi.size() == 1);
                poiEnd = vPoi.front();
             }
             else
             {
-               poiEnd = pIPoi->GetPointOfInterest(segmentKey,segment_length);
+               poiEnd = pPoi->GetPointOfInterest(segmentKey,segment_length);
             }
 
-            Xgs = pIPoi->ConvertPoiToGirderPathCoordinate(poiStart);
-            Xge = pIPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+            Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+            Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
 
             from_point->put_X(group_offset + Xgs);
             from_point->put_Y(0.0);
@@ -2426,16 +2432,16 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
          //
 
          // CL Brg to CL Brg
-         std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND));
+         std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND));
          ATLASSERT(vPoi.size() == 1);
          poiStart = vPoi.front();
 
-         vPoi = pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND);
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND);
          ATLASSERT(vPoi.size() == 1);
          poiEnd = vPoi.front();
 
-         Xgs = pIPoi->ConvertPoiToGirderPathCoordinate(poiStart);
-         Xge = pIPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+         Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+         Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
 
          from_point->put_X(group_offset + Xgs);
          from_point->put_Y(-Hg);
@@ -2450,69 +2456,101 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
          BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
          dimLine->SetWitnessLength(-twip_offset);
 
-         //StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
+         StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
-         //Float64 lft_harp, rgt_harp;
-         //pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
+         Float64 lft_harp, rgt_harp;
+         pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
 
-#pragma Reminder("UPDATE: fix harped strand dimension lines")
-         //// harp locations from end of segment (along top)
-         //if ( 0 < Nh )
-         //{
-         //   from_point->put_X(group_offset + running_segment_length + start_brg_offset - start_lgth);
-         //   to_point->put_X(group_offset + lft_harp);
-         //   dimLine.Release();
-         //   BuildDimensionLine(pDL, from_point, to_point,lft_harp,&dimLine);
-         //   dimLine->SetWitnessLength(twip_offset/2);
+         if ( 0 < Nh )
+         {
+            // harp locations from end of segment (along top)
+            std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT));
+            ATLASSERT(vPoi.size() <= 2);
+            Float64 Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,0.0);
+            Float64 Xgs = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
+            Float64 Xge = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.front());
 
-         //   from_point->put_X(group_offset + rgt_harp + start_brg_offset - start_lgth);
-         //   to_point->put_X(group_offset + running_segment_length + segment_layout_length - end_brg_offset + end_lgth);
+            from_point->put_X(group_offset + Xgs);
+            from_point->put_Y(0.0);
 
-         //   Float64 x1,x2;
-         //   from_point->get_X(&x1);
-         //   to_point->get_X(&x2);
+            to_point->put_X(group_offset + Xge);
+            to_point->put_Y(0.0);
 
-         //   dimLine.Release();
-         //   BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
-         //   dimLine->SetWitnessLength(twip_offset/2);
-         //}
+            from_point->get_X(&x1);
+            to_point->get_X(&x2);
 
-#pragma Reminder("UPDATE: fix harped strand dimension lines")
-         //// harp locations (from bearings) (along bottom)
-         //if ( 0 < Nh )
-         //{
-         //   from_point->put_X(group_offset + running_segment_length + start_brg_offset);
-         //   to_point->put_X(group_offset + running_segment_length + start_brg_offset - start_lgth + lft_harp);
-         //   dimLine.Release();
-         //   BuildDimensionLine(pDL, from_point, to_point, lft_harp-start_lgth, &dimLine);
-         //   dimLine->SetWitnessLength(-twip_offset/2);
+            dimLine.Release();
+            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+            dimLine->SetWitnessLength(twip_offset/2);
 
-         //   from_point->put_X(group_offset + running_segment_length + start_brg_offset - start_lgth + rgt_harp);
-         //   to_point->put_X(group_offset + running_segment_length + segment_layout_length - end_brg_offset);
+            Xgs = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.back());
+            Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,segment_length);
+            Xge = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
 
-         //   Float64 x1,x2;
-         //   from_point->get_X(&x1);
-         //   to_point->get_X(&x2);
+            from_point->put_X(group_offset + Xgs);
+            from_point->put_Y(0.0);
 
-         //   dimLine.Release();
-         //   BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
-         //   dimLine->SetWitnessLength(-twip_offset/2);
-         //}
+            to_point->put_X(group_offset + Xge);
+            to_point->put_Y(0.0);
 
+            from_point->get_X(&x1);
+            to_point->get_X(&x2);
+
+            dimLine.Release();
+            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+            dimLine->SetWitnessLength(twip_offset/2);
+
+            // harp locations from cl bearing (along bottom)
+            Float64 end_dist = pBridge->GetSegmentStartEndDistance(segmentKey);
+            Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,end_dist);
+            Xgs = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
+            Xge = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.front());
+
+            from_point->put_X(group_offset + Xgs);
+            from_point->put_Y(-Hg);
+
+            to_point->put_X(group_offset + Xge);
+            to_point->put_Y(-Hg);
+
+            from_point->get_X(&x1);
+            to_point->get_X(&x2);
+
+            dimLine.Release();
+            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+            dimLine->SetWitnessLength(-twip_offset/2);
+
+            end_dist = pBridge->GetSegmentEndEndDistance(segmentKey);
+            Xgs = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.back());
+            Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,segment_length-end_dist);
+            Xge = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
+
+            from_point->put_X(group_offset + Xgs);
+            from_point->put_Y(-Hg);
+
+            to_point->put_X(group_offset + Xge);
+            to_point->put_Y(-Hg);
+
+            from_point->get_X(&x1);
+            to_point->get_X(&x2);
+
+            dimLine.Release();
+            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+            dimLine->SetWitnessLength(-twip_offset/2);
+         }
       } // next segment
 
       if ( 1 < nSegments )
       {
          // Overall length along the top
          CSegmentKey segmentKey(gdrKey,0);
-         poiStart = pIPoi->GetPointOfInterest(segmentKey,0);
+         poiStart = pPoi->GetPointOfInterest(segmentKey,0);
 
          segmentKey.segmentIndex = nSegments-1;
          Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
-         poiEnd = pIPoi->GetPointOfInterest(segmentKey,segment_length);
+         poiEnd = pPoi->GetPointOfInterest(segmentKey,segment_length);
 
-         Xgs = pIPoi->ConvertPoiToGirderPathCoordinate(poiStart);
-         Xge = pIPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+         Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+         Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
 
          from_point->put_X(group_offset + Xgs);
          from_point->put_Y(0.0);
@@ -2529,17 +2567,17 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
 
          // Overall length along the bottom
          segmentKey.segmentIndex = 0;
-         std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND));
+         std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND));
          ATLASSERT(vPoi.size() == 1);
          poiStart = vPoi.front();
 
          segmentKey.segmentIndex = nSegments-1;
-         vPoi = pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND);
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND);
          ATLASSERT(vPoi.size() == 1);
          poiEnd = vPoi.front();
 
-         Xgs = pIPoi->ConvertPoiToGirderPathCoordinate(poiStart);
-         Xge = pIPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+         Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+         Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
 
          from_point->put_X(group_offset + Xgs);
          from_point->put_Y(-Hg);
@@ -2557,26 +2595,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
 
       // Update the offset for starting the dimensions lines in the next group
       Float64 group_length = pBridge->GetGirderLayoutLength(gdrKey);
-      if ( grpIdx == 0 )
-      {
-         // if this is group 0, adjust the layout length so that it starts from the
-         // left face of the girder.
-         Float64 brg_offset = pBridge->GetSegmentStartBearingOffset(CSegmentKey(gdrKey,0));
-         Float64 end_dist   = pBridge->GetSegmentStartEndDistance(  CSegmentKey(gdrKey,0));
-         group_length -= (brg_offset-end_dist);
-      }
-
-      // dimensions are layed out in girder coordinates. group_offset needs to be adjusted
-      // so that it starts at the left face of the next group
-      if ( grpIdx < endGroupIdx )
-      {
-         Float64 brg_offset = pBridge->GetSegmentStartBearingOffset(CSegmentKey(grpIdx+1,gdrKey.girderIndex,0));
-         Float64 end_dist   = pBridge->GetSegmentStartEndDistance(  CSegmentKey(grpIdx+1,gdrKey.girderIndex,0));
-         group_length += (brg_offset-end_dist);
-      }
-
       group_offset += group_length;
-
    } // next group
 
 
@@ -2589,43 +2608,29 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
          CGirderKey gdrKey(girderKey);
          gdrKey.groupIndex = grpIdx;
          Float64 group_length = pBridge->GetGirderLayoutLength(gdrKey);
-         if ( grpIdx == 0 )
-         {
-            // if this is group 0, adjust the layout length so that it starts from the
-            // left face of the girder.
-            Float64 brg_offset = pBridge->GetSegmentStartBearingOffset(CSegmentKey(gdrKey,0));
-            Float64 end_dist   = pBridge->GetSegmentStartEndDistance(  CSegmentKey(gdrKey,0));
-            group_length -= (brg_offset-end_dist);
-         }
-
-         // dimensions are layed out in girder coordinates. group_offset needs to be adjusted
-         // so that it starts at the left face of the next group
-         if ( grpIdx < girderKey.groupIndex-1 )
-         {
-            Float64 brg_offset = pBridge->GetSegmentStartBearingOffset(CSegmentKey(grpIdx+1,gdrKey.girderIndex,0));
-            Float64 end_dist   = pBridge->GetSegmentStartEndDistance(  CSegmentKey(grpIdx+1,gdrKey.girderIndex,0));
-            group_length += (brg_offset-end_dist);
-         }
-
          girderlineOffset -= group_length;
       }
    }
-   std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_ABUTMENT | POI_BOUNDARY_PIER | POI_INTERMEDIATE_PIER,POIFIND_OR));
+
+   Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(CSegmentKey(0,girderKey.girderIndex,0));
+   Float64 endDist   = pBridge->GetSegmentStartEndDistance(CSegmentKey(0,girderKey.girderIndex,0));
+   Float64 offset = brgOffset - endDist;
+   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_ABUTMENT | POI_BOUNDARY_PIER | POI_INTERMEDIATE_PIER));
    std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
    poiStart = *iter;
+   Xgs = pPoi->ConvertPoiToGirderlineCoordinate(poiStart);
    iter++;
    for ( ; iter != end; iter++ )
    {
       poiEnd = *iter;
 
-      Xgs = pIPoi->ConvertPoiToGirderPathCoordinate(poiStart);
-      Xge = pIPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+      Xge = pPoi->ConvertPoiToGirderlineCoordinate(poiEnd);
 
-      from_point->put_X(girderlineOffset + Xgs);
+      from_point->put_X(girderlineOffset + Xgs + offset);
       from_point->put_Y(-Hg);
 
-      to_point->put_X(girderlineOffset + Xge);
+      to_point->put_X(girderlineOffset + Xge + offset);
       to_point->put_Y(-Hg);
 
       from_point->get_X(&x1);
@@ -2637,6 +2642,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
       dimLine->SetHiddenWitnessLength(twip_offset);
 
       poiStart = poiEnd;
+      Xgs      = Xge;
    }
 }
 
@@ -2677,7 +2683,6 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDocBase* pDoc
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    GET_IFACE2(pBroker,IGirder,pIGirder);
 
    // assume a typical cover
@@ -2705,7 +2710,9 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDocBase* pDoc
          SegmentIDType segID = pSegment->GetID();
 
          if ( eventIdx < pTimelineMgr->GetSegmentConstructionEventIndex(segID) )
+         {
             continue; // segment not constructed in this event, go to next segment
+         }
 
          CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
 
@@ -2728,7 +2735,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDocBase* pDoc
          bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(segmentKey);
 
 
-         ZoneIndexType nStirrupZones = pStirrupGeom->GetNumPrimaryZones(segmentKey);
+         ZoneIndexType nStirrupZones = pStirrupGeom->GetPrimaryZoneCount(segmentKey);
          for ( ZoneIndexType zoneIdx = 0; zoneIdx < nStirrupZones; zoneIdx++ )
          {
             Float64 start,end;
@@ -2787,9 +2794,13 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDocBase* pDoc
 
                   Float64 top;
                   if ( deckType == pgsTypes::sdtNone || !bDoStirrupsEngageDeck )
+                  {
                      top = -top_cover;
+                  }
                   else
+                  {
                      top = slab_offset;
+                  }
 
                   CComPtr<IPoint2d> p1, p2;
                   p1.CoCreateInstance(CLSID_Point2d);
@@ -2828,7 +2839,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDocBase* pDoc
                   }
                   else
                   {
-                     ATLASSERT(0);
+                     ATLASSERT(false);
                   }
 
                   // Attach connector to the sockets 
@@ -2901,7 +2912,9 @@ void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint
       pSimple->SetColor(color);
    }
    else
-      ATLASSERT(0);
+   {
+      ATLASSERT(false);
+   }
 
    // Attach connector to the sockets 
    CComPtr<iConnector> connector;
@@ -3051,6 +3064,7 @@ void CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL, IPoint2d* 
    CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 
    textBlock->SetText(strDimension);
+   textBlock->SetBkMode(TRANSPARENT);
 
    dimLine->SetTextBlock(textBlock);
 
@@ -3093,7 +3107,7 @@ void CGirderModelElevationView::OnGevCtxEditLoad()
       }
    }
 
-   CHECK(0);
+   ATLASSERT(false);
 }
 
 void CGirderModelElevationView::OnGevCtxDeleteLoad() 
@@ -3123,7 +3137,7 @@ void CGirderModelElevationView::OnGevCtxDeleteLoad()
       }
    }
 
-   CHECK(0);
+   ATLASSERT(false);
 }
 
 void CGirderModelElevationView::OnDestroy() 
@@ -3169,12 +3183,16 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
       CFont font;
       CFont* pOldFont = NULL;
       if ( font.CreatePointFont(100,_T("Arial"),pDC) )
+      {
          pOldFont = pDC->SelectObject(&font);
+      }
 
       MultiLineTextOut(pDC,0,0,msg);
 
       if ( pOldFont )
+      {
          pDC->SelectObject(pOldFont);
+      }
       return;
    }
 
@@ -3189,12 +3207,16 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
       CFont font;
       CFont* pOldFont = NULL;
       if ( font.CreatePointFont(100,_T("Arial"),pDC) )
+      {
          pOldFont = pDC->SelectObject(&font);
+      }
 
       MultiLineTextOut(pDC,0,0,msg);
 
       if ( pOldFont )
+      {
          pDC->SelectObject(pOldFont);
+      }
    }
 }
 
@@ -3207,12 +3229,18 @@ BOOL CGirderModelElevationView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
    dispMgr->GetSelectedObjects(&selObjs);
 
    if ( selObjs.size() == 0 || selObjs.front().m_T->GetID() != SECTION_CUT_ID )
+   {
       return FALSE;
+   }
 
    if ( 0 < zDelta )
+   {
       m_pFrame->CutAtPrev();
+   }
    else
+   {
       m_pFrame->CutAtNext();
+   }
 
    return TRUE;
 }
@@ -3275,7 +3303,7 @@ Float64 CGirderModelElevationView::GetSegmentStartLocation(const CSegmentKey& se
    return group_offset;
 }
 
-Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanGirderKey& spanGirderKey)
+Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -3284,13 +3312,13 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanGirderKey& sp
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType startSpanIdx = 0;
-   SpanIndexType endSpanIdx   = spanGirderKey.spanIndex;
+   SpanIndexType endSpanIdx   = spanKey.spanIndex;
 
    Float64 span_offset = 0;
 
    for (SpanIndexType spanIdx = startSpanIdx; spanIdx < endSpanIdx; spanIdx++ )
    {
-      Float64 span_length = pBridge->GetSpanLength(spanIdx,spanGirderKey.girderIndex);
+      Float64 span_length = pBridge->GetSpanLength(spanIdx,spanKey.girderIndex);
       span_offset += span_length;
    }
 

@@ -155,10 +155,6 @@ class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public CEAFStatusItem
 {
 public:
    typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions };
-#pragma Reminder("REVIEW: BoundaryCondition status type is not set anywhere... it isn't used")
-   // BoundaryConditions type was added because it had something to do with the Boundary and Interior Pier
-   // concepts (Boundary being piers at the boundary of a group and Interior being piers within a group)
-   // I don't know why there aren't any status items for bad boundary conditions
    pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,IssueType issueType,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 

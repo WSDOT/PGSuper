@@ -50,10 +50,6 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
 
 	CDialog::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    if ( pDX->m_bSaveAndValidate )
    {
       // Data coming out of the dialog

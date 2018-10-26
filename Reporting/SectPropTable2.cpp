@@ -62,6 +62,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(segmentKey);
 
@@ -72,13 +73,21 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
 
    ColumnIndexType nCol;
    if ( intervalIdx < compositeDeckIntervalIdx )
+   {
       nCol = 12;
+   }
    else if ( pBridge->GetDeckType() != pgsTypes::sdtNone && bIsCompositeDeck && compositeDeckIntervalIdx <= intervalIdx)
+   {
       nCol = 17;
+   }
    else if ( intervalIdx == compositeDeckIntervalIdx )
+   {
       nCol = 13; // BS2 and noncomposite deck
+   }
    else
+   {
       nCol = 10;
+   }
 
    rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(nCol,os.str().c_str());
 
@@ -90,7 +99,14 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
 
    // Setup column headers
    ColumnIndexType col = 0;
-   (*xs_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   if ( intervalIdx < erectionIntervalIdx )
+   {
+      (*xs_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   }
+   else
+   {
+      (*xs_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   }
    (*xs_table)(0,col++) << COLHDR(_T("Area"),           rptAreaUnitTag,    pDisplayUnits->GetAreaUnit() );
    (*xs_table)(0,col++) << COLHDR(_T("Depth"),          rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_IX,               rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
@@ -156,7 +172,8 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
 
    // Get all the tabular poi's for flexure and shear
    // Merge the two vectors to form one vector to report on.
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
+   PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
 
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 
@@ -170,12 +187,14 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       const CSegmentKey& segKey = poi.GetSegmentKey();
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(segKey);
-      if ( intervalIdx < compositeDeckIntervalIdx )
+      if ( intervalIdx < erectionIntervalIdx )
+      {
          end_size = 0;
+      }
 
       Float64 depth = pSectProp->GetHg(intervalIdx,poi);
 
-      (*xs_table)(row,col++) << location.SetValue( POI_RELEASED_SEGMENT, poi, end_size );
+      (*xs_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
       (*xs_table)(row,col++) << l2.SetValue(pSectProp->GetAg(intervalIdx,poi));
       (*xs_table)(row,col++) << l1.SetValue(depth);
       (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetIx(intervalIdx,poi));

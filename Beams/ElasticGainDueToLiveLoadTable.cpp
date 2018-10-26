@@ -131,7 +131,6 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 
 void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
 
    (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetLiveLoadMoment() );

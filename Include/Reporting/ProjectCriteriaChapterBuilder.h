@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_ProjectCriteriaCHAPTERBUILDER_H_
-#define INCLUDED_ProjectCriteriaCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
@@ -50,53 +49,16 @@ LOG
 class REPORTINGCLASS CProjectCriteriaChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CProjectCriteriaChapterBuilder(bool bRating,bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
-
-   //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    bool m_bRating;
-
-   // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
    CProjectCriteriaChapterBuilder(const CProjectCriteriaChapterBuilder&);
    CProjectCriteriaChapterBuilder& operator=(const CProjectCriteriaChapterBuilder&);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_ProjectCriteriaCHAPTERBUILDER_H_

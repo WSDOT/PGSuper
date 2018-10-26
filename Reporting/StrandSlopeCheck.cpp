@@ -123,9 +123,13 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
          (*pTable)(2,1) << slope.SetValue(pArtifact->GetDemand());
 
          if ( pArtifact->Passed() )
+         {
             (*pTable)(3,1) << RPT_PASS;
+         }
          else
+         {
             (*pTable)(3,1) << RPT_FAIL;
+         }
       } // is applicable
    } // next segment
 }

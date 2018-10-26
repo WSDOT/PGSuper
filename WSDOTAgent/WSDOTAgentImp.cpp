@@ -46,7 +46,7 @@ DECLARE_LOGFILE;
 //
 STDMETHODIMP CWSDOTAgentImp::SetBroker(IBroker* pBroker)
 {
-   AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_SET_BROKER(pBroker);
 
    CComQIPtr<ICLSIDMap> clsidMap(pBroker);
    clsidMap->AddCLSID(_T("{338AD645-BAF2-41DC-964E-A9DFC8123253}"),_T("{B1A19633-8880-40BC-A3C9-DDF47F7F1844}"));
@@ -65,7 +65,7 @@ STDMETHODIMP CWSDOTAgentImp::Init()
 {
    CREATE_LOGFILE("WSDOTAgent");
 
-   AGENT_INIT;
+   EAF_AGENT_INIT;
 
    // We are going to add new reports to PGSuper. In order to do this, the agent that implements
    // IReportManager must be loaded. We have no way of knowing if that agent is loaded before
@@ -124,7 +124,7 @@ STDMETHODIMP CWSDOTAgentImp::Reset()
 
 STDMETHODIMP CWSDOTAgentImp::ShutDown()
 {
+   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
-   AGENT_CLEAR_INTERFACE_CACHE;
    return S_OK;
 }

@@ -279,10 +279,8 @@ BOOL CLegalRatingPage::OnSetActive()
       GetDlgItem(IDC_SERVICE_III_LL_SPECIAL)->EnableWindow(TRUE);
    }
 
-   GET_IFACE2(broker,ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   if ( pSpecEntry->GetLossMethod() != pgsTypes::TIME_STEP )
+   GET_IFACE2(broker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
    {
       GetDlgItem(IDC_STRENGTH_I_PLUS)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_STRENGTH_I_CR)->ShowWindow(SW_HIDE);

@@ -55,16 +55,24 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
    pBridgeGeometry->put_BridgeAlignmentID(m_AlignmentID);
 
    if ( !LayoutPiers(pBridgeDesc,pBridgeGeometry) )
+   {
       return false;
+   }
 
    if ( !LayoutTemporarySupports(pBridgeDesc,pBridgeGeometry) )
+   {
       return false;
+   }
 
    if ( !LayoutGirderLines(pBridgeDesc,pBridgeGeometry) )
+   {
       return false;
+   }
 
    if ( !LayoutDiaphragmLines(pBridgeDesc,pBridgeGeometry) )
+   {
       return false;
+   }
 
    return true;
 }
@@ -133,7 +141,9 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
             Float64 alignment_offset = pBridgeDesc->GetAlignmentOffset();
 
             if ( pSpacing->GetMeasurementType() == pgsTypes::AlongItem )
+            {
                alignment_offset /= cosine_skew_angle;
+            }
 
             refGirderOffset += alignment_offset;
          }
@@ -177,7 +187,9 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
             Float64 alignment_offset = pBridgeDesc->GetAlignmentOffset();
 
             if ( pSpacing->GetMeasurementType() == pgsTypes::AlongItem )
+            {
                alignment_offset /= cosine_skew_angle;
+            }
 
             refGirderOffset += alignment_offset;
          }

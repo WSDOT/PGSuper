@@ -129,7 +129,7 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
    (*pTbl)(0,0) << _T("Bridge Name");
    (*pTbl)(0,1) << pProps->GetBridgeName();
    (*pTbl)(1,0) << _T("Bridge ID");
-   (*pTbl)(1,1) << pProps->GetBridgeId();
+   (*pTbl)(1,1) << pProps->GetBridgeID();
    (*pTbl)(2,0) << _T("Job Number");
    (*pTbl)(2,1) << pProps->GetJobNumber();
    (*pTbl)(3,0) << _T("Engineer");

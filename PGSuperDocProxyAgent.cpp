@@ -262,51 +262,51 @@ void CPGSuperDocProxyAgent::UnadviseEventSinks()
    HRESULT hr = S_OK;
 
    hr = pBrokerInit->FindConnectionPoint( IID_IBridgeDescriptionEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwBridgeDescCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
    hr = pBrokerInit->FindConnectionPoint( IID_IEnvironmentEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwEnvironmentCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
    hr = pBrokerInit->FindConnectionPoint( IID_IProjectPropertiesEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwProjectPropertiesCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
    hr = pBrokerInit->FindConnectionPoint( IID_IEAFDisplayUnitsEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwDisplayUnitsCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
    hr = pBrokerInit->FindConnectionPoint( IID_ISpecificationEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwSpecificationCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
    hr = pBrokerInit->FindConnectionPoint( IID_IRatingSpecificationEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwRatingSpecificationCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
    hr = pBrokerInit->FindConnectionPoint( IID_ILibraryConflictEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwLibraryConflictGuiCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
    hr = pBrokerInit->FindConnectionPoint( IID_ILoadModifiersEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwLoadModiferCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 }
 
@@ -380,13 +380,13 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
 {
    if ( m_pBroker )
    {
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       GET_IFACE(IEAFToolbars,pToolBars);
       CEAFToolBar* pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
 
       if ( pToolBar == NULL )
          return;
    
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       switch(pStatusCenter->GetSeverity())
       {
       case eafTypes::statusOK:
@@ -424,7 +424,7 @@ void CPGSuperDocProxyAgent::OnResetHints()
 // IAgentEx
 STDMETHODIMP CPGSuperDocProxyAgent::SetBroker(IBroker* pBroker)
 {
-   AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_SET_BROKER(pBroker);
    return S_OK;
 }
 
@@ -449,7 +449,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
 
 STDMETHODIMP CPGSuperDocProxyAgent::Init()
 {
-   AGENT_INIT;
+   EAF_AGENT_INIT;
 
    return AGENT_S_SECONDPASSINIT;
 }
@@ -470,9 +470,8 @@ STDMETHODIMP CPGSuperDocProxyAgent::ShutDown()
 {
    UnadviseEventSinks();
 
+   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
-
-   AGENT_CLEAR_INTERFACE_CACHE;
 
    return S_OK;
 }

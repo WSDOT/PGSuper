@@ -207,8 +207,8 @@ CLASS
    ProductForcesReactionAdapter
 ****************************************************************************/
 
-ProductForcesReactionAdapter::ProductForcesReactionAdapter(IProductForces* pForces, const CGirderKey& girderKey):
-   m_Pointer(pForces), m_GirderKey(girderKey)
+ProductForcesReactionAdapter::ProductForcesReactionAdapter(IReactions* pReactions,const CGirderKey& girderKey):
+m_pReactions(pReactions), m_GirderKey(girderKey)
 {
 }
 
@@ -227,20 +227,19 @@ bool ProductForcesReactionAdapter::DoReportAtPier(PierIndexType pierIdx,const CG
    return true; // always report pier reactions for all piers
 }
 
-Float64 ProductForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,ProductForceType type,pgsTypes::BridgeAnalysisType bat)
+Float64 ProductForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat)
 {
    ATLASSERT(rLocation.Face == rftMid);
-
-   return m_Pointer->GetReaction(intervalIdx, type, rLocation.PierIdx, rLocation.GirderKey, bat, ctIncremental);
+   return m_pReactions->GetReaction(rLocation.GirderKey,rLocation.PierIdx,pgsTypes::stPier,intervalIdx,pfType,bat,rtCumulative);
 }
 
-void ProductForcesReactionAdapter::GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
+void ProductForcesReactionAdapter::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                                        bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                                        VehicleIndexType* pMinConfig, VehicleIndexType* pMaxConfig)
 {
    ATLASSERT(rLocation.Face == rftMid);
 
-   m_Pointer->GetLiveLoadReaction(llType, intervalIdx, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, bIncludeLLDF, pRmin, pRmax, pMinConfig, pMaxConfig);
+   m_pReactions->GetLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, bIncludeLLDF, pRmin, pRmax, pMinConfig, pMaxConfig);
 }
 
 /****************************************************************************
@@ -271,12 +270,12 @@ Float64 BearingDesignProductReactionAdapter::GetReaction(IntervalIndexType inter
    ATLASSERT(rLocation.Face != rftMid); // bearings are on sides
 
    Float64 Rleft, Rright;
-   m_pBearingDesign->GetBearingProductReaction(intervalIdx, type, rLocation.GirderKey, ctIncremental, bat, &Rleft, &Rright);
+   m_pBearingDesign->GetBearingProductReaction(intervalIdx, type, rLocation.GirderKey, bat, rtCumulative, &Rleft, &Rright);
 
    return rLocation.Face==rftAhead ? Rleft : Rright;
 }
 
-void BearingDesignProductReactionAdapter::GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
+void BearingDesignProductReactionAdapter::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                                        bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                                        VehicleIndexType* pMinConfig, VehicleIndexType* pMaxConfig)
 {
@@ -288,7 +287,7 @@ void BearingDesignProductReactionAdapter::GetLiveLoadReaction(pgsTypes::LiveLoad
   VehicleIndexType LeftMinConfig , LeftMaxConfig;
   VehicleIndexType RightMinConfig, RightMaxConfig;
 
-  m_pBearingDesign->GetBearingLiveLoadReaction(llType, intervalIdx, rLocation.GirderKey, bat, bIncludeImpact, bIncludeLLDF, 
+  m_pBearingDesign->GetBearingLiveLoadReaction(intervalIdx, llType, rLocation.GirderKey, bat, bIncludeImpact, bIncludeLLDF, 
                                         &LeftRmin, &LeftRmax, &LeftTmin, &LeftTmax, &RightRmin, &RightRmax, &RightTmin, &RightTmax,
                                         &LeftMinConfig, &LeftMaxConfig, &RightMinConfig, &RightMaxConfig);
 
@@ -318,8 +317,8 @@ void BearingDesignProductReactionAdapter::GetLiveLoadReaction(pgsTypes::LiveLoad
 // class CmbLsBearingDesignReactionAdapter
 /////////////////////////////////////////////
 
-CombinedLsForcesReactionAdapter::CombinedLsForcesReactionAdapter(ICombinedForces* pCmbForces, ILimitStateForces* pForces, const CGirderKey& girderKey):
-   m_CmbPointer(pCmbForces), m_LsPointer(pForces), m_GirderKey(girderKey)
+CombinedLsForcesReactionAdapter::CombinedLsForcesReactionAdapter(IReactions* pReactions, ILimitStateForces* pForces, const CGirderKey& girderKey):
+   m_pReactions(pReactions), m_LsPointer(pForces), m_GirderKey(girderKey)
 {;}
 
 ReactionLocationIter CombinedLsForcesReactionAdapter::GetReactionLocations(IBridge* pBridge)
@@ -337,26 +336,26 @@ bool CombinedLsForcesReactionAdapter::DoReportAtPier(PierIndexType pier,const CG
    return true; // always report for pier reactions
 }
 
-Float64 CombinedLsForcesReactionAdapter::GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,CombinationType type,pgsTypes::BridgeAnalysisType bat)
+Float64 CombinedLsForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    ATLASSERT(rLocation.Face == rftMid);
 
-   return m_CmbPointer->GetReaction(combo, intervalIdx, rLocation.PierIdx, rLocation.GirderKey, type, bat);
+   return m_pReactions->GetReaction(rLocation.GirderKey,rLocation.PierIdx,pgsTypes::stPier,intervalIdx,combo,bat,resultsType);
 }
 
-void CombinedLsForcesReactionAdapter::GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
+void CombinedLsForcesReactionAdapter::GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
 {
    ATLASSERT(rLocation.Face == rftMid);
 
-   return m_CmbPointer->GetCombinedLiveLoadReaction(llType, intervalIdx, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pRmin, pRmax);
+   return m_pReactions->GetCombinedLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pRmin, pRmax);
 }
 
 // From ILimitStateForces
-void CombinedLsForcesReactionAdapter::GetReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax)
+void CombinedLsForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax)
 {
    ATLASSERT(rLocation.Face == rftMid);
 
-   return m_LsPointer->GetReaction(ls, intervalIdx, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pMin, pMax);
+   return m_LsPointer->GetReaction(intervalIdx, limitState, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pMin, pMax);
 }
 
 /////////////////////////////////////////////
@@ -381,23 +380,23 @@ bool CmbLsBearingDesignReactionAdapter::DoReportAtPier(PierIndexType pierIdx,con
    return DoDoReportAtPier(m_IntervalIdx, pierIdx, girderKey, m_pBearingDesign);
 }
 
-Float64 CmbLsBearingDesignReactionAdapter::GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,CombinationType type,pgsTypes::BridgeAnalysisType bat)
+Float64 CmbLsBearingDesignReactionAdapter::GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    ATLASSERT(rLocation.Face != rftMid); // bearings are on sides
 
    Float64 Rleft, Rright;
-   m_pBearingDesign->GetBearingCombinedReaction(combo, intervalIdx, rLocation.GirderKey, type, bat, &Rleft, &Rright);
+   m_pBearingDesign->GetBearingCombinedReaction(intervalIdx, combo, rLocation.GirderKey, bat, resultsType, &Rleft, &Rright);
 
    return rLocation.Face==rftAhead ? Rleft : Rright;
 }
 
-void CmbLsBearingDesignReactionAdapter::GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
+void CmbLsBearingDesignReactionAdapter::GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
 {
    ATLASSERT(rLocation.Face != rftMid); // bearings are on sides
 
   Float64 LeftRmin, LeftRmax;
   Float64 RightRmin, RightRmax;
-  m_pBearingDesign->GetBearingCombinedLiveLoadReaction(llType, intervalIdx, rLocation.GirderKey, bat, bIncludeImpact, &LeftRmin, &LeftRmax, &RightRmin, &RightRmax);
+  m_pBearingDesign->GetBearingCombinedLiveLoadReaction(intervalIdx, llType, rLocation.GirderKey, bat, bIncludeImpact, &LeftRmin, &LeftRmax, &RightRmin, &RightRmax);
 
   if(rLocation.Face==rftAhead)
   {
@@ -411,13 +410,13 @@ void CmbLsBearingDesignReactionAdapter::GetCombinedLiveLoadReaction(pgsTypes::Li
   }
 }
 
-void CmbLsBearingDesignReactionAdapter::GetReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
+void CmbLsBearingDesignReactionAdapter::GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
 {
    ATLASSERT(rLocation.Face != rftMid); // bearings are on sides
 
    Float64 LeftRmin, LeftRmax;
    Float64 RightRmin, RightRmax;
-   m_pBearingDesign->GetBearingLimitStateReaction(ls, intervalIdx, rLocation.GirderKey, bat, bIncludeImpact, &LeftRmin, &LeftRmax, &RightRmin, &RightRmax);
+   m_pBearingDesign->GetBearingLimitStateReaction(intervalIdx, limitState, rLocation.GirderKey, bat, bIncludeImpact, &LeftRmin, &LeftRmax, &RightRmin, &RightRmax);
 
    if(rLocation.Face==rftAhead)
    {
@@ -462,7 +461,7 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
       }
       else
       {
-         ATLASSERT(0); // should not happen for bearing location
+         ATLASSERT(false); // should not happen for bearing location
       }
 
       if (isSimple)
@@ -487,6 +486,12 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
 // If true, report results
 bool ReactionDecider::DoReport(IntervalIndexType intervalIdx)
 {
+   if ( intervalIdx == INVALID_INDEX )
+   {
+      // no overlay
+      return false;
+   }
+
    if (m_bAlwaysReport)
    {
       return true;

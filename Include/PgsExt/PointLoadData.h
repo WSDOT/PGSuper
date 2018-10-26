@@ -51,11 +51,17 @@ struct PGSEXTCLASS UserLoads
    static UserLoadType GetUserLoadTypeFromID(IDType id)
    {
       if ( id < 9999 )
+      {
          return Distributed;
+      }
       else if ( id < 19999 )
+      {
          return Point;
+      }
       else
+      {
          return Moment;
+      }
    }
 
    static Int32 GetNumLoadCases()
@@ -77,7 +83,7 @@ struct PGSEXTCLASS UserLoads
          return LL_IM;
          break;
       default:
-         CHECK(0);
+         ATLASSERT(false);
          return DC;
       }
    }
@@ -96,7 +102,7 @@ struct PGSEXTCLASS UserLoads
          return std::_tstring(_T("LL + IM"));
          break;
       default:
-         CHECK(0);
+         ATLASSERT(false);
          return std::_tstring(_T("Error"));
       }
    }
@@ -117,7 +123,7 @@ struct PGSEXTCLASS UserLoads
             return Trapezoidal;
             break;
          default:
-            CHECK(0);
+            ATLASSERT(false);
             return Trapezoidal;
       }
    }
@@ -133,7 +139,7 @@ struct PGSEXTCLASS UserLoads
             return std::_tstring(_T("Trapezoidal"));
             break;
          default:
-            CHECK(0);
+            ATLASSERT(false);
             return std::_tstring(_T("Error"));
       }
    }
@@ -158,7 +164,7 @@ public:
    EventIndexType        m_EventIndex;
    UserLoads::LoadCase   m_LoadCase;
 
-   CSpanGirderKey m_SpanGirderKey;
+   CSpanKey m_spanKey;
    Float64  m_Location;   // measured from CL bearing at start of span
    bool     m_Fractional;
    Float64  m_Magnitude;

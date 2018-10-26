@@ -120,10 +120,14 @@ bool pgsDeflectionCheckArtifact::Passed() const
 {
    // If this check is not applicable, return true. i.e. - you always pass this check
    if ( !m_bIsApplicable )
+   {
       return true;
+   }
 
    if ( m_MinDemand < -m_Capacity || m_Capacity < m_MaxDemand )
+   {
       return false;
+   }
 
    return true;
 }

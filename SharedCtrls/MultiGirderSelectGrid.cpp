@@ -104,7 +104,7 @@ inline RowAndColCollection GetCellList(CGXRange& range, ROWCOL numRows, ROWCOL n
       }
    }
    else
-      ATLASSERT(0); // hmmmm...
+      ATLASSERT(false); // hmmmm...
 
 
    return theList;

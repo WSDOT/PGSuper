@@ -79,7 +79,8 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
@@ -111,7 +112,7 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS)) );
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
 
@@ -123,14 +124,14 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
       std::vector<Float64> fTopMaxLLIM, fBotMaxLLIM;
       std::vector<Float64> fTopMinLLIM, fBotMinLLIM;
 
-      pForces2->GetStress(intervalIdx, pftUserDC, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxDC, &fBotMaxDC);
-      pForces2->GetStress(intervalIdx, pftUserDC, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinDC, &fBotMinDC);
+      pForces2->GetStress(intervalIdx, pftUserDC, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxDC, &fBotMaxDC);
+      pForces2->GetStress(intervalIdx, pftUserDC, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinDC, &fBotMinDC);
 
-      pForces2->GetStress(intervalIdx, pftUserDW, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxDW, &fBotMaxDW);
-      pForces2->GetStress(intervalIdx, pftUserDW, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinDW, &fBotMinDW);
+      pForces2->GetStress(intervalIdx, pftUserDW, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxDW, &fBotMaxDW);
+      pForces2->GetStress(intervalIdx, pftUserDW, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinDW, &fBotMinDW);
 
-      pForces2->GetStress(intervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxLLIM, &fBotMaxLLIM);
-      pForces2->GetStress(intervalIdx, pftUserLLIM, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinLLIM, &fBotMinLLIM);
+      pForces2->GetStress(intervalIdx, pftUserLLIM, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxLLIM, &fBotMaxLLIM);
+      pForces2->GetStress(intervalIdx, pftUserLLIM, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinLLIM, &fBotMinLLIM);
 
       std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
       std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
@@ -141,7 +142,7 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
 
          const pgsPointOfInterest& poi = *i;
 
-         (*p_table)(row,col++) << location.SetValue( POI_GIRDER, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
 
          if ( analysisType == pgsTypes::Envelope )
          {

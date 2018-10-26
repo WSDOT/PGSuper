@@ -41,11 +41,13 @@ public:
    int GetGraphMode();
 
    ActionType GetActionType();
-   CombinationType GetCombinationType();
+   ResultsType GetResultsType();
    bool PlotStresses(pgsTypes::StressLocation stressLocation);
 
    IntervalIndexType GetInterval();
    std::vector<IntervalIndexType> GetSelectedIntervals();
+
+   bool IncludeElevationAdjustment();
 
    pgsTypes::AnalysisType GetAnalysisType();
 
@@ -65,6 +67,7 @@ protected:
    afx_msg void OnSelectListChanged();
    afx_msg void OnPlotTypeClicked();
    afx_msg void OnStress();
+   afx_msg void OnElevAdjustment();
    afx_msg void OnAnalysisTypeClicked();
    //}}AFX_MSG
 
@@ -82,8 +85,10 @@ protected:
    void FillSelectListCtrl_Loadings(bool bRetainSelection);
 
    void UpdateStressControls();
+   void UpdateElevAdjustment();
    void UpdateAnalysisType();
    void UpdateListInfo();
+   void UpdateResultsType();
 
    IntervalIndexType GetFirstInterval();
    IntervalIndexType GetLastInterval();

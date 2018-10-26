@@ -24,7 +24,7 @@
 #define INCLUDED_DESIGNGIRDER_H_
 
 #include <System\Transaction.h>
-#include <PgsExt\DesignArtifact.h>
+#include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\StrandData.h>
 #include <PgsExt\GirderMaterial.h>
 #include <PsgLib\ShearData.h>
@@ -33,7 +33,7 @@
 class txnDesignGirder : public txnTransaction
 {
 public:
-   txnDesignGirder(std::vector<const pgsDesignArtifact*>& artifacts, pgsTypes::SlabOffsetType slabOffsetType);
+   txnDesignGirder(std::vector<const pgsGirderDesignArtifact*>& artifacts, pgsTypes::SlabOffsetType slabOffsetType);
    ~txnDesignGirder();
 
    virtual bool Execute();
@@ -59,7 +59,9 @@ private:
    // Store all design data for a girder
    struct DesignData
    {
-      pgsDesignArtifact m_DesignArtifact;
+      DesignData(const pgsGirderDesignArtifact& gdrDesignArtifact) : m_DesignArtifact(gdrDesignArtifact) {}
+
+      pgsGirderDesignArtifact m_DesignArtifact;
 
       // index 0 = old data (before design), 1 = new data (design outcome)
       CGirderMaterial m_Material[2];

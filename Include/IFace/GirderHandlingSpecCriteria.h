@@ -58,7 +58,7 @@ COPYRIGHT
 
 /*****************************************************************************
 INTERFACE
-   IGirderLiftingSpecCriteria
+   ISegmentLiftingSpecCriteria
 
    Interface to specification criteria for lifting
 
@@ -66,9 +66,9 @@ DESCRIPTION
    Interface to specification criteria for lifting
 *****************************************************************************/
 // {CA83DBFA-E62F-11d2-AD3D-00105A9AF985}
-DEFINE_GUID(IID_IGirderLiftingSpecCriteria, 
+DEFINE_GUID(IID_ISegmentLiftingSpecCriteria, 
 0xca83dbfa, 0xe62f, 0x11d2, 0xad, 0x3d, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface IGirderLiftingSpecCriteria : IUnknown
+interface ISegmentLiftingSpecCriteria : IUnknown
 {
    // do we analyze lifting or not?
    virtual bool IsLiftingAnalysisEnabled() const = 0;
@@ -112,7 +112,7 @@ interface IGirderLiftingSpecCriteria : IUnknown
 
 /*****************************************************************************
 INTERFACE
-   IGirderHaulingSpecCriteria
+   ISegmentHaulingSpecCriteria
 
    Interface to  specification criteria for Hauling
 
@@ -120,9 +120,9 @@ DESCRIPTION
    Interface to  specification criteria for Hauling
 *****************************************************************************/
 // {DBEBE70C-E62F-11d2-AD3D-00105A9AF985}
-DEFINE_GUID(IID_IGirderHaulingSpecCriteria, 
+DEFINE_GUID(IID_ISegmentHaulingSpecCriteria, 
 0xdbebe70c, 0xe62f, 0x11d2, 0xad, 0x3d, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface IGirderHaulingSpecCriteria : IUnknown
+interface ISegmentHaulingSpecCriteria : IUnknown
 {
    enum RollStiffnessMethod { LumpSum, PerAxle };
 

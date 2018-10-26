@@ -70,7 +70,9 @@ CGirderPropertiesGraphBuilder::~CGirderPropertiesGraphBuilder()
 int CGirderPropertiesGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
 {
    if ( !CGirderGraphBuilderBase::InitializeGraphController(pParent,nID) )
+   {
       return FALSE;
+   }
 
    m_Graph.SetPinYAxisAtZero(true);
 
@@ -265,9 +267,13 @@ void CGirderPropertiesGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Girde
 
    CString strGraphTitle;
    if ( grpIdx == ALL_GROUPS )
+   {
       strGraphTitle.Format(_T("Girder %s - %s - Interval %d: %s"),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
+   }
    else
+   {
       strGraphTitle.Format(_T("Group %d Girder %s - %s - Interval %d: %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
+   }
    
    m_Graph.SetTitle(std::_tstring(strGraphTitle));
 }
@@ -279,29 +285,27 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
 
    // Get the points of interest we need.
    GET_IFACE(IPointOfInterest,pIPoi);
+   CGirderKey girderKey(grpIdx,gdrIdx);
    CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
 
    // Map POI coordinates to X-values for the graph
    std::vector<Float64> xVals;
-   GetXValues(vPoi,xVals);
+   GetXValues(vPoi,&xVals);
 
    // The tendon graph is different than all the rest...
    if ( propertyType == TendonEccentricity || propertyType == TendonProfile)
    {
       // ... deal with it and return
-      UpdateTendonGraph(propertyType,CGirderKey(grpIdx,gdrIdx),intervalIdx,vPoi,xVals);
+      UpdateTendonGraph(propertyType,girderKey,intervalIdx,vPoi,xVals);
       return;
    }
 
    IndexType dataSeries1, dataSeries2;
-   InitializeGraph(propertyType,CGirderKey(grpIdx,gdrIdx),intervalIdx,&dataSeries1,&dataSeries2);
+   InitializeGraph(propertyType,girderKey,intervalIdx,&dataSeries1,&dataSeries2);
 
-   GET_IFACE(ISectionProperties,pSectProps);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   GET_IFACE(IMaterials,pMaterials);
    GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
 
    Float64 nEffectiveStrands;
 
@@ -315,70 +319,130 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
       switch(propertyType)
       {
       case Height:
+         {
+         GET_IFACE(ISectionProperties,pSectProps);
          value1 = pSectProps->GetHg(intervalIdx,poi);
          break;
+         }
          
       case Area:
+         {
+         GET_IFACE(ISectionProperties,pSectProps);
          value1 = pSectProps->GetAg(sectPropType,intervalIdx,poi);
          break;
+         }
          
       case MomentOfInertia:
+         {
+         GET_IFACE(ISectionProperties,pSectProps);
          value1 = pSectProps->GetIx(sectPropType,intervalIdx,poi);
          break;
+         }
 
       case Centroid:
-         value1 = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
+         {
+         GET_IFACE(ISectionProperties,pSectProps);
+         if ( intervalIdx < compositeDeckIntervalIdx )
+         {
+            value1 = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::TopGirder);
+         }
+         else
+         {
+            value1 = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
+         }
+
          value2 = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder);
          break;
+         }
 
       case SectionModulus:
-         value1 = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
+         {
+         GET_IFACE(ISectionProperties,pSectProps);
+         if ( intervalIdx < compositeDeckIntervalIdx )
+         {
+            value1 = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopGirder);
+         }
+         else
+         {
+            value1 = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
+         }
+
          value2 = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder);
          break;
+         }
 
       case KernPoint:
+         {
+         GET_IFACE(ISectionProperties,pSectProps);
          value1 = pSectProps->GetKt(sectPropType,intervalIdx,poi);
          value2 = pSectProps->GetKb(sectPropType,intervalIdx,poi);
          break;
+         }
 
       case StrandEccentricity:
+         {
+         GET_IFACE(IStrandGeometry,pStrandGeom);
          value1 = pStrandGeom->GetEccentricity(sectPropType,intervalIdx,poi,true,&nEffectiveStrands);
          break;
+         }
 
       case TendonEccentricity:
          ATLASSERT(false); // should never get here
          break;
 
       case EffectiveFlangeWidth:
+         {
          if ( intervalIdx < pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
+         {
             value1 = 0;
+         }
          else
+         {
+            GET_IFACE(ISectionProperties,pSectProps);
             value1 = pSectProps->GetEffectiveFlangeWidth(poi);
+         }
          break;
+         }
 
       case Fc:
-         if ( poi.HasAttribute(POI_CLOSURE) )
+         {
+         GET_IFACE(IMaterials,pMaterials);
+         GET_IFACE(IPointOfInterest,pPoi);
+         if ( pPoi->IsInClosureJoint(poi) )
+         {
             value1 = pMaterials->GetClosureJointFc(poi.GetSegmentKey(),intervalIdx);
+         }
          else
+         {
             value1 = pMaterials->GetSegmentFc(poi.GetSegmentKey(),intervalIdx);
+         }
 
          if ( pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
          {
             value2 = pMaterials->GetDeckFc(poi.GetSegmentKey(),intervalIdx);
          }
          break;
+         }
 
       case Ec:
-         if ( poi.HasAttribute(POI_CLOSURE) )
+         {
+         GET_IFACE(IMaterials,pMaterials);
+         GET_IFACE(IPointOfInterest,pPoi);
+         if ( pPoi->IsInClosureJoint(poi) )
+         {
             value1 = pMaterials->GetClosureJointEc(poi.GetSegmentKey(),intervalIdx);
+         }
          else
+         {
             value1 = pMaterials->GetSegmentEc(poi.GetSegmentKey(),intervalIdx);
+         }
 
          if ( pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
          {
             value2 = pMaterials->GetDeckEc(poi.GetSegmentKey(),intervalIdx);
          }
          break;
+         }
 
       default:
          ATLASSERT(false);
@@ -424,11 +488,13 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++,colorIdx++ )
       {
          if (nColors <= colorIdx )
+         {
             colorIdx = 0;
+         }
 
          CString strLabel;
          strLabel.Format(_T("Tendon %d"),LABEL_DUCT(ductIdx));
-         IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,1,colors[colorIdx]);
+         IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,GRAPH_PEN_WEIGHT,colors[colorIdx]);
 
          std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
          std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
@@ -438,9 +504,13 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
             const pgsPointOfInterest& poi = *iter;
             Float64 value;
             if ( propertyType == TendonEccentricity )
+            {
                value = pTendonGeom->GetEccentricity(intervalIdx,poi,ductIdx);
+            }
             else
+            {
                value = pTendonGeom->GetDuctOffset(intervalIdx,poi,ductIdx);
+            }
 
             Float64 X = *xIter;
 
@@ -514,7 +584,7 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    *pGraph1 = INVALID_INDEX;
    *pGraph2 = INVALID_INDEX;
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE_NOCHECK(IIntervals,pIntervals); // not always used
 
    std::_tstring strPropertyLabel1( GetPropertyLabel(propertyType) );
    std::_tstring strPropertyLabel2(strPropertyLabel1);
@@ -527,42 +597,42 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    case TendonEccentricity:
    case TendonProfile:
    case EffectiveFlangeWidth:
-      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
       break;
 
    case Fc:
       strPropertyLabel1 += _T(" Girder");
-      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
       if ( pIntervals->GetCompositeDeckInterval(girderKey) <= intervalIdx )
       {
          strPropertyLabel2 += _T(" Deck");
-         *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,1,BLUE);
+         *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);
       }
       break;
 
    case Ec:
       strPropertyLabel1 += _T(" Girder");
-      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
       if ( pIntervals->GetCompositeDeckInterval(girderKey) <= intervalIdx )
       {
          strPropertyLabel2 += _T(" Deck");
-         *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,1,BLUE);
+         *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);
       }
       break;
 
    case Centroid:
       strPropertyLabel1 += _T(" from Top");
       strPropertyLabel2 += _T(" from Bottom");
-      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
-      *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,1,BLUE);
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
+      *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);
       break;
 
    case SectionModulus:
    case KernPoint:
       strPropertyLabel1 = _T("Top ") + strPropertyLabel1;
       strPropertyLabel2 = _T("Bottom ") + strPropertyLabel2;
-      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
-      *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,1,BLUE);
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
+      *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);
       break;
 
    default:

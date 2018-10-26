@@ -249,23 +249,23 @@ Float64 pgsLiftingStressAnalysisArtifact::GetMaximumConcreteTensileStress() cons
 void pgsLiftingStressAnalysisArtifact::SetAlternativeTensileStressParameters(ImpactDir impact, Float64 Yna,   Float64 At,   Float64 T,
                                                                              Float64 AsProvd,  Float64 AsReqd,  Float64 fAllow)
 {
-   m_Yna[impact] = Yna;
-   m_At[impact] = At;
-   m_T[impact] = T;
-   m_AsReqd[impact] = AsReqd;
+   m_Yna[impact]     = Yna;
+   m_At[impact]      = At;
+   m_T[impact]       = T;
+   m_AsReqd[impact]  = AsReqd;
    m_AsProvd[impact] = AsProvd;
-   m_fAllow[impact] = fAllow;
+   m_fAllow[impact]  = fAllow;
 }
 
 void pgsLiftingStressAnalysisArtifact::GetAlternativeTensileStressParameters(ImpactDir impact, Float64* Yna,   Float64* At,   Float64* T,  
                                                                              Float64* AsProvd,  Float64* AsReqd,  Float64* fAllow) const
 {
-   *Yna   = m_Yna[impact];
-   *At    = m_At[impact];
-   *T     = m_T[impact];
-   *AsReqd   = m_AsReqd[impact];
-   *AsProvd  = m_AsProvd[impact];
-   *fAllow   = m_fAllow[impact];
+   *Yna     = m_Yna[impact];
+   *At      = m_At[impact];
+   *T       = m_T[impact];
+   *AsReqd  = m_AsReqd[impact];
+   *AsProvd = m_AsProvd[impact];
+   *fAllow  = m_fAllow[impact];
 }
 
 void pgsLiftingStressAnalysisArtifact::SetCompressiveCapacity(Float64 fAllowable)
@@ -287,14 +287,14 @@ void pgsLiftingStressAnalysisArtifact::GetTensileCapacities(Float64* pUpward,  F
 
 void pgsLiftingStressAnalysisArtifact::SetRequiredConcreteStrength(Float64 fciComp,Float64 fciTensNoRebar,Float64 fciTensWithRebar)
 {
-   m_ReqdCompConcreteStrength = fciComp;
+   m_ReqdCompConcreteStrength        = fciComp;
    m_ReqdTensConcreteStrengthNoRebar = fciTensNoRebar;
    m_ReqdTensConcreteStrengthWithRebar = fciTensWithRebar;
 }
 
 void pgsLiftingStressAnalysisArtifact::GetRequiredConcreteStrength(Float64* pfciComp,Float64 *pfciTensNoRebar,Float64 *pfciTensWithRebar) const
 {
-   *pfciComp = m_ReqdCompConcreteStrength;
+   *pfciComp        = m_ReqdCompConcreteStrength;
    *pfciTensNoRebar = m_ReqdTensConcreteStrengthNoRebar;
    *pfciTensWithRebar = m_ReqdTensConcreteStrengthWithRebar;   
 }
@@ -322,10 +322,10 @@ void pgsLiftingStressAnalysisArtifact::MakeCopy(const pgsLiftingStressAnalysisAr
    m_BottomFiberStressNoImpact = rOther.m_BottomFiberStressNoImpact;
    m_BottomFiberStressDownward = rOther.m_BottomFiberStressDownward;
 
-   std::copy(rOther.m_Yna, rOther.m_Yna+SIZE_OF_IMPACTDIR, m_Yna);
-   std::copy(rOther.m_At, rOther.m_At+SIZE_OF_IMPACTDIR, m_At);
-   std::copy(rOther.m_T, rOther.m_T+SIZE_OF_IMPACTDIR, m_T);
-   std::copy(rOther.m_AsReqd, rOther.m_AsReqd+SIZE_OF_IMPACTDIR, m_AsReqd);
+   std::copy(rOther.m_Yna,     rOther.m_Yna+SIZE_OF_IMPACTDIR,     m_Yna);
+   std::copy(rOther.m_At,      rOther.m_At+SIZE_OF_IMPACTDIR,      m_At);
+   std::copy(rOther.m_T,       rOther.m_T+SIZE_OF_IMPACTDIR,       m_T);
+   std::copy(rOther.m_AsReqd,  rOther.m_AsReqd+SIZE_OF_IMPACTDIR,  m_AsReqd);
    std::copy(rOther.m_AsProvd, rOther.m_AsProvd+SIZE_OF_IMPACTDIR, m_AsProvd);
    std::copy(rOther.m_fAllow, rOther.m_fAllow+SIZE_OF_IMPACTDIR, m_fAllow);
 
@@ -477,10 +477,6 @@ void pgsLiftingCrackingAnalysisArtifact::SetLateralMomentStress(Float64 m)
 Float64 pgsLiftingCrackingAnalysisArtifact::GetFsCracking() const
 {
    return m_FsCracking;
-//   if (m_pParent->IsGirderStable())
-//      return m_FsCracking;
-//   else
-//      return 0.0; // no safety for unstable girders
 }
 
 void pgsLiftingCrackingAnalysisArtifact::SetFsCracking(Float64 fs)
@@ -580,16 +576,22 @@ bool pgsLiftingAnalysisArtifact::Passed() const
    // cracking
    Float64 fs_crack = this->GetMinFsForCracking();
    Float64 all_crack = this->GetAllowableFsForCracking();
-   if (fs_crack<all_crack)
+   if (fs_crack < all_crack)
+   {
       return false;
+   }
 
    // Failure
    if ( !PassedFailureCheck() )
+   {
       return false;
+   }
 
    // Stresses
    if (! PassedStressCheck() )
+   {
       return false;
+   }
 
    return true;
 }
@@ -603,14 +605,16 @@ bool pgsLiftingAnalysisArtifact::PassedFailureCheck() const
 
 bool pgsLiftingAnalysisArtifact::PassedStressCheck() const
 {
-   for (std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator is = m_LiftingStressAnalysisArtifacts.begin(); 
-        is!=m_LiftingStressAnalysisArtifacts.end(); is++)
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iter( m_LiftingStressAnalysisArtifacts.begin() ); 
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iterEnd( m_LiftingStressAnalysisArtifacts.end() ); 
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 distFromStart = is->first;
-      const pgsLiftingStressAnalysisArtifact& rart = is->second;
+      const pgsLiftingStressAnalysisArtifact& artifact = iter->second;
 
-      if (!rart.Passed())
+      if (!artifact.Passed())
+      {
          return false;
+      }
    }
 
    return true;
@@ -952,12 +956,14 @@ void pgsLiftingAnalysisArtifact::SetInitialTiltAngle(Float64 val)
 Float64 pgsLiftingAnalysisArtifact::GetMinFsForCracking() const
 {
    // cycle through all fs's at all pois and return min
-   Float64 min_fs=DBL_MAX;
-   PRECONDITION(m_LiftingCrackingAnalysisArtifacts.size()>0);
-   for (std::map<Float64,pgsLiftingCrackingAnalysisArtifact,Float64_less>::const_iterator i = m_LiftingCrackingAnalysisArtifacts.begin(); 
-        i!=m_LiftingCrackingAnalysisArtifacts.end(); i++)
+   Float64 min_fs = DBL_MAX;
+   ATLASSERT( 0 < m_LiftingCrackingAnalysisArtifacts.size() );
+   std::map<pgsPointOfInterest,pgsLiftingCrackingAnalysisArtifact>::const_iterator iter( m_LiftingCrackingAnalysisArtifacts.begin() );
+   std::map<pgsPointOfInterest,pgsLiftingCrackingAnalysisArtifact>::const_iterator end( m_LiftingCrackingAnalysisArtifacts.end() );
+   for ( ; iter != end; iter++ )
    {
-      Float64 fs = i->second.GetFsCracking();
+      const pgsLiftingCrackingAnalysisArtifact& artifact = iter->second;
+      Float64 fs = artifact.GetFsCracking();
       min_fs = Min(min_fs,fs);
    }
    return min_fs;
@@ -1003,71 +1009,87 @@ void pgsLiftingAnalysisArtifact::SetIsGirderStable(bool isStable)
    m_IsStable = isStable;
 }
 
-void pgsLiftingAnalysisArtifact::SetLiftingPointsOfInterest(const std::vector<pgsPointOfInterest>& rPois)
-{
-   m_LiftingPois = rPois;
-}
-
-std::vector<pgsPointOfInterest> pgsLiftingAnalysisArtifact::GetLiftingPointsOfInterest() const
+const std::vector<pgsPointOfInterest>& pgsLiftingAnalysisArtifact::GetLiftingPointsOfInterest() const
 {
    return m_LiftingPois;
 }
 
-void pgsLiftingAnalysisArtifact::AddLiftingStressAnalysisArtifact(Float64 distFromStart,
-                                   const pgsLiftingStressAnalysisArtifact& artifact)
+void pgsLiftingAnalysisArtifact::AddLiftingStressAnalysisArtifact(const pgsPointOfInterest& poi,const pgsLiftingStressAnalysisArtifact& artifact)
 {
-   m_LiftingStressAnalysisArtifacts.insert(std::make_pair(distFromStart,artifact));
+   ATLASSERT(poi.GetID() != INVALID_ID);
+   std::vector<pgsPointOfInterest>::iterator found = std::find(m_LiftingPois.begin(),m_LiftingPois.end(),poi);
+   if ( found == m_LiftingPois.end() )
+   {
+      m_LiftingPois.push_back(poi);
+      std::sort(m_LiftingPois.begin(),m_LiftingPois.end());
+   }
+   m_LiftingStressAnalysisArtifacts.insert(std::make_pair(poi,artifact));
 }
 
-const pgsLiftingStressAnalysisArtifact* pgsLiftingAnalysisArtifact::GetLiftingStressAnalysisArtifact(Float64 distFromStart) const
+const pgsLiftingStressAnalysisArtifact* pgsLiftingAnalysisArtifact::GetLiftingStressAnalysisArtifact(const pgsPointOfInterest& poi) const
 {
-   std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator found;
-   found = m_LiftingStressAnalysisArtifacts.find( distFromStart );
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator found;
+   found = m_LiftingStressAnalysisArtifacts.find( poi );
    if ( found == m_LiftingStressAnalysisArtifacts.end() )
-      return 0;
+   {
+      ATLASSERT(false);
+      return NULL;
+   }
 
    return &(*found).second;
 }
 
 
-void pgsLiftingAnalysisArtifact::AddLiftingCrackingAnalysisArtifact(Float64 distFromStart,
-                                   const pgsLiftingCrackingAnalysisArtifact& artifact)
+void pgsLiftingAnalysisArtifact::AddLiftingCrackingAnalysisArtifact(const pgsPointOfInterest& poi,const pgsLiftingCrackingAnalysisArtifact& artifact)
 {
-   m_LiftingCrackingAnalysisArtifacts.insert(std::make_pair(distFromStart,artifact));
-
+   ATLASSERT(poi.GetID() != INVALID_ID);
+   std::vector<pgsPointOfInterest>::iterator found = std::find(m_LiftingPois.begin(),m_LiftingPois.end(),poi);
+   if ( found == m_LiftingPois.end() )
+   {
+      m_LiftingPois.push_back(poi);
+      std::sort(m_LiftingPois.begin(),m_LiftingPois.end());
+   }
+   m_LiftingCrackingAnalysisArtifacts.insert(std::make_pair(poi,artifact));
 }
 
-const pgsLiftingCrackingAnalysisArtifact* pgsLiftingAnalysisArtifact::GetLiftingCrackingAnalysisArtifact(Float64 distFromStart) const
+const pgsLiftingCrackingAnalysisArtifact* pgsLiftingAnalysisArtifact::GetLiftingCrackingAnalysisArtifact(const pgsPointOfInterest& poi) const
 {
-   std::map<Float64,pgsLiftingCrackingAnalysisArtifact,Float64_less>::const_iterator found;
-   found = m_LiftingCrackingAnalysisArtifacts.find( distFromStart );
+   std::map<pgsPointOfInterest,pgsLiftingCrackingAnalysisArtifact>::const_iterator found;
+   found = m_LiftingCrackingAnalysisArtifacts.find( poi );
    if ( found == m_LiftingCrackingAnalysisArtifacts.end() )
-      return 0;
+   {
+      ATLASSERT(false);
+      return NULL;
+   }
 
    return &(*found).second;
 }
 
 void pgsLiftingAnalysisArtifact::GetMinMaxStresses(Float64* minStress, Float64* maxStress,Float64* minDistFromStart,Float64* maxDistFromStart) const
 {
-   PRECONDITION(m_LiftingStressAnalysisArtifacts.size()>0);
+   ATLASSERT(0 < m_LiftingStressAnalysisArtifacts.size());
 
    Float64 min_stress = Float64_Max;
    Float64 max_stress = -Float64_Max;
-   for (std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator is = m_LiftingStressAnalysisArtifacts.begin(); 
-        is!=m_LiftingStressAnalysisArtifacts.end(); is++)
+
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iter( m_LiftingStressAnalysisArtifacts.begin() ); 
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iterEnd( m_LiftingStressAnalysisArtifacts.end() );
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 stress = is->second.GetMaximumConcreteCompressiveStress();
+      const pgsPointOfInterest& poi = iter->first;
+      const pgsLiftingStressAnalysisArtifact& artifact = iter->second;
+      Float64 stress = artifact.GetMaximumConcreteCompressiveStress();
       if (  stress < min_stress )
       {
          min_stress = stress;
-         *minDistFromStart = is->first;
+         *minDistFromStart = poi.GetDistFromStart();
       }
 
-      stress = is->second.GetMaximumConcreteTensileStress();
+      stress = artifact.GetMaximumConcreteTensileStress();
       if ( max_stress < stress )
       {
          max_stress = stress;
-         *maxDistFromStart = is->first;
+         *maxDistFromStart = poi.GetDistFromStart();
       }
 
    }
@@ -1077,7 +1099,7 @@ void pgsLiftingAnalysisArtifact::GetMinMaxStresses(Float64* minStress, Float64* 
 }
 
 void pgsLiftingAnalysisArtifact::GetGirderStress(
-   std::vector<Float64> locs, // locations were stresses are to be retreived
+   std::vector<pgsPointOfInterest> vPois, // locations were stresses are to be retreived
    bool bMin,                // if true, minimum (compression) stresses are returned
    bool bIncludePrestress,   // if true, stresses contain the effect of prestressing
    std::vector<Float64>& fTop,// vector of resulting stresses at top of girder
@@ -1087,31 +1109,37 @@ void pgsLiftingAnalysisArtifact::GetGirderStress(
    // get the girder stress duing lift
    ATLASSERT(0 < m_LiftingStressAnalysisArtifacts.size());
 
-   std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator iter;
-   for (iter = m_LiftingStressAnalysisArtifacts.begin(); iter != m_LiftingStressAnalysisArtifacts.end(); iter++)
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iter(m_LiftingStressAnalysisArtifacts.begin());
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iterEnd(m_LiftingStressAnalysisArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 distFromStart = iter->first;
+      const pgsPointOfInterest& thisPoi = iter->first;
       const pgsLiftingStressAnalysisArtifact& liftStressArtifact = iter->second;
 
-      std::vector<Float64>::iterator locIter;
-      for ( locIter = locs.begin(); locIter != locs.end(); locIter++ )
+      std::vector<pgsPointOfInterest>::const_iterator poiIter(vPois.begin());
+      std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPois.end());
+      for ( ; poiIter != poiIterEnd; poiIter++ )
       {
-         Float64 location = *locIter;
-         if ( IsEqual(location,distFromStart) )
+         const pgsPointOfInterest& poi = *poiIter;
+         if ( poi == thisPoi )
          {
             Float64 fTopPS,fTopImpactUp,fTopNoImpact,fTopImpactDown;
             liftStressArtifact.GetTopFiberStress(&fTopPS,&fTopImpactUp,&fTopNoImpact,&fTopImpactDown);
 
             Float64 ft = ( bMin ? Min(fTopImpactUp,fTopNoImpact,fTopImpactDown) : Max(fTopImpactUp,fTopNoImpact,fTopImpactDown) );
             if ( !bIncludePrestress )
+            {
                ft -= fTopPS;
+            }
 
             Float64 fBottomPS,fBottomImpactUp,fBottomNoImpact,fBottomImpactDown;
             liftStressArtifact.GetBottomFiberStress(&fBottomPS,&fBottomImpactUp,&fBottomNoImpact,&fBottomImpactDown);
 
             Float64 fb = ( bMin ? Min(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) : Max(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) );
             if ( !bIncludePrestress )
+            {
                fb -= fBottomPS;
+            }
 
 
             fTop.push_back(ft);
@@ -1132,7 +1160,7 @@ void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress,
    // look at lifting locations and transfer lengths
    // Largest of overhang or transfer will control. (from sensitivity study and until proven wrong)
    Float64 left_loc, right_loc;
-   if (m_LeftOverhang > m_XFerLength)
+   if (m_XFerLength < m_LeftOverhang)
    {
        left_loc = m_LeftOverhang;
    }
@@ -1141,7 +1169,7 @@ void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress,
       left_loc = m_XFerLength;
    }
 
-   if(m_RightOverhang > m_XFerLength)
+   if (m_XFerLength < m_RightOverhang)
    {
       right_loc = m_GirderLength - m_RightOverhang;
    }
@@ -1151,13 +1179,16 @@ void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress,
    }
 
    Int16 found=0;
-   for (std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator is = m_LiftingStressAnalysisArtifacts.begin(); 
-        is!=m_LiftingStressAnalysisArtifacts.end(); is++)
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iter( m_LiftingStressAnalysisArtifacts.begin() );
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iterEnd( m_LiftingStressAnalysisArtifacts.end() );
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 distFromStart = is->first;
-      const pgsLiftingStressAnalysisArtifact& rart = is->second;
+      const pgsPointOfInterest& poi = iter->first;
+      const pgsLiftingStressAnalysisArtifact& artifact = iter->second;
 
-      if ( IsEqual(distFromStart,left_loc) || IsEqual(distFromStart,right_loc))
+      Float64 Xpoi = poi.GetDistFromStart();
+
+      if ( IsEqual(Xpoi,left_loc) || IsEqual(Xpoi,right_loc))
       {
          found++;
 
@@ -1165,22 +1196,22 @@ void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress,
          // subtract out stress due to prestressing
          Float64 stps;
          Float64 up, no, dn;
-         rart.GetTopFiberStress(&stps,&up, &no, &dn);
+         artifact.GetTopFiberStress(&stps,&up, &no, &dn);
 
          Float64 optim = Max(up,no,dn);
 
          optim -= stps;
 
-         if (optim > top_stress)
+         if (top_stress < optim)
          {
             top_stress = optim;
-            top_loc    = distFromStart;
+            top_loc    = Xpoi;
          }
 
          // bottom fiber
          // subtract out stress due to prestressing
          Float64 sbps;
-         rart.GetBottomFiberStress(&sbps, &up, &no, &dn);
+         artifact.GetBottomFiberStress(&sbps, &up, &no, &dn);
 
          optim = Min(up,no,dn);
 
@@ -1189,61 +1220,64 @@ void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress,
          if (optim < bot_stress)
          {
             bot_stress = optim;
-            bot_loc    = distFromStart;
+            bot_loc    = Xpoi;
          }
       }
    }
 
-   ATLASSERT(found>=2);
+   ATLASSERT(2 <= found);
 
-   *topStress = top_stress;
+   *topStress        = top_stress;
    *topDistFromStart = top_loc;
 
-   *botStress = bot_stress;
+   *botStress        = bot_stress;
    *botDistFromStart = bot_loc;
 }
 
 
 void pgsLiftingAnalysisArtifact::GetMidZoneMinMaxRawStresses(Float64 leftHp, Float64 rightHp, Float64* topStress, Float64* botStress,Float64* topDistFromStart,Float64* botDistFromStart) const
 {
-   PRECONDITION(m_LiftingStressAnalysisArtifacts.size()>0);
+   ATLASSERT(0 < m_LiftingStressAnalysisArtifacts.size());
 
    Float64 top_stress = -Float64_Max;
    Float64 bot_stress =  Float64_Max;
    Float64 top_loc, bot_loc;
 
-   for (std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator is = m_LiftingStressAnalysisArtifacts.begin(); 
-        is!=m_LiftingStressAnalysisArtifacts.end(); is++)
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iter( m_LiftingStressAnalysisArtifacts.begin() ); 
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iterEnd( m_LiftingStressAnalysisArtifacts.end() ); 
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 distFromStart = is->first;
-      const pgsLiftingStressAnalysisArtifact& rart = is->second;
+      const pgsPointOfInterest& poi = iter->first;
+      const pgsLiftingStressAnalysisArtifact& artifact = iter->second;
+
+      Float64 Xpoi = poi.GetDistFromStart();
 
       // location must be outside of HP's
-      if (distFromStart>=leftHp && distFromStart<=rightHp)
+      if (leftHp <= Xpoi && Xpoi <= Xpoi)
       {
-         Float64 psf = rart.GetEffectiveHorizPsForce();
-         Float64 ecc = rart.GetEccentricityPsForce();
+         Float64 psf = artifact.GetEffectiveHorizPsForce();
+         Float64 ecc = artifact.GetEccentricityPsForce();
 
          // top fiber
          // subtract out stress due to prestressing
          Float64 stps;
          Float64 up, no, dn;
-         rart.GetTopFiberStress(&stps, &up, &no, &dn);
+         artifact.GetTopFiberStress(&stps, &up, &no, &dn);
 
          Float64 optim = Max(up, no, dn);
 
          optim -= stps;
 
-         if (optim > top_stress)
+         if (top_stress < optim)
          {
             top_stress = optim;
-            top_loc    = distFromStart;
+            top_loc    = Xpoi;
          }
 
          // bottom fiber
          // subtract out stress due to prestressing
          Float64 sbps;
-         rart.GetBottomFiberStress(&sbps, &up, &no, &dn);
+         artifact.GetBottomFiberStress(&sbps, &up, &no, &dn);
 
          optim = Min(up, no, dn);
 
@@ -1252,7 +1286,7 @@ void pgsLiftingAnalysisArtifact::GetMidZoneMinMaxRawStresses(Float64 leftHp, Flo
          if (optim < bot_stress)
          {
             bot_stress = optim;
-            bot_loc    = distFromStart;
+            bot_loc    = Xpoi;
          }
       }
    }
@@ -1266,41 +1300,36 @@ void pgsLiftingAnalysisArtifact::GetMidZoneMinMaxRawStresses(Float64 leftHp, Flo
 
 void pgsLiftingAnalysisArtifact::GetMinMaxLiftingStresses(MaxLiftingStressCollection& rMaxStresses) const
 {
-   PRECONDITION(m_LiftingStressAnalysisArtifacts.size()>0);
-
-   IndexType size = m_LiftingStressAnalysisArtifacts.size();
-   IndexType psiz = m_LiftingPois.size();
-   PRECONDITION(m_LiftingStressAnalysisArtifacts.size()==psiz);
+   ATLASSERT(0 < m_LiftingStressAnalysisArtifacts.size());
 
    rMaxStresses.clear();
-   rMaxStresses.reserve(size);
+   rMaxStresses.reserve(m_LiftingStressAnalysisArtifacts.size());
 
-   IndexType idx=0;
-   for (std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator is = m_LiftingStressAnalysisArtifacts.begin(); 
-        is!=m_LiftingStressAnalysisArtifacts.end(); is++)
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iter(m_LiftingStressAnalysisArtifacts.begin()); 
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iterEnd(m_LiftingStressAnalysisArtifacts.end()); 
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 distFromStart = is->first;
-      const pgsLiftingStressAnalysisArtifact& rart = is->second;
+      const pgsPointOfInterest& poi = iter->first;
+      const pgsLiftingStressAnalysisArtifact& artifact = iter->second;
 
       // top fiber
       Float64 stps;
       Float64 up, no, dn;
       // upward impact will always cause max top tension
-      rart.GetTopFiberStress(&stps, &up, &no, &dn);
+      artifact.GetTopFiberStress(&stps, &up, &no, &dn);
 
       Float64 top_stress = Max(up,no,dn);
 
       // bottom fiber
       Float64 sbps;
-      rart.GetBottomFiberStress(&sbps, &up, &no, &dn);
+      artifact.GetBottomFiberStress(&sbps, &up, &no, &dn);
 
       Float64 bot_stress = Min(up,no,dn);
 
       // prestress force
-      Float64 psf = rart.GetEffectiveHorizPsForce();
+      Float64 psf = artifact.GetEffectiveHorizPsForce();
 
-      rMaxStresses.push_back( MaxdLiftingStresses(m_LiftingPois[idx], psf, top_stress,bot_stress) );
-      idx++;
+      rMaxStresses.push_back( MaxdLiftingStresses(poi, psf, top_stress,bot_stress) );
    }
 }
 
@@ -1310,12 +1339,14 @@ void pgsLiftingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfciComp,F
    Float64 maxFciTensnobar = -Float64_Max;
    Float64 maxFciTenswithbar = -Float64_Max;
 
-   std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator is = m_LiftingStressAnalysisArtifacts.begin();
-   std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator iend = m_LiftingStressAnalysisArtifacts.end();
-   for ( ; is!=iend; is++)
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iter( m_LiftingStressAnalysisArtifacts.begin() );
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator iterEnd( m_LiftingStressAnalysisArtifacts.end() );
+   for ( ; iter != iterEnd; iter++ )
    {
+      const pgsLiftingStressAnalysisArtifact& artifact = iter->second;
+      
       Float64 fciComp, fciTensNoRebar, fciTensWithRebar;
-      is->second.GetRequiredConcreteStrength(&fciComp, &fciTensNoRebar, &fciTensWithRebar);
+      artifact.GetRequiredConcreteStrength(&fciComp, &fciTensNoRebar, &fciTensWithRebar);
 
       // Use inline function for comparison
       maxFciComp        = CompareConcreteStrength(maxFciComp, fciComp);
@@ -1418,8 +1449,8 @@ void pgsLiftingAnalysisArtifact::Dump(dbgDumpContext& os) const
       const pgsPointOfInterest& rpoi = *iter;
       Float64 loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
-      std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator found;
-      found = m_LiftingStressAnalysisArtifacts.find( loc );
+      std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact>::const_iterator found;
+      found = m_LiftingStressAnalysisArtifacts.find( rpoi );
 /*
       os<<endl;
       Float64 fps, fup, fno, fdown;
@@ -1443,8 +1474,8 @@ void pgsLiftingAnalysisArtifact::Dump(dbgDumpContext& os) const
       const pgsPointOfInterest& rpoi = *iter;
       Float64 loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
-      std::map<Float64,pgsLiftingCrackingAnalysisArtifact,Float64_less>::const_iterator found;
-      found = m_LiftingCrackingAnalysisArtifacts.find( loc );
+      std::map<pgsPointOfInterest,pgsLiftingCrackingAnalysisArtifact>::const_iterator found;
+      found = m_LiftingCrackingAnalysisArtifacts.find( rpoi );
 
       CrackedFlange flange = found->second.GetCrackedFlange();
       os<<_T("Flange=")<<(flange==TopFlange?_T("TopFlange"):_T("BottomFlange"));

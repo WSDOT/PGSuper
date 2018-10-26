@@ -29,6 +29,8 @@
 #define GRAPH_GRID_PEN_WEIGHT 1
 #define GRAPH_GRID_COLOR GREY50 //RGB(0,150,0)
 
+#define GRAPH_PEN_WEIGHT 2
+
 
 class CGraphColor
 {

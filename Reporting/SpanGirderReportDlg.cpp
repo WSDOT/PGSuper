@@ -116,7 +116,9 @@ void CSpanGirderReportDlg::UpdateGirderComboBox(GroupIndexType grpIdx)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if ( m_Mode == ChaptersOnly || m_Mode == SpanAndChapters )
+   {
       return;
+   }
 
    GET_IFACE( IBridge, pBridge );
 
@@ -146,7 +148,9 @@ void CSpanGirderReportDlg::UpdateGirderComboBox(GroupIndexType grpIdx)
    }
 
    if ( pGdrBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR )
+   {
       pGdrBox->SetCurSel(0);
+   }
 }
 
 void CSpanGirderReportDlg::UpdateChapterList()
@@ -189,13 +193,12 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
    CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
 
    // Fill up the span and girder combo boxes
-   GET_IFACE( IBridge, pBridge );
-
    if ( m_Mode == SpanAndChapters || m_Mode == SpanGirderAndChapters )
    {
       // fill up the group list box
       CComboBox* pGroupBox = (CComboBox*)GetDlgItem( IDC_SPAN );
-      GroupIndexType cGroups = pBridge->GetGirderGroupCount();
+      GET_IFACE( IBridge, pBridge );
+         GroupIndexType cGroups = pBridge->GetGirderGroupCount();
       for ( GroupIndexType i = 0; i < cGroups; i++ )
       {
          CString strGroup;
@@ -292,7 +295,9 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
    UpdateChapterList();
 
    if ( m_pInitRptSpec )
+   {
       InitFromRptSpec();
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE

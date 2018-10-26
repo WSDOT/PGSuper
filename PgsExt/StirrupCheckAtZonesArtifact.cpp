@@ -61,7 +61,9 @@ pgsStirrupCheckAtZonesArtifactKey::~pgsStirrupCheckAtZonesArtifactKey()
 pgsStirrupCheckAtZonesArtifactKey& pgsStirrupCheckAtZonesArtifactKey::operator = (const pgsStirrupCheckAtZonesArtifactKey& rOther)
 {
    if ( this != &rOther )
+   {
       MakeAssignment( rOther );
+   }
 
    return *this;
 }
@@ -664,27 +666,37 @@ void pgsConfinementArtifact::SetEndd(Float64 d)
 bool pgsConfinementArtifact::StartPassed() const
 {
    if ( !m_IsApplicable )
+   {
       return true;
+   }
 
    const Float64 tol = 1.0e-6;
 
    // Zone length
    if (m_StartProvidedZoneLength+tol < m_StartRequiredZoneLength)
+   {
       return false;
+   }
 
    // min bar size
    if (m_pMinRebar != NULL)
    {
       if (m_pStartRebar == NULL)
+      {
          return false;
+      }
 
       if (m_pStartRebar->GetNominalDimension() < m_pMinRebar->GetNominalDimension())
+      {
          return false;
+      }
    }
       
    // spacing
    if (GetStartS() > GetSMax()+tol)
+   {
       return false;
+   }
 
    return true;
 }
@@ -692,27 +704,37 @@ bool pgsConfinementArtifact::StartPassed() const
 bool pgsConfinementArtifact::EndPassed() const
 {
    if ( !m_IsApplicable )
+   {
       return true;
+   }
 
    const Float64 tol = 1.0e-6;
 
    // Zone length
    if (m_EndProvidedZoneLength+tol < m_EndRequiredZoneLength)
+   {
       return false;
+   }
 
    // min bar size
    if (m_pMinRebar != NULL)
    {
       if (m_pEndRebar == NULL)
+      {
          return false;
+      }
 
       if (m_pEndRebar->GetNominalDimension() < m_pMinRebar->GetNominalDimension())
+      {
          return false;
+      }
    }
       
    // spacing
    if (GetEndS() > GetSMax()+tol)
+   {
       return false;
+   }
 
    return true;
 }

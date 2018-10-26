@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "AnalysisResultsGraphController.h"
+#include <Graphing\GraphingTypes.h>
 #include <Graphing\AnalysisResultsGraphBuilder.h>
 
 #include <IFace\DocumentType.h>
@@ -34,7 +35,7 @@
 IMPLEMENT_DYNCREATE(CAnalysisResultsGraphController,CGirderGraphControllerBase)
 
 CAnalysisResultsGraphController::CAnalysisResultsGraphController():
-CGirderGraphControllerBase(false/*exclude ALL_GROUPS*/),
+CGirderGraphControllerBase(true/*false*//*exclude ALL_GROUPS*/),
 m_GraphMode(GRAPH_MODE_LOADING),
 m_ActionType(actionMoment),
 m_AnalysisType(pgsTypes::Simple)
@@ -61,6 +62,8 @@ BEGIN_MESSAGE_MAP(CAnalysisResultsGraphController, CGirderGraphControllerBase)
    ON_BN_CLICKED(IDC_TOP_DECK, OnStress)
    ON_BN_CLICKED(IDC_BOTTOM_DECK, OnStress)
 
+   ON_BN_CLICKED(IDC_ELEV_ADJUSTMENT,OnElevAdjustment)
+
    ON_BN_CLICKED(IDC_SIMPLE,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_SIMPLE2,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_SIMPLE3,OnAnalysisTypeClicked)
@@ -83,6 +86,7 @@ BOOL CAnalysisResultsGraphController::OnInitDialog()
    UpdateListInfo();
    UpdateStressControls();
    UpdateAnalysisType();
+   UpdateElevAdjustment();
 
    OnModeChanged();
 
@@ -94,9 +98,9 @@ ActionType CAnalysisResultsGraphController::GetActionType()
    return m_ActionType;
 }
 
-CombinationType CAnalysisResultsGraphController::GetCombinationType()
+ResultsType CAnalysisResultsGraphController::GetResultsType()
 {
-   return IsDlgButtonChecked(IDC_INCREMENTAL) == BST_CHECKED ? ctIncremental : ctCumulative;
+   return IsDlgButtonChecked(IDC_INCREMENTAL) == BST_CHECKED ? rtIncremental : rtCumulative;
 }
 
 bool CAnalysisResultsGraphController::PlotStresses(pgsTypes::StressLocation stressLocation)
@@ -145,6 +149,11 @@ std::vector<IntervalIndexType> CAnalysisResultsGraphController::GetSelectedInter
    }
 
    return vIntervals;
+}
+
+bool CAnalysisResultsGraphController::IncludeElevationAdjustment()
+{
+   return IsDlgButtonChecked(IDC_ELEV_ADJUSTMENT) == BST_CHECKED ? true : false;
 }
 
 pgsTypes::AnalysisType CAnalysisResultsGraphController::GetAnalysisType()
@@ -211,7 +220,7 @@ void CAnalysisResultsGraphController::OnActionChanged()
    CComboBox* pcbAction = (CComboBox*)GetDlgItem(IDC_ACTION);
 
    int curSel = pcbAction->GetCurSel();
-   ActionType actionType = ActionType(curSel);
+   ActionType actionType = ActionType(pcbAction->GetItemData(curSel));
    if ( m_ActionType == actionType )
    {
       // action type didn't change
@@ -220,6 +229,7 @@ void CAnalysisResultsGraphController::OnActionChanged()
 
    m_ActionType = actionType;
 
+   UpdateElevAdjustment();
    UpdateStressControls();
 
    // the loads that are available to plot for a particular action depend on the
@@ -244,6 +254,7 @@ void CAnalysisResultsGraphController::OnDropDownChanged()
    }
    else
    {
+      UpdateResultsType();
       FillDropListCtrl(true);
    }
 
@@ -252,6 +263,11 @@ void CAnalysisResultsGraphController::OnDropDownChanged()
 
 void CAnalysisResultsGraphController::OnSelectListChanged()
 {
+   if ( GetGraphMode() == GRAPH_MODE_LOADING) 
+   {
+      UpdateResultsType();
+   }
+
    UpdateGraph();
 }
 
@@ -261,6 +277,11 @@ void CAnalysisResultsGraphController::OnPlotTypeClicked()
 }
 
 void CAnalysisResultsGraphController::OnStress()
+{
+   UpdateGraph();
+}
+
+void CAnalysisResultsGraphController::OnElevAdjustment()
 {
    UpdateGraph();
 }
@@ -288,7 +309,9 @@ void CAnalysisResultsGraphController::OnAnalysisTypeClicked()
    }
 
    if ( m_AnalysisType == analysisType )
+   {
       return;
+   }
 
    m_AnalysisType = analysisType;
 
@@ -329,17 +352,23 @@ void CAnalysisResultsGraphController::FillActionTypeCtrl()
 
    pcbAction->ResetContent();
 
-   pcbAction->AddString(_T("Moment"));
-   pcbAction->AddString(_T("Shear"));
-   pcbAction->AddString(_T("Deflection"));
-   pcbAction->AddString(_T("Stress"));
+   pcbAction->SetItemData(pcbAction->AddString(_T("Moment")),     actionMoment);
+   pcbAction->SetItemData(pcbAction->AddString(_T("Shear")),      actionShear);
+   pcbAction->SetItemData(pcbAction->AddString(_T("Deflection")), actionDeflection);
+   pcbAction->SetItemData(pcbAction->AddString(_T("Rotation")),   actionRotation);
+   pcbAction->SetItemData(pcbAction->AddString(_T("Stress")),     actionStress);
+   pcbAction->SetItemData(pcbAction->AddString(_T("Reaction")),   actionReaction);
 
    if ( curSel == CB_ERR || pcbAction->GetCount() <= curSel)
+   {
       pcbAction->SetCurSel(0);
+   }
    else
+   {
       pcbAction->SetCurSel(curSel);
+   }
 
-   m_ActionType = (ActionType)pcbAction->GetCurSel();
+   m_ActionType = (ActionType)pcbAction->GetItemData(pcbAction->GetCurSel());
 }
 
 void CAnalysisResultsGraphController::FillDropListCtrl(bool bRetainSelection)
@@ -365,6 +394,10 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRetainSel
    pcbIntervals->ResetContent();
 
    CGirderKey girderKey(GetGirderKey());
+   if ( girderKey.groupIndex == ALL_GROUPS )
+   {
+      girderKey.groupIndex = 0;
+   }
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
@@ -401,15 +434,15 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Loadings(bool bRetainSele
 
    CAnalysisResultsGraphBuilder* pGraphBuilder = (CAnalysisResultsGraphBuilder*)GetGraphBuilder();
    
-   std::vector<std::pair<CString,IDType>> vLoadings( pGraphBuilder->GetLoadings(INVALID_INDEX,GetActionType()) );
-   std::vector<std::pair<CString,IDType>>::iterator iter(vLoadings.begin());
-   std::vector<std::pair<CString,IDType>>::iterator end(vLoadings.end());
+   std::vector<std::pair<std::_tstring,IDType>> vLoadings( pGraphBuilder->GetLoadings(INVALID_INDEX,GetActionType()) );
+   std::vector<std::pair<std::_tstring,IDType>>::iterator iter(vLoadings.begin());
+   std::vector<std::pair<std::_tstring,IDType>>::iterator end(vLoadings.end());
    for ( ; iter != end; iter++ )
    {
-      CString& lcName( (*iter).first );
+      std::_tstring& lcName( (*iter).first );
       IDType  graphID   = (*iter).second;
       
-      int idx = pcbLoadings->AddString(lcName);
+      int idx = pcbLoadings->AddString(lcName.c_str());
       pcbLoadings->SetItemData(idx,(DWORD_PTR)graphID);
    }
 
@@ -475,7 +508,13 @@ void CAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool bRetainS
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
    {
       CString str;
-      str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+      CGirderKey thisGirderKey(girderKey);
+      if ( thisGirderKey.groupIndex == ALL_GROUPS )
+      {
+         thisGirderKey.groupIndex = 0;
+      }
+
+      str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(thisGirderKey,intervalIdx));
       int idx = plbIntervals->AddString(str);
       plbIntervals->SetItemData(idx,intervalIdx);
    }
@@ -523,16 +562,16 @@ void CAnalysisResultsGraphController::FillSelectListCtrl_Loadings(bool bRetainSe
 
    CAnalysisResultsGraphBuilder* pGraphBuilder = (CAnalysisResultsGraphBuilder*)GetGraphBuilder();
    
-   std::vector<std::pair<CString,IDType>> vLoadings( pGraphBuilder->GetLoadings(GetInterval(),GetActionType()) );
+   std::vector<std::pair<std::_tstring,IDType>> vLoadings( pGraphBuilder->GetLoadings(GetInterval(),GetActionType()) );
 
-   std::vector<std::pair<CString,IDType>>::iterator iter(vLoadings.begin());
-   std::vector<std::pair<CString,IDType>>::iterator end(vLoadings.end());
+   std::vector<std::pair<std::_tstring,IDType>>::iterator iter(vLoadings.begin());
+   std::vector<std::pair<std::_tstring,IDType>>::iterator end(vLoadings.end());
    for ( ; iter != end; iter++ )
    {
-      CString& lcName( (*iter).first );
+      std::_tstring& lcName( (*iter).first );
       IDType   graphID = (*iter).second;
       
-      int idx = plbLoadings->AddString(lcName);
+      int idx = plbLoadings->AddString(lcName.c_str());
       plbLoadings->SetItemData(idx,(DWORD_PTR)graphID);
    }
 
@@ -567,6 +606,72 @@ void CAnalysisResultsGraphController::UpdateListInfo()
    CString strHint;
    strHint.Format(_T("Hold CTRL key to select multiple %s\nHold SHIFT key to select range of %s"),strType,strType);
    GetDlgItem(IDC_LIST_INFO)->SetWindowText(strHint);
+}
+
+bool IsCumulativeOnlyGraphType(GraphType graphType)
+{
+   return (graphType == graphLimitState ||
+           graphType == graphDemand     ||
+           graphType == graphAllowable  ||
+           graphType == graphCapacity   ||
+           graphType == graphMinCapacity) ? true : false;
+}
+
+void CAnalysisResultsGraphController::UpdateResultsType()
+{
+   bool bCumulativeOnly = false;
+   CAnalysisResultsGraphBuilder* pGraphBuilder = (CAnalysisResultsGraphBuilder*)GetGraphBuilder();
+   if ( GetGraphMode() == GRAPH_MODE_INTERVAL )
+   {
+      IDType graphID = SelectedGraphIndexToGraphID(0);
+      GraphType graphType = pGraphBuilder->GetGraphType(graphID);
+      bCumulativeOnly = IsCumulativeOnlyGraphType(graphType);
+   }
+   else
+   {
+      IndexType nGraphs = GetGraphCount();
+      for ( IndexType graphIdx = 0; graphIdx < nGraphs; graphIdx++ )
+      {
+         IDType graphID = SelectedGraphIndexToGraphID(graphIdx);
+         GraphType graphType = pGraphBuilder->GetGraphType(graphID);
+         if ( IsCumulativeOnlyGraphType(graphType) )
+         {
+            bCumulativeOnly = true;
+         }
+      }
+   }
+
+   if ( bCumulativeOnly )
+   {
+      CheckRadioButton(IDC_INCREMENTAL,IDC_CUMULATIVE,IDC_CUMULATIVE);
+      GetDlgItem(IDC_INCREMENTAL)->EnableWindow(FALSE);
+   }
+   else
+   {
+      GetDlgItem(IDC_INCREMENTAL)->EnableWindow(TRUE);
+   }
+}
+
+void CAnalysisResultsGraphController::UpdateElevAdjustment()
+{
+   ActionType actionType = GetActionType();
+   if ( actionType == actionDeflection || actionType == actionRotation )
+   {
+      if ( actionType == actionDeflection )
+      {
+         GetDlgItem(IDC_ELEV_ADJUSTMENT)->SetWindowText(_T("Include Elevation Adjustment"));
+      }
+      else
+      {
+         GetDlgItem(IDC_ELEV_ADJUSTMENT)->SetWindowText(_T("Include Slope Adjustment"));
+      }
+
+      GetDlgItem(IDC_ELEV_ADJUSTMENT)->ShowWindow(SW_SHOW);
+   }
+   else
+   {
+      GetDlgItem(IDC_ELEV_ADJUSTMENT)->ShowWindow(SW_HIDE);
+   }
 }
 
 void CAnalysisResultsGraphController::UpdateAnalysisType()
@@ -621,6 +726,10 @@ IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval()
 {
    GET_IFACE(IIntervals,pIntervals);
    CGirderKey girderKey(GetGirderKey());
+   if ( girderKey.groupIndex == ALL_GROUPS )
+   {
+      girderKey.groupIndex = 0;
+   }
 
    // want the first segment release interval... which is one interval after strand stressing
    return pIntervals->GetFirstStressStrandInterval(girderKey)+1;
@@ -630,6 +739,10 @@ IntervalIndexType CAnalysisResultsGraphController::GetLastInterval()
 {
    GET_IFACE(IIntervals,pIntervals);
    CGirderKey girderKey(GetGirderKey());
+   if ( girderKey.groupIndex == ALL_GROUPS )
+   {
+      girderKey.groupIndex = 0;
+   }
    return pIntervals->GetIntervalCount(girderKey) - 1;
 }
 

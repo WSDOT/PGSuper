@@ -102,7 +102,7 @@ public:
       }
       else
       {
-         ATLASSERT(0); // forgot to set factor?
+         ATLASSERT(false); // forgot to set factor?
          return 2.0;
       }
    }

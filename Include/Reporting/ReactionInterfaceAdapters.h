@@ -87,7 +87,7 @@ public:
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
    virtual Float64 GetReaction(IntervalIndexType intervalIdx, const ReactionLocation& rLocation, ProductForceType type, pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
 };
@@ -100,17 +100,17 @@ public:
 class REPORTINGCLASS ProductForcesReactionAdapter: public IProductReactionAdapter
 {
 public:
-   ProductForcesReactionAdapter(IProductForces* pForces, const CGirderKey& girderKey);
+   ProductForcesReactionAdapter(IReactions* pReactions,const CGirderKey& girderKey);
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
    virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,ProductForceType type,pgsTypes::BridgeAnalysisType bat);
-   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);
 
 private:
-   IProductForces* m_Pointer;
+   IReactions* m_pReactions;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
 };
@@ -128,7 +128,7 @@ public:
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
    virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,ProductForceType type,pgsTypes::BridgeAnalysisType bat);
-   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
+   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);
 private:
@@ -163,28 +163,28 @@ public:
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
    // From ICombinedForces
-   virtual Float64 GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) = 0;
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType type) = 0;
+   virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) = 0;
 
    // From ILimitStateForces
-   virtual void GetReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax) = 0;
+   virtual void GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax) = 0;
 };
 
 class REPORTINGCLASS CombinedLsForcesReactionAdapter: public ICmbLsReactionAdapter
 {
 public:
-   CombinedLsForcesReactionAdapter(ICombinedForces* pCmbForces, ILimitStateForces* pForces, const CGirderKey& girderKey);
+   CombinedLsForcesReactionAdapter(IReactions* pReactions, ILimitStateForces* pForces, const CGirderKey& girderKey);
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
-   virtual Float64 GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,CombinationType type,pgsTypes::BridgeAnalysisType bat);
-   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType type);
+   virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
 
    // From ILimitStateForces
-   virtual void GetReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax);
+   virtual void GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax);
 
 private:
-   ICombinedForces*   m_CmbPointer;
+   IReactions* m_pReactions;
    ILimitStateForces* m_LsPointer;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
@@ -201,9 +201,9 @@ public:
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
 
-   virtual Float64 GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,CombinationType type,pgsTypes::BridgeAnalysisType bat);
-   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
-   virtual void GetReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType type);
+   virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
+   virtual void GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
 
 private:
    IBearingDesign* m_pBearingDesign;

@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CTogaSectionCutDlgEx dialog
 
-CTogaSectionCutDlgEx::CTogaSectionCutDlgEx(long nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
+CTogaSectionCutDlgEx::CTogaSectionCutDlgEx(IndexType nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
                      CTxDOTOptionalDesignGirderViewPage::CutLocation location, CWnd* pParent):
 CDialog(CTogaSectionCutDlgEx::IDD, pParent),
 m_Value(value),

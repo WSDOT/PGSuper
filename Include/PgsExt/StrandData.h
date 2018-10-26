@@ -28,6 +28,7 @@
 #include <PgsExt\DebondData.h>
 
 class matPsStrand;
+class GirderLibraryEntry;
 
 // Class to store direct-select strand fill input
 // Only used for CStrandData::npsDirectSelection
@@ -96,6 +97,11 @@ private:
    std::vector<CDirectStrandFillInfo> m_StrandFill;
 };
 
+#define LOCATION_START 0
+#define LOCATION_LEFT_HP 1
+#define LOCATION_RIGHT_HP 2
+#define LOCATION_END 3
+
 class PGSEXTCLASS CStrandRow
 {
 public:
@@ -104,18 +110,22 @@ public:
    bool operator==(const CStrandRow& other) const;
    bool operator!=(const CStrandRow& other) const;
 
-   // use the pgsTypes::MemberEndType constant to access the arrays in this class
-
    Float64 m_InnerSpacing; // spacing between strands that are on either side of the CL Beam
    Float64 m_Spacing; // spacing between all other strands
+   pgsTypes::StrandType m_StrandType;
    StrandIndexType m_nStrands; // total number of strands in the row. If an odd number, the center strand is on the CL of the beam and m_InnerSpacing is ignored
 
+   // use one of the LOCATION_xxx constanst to access these arrays
+
+   // Location of the strand measured from the left end of the girder
+   Float64 m_X[4]; // values that are less than zero are fractional distances of the segment length
+
    // Location of the strand measured from the top or bottom of the girder
-   Float64 m_Y[2];
-   pgsTypes::FaceType m_Face[2];
+   Float64 m_Y[4];
+   pgsTypes::FaceType m_Face[4];
 
    // Extended strand data
-   bool m_bIsTemporaryStrand;
+   // use the pgsTypes::MemberEndType constant to access the arrays in this class
    bool m_bIsExtendedStrand[2];
    bool m_bIsDebonded[2];
    Float64 m_DebondLength[2];
@@ -148,43 +158,6 @@ public:
       npsDirectSelection, // input is a fill array of strand positions in the girder strand grid
       npsUser // input is user defined rows of straight strands. the strand grid in the girder library is ignored
    };
-
-#pragma Reminder("UPDATE: consider making this data private")
-   // This data can't be access directly so I'm not sure why it is public
-
-   PermanentStrandType NumPermStrandsType; // one of PermanentStrandType enum values
-   // Note that the arrays with size 3 and 4 below are indexed using pgsTypes::StrandType.
-   // The pgsTypes::Permanent position is used when NumPermStrandsType==npsTotal.
-   // When this is the case, values must be divided proportionally to straight and harped strands into 
-   // the pgsTypes::Harped and pgsTypes::Straight strand locations because these are the values
-   // used internally by the analysis and engineering agents
-   StrandIndexType  Nstrands[4];
-   Float64 Pjack[4];
-   HarpedStrandOffsetType HsoEndMeasurement; // one of HarpedStrandOffsetType enums
-   Float64 HpOffsetAtEnd;
-   HarpedStrandOffsetType HsoHpMeasurement;  // one of HarpedStrandOffsetType enums
-   Float64 HpOffsetAtHp;
-
-   std::vector<CDebondData> Debond[3];
-   bool bSymmetricDebond; // if true, left and right debond are the same (Only use Length1 of CDebondData struct)
-
-   bool bPjackCalculated[4]; // true if Pjack was calculated
-   Float64 LastUserPjack[4]; // Last Pjack entered by user
-
-   pgsTypes::TTSUsage TempStrandUsage; // One of the tts constants above.
-
-   const matPsStrand* StrandMaterial[3]; // pgsTypes::StrandType enum, except not using pgsTypes::Permanent
-
-   // Grid index for extended strands. First array index is pgsTypes::StrandType (except don't use permanent)
-   // second index is pgsTypes::MemberEndType
-   std::vector<GridIndexType> NextendedStrands[3][2];
-   bool bConvertExtendedStrands;
-   friend CProjectAgentImp;
-
-   // Strand fill when direct selection (npsDirectSelection) is used
-   CDirectStrandFillCollection m_StraightStrandFill;
-   CDirectStrandFillCollection m_HarpedStrandFill;
-   CDirectStrandFillCollection m_TemporaryStrandFill;
 
 public:
    CStrandData();
@@ -222,8 +195,9 @@ public:
    void SetStrandRows(const CStrandRowCollection& strandRows); // replaces the current collection this collection
    const CStrandRowCollection& GetStrandRows() const;
 
-   // Get number of strands for any fill type
-   StrandIndexType GetNstrands(pgsTypes::StrandType type) const;
+   // Get number of strands for any fill except CStrandData::npsUser
+   void SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands);
+   StrandIndexType GetStrandCount(pgsTypes::StrandType strandType) const;
 
    // Strand extension paramaters (not used if using CStrandData::npsUser)
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
@@ -237,7 +211,40 @@ public:
    void ClearExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType);
 
    void ClearDebondData();
-   StrandIndexType GetDebondCount(pgsTypes::StrandType strandType) const;
+   StrandIndexType GetDebondCount(pgsTypes::StrandType strandType,const GirderLibraryEntry* pGirderLibEntry) const;
+   void SetDebonding(pgsTypes::StrandType strandType,const std::vector<CDebondData>& vDebond);
+   const std::vector<CDebondData>& GetDebonding(pgsTypes::StrandType strandType) const;
+   std::vector<CDebondData>& GetDebonding(pgsTypes::StrandType strandType);
+   bool IsSymmetricDebond() const;
+   void IsSymmetricDebond(bool bIsSymmetric);
+
+   void SetStrandMaterial(pgsTypes::StrandType strandType,const matPsStrand* pStrandMaterial);
+   const matPsStrand* GetStrandMaterial(pgsTypes::StrandType strandType) const;
+
+   void IsPjackCalculated(pgsTypes::StrandType strandType,bool bIsCalculated);
+   bool IsPjackCalculated(pgsTypes::StrandType strandType) const;
+   void SetPjack(pgsTypes::StrandType strandType,Float64 Pjack);
+   Float64 GetPjack(pgsTypes::StrandType strandType) const;
+   void SetLastUserPjack(pgsTypes::StrandType strandType,Float64 Pjack);
+   Float64 GetLastUserPjack(pgsTypes::StrandType strandType) const;
+
+   void SetHarpStrandOffsetMeasurementAtEnd(HarpedStrandOffsetType offsetType);
+   HarpedStrandOffsetType GetHarpStrandOffsetMeasurementAtEnd() const;
+
+   void SetHarpStrandOffsetAtEnd(Float64 offset);
+   Float64 GetHarpStrandOffsetAtEnd() const;
+
+   void SetHarpStrandOffsetMeasurementAtHarpPoint(HarpedStrandOffsetType offsetType);
+   HarpedStrandOffsetType GetHarpStrandOffsetMeasurementAtHarpPoint() const;
+
+   void SetHarpStrandOffsetAtHarpPoint(Float64 offset);
+   Float64 GetHarpStrandOffsetAtHarpPoint() const;
+
+   void SetTemporaryStrandUsage(pgsTypes::TTSUsage ttsUsage);
+   pgsTypes::TTSUsage GetTemporaryStrandUsage() const;
+
+   void SetStrandDefinitionType(PermanentStrandType permStrandsType);
+   PermanentStrandType GetStrandDefinitionType() const;
 
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64* pVersion);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
@@ -247,9 +254,42 @@ protected:
    virtual void MakeAssignment(const CStrandData& rOther);
 
    StrandIndexType ProcessDirectFillData(const CDirectStrandFillCollection& rInCollection, CDirectStrandFillCollection& rLocalCollection);
+   void ProcessStrandRowData();
+
+   PermanentStrandType m_NumPermStrandsType; // one of PermanentStrandType enum values
+   // Note that the arrays with size 3 and 4 below are indexed using pgsTypes::StrandType.
+   // The pgsTypes::Permanent position is used when NumPermStrandsType==npsTotal.
+   // When this is the case, values must be divided proportionally to straight and harped strands into 
+   // the pgsTypes::Harped and pgsTypes::Straight strand locations because these are the values
+   // used internally by the analysis and engineering agents
+   StrandIndexType m_Nstrands[4];
+   Float64 m_Pjack[4];
+   HarpedStrandOffsetType m_HsoEndMeasurement; // one of HarpedStrandOffsetType enums
+   Float64 m_HpOffsetAtEnd;
+   HarpedStrandOffsetType m_HsoHpMeasurement;  // one of HarpedStrandOffsetType enums
+   Float64 m_HpOffsetAtHp;
+
+   std::vector<CDebondData> m_Debond[3];
+   bool m_bSymmetricDebond; // if true, left and right debond are the same (Only use Length1 of CDebondData struct)
+
+   bool m_bPjackCalculated[4]; // true if Pjack was calculated
+   Float64 m_LastUserPjack[4]; // Last Pjack entered by user
+
+   pgsTypes::TTSUsage m_TempStrandUsage; // One of the tts constants above.
+
+   const matPsStrand* m_StrandMaterial[3]; // pgsTypes::StrandType enum, except not using pgsTypes::Permanent
+
+   // Grid index for extended strands. First array index is pgsTypes::StrandType (except don't use permanent)
+   // second index is pgsTypes::MemberEndType
+   std::vector<GridIndexType> m_NextendedStrands[3][2];
+   bool m_bConvertExtendedStrands;
+   friend CProjectAgentImp;
+
+   // Strand fill when direct selection (npsDirectSelection) is used
+   CDirectStrandFillCollection m_StraightStrandFill;
+   CDirectStrandFillCollection m_HarpedStrandFill;
+   CDirectStrandFillCollection m_TemporaryStrandFill;
 
    // Strand information when user defined strands (npsUser) is used
    CStrandRowCollection m_StrandRows;
-
-   void ProcessStrandRowData();
 };

@@ -117,7 +117,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       // slab offset
       DDX_Check_Bool(pDX,IDC_SAMESLABOFFSET,m_bSlabOffsetWholeBridge);
       if ( m_bSlabOffsetWholeBridge )
+      {
          DDX_UnitValueAndTag( pDX, IDC_ADIM, IDC_ADIM_UNIT, m_SlabOffset, pDisplayUnits->GetComponentDimUnit() );
+      }
 
       // overhang
       DDX_UnitValueAndTag( pDX, IDC_OVERHANG_DEPTH, IDC_OVERHANG_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth, pDisplayUnits->GetComponentDimUnit() );
@@ -126,7 +128,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       // deck panel
       DDX_UnitValueAndTag( pDX, IDC_PANEL_DEPTH, IDC_PANEL_DEPTH_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit() );
       if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
+      {
          DDV_UnitValueGreaterThanZero( pDX, IDC_PANEL_DEPTH, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetXSectionDimUnit() );
+      }
 
       DDX_UnitValueAndTag( pDX, IDC_PANEL_SUPPORT, IDC_PANEL_SUPPORT_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->PanelSupport, pDisplayUnits->GetComponentDimUnit() );
 
@@ -139,9 +143,13 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
    if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone )
    {
       if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
+      {
          DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit(), _T("Please enter a sacrificial depth that is less than %f %s") );
+      }
       else // all others
+      {
          DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit(), _T("Please enter a sacrificial depth that is less than %f %s") );
+      }
    }
 
    // wearing surface
@@ -260,7 +268,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          }
          else
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             // should not get here
          }
 
@@ -312,7 +320,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          }
          else
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             // should not get here
          }
       }
@@ -415,9 +423,13 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    // set density/weight labels
    CStatic* pStatic = (CStatic*)GetDlgItem( IDC_OLAY_DENSITY_LABEL );
    if ( IS_SI_UNITS(pDisplayUnits) )
+   {
       pStatic->SetWindowText( _T("Overlay Density") );
+   }
    else
+   {
       pStatic->SetWindowText( _T("Overlay Weight") );
+   }
 
    // fill up slab overhang taper options
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_OVERHANG_TAPER);
@@ -467,7 +479,9 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    CPropertyPage::OnInitDialog();
 
    if ( m_strUserEc == _T("") )
+   {
       m_ctrlEc.GetWindowText(m_strUserEc);
+   }
 	
    OnWearingSurfaceTypeChanged();
    UpdateSlabOffsetControls();
@@ -533,7 +547,9 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 
    if ( deckType == pgsTypes::sdtCompositeOverlay )
+   {
       GetDlgItem(IDC_FILLET)->SetWindowText(_T("0.00"));
+   }
 
    UpdateSlabOffsetControls();
 
@@ -670,7 +686,9 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    CEAFDocument* pDoc = EAFGetDocument();
    bool bPGSuperDoc = false;
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
       bPGSuperDoc = true;
+   }
 
    pgsTypes::WearingSurfaceType ws = (pgsTypes::WearingSurfaceType)(pCB->GetItemData(idx));
    if ( ws == pgsTypes::wstSacrificialDepth )
@@ -985,7 +1003,9 @@ void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
 
    if ( bEnable )
+   {
       bEnable = (deckType != pgsTypes::sdtNone); // if enabled, disable if deck type is none
+   }
 
    GetDlgItem(IDC_ADIM_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_ADIM)->EnableWindow(bEnable);
@@ -1082,10 +1102,14 @@ void CBridgeDescDeckDetailsPage::FillEventList()
    pcbOverlayEvent->SetItemData(pcbOverlayEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
    if ( deckEventIdx != CB_ERR )
+   {
       pcbDeckEvent->SetCurSel(deckEventIdx);
+   }
 
    if ( overlayEventIdx != CB_ERR )
+   {
       pcbOverlayEvent->SetCurSel(overlayEventIdx);
+   }
 }
 
 void CBridgeDescDeckDetailsPage::OnDeckEventChanging()
@@ -1121,9 +1145,13 @@ void CBridgeDescDeckDetailsPage::OnDeckEventChanged()
          {
             CString strProblem;
             if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
+            {
                strProblem = _T("This event begins before the activities in the previous event have completed.");
+            }
             else
+            {
                strProblem = _T("The activities in this event end after the next event begins.");
+            }
 
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
@@ -1181,9 +1209,13 @@ void CBridgeDescDeckDetailsPage::OnOverlayEventChanged()
             {
                CString strProblem;
                if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
+               {
                   strProblem = _T("This event begins before the activities in the previous event have completed.");
+               }
                else
+               {
                   strProblem = _T("The activities in this event end after the next event begins.");
+               }
 
                CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 

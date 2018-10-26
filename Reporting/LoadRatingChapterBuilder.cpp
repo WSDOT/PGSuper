@@ -58,33 +58,15 @@ LPCTSTR CLoadRatingChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-#pragma Reminder("REVIEW: this is weired and I don't understand why")
-   // When the Load Rating Report is created from the toolbar menu, the report Spec is a GirderReportSpecification
-   // When the report is created from the right click context menu on the girder, the speci s a GirderLineReportSpecification
-   // There is only one flavor of this report stored in the report manager so why to different specification types?
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
 
-   if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrRptSpec->GetGirderKey();
-   }
-   else if ( pGdrLineRptSpec)
-   {
-      pGdrLineRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrLineRptSpec->GetGirderKey();
-   }
-   else
-   {
-      ATLASSERT(false); // not expecting a different kind of report spec
-   }
-
+   ATLASSERT(pGdrLineRptSpec);
+   pGdrLineRptSpec->GetBroker(&pBroker);
+   girderKey = pGdrLineRptSpec->GetGirderKey();
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

@@ -544,8 +544,7 @@ public:
    void SetEqualibriumAngle(Float64 val);
 
    // points of interest used for this hauling analysis
-   void SetHaulingPointsOfInterest(const std::vector<pgsPointOfInterest>& rPois);
-   std::vector<pgsPointOfInterest> GetHaulingPointsOfInterest() const;
+   const std::vector<pgsPointOfInterest>& GetHaulingPointsOfInterest() const;
 
    void GetMinMaxStresses(Float64* minStress, Float64* maxStress) const;
    void GetMinMaxInclinedStresses(Float64* pftuMin,Float64* pftdMin,Float64* pfbuMin,Float64* pfbdMin,
@@ -569,13 +568,11 @@ public:
 
    void GetMinMaxHaulingStresses(MaxHaulingStressCollection& rMaxStresses) const;
 
-   void AddHaulingStressAnalysisArtifact(Float64 distFromStart,
-                                      const pgsWsdotHaulingStressAnalysisArtifact& artifact);
-   const pgsWsdotHaulingStressAnalysisArtifact* GetHaulingStressAnalysisArtifact(Float64 distFromStart) const;
+   void AddHaulingStressAnalysisArtifact(const pgsPointOfInterest& poi,const pgsWsdotHaulingStressAnalysisArtifact& artifact);
+   const pgsWsdotHaulingStressAnalysisArtifact* GetHaulingStressAnalysisArtifact(const pgsPointOfInterest& poi) const;
 
-   void AddHaulingCrackingAnalysisArtifact(Float64 distFromStart,
-                                      const pgsWsdotHaulingCrackingAnalysisArtifact& artifact);
-   const pgsWsdotHaulingCrackingAnalysisArtifact* GetHaulingCrackingAnalysisArtifact(Float64 distFromStart) const;
+   void AddHaulingCrackingAnalysisArtifact(const pgsPointOfInterest& poi,const pgsWsdotHaulingCrackingAnalysisArtifact& artifact);
+   const pgsWsdotHaulingCrackingAnalysisArtifact* GetHaulingCrackingAnalysisArtifact(const pgsPointOfInterest& poi) const;
 
    void SetAllowableTensileConcreteStressParameters(Float64 f,bool bMax,Float64 fmax);
    void SetAllowableCompressionFactor(Float64 c);
@@ -644,8 +641,8 @@ private:
    Float64 m_TrailingOverhang;
 
    std::vector<pgsPointOfInterest> m_HaulingPois; // sorted same as below collections
-   std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less> m_HaulingStressAnalysisArtifacts;
-   std::map<Float64,pgsWsdotHaulingCrackingAnalysisArtifact,Float64_less> m_HaulingCrackingAnalysisArtifacts;
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact> m_HaulingStressAnalysisArtifacts;
+   std::map<pgsPointOfInterest,pgsWsdotHaulingCrackingAnalysisArtifact> m_HaulingCrackingAnalysisArtifacts;
 
    Float64 m_GirderWeight; // total girder weight
 

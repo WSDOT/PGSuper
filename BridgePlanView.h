@@ -165,7 +165,7 @@ protected:
    void BuildPierDisplayObjects();
    void BuildTemporarySupportDisplayObjects();
    void BuildClosureJointDisplayObjects();
-   void BuildGirderSegmentDisplayObjects();
+   void BuildSegmentDisplayObjects();
    void BuildGirderDisplayObjects();
    void BuildSpanDisplayObjects();
    void BuildSlabDisplayObjects();

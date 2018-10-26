@@ -145,9 +145,13 @@ std::set<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages()
 txnTransaction* CBridgeDescDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
+   {
       return m_Macro.CreateClone();
+   }
    else
+   {
       return NULL;
+   }
 }
 
 void CBridgeDescDlg::NotifyExtensionPages()
@@ -193,7 +197,9 @@ LRESULT CBridgeDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
 	}
 	else
+   {
 		return 0;
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -80,7 +80,6 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
       table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0,1)  << _T("Bar Size");
    (*table)(0,2)  << COLHDR(_T("S"),            rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -120,7 +119,9 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == NULL )
+         {
             continue;
+         }
 
          const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
 
@@ -131,9 +132,13 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
          Float64 s = pArtifact->GetS();
          if (0 < s)
+         {
             (*table)(row,2) << dim.SetValue(s);
+         }
          else
+         {
             (*table)(row,2) << _T("-");
+         }
 
          (*table)(row,3) << dim.SetValue( pArtifact->GetSMax() );
          (*table)(row,4) << dim.SetValue( pArtifact->GetSMin() );
@@ -147,9 +152,13 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
          }
 
          if ( pArtifact->Passed() )
+         {
             (*table)(row,7) << RPT_PASS;
+         }
          else
+         {
             (*table)(row,7) << RPT_FAIL;
+         }
 
          row++;
       }

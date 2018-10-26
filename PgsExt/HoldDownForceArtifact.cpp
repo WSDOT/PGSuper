@@ -97,10 +97,14 @@ bool pgsHoldDownForceArtifact::Passed() const
 {
    // If this check is not applicable, return true. i.e. - you always pass this check
    if ( !m_bIsApplicable )
+   {
       return true;
+   }
 
    if ( m_Capacity < m_Demand )
+   {
       return false;
+   }
 
    return true;
 }

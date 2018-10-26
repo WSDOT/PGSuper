@@ -74,7 +74,7 @@ DECLARE_LOGFILE;
 //
 STDMETHODIMP CTxDOTAgentImp::SetBroker(IBroker* pBroker)
 {
-   AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_SET_BROKER(pBroker);
 
    CComQIPtr<ICLSIDMap> clsidMap(pBroker);
    clsidMap->AddCLSID(_T("{360F7694-BE5B-4E97-864F-EF3575689C6E}"),_T("{3700B253-8489-457C-8A6D-D174F95C457C}"));
@@ -93,7 +93,7 @@ STDMETHODIMP CTxDOTAgentImp::Init()
 {
    CREATE_LOGFILE("TxDOTAgent");
 
-   AGENT_INIT;
+   EAF_AGENT_INIT;
 
    // We are going to add new reports to PGSuper. In order to do this, the agent that implements
    // IReportManager must be loaded. We have no way of knowing if that agent is loaded before
@@ -193,8 +193,8 @@ STDMETHODIMP CTxDOTAgentImp::Reset()
 
 STDMETHODIMP CTxDOTAgentImp::ShutDown()
 {
+   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
-   AGENT_CLEAR_INTERFACE_CACHE;
    return S_OK;
 }
 
@@ -484,13 +484,16 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
          }
 
          GET_IFACE(IArtifact,pIArtifact);
-         const pgsDesignArtifact* pArtifact;
+         const pgsGirderDesignArtifact* pGirderDesignArtifact;
+         const pgsSegmentDesignArtifact* pArtifact;
          try
          {
             // Design the girder
-            pArtifact = pIArtifact->CreateDesignArtifact( segmentKey, des_options);
+            pGirderDesignArtifact = pIArtifact->CreateDesignArtifact( segmentKey, des_options);
+            pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
+            ATLASSERT(segmentKey.IsEqual(pArtifact->GetSegmentKey()));
          
-            if (pArtifact->GetOutcome() != pgsDesignArtifact::Success)
+            if (pArtifact->GetOutcome() != pgsSegmentDesignArtifact::Success)
             {
                err_file <<_T("Design was unsuccessful")<<std::endl;
                designSucceeded=false;
@@ -574,7 +577,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
 }
 
 
-void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDesignOptions& designOptions,const pgsDesignArtifact* pArtifact)
+void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDesignOptions& designOptions,const pgsSegmentDesignArtifact* pArtifact)
 {
    GET_IFACE(ISegmentData,pSegmentData);
    GET_IFACE(IStrandGeometry, pStrandGeometry );
@@ -586,12 +589,11 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
    // convert them to the measurement basis that the CGirderData object is using
    ConfigStrandFillVector fillvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pArtifact->GetNumHarpedStrands());
 
-   strands.HpOffsetAtEnd = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, fillvec,
-                                                                                  strands.HsoEndMeasurement, 
-                                                                                  pArtifact->GetHarpStrandOffsetEnd());
+   strands.SetHarpStrandOffsetAtEnd( pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, fillvec,
+                                                                                  strands.GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                  pArtifact->GetHarpStrandOffsetEnd()) );
 
 
-#pragma Reminder("############ - Update with loop after updating Artifact #############")
    // see if strand design data fits in grid
    bool fills_grid=false;
    StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
@@ -616,8 +618,8 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
 
       strands.SetTotalPermanentNstrands(num_permanent, ns, nh);
 
-      strands.Pjack[pgsTypes::Permanent]               = pArtifact->GetPjackStraightStrands() + pArtifact->GetPjackHarpedStrands();
-      strands.bPjackCalculated[pgsTypes::Permanent]    = pArtifact->GetUsedMaxPjackStraightStrands();
+      strands.SetPjack(pgsTypes::Permanent,pArtifact->GetPjackStraightStrands() + pArtifact->GetPjackHarpedStrands());
+      strands.IsPjackCalculated(pgsTypes::Permanent,pArtifact->GetUsedMaxPjackStraightStrands());
    }
    else
    {
@@ -627,21 +629,21 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
 
    strands.SetTemporaryNstrands(pArtifact->GetNumTempStrands());
 
-   strands.Pjack[pgsTypes::Harped]               = pArtifact->GetPjackHarpedStrands();
-   strands.Pjack[pgsTypes::Straight]             = pArtifact->GetPjackStraightStrands();
-   strands.Pjack[pgsTypes::Temporary]            = pArtifact->GetPjackTempStrands();
-   strands.bPjackCalculated[pgsTypes::Harped]    = pArtifact->GetUsedMaxPjackHarpedStrands();
-   strands.bPjackCalculated[pgsTypes::Straight]  = pArtifact->GetUsedMaxPjackStraightStrands();
-   strands.bPjackCalculated[pgsTypes::Temporary] = pArtifact->GetUsedMaxPjackTempStrands();
-   strands.LastUserPjack[pgsTypes::Harped]       = pArtifact->GetPjackHarpedStrands();
-   strands.LastUserPjack[pgsTypes::Straight]     = pArtifact->GetPjackStraightStrands();
-   strands.LastUserPjack[pgsTypes::Temporary]    = pArtifact->GetPjackTempStrands();
+   strands.SetPjack(pgsTypes::Harped,             pArtifact->GetPjackHarpedStrands());
+   strands.SetPjack(pgsTypes::Straight,           pArtifact->GetPjackStraightStrands());
+   strands.SetPjack(pgsTypes::Temporary,          pArtifact->GetPjackTempStrands());
+   strands.IsPjackCalculated(pgsTypes::Harped,    pArtifact->GetUsedMaxPjackHarpedStrands());
+   strands.IsPjackCalculated(pgsTypes::Straight,  pArtifact->GetUsedMaxPjackStraightStrands());
+   strands.IsPjackCalculated(pgsTypes::Temporary, pArtifact->GetUsedMaxPjackTempStrands());
+   strands.SetLastUserPjack(pgsTypes::Harped,     pArtifact->GetPjackHarpedStrands());
+   strands.SetLastUserPjack(pgsTypes::Straight,   pArtifact->GetPjackStraightStrands());
+   strands.SetLastUserPjack(pgsTypes::Temporary,  pArtifact->GetPjackTempStrands());
 
-   strands.TempStrandUsage = pArtifact->GetTemporaryStrandUsage();
+   strands.SetTemporaryStrandUsage(pArtifact->GetTemporaryStrandUsage());
 
    // Get debond information from design artifact
    strands.ClearDebondData();
-   strands.bSymmetricDebond = true;  // design is always symmetric
+   strands.IsSymmetricDebond(true);  // design is always symmetric
 
 
    // TRICKY: Mapping from DEBONDCONFIG to CDebondData is tricky because
@@ -682,7 +684,7 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
       cdbi.Length[pgsTypes::metStart] = rdbrinfo.DebondLength[pgsTypes::metStart];
       cdbi.Length[pgsTypes::metEnd]   = rdbrinfo.DebondLength[pgsTypes::metEnd];
 
-      strands.Debond[pgsTypes::Straight].push_back(cdbi);
+      strands.GetDebonding(pgsTypes::Straight).push_back(cdbi);
    }
    
    pSegmentData->SetStrandData(segmentKey,strands);
@@ -701,10 +703,10 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
    pGroup->SetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  segmentKey.girderIndex,pArtifact->GetSlabOffset(pgsTypes::metEnd));
    pIBridgeDesc->SetBridgeDescription(bridgeDesc);
 
-   GET_IFACE(IGirderLifting,pLifting);
+   GET_IFACE(ISegmentLifting,pLifting);
    pLifting->SetLiftingLoopLocations(segmentKey,pArtifact->GetLeftLiftingLocation(),pArtifact->GetRightLiftingLocation());
 
-   GET_IFACE(IGirderHauling,pHauling);
+   GET_IFACE(ISegmentHauling,pHauling);
    pHauling->SetTruckSupportLocations(segmentKey,pArtifact->GetTrailingOverhang(),pArtifact->GetLeadingOverhang());
 
 }

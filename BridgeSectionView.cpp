@@ -128,13 +128,17 @@ bool CBridgeSectionView::IsDeckSelected()
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
+   {
       return false;
+   }
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
    IDType ID = pDO->GetID();
    if ( ID == DECK_ID )
+   {
       return true;
+   }
 
    return false;
 }
@@ -168,14 +172,18 @@ bool CBridgeSectionView::GetSelectedGirder(CGirderKey* pGirderKey)
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
+   {
       return false;
+   }
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
    // girder IDs are positive values
    IDType ID = pDO->GetID();
    if ( ID == INVALID_ID )
+   {
       return false;
+   }
 
    // do a reverse search in the map (look for values to get the key)
    GirderIDCollection::iterator iter;
@@ -211,9 +219,13 @@ void CBridgeSectionView::SelectGirder(const CGirderKey& girderKey,bool bSelect)
    dispMgr->FindDisplayObject(ID,GIRDER_DISPLAY_LIST,atByID,&pDO);
 
    if ( pDO )
+   {
       dispMgr->SelectObject(pDO,bSelect);
+   }
    else
+   {
       dispMgr->ClearSelectedObjects();
+   }
 }
 
 void CBridgeSectionView::SelectDeck(bool bSelect)
@@ -370,7 +382,9 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
       if ( !InRange(first_station,cut_station,last_station) )
+      {
          m_pFrame->InvalidateCutLocation();
+      }
    }
 
 	if ( (lHint == 0)                              || 
@@ -520,7 +534,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   //GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IMaterials,pMaterial);
@@ -541,7 +555,9 @@ void CBridgeSectionView::UpdateGirderTooltips()
       CGirderKey girderKey(grpIdx,gdrIdx);
       GirderIDCollection::iterator found = m_GirderIDs.find(girderKey);
       if ( found == m_GirderIDs.end() )
+      {
          continue;
+      }
 
       IDType ID = (*found).second;
 
@@ -549,7 +565,9 @@ void CBridgeSectionView::UpdateGirderTooltips()
       girder_list->FindDisplayObject(ID,&pDO);
 
       if ( !pDO )
+      {
          continue;
+      }
 
 #pragma Reminder("UPDATE: assuming precast girder bridge")
       // need to get segment where section cut is
@@ -669,9 +687,13 @@ void CBridgeSectionView::UpdateDisplayObjects()
    UpdateGirderTooltips();
 
    if ( bSelectedGirder )
+   {
       SelectGirder(girderKey,TRUE);
+   }
    else if ( bDeckSelected )
+   {
       SelectDeck(true);
+   }
 }
 
 void CBridgeSectionView::BuildTitleDisplayObjects()
@@ -886,18 +908,19 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IShapes,pShapes);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
    pgsTypes::SupportedDeckType deckType = pDeck->DeckType;
    if ( deckType == pgsTypes::sdtNone )
+   {
       return; // if there is no deck, don't create a display object
+   }
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IShapes,pShapes);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -996,7 +1019,9 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
 
    // no overlay = nothing to draw
    if ( !pBridge->HasOverlay() )
+   {
       return;
+   }
 
    Float64 overlay_weight = pBridge->GetOverlayWeight();
    Float64 depth = pBridge->GetOverlayDepth();
@@ -1285,7 +1310,9 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    if ( !(settings & IDB_CS_SHOW_DIMENSIONS ) )
+   {
       return;
+   }
 
 
    CComPtr<IBroker> pBroker;
@@ -1334,14 +1361,18 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       GirderIDCollection::iterator found = m_GirderIDs.find(girderKey);
 
       if ( found == m_GirderIDs.end() )
+      {
          continue;
+      }
 
       IDType ID = (*found).second;
 
       girder_list->FindDisplayObject(ID,&doGirder);
 
       if ( !doGirder )
+      {
          continue;
+      }
 
       CComQIPtr<iPointDisplayObject> pdoGirder(doGirder);
 
@@ -1424,13 +1455,17 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    
          GirderIDCollection::iterator found( m_GirderIDs.find(firstGirderKey) );
          if ( found == m_GirderIDs.end() )
+         {
             continue;
+         }
 
          IDType firstID = (*found).second;
 
          found = m_GirderIDs.find(lastGirderKey);
          if ( found == m_GirderIDs.end() )
+         {
             continue;
+         }
 
          IDType lastID  = (*found).second;
 
@@ -1477,10 +1512,14 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             // save the first and last sockets for use with creating
             // the slab overhang dimensions
             if ( firstGdrIdx == 0 )
+            {
                firstSocket = s1;
+            }
 
             if ( lastGdrIdx == nGirders-1 )
+            {
                lastSocket = s2;
+            }
 
             // get the plugs
             CComPtr<iPlug> startPlug;
@@ -1932,7 +1971,9 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 int CBridgeSectionView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CDisplayView::OnCreate(lpCreateStruct) == -1)
+   {
 		return -1;
+   }
 	
    m_pFrame = (CBridgeModelViewChildFrame*)GetParent()->GetParent();
    ASSERT( m_pFrame != 0 );
@@ -1950,7 +1991,9 @@ void CBridgeSectionView::UpdateDrawingScale()
    dispMgr->FindDisplayList(TITLE_DISPLAY_LIST,&display_list);
 
    if ( display_list == NULL )
+   {
       return;
+   }
 
    CDManipClientDC dc(this);
 

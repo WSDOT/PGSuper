@@ -350,15 +350,17 @@ void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
 
 CString CBridgeDescDeckRebarGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 {
-    if (IsCurrentCell(nRow, nCol) && IsActiveCurrentCell())
-    {
-        CString s;
-        CGXControl* pControl = GetControl(nRow, nCol);
-        pControl->GetValue(s);
-        return s;
-  }
-    else
-        return GetValueRowCol(nRow, nCol);
+   if (IsCurrentCell(nRow, nCol) && IsActiveCurrentCell())
+   {
+      CString s;
+      CGXControl* pControl = GetControl(nRow, nCol);
+      pControl->GetValue(s);
+      return s;
+   }
+   else
+   {
+      return GetValueRowCol(nRow, nCol);
+   }
 }
 
 bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMomentRebarData* pRebarData)
@@ -418,7 +420,9 @@ matRebar::Size CBridgeDescDeckRebarGrid::GetBarSize(ROWCOL row,ROWCOL col)
    CString s2 = s.Right(l-1);
    int i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
+   {
       return matRebar::bsNone;
+   }
 
    switch(i)
    {
@@ -549,8 +553,10 @@ void CBridgeDescDeckRebarGrid::FillGrid(const std::vector<CDeckRebarData::NegMom
 
    // remove all but top row
    ROWCOL rows = GetRowCount();
-   if (rows>=1)
+   if (1 <= rows)
+   {
 	   RemoveRows(1, rows);
+   }
 
    CollectionIndexType size = vRebarData.size();
 
@@ -590,7 +596,9 @@ bool CBridgeDescDeckRebarGrid::GetRebarData(std::vector<CDeckRebarData::NegMomen
    {
       CDeckRebarData::NegMomentRebarData rebarData;
       if ( !GetRowData(row,&rebarData) )
+      {
          return false;
+      }
 
      vRebarData.push_back(rebarData);
    }

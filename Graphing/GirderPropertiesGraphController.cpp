@@ -30,6 +30,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Selection.h>
+#include <IFace\Bridge.h>
 
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
@@ -63,8 +64,10 @@ BOOL CGirderPropertiesGraphController::OnInitDialog()
    pcbProperties->SetCurSel(0);
    m_PropertyType = (CGirderPropertiesGraphBuilder::PropertyType)(pcbProperties->GetItemData(0));
 
-   int i = GetCheckedRadioButton(IDC_TRANSFORMED,IDC_GROSS);
-   m_SectionPropertyType = (i == IDC_TRANSFORMED ? pgsTypes::sptTransformed : pgsTypes::sptGross);
+   GET_IFACE(ISectionProperties,pSectProp);
+   m_SectionPropertyType = (pgsTypes::SectionPropertyType)(pSectProp->GetSectionPropertiesMode());
+
+   CheckRadioButton(IDC_TRANSFORMED,IDC_GROSS,(m_SectionPropertyType == pgsTypes::sptTransformed ? IDC_TRANSFORMED : IDC_GROSS));
 
    UpdateSectionPropertyTypeControls();
 
@@ -121,11 +124,19 @@ void CGirderPropertiesGraphController::FillPropertyCtrl()
 
    CGirderPropertiesGraphBuilder* pGraphBuilder = (CGirderPropertiesGraphBuilder*)GetGraphBuilder();
 
+   GET_IFACE(IDocumentType,pDocType);
+   bool bPGSuperDoc = pDocType->IsPGSuperDocument();
 
    int idx;
    for ( int i = 0; i < int(CGirderPropertiesGraphBuilder::PropertyTypeCount); i++ )
    {
       CGirderPropertiesGraphBuilder::PropertyType propertyType = (CGirderPropertiesGraphBuilder::PropertyType)i;
+
+      if ( bPGSuperDoc && (propertyType == CGirderPropertiesGraphBuilder::TendonEccentricity || propertyType == CGirderPropertiesGraphBuilder::TendonProfile) )
+      {
+         continue;
+      }
+
       idx = pcbProperties->AddString(pGraphBuilder->GetPropertyLabel(propertyType));
       pcbProperties->SetItemData(idx,(DWORD_PTR)propertyType);
    }
@@ -135,9 +146,10 @@ void CGirderPropertiesGraphController::UpdateSectionPropertyTypeControls()
 {
    BOOL bEnable = TRUE;
    if ( m_PropertyType == CGirderPropertiesGraphBuilder::Height ||
-        m_PropertyType == CGirderPropertiesGraphBuilder::TendonEccentricity ||
+        m_PropertyType == CGirderPropertiesGraphBuilder::TendonProfile ||
         m_PropertyType == CGirderPropertiesGraphBuilder::EffectiveFlangeWidth ||
-        m_PropertyType == CGirderPropertiesGraphBuilder::Fc
+        m_PropertyType == CGirderPropertiesGraphBuilder::Fc ||
+        m_PropertyType == CGirderPropertiesGraphBuilder::Ec
       )
    {
       bEnable = FALSE;

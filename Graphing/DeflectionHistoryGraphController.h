@@ -23,39 +23,25 @@
 #pragma once
 
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
-#include <EAF\EAFGraphControlWindow.h>
+#include "LocationGraphController.h"
 
-class CDeflectionHistoryGraphController : public CEAFGraphControlWindow
+class CDeflectionHistoryGraphController : public CLocationGraphController
 {
 public:
    CDeflectionHistoryGraphController();
    DECLARE_DYNCREATE(CDeflectionHistoryGraphController);
 
-   CGirderKey GetGirderKey();
-   pgsPointOfInterest GetLocation();
-   int GetXAxisType();
+   bool IncludeElevationAdjustment();
 
 protected:
    virtual BOOL OnInitDialog();
 
 	//{{AFX_MSG(CStressHistoryGraphController)
-   afx_msg void OnGroupChanged();
-   afx_msg void OnGirderChanged();
-   afx_msg void OnLocationChanged();
-   afx_msg void OnXAxis();
+   afx_msg void OnElevAdjustment();
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
-
-   void FillGroupCtrl();
-   void FillGirderCtrl();
-   void FillLocationCtrl();
    void UpdateGraph();
-
-   CComPtr<IBroker> m_pBroker;
-
-   CGirderKey m_GirderKey;
-   pgsPointOfInterest m_Poi;
 
 #ifdef _DEBUG
 public:

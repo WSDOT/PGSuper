@@ -137,8 +137,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
 	/* Create pois at the start of girder and mid-span */
    pgsPointOfInterest pois(segmentKey, 0.0);
-	std::vector<pgsPointOfInterest> pmid( pPointOfInterest->GetPointsOfInterest(segmentKey, POI_MIDSPAN) );
-	CHECK(pmid.size() == 1);
+	std::vector<pgsPointOfInterest> pmid( pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT) );
+	ATLASSERT(pmid.size() == 1);
 
 
    bool isExtendedVersion = (format==tcxExtended || format==tcxTest);
@@ -208,7 +208,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 	/* 4. STRAND PATTERN */
 	TCHAR  strandPat[5+1]; 
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   if (pStrands->NumPermStrandsType != CStrandData::npsTotal)
+   if (pStrands->GetStrandDefinitionType() != CStrandData::npsTotal)
    {
 	   _tcscpy_s(strandPat, sizeof(strandPat)/sizeof(TCHAR), _T("*"));
    }
@@ -292,7 +292,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    /* 17a - Non-Standard Design Data */
    std::_tstring ns_strand_str;
-   bool do_write_ns_data = isHarpedDesign && pStrands->NumPermStrandsType != CStrandData::npsTotal && !isExtendedVersion;
+   bool do_write_ns_data = isHarpedDesign && pStrands->GetStrandDefinitionType() != CStrandData::npsTotal && !isExtendedVersion;
    if (do_write_ns_data)
    {
       ns_strand_str = MakeNonStandardStrandString(pBroker,pmid[0]);
@@ -387,20 +387,20 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
-      value = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab,      pmid[0], bat, ctIncremental )
-            + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, pmid[0], bat, ctIncremental )
-            + pProductForces->GetDeflection(castDeckIntervalIdx, pftShearKey,  pmid[0], bat, ctIncremental );
+      value = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab,      pmid[0], bat, rtIncremental, false )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, pmid[0], bat, rtIncremental, false )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pftShearKey,  pmid[0], bat, rtIncremental, false );
 
       Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 20. DEFLECTION (OVERLAY)  */
-      value = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, pmid[0], bat, ctIncremental );
+      value = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, pmid[0], bat, rtIncremental, false );
 
       Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 21. DEFLECTION (OTHER)  */
-      value =  pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, pmid[0], bat, ctIncremental );
-      value += pProductForces->GetDeflection(railingSystemIntervalIdx, pftSidewalk,       pmid[0], bat, ctIncremental );
+      value =  pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, pmid[0], bat, rtIncremental, false );
+      value += pProductForces->GetDeflection(railingSystemIntervalIdx, pftSidewalk,       pmid[0], bat, rtIncremental, false );
 
       Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
@@ -419,11 +419,11 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       Float64 finalLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 
    	/* 25. Lifting location  */
-      GET_IFACE2(pBroker,IGirderLifting,pLifting);
+      GET_IFACE2(pBroker,ISegmentLifting,pLifting);
       Float64 liftLoc = ::ConvertFromSysUnits( pLifting->GetLeftLiftingLoopLocation(segmentKey), unitMeasure::Feet );
 
    	/* 26. Forward handling location  */
-      GET_IFACE2(pBroker,IGirderHauling,pHauling);
+      GET_IFACE2(pBroker,ISegmentHauling,pHauling);
       Float64 fwdLoc = ::ConvertFromSysUnits( pHauling->GetLeadingOverhang(segmentKey), unitMeasure::Feet );
 
    	/* 27. Trailing handling location  */

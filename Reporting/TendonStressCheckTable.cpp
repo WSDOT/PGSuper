@@ -72,7 +72,9 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeometry);
    DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
    if ( nDucts == 0 )
+   {
       return;
+   }
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
    
@@ -100,9 +102,13 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
       (*p_table)(0,0) << _T("");
       if ( pTendonArtifact->IsAtJackingApplicable() )
+      {
         (*p_table)(1,0) << _T("At Jacking (") << RPT_FPJ << _T(")");
+      }
       else
+      {
         (*p_table)(1,0) << _T("Prior to seating - short-term ") << RPT_FPBT << _T(" may be allowed");
+      }
 
       (*p_table)(2,0) << _T("At anchorages and couplers immediately after anchor set");
       (*p_table)(3,0) << _T("Elsewhere along length of member away from anchorages and couplers immediately after anchor set");
@@ -115,16 +121,24 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       Float64 capacity,demand;
       bool bPassed;
       if ( pTendonArtifact->IsAtJackingApplicable() )
+      {
          pTendonArtifact->GetCheckAtJacking(&capacity,&demand,&bPassed);
+      }
       else
+      {
          pTendonArtifact->GetCheckPriorToSeating(&capacity,&demand,&bPassed);
+      }
 
       (*p_table)(1,1) << stress.SetValue(capacity);
       (*p_table)(1,2) << stress.SetValue(demand);
 	   if ( bPassed )
+      {
 		   (*p_table)(1,3) << RPT_PASS;
+      }
       else
+      {
 		   (*p_table)(1,3) << RPT_FAIL;
+      }
 
       (*p_table)(1,3) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
@@ -132,9 +146,13 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       (*p_table)(2,1) << stress.SetValue(capacity);
       (*p_table)(2,2) << stress.SetValue(demand);
 	   if ( bPassed )
+      {
 		   (*p_table)(2,3) << RPT_PASS;
+      }
       else
+      {
 		   (*p_table)(2,3) << RPT_FAIL;
+      }
 
       (*p_table)(2,3) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
@@ -142,9 +160,13 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       (*p_table)(3,1) << stress.SetValue(capacity);
       (*p_table)(3,2) << stress.SetValue(demand);
 	   if ( bPassed )
+      {
 		   (*p_table)(3,3) << RPT_PASS;
+      }
       else
+      {
 		   (*p_table)(3,3) << RPT_FAIL;
+      }
 
       (*p_table)(3,3) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
@@ -152,9 +174,13 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       (*p_table)(4,1) << stress.SetValue(capacity);
       (*p_table)(4,2) << stress.SetValue(demand);
 	   if ( bPassed )
+      {
 		   (*p_table)(4,3) << RPT_PASS;
+      }
       else
+      {
 		   (*p_table)(4,3) << RPT_FAIL;
+      }
 
       (*p_table)(4,3) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
    } // next duct

@@ -97,10 +97,14 @@ bool pgsStrandSlopeArtifact::Passed() const
 {
    // If this check is not applicable, return true. i.e. - you always pass this check
    if ( !m_bIsApplicable )
+   {
       return true;
+   }
 
    if ( 1.0/m_Capacity < 1.0/m_Demand && !IsEqual(m_Capacity,m_Demand) )
+   {
       return false;
+   }
 
    return true;
 }

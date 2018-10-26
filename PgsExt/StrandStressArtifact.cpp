@@ -185,28 +185,36 @@ bool pgsStrandStressArtifact::Passed(pgsTypes::StrandType strandType) const
    {
       GetCheckAtJacking(strandType,&demand,&cap,&bPassed);
       if ( !bPassed )
+      {
          return false;
+      }
    }
 
    if ( IsCheckBeforeXferApplicable(strandType) )
    {
       GetCheckBeforeXfer(strandType,&demand,&cap,&bPassed);
       if ( !bPassed )
+      {
          return false;
+      }
    }
 
    if ( IsCheckAfterXferApplicable(strandType) )
    {
       GetCheckAfterXfer(strandType,&demand,&cap,&bPassed);
       if ( !bPassed )
+      {
          return false;
+      }
    }
 
    if ( IsCheckAfterLossesApplicable(strandType) )
    {
       GetCheckAfterLosses(strandType,&demand,&cap,&bPassed);
       if ( !bPassed )
+      {
          return false;
+      }
    }
 
    return true;
@@ -218,7 +226,9 @@ bool pgsStrandStressArtifact::Passed() const
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
       if (!Passed(strandType))
+      {
          return false;
+      }
    }
 
    return true;

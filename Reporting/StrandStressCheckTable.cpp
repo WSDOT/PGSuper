@@ -104,7 +104,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
       std::vector<pgsTypes::StrandType> strandTypes;
-      if ( pStrands->NumPermStrandsType == CStrandData::npsTotal )
+      if ( pStrands->GetStrandDefinitionType() == CStrandData::npsTotal )
       {
          strandTypes.push_back(pgsTypes::Permanent);
       }
@@ -190,7 +190,9 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          RowIndexType row = 2;
          ColumnIndexType startColumn = 2*(iter - strandTypes.begin()) + 2;
          if ( strandType == strandTypes.front() )
+         {
             startColumn -= 2;
+         }
 
          ColumnIndexType col = startColumn;
          if ( pArtifact->IsCheckAtJackingApplicable(strandType) )
@@ -205,9 +207,13 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 	         (*p_table)(row,col++) << stress.SetValue( demand );
 
 	         if ( bPassed )
+            {
 		         (*p_table)(row,col) << RPT_PASS;
+            }
 	         else
+            {
 		         (*p_table)(row,col) << RPT_FAIL;
+            }
 
             (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
@@ -226,9 +232,13 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 	         (*p_table)(row,col++) << stress.SetValue( demand );
 
 	         if ( bPassed )
+            {
 		         (*p_table)(row,col) << RPT_PASS;
+            }
 	         else
+            {
 		         (*p_table)(row,col) << RPT_FAIL;
+            }
 
             (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
@@ -247,9 +257,13 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 	         (*p_table)(row,col++) << stress.SetValue( demand );
 
 	         if ( bPassed )
+            {
 		         (*p_table)(row,col) << RPT_PASS;
+            }
 	         else
+            {
 		         (*p_table)(row,col) << RPT_FAIL;
+            }
 
             (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
@@ -268,9 +282,13 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 	         (*p_table)(row,col++) << stress.SetValue( demand );
 
 	         if ( bPassed )
+            {
 		         (*p_table)(row,col) << RPT_PASS;
+            }
 	         else
+            {
 		         (*p_table)(row,col) << RPT_FAIL;
+            }
 
             (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 

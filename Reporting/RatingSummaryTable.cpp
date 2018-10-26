@@ -58,8 +58,8 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
 
    rptCapacityToDemand rating_factor;
 
-   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetGeneralForceUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   true  );
 
    location.IncludeSpanAndGirder(true);
 
@@ -222,9 +222,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
             const pgsMomentRatingArtifact* pMomentArtifact;
             Float64 RF = pRatingArtifact->GetMomentRatingFactorEx(true, &pMomentArtifact);
             if ( RF < 1 )
+            {
                (*table)(row,col) << RF_FAIL(rating_factor,RF);
+            }
             else
+            {
                (*table)(row,col) << RF_PASS(rating_factor,RF);
+            }
 
             if ( pMomentArtifact )
             {
@@ -233,7 +237,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                const CSegmentKey& segmentKey = poi.GetSegmentKey();
                Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                
-               (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+               (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
             }
             else
             {
@@ -246,9 +250,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
             {
                RF = pRatingArtifact->GetMomentRatingFactorEx(false, &pMomentArtifact);
                if ( RF < 1 )
+               {
                   (*table)(row,col) << RF_FAIL(rating_factor,RF);
+               }
                else
+               {
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
+               }
 
                if ( pMomentArtifact )
                {
@@ -258,7 +266,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                   
-                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
                }
                else
                {
@@ -273,9 +281,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                const pgsShearRatingArtifact* pShearArtifact;
                Float64 RF = pRatingArtifact->GetShearRatingFactorEx(&pShearArtifact);
                if ( RF < 1 )
+               {
                   (*table)(row,col) << RF_FAIL(rating_factor,RF);
+               }
                else
+               {
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
+               }
 
                if ( pShearArtifact )
                {
@@ -285,7 +297,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
                }
                else
                {
@@ -309,9 +321,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
             const pgsMomentRatingArtifact* pMomentArtifact;
             Float64 RF = pRatingArtifact->GetMomentRatingFactorEx(true, &pMomentArtifact);
             if ( RF < 1 )
+            {
                (*table)(row,col) << RF_FAIL(rating_factor,RF);
+            }
             else
+            {
                (*table)(row,col) << RF_PASS(rating_factor,RF);
+            }
 
             if ( pMomentArtifact )
             {
@@ -320,7 +336,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                const CSegmentKey& segmentKey = poi.GetSegmentKey();
                Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                
-               (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+               (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
             }
             else
             {
@@ -333,9 +349,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
             {
                RF = pRatingArtifact->GetMomentRatingFactorEx(false, &pMomentArtifact);
                if ( RF < 1 )
+               {
                   (*table)(row,col) << RF_FAIL(rating_factor,RF);
+               }
                else
+               {
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
+               }
 
                if ( pMomentArtifact )
                {
@@ -345,7 +365,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                   
-                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
                }
                else
                {
@@ -360,9 +380,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                const pgsShearRatingArtifact* pShearArtifact;
                Float64 RF = pRatingArtifact->GetShearRatingFactorEx(&pShearArtifact);
                if ( RF < 1 )
+               {
                   (*table)(row,col) << RF_FAIL(rating_factor,RF);
+               }
                else
+               {
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
+               }
 
                if ( pShearArtifact )
                {
@@ -372,7 +396,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
                }
                else
                {
@@ -400,9 +424,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   const pgsYieldStressRatioArtifact* pYieldStressArtifact;
                   Float64 RF = pRatingArtifact->GetYieldStressRatioEx(true, &pYieldStressArtifact);
                   if ( RF < 1 )
+                  {
                      (*table)(row,col) << RF_FAIL(rating_factor,RF);
+                  }
                   else
+                  {
                      (*table)(row,col) << RF_PASS(rating_factor,RF);
+                  }
 
                   if ( pYieldStressArtifact )
                   {
@@ -412,7 +440,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                      const CSegmentKey& segmentKey = poi.GetSegmentKey();
                      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                      
-                     (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+                     (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
                   }
                   else
                   {
@@ -423,9 +451,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
 
                   RF = pRatingArtifact->GetYieldStressRatioEx(false, &pYieldStressArtifact);
                   if ( RF < 1 )
+                  {
                      (*table)(row,col) << RF_FAIL(rating_factor,RF);
+                  }
                   else
+                  {
                      (*table)(row,col) << RF_PASS(rating_factor,RF);
+                  }
 
                   if ( pYieldStressArtifact )
                   {
@@ -435,7 +467,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                      const CSegmentKey& otherSegmentKey = poi.GetSegmentKey();
                      Float64 end_size = pBridge->GetSegmentStartEndDistance(otherSegmentKey);
                      
-                     (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+                     (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
                   }
                   else
                   {
@@ -449,9 +481,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   const pgsYieldStressRatioArtifact* pYieldStressArtifact;
                   Float64 RF = pRatingArtifact->GetYieldStressRatioEx(true, &pYieldStressArtifact);
                   if ( RF < 1 )
+                  {
                      (*table)(row,col) << RF_FAIL(rating_factor,RF);
+                  }
                   else
+                  {
                      (*table)(row,col) << RF_PASS(rating_factor,RF);
+                  }
 
                   if ( pYieldStressArtifact )
                   {
@@ -461,7 +497,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                      const CSegmentKey& segmentKey = poi.GetSegmentKey();
                      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                      
-                     (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+                     (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
                   }
                   else
                   {
@@ -510,9 +546,13 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                const pgsStressRatingArtifact* pStressArtifact;
                Float64 RF = pRatingArtifact->GetStressRatingFactorEx(&pStressArtifact);
                if ( RF < 1 )
+               {
                   (*table)(row,col) << RF_FAIL(rating_factor,RF);
+               }
                else
+               {
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
+               }
 
                if ( pStressArtifact )
                {
@@ -522,7 +562,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                   
-                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
                }
                else
                {
@@ -644,16 +684,19 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   GET_IFACE2(pBroker,IArtifact,pArtifact);
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
    std::_tstring strName = pProductLoads->GetLiveLoadName(llType,0);
    if ( strName == _T("No Live Load Defined") )
+   {
       return NULL;
+   }
+
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IArtifact,pArtifact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    rptCapacityToDemand rating_factor;
 
@@ -761,15 +804,21 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
      (*pTable)(row,0) << strName;
 
      if ( RF < 1 )
+     {
         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+     }
      else
+     {
         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+     }
 
      if ( bIsStressRatio )
+     {
         (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
+     }
 
      (*pTable)(row,2) << scalar.SetValue(gLL);
-     (*pTable)(row,3) << location.SetValue( POI_GIRDER, poi,end_size );
+     (*pTable)(row,3) << location.SetValue( POI_SPAN, poi,end_size );
      (*pTable)(row,4) << strControlling;
 
      row++;
@@ -819,19 +868,29 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirder
          (*table)(row,col++) << tonnage.SetValue(W);
 
          if ( RF < 1 )
+         {
             (*table)(row,col++) << RF_FAIL(rating_factor,RF);
+         }
          else
+         {
             (*table)(row,col++) << RF_PASS(rating_factor,RF);
+         }
 
          (*table)(row,col++) << tonnage.SetValue(::FloorOff(W*RF,0.01));
 
          if ( RF < 1 )
+         {
             (*table)(row,col++) << tonnage.SetValue(postingLoad);
+         }
          else
+         {
             (*table)(row,col++) << _T("-");
+         }
 
          if ( RF < 1 )
+         {
             bLoadPostingRequired = true;
+         }
       }
       else
       {

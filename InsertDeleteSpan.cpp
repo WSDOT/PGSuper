@@ -39,8 +39,6 @@ txnInsertSpan::txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pie
    m_SpanLength = spanLength;
    m_bCreateNewGroup = bCreateNewGroup;
    m_PierErectionEventIndex = pierErectionEventIdx;
-
-   Init();
 }
 
 std::_tstring txnInsertSpan::Name() const
@@ -65,29 +63,21 @@ bool txnInsertSpan::IsRepeatable()
 
 bool txnInsertSpan::Execute()
 {
-   DoExecute(1);
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IEvents,pEvents);
+   pEvents->HoldEvents();
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,NULL,NULL,m_bCreateNewGroup,m_PierErectionEventIndex);
+
+   pEvents->FirePendingEvents();
+
    return true;
 }
 
 void txnInsertSpan::Undo()
-{
-   DoExecute(0);
-}
-
-void txnInsertSpan::Init()
-{
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
-   m_BridgeDescription[0] = *(pIBridgeDesc->GetBridgeDescription());
-   m_BridgeDescription[1] = m_BridgeDescription[0];
-
-   m_BridgeDescription[1].InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,NULL,NULL,m_bCreateNewGroup,m_PierErectionEventIndex);
-}
-
-void txnInsertSpan::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -96,11 +86,10 @@ void txnInsertSpan::DoExecute(int i)
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-#pragma Reminder("UPDATE: use the IBridgeDescription::InsertSpan command")
-   // this just replaces the bridge and it doesn't fire events related to a span
-   // being added (or removed in the case of undo)... same comment for txnDeleteSpan below
 
-   pIBridgeDesc->SetBridgeDescription(m_BridgeDescription[i]);
+   PierIndexType newPierIdx = m_RefPierIdx + (m_PierFace == pgsTypes::Ahead ? 1 : 0);
+   pgsTypes::PierFaceType newPierFace = (m_PierFace == pgsTypes::Ahead ? pgsTypes::Back : pgsTypes::Ahead);
+   pIBridgeDesc->DeletePier(newPierIdx,newPierFace);
 
    pEvents->FirePendingEvents();
 }
@@ -111,8 +100,6 @@ txnDeleteSpan::txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pie
 {
    m_RefPierIdx = refPierIdx;
    m_PierFace   = pierFace;
-
-   Init();
 }
 
 txnDeleteSpan::~txnDeleteSpan()
@@ -141,42 +128,37 @@ bool txnDeleteSpan::IsRepeatable()
 
 bool txnDeleteSpan::Execute()
 {
-   DoExecute(1);
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IEvents,pEvents);
+   pEvents->HoldEvents();
+
+   // save the span/pier that are going to be deleted for undo
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CPierData2* pPier = pBridgeDesc->GetPier(m_RefPierIdx);
+   const CSpanData2* pSpan = (m_PierFace == pgsTypes::Back ? pPier->GetPrevSpan() : pPier->GetNextSpan());
+
+   ATLASSERT(pSpan != NULL); // this should not happen
+
+   m_pDeletedPier = new CPierData2(*pPier);
+   m_pDeletedSpan = new CSpanData2(*pSpan);
+
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+   m_bCreateNewGroup = (pGroup->GetSpanCount() == 1 ? true : false); // there is only one span in this group so the group is going to go away. need to create a new group for undo
+   m_PierErectionEventIdx = pIBridgeDesc->GetPierErectionEvent(m_RefPierIdx);
+
+   // save span length for undo
+   m_SpanLength = pSpan->GetSpanLength();
+
+   pIBridgeDesc->DeletePier(m_RefPierIdx,m_PierFace);
+
+   pEvents->FirePendingEvents();
+
    return true;
 }
 
 void txnDeleteSpan::Undo()
-{
-   DoExecute(0);
-}
-
-void txnDeleteSpan::Init()
-{
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
-   m_BridgeDescription[0] = *(pIBridgeDesc->GetBridgeDescription());
-   m_BridgeDescription[1] = m_BridgeDescription[0];
-
-   SpanIndexType spanIdx;
-   pgsTypes::RemovePierType removePierType;
-
-   if (m_PierFace == pgsTypes::Back )
-   {
-      spanIdx = m_RefPierIdx - 1;
-      removePierType = pgsTypes::NextPier;
-   }
-   else
-   {
-      spanIdx = m_RefPierIdx;
-      removePierType = pgsTypes::PrevPier;
-   }
-
-   m_BridgeDescription[1].RemoveSpan(spanIdx,removePierType);
-}
-
-void txnDeleteSpan::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -185,8 +167,14 @@ void txnDeleteSpan::DoExecute(int i)
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
-   pIBridgeDesc->SetBridgeDescription(m_BridgeDescription[i]);
+   if ( m_RefPierIdx == 0 && m_PierFace == pgsTypes::Ahead )
+   {
+      pIBridgeDesc->InsertSpan(m_RefPierIdx,pgsTypes::Back,m_SpanLength,m_pDeletedSpan,m_pDeletedPier,m_bCreateNewGroup,m_PierErectionEventIdx);
+   }
+   else
+   {
+      pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,m_pDeletedSpan,m_pDeletedPier,m_bCreateNewGroup,m_PierErectionEventIdx);
+   }
 
    pEvents->FirePendingEvents();
 }

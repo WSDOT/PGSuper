@@ -714,7 +714,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       // data is coming out of the dialog
       int rad_ord;
       DDX_CBIndex(pDX,IDC_LOSS_METHOD,rad_ord);
-      CHECK(0 <= rad_ord && rad_ord < map_size);
+      ATLASSERT(0 <= rad_ord && rad_ord < map_size);
       m_Entry.m_LossMethod = map[rad_ord];
 
       if (m_Entry.m_SectionPropertyMode == pgsTypes::spmGross && m_Entry.m_LossMethod == LOSSES_TIME_STEP )
@@ -762,7 +762,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       int idx=0;
       while(m_Entry.m_LossMethod != map[idx])
       {
-         CHECK(idx<map_size);
+         ATLASSERT(idx<map_size);
          if (map_size < idx)
          {
             idx = 0;

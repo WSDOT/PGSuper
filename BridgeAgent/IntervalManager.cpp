@@ -28,6 +28,9 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
 
+#include <PgsExt\DistributedLoadData.h>
+#include <PgsExt\MomentLoadData.h>
+
 
 #if defined ASSERT_VALID
 #undef ASSERT_VALID
@@ -66,6 +69,9 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
    m_SegmentErectionIntervals.clear();
    m_SegmentErectionSequenceIntervalLimits.clear();
    m_StrandStressingSequenceIntervalLimits.clear();
+   m_RemoveTemporaryStrandsIntervals.clear();
+
+   m_StressTendonIntervals.clear();
 
    StageIndexType stageIdx = 0;
 
@@ -319,7 +325,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
                // analysis intervals for temporary strand removal need to be created later
                const CPrecastSegmentData* pSegment = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
                ATLASSERT(pSegment);
-               if ( 0 < pSegment->Strands.Nstrands[pgsTypes::Temporary] )
+               if ( 0 < pSegment->Strands.GetStrandCount(pgsTypes::Temporary) )
                {
                   bTempStrands = true;
                }
@@ -355,6 +361,9 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
                ATLASSERT( found != m_IntervalSequences.end());
                std::vector<CInterval>& vIntervals(found->second);
 
+               IntervalIndexType removeTempStrandsIntervalIdx = vIntervals.size(); // this will be the interval
+               // if there are temporary strands to remove
+
                bool bRemoveTempStrands = false; // do any segments in this girder, that are erected during this activity, have temporary strands?
                std::vector<CSegmentKey>::iterator segIter(segments.begin());
                std::vector<CSegmentKey>::iterator segIterEnd(segments.end());
@@ -364,9 +373,10 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
 
                   const CPrecastSegmentData* pSegment = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
                   ATLASSERT(pSegment);
-                  if ( 0 < pSegment->Strands.Nstrands[pgsTypes::Temporary] )
+                  if ( 0 < pSegment->Strands.GetStrandCount(pgsTypes::Temporary) )
                   {
                      bRemoveTempStrands = true;
+                     m_RemoveTemporaryStrandsIntervals.insert(std::make_pair(segmentKey,removeTempStrandsIntervalIdx));
                   }
                } // next segment
 
@@ -376,7 +386,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
                   // strands. create a temporary strand removal analysis interval. this analysis interval
                   // applies to all segments, for this activity, in this girder that have temporary strands
                   vIntervals.push_back(removeTempStrandInterval);
-                  IntervalIndexType removeTempStrandsIntervalIdx = vIntervals.size()-1;
+                  ATLASSERT(removeTempStrandsIntervalIdx == vIntervals.size()-1);
                   AddToStageMap(girderKey,removeTempStrandsIntervalIdx,removeTempStrandStageIdx);
                }
             } // next gdr
@@ -414,7 +424,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
          cureDeckInterval.Duration = Max(pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity(),pTimelineEvent->GetCastDeckActivity().GetConcreteAgeAtContinuity());
          cureDeckInterval.End = cureDeckInterval.Start + cureDeckInterval.Duration;
          cureDeckInterval.Middle = 0.5*(cureDeckInterval.Start + cureDeckInterval.End);
-         cureDeckInterval.Description = _T("Time Step - Deck Curing");
+         cureDeckInterval.Description = _T("Deck curing");
 
          CInterval compositeDeckInterval;
          compositeDeckInterval.StartEventIdx = eventIdx;
@@ -516,9 +526,8 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             cureClosureInterval.Duration = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
             cureClosureInterval.End = cureClosureInterval.Start + cureClosureInterval.Duration;
             cureClosureInterval.Middle = 0.5*(cureClosureInterval.Start + cureClosureInterval.End);
-            cureClosureInterval.Description = _T("Time Step");
+            cureClosureInterval.Description = _T("Closure joints curing");
 
-#pragma Reminder("UPDATE: should be doing this for only the girders that have closure joints cast in this activity, not all girders")
             GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
             for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
             {
@@ -564,7 +573,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             cureDeckInterval.Duration = pTimelineEvent->GetCastDeckActivity().GetConcreteAgeAtContinuity();
             cureDeckInterval.End = cureDeckInterval.Start + cureDeckInterval.Duration;
             cureDeckInterval.Middle = 0.5*(cureDeckInterval.Start + cureDeckInterval.End);
-            cureDeckInterval.Description = _T("Time Step - Deck Curing");
+            cureDeckInterval.Description = _T("Deck curing");
 
             CInterval compositeDeckInterval;
             compositeDeckInterval.StartEventIdx = eventIdx;
@@ -667,7 +676,6 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
          if ( bUserLoad && !bRailing && !bOverlay && !bLiveLoad )
          {
             applyLoadInterval.Description = _T("User Defined Loading Applied");
-            //m_Intervals.push_back(i);
          }
 
          if ( bRailing && !bHasRailingBeenApplied )
@@ -734,8 +742,47 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
                IntervalIndexType applyLoadIntervalIdx = vIntervals.size()-1;
                AddToStageMap(girderKey,applyLoadIntervalIdx,stageIdx);
 
-               // if the laoding was railing, overlay, or live load, keep a record
+               // if the loading was use railing, overlay, or live load, keep a record
                // so it is easier to look up this information later
+               if ( bUserLoad )
+               {
+                  CComPtr<IBroker> pBroker;
+                  EAFGetBroker(&pBroker);
+                  GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
+
+                  IndexType nUserLoads = pTimelineEvent->GetApplyLoadActivity().GetUserLoadCount();
+                  for ( IndexType userLoadIdx = 0; userLoadIdx < nUserLoads; userLoadIdx++ )
+                  {
+                     LoadIDType userLoadID = pTimelineEvent->GetApplyLoadActivity().GetUserLoadID(userLoadIdx);
+
+                     UserLoads::LoadCase loadCase;
+
+                     const CPointLoadData*       pPointLoad       = pUserDefinedLoadData->FindPointLoad(userLoadID);
+                     const CDistributedLoadData* pDistributedLoad = pUserDefinedLoadData->FindDistributedLoad(userLoadID);
+                     const CMomentLoadData*      pMomentLoad      = pUserDefinedLoadData->FindMomentLoad(userLoadID);
+
+                     if ( pPointLoad )
+                     {
+                        loadCase = pPointLoad->m_LoadCase;
+                     }
+                     else if ( pDistributedLoad )
+                     {
+                        loadCase = pDistributedLoad->m_LoadCase;
+                     }
+                     else
+                     {
+                        ATLASSERT(pMomentLoad);
+                        loadCase = pMomentLoad->m_LoadCase;
+                     }
+
+                     if ( loadCase != UserLoads::LL_IM )
+                     {
+                        CUserLoadKey key(girderKey,eventIdx);
+                        m_UserLoadInterval[loadCase].insert(std::make_pair(key,applyLoadIntervalIdx));
+                     }
+                  }
+               }
+
                if ( bHasRailingBeenApplied )
                {
                   m_RailingSystemInterval.insert(std::make_pair(girderKey,applyLoadIntervalIdx));
@@ -761,9 +808,11 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
          CInterval stressTendonInterval;
 
          // this is an abrupt change in boundary condition, treat as sudden change in loading
+         std::vector<CGirderKey> vGirderKeys;
          const CStressTendonActivity& stressTendon = pTimelineEvent->GetStressTendonActivity();
          const std::set<CTendonKey>& tendons( stressTendon.GetTendons() );
-         std::set<CTendonKey>::const_iterator tendonIter(tendons.begin());
+         std::set<CTendonKey>::const_iterator tendonIterBegin(tendons.begin());
+         std::set<CTendonKey>::const_iterator tendonIter = tendonIterBegin;
          std::set<CTendonKey>::const_iterator tendonIterEnd(tendons.end());
          for ( ; tendonIter != tendonIterEnd; tendonIter++ )
          {
@@ -771,8 +820,18 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             CGirderKey girderKey(tendonKey.girderKey);
             DuctIndexType ductIdx = tendonKey.ductIdx;
 
+            vGirderKeys.push_back(girderKey);
+
             CString strDescription;
-            strDescription.Format(_T("Stress tendon %d and remove temporary supports"),LABEL_DUCT(ductIdx));
+            if ( tendonIter == tendonIterBegin )
+            {
+               strDescription.Format(_T("Stress tendon %d and remove temporary supports"),LABEL_DUCT(ductIdx));
+            }
+            else
+            {
+               strDescription.Format(_T("Stress tendon %d"),LABEL_DUCT(ductIdx));
+            }
+
             stressTendonInterval.StartEventIdx = eventIdx;
             stressTendonInterval.EndEventIdx   = eventIdx;
             stressTendonInterval.Start         = pTimelineEvent->GetDay();
@@ -794,6 +853,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             // keep track of the intervals when temporary supports are removed
             // since the interval sequence for each girder can be different, we have to keep
             // the a map of temporary support removal to interval index for each girder
+            IntervalIndexType removeTempSupportIntervalIdx = stressTendonIntervalIdx;
             const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
             const std::vector<SupportIDType>& tsIDs(removeTS.GetTempSupports());
             std::vector<SupportIDType>::const_iterator tsIter(tsIDs.begin());
@@ -802,9 +862,55 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             {
                SupportIDType tsID(*tsIter);
                CTempSupportKey key(girderKey,tsID);
-               m_TempSupportRemovalIntervals.insert(std::make_pair(key,stressTendonIntervalIdx));
+               m_TempSupportRemovalIntervals.insert(std::make_pair(key,removeTempSupportIntervalIdx));
             }
          }
+
+         // need to add temporary support removal for all girders not covered above
+         // Example... create a bridge model that doesn't have any tendons in one girder. that girder
+         // will not be accounted for above so we have to add a temporary support removal interval here
+         vGirderKeys.erase(std::unique(vGirderKeys.begin(),vGirderKeys.end()),vGirderKeys.end());
+         CInterval removeTempSupportInterval;
+         removeTempSupportInterval.StartEventIdx = eventIdx;
+         removeTempSupportInterval.EndEventIdx   = eventIdx;
+         removeTempSupportInterval.Start         = pTimelineEvent->GetDay();
+         removeTempSupportInterval.End           = removeTempSupportInterval.Start;
+         removeTempSupportInterval.Middle        = removeTempSupportInterval.Start;
+         removeTempSupportInterval.Duration      = 0;
+         removeTempSupportInterval.Description   = _T("Remove temporary supports");
+
+         GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+         for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+         {
+            GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
+            for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+            {
+               CGirderKey girderKey(grpIdx,gdrIdx);
+               if ( std::find(vGirderKeys.begin(),vGirderKeys.end(),girderKey) != vGirderKeys.end() )
+               {
+                  continue;
+               }
+
+               std::map<CGirderKey,std::vector<CInterval>>::iterator found(m_IntervalSequences.find(girderKey));
+               ATLASSERT( found != m_IntervalSequences.end());
+               std::vector<CInterval>& vIntervals(found->second);
+
+               vIntervals.push_back(removeTempSupportInterval);
+               IntervalIndexType removeTempSupportIntervalIdx = vIntervals.size() - 1;
+               AddToStageMap(girderKey,removeTempSupportIntervalIdx,stageIdx);
+
+               const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
+               std::vector<SupportIDType> tsIDs(removeTS.GetTempSupports());
+               std::vector<SupportIDType>::iterator iter(tsIDs.begin());
+               std::vector<SupportIDType>::iterator end(tsIDs.end());
+               for ( ; iter != end; iter++ )
+               {
+                  SupportIDType tsID(*iter);
+                  CTempSupportKey key(girderKey,tsID);
+                  m_TempSupportRemovalIntervals.insert(std::make_pair(key,removeTempSupportIntervalIdx));
+               }
+            }// next gdr
+         } // next group
       }
       else
       {
@@ -919,20 +1025,9 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
 
                time_step.Duration = time_step.End - time_step.Start;
                time_step.Middle = 0.5*(time_step.Start + time_step.End);
-               if ( eventIdx < nEvents-1 )
+               time_step.Description = _T("Time Step");
+               if ( 0.0 < time_step.Duration )
                {
-                  time_step.Description = _T("Time Step");
-                  if ( 0.0 < time_step.Duration )
-                  {
-                     vIntervals.push_back(time_step);
-                     IntervalIndexType timeStepIntervalIdx = vIntervals.size()-1;
-                     AddToStageMap(girderKey,timeStepIntervalIdx,stageIdx);
-                     bAddedInterval = true;
-                  }
-               }
-               else
-               {
-                  time_step.Description = _T("Final Time Step");
                   vIntervals.push_back(time_step);
                   IntervalIndexType timeStepIntervalIdx = vIntervals.size()-1;
                   AddToStageMap(girderKey,timeStepIntervalIdx,stageIdx);
@@ -962,9 +1057,13 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
                std::vector<CInterval>& vIntervals(found->second);
 
                if ( eventIdx < nEvents-1 )
+               {
                   vIntervals.back().End = pTimelineMgr->GetStart(eventIdx+1);
+               }
                else
+               {
                   vIntervals.back().End = vIntervals.back().Start;
+               }
             }
          }
       }
@@ -1002,6 +1101,31 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             std::map<CGirderKey,IntervalIndexType>& vGirderIntervalMap(found->second);
             vGirderIntervalMap.insert(std::make_pair(girderKey,intervalIdx));
          }
+      }
+   }
+
+   // If we aren't doing type step analysis, this is a PGSuper project
+   // Append the old Bridge Site names to the interval descriptions for
+   // continuity with previous versions
+   if ( !bTimeStepMethod )
+   {
+      std::map<CGirderKey,std::vector<CInterval>>::iterator seqIter(m_IntervalSequences.begin());
+      std::map<CGirderKey,std::vector<CInterval>>::iterator seqIterEnd(m_IntervalSequences.end());
+      for ( ; seqIter != seqIterEnd; seqIter++ )
+      {
+         CGirderKey girderKey(seqIter->first);
+         std::vector<CInterval>& vIntervals(seqIter->second);
+         IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(CSegmentKey(girderKey,0));
+         vIntervals[releaseIntervalIdx].Description += _T(" (Casting Yard)");
+
+         IntervalIndexType castDeckIntervalIdx = GetCastDeckInterval(girderKey);
+         vIntervals[castDeckIntervalIdx].Description += _T(" (Bridge Site 1)");
+
+         IntervalIndexType installRailingIntervalIdx = GetInstallRailingSystemInterval(girderKey);
+         vIntervals[installRailingIntervalIdx].Description += _T(" (Bridge Site 2)");
+
+         IntervalIndexType liveLoadInteralIdx = GetLiveLoadInterval(girderKey);
+         vIntervals[liveLoadInteralIdx].Description += _T(" (Bridge Site 3)");
       }
    }
 
@@ -1145,7 +1269,9 @@ IntervalIndexType CIntervalManager::GetInterval(const CGirderKey& girderKey,Even
    for ( IntervalIndexType i = 0; i < nIntervals; i++ )
    {
       if ( vIntervals[i].StartEventIdx == eventIdx )
+      {
          return i;
+      }
    }
 
    // if this is the last event, the return the last interval
@@ -1176,18 +1302,56 @@ IntervalIndexType CIntervalManager::GetCompositeDeckInterval(const CGirderKey& g
 
 IntervalIndexType CIntervalManager::GetFirstStressStrandInterval(const CGirderKey& girderKey) const
 {
-   ASSERT_GIRDER_KEY(girderKey);
-   std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_StrandStressingSequenceIntervalLimits.find(girderKey));
-   ATLASSERT(found != m_StrandStressingSequenceIntervalLimits.end());
-   return found->second.first;
+   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
+   {
+      IntervalIndexType intervalIdx = MAX_INDEX;
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_StrandStressingSequenceIntervalLimits.begin());
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_StrandStressingSequenceIntervalLimits.end());
+      for ( ; iter != iterEnd; iter++ )
+      {
+         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
+              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+            )
+         {
+            intervalIdx = Min(intervalIdx,iter->second.first);
+         }
+      }
+      return intervalIdx;
+   }
+   else
+   {
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_StrandStressingSequenceIntervalLimits.find(girderKey));
+      ATLASSERT(found != m_StrandStressingSequenceIntervalLimits.end());
+      return found->second.first;
+   }
 }
 
 IntervalIndexType CIntervalManager::GetLastStressStrandInterval(const CGirderKey& girderKey) const
 {
-   ASSERT_GIRDER_KEY(girderKey);
-   std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_StrandStressingSequenceIntervalLimits.find(girderKey));
-   ATLASSERT(found != m_StrandStressingSequenceIntervalLimits.end());
-   return found->second.second;
+   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
+   {
+      IntervalIndexType intervalIdx = MAX_INDEX;
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_StrandStressingSequenceIntervalLimits.begin());
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_StrandStressingSequenceIntervalLimits.end());
+      for ( ; iter != iterEnd; iter++ )
+      {
+         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
+              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+            )
+         {
+            intervalIdx = Min(intervalIdx,iter->second.second);
+         }
+      }
+      return intervalIdx;
+   }
+   else
+   {
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_StrandStressingSequenceIntervalLimits.find(girderKey));
+      ATLASSERT(found != m_StrandStressingSequenceIntervalLimits.end());
+      return found->second.second;
+   }
 }
 
 IntervalIndexType CIntervalManager::GetStressStrandInterval(const CSegmentKey& segmentKey) const
@@ -1254,7 +1418,15 @@ bool CIntervalManager::IsSegmentErectionInterval(const CGirderKey& girderKey,Int
 
 IntervalIndexType CIntervalManager::GetTemporaryStrandRemovalInterval(const CSegmentKey& segmentKey) const
 {
-   return GetErectSegmentInterval(segmentKey) + 1;
+   std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_RemoveTemporaryStrandsIntervals.find(segmentKey));
+   if ( found != m_RemoveTemporaryStrandsIntervals.end() )
+   {
+      return found->second;
+   }
+   else
+   {
+      return INVALID_INDEX; // there aren't any temporary strands in this segment
+   }
 }
 
 IntervalIndexType CIntervalManager::GetFirstSegmentErectionInterval(const CGirderKey& girderKey) const
@@ -1287,26 +1459,8 @@ IntervalIndexType CIntervalManager::GetOverlayInterval(const CGirderKey& girderK
    std::map<CGirderKey,IntervalIndexType>::const_iterator found(m_OverlayInterval.find(girderKey));
 
    IntervalIndexType intervalIdx = INVALID_INDEX;
-   if ( found == m_OverlayInterval.end() )
+   if ( found != m_OverlayInterval.end() )
    {
-      // there isn't an overlay loading applied. use the railing system interval
-      // so we can return a valid value
-      found = m_RailingSystemInterval.find(girderKey);
-      if ( found == m_RailingSystemInterval.end() )
-      {
-         // there isn't a railing system either... this is bad
-         ATLASSERT(false);
-         intervalIdx = INVALID_INDEX;
-      }
-      else
-      {
-         // railing system was installed, return the interval
-         intervalIdx = found->second;
-      }
-   }
-   else
-   {
-      // overlay was installed, return the interval
       intervalIdx = found->second;
    }
    return intervalIdx;
@@ -1317,6 +1471,22 @@ IntervalIndexType CIntervalManager::GetInstallRailingSystemInterval(const CGirde
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
    std::map<CGirderKey,IntervalIndexType>::const_iterator found(m_RailingSystemInterval.find(girderKey));
    ATLASSERT(found != m_RailingSystemInterval.end());
+   return found->second;
+}
+
+IntervalIndexType CIntervalManager::GetUserLoadInterval(const CGirderKey& girderKey,UserLoads::LoadCase loadCase,EventIndexType eventIdx) const
+{
+   ASSERT_GIRDER_KEY(girderKey);
+   ASSERT(loadCase == UserLoads::DC || loadCase == UserLoads::DW);
+
+   CUserLoadKey key(girderKey,eventIdx);
+   std::map<CUserLoadKey,IntervalIndexType>::const_iterator found(m_UserLoadInterval[loadCase].find(key));
+   if ( found == m_UserLoadInterval[loadCase].end() )
+   {
+      ATLASSERT(false);
+      return INVALID_INDEX;
+   }
+
    return found->second;
 }
 
@@ -1348,7 +1518,9 @@ IntervalIndexType CIntervalManager::GetFirstTendonStressingInterval(const CGirde
    }
 
    if ( intervals.size() == 0 )
+   {
       return INVALID_INDEX;
+   }
 
    return *intervals.begin();
 }
@@ -1368,7 +1540,9 @@ IntervalIndexType CIntervalManager::GetLastTendonStressingInterval(const CGirder
    }
 
    if ( intervals.size() == 0 )
+   {
       return INVALID_INDEX;
+   }
 
    return *intervals.rbegin();
 }
@@ -1536,10 +1710,39 @@ m_GirderKey(other.m_GirderKey),m_tsID(other.m_tsID)
 bool CIntervalManager::CTempSupportKey::operator<(const CIntervalManager::CTempSupportKey& other) const
 {
    if ( m_GirderKey < other.m_GirderKey )
+   {
       return true;
+   }
 
-   if ( m_GirderKey == other.m_GirderKey && m_tsID < other.m_tsID )
+   if ( m_GirderKey.IsEqual(other.m_GirderKey) && m_tsID < other.m_tsID )
+   {
       return true;
+   }
+
+   return false;
+}
+
+CIntervalManager::CUserLoadKey::CUserLoadKey(const CGirderKey& girderKey,EventIndexType eventIdx) :
+m_GirderKey(girderKey),m_EventIdx(eventIdx)
+{
+}
+
+CIntervalManager::CUserLoadKey::CUserLoadKey(const CUserLoadKey& other) :
+m_GirderKey(other.m_GirderKey),m_EventIdx(other.m_EventIdx)
+{
+}
+
+bool CIntervalManager::CUserLoadKey::operator<(const CUserLoadKey& other) const
+{
+   if ( m_GirderKey < other.m_GirderKey )
+   {
+      return true;
+   }
+
+   if ( m_GirderKey.IsEqual(other.m_GirderKey) && m_EventIdx < other.m_EventIdx )
+   {
+      return true;
+   }
 
    return false;
 }

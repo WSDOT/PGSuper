@@ -134,9 +134,13 @@ void CStabilityGraphController::FillGirderCtrl()
    }
 
    if ( curSel != CB_ERR && curSel < pcbGirder->GetCount() )
+   {
       pcbGirder->SetCurSel(curSel);
+   }
    else
+   {
       pcbGirder->SetCurSel(0);
+   }
 }
 
 void CStabilityGraphController::FillSegmentCtrl()
@@ -154,9 +158,13 @@ void CStabilityGraphController::FillSegmentCtrl()
    }
 
    if ( curSel != CB_ERR && curSel < pcbSegment->GetCount() )
+   {
       pcbSegment->SetCurSel(curSel);
+   }
    else
+   {
       pcbSegment->SetCurSel(0);
+   }
 }
 
 void CStabilityGraphController::OnGroupChanged()

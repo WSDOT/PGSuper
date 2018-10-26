@@ -161,9 +161,6 @@ void CSplicedUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    ATLASSERT(segment != NULL);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -608,7 +605,7 @@ Float64 CSplicedUBeamFactory::GetVolume(IBroker* pBroker,const CSegmentKey& segm
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
@@ -647,7 +644,7 @@ Float64 CSplicedUBeamFactory::GetSurfaceArea(IBroker* pBroker,const CSegmentKey&
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 S = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );

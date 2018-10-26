@@ -56,10 +56,14 @@ CSegmentActivityBase& CSegmentActivityBase::operator= (const CSegmentActivityBas
 bool CSegmentActivityBase::operator==(const CSegmentActivityBase& rOther) const
 {
    if ( m_bEnabled != rOther.m_bEnabled )
+   {
       return false;
+   }
 
    if (m_Segments != rOther.m_Segments )
+   {
       return false;
+   }
 
    return true;
 }
@@ -250,13 +254,19 @@ CConstructSegmentActivity& CConstructSegmentActivity::operator= (const CConstruc
 bool CConstructSegmentActivity::operator==(const CConstructSegmentActivity& rOther) const
 {
    if ( !CSegmentActivityBase::operator ==(rOther) )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_RelaxationTime,rOther.m_RelaxationTime) )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_AgeAtRelease,rOther.m_AgeAtRelease) )
+   {
       return false;
+   }
 
    return true;
 }

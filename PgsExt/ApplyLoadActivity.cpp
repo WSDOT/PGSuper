@@ -59,19 +59,29 @@ CApplyLoadActivity& CApplyLoadActivity::operator= (const CApplyLoadActivity& rOt
 bool CApplyLoadActivity::operator==(const CApplyLoadActivity& rOther) const
 {
    if ( m_bEnabled != rOther.m_bEnabled )
+   {
       return false;
+   }
 
    if ( m_bApplyRailingSystemLoad != rOther.m_bApplyRailingSystemLoad )
+   {
       return false;
+   }
 
    if ( m_bApplyOverlayLoad != rOther.m_bApplyOverlayLoad )
+   {
       return false;
+   }
 
    if ( m_bApplyLiveLoad != rOther.m_bApplyLiveLoad )
+   {
       return false;
+   }
 
    if ( m_UserLoads != rOther.m_UserLoads )
+   {
       return false;
+   }
 
    return true;
 }

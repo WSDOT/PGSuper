@@ -123,6 +123,13 @@ public:
    static rptRcTable* CreateTableNoHeading(ColumnIndexType numColumns, LPCTSTR lpszLabel=NULL);
    static rptRcTable* CreateTableNoHeading(ColumnIndexType numColumns, const std::_tstring& strLabel);
 
+   //------------------------------------------------------------------------ 
+   // Returns a pointer to a dynamically allocated table configured to act as
+   // a layout table. This table does not have visable borders and is intended
+   // to be used to layout multi-column output (such as side by side tables)
+   static rptRcTable* CreateLayoutTable(ColumnIndexType nColumns,const std::_tstring& strLabel);
+   static rptRcTable* CreateLayoutTable(ColumnIndexType nColumns,LPCTSTR lpszLabel = NULL);
+
    static void ConfigureTable(rptRcTable* pTable);
 
    //------------------------------------------------------------------------ 

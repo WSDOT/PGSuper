@@ -81,7 +81,9 @@ bool CTimelineManager::operator==(const CTimelineManager& rOther) const
    ASSERT_VALID;
 
    if ( m_TimelineEvents.size() != rOther.m_TimelineEvents.size() )
+   {
       return false;
+   }
 
    std::vector<CTimelineEvent*>::const_iterator myIter(    m_TimelineEvents.begin()        );
    std::vector<CTimelineEvent*>::const_iterator myEnd(     m_TimelineEvents.end()          );
@@ -93,7 +95,9 @@ bool CTimelineManager::operator==(const CTimelineManager& rOther) const
       const CTimelineEvent* pOtherEvent = *otherIter;
 
       if ( *pMyEvent != *pOtherEvent )
+      {
          return false;
+      }
    }
 
    return true;
@@ -129,7 +133,9 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
    }
 
    if ( pTimelineEvent->GetID() == INVALID_ID )
+   {
       pTimelineEvent->SetID(ms_ID++);
+   }
 
    pTimelineEvent->SetTimelineManager(this);
 
@@ -416,7 +422,9 @@ int CTimelineManager::SetEventByIndex(EventIndexType eventIdx,CTimelineEvent* pT
       m_TimelineEvents.insert(m_TimelineEvents.begin()+eventIdx,pOldEvent);
 
       if ( result != TLM_SUCCESS )
+      {
          return result;
+      }
    }
 
    CTimelineEvent* pOldEvent = m_TimelineEvents[eventIdx];
@@ -449,7 +457,9 @@ int CTimelineManager::SetEventByIndex(EventIndexType eventIdx,const CTimelineEve
       m_TimelineEvents.insert(m_TimelineEvents.begin()+eventIdx,pOldEvent);
 
       if ( result != TLM_SUCCESS )
+      {
          return result;
+      }
    }
 
    *m_TimelineEvents[eventIdx] = timelineEvent;
@@ -514,7 +524,9 @@ int CTimelineManager::AdjustDayByIndex(EventIndexType eventIdx,Float64 day,bool 
       m_TimelineEvents.insert(m_TimelineEvents.begin()+eventIdx,pOldEvent);
 
       if ( result != TLM_SUCCESS )
+      {
          return result;
+      }
    }
 
    m_TimelineEvents[eventIdx]->SetDay(day);
@@ -544,7 +556,9 @@ int CTimelineManager::AdjustDayByID(EventIDType id,Float64 day,bool bAdjustTimel
 void CTimelineManager::SetElapsedTime(EventIndexType eventIdx,Float64 elapsedTime)
 {
    if ( eventIdx == m_TimelineEvents.size()-1 )
+   {
       return; // eventIdx is the last event so the elapsed time to the next event doesn't do anything
+   }
 
    CTimelineEvent* pThisTimelineEvent = GetEventByIndex(eventIdx);
    CTimelineEvent* pNextTimelineEvent = GetEventByIndex(eventIdx+1);
@@ -630,9 +644,13 @@ Float64 CTimelineManager::GetEnd(EventIndexType eventIdx) const
    ASSERT_VALID;
 
    if ( eventIdx == m_TimelineEvents.size()-1 )
+   {
       return m_TimelineEvents[eventIdx]->GetDay(); // end of the last event is the same as the start day (last event has a duration of 0)
+   }
    else
+   {
       return m_TimelineEvents[eventIdx+1]->GetDay();
+   }
 }
 
 Float64 CTimelineManager::GetDuration(EventIndexType eventIdx) const
@@ -649,7 +667,9 @@ bool CTimelineManager::AreAllPiersErected() const
    {
       PierIDType pierID = m_pBridgeDesc->GetPier(pierIdx)->GetID();
       if ( !IsPierErected(pierID) )
+      {
          return false;
+      }
    }
 
    return true;
@@ -662,7 +682,9 @@ bool CTimelineManager::AreAllTemporarySupportsErected() const
    {
       SupportIDType tsID = m_pBridgeDesc->GetTemporarySupport(tsIdx)->GetID();
       if ( !IsTemporarySupportErected(tsID) )
+      {
          return false;
+      }
    }
 
    return true;
@@ -675,7 +697,9 @@ bool CTimelineManager::AreAllTemporarySupportsRemoved() const
    {
       SupportIDType tsID = m_pBridgeDesc->GetTemporarySupport(tsIdx)->GetID();
       if ( !IsTemporarySupportRemoved(tsID) )
+      {
          return false;
+      }
    }
 
    return true;
@@ -1134,10 +1158,14 @@ void CTimelineManager::SetTempSupportEvents(SupportIDType tsID,EventIndexType er
    // At this point, the temp support is not assigned to any event for erection or removal
    // Assign it now.
    if ( erectIdx != INVALID_INDEX )
+   {
       m_TimelineEvents[erectIdx]->GetErectPiersActivity().AddTempSupport(tsID);
+   }
 
    if ( removeIdx != INVALID_INDEX )
+   {
       m_TimelineEvents[removeIdx]->GetRemoveTempSupportsActivity().AddTempSupport(tsID);
+   }
 }
 
 void CTimelineManager::GetTempSupportEvents(SupportIDType tsID,EventIndexType* pErectIdx,EventIndexType* pRemoveIdx) const
@@ -1155,13 +1183,19 @@ void CTimelineManager::GetTempSupportEvents(SupportIDType tsID,EventIndexType* p
    {
       const CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetErectPiersActivity().HasTempSupport(tsID) )
+      {
          *pErectIdx = idx;
+      }
 
       if ( pTimelineEvent->GetRemoveTempSupportsActivity().HasTempSupport(tsID) )
+      {
          *pRemoveIdx = idx;
+      }
 
       if ( *pErectIdx != INVALID_INDEX && *pRemoveIdx != INVALID_INDEX )
+      {
          break;
+      }
 
       idx++;
    }
@@ -1179,7 +1213,9 @@ EventIndexType CTimelineManager::GetSegmentConstructionEventIndex(SegmentIDType 
    {
       const CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
+      {
          return idx;
+      }
 
       idx++;
    }
@@ -1197,7 +1233,9 @@ EventIDType CTimelineManager::GetSegmentConstructionEventID(SegmentIDType segmen
    {
       const CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
+      {
          return pTimelineEvent->GetID();
+      }
    }
 
    return INVALID_ID;
@@ -1253,7 +1291,9 @@ EventIndexType CTimelineManager::GetSegmentErectionEventIndex(SegmentIDType segm
    {
       const CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetErectSegmentsActivity().HasSegment(segmentID) )
+      {
          return iter - m_TimelineEvents.begin();
+      }
    }
 
    return INVALID_INDEX;
@@ -1269,7 +1309,9 @@ EventIDType CTimelineManager::GetSegmentErectionEventID(SegmentIDType segmentID)
    {
       const CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetErectSegmentsActivity().HasSegment(segmentID) )
+      {
          return pTimelineEvent->GetID();
+      }
    }
 
    return INVALID_ID;
@@ -1372,10 +1414,14 @@ EventIndexType CTimelineManager::GetCastClosureJointEventIndex(ClosureIDType clo
    {
       const CTimelineEvent* pTimelineEvent = *iter;
       if ( pClosure->GetPier() && pTimelineEvent->GetCastClosureJointActivity().HasPier(pClosure->GetPier()->GetID()))
+      {
          return iter - m_TimelineEvents.begin();
+      }
 
       if ( pClosure->GetTemporarySupport() && pTimelineEvent->GetCastClosureJointActivity().HasTempSupport(pClosure->GetTemporarySupport()->GetID()))
+      {
          return iter - m_TimelineEvents.begin();
+      }
    }
 
    return INVALID_INDEX;
@@ -1399,10 +1445,14 @@ EventIDType CTimelineManager::GetCastClosureJointEventID(ClosureIDType closureID
    {
       const CTimelineEvent* pTimelineEvent = *iter;
       if ( pClosure->GetPier() && pTimelineEvent->GetCastClosureJointActivity().HasPier(pClosure->GetPier()->GetID()))
+      {
          return pTimelineEvent->GetID();
+      }
 
       if ( pClosure->GetTemporarySupport() && pTimelineEvent->GetCastClosureJointActivity().HasTempSupport(pClosure->GetTemporarySupport()->GetID()))
+      {
          return pTimelineEvent->GetID();
+      }
    }
 
    return INVALID_ID;
@@ -1443,9 +1493,13 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
       m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().Enable(true);
 
       if ( pClosure->GetPier() )
+      {
          m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().AddPier(pClosure->GetPier()->GetID());
+      }
       else
+      {
          m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().AddTempSupport(pClosure->GetTemporarySupport()->GetID());
+      }
    }
 }
 
@@ -1860,19 +1914,27 @@ void CTimelineManager::SetLiveLoadEventByID(EventIDType ID)
 int CTimelineManager::Validate() const
 {
    if ( m_pBridgeDesc == NULL )
+   {
       return TLM_SUCCESS;
+   }
 
    // Make sure the deck is cast
    if ( m_pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone && !IsDeckCast() )
+   {
       return TLM_CAST_DECK_ACTIVITY_REQUIRED;
+   }
 
    // Make sure the railing system is installed
    if ( !IsRailingSystemInstalled() )
+   {
       return TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED;
+   }
 
    // Make sure railing system is installed after the deck
    if ( GetRailingSystemLoadEventIndex() <= GetCastDeckEventIndex() )
+   {
       return TLM_RAILING_SYSTEM_ERROR;
+   }
 
    // Make sure all piers are erected
    PierIndexType nPiers = m_pBridgeDesc->GetPierCount();
@@ -1881,7 +1943,9 @@ int CTimelineManager::Validate() const
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
       PierIDType pierID = pPier->GetID();
       if ( !IsPierErected(pierID) )
+      {
          return TLM_ERECT_PIERS_ACTIVITY_REQUIRED;
+      }
    }
 
    // Make sure all temporary supports are erected and removed and that they
@@ -1892,15 +1956,21 @@ int CTimelineManager::Validate() const
       const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
       SupportIDType tsID = pTS->GetID();
       if ( !IsTemporarySupportErected(tsID) )
+      {
          return TLM_ERECT_PIERS_ACTIVITY_REQUIRED;
+      }
 
       if ( !IsTemporarySupportRemoved(tsID) )
+      {
          return TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED;
+      }
    
       EventIndexType erectIdx, removeIdx;
       GetTempSupportEvents(tsID,&erectIdx,&removeIdx);
       if ( removeIdx < erectIdx )
+      {
          return TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR;
+      }
    }
 
    // validate segments, girders, and groups
@@ -1922,7 +1992,9 @@ int CTimelineManager::Validate() const
          {
             // tendon must be stressed
             if ( !IsTendonStressed(girderKey,ductIdx) )
+            {
                return TLM_STRESS_TENDONS_ACTIVITY_REQUIRED;
+            }
 
             firstPTEventIdx = Min(firstPTEventIdx,GetStressTendonEventIndex(girderKey,ductIdx));
          }
@@ -1935,33 +2007,39 @@ int CTimelineManager::Validate() const
 
             // Segment must be constructed...
             if ( !IsSegmentConstructed(segID) )
+            {
                return TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED;
+            }
 
             // and erected...
             if ( !IsSegmentErected(segID) )
+            {
                return TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED;
+            }
 
             // and its supports must be erected prior to the segment being erected...
             EventIndexType erectSegmentEventIdx = GetSegmentErectionEventIndex(segID);
 
             // and it must be erected before the first tendon is stressed
             if ( firstPTEventIdx <= erectSegmentEventIdx )
+            {
                return TLM_STRESS_TENDON_ERROR;
+            }
 
             const CPierData2* pPier;
             const CTemporarySupportData* pTS;
-            for ( int i = 0; i < 1; i++ )
+            for ( int i = 0; i < 2; i++ )
             {
-               if ( i == 0 )
-                  pSegment->GetStartSupport(&pPier,&pTS);
-               else
-                  pSegment->GetEndSupport(&pPier,&pTS);
+               pgsTypes::MemberEndType endType = pgsTypes::MemberEndType(i);
+               pSegment->GetSupport(endType,&pPier,&pTS);
 
                if ( pPier )
                {
                   EventIndexType erectPierEventIdx = GetPierErectionEventIndex(pPier->GetID());
                   if ( erectSegmentEventIdx < erectPierEventIdx )
+                  {
                      return TLM_SEGMENT_ERECTION_ERROR;
+                  }
                }
                else
                {
@@ -1970,11 +2048,15 @@ int CTimelineManager::Validate() const
 
                   // can't erect segment before temporary support
                   if ( erectSegmentEventIdx < erectTempSupportEventIdx )
+                  {
                      return TLM_SEGMENT_ERECTION_ERROR;
+                  }
 
                   // can't remove temporary support before segment is erected
                   if ( removeTempSupportEventIdx <= erectSegmentEventIdx )
+                  {
                      return TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR;
+                  }
                }
 
                const CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
@@ -1984,7 +2066,9 @@ int CTimelineManager::Validate() const
 
                   // it must be cast
                   if ( !IsClosureJointCast(pClosureJoint->GetID()) )
+                  {
                      return TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED;
+                  }
 
                   // and cast after the adjent segments are erected
                   EventIndexType erectRightSegmentEventIdx = GetSegmentErectionEventIndex(pClosureJoint->GetRightSegment()->GetID());
@@ -2006,7 +2090,6 @@ int CTimelineManager::Validate() const
          } // next segment
       } // next girder
    } // next group
-
 
    return TLM_SUCCESS;
 }
@@ -2032,9 +2115,13 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
          pTimelineEvent->Load(pStrLoad,pProgress);
          if ( pTimelineEvent->GetID() == INVALID_ID )
+         {
             pTimelineEvent->SetID(ms_ID++);
+         }
          else
+         {
             ms_ID = Max(ms_ID,pTimelineEvent->GetID()+1);
+         }
 
          m_TimelineEvents.push_back(pTimelineEvent);
       }
@@ -2144,23 +2231,35 @@ void CTimelineManager::Sort()
       // keep track of the number of live load events... keep the first one
       // and then remove any subsequent live load events
       if ( nLiveLoadEvents < 1 && pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsLiveLoadApplied() )
+      {
          nLiveLoadEvents++;
+      }
       else
+      {
          pTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad(false);
+      }
 
       // keep track of the number of railing system events... keep the first one
       // and then remove any subsequent railing events
       if ( nRailingSystemEvents < 1 && pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsRailingSystemLoadApplied() )
+      {
          nRailingSystemEvents++;
+      }
       else
+      {
          pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad(false);
+      }
 
       // keep track of the number of overlay events... keep the first one
       // and then remove any subsequent overlay events
       if ( nOverlayEvents < 1 && pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsOverlayLoadApplied() )
+      {
          nOverlayEvents++;
+      }
       else
+      {
          pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(false);
+      }
    }
 }
 
@@ -2218,7 +2317,9 @@ int CTimelineManager::CanRemoveEvent(CTimelineEvent* pTimelineEvent)
 {
    // we can do anything if there isn't an associated bridge
    if ( m_pBridgeDesc == NULL )
+   {
       return TLM_SUCCESS;
+   }
 
    if ( pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
    {
@@ -2376,19 +2477,25 @@ void CTimelineManager::AssertValid() const
       pTimelineEvent->AssertValid();
 
       if ( pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
+      {
          nSegmentConstructionEvents++;
+      }
 
       if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsLiveLoadApplied() )
+      {
          nLiveLoadEvents++;
+      }
 
       if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsOverlayLoadApplied() )
+      {
          nOverlayEvents++;
+      }
 
-      //if ( iter != m_TimelineEvents.begin() )
-      //{
-      //   const CTimelineEvent* pPrevEvent = *(iter-1);
-      //   ATLASSERT(pPrevEvent->GetDay() < pTimelineEvent->GetDay());
-      //}
+      if ( iter != m_TimelineEvents.begin() )
+      {
+         const CTimelineEvent* pPrevEvent = *(iter-1);
+         ATLASSERT(pPrevEvent->GetDay() <= pTimelineEvent->GetDay());
+      }
    }
 
    ATLASSERT(nSegmentConstructionEvents <= 1); // 0 means not set yet, 1 is ok, 2 or more... no good

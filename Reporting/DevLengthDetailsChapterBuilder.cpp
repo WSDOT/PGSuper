@@ -89,11 +89,22 @@ LPCTSTR CDevLengthDetailsChapterBuilder::GetName() const
 
 rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec      = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
 
-   pGdrRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CComPtr<IBroker> pBroker;
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -113,8 +124,9 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    GET_IFACE2(pBroker,IPretensionForce,pPSForce);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
    GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
+
+   GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterials); // only used if there are rebar in the girder
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -174,9 +186,13 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          }
 
          if ( IS_US_UNITS(pDisplayUnits) )
+         {
             *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("DevLength_US.png")) << rptNewLine;
+         }
          else
+         {
             *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("DevLength_SI.png")) << rptNewLine;
+         }
 
 
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("DevLengthReduction.png")) << rptNewLine;
@@ -238,17 +254,27 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
             Float64 lpx;
             if ( poi.GetDistFromStart() < half_segment_length )
+            {
                lpx = poi.GetDistFromStart();
+            }
             else
+            {
                lpx = segment_length - poi.GetDistFromStart();
+            }
 
             Float64 bond_factor;
             if ( lpx < bonded_details.lt )
+            {
                bond_factor = bonded_details.fpe*lpx/(bonded_details.fps*bonded_details.lt);
+            }
             else if ( lpx < bonded_details.ld )
+            {
                bond_factor = (bonded_details.fpe + ((lpx - bonded_details.lt)/(bonded_details.ld - bonded_details.lt))*(bonded_details.fps - bonded_details.fpe))/bonded_details.fps;
+            }
             else
+            {
                bond_factor = 1.0;
+            }
 
             bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
 
@@ -261,11 +287,17 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             (*pTable)(row,6) << scalar.SetValue(bond_factor);
 
             if ( lpx < debonded_details.lt )
+            {
                bond_factor = debonded_details.fpe*lpx/(debonded_details.fps*debonded_details.lt);
+            }
             else if ( lpx < debonded_details.ld )
+            {
                bond_factor = (debonded_details.fpe + ((lpx - debonded_details.lt)/(debonded_details.ld - debonded_details.lt))*(debonded_details.fps - debonded_details.fpe))/debonded_details.fps;
+            }
             else
+            {
                bond_factor = 1.0;
+            }
 
             bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
 
@@ -310,9 +342,13 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             else
             {
                if ( IS_US_UNITS(pDisplayUnits) )
+               {
                   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
+               }
                else
+               {
                   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
+               }
 
                rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
                (*pParagraph) << pTable << rptNewLine;
@@ -419,7 +455,9 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                std::_tstring barst(pRebar->GetName());
                std::size_t sit = barst.find(_T(" "));
                if (sit != std::_tstring::npos)
+               {
                   barst.erase(sit, barst.size()-1);
+               }
 
                CComBSTR barname(barst.c_str());
                Float64 Es = pRebar->GetE();

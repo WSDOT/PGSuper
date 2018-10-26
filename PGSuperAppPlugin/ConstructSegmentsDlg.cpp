@@ -29,10 +29,6 @@ CConstructSegmentsDlg::~CConstructSegmentsDlg()
 
 void CConstructSegmentsDlg::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
 	CDialog::DoDataExchange(pDX);
    if ( pDX->m_bSaveAndValidate )
    {

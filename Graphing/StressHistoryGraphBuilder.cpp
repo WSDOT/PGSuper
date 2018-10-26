@@ -147,7 +147,9 @@ CGraphBuilder* CStressHistoryGraphBuilder::Clone()
 int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
 {
    if ( CEAFAutoCalcGraphBuilder::InitializeGraphController(pParent,nID) < 0 )
+   {
       return -1;
+   }
 
    // create the graph definitions before creating the graph controller.
    // our graph controller will call GetLoadCaseNames to populate the 
@@ -264,27 +266,29 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IPointOfInterest,pPoi);
-   Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
+
+   SpanIndexType spanIdx;
+   Float64 Xspan;
+   pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
+
    CString strSubtitle;
-   std::_tstring strAttributes = poi.GetAttributes(POI_ERECTED_SEGMENT,false);
+   std::_tstring strAttributes = poi.GetAttributes(POI_SPAN,false);
    if ( strAttributes.size() == 0 )
    {
-      strSubtitle.Format(_T("Group %d Girder %s Segment %d, %s (X=%s)"),
+      strSubtitle.Format(_T("Group %d Girder %s Span %d (%s)"),
          LABEL_GROUP(segmentKey.groupIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
-         LABEL_SEGMENT(segmentKey.segmentIndex),
-         FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()),
-         FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit()));
+         LABEL_SPAN(spanIdx),
+         FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
    }
    else
    {
-      strSubtitle.Format(_T("Group %d Girder %s Segment %d, %s (%s) (X=%s)"),
+      strSubtitle.Format(_T("Group %d Girder %s Span %d, (%s (%s))"),
          LABEL_GROUP(segmentKey.groupIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
-         LABEL_SEGMENT(segmentKey.segmentIndex),
-         FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()),
-         strAttributes.c_str(),
-         FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit()));
+         LABEL_SPAN(spanIdx),
+         FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()),
+         strAttributes.c_str());
    }
 
    m_Graph.SetSubtitle(std::_tstring(strSubtitle));
@@ -295,22 +299,24 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
    // clear graph
    m_Graph.ClearData();
 
-   IndexType topSlabMinDataSeries   = m_Graph.CreateDataSeries(_T("Top of Slab"),     PS_SOLID,1,ORANGE);
-   IndexType topSlabMaxDataSeries   = m_Graph.CreateDataSeries(_T(""),                PS_SOLID,1,ORANGE);
-   IndexType topSlabDataSeries      = m_Graph.CreateDataSeries(_T(""),                PS_DASH, 1,ORANGE);
-   IndexType botSlabMinDataSeries   = m_Graph.CreateDataSeries(_T("Bottom of Slab"),  PS_SOLID,1,RED);
-   IndexType botSlabMaxDataSeries   = m_Graph.CreateDataSeries(_T(""),                PS_SOLID,1,RED);
-   IndexType botSlabDataSeries      = m_Graph.CreateDataSeries(_T(""),                PS_DASH,1,RED);
-   IndexType topGirderMinDataSeries = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID,1,GREEN);
-   IndexType topGirderMaxDataSeries = m_Graph.CreateDataSeries(_T(""),                PS_SOLID,1,GREEN);
-   IndexType topGirderDataSeries    = m_Graph.CreateDataSeries(_T(""),                PS_DASH,1,GREEN);
-   IndexType botGirderMinDataSeries = m_Graph.CreateDataSeries(_T("Bottom of Girder"),PS_SOLID,1,BLUE);
-   IndexType botGirderMaxDataSeries = m_Graph.CreateDataSeries(_T(""),                PS_SOLID,1,BLUE);
-   IndexType botGirderDataSeries    = m_Graph.CreateDataSeries(_T(""),                PS_DASH,1,BLUE);
+   int penWeight = GRAPH_PEN_WEIGHT;
 
-   GET_IFACE(ICombinedForces,pCombinedForces);
-   GET_IFACE(ILimitStateForces,pLimitStateForces);
+   IndexType topSlabDataSeries      = m_Graph.CreateDataSeries(_T("Top of Slab"),     PS_SOLID, penWeight, ORANGE);
+   IndexType topSlabMinDataSeries   = m_Graph.CreateDataSeries(_T(""),                PS_DOT,   penWeight, ORANGE);
+   IndexType topSlabMaxDataSeries   = m_Graph.CreateDataSeries(_T(""),                PS_DOT,   penWeight, ORANGE);
+   IndexType botSlabDataSeries      = m_Graph.CreateDataSeries(_T("Bottom of Slab"),  PS_SOLID, penWeight, RED);
+   IndexType botSlabMinDataSeries   = m_Graph.CreateDataSeries(_T(""),                PS_DOT,   penWeight, RED);
+   IndexType botSlabMaxDataSeries   = m_Graph.CreateDataSeries(_T(""),                PS_DOT,   penWeight, RED);
+   IndexType topGirderDataSeries    = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID, penWeight, GREEN);
+   IndexType topGirderMinDataSeries = m_Graph.CreateDataSeries(_T(""),                PS_DOT,   penWeight, GREEN);
+   IndexType topGirderMaxDataSeries = m_Graph.CreateDataSeries(_T(""),                PS_DOT,   penWeight, GREEN);
+   IndexType botGirderDataSeries    = m_Graph.CreateDataSeries(_T("Bottom of Girder"),PS_SOLID, penWeight, BLUE);
+   IndexType botGirderMinDataSeries = m_Graph.CreateDataSeries(_T(""),                PS_DOT,   penWeight, BLUE);
+   IndexType botGirderMaxDataSeries = m_Graph.CreateDataSeries(_T(""),                PS_DOT,   penWeight, BLUE);
+
    GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE_NOCHECK(ICombinedForces,pCombinedForces); // only used if a stress location is checked
+   GET_IFACE_NOCHECK(ILimitStateForces,pLimitStateForces); // only used if a stress location is checked
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -338,114 +344,153 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
       if ( m_bTopDeck )
       {
          Float64 fMinStart, fMaxStart;
-         pLimitStateForces->GetStress(pgsTypes::ServiceI,prevIntervalIdx,poi,pgsTypes::TopDeck,bIncludePrestress,pgsTypes::ContinuousSpan,&fMinStart,&fMaxStart);
-         AddGraphPoint(topSlabMinDataSeries,xStart,fMinStart);
-         AddGraphPoint(topSlabMaxDataSeries,xStart,fMaxStart);
+         pLimitStateForces->GetStress(prevIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,pgsTypes::TopDeck,&fMinStart,&fMaxStart);
 
          Float64 fMinTop(0),fMaxTop(0),fMinBot(0),fMaxBot(0);
          if ( liveLoadIntervalIdx <= prevIntervalIdx )
          {
-            pCombinedForces->GetCombinedLiveLoadStress(pgsTypes::lltDesign,prevIntervalIdx,poi,pgsTypes::ContinuousSpan,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            pCombinedForces->GetCombinedLiveLoadStress(prevIntervalIdx,pgsTypes::lltDesign,poi,pgsTypes::ContinuousSpan,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+
+            if ( liveLoadIntervalIdx == prevIntervalIdx )
+            {
+               AddGraphPoint(topSlabMinDataSeries,xStart,fMinStart-fMinTop);
+               AddGraphPoint(topSlabMaxDataSeries,xStart,fMaxStart-fMaxTop);
+            }
+
+            AddGraphPoint(topSlabMinDataSeries,xStart,fMinStart);
+            AddGraphPoint(topSlabMaxDataSeries,xStart,fMaxStart);
+            fMinStart -= fMinTop;
          }
-         AddGraphPoint(topSlabDataSeries,xStart,fMinStart-fMinTop);
+         AddGraphPoint(topSlabDataSeries,xStart,fMinStart);
 
          Float64 fMinEnd,fMaxEnd;
-         pLimitStateForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::TopDeck,bIncludePrestress,pgsTypes::ContinuousSpan,&fMinEnd,&fMaxEnd);
-         AddGraphPoint(topSlabMinDataSeries,xEnd,fMinEnd);
-         AddGraphPoint(topSlabMaxDataSeries,xEnd,fMaxEnd);
-
+         pLimitStateForces->GetStress(intervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,pgsTypes::TopDeck,&fMinEnd,&fMaxEnd);
 
          fMinTop = 0;
          fMaxTop = 0;
          if ( liveLoadIntervalIdx <= intervalIdx )
          {
-            pCombinedForces->GetCombinedLiveLoadStress(pgsTypes::lltDesign,intervalIdx,poi,pgsTypes::ContinuousSpan,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            pCombinedForces->GetCombinedLiveLoadStress(intervalIdx,pgsTypes::lltDesign,poi,pgsTypes::ContinuousSpan,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            AddGraphPoint(topSlabMinDataSeries,xEnd,fMinEnd);
+            AddGraphPoint(topSlabMaxDataSeries,xEnd,fMaxEnd);
+            fMinEnd -= fMinTop;
          }
-         AddGraphPoint(topSlabDataSeries,xEnd,fMinEnd-fMinTop);
+         AddGraphPoint(topSlabDataSeries,xEnd,fMinEnd);
       }
 
       if ( m_bBottomDeck )
       {
          Float64 fMinStart, fMaxStart;
-         pLimitStateForces->GetStress(pgsTypes::ServiceI,prevIntervalIdx,poi,pgsTypes::BottomDeck,bIncludePrestress,pgsTypes::ContinuousSpan,&fMinStart,&fMaxStart);
-         AddGraphPoint(botSlabMinDataSeries,xStart,fMinStart);
-         AddGraphPoint(botSlabMaxDataSeries,xStart,fMaxStart);
+         pLimitStateForces->GetStress(prevIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,pgsTypes::BottomDeck,&fMinStart,&fMaxStart);
 
          Float64 fMinTop(0),fMaxTop(0),fMinBot(0),fMaxBot(0);
          if ( liveLoadIntervalIdx <= prevIntervalIdx )
          {
-            pCombinedForces->GetCombinedLiveLoadStress(pgsTypes::lltDesign,prevIntervalIdx,poi,pgsTypes::ContinuousSpan,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            pCombinedForces->GetCombinedLiveLoadStress(prevIntervalIdx,pgsTypes::lltDesign,poi,pgsTypes::ContinuousSpan,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+
+            if ( liveLoadIntervalIdx == prevIntervalIdx )
+            {
+               AddGraphPoint(botSlabMinDataSeries,xStart,fMinStart-fMinBot);
+               AddGraphPoint(botSlabMaxDataSeries,xStart,fMaxStart-fMaxBot);
+            }
+
+            AddGraphPoint(botSlabMinDataSeries,xStart,fMinStart);
+            AddGraphPoint(botSlabMaxDataSeries,xStart,fMaxStart);
+            fMinStart -= fMinBot;
          }
-         AddGraphPoint(botSlabDataSeries,xStart,fMinStart-fMinBot);
+         AddGraphPoint(botSlabDataSeries,xStart,fMinStart);
 
          Float64 fMinEnd, fMaxEnd;
-         pLimitStateForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::BottomDeck,bIncludePrestress,pgsTypes::ContinuousSpan,&fMinEnd,&fMaxEnd);
-         AddGraphPoint(botSlabMinDataSeries,xEnd,fMinEnd);
-         AddGraphPoint(botSlabMaxDataSeries,xEnd,fMaxEnd);
+         pLimitStateForces->GetStress(intervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,pgsTypes::BottomDeck,&fMinEnd,&fMaxEnd);
 
          fMinBot = 0;
          fMaxBot = 0;
          if ( liveLoadIntervalIdx <= intervalIdx )
          {
-            pCombinedForces->GetCombinedLiveLoadStress(pgsTypes::lltDesign,intervalIdx,poi,pgsTypes::ContinuousSpan,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            pCombinedForces->GetCombinedLiveLoadStress(intervalIdx,pgsTypes::lltDesign,poi,pgsTypes::ContinuousSpan,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            AddGraphPoint(botSlabMinDataSeries,xEnd,fMinEnd);
+            AddGraphPoint(botSlabMaxDataSeries,xEnd,fMaxEnd);
+            fMinEnd -= fMinBot;
          }
-         AddGraphPoint(botSlabDataSeries,xEnd,fMinEnd-fMinBot);
+         AddGraphPoint(botSlabDataSeries,xEnd,fMinEnd);
       }
 
       if ( m_bTopGirder )
       {
          Float64 fMinStart, fMaxStart;
-         pLimitStateForces->GetStress(pgsTypes::ServiceI,prevIntervalIdx,poi,pgsTypes::TopGirder,bIncludePrestress,pgsTypes::ContinuousSpan,&fMinStart,&fMaxStart);
-         AddGraphPoint(topGirderMinDataSeries,xStart,fMinStart);
-         AddGraphPoint(topGirderMaxDataSeries,xStart,fMaxStart);
+         pLimitStateForces->GetStress(prevIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,pgsTypes::TopGirder,&fMinStart,&fMaxStart);
 
          Float64 fMinTop(0),fMaxTop(0),fMinBot(0),fMaxBot(0);
          if ( liveLoadIntervalIdx <= prevIntervalIdx )
          {
-            pCombinedForces->GetCombinedLiveLoadStress(pgsTypes::lltDesign,prevIntervalIdx,poi,pgsTypes::ContinuousSpan,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            pCombinedForces->GetCombinedLiveLoadStress(prevIntervalIdx,pgsTypes::lltDesign,poi,pgsTypes::ContinuousSpan,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+
+            if ( liveLoadIntervalIdx == prevIntervalIdx )
+            {
+               AddGraphPoint(topGirderMinDataSeries,xStart,fMinStart-fMinTop);
+               AddGraphPoint(topGirderMaxDataSeries,xStart,fMaxStart-fMaxTop);
+            }
+
+            AddGraphPoint(topGirderMinDataSeries,xStart,fMinStart);
+            AddGraphPoint(topGirderMaxDataSeries,xStart,fMaxStart);
+
+            fMinStart -= fMinTop;
          }
-         AddGraphPoint(topGirderDataSeries,xStart,fMinStart-fMinTop);
+         AddGraphPoint(topGirderDataSeries,xStart,fMinStart);
 
          Float64 fMinEnd, fMaxEnd;
-         pLimitStateForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::TopGirder,bIncludePrestress,pgsTypes::ContinuousSpan,&fMinEnd,&fMaxEnd);
-         AddGraphPoint(topGirderMinDataSeries,xEnd,fMinEnd);
-         AddGraphPoint(topGirderMaxDataSeries,xEnd,fMaxEnd);
+         pLimitStateForces->GetStress(intervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,pgsTypes::TopGirder,&fMinEnd,&fMaxEnd);
 
          fMinTop = 0;
          fMaxTop = 0;
          if ( liveLoadIntervalIdx <= intervalIdx )
          {
-            pCombinedForces->GetCombinedLiveLoadStress(pgsTypes::lltDesign,intervalIdx,poi,pgsTypes::ContinuousSpan,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            pCombinedForces->GetCombinedLiveLoadStress(intervalIdx,pgsTypes::lltDesign,poi,pgsTypes::ContinuousSpan,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            
+            AddGraphPoint(topGirderMinDataSeries,xEnd,fMinEnd);
+            AddGraphPoint(topGirderMaxDataSeries,xEnd,fMaxEnd);
+
+            fMinEnd -= fMinTop;
          }
-         AddGraphPoint(topGirderDataSeries,xEnd,fMinEnd-fMinTop);
+         AddGraphPoint(topGirderDataSeries,xEnd,fMinEnd);
       }
 
       if ( m_bBottomGirder )
       {
          Float64 fMinStart, fMaxStart;
-         pLimitStateForces->GetStress(pgsTypes::ServiceI,prevIntervalIdx,poi,pgsTypes::BottomGirder,bIncludePrestress,pgsTypes::ContinuousSpan,&fMinStart,&fMaxStart);
-         AddGraphPoint(botGirderMinDataSeries,xStart,fMinStart);
-         AddGraphPoint(botGirderMaxDataSeries,xStart,fMaxStart);
+         pLimitStateForces->GetStress(prevIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,pgsTypes::BottomGirder,&fMinStart,&fMaxStart);
 
          Float64 fMinTop(0),fMaxTop(0),fMinBot(0),fMaxBot(0);
          if ( liveLoadIntervalIdx <= prevIntervalIdx )
          {
-            pCombinedForces->GetCombinedLiveLoadStress(pgsTypes::lltDesign,prevIntervalIdx,poi,pgsTypes::ContinuousSpan,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            pCombinedForces->GetCombinedLiveLoadStress(prevIntervalIdx,pgsTypes::lltDesign,poi,pgsTypes::ContinuousSpan,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+
+            if ( liveLoadIntervalIdx == prevIntervalIdx )
+            {
+               AddGraphPoint(botGirderMinDataSeries,xStart,fMinStart-fMinBot);
+               AddGraphPoint(botGirderMaxDataSeries,xStart,fMaxStart-fMaxBot);
+            }
+
+            AddGraphPoint(botGirderMinDataSeries,xStart,fMinStart);
+            AddGraphPoint(botGirderMaxDataSeries,xStart,fMaxStart);
+
+            fMinStart -= fMinBot;
          }
-         AddGraphPoint(botGirderDataSeries,xStart,fMinStart-fMinBot);
+         AddGraphPoint(botGirderDataSeries,xStart,fMinStart);
 
          Float64 fMinEnd, fMaxEnd;
-         pLimitStateForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::BottomGirder,bIncludePrestress,pgsTypes::ContinuousSpan,&fMinEnd,&fMaxEnd);
-         AddGraphPoint(botGirderMinDataSeries,xEnd,fMinEnd);
-         AddGraphPoint(botGirderMaxDataSeries,xEnd,fMaxEnd);
+         pLimitStateForces->GetStress(intervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,pgsTypes::BottomGirder,&fMinEnd,&fMaxEnd);
 
          fMinBot = 0;
          fMaxBot = 0;
          if ( liveLoadIntervalIdx <= intervalIdx )
          {
-            pCombinedForces->GetCombinedLiveLoadStress(pgsTypes::lltDesign,intervalIdx,poi,pgsTypes::ContinuousSpan,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            pCombinedForces->GetCombinedLiveLoadStress(intervalIdx,pgsTypes::lltDesign,poi,pgsTypes::ContinuousSpan,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fMinTop,&fMaxTop,&fMinBot,&fMaxBot);
+            AddGraphPoint(botGirderMinDataSeries,xEnd,fMinEnd);
+            AddGraphPoint(botGirderMaxDataSeries,xEnd,fMaxEnd);
+            fMinEnd -= fMinBot;
          }
-         AddGraphPoint(botGirderDataSeries,xEnd,fMinEnd-fMinBot);
+         AddGraphPoint(botGirderDataSeries,xEnd,fMinEnd);
       }
    }
 }
@@ -510,7 +555,9 @@ void CStressHistoryGraphBuilder::UpdateXAxis()
 void CStressHistoryGraphBuilder::UpdateYAxis()
 {
    if ( m_pYFormat )
+   {
       delete m_pYFormat;
+   }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();

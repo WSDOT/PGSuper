@@ -78,7 +78,7 @@ void CDesignOutcomeDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
 	
-   CHECK(m_Ok.m_hWnd!=0);
+   ATLASSERT(m_Ok.m_hWnd!=0);
 
    // Convert a 7du x 7du rect into pixels
    CRect sizeRect(0,0,7,7);
@@ -181,11 +181,11 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    GirderIndexType gdr = m_pRptSpec->GetGirder();
 
    GET_IFACE2(pBroker,IArtifact,pArtifact);
-   const pgsDesignArtifact* pDesignArtifact = pArtifact->GetDesignArtifact(span,gdr);
+   const pgsSegmentDesignArtifact* pDesignArtifact = pArtifact->GetDesignArtifact(span,gdr);
    ATLASSERT( pDesignArtifact != NULL ); // the design should be done if we are displaying the outcome
 
    // If design failed, default for Update Bridge Description is No, otherwise, Yes
-   if ( pDesignArtifact->GetOutcome() == pgsDesignArtifact::Success )
+   if ( pDesignArtifact->GetOutcome() == pgsSegmentDesignArtifact::Success )
       SetDefID(IDOK);
    else
       SetDefID(IDCANCEL);

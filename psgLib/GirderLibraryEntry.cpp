@@ -414,7 +414,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
       }
 
       pSave->Property(_T("LocalSortOrder"), permStrandIter->m_GridIdx);
@@ -1282,7 +1282,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                }
                else
                {
-                  ATLASSERT(0);
+                  ATLASSERT(false);
                   THROW_LOAD(InvalidFileFormat,pLoad);
                }
 
@@ -1301,7 +1301,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                   end_pnt->get_X(&x);
                   if (!IsZero(x))
                   {
-                     ATLASSERT(0);
+                     ATLASSERT(false);
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
                }
@@ -1314,7 +1314,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                   hp_pnt->get_X(&x);
                   if (!IsZero(x))
                   {
-                     ATLASSERT(0);
+                     ATLASSERT(false);
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
                }
@@ -1482,7 +1482,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
             else
             {
-               ATLASSERT(0);
+               ATLASSERT(false);
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
          
@@ -2559,6 +2559,10 @@ void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
    {
       m_bSupportsVariableDepthSection = true;
    }
+   else
+   {
+      m_bSupportsVariableDepthSection = false;
+   }
 }
 
 void GirderLibraryEntry::GetBeamFactory(IBeamFactory** ppFactory) const
@@ -2972,7 +2976,7 @@ bool GirderLibraryEntry::GetPermStrandDistribution(StrandIndexType totalNumStran
          }
          else
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
          }
 
          np = nh + ns;
@@ -3690,7 +3694,7 @@ std::_tstring GirderLibraryEntry::GetSectionName() const
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return std::_tstring(_T("Unknown Girder Type"));
    }
 }

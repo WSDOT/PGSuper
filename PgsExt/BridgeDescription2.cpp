@@ -121,39 +121,61 @@ CBridgeDescription2& CBridgeDescription2::operator= (const CBridgeDescription2& 
 bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
 {
    if ( m_strGirderFamilyName != rOther.m_strGirderFamilyName )
+   {
       return false;
+   }
 
    if ( m_GirderOrientation != rOther.m_GirderOrientation )
+   {
       return false;
+   }
 
    if ( m_bSameGirderName != rOther.m_bSameGirderName )
+   {
       return false;
+   }
 
    if ( m_bSameGirderName &&  m_strGirderName != rOther.m_strGirderName )
+   {
       return false;
+   }
    
    if ( m_bSameNumberOfGirders != rOther.m_bSameNumberOfGirders )
+   {
       return false;
+   }
 
    if ( m_bSameNumberOfGirders && m_nGirders != rOther.m_nGirders )
+   {
       return false;
+   }
 
    if ( m_GirderSpacingType != rOther.m_GirderSpacingType )
+   {
       return false;
+   }
 
    if ( m_TimelineManager != rOther.m_TimelineManager )
+   {
       return false;
+   }
 
    if ( m_AlignmentOffset != rOther.m_AlignmentOffset )
+   {
       return false;
+   }
 
    if ( m_SlabOffsetType != rOther.m_SlabOffsetType )
+   {
       return false;
+   }
 
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
    {
       if ( !IsEqual(m_SlabOffset,rOther.m_SlabOffset) )
+      {
          return false;
+      }
    }
 
    // the bridge-wide value of girder spacing only applies
@@ -163,75 +185,111 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
         m_GirderSpacingType == pgsTypes::sbsConstantAdjacent )
    {
       if ( !IsEqual(m_GirderSpacing,rOther.m_GirderSpacing) )
+      {
          return false;
+      }
 
       if ( m_MeasurementLocation != rOther.m_MeasurementLocation )
+      {
          return false;
+      }
 
       if ( m_MeasurementType != rOther.m_MeasurementType )
+      {
          return false;
+      }
 
       if ( m_RefGirderIdx != rOther.m_RefGirderIdx )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_RefGirderOffset,rOther.m_RefGirderOffset) )
+      {
          return false;
+      }
 
       if ( m_RefGirderOffsetType != rOther.m_RefGirderOffsetType )
+      {
          return false;
+      }
    }
 
    if ( m_GirderGroups.size() != rOther.m_GirderGroups.size() )
+   {
       return false;
+   }
 
    GroupIndexType nGroups = m_GirderGroups.size();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       if ( *m_GirderGroups[grpIdx] != *rOther.m_GirderGroups[grpIdx] )
+      {
          return false;
+      }
    }
 
    if ( m_Piers.size() != rOther.m_Piers.size() )
+   {
       return false;
+   }
 
    PierIndexType nPiers = m_Piers.size();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
       if (*m_Piers[pierIdx] != *rOther.m_Piers[pierIdx] )
+      {
          return false;
+      }
    }
 
    if ( m_Spans.size() != rOther.m_Spans.size() )
+   {
       return false;
+   }
 
    SpanIndexType nSpans = m_Spans.size();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
       if (*m_Spans[spanIdx] != *rOther.m_Spans[spanIdx] )
+      {
          return false;
+      }
    }
 
    if ( m_TemporarySupports.size() != rOther.m_TemporarySupports.size() )
+   {
       return false;
+   }
 
    SupportIndexType nTS = m_TemporarySupports.size();
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
       if ( *m_TemporarySupports[tsIdx] != *rOther.m_TemporarySupports[tsIdx] )
+      {
          return false;
+      }
    }
 
    if ( m_Deck != rOther.m_Deck )
+   {
       return false;
+   }
 
    if ( m_LeftRailingSystem != rOther.m_LeftRailingSystem )
+   {
       return false;
+   }
 
    if ( m_RightRailingSystem != rOther.m_RightRailingSystem )
+   {
       return false;
+   }
 
    if ( m_LLDFMethod != rOther.m_LLDFMethod )
+   {
       return false;
+   }
 
    return true;
 }
@@ -467,7 +525,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
@@ -664,10 +722,14 @@ void CBridgeDescription2::SetSlabOffset(Float64 slabOffset)
 Float64 CBridgeDescription2::GetSlabOffset(bool bGetRawValue) const
 {
    if ( bGetRawValue )
+   {
       return m_SlabOffset;
+   }
 
    if ( m_Deck.DeckType == pgsTypes::sdtNone )
+   {
       return 0;
+   }
 
    return m_SlabOffset;
 }
@@ -675,7 +737,9 @@ Float64 CBridgeDescription2::GetSlabOffset(bool bGetRawValue) const
 Float64 CBridgeDescription2::GetMaxSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
+   {
       return GetSlabOffset();
+   }
 
    Float64 maxSlabOffset = 0;
    std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
@@ -708,14 +772,22 @@ void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSp
    CPierData2* nextPier;
 
    if ( pFirstPier )
+   {
       firstPier = new CPierData2(*pFirstPier);
+   }
    else
+   {
       firstPier = new CPierData2();
+   }
 
    if ( pFirstSpan )
+   {
       firstSpan = new CSpanData2(*pFirstSpan);
+   }
    else
+   {
       firstSpan = new CSpanData2();
+   }
 
    if ( pNextPier )
    {
@@ -976,7 +1048,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    // renumbers spans and sets the pier<-->span<-->pier pointers
    RenumberSpans();
 
-   // Before the spans/piers are renumbered, updated the reference group pier references if needed
+   // Update the reference group pier references if needed
    if ( bCreateNewGroup )
    {
       ASSERT(refGroupIdx != INVALID_INDEX);
@@ -1096,6 +1168,9 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
             m_TimelineManager.SetSegmentConstructionEventByIndex( newSegID, constructionEventIdx );
             m_TimelineManager.SetSegmentErectionEventByIndex( newSegID, erectionEventIdx );
+
+            const CPrecastSegmentData* pRefSegment = pRefGirder->GetSegment(segIdx);
+            pNewSegment->CopySegmentData(pRefSegment,false);
          }
       }
    }
@@ -1188,7 +1263,9 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    {
       CTemporarySupportData* pTS = *tsIter;
       if ( pTS->GetSpan() == pSpan )
+      {
          tsIndices.push_back(pTS->GetIndex());
+      }
    }
 
    // remove temporary supports by index.. work in reverse order. the spliced girder closure joints and segments
@@ -1333,9 +1410,13 @@ GroupIndexType CBridgeDescription2::CreateGirderGroup(GroupIndexType refGroupIdx
 
    CGirderGroupData* pRefGroup;
    if ( refGroupIdx == INVALID_INDEX )
+   {
       pRefGroup = m_GirderGroups.back();
+   }
    else
+   {
       pRefGroup = m_GirderGroups[refGroupIdx];
+   }
 
    CPierData2* pRefPier = pRefGroup->GetPier(end);
 
@@ -1370,12 +1451,16 @@ GroupIndexType CBridgeDescription2::CreateGirderGroup(GroupIndexType refGroupIdx
 
       // new group starts with the first new pier created... capture it
       if ( end == pgsTypes::metStart && i == 0 )
+      {
          pStartPier = pNewPier;
+      }
       
       // new groups ends with the last new pier created... update this pointer
       // every time. when the loop completes, it will have the correct pointer
       if ( end == pgsTypes::metEnd )
+      {
          pEndPier = pNewPier;
+      }
    }
 
    CGirderGroupData* pGirderGroupData = new CGirderGroupData(pStartPier,pEndPier);
@@ -1389,7 +1474,9 @@ GroupIndexType CBridgeDescription2::CreateGirderGroup(GroupIndexType refGroupIdx
 CGirderGroupData* CBridgeDescription2::GetGirderGroup(GroupIndexType grpIdx)
 {
    if ( grpIdx == INVALID_INDEX || m_GirderGroups.size() <= grpIdx )
+   {
       return NULL; 
+   }
 
    return m_GirderGroups[grpIdx];
 }
@@ -1397,7 +1484,9 @@ CGirderGroupData* CBridgeDescription2::GetGirderGroup(GroupIndexType grpIdx)
 const CGirderGroupData* CBridgeDescription2::GetGirderGroup(GroupIndexType grpIdx) const
 {
    if ( grpIdx == INVALID_INDEX || m_GirderGroups.size() <= grpIdx )
+   {
       return NULL; 
+   }
 
    return m_GirderGroups[grpIdx];
 }
@@ -1405,7 +1494,9 @@ const CGirderGroupData* CBridgeDescription2::GetGirderGroup(GroupIndexType grpId
 CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pSpan)
 {
    if ( pSpan == NULL )
+   {
       return NULL;
+   }
 
    PierIndexType prevPierIdx = pSpan->GetPrevPier()->GetIndex();
    PierIndexType nextPierIdx = pSpan->GetNextPier()->GetIndex();
@@ -1431,7 +1522,9 @@ CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pSpan)
 const CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pSpan) const
 {
    if ( pSpan == NULL )
+   {
       return NULL;
+   }
 
    PierIndexType prevPierIdx = pSpan->GetPrevPier()->GetIndex();
    PierIndexType nextPierIdx = pSpan->GetNextPier()->GetIndex();
@@ -1445,7 +1538,9 @@ const CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pS
       PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
 
       if ( startPierIdx <= prevPierIdx && nextPierIdx <= endPierIdx )
+      {
          return pGroup;
+      }
    }
 
    return NULL;
@@ -1532,11 +1627,15 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
    // Also adjust the piers at the ends of the adjacent groups
    if ( rmPierType == pgsTypes::PrevPier )
    {
-      // the pier at the start of this group is going to be deleted, therefore the end pier of the
-      // previous group will become the end pier of this group
-      if ( pGroup->GetPrevGirderGroup() )
+      // the pier at the start of this group is going to be deleted, therefore the end pier of this
+      // group will become the end pier of the previous group
+      CGirderGroupData* pPrevGroup = pGroup->GetPrevGirderGroup();
+      if ( pPrevGroup )
       {
-         pGroup->GetPrevGirderGroup()->SetPier(pgsTypes::metEnd,pGroup->GetPier(pgsTypes::metEnd));
+         CPierData2* pPier = pGroup->GetPier(pgsTypes::metEnd);
+         CSpanData2* pSpan = pPrevGroup->GetPier(pgsTypes::metEnd)->GetSpan(pgsTypes::Back);
+         pPier->SetSpan(pgsTypes::Back,pSpan);
+         pPrevGroup->SetPier(pgsTypes::metEnd,pPier);
       }
 
       // pier at the start of the group is removed, so save the last pier
@@ -1546,9 +1645,13 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
    {
       // the pier at the end of this group is going to be deleted, therefore the start pier of the
       // next group will become the start pier of this group
-      if ( pGroup->GetNextGirderGroup() )
+      CGirderGroupData* pNextGroup = pGroup->GetNextGirderGroup();
+      if ( pNextGroup )
       {
-         pGroup->GetNextGirderGroup()->SetPier(pgsTypes::metStart,pGroup->GetPier(pgsTypes::metStart));
+         CPierData2* pPier = pGroup->GetPier(pgsTypes::metStart);
+         CSpanData2* pSpan = pNextGroup->GetPier(pgsTypes::metStart)->GetSpan(pgsTypes::Ahead);
+         pPier->SetSpan(pgsTypes::Ahead,pSpan);
+         pNextGroup->SetPier(pgsTypes::metStart,pPier);
       }
 
       // pier at the end of the group is removed, so save the first pier
@@ -1566,12 +1669,16 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
       // If this is the first pier in the bridge, the next pier becomes the first pier
       // so remove the rebar at the next pier
       if ( pPier->GetPrevSpan() == NULL )
+      {
          removeRebarPierIdx++;
+      }
 
       // If this is the last pier in the bridge, the next to last pier becomes the last pier
       // so remove the rebar at the next to last pier
       if ( pPier->GetNextSpan() == NULL )
+      {
          removeRebarPierIdx--;
+      }
 
       std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
       std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
@@ -1615,7 +1722,7 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
       pSpan = NULL;
    }
 
-   // remove delete slots from span vector
+   // remove deleted slots from span vector
    m_Spans.erase(m_Spans.begin()+startSpanIdx,m_Spans.begin()+endSpanIdx+1);
 
    // delete group
@@ -1645,7 +1752,9 @@ SpanIndexType CBridgeDescription2::GetSpanCount() const
 CPierData2* CBridgeDescription2::GetPier(PierIndexType pierIdx)
 {
    if (0 <= pierIdx && pierIdx < (PierIndexType)m_Piers.size() )
+   {
      return m_Piers[pierIdx];
+   }
 
    return NULL;
 }
@@ -1653,7 +1762,9 @@ CPierData2* CBridgeDescription2::GetPier(PierIndexType pierIdx)
 const CPierData2* CBridgeDescription2::GetPier(PierIndexType pierIdx) const
 {
    if (0 <= pierIdx && pierIdx < (PierIndexType)m_Piers.size() )
+   {
       return m_Piers[pierIdx];
+   }
 
    return NULL;
 }
@@ -1666,7 +1777,9 @@ CPierData2* CBridgeDescription2::FindPier(PierIDType pierID)
    {
       CPierData2* pPier = *iter;
       if ( pPier->GetID() == pierID )
+      {
          return pPier;
+      }
    }
 
    ATLASSERT(false); // Pier not found
@@ -1681,7 +1794,9 @@ const CPierData2* CBridgeDescription2::FindPier(PierIDType pierID) const
    {
       const CPierData2* pPier = *iter;
       if ( pPier->GetID() == pierID )
+      {
          return pPier;
+      }
    }
 
    ATLASSERT(false); // Pier not found
@@ -1691,7 +1806,9 @@ const CPierData2* CBridgeDescription2::FindPier(PierIDType pierID) const
 CSpanData2* CBridgeDescription2::GetSpan(SpanIndexType spanIdx)
 {
    if ( 0 <= spanIdx && spanIdx < (SpanIndexType)m_Spans.size() )
+   {
      return m_Spans[spanIdx];
+   }
 
    return NULL;
 }
@@ -1699,7 +1816,9 @@ CSpanData2* CBridgeDescription2::GetSpan(SpanIndexType spanIdx)
 const CSpanData2* CBridgeDescription2::GetSpan(SpanIndexType spanIdx) const
 {
    if ( 0 <= spanIdx && spanIdx < (SpanIndexType)m_Spans.size() )
+   {
       return m_Spans[spanIdx];
+   }
 
    return NULL;
 }
@@ -1738,7 +1857,9 @@ bool CBridgeDescription2::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
    Float64 deltaL = newLength - length;
 
    if ( IsZero(deltaL) )
+   {
       return false;
+   }
 
    Float64 endSpanStation = pSpan->GetNextPier()->GetStation();
 
@@ -1771,7 +1892,9 @@ bool CBridgeDescription2::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
 SupportIndexType CBridgeDescription2::AddTemporarySupport(CTemporarySupportData* pTempSupport,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType castClosureEventIdx)
 {
    if ( pTempSupport->GetID() == INVALID_ID )
+   {
       pTempSupport->SetID( GetNextTemporaryID() );
+   }
 
    m_TemporarySupports.push_back(pTempSupport);
    UpdateTemporarySupports();
@@ -1807,7 +1930,9 @@ SupportIndexType CBridgeDescription2::GetTemporarySupportCount() const
 CTemporarySupportData* CBridgeDescription2::GetTemporarySupport(SupportIndexType tsIdx)
 {
    if ( 0 <= tsIdx && tsIdx < (SupportIndexType)m_TemporarySupports.size() )
+   {
       return m_TemporarySupports[tsIdx];
+   }
    
    return NULL;
 }
@@ -1815,7 +1940,9 @@ CTemporarySupportData* CBridgeDescription2::GetTemporarySupport(SupportIndexType
 const CTemporarySupportData* CBridgeDescription2::GetTemporarySupport(SupportIndexType tsIdx) const
 {
    if ( 0 <= tsIdx && tsIdx < (SupportIndexType)m_TemporarySupports.size() )
+   {
       return m_TemporarySupports[tsIdx];
+   }
    
    return NULL;
 }
@@ -1828,7 +1955,9 @@ CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportIDType t
    {
       CTemporarySupportData* pTS = *tsIter;
       if ( pTS->GetID() == tsID )
+      {
          return pTS;
+      }
    }
    
    ATLASSERT(false); // not found
@@ -1843,7 +1972,9 @@ const CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportID
    {
       const CTemporarySupportData* pTS = *tsIter;
       if ( pTS->GetID() == tsID )
+      {
          return pTS;
+      }
    }
    
    ATLASSERT(false); // temporary support not found
@@ -2057,7 +2188,9 @@ void CBridgeDescription2::Clear()
 Float64 CBridgeDescription2::GetLength() const
 {
    if ( m_Piers.size() == 0 )
+   {
       return 0.0;
+   }
 
    return m_Piers.back()->GetStation() - m_Piers.front()->GetStation();
 }
@@ -2090,7 +2223,9 @@ PierIndexType CBridgeDescription2::IsPierLocation(Float64 station,Float64 tolera
    {
       const CPierData2* pPier = *iter;
       if ( IsEqual(station,pPier->GetStation(),tolerance) )
+      {
          return pPier->GetIndex();
+      }
    }
 
    return INVALID_INDEX;
@@ -2104,7 +2239,9 @@ SupportIndexType CBridgeDescription2::IsTemporarySupportLocation(Float64 station
    {
       const CTemporarySupportData* pTS = *iter;
       if ( IsEqual(station,pTS->GetStation(),tolerance) )
+      {
          return pTS->GetIndex();
+      }
    }
 
    return INVALID_INDEX;
@@ -3150,7 +3287,9 @@ bool CBridgeDescription2::MoveBridge(PierIndexType pierIdx,Float64 newStation)
    Float64 old_station = pPier->GetStation();
    Float64 deltaStation = newStation - old_station;
    if ( IsZero(deltaStation) )
+   {
       return false;
+   }
 
    CPierData2* pPrevPier = GetPier(0);
    pPrevPier->SetStation(pPrevPier->GetStation() + deltaStation);
@@ -3197,7 +3336,9 @@ bool CBridgeDescription2::MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64
    Float64 old_station = pPier->GetStation();
    Float64 deltaStation = newStation - old_station;
    if ( IsZero(deltaStation) )
+   {
       return false;
+   }
 
    pPier->SetStation(old_station + deltaStation);
 
@@ -3235,7 +3376,9 @@ bool CBridgeDescription2::MoveBridgeAdjustNextSpan(PierIndexType pierIdx,Float64
    Float64 old_station = pPier->GetStation();
    Float64 deltaStation = newStation - old_station;
    if ( IsZero(deltaStation) )
+   {
       return false;
+   }
 
    pPier->SetStation( pPier->GetStation() + deltaStation);
 
@@ -3272,7 +3415,9 @@ bool CBridgeDescription2::MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Fl
    Float64 old_station = pPier->GetStation();
    Float64 deltaStation = newStation - old_station;
    if ( IsZero(deltaStation) )
+   {
       return false;
+   }
 
    if ( pPier->GetPrevSpan() )
    {
@@ -3415,7 +3560,9 @@ HRESULT CBridgeDescription2::LoadOldBridgeDescription(Float64 version,IStructure
    std::auto_ptr<CBridgeDescription> pBridgeDesc(new CBridgeDescription);
    HRESULT hr = pBridgeDesc->Load(version,pStrLoad,pProgress);
    if ( FAILED(hr))
+   {
       return hr;
+   }
 
    // The data was loaded correctly, now convert the old data into the proper format for this class
    pBridgeDesc->SetBridgeData(this);
@@ -3445,7 +3592,9 @@ SupportIDType CBridgeDescription2::GetNextTemporaryID(bool bIncrement)
 {
    SegmentIDType tsID = m_TempSupportID;
    if ( bIncrement )
+   {
       m_TempSupportID++;
+   }
 
    return tsID;
 }
@@ -3459,7 +3608,9 @@ SegmentIDType CBridgeDescription2::GetNextSegmentID(bool bIncrement)
 {
    SegmentIDType segID = m_SegmentID;
    if ( bIncrement )
+   {
       m_SegmentID++;
+   }
 
    return segID;
 }
@@ -3473,7 +3624,9 @@ GirderIDType CBridgeDescription2::GetNextGirderID(bool bIncrement)
 {
    GirderIDType gdrID = m_GirderID;
    if ( bIncrement )
+   {
       m_GirderID++;
+   }
 
    return gdrID;
 }
@@ -3487,7 +3640,9 @@ PierIDType CBridgeDescription2::GetNextPierID(bool bIncrement)
 {
    PierIDType pierID = m_PierID;
    if ( bIncrement )
+   {
       m_PierID++;
+   }
 
    return pierID;
 }
@@ -3501,7 +3656,9 @@ GroupIDType CBridgeDescription2::GetNextGirderGroupID(bool bIncrement)
 {
    GroupIDType grpID = m_GirderGroupID;
    if ( bIncrement )
+   {
       m_GirderGroupID++;
+   }
 
    return grpID;
 }
@@ -3601,7 +3758,9 @@ void CBridgeDescription2::AssertValid()
 
          // check girder count/girder spacing
          if ( pPrevGroup->GetGirderCount() != 0 )
+         {
             _ASSERT( pPrevGroup->GetGirderCount() == pThisGroup->GetPier(pgsTypes::metStart)->GetGirderSpacing(pgsTypes::Back)->GetSpacingCount()+1);
+         }
       }
 
       if ( pThisGroup->GetGirderCount() != 0 )
@@ -3617,7 +3776,9 @@ void CBridgeDescription2::AssertValid()
 
          // check girder count/girder spacing
          if ( pNextGroup->GetGirderCount() != 0 )
+         {
             _ASSERT( pNextGroup->GetGirderCount() == pThisGroup->GetPier(pgsTypes::metEnd)->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1);
+         }
       }
    }
 }

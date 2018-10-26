@@ -208,6 +208,7 @@
 #define IDD_POSTTENSION_PARAMETERS      358
 #define IDD_PRETENSION_PARAMETERS       359
 #define IDD_ACI_PARAMETERS              362
+#define IDD_TIMESTEP_PARAMETERS         363
 #define IDD_GIRDER_SELECT_STRANDS       390
 #define IDD_PIERCONNECTIONS2            391
 #define IDR_PGSUPER_TEMPLATE_ICON       500
@@ -405,6 +406,7 @@
 #define IDC_HS_JACK_FORCE_UNIT2         1132
 #define IDC_TS_JACK_FORCE_UNIT          1132
 #define IDC_NUM_TEMP                    1133
+#define IDC_HS_JACK_FORCE_UNIT3         1133
 #define IDC_LEFT_TRAFFICBARRIER         1134
 #define IDC_SPACING                     1135
 #define IDC_NUM_TEMP_SPIN               1136
@@ -787,6 +789,7 @@
 #define IDC_CONSTRUCTION_EVENT          1423
 #define IDC_DECK_EVENT                  1423
 #define IDC_HARP_END_CB                 1423
+#define IDC_DUCT_TYPE                   1423
 #define IDC_ERECTION_EVENT              1424
 #define IDC_HP_COMBO_HP                 1424
 #define IDC_HARP_HP_CB                  1424
@@ -829,6 +832,7 @@
 #define IDC_CHECKBOX                    1446
 #define IDC_USE_LUMPSUM                 1446
 #define IDC_BOTTOM_FLANGE_DEPTH         1446
+#define IDC_TIME_DEPENDENT_EFFECTS      1446
 #define IDC_SYMMETRIC_DEBOND            1447
 #define IDC_FUTURE_WS                   1448
 #define IDC_MOD_ECI                     1449
@@ -1444,9 +1448,12 @@
 #define IDC_BACK_SLAB_OFFSET_LABEL      1784
 #define IDC_BOUNDARY_CONDITION_LABEL    1784
 #define IDC_AHEAD_SLAB_OFFSET_LABEL     1785
+#define IDC_TS_LABEL                    1785
 #define IDC_NUMGDR_LABEL                1786
+#define IDC_SEGMENT_LENGTH_LABEL        1786
 #define IDC_START_SLAB_OFFSET_LABEL     1787
 #define IDC_STRENGTH_II_PS_MIN_LABEL    1787
+#define IDC_EXTENSIONS                  1787
 #define IDC_END_SLAB_OFFSET_LABEL       1788
 #define IDC_NWC_NOTE                    1789
 #define IDC_HYPERLINK                   1790
@@ -1625,9 +1632,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        363
+#define _APS_NEXT_RESOURCE_VALUE        364
 #define _APS_NEXT_COMMAND_VALUE         36991
-#define _APS_NEXT_CONTROL_VALUE         1785
+#define _APS_NEXT_CONTROL_VALUE         1788
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

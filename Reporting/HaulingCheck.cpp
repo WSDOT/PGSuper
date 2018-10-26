@@ -81,14 +81,29 @@ void CHaulingCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,const CGirderKey& girderKey,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      CSegmentKey segmentKey(girderKey,segIdx);
-      const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
-      pHaulArtifact->BuildHaulingCheckReport(segmentKey, pChapter, pBroker, pDisplayUnits);
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IArtifact,pArtifacts);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey segmentKey(girderKey,segIdx);
+         const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
+         pHaulArtifact->BuildHaulingCheckReport(segmentKey, pChapter, pBroker, pDisplayUnits);
+      }
+   }
+   else
+   {
+      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      *pChapter << pTitle;
+      *pTitle << _T("Check for Hauling to Bridge Site")<<rptNewLine;
+
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+
+      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
    }
 }
 

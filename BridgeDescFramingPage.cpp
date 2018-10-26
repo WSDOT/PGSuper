@@ -207,7 +207,9 @@ BOOL CBridgeDescFramingPage::OnNcActivate(BOOL bActive)
    // This is required when a CGXComboBox is used in the grid. It prevents
    // the dialog from losing focus and the title bar from flashing. See CGXComboBox documentation
    if ( GXDiscardNcActivate() )
+   {
       return true;
+   }
 
    return CPropertyPage::OnNcActivate(bActive);
 }

@@ -64,9 +64,21 @@ LPCTSTR CPrestressForceChapterBuilder::GetName() const
 rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+
    CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -74,10 +86,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
    // These are the interfaces we are going to be using
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeom);
    GET_IFACE2(pBroker,IPretensionForce, pPrestressForce ); 
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-   GET_IFACE2(pBroker,ILosses,pLosses);
-   GET_IFACE2(pBroker,IPretensionStresses,pPrestressStresses);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -132,7 +141,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
                   << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Temporary)) << _T(")") << rptNewLine;
 
                   
-               switch(pStrands->TempStrandUsage)
+               switch(pStrands->GetTemporaryStrandUsage())
                {
                case pgsTypes::ttsPretensioned:
                   *pPara << _T("Temporary Strands pretensioned with permanent strands") << rptNewLine;
@@ -171,6 +180,10 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
             pPara = new rptParagraph;
             *pChapter << pPara;
             *pPara << CPrestressLossTable().Build(pBroker,thisSegmentKey,pDisplayUnits) << rptNewLine;
+
+            pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            *pChapter << pPara;
+            *pPara << _T("Loss = change in strand stress due to time dependent and elastic effects") << rptNewLine;
          } // segIdx
       } // gdrIdx
    } // spanIdx

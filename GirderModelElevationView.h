@@ -112,7 +112,6 @@ private:
 
    bool m_DoBlockUpdate;
 
-   //void BuildGirderDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx,iDisplayMgr* dispMgr);
    void BuildSupportDisplayObjects(         CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildDropTargetDisplayObjects(      CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildStrandDisplayObjects(          CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
@@ -157,7 +156,7 @@ private:
    Float64 GetSegmentStartLocation(const CSegmentKey& segmentKey);
 
    // Returns the X location at the start of a span
-   Float64 GetSpanStartLocation(const CSpanGirderKey& spanGirderKey);
+   Float64 GetSpanStartLocation(const CSpanKey& spanKey);
 };
 
 /////////////////////////////////////////////////////////////////////////////

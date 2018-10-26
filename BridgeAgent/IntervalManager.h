@@ -23,8 +23,10 @@
 #pragma once
 
 #include <PgsExt\TimelineManager.h>
+#include <PgsExt\PointLoadData.h> // for UserLoads
 
 #include <IFace\BeamFactory.h>
+
 
 ////////////////////////////////////////////////
 // This class manages the definitions for intervals of time for 
@@ -120,6 +122,9 @@ public:
    // returns index of interval when the railing system is installed
    IntervalIndexType GetInstallRailingSystemInterval(const CGirderKey& girderKey) const;
 
+   // returns the index of the interval when a user defined load is applied
+   IntervalIndexType GetUserLoadInterval(const CGirderKey& girderKey,UserLoads::LoadCase loadCase,EventIndexType eventIdx) const;
+
    // returns the interval index when a temporary support is removed
    IntervalIndexType GetTemporarySupportRemovalInterval(const CGirderKey& girderKey,SupportIDType tsID) const;
 
@@ -189,11 +194,26 @@ protected:
    std::map<CSegmentKey,IntervalIndexType> m_StressStrandIntervals;
    std::map<CSegmentKey,IntervalIndexType> m_ReleaseIntervals;
 
+   std::map<CSegmentKey,IntervalIndexType> m_RemoveTemporaryStrandsIntervals;
+
    std::map<CGirderKey,IntervalIndexType> m_CastDeckInterval;
    std::map<CGirderKey,IntervalIndexType> m_CompositeDeckInterval; // interval when deck is composite
    std::map<CGirderKey,IntervalIndexType> m_LiveLoadInterval; // interval when live load is applied to the structure
    std::map<CGirderKey,IntervalIndexType> m_OverlayInterval;
    std::map<CGirderKey,IntervalIndexType> m_RailingSystemInterval;
+
+   class CUserLoadKey
+   {
+   public:
+      CUserLoadKey(const CGirderKey& girderKey,EventIndexType eventIdx);
+      CUserLoadKey(const CUserLoadKey& other);
+      bool operator<(const CUserLoadKey& other) const;
+
+      CGirderKey m_GirderKey;
+      EventIndexType m_EventIdx;
+   };
+   std::map<CUserLoadKey,IntervalIndexType> m_UserLoadInterval[2]; // interval when user DC/DW loads are applied
+                                                                   // user LLIM are applied in the live load interval
 
    void AddToStageMap(const CGirderKey& girderKey,IntervalIndexType intervalIdx,StageIndexType stageIdx);
 

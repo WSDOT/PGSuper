@@ -26,6 +26,10 @@
 
 #include "resource.h"       // main symbols
 
+#include "ReporterBase.h"
+
+#include <IFace\Project.h>
+
 #include <EAF\EAFInterfaceCache.h>
 
 #include <boost\shared_ptr.hpp>
@@ -39,8 +43,10 @@ class rptReport;
 class ATL_NO_VTABLE CPGSuperReporterImp : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CPGSuperReporterImp, &CLSID_PGSuperReportAgent>,
+   public CReporterBase,
 	public IConnectionPointContainerImpl<CPGSuperReporterImp>,
-   public IAgentEx
+   public IAgentEx,
+   public ISpecificationEventSink
 {
 public:
 	CPGSuperReporterImp()
@@ -53,6 +59,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPER_REPORTER)
 BEGIN_COM_MAP(CPGSuperReporterImp)
 	COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
+   COM_INTERFACE_ENTRY(ISpecificationEventSink)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
@@ -70,8 +77,19 @@ public:
    STDMETHOD(Init2)();
    STDMETHOD(GetClassID)(CLSID* pCLSID);
 
+protected:
+   // CReporterBase implementation
+   virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true);
+
+// ISpecificationEventSink
+public:
+   virtual HRESULT OnSpecificationChanged();
+   virtual HRESULT OnAnalysisTypeChanged();
+
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
+
+   DWORD m_dwSpecCookie;
 
    HRESULT InitReportBuilders();
 };

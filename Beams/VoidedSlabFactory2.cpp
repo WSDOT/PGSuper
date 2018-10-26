@@ -28,6 +28,7 @@
 #include "IBeamDistFactorEngineer.h"
 #include "VoidedSlab2DistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
+#include "TimeStepLossEngineer.h"
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
@@ -172,9 +173,6 @@ void CVoidedSlab2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statu
    segment.CoCreateInstance(CLSID_VoidedSlabEndBlockSegment);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -268,25 +266,41 @@ void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupI
 
 void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
 {
-   CComObject<CPsBeamLossEngineer>* pEngineer;
-   CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    
-   // depends on # of voids
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(girderKey.girderIndex)->GetGirderLibraryEntry();
-
-   Float64 nVoids = pGdrEntry->GetDimension(_T("Number_of_Voids"));
-
-   if ( nVoids == 0 )
-      pEngineer->Init(SolidSlab);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      CComObject<CTimeStepLossEngineer>* pEngineer;
+      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
    else
-      pEngineer->Init(SingleT);
+   {
+      CComObject<CPsBeamLossEngineer>* pEngineer;
+      CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
+       
+      // depends on # of voids
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+      const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(girderKey.girderIndex)->GetGirderLibraryEntry();
 
-   pEngineer->SetBroker(pBroker,statusGroupID);
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+      Float64 nVoids = pGdrEntry->GetDimension(_T("Number_of_Voids"));
+
+      if ( nVoids == 0 )
+      {
+         pEngineer->Init(SolidSlab);
+      }
+      else
+      {
+         pEngineer->Init(SingleT);
+      }
+
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
 }
 
 static void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, IShape** shape)
@@ -732,7 +746,7 @@ Float64 CVoidedSlab2Factory::GetVolume(IBroker* pBroker,const CSegmentKey& segme
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );

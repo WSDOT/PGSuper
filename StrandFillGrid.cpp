@@ -350,7 +350,7 @@ void CStrandFillGrid::FillGrid()
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
       }
 
       CString strStrand;
@@ -359,7 +359,7 @@ void CStrandFillGrid::FillGrid()
       else if (oneOrTwo==2)
          strStrand.Format(_T("%d-%d"),currPositionNo+1,currPositionNo+2);
       else
-         ATLASSERT(0); // new fill type?
+         ATLASSERT(false); // new fill type?
 
       SetStyleRange(CGXRange(row,0), CGXStyle().SetValue(strStrand).SetHorizontalAlignment(DT_CENTER));
 
@@ -592,7 +592,7 @@ void CStrandFillGrid::FillGrid()
       else if (oneOrTwo==2)
          strStrand.Format(_T("%d-%d"),currPositionNo+1,currPositionNo+2);
       else
-         ATLASSERT(0); // new fill type?
+         ATLASSERT(false); // new fill type?
 
       SetStyleRange(CGXRange(row,0), CGXStyle().SetValue(strStrand));
       SetStyleRange(CGXRange(row,TYPE_COL), CGXStyle().SetValue(_T("T")));
@@ -658,7 +658,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
    // However, debonding and extended strand information must be taken care of here
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // may or may not be used, depends on input parameters
 
    // clear out old debond data
    m_pParent->m_StraightDebond.clear();
@@ -928,7 +928,7 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 }
 
@@ -978,7 +978,7 @@ bool CStrandFillGrid::IsPermStrandFilled(GirderLibraryEntry::psStrandType strand
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return false;
    }
 }
@@ -1010,7 +1010,7 @@ void CStrandFillGrid::RemoveStrandFill(const CUserData* pUserData)
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 }
 
@@ -1037,7 +1037,7 @@ void CStrandFillGrid::AddStrandFill(const CUserData* pUserData)
       m_pParent->m_pStrands->SetDirectStrandFillTemporary(collection);
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 }
 
 bool CStrandFillGrid::IsStrandExtended(GridIndexType gridIdx,pgsTypes::MemberEndType endType)
@@ -1100,7 +1100,7 @@ void CStrandFillGrid::ToggleFill(ROWCOL rowNo)
 	   GetParam()->EnableUndo(TRUE);
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    ScrollCellInView(rowNo, SELECT_CHECK_COL);
 }

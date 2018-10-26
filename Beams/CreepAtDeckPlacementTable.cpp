@@ -72,7 +72,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    *pChapter << pParagraph;
    *pParagraph << _T("[5.9.5.4.2b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << rptNewLine;
 
-   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR_PT.png")) << rptNewLine;
    else
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR.png")) << rptNewLine;
@@ -81,7 +81,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
-   if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
+   if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
       (*table)(0,1) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    else
       (*table)(0,1) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -102,11 +102,11 @@ void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
    boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return;
    }
 
-   if ( m_pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
+   if ( m_pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
       (*this)(row,1) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
    else
       (*this)(row,1) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + ptl->GetDeltaFpp());

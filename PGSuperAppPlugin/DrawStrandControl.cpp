@@ -303,9 +303,13 @@ void CDrawStrandControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollecti
    }
 
    if ( bPolygon )
+   {
       pDC->Polygon(dev_points,(int)nPoints);
+   }
    else
+   {
       pDC->Polyline(dev_points,(int)nPoints);
+   }
 
    delete[] points;
    delete[] dev_points;
@@ -313,6 +317,11 @@ void CDrawStrandControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollecti
 
 void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlibPointMapper& centerMapper,grlibPointMapper& rightMapper)
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
    const CStrandRowCollection& strandRows = m_pSegment->Strands.GetStrandRows();
    CStrandRowCollection::const_iterator iter(strandRows.begin());
    CStrandRowCollection::const_iterator iterEnd(strandRows.end());
@@ -321,29 +330,35 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
       const CStrandRow& strandRow(*iter);
       GridIndexType nGridPoints = strandRow.m_nStrands/2; // strand grid is only half the full grid (just the grid on the positive X side)
       Float64 Xi = strandRow.m_InnerSpacing/2; // distance from CL Girder to first strand
-      Float64 Ys = strandRow.m_Y[pgsTypes::metStart];
-      Float64 Ye = strandRow.m_Y[pgsTypes::metEnd];
 
       // grid points are in Girder Section Coordinates (0,0 is at the top center of the girder)
       // Y is measured positive up and negative down
-      if ( strandRow.m_Face[pgsTypes::metStart] == pgsTypes::BottomFace )
+      Float64 Z[4], Y[4];
+      for ( int i = 0; i < 4; i++ )
       {
-         // adjust to be measured from top of girder
-         Ys -= m_HgStart;
-      }
-      else
-      {
-         Ys *= -1; // measured down from top of girder... this is negative in Girder Section Coordinates
-      }
+         Z[i] = strandRow.m_X[i];
+         if ( Z[i] < 0 )
+         {
+            // fractional measure
+            Z[i] *= -1.0*m_SegmentLength;
+         }
 
-      if ( strandRow.m_Face[pgsTypes::metEnd] == pgsTypes::BottomFace )
-      {
-         // adjust to be measured from top of girder
-         Ye -= m_HgEnd;
-      }
-      else
-      {
-         Ye *= -1; // measured down from top of girder... this is negative in Girder Section Coordinates
+         Y[i] = strandRow.m_Y[i];
+         if ( strandRow.m_Face[i] == pgsTypes::TopFace )
+         {
+            // measured down from top of girder... this is negatve in Girder Section Coordinates
+            Y[i] *= -1;
+         }
+         else
+         {
+            // adjust to be measured from to of girder
+            Float64 Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(m_pSegment->GetSegmentKey(),Z[i]);
+            Float64 Hg = pGirder->GetSegmentHeight(m_pSegment->GetSegmentKey(),m_pSegment->GetGirder(),Xsp);
+            Y[i] -= Hg;
+         }
+
+         Z[i] = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(m_pSegment->GetSegmentKey(),Z[i]);
+         Z[i] = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(m_pSegment->GetSegmentKey(),Z[i]);
       }
 
       CSize minStrandSize(2,2);
@@ -355,10 +370,10 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
 
          // Draw in left end
          CRect rect;
-         leftMapper.WPtoDP(X-m_Radius,Ys-m_Radius,&rect.left,&rect.top); 
-         leftMapper.WPtoDP(X+m_Radius,Ys-m_Radius,&rect.right,&rect.top); 
-         leftMapper.WPtoDP(X-m_Radius,Ys+m_Radius,&rect.left,&rect.bottom); 
-         leftMapper.WPtoDP(X+m_Radius,Ys+m_Radius,&rect.right,&rect.bottom); 
+         leftMapper.WPtoDP(X-m_Radius,Y[LOCATION_START]-m_Radius,&rect.left,&rect.top); 
+         leftMapper.WPtoDP(X+m_Radius,Y[LOCATION_START]-m_Radius,&rect.right,&rect.top); 
+         leftMapper.WPtoDP(X-m_Radius,Y[LOCATION_START]+m_Radius,&rect.left,&rect.bottom); 
+         leftMapper.WPtoDP(X+m_Radius,Y[LOCATION_START]+m_Radius,&rect.right,&rect.bottom); 
          
          rect.NormalizeRect();
          if ( rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy )
@@ -368,10 +383,10 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
 
          pDC->Ellipse(&rect);
 
-         leftMapper.WPtoDP(-X-m_Radius,Ys-m_Radius,&rect.left,&rect.top); 
-         leftMapper.WPtoDP(-X+m_Radius,Ys-m_Radius,&rect.right,&rect.top); 
-         leftMapper.WPtoDP(-X-m_Radius,Ys+m_Radius,&rect.left,&rect.bottom); 
-         leftMapper.WPtoDP(-X+m_Radius,Ys+m_Radius,&rect.right,&rect.bottom); 
+         leftMapper.WPtoDP(-X-m_Radius,Y[LOCATION_START]-m_Radius,&rect.left,&rect.top); 
+         leftMapper.WPtoDP(-X+m_Radius,Y[LOCATION_START]-m_Radius,&rect.right,&rect.top); 
+         leftMapper.WPtoDP(-X-m_Radius,Y[LOCATION_START]+m_Radius,&rect.left,&rect.bottom); 
+         leftMapper.WPtoDP(-X+m_Radius,Y[LOCATION_START]+m_Radius,&rect.right,&rect.bottom); 
          
          rect.NormalizeRect();
          if ( rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy )
@@ -383,10 +398,10 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
 
 
          // Draw in right end
-         rightMapper.WPtoDP(X-m_Radius,Ye-m_Radius,&rect.left,&rect.top); 
-         rightMapper.WPtoDP(X+m_Radius,Ye-m_Radius,&rect.right,&rect.top); 
-         rightMapper.WPtoDP(X-m_Radius,Ye+m_Radius,&rect.left,&rect.bottom); 
-         rightMapper.WPtoDP(X+m_Radius,Ye+m_Radius,&rect.right,&rect.bottom); 
+         rightMapper.WPtoDP(X-m_Radius,Y[LOCATION_END]-m_Radius,&rect.left,&rect.top); 
+         rightMapper.WPtoDP(X+m_Radius,Y[LOCATION_END]-m_Radius,&rect.right,&rect.top); 
+         rightMapper.WPtoDP(X-m_Radius,Y[LOCATION_END]+m_Radius,&rect.left,&rect.bottom); 
+         rightMapper.WPtoDP(X+m_Radius,Y[LOCATION_END]+m_Radius,&rect.right,&rect.bottom); 
          
          rect.NormalizeRect();
          if ( rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy )
@@ -396,10 +411,10 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
 
          pDC->Ellipse(&rect);
 
-         rightMapper.WPtoDP(-X-m_Radius,Ye-m_Radius,&rect.left,&rect.top); 
-         rightMapper.WPtoDP(-X+m_Radius,Ye-m_Radius,&rect.right,&rect.top); 
-         rightMapper.WPtoDP(-X-m_Radius,Ye+m_Radius,&rect.left,&rect.bottom); 
-         rightMapper.WPtoDP(-X+m_Radius,Ye+m_Radius,&rect.right,&rect.bottom); 
+         rightMapper.WPtoDP(-X-m_Radius,Y[LOCATION_END]-m_Radius,&rect.left,&rect.top); 
+         rightMapper.WPtoDP(-X+m_Radius,Y[LOCATION_END]-m_Radius,&rect.right,&rect.top); 
+         rightMapper.WPtoDP(-X-m_Radius,Y[LOCATION_END]+m_Radius,&rect.left,&rect.bottom); 
+         rightMapper.WPtoDP(-X+m_Radius,Y[LOCATION_END]+m_Radius,&rect.right,&rect.bottom); 
          
          rect.NormalizeRect();
          if ( rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy )
@@ -410,10 +425,19 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
          pDC->Ellipse(&rect);
 
          // Draw in segment profile
-         centerMapper.WPtoDP(m_SegmentXLeft,Ys,&dx,&dy);
+         centerMapper.WPtoDP(Z[LOCATION_START],Y[LOCATION_START],&dx,&dy);
          pDC->MoveTo(dx,dy);
 
-         centerMapper.WPtoDP(m_SegmentXLeft+m_SegmentLength,Ye,&dx,&dy);
+         if ( strandRow.m_StrandType == pgsTypes::Harped )
+         {
+            centerMapper.WPtoDP(Z[LOCATION_LEFT_HP],Y[LOCATION_LEFT_HP],&dx,&dy);
+            pDC->LineTo(dx,dy);
+
+            centerMapper.WPtoDP(Z[LOCATION_RIGHT_HP],Y[LOCATION_RIGHT_HP],&dx,&dy);
+            pDC->LineTo(dx,dy);
+         }
+
+         centerMapper.WPtoDP(Z[LOCATION_END],Y[LOCATION_END],&dx,&dy);
          pDC->LineTo(dx,dy);
       }
    }

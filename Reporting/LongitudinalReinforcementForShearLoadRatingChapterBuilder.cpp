@@ -59,9 +59,21 @@ LPCTSTR CLongitudinalReinforcementForShearLoadRatingChapterBuilder::GetName() co
 rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+
    CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
-   CGirderKey girderKey(pGdrRptSpec->GetGroupIndex(),pGdrRptSpec->GetGirderIndex());
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -82,17 +94,25 @@ rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(CR
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
       {
          if ( pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
+         {
             CLongReinfShearCheck().Build(pChapter,pBroker,girderKey,pgsTypes::StrengthI_Inventory,pDisplayUnits);
+         }
          else
+         {
             (*pPara) << _T("Shear rating not computed") << rptNewLine;
+         }
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
       {
          if ( pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) )
+         {
             CLongReinfShearCheck().Build(pChapter,pBroker,girderKey,pgsTypes::StrengthI_Operating,pDisplayUnits);
+         }
          else
+         {
             (*pPara) << _T("Shear rating not computed") << rptNewLine;
+         }
       }
    }
 
@@ -108,17 +128,25 @@ rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(CR
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
          if ( pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) )
+         {
             CLongReinfShearCheck().Build(pChapter,pBroker,girderKey,pgsTypes::StrengthI_LegalRoutine,pDisplayUnits);
+         }
          else
+         {
             (*pPara) << _T("Shear rating not computed") << rptNewLine;
+         }
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
          if ( pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
+         {
             CLongReinfShearCheck().Build(pChapter,pBroker,girderKey,pgsTypes::StrengthI_LegalSpecial,pDisplayUnits);
+         }
          else
+         {
             (*pPara) << _T("Shear rating not computed") << rptNewLine;
+         }
       }
    }
 
@@ -135,17 +163,25 @@ rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(CR
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
          if ( pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) )
+         {
             CLongReinfShearCheck().Build(pChapter,pBroker,girderKey,pgsTypes::StrengthII_PermitRoutine,pDisplayUnits);
+         }
          else
+         {
             (*pPara) << _T("Shear rating not computed") << rptNewLine;
+         }
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
          if ( pRatingSpec->RateForShear(pgsTypes::lrPermit_Special) )
+         {
             CLongReinfShearCheck().Build(pChapter,pBroker,girderKey,pgsTypes::StrengthII_PermitSpecial,pDisplayUnits);
+         }
          else
+         {
             (*pPara) << _T("Shear rating not computed") << rptNewLine;
+         }
       }
    }
    return pChapter;

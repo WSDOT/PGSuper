@@ -92,14 +92,14 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   rptRcTable* pMasterTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Live Load Distribution Factors"));
+   rptRcTable* pMasterTable = pgsReportStyleHolder::CreateLayoutTable(2,_T("Live Load Distribution Factors"));
    *pBody << pMasterTable;
-   pMasterTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
-   pMasterTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
 
    ColumnIndexType nCols = 4;
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   {
       nCols += 3; // for fatigue limit state LLDF
+   }
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Girder"));
    (*pMasterTable)(0,0) << pTable;
@@ -147,7 +147,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
@@ -200,7 +200,9 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    nCols = 2;
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   {
       nCols++;
+   }
 
    rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Reactions"));
    (*pMasterTable)(0,1) << pTable2;
@@ -208,7 +210,9 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    (*pTable2)(0,1) << _T("Strength/Service");
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   {
       (*pTable2)(0,2) << _T("Fatigue/One Lane");
+   }
 
    row = pTable2->GetNumberOfHeaderRows();
    PierIndexType nPiers = pBridge->GetPierCount();

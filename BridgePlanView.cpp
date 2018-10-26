@@ -24,9 +24,9 @@
 //
 
 #pragma Reminder("UPDATE")
-// Recently (2/2012) RAB added ID's to all girders, piers, segments, etc... these object ID's
-// could be the display object id. currently this view keeps a mapping of key values to
-// display object ids. this may not be necessary
+// RAB added ID's to all girders, piers, segments, etc... in the bridge product model. 
+// These object ID's could be the display object id. currently this view keeps a 
+// mapping of key values to display object ids. this may not be necessary
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\resource.h"
@@ -139,14 +139,18 @@ bool CBridgePlanView::IsDeckSelected()
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
+   {
       return false;
+   }
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
    DeckDisplayObjectInfo* pInfo = NULL;
    pDO->GetItemData((void**)&pInfo);
    if ( pInfo == NULL || pInfo->ID != DECK_ID || pInfo->DisplayListID != SLAB_DISPLAY_LIST )
+   {
       return false;
+   }
 
    return true;
 }
@@ -162,12 +166,16 @@ bool CBridgePlanView::IsAlignmentSelected()
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
+   {
       return false;
+   }
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
    if ( pDO->GetID() == ALIGNMENT_ID )
+   {
       return true;
+   }
 
    return false;
 }
@@ -198,14 +206,18 @@ bool CBridgePlanView::GetSelectedSpan(SpanIndexType* pSpanIdx)
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
+   {
       return false;
+   }
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
    SpanDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
    if ( pInfo == NULL || pInfo->SpanIdx == ALL_SPANS || pInfo->DisplayListID != SPAN_DISPLAY_LIST )
+   {
       return false;
+   }
 
    *pSpanIdx = pInfo->SpanIdx;
 
@@ -223,7 +235,9 @@ bool CBridgePlanView::GetSelectedPier(PierIndexType* pPierIdx)
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
+   {
       return false;
+   }
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
@@ -231,7 +245,9 @@ bool CBridgePlanView::GetSelectedPier(PierIndexType* pPierIdx)
    pDO->GetItemData((void**)&pInfo);
 
    if ( pInfo == NULL || pInfo->DisplayListID != PIER_DISPLAY_LIST )
+   {
       return false;
+   }
 
    *pPierIdx = pInfo->PierIdx;
 
@@ -247,9 +263,13 @@ void CBridgePlanView::SelectSpan(SpanIndexType spanIdx,bool bSelect)
    dispMgr->FindDisplayObject(spanIdx,SPAN_DISPLAY_LIST,atByID,&pDO);
 
    if ( pDO )
+   {
       dispMgr->SelectObject(pDO,bSelect);
+   }
    else
+   {
       dispMgr->ClearSelectedObjects();
+   }
 }
 
 void CBridgePlanView::SelectPier(PierIndexType pierIdx,bool bSelect)
@@ -261,9 +281,13 @@ void CBridgePlanView::SelectPier(PierIndexType pierIdx,bool bSelect)
    dispMgr->FindDisplayObject(pierIdx,PIER_DISPLAY_LIST,atByID,&pDO);
 
    if ( pDO )
+   {
       dispMgr->SelectObject(pDO,bSelect);
+   }
    else
+   {
       dispMgr->ClearSelectedObjects();
+   }
 }
 
 bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
@@ -277,7 +301,9 @@ bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
+   {
       return false;
+   }
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
@@ -285,7 +311,9 @@ bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
    pDO->GetItemData((void**)&pInfo);
 
    if ( pInfo == NULL || pInfo->DisplayListID != GIRDER_DISPLAY_LIST )
+   {
       return false;
+   }
 
    *pGirderKey = pInfo->m_GirderKey;
    return true;
@@ -309,9 +337,13 @@ void CBridgePlanView::SelectGirder(const CGirderKey& girderKey,bool bSelect)
    dispMgr->FindDisplayObject(ID,GIRDER_DISPLAY_LIST,atByID,&pDO);
 
    if ( pDO )
+   {
       dispMgr->SelectObject(pDO,bSelect);
+   }
    else
+   {
       dispMgr->ClearSelectedObjects();
+   }
 }
 
 bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
@@ -325,7 +357,9 @@ bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
+   {
       return false;
+   }
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
@@ -333,7 +367,9 @@ bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
    pDO->GetItemData((void**)&pInfo);
 
    if ( pInfo == NULL || pInfo->DisplayListID != SEGMENT_DISPLAY_LIST )
+   {
       return false;
+   }
 
    *pSegmentKey = pInfo->m_SegmentKey;
 
@@ -358,9 +394,13 @@ void CBridgePlanView::SelectSegment(const CSegmentKey& segmentKey,bool bSelect)
    dispMgr->FindDisplayObject(ID,SEGMENT_DISPLAY_LIST,atByID,&pDO);
 
    if ( pDO )
+   {
       dispMgr->SelectObject(pDO,bSelect);
+   }
    else
+   {
       dispMgr->ClearSelectedObjects();
+   }
 }
 
 bool CBridgePlanView::GetSelectedClosureJoint(CSegmentKey* pClosureKey)
@@ -374,7 +414,9 @@ bool CBridgePlanView::GetSelectedClosureJoint(CSegmentKey* pClosureKey)
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
+   {
       return false;
+   }
 
    CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
 
@@ -382,7 +424,9 @@ bool CBridgePlanView::GetSelectedClosureJoint(CSegmentKey* pClosureKey)
    pDO->GetItemData((void**)&pInfo);
 
    if ( pInfo == NULL || pInfo->DisplayListID != CLOSURE_JOINT_DISPLAY_LIST )
+   {
       return false;
+   }
 
    *pClosureKey = pInfo->m_SegmentKey;
 
@@ -407,9 +451,13 @@ void CBridgePlanView::SelectClosureJoint(const CSegmentKey& closureKey,bool bSel
    dispMgr->FindDisplayObject(ID,CLOSURE_JOINT_DISPLAY_LIST,atByID,&pDO);
 
    if ( pDO )
+   {
       dispMgr->SelectObject(pDO,bSelect);
+   }
    else
+   {
       dispMgr->ClearSelectedObjects();
+   }
 }
 
 void CBridgePlanView::SelectDeck(bool bSelect)
@@ -457,9 +505,13 @@ void CBridgePlanView::SelectTemporarySupport(SupportIDType tsID,bool bSelect)
    dispMgr->FindDisplayObject(tsID,TEMPORARY_SUPPORT_DISPLAY_LIST,atByID,&pDO);
 
    if ( pDO )
+   {
       dispMgr->SelectObject(pDO,bSelect);
+   }
    else
+   {
       dispMgr->ClearSelectedObjects();
+   }
 }
 
 void CBridgePlanView::OnInitialUpdate() 
@@ -654,9 +706,13 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
                else
                {
                   if ( spanIdx == m_StartSpanIdx && spanIdx != 0)
+                  {
                      m_StartSpanIdx++; // span at start of range was removed, so make the range smaller
+                  }
                   else
+                  {
                      m_EndSpanIdx--; // span at within or at the end of the range was removed...
+                  }
                }
             }
          }
@@ -765,7 +821,9 @@ void CBridgePlanView::UpdateSegmentTooltips()
 
             std::map<CSegmentKey,IDType>::iterator found = m_SegmentIDs.find(segmentKey);
             if ( found == m_SegmentIDs.end() )
+            {
                continue;
+            }
 
             IDType ID = (*found).second;
 
@@ -776,14 +834,10 @@ void CBridgePlanView::UpdateSegmentTooltips()
             CComPtr<IDirection> direction;
             pBridge->GetSegmentBearing(segmentKey,&direction);
 
-#pragma Reminder("UPDATE: girder/segment label in tool tip") // using generic text for now
-            //CString strMsg1;
-            //strMsg1.Format(_T("Double click to edit Span %d Girder %s\r\nRight click for more options."),LABEL_SPAN(spanIdx),LABEL_GIRDER(girderIdx));
             CString strMsg1(_T("Double click to edit.\r\nRight click for more options."));
 
-            Float64 gdr_length, span_length;
-            gdr_length  = pBridge->GetSegmentLength(segmentKey);
-            span_length = pBridge->GetSegmentSpanLength(segmentKey);
+            Float64 gdr_length  = pBridge->GetSegmentLength(segmentKey);
+            Float64 span_length = pBridge->GetSegmentSpanLength(segmentKey);
             CString strMsg2;
             strMsg2.Format(_T("\r\n\r\nGirder: %s\r\nGirder Length: %s\r\nSpan Length: %s\r\n\r\n%s"),
                            pGirder->GetGirderName(),
@@ -805,11 +859,10 @@ void CBridgePlanView::UpdateSegmentTooltips()
             const matPsStrand* pStrand     = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
             const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
-            StrandIndexType Ns, Nh, Nt, Nsd;
-            Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
-            Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
-            Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
-            Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+            StrandIndexType Ns = pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+            StrandIndexType Nh = pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+            StrandIndexType Nt = pSegment->Strands.GetStrandCount(pgsTypes::Temporary);
+            StrandIndexType Nsd = pSegment->Strands.GetDebondCount(pgsTypes::Straight,pGirder->GetGirderLibraryEntry());
        
             std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 	
@@ -818,12 +871,12 @@ void CBridgePlanView::UpdateSegmentTooltips()
 	         {
 	            if ( Nsd == 0 )
 	            {
-	               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+	               strMsg4.Format(_T("\r\n\r\nPermanent Strand\r\n%s\r\n# Straight: %2d\r\n# %s: %2d\r\n\r\nTemporary Strands\r\n%s\r\n# Temporary: %2d"),
 	                               pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
 	            }
 	            else
 	            {
-	               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+	               strMsg4.Format(_T("\r\n\r\nPermanent Strands\r\n%s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d\r\n\r\nTemporary Strands\r\n%s\r\n# Temporary: %2d"),
 	                               pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
 	            }
 	         }
@@ -831,12 +884,12 @@ void CBridgePlanView::UpdateSegmentTooltips()
 	         {
 	            if ( Nsd == 0 )
 	            {
-	               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d"),
+	               strMsg4.Format(_T("\r\n\r\nPermanent Strands\r\n%s\r\n# Straight: %2d\r\n# %s: %2d"),
 	                               pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh);
 	            }
 	            else
 	            {
-	               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d"),
+	               strMsg4.Format(_T("\r\n\r\nPermanent Strands\r\n%s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d"),
 	                               pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh);
 	            }
 	         }
@@ -864,11 +917,11 @@ void CBridgePlanView::UpdateClosureJointTooltips()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+
+   // only used if there is a closure joint
+   GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -896,7 +949,9 @@ void CBridgePlanView::UpdateClosureJointTooltips()
 
             std::map<CSegmentKey,IDType>::iterator found = m_ClosureJointIDs.find(closureKey);
             if ( found == m_ClosureJointIDs.end() )
+            {
                continue;
+            }
 
             IDType ID = (*found).second;
 
@@ -1049,10 +1104,6 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
    if ( nChar == VK_LEFT || nChar == VK_RIGHT )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridge,pBridge);
-
       CComPtr<iDisplayMgr> dispMgr;
       GetDisplayMgr(&dispMgr);
       DisplayObjectContainer selObjs;
@@ -1062,11 +1113,17 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       {
          CComPtr<iDisplayObject> pDO = selObjs[0].m_T;
          if ( pDO->GetID() == SECTION_CUT_ID )
+         {
             bSectionCutSelected = true;
+         }
       }
 
       if ( ::GetKeyState(VK_CONTROL) < 0 || bSectionCutSelected )
       {
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridge,pBridge);
+
          // if control key is down... move the section cut
 
          CBridgeModelViewChildFrame* pFrame = GetFrame();
@@ -1074,7 +1131,9 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
          SpanIndexType spanIdx;
          if ( !pBridge->GetSpan(station,&spanIdx) )
+         {
             return;
+         }
 
          Float64 back_pier = pBridge->GetPierStation(spanIdx);
          Float64 ahead_pier = pBridge->GetPierStation(spanIdx+1);
@@ -1092,12 +1151,20 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
          // otherwise select a pier
          if ( selObjs.size() == 0 )
          {
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker,IBridge,pBridge);
+
             PierIndexType nPiers = pBridge->GetPierCount();
 
             if (nChar == VK_LEFT)
+            {
                m_pFrame->SelectPier(nPiers-1);
+            }
             else
+            {
                m_pFrame->SelectPier(0);
+            }
 
             return;
          }
@@ -1131,7 +1198,6 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -1161,9 +1227,13 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
 
    UINT nChar;
    if ( bLeftRight )
+   {
       nChar = (zDelta < 0 ? VK_RIGHT : VK_LEFT);
+   }
    else
+   {
       nChar = (zDelta < 0 ? VK_DOWN : VK_UP);
+   }
 
    OnKeyDown(nChar, 1, nFlags);
 
@@ -1188,7 +1258,7 @@ void CBridgePlanView::UpdateDisplayObjects()
    BuildTitleDisplayObjects();
    BuildAlignmentDisplayObjects();
 
-   BuildGirderSegmentDisplayObjects();
+   BuildSegmentDisplayObjects();
    BuildGirderDisplayObjects();
 
    BuildPierDisplayObjects();
@@ -1231,11 +1301,17 @@ void CBridgePlanView::BuildTitleDisplayObjects()
 
    CString strTitle;
    if ( m_StartSpanIdx == 0 && (m_EndSpanIdx == nSpans-1 || m_EndSpanIdx == ALL_SPANS) )
+   {
       strTitle = _T("Plan View");
+   }
    else if ( m_StartSpanIdx == m_EndSpanIdx )
+   {
       strTitle.Format(_T("Plan View: Span %d of %d"),LABEL_SPAN(m_StartSpanIdx),nSpans);
+   }
    else
+   {
       strTitle.Format(_T("Plan View: Span %d - %d of %d"),LABEL_SPAN(m_StartSpanIdx),LABEL_SPAN(m_EndSpanIdx),nSpans);
+   }
 
    title->SetText(strTitle);
    title_list->AddDisplayObject(title);
@@ -1362,7 +1438,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    dispObj->RegisterDropSite(drop_site);
 }
 
-void CBridgePlanView::BuildGirderSegmentDisplayObjects()
+void CBridgePlanView::BuildSegmentDisplayObjects()
 {
    USES_CONVERSION;
 
@@ -1416,7 +1492,7 @@ void CBridgePlanView::BuildGirderSegmentDisplayObjects()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pIGirder);
-   GET_IFACE2(pBroker,ITempSupport,pTempSupport);
+   GET_IFACE2_NOCHECK(pBroker,ITempSupport,pTempSupport); // only gets used if there are temporary supports
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1426,7 +1502,9 @@ void CBridgePlanView::BuildGirderSegmentDisplayObjects()
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       
       if ( pGroup->GetPierIndex(pgsTypes::metStart) < m_StartSpanIdx || m_EndSpanIdx+1 < pGroup->GetPierIndex(pgsTypes::metEnd) )
+      {
          continue;
+      }
 
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -1454,9 +1532,13 @@ void CBridgePlanView::BuildGirderSegmentDisplayObjects()
             if( pLeftClosure )
             {
                if ( pLeftClosure->GetTemporarySupport() )
+               {
                   pTempSupport->GetDirection(pLeftClosure->GetTemporarySupport()->GetIndex(),&objStartDirection);
+               }
                else
+               {
                   pBridge->GetPierDirection(pLeftClosure->GetPier()->GetIndex(),&objStartDirection);
+               }
             }
             else
             {
@@ -1466,9 +1548,13 @@ void CBridgePlanView::BuildGirderSegmentDisplayObjects()
             if( pRightClosure )
             {
                if ( pRightClosure->GetTemporarySupport() )
+               {
                   pTempSupport->GetDirection(pRightClosure->GetTemporarySupport()->GetIndex(),&objEndDirection);
+               }
                else
+               {
                   pBridge->GetPierDirection(pRightClosure->GetPier()->GetIndex(),&objEndDirection);
+               }
             }
             else
             {
@@ -1675,7 +1761,9 @@ void CBridgePlanView::BuildGirderDisplayObjects()
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       
       if ( pGroup->GetPierIndex(pgsTypes::metStart) < m_StartSpanIdx || m_EndSpanIdx+1 < pGroup->GetPierIndex(pgsTypes::metEnd) )
+      {
          continue;
+      }
 
       GirderIndexType nGirdersThisGroup = pGroup->GetGirderCount();
 
@@ -1791,7 +1879,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   //GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1857,9 +1945,13 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
       CString strConnectionTip;
       if ( pPier->IsBoundaryPier() )
+      {
          strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetPierConnectionType()));
+      }
       else
+      {
          strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetSegmentConnectionType()));
+      }
 
       CString strMsg = strMsg1 + _T("\r\n\r\n") + strMsg2 + _T("\r\n") + strConnectionTip;
 
@@ -1933,7 +2025,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
          ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
          pPier->GetBearingOffset(pgsTypes::Back,&left_offset,&left_brg_offset_measure_type);
          if ( left_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
+         {
             left_offset /= cos(skew);
+         }
       }
 
       if ( pPier->GetNextSpan() )
@@ -1941,7 +2035,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
          ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
          pPier->GetBearingOffset(pgsTypes::Ahead,&right_offset,&right_brg_offset_measure_type);
          if ( right_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
+         {
             right_offset /= cos(skew);
+         }
       }
  
       left_offset  = ( IsZero(left_offset)  ? right_offset/2 : left_offset );
@@ -2254,10 +2350,17 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
 void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 {
-   CBridgeModelViewChildFrame* pFrame = GetFrame();
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
+   if ( nTS == 0 )
+   {
+      return;
+   }
+
+   CBridgeModelViewChildFrame* pFrame = GetFrame();
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -2273,27 +2376,25 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
    CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
 
-   GET_IFACE2(pBroker,IRoadway,pAlignment);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
    CComPtr<IDocUnitSystem> docUnitSystem;
    pDoc->GetDocUnitSystem(&docUnitSystem);
 
-   GET_IFACE2(pBroker,ITempSupport,pTemporarySupport);
+   GET_IFACE2(pBroker,ITempSupport,pTemporarySupport); // only needed if there are temporary supports
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IRoadway,pAlignment);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
       const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
 
       SpanIndexType spanIdx = pTS->GetSpan()->GetIndex();
       if ( spanIdx < m_StartSpanIdx || m_EndSpanIdx < spanIdx )
+      {
          continue;
+      }
 
       SupportIDType tsID = pTS->GetID();
 
@@ -2308,10 +2409,14 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       const CTimelineEvent* pRemovalEvent  = NULL;
 
       if ( erectionEventIdx != INVALID_INDEX )
+      {
          pErectionEvent = pTimelineMgr->GetEventByIndex(erectionEventIdx);
+      }
 
       if ( removalEventIdx != INVALID_INDEX )
+      {
          pRemovalEvent  = pTimelineMgr->GetEventByIndex(removalEventIdx);
+      }
 
       // get the control points
       CComPtr<IPoint2d> left,alignment_pt,bridge_pt,right;
@@ -2389,6 +2494,13 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
                      pRemovalEvent ==  NULL ? _T("Removal stage not defined") : pRemovalEvent->GetDescription());
 
       CString strMsg = strMsg1 + _T("\r\n\r\n") + strMsg2 + _T("\r\n");
+
+#if defined _DEBUG
+            CString strID;
+            strID.Format(_T("\r\n\r\nID: %d"),tsID);
+
+            strMsg += strID;
+#endif // _DEBUG
 
       doCenterLine->SetToolTipText(strMsg);
       doCenterLine->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -2558,9 +2670,13 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
          doConnection->SetSelectionType(stNone);
          doConnection->SetPosition(connection_label_point);
          if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
+         {
             doConnection->SetTextColor(TS_LABEL_COLOR);
+         }
          else
+         {
             doConnection->SetTextColor(SB_LABEL_COLOR);
+         }
 
          doConnection->SetBkMode(TRANSPARENT);
          doConnection->SetAngle(angle);
@@ -2606,9 +2722,11 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
    m_NextClosureJointID = 0;
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IBridge,pIBridge);
-   GET_IFACE2(pBroker,IGirder,pIGirder);
-   GET_IFACE2(pBroker,ITempSupport,pITemporarySupport);
+
+   // this are only used if there are closure joints
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pIBridge);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
+   GET_IFACE2_NOCHECK(pBroker,ITempSupport,pITemporarySupport);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
@@ -2637,9 +2755,13 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
             if( pClosure )
             {
                if ( pClosure->GetTemporarySupport() )
+               {
                   pITemporarySupport->GetDirection(pClosure->GetTemporarySupport()->GetIndex(),&objDirection);
+               }
                else
+               {
                   pIBridge->GetPierDirection(pClosure->GetPier()->GetIndex(),&objDirection);
+               }
             }
             else
             {
@@ -2767,7 +2889,9 @@ void CBridgePlanView::BuildSpanDisplayObjects()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   {
       return;
+   }
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -2841,9 +2965,10 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   {
       return;
+   }
 
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -2962,7 +3087,7 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
    point_disp->SetToolTipText(_T("Drag me along the alignment to move section cut.\r\nDouble click to enter the cut station\r\nPress CTRL + -> to move ahead\r\nPress CTRL + <- to move back"));
    point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
 
-   GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2_NOCHECK(pBroker,IRoadway,pRoadway); // this interface is simply stored in the section_cut_strategy object.. no usage here
    GET_IFACE2(pBroker,IBridge,pBridge);
    CComQIPtr<iBridgeSectionCutDrawStrategy,&IID_iBridgeSectionCutDrawStrategy> section_cut_strategy(sink);
    section_cut_strategy->Init(m_pFrame, point_disp, pRoadway, pBridge, m_pFrame);
@@ -3123,12 +3248,8 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 	            doDiaphragmLine->SetMaxTipWidth(TOOLTIP_WIDTH);
 	            doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
 	            doDiaphragmLine->SetToolTipText(strTip);
-	
-	
-	
-	
-	
-	            CComQIPtr<iDisplayObject> dispObj(doDiaphragmLine);
+
+               CComQIPtr<iDisplayObject> dispObj(doDiaphragmLine);
 	            display_list->AddDisplayObject(dispObj);
 	
 	         }
@@ -3140,7 +3261,9 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 int CBridgePlanView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CDisplayView::OnCreate(lpCreateStruct) == -1)
+   {
 		return -1;
+   }
 	
    m_pFrame = (CBridgeModelViewChildFrame*)GetParent()->GetParent();
    ASSERT( m_pFrame != 0 );
@@ -3161,7 +3284,9 @@ void CBridgePlanView::UpdateDrawingScale()
    dispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST,&na_display_list);
 
    if ( title_display_list == NULL )
+   {
       return;
+   }
 
    CDManipClientDC dc(this);
 
@@ -3220,7 +3345,9 @@ DROPEFFECT CBridgePlanView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState
       source->Read(CBridgeSectionCutDisplayImpl::ms_Format,&threadl,sizeof(DWORD));
 
       if (threadl == threadid)
+      {
         return DROPEFFECT_MOVE;
+      }
    }
 
    return DROPEFFECT_NONE;
@@ -3301,7 +3428,7 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
          break;
 
       default:
-         ATLASSERT(0); // who added a new connection type?
+         ATLASSERT(false); // who added a new connection type?
          strConnection = _T("?");
       }
    }
@@ -3344,7 +3471,7 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
          break;
 
       default:
-         ATLASSERT(0); // who added a new connection type?
+         ATLASSERT(false); // who added a new connection type?
          strConnection += _T("-?");
       }
    }
@@ -3402,7 +3529,7 @@ std::_tstring CBridgePlanView::GetFullConnectionString(const CPierData2* pPierDa
          break;
 
       default:
-         ATLASSERT(0); // who added a new connection type?
+         ATLASSERT(false); // who added a new connection type?
          strConnection = _T("?????");
       }
    }
@@ -3452,7 +3579,7 @@ std::_tstring CBridgePlanView::GetConnectionString(const CTemporarySupportData* 
       break;
 
    default:
-      ATLASSERT(0); // who added a new connection type?
+      ATLASSERT(false); // who added a new connection type?
    }
 
    return strConnection;
@@ -3474,7 +3601,7 @@ std::_tstring CBridgePlanView::GetFullConnectionString(const CTemporarySupportDa
       break;
 
    default:
-      ATLASSERT(0); // who added a new connection type?
+      ATLASSERT(false); // who added a new connection type?
    }
 
    return strConnection;

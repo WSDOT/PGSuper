@@ -676,6 +676,10 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath=".\GrapherBase.cpp"
+				>
+			</File>
+			<File
 				RelativePath="GraphingAgent.cpp"
 				>
 				<FileConfiguration
@@ -924,6 +928,10 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath=".\GrapherBase.h"
+				>
+			</File>
 			<File
 				RelativePath="..\Include\Graphing\GraphingTypes.h"
 				>

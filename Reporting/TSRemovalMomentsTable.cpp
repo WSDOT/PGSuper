@@ -85,17 +85,15 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
    GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
 
-   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
    GET_IFACE2(pBroker, IIntervals, pIntervals);
-
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
 
-
    // Get the results
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec); // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoads, pUDL);           // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi);             // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker,IProductForces2,pForces2);           // only used if there are temporary supports to be removed
+
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
@@ -109,7 +107,9 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
       if ( tsrIntervals.size() == 0 )
+      {
          continue; // next group
+      }
 
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
@@ -161,7 +161,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bIsFutureOverlay,false,bPedLoading,
                                                                                                  bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
                                                                                                  pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
@@ -183,32 +183,32 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
          }
 
          CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-         std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );
+         std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );
 
          // Get the results for this span (it is faster to get them as a vector rather than individually)
-         std::vector<Float64> girder    = pForces2->GetMoment(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, ctIncremental);
-         std::vector<Float64> diaphragm = pForces2->GetMoment(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, ctIncremental);
+         std::vector<Float64> girder    = pForces2->GetMoment(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, rtIncremental);
+         std::vector<Float64> diaphragm = pForces2->GetMoment(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, rtIncremental);
 
          std::vector<Float64> minSlab, maxSlab;
          std::vector<Float64> minSlabPad, maxSlabPad;
-         maxSlab = pForces2->GetMoment( tsrIntervalIdx, pftSlab, vPoi, maxBAT, ctIncremental );
-         minSlab = pForces2->GetMoment( tsrIntervalIdx, pftSlab, vPoi, minBAT, ctIncremental );
+         maxSlab = pForces2->GetMoment( tsrIntervalIdx, pftSlab, vPoi, maxBAT, rtIncremental );
+         minSlab = pForces2->GetMoment( tsrIntervalIdx, pftSlab, vPoi, minBAT, rtIncremental );
 
-         maxSlabPad = pForces2->GetMoment( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, ctIncremental );
-         minSlabPad = pForces2->GetMoment( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, ctIncremental );
+         maxSlabPad = pForces2->GetMoment( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, rtIncremental );
+         minSlabPad = pForces2->GetMoment( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, rtIncremental );
 
          std::vector<Float64> minDeckPanel, maxDeckPanel;
          if ( bDeckPanels )
          {
-            maxDeckPanel = pForces2->GetMoment( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, ctIncremental );
-            minDeckPanel = pForces2->GetMoment( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, ctIncremental );
+            maxDeckPanel = pForces2->GetMoment( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, rtIncremental );
+            minDeckPanel = pForces2->GetMoment( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, rtIncremental );
          }
 
          std::vector<Float64> minConstruction, maxConstruction;
          if ( bConstruction )
          {
-            maxConstruction = pForces2->GetMoment( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, ctIncremental );
-            minConstruction = pForces2->GetMoment( tsrIntervalIdx, pftConstruction, vPoi, minBAT, ctIncremental );
+            maxConstruction = pForces2->GetMoment( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, rtIncremental );
+            minConstruction = pForces2->GetMoment( tsrIntervalIdx, pftConstruction, vPoi, minBAT, rtIncremental );
          }
 
          std::vector<Float64> minOverlay, maxOverlay;
@@ -218,30 +218,30 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
          if ( bSidewalk )
          {
-            maxSidewalk = pForces2->GetMoment( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, ctIncremental );
-            minSidewalk = pForces2->GetMoment( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, ctIncremental );
+            maxSidewalk = pForces2->GetMoment( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, rtIncremental );
+            minSidewalk = pForces2->GetMoment( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, rtIncremental );
          }
 
          if ( bShearKey )
          {
-            maxShearKey = pForces2->GetMoment( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, ctIncremental );
-            minShearKey = pForces2->GetMoment( tsrIntervalIdx, pftShearKey, vPoi, minBAT, ctIncremental );
+            maxShearKey = pForces2->GetMoment( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, rtIncremental );
+            minShearKey = pForces2->GetMoment( tsrIntervalIdx, pftShearKey, vPoi, minBAT, rtIncremental );
          }
 
-         maxTrafficBarrier = pForces2->GetMoment( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, ctIncremental );
-         minTrafficBarrier = pForces2->GetMoment( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, ctIncremental );
+         maxTrafficBarrier = pForces2->GetMoment( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtIncremental );
+         minTrafficBarrier = pForces2->GetMoment( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtIncremental );
          if ( overlayIntervalIdx != INVALID_INDEX )
          {
-            maxOverlay = pForces2->GetMoment( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, ctIncremental );
-            minOverlay = pForces2->GetMoment( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, ctIncremental );
+            maxOverlay = pForces2->GetMoment( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, rtIncremental );
+            minOverlay = pForces2->GetMoment( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, rtIncremental );
          }
 
          std::vector<Float64> userDC, userDW, userLLIM;
          if ( bAreThereUserLoads )
          {
-            userDC   = pForces2->GetMoment(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT, ctIncremental);
-            userDW   = pForces2->GetMoment(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT, ctIncremental);
-            userLLIM = pForces2->GetMoment(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental);
+            userDC   = pForces2->GetMoment(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT, rtIncremental);
+            userDW   = pForces2->GetMoment(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT, rtIncremental);
+            userLLIM = pForces2->GetMoment(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, rtIncremental);
          }
 
          // write out the results
@@ -326,8 +326,11 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
                (*p_table)(row,col++) << moment.SetValue( maxTrafficBarrier[index] );
                (*p_table)(row,col++) << moment.SetValue( minTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
-               (*p_table)(row,col++) << moment.SetValue( minOverlay[index] );
+               if ( overlayIntervalIdx != INVALID_INDEX )
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minOverlay[index] );
+               }
             }
             else
             {
@@ -338,7 +341,10 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
                (*p_table)(row,col++) << moment.SetValue( maxTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
+               if ( overlayIntervalIdx != INVALID_INDEX )
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
+               }
             }
 
             if ( bAreThereUserLoads )

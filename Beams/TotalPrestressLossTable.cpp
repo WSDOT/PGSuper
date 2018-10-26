@@ -65,15 +65,21 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    ColumnIndexType numColumns = 9;
    if ( !bIgnoreInitialRelaxation )
+   {
       numColumns++; // fpR0
+   }
 
-   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
+   {
       numColumns++; // fpp
+   }
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
    if ( 0 == NtMax  )
+   {
       numColumns--; // omit fptr
+   }
 
    // Create and configure the table
    CTotalPrestressLossTable* table = new CTotalPrestressLossTable( numColumns, pDisplayUnits );
@@ -91,22 +97,30 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    // delta fpT
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" = ");
    if ( !bIgnoreInitialRelaxation )
+   {
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" + ");
+   }
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
 
-   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
+   {
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
+   }
 
    if ( 0 < NtMax )
+   {
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("ptr")) << _T(" + ");
+   }
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLT")) << rptNewLine;
 
    //
    *pParagraph << _T("% Loss Initial = (");
    if ( !bIgnoreInitialRelaxation )
+   {
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" + ");
+   }
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
 
@@ -128,7 +142,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << _T("% Loss") << rptNewLine << _T("Initial");
 
-   if ( 0 < NtMax && pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < NtMax && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -167,12 +181,14 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    Float64 fpi = pDetails->pLosses->PermanentStrand_AfterTransfer(); 
 
    if ( !m_bUseGrossProperties )
+   {
       fpi += dfpES;
+   }
 
    Float64 fpe  = fpj - fpi;
    (*this)(row,col++) << scalar.SetValue( -1*PercentChange(fpj,fpe) );
    
-   if ( 0 < m_NtMax && m_pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
       (*this)(row,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
    }
@@ -192,7 +208,9 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    Float64 fpt = pDetails->pLosses->PermanentStrand_Final(); 
 
    if ( !m_bUseGrossProperties )
+   {
       fpt += dfpES;
+   }
 
    Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
    Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();

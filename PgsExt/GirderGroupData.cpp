@@ -118,15 +118,21 @@ void CGirderGroupData::CopyGirderGroupData(const CGirderGroupData* pGroup)
 bool CGirderGroupData::operator==(const CGirderGroupData& rOther) const
 {
    if ( GetPierIndex(pgsTypes::metStart) != rOther.GetPierIndex(pgsTypes::metStart) )
+   {
       return false;
+   }
 
    if ( GetPierIndex(pgsTypes::metEnd) != rOther.GetPierIndex(pgsTypes::metEnd) )
+   {
       return false;
+   }
 
    if ( m_pBridge && !m_pBridge->UseSameNumberOfGirdersInAllGroups() )
    {
       if ( m_Girders.size() != rOther.m_Girders.size() )
+      {
          return false;
+      }
    }
 
    bool bCheckSlabOffset = false;
@@ -139,7 +145,9 @@ bool CGirderGroupData::operator==(const CGirderGroupData& rOther) const
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       if ( *m_Girders[gdrIdx] != *rOther.m_Girders[gdrIdx] )
+      {
          return false;
+      }
 
       if ( bCheckSlabOffset )
       {
@@ -148,7 +156,9 @@ bool CGirderGroupData::operator==(const CGirderGroupData& rOther) const
          for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
          {
             if ( !IsEqual(GetSlabOffset(pierIdx,gdrIdx),rOther.GetSlabOffset(pierIdx,gdrIdx)) )
+            {
                return false;
+            }
          }
       }
    }
@@ -265,7 +275,9 @@ CPierData2* CGirderGroupData::GetPier(PierIndexType pierIdx)
 {
    PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
    if ( pierIdx < startPierIdx && GetPierIndex(pgsTypes::metEnd) < pierIdx )
+   {
       return NULL; // pier isn't part of this girder group
+   }
 
    CPierData2* pPier = m_pPier[pgsTypes::metStart];
    for ( PierIndexType pi = startPierIdx; pi < pierIdx; pi++ )
@@ -280,7 +292,9 @@ const CPierData2* CGirderGroupData::GetPier(PierIndexType pierIdx) const
 {
    PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
    if ( pierIdx < startPierIdx && GetPierIndex(pgsTypes::metEnd) < pierIdx )
+   {
       return NULL; // pier isn't part of this girder group
+   }
 
    const CPierData2* pPier = m_pPier[pgsTypes::metStart];
    for ( PierIndexType pi = startPierIdx; pi < pierIdx; pi++ )
@@ -380,9 +394,13 @@ void CGirderGroupData::SetGirderCount(GirderIndexType nGirders)
    }
 
    if ( nGirders < m_Girders.size() )
+   {
       RemoveGirders(m_Girders.size()-nGirders);
+   }
    else if ( m_Girders.size() < nGirders )
+   {
       AddGirders(nGirders-m_Girders.size());
+   }
    //else
    // do nothing if nGirders == m_Girders.size()
 
@@ -402,7 +420,9 @@ void CGirderGroupData::Initialize(GirderIndexType nGirders)
    }
 
    if ( nGirders == 0 )
+   {
       return;
+   }
 
    CGirderGroupData* pPrevGroup = GetPrevGirderGroup();
    CGirderGroupData* pNextGroup = GetNextGirderGroup();
@@ -554,9 +574,8 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
    // Update the girder spacing (number of girders and number of spaces are related)
    CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
    CPierData2* pEndPier   = m_pPier[pgsTypes::metEnd];
-   CPierData2* pPier = pStartPier;
-   bool bDone = false;
-   while ( !bDone )
+   PierIndexType endPierIdx = pEndPier->GetIndex();
+   for ( CPierData2* pPier = pStartPier; pPier != NULL && pPier->GetIndex() <= endPierIdx;  )
    {
       if ( pPier == pStartPier )
       {
@@ -572,10 +591,13 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
          pPier->GetGirderSpacing(pgsTypes::Back)->AddGirders(nGirdersToAdd);
       }
 
-      pPier = pPier->GetNextSpan()->GetNextPier();
-      if ( pPier == pEndPier )
+      if ( pPier->GetNextSpan() )
       {
-         bDone = true;
+         pPier = pPier->GetNextSpan()->GetNextPier();
+      }
+      else
+      {
+         pPier = NULL;
       }
    }
 }
@@ -583,9 +605,13 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
 GirderIndexType CGirderGroupData::GetGirderCount() const
 {
    if ( m_pBridge && m_pBridge->UseSameNumberOfGirdersInAllGroups() )
+   {
       return m_pBridge->GetGirderCount();
+   }
    else
+   {
       return (GirderIndexType)m_Girders.size();
+   }
 }
 
 void CGirderGroupData::SetGirder(GirderIndexType gdrIdx,CSplicedGirderData* pGirderData)
@@ -596,7 +622,9 @@ void CGirderGroupData::SetGirder(GirderIndexType gdrIdx,CSplicedGirderData* pGir
 CSplicedGirderData* CGirderGroupData::GetGirder(GirderIndexType gdrIdx)
 {
    if ( gdrIdx < 0 || m_Girders.size() <= gdrIdx )
+   {
       return NULL;
+   }
 
    return m_Girders[gdrIdx];
 }
@@ -604,7 +632,9 @@ CSplicedGirderData* CGirderGroupData::GetGirder(GirderIndexType gdrIdx)
 const CSplicedGirderData* CGirderGroupData::GetGirder(GirderIndexType gdrIdx) const
 {
    if ( gdrIdx < 0 || m_Girders.size() <= gdrIdx )
+   {
       return NULL;
+   }
 
    return m_Girders[gdrIdx];
 }
@@ -659,7 +689,9 @@ Float64 CGirderGroupData::GetSlabOffset(PierIndexType pierIdx,GirderIndexType gd
       else if ( slabOffsetType == pgsTypes::sotPier )
       {
          if ( m_pBridge->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         {
             return 0;
+         }
 
          ATLASSERT(GetPierIndex(pgsTypes::metStart) <= pierIdx && pierIdx <= GetPierIndex(pgsTypes::metEnd));
 
@@ -673,7 +705,9 @@ Float64 CGirderGroupData::GetSlabOffset(PierIndexType pierIdx,GirderIndexType gd
       else
       {
          if ( m_pBridge->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         {
             return 0;
+         }
 
          ATLASSERT(GetPierIndex(pgsTypes::metStart) <= pierIdx && pierIdx <= GetPierIndex(pgsTypes::metEnd));
 
@@ -704,7 +738,9 @@ void CGirderGroupData::CopySlabOffset(GirderIndexType sourceGdrIdx,GirderIndexTy
 GroupIndexType CGirderGroupData::CreateGirderTypeGroup(GirderIndexType firstGdrIdx,GirderIndexType lastGdrIdx)
 {
    if ( m_pBridge->UseSameGirderForEntireBridge() )
+   {
       return 0; // can't create a new group... return group 0
+   }
 
    GroupIndexType newGroupIdx = 9999;
 
@@ -795,7 +831,9 @@ GroupIndexType CGirderGroupData::CreateGirderTypeGroup(GirderIndexType firstGdrI
          gdrGroup = *iter;
          gdrGroup.first = lastGdrIdx + 1; // group begins one girder after the last group
          if ( gdrGroup.first <= gdrGroup.second ) 
+         {
             gdrGroups.push_back(gdrGroup); // if last is < first, then this isn't a group... the new group ends at the last girder
+         }
       }
       else
       {
@@ -828,7 +866,9 @@ void CGirderGroupData::Expand(GroupIndexType girderTypeGroupIdx)
    GetGirderTypeGroup(girderTypeGroupIdx,&firstGdrIdx,&lastGdrIdx,&strName);
 
    if ( firstGdrIdx == lastGdrIdx )
+   {
       return; // nothing to expand
+   }
 
    std::vector<GirderTypeGroup>::iterator iter = m_GirderTypeGroups.begin() + girderTypeGroupIdx;
    std::vector<GirderTypeGroup>::iterator pos = m_GirderTypeGroups.erase(iter); // returns the iter the element after the one removed
@@ -847,7 +887,9 @@ void CGirderGroupData::Expand(GroupIndexType girderTypeGroupIdx)
 void CGirderGroupData::JoinAll(GirderIndexType gdrIdx)
 {
    if ( m_Girders.size() == 0 )
+   {
       return;
+   }
 
    std::_tstring strName = m_Girders[gdrIdx]->GetGirderName();
    const GirderLibraryEntry* pGdrEntry = m_Girders[gdrIdx]->GetGirderLibraryEntry();
@@ -907,9 +949,13 @@ void CGirderGroupData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrI
    {
       GirderTypeGroup gdrGroup = *iter;
       if ( gdrGroup.first == firstGdrIdx )
+      {
          break;
+      }
       else
+      {
          gdrGroups.push_back(gdrGroup);
+      }
    }
 
    _ASSERT(iter != m_GirderTypeGroups.end()); // shouldn't have gone through the full vector
@@ -933,7 +979,9 @@ void CGirderGroupData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrI
 
    // copy the remaining groups
    if ( iter != m_GirderTypeGroups.end() )
+   {
       gdrGroups.insert(gdrGroups.end(),iter,m_GirderTypeGroups.end());
+   }
 
    // finally replace the data member with the local girder groups
    m_GirderTypeGroups = gdrGroups;
@@ -943,9 +991,13 @@ void CGirderGroupData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrI
 GroupIndexType CGirderGroupData::GetGirderTypeGroupCount() const
 {
    if ( m_pBridge && m_pBridge->UseSameGirderForEntireBridge() )
+   {
       return 1;
+   }
    else
+   {
       return m_GirderTypeGroups.size();
+   }
 }
 
 void CGirderGroupData::GetGirderTypeGroup(GroupIndexType girderTypeGroupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,std::_tstring* pName) const
@@ -980,7 +1032,9 @@ void CGirderGroupData::GetGirderTypeGroup(GroupIndexType girderTypeGroupIdx,Gird
 GroupIndexType CGirderGroupData::FindGroup(GirderIndexType gdrIdx) const
 {
    if ( m_pBridge && m_pBridge->UseSameGirderForEntireBridge() )
+   {
       return 0; // can't create a new group... return group 0
+   }
 
    GroupIndexType nGroups = GetGirderTypeGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -993,7 +1047,9 @@ GroupIndexType CGirderGroupData::FindGroup(GirderIndexType gdrIdx) const
       lastGdrIdx  = group.second;
 
       if ( firstGdrIdx <= gdrIdx && gdrIdx <= lastGdrIdx )
+      {
          return grpIdx;
+      }
    }
 
    ATLASSERT(false); // should never get here
@@ -1027,9 +1083,13 @@ void CGirderGroupData::RenameGirder(GroupIndexType grpIdx,LPCTSTR strName)
 LPCTSTR CGirderGroupData::GetGirderName(GirderIndexType gdrIdx) const
 {
    if ( m_pBridge && m_pBridge->UseSameGirderForEntireBridge() )
+   {
       return m_pBridge->GetGirderName();
+   }
    else
+   {
       return m_Girders[gdrIdx]->GetGirderName();
+   }
 }
 
 void CGirderGroupData::SetGirderLibraryEntry(GirderIndexType gdrIdx,const GirderLibraryEntry* pEntry)
@@ -1055,6 +1115,11 @@ bool CGirderGroupData::IsInteriorGirder(GirderIndexType gdrIdx) const
 PierIndexType CGirderGroupData::GetPierCount() const
 {
    return GetPierIndex(pgsTypes::metEnd) - GetPierIndex(pgsTypes::metStart) + 1;
+}
+
+SpanIndexType CGirderGroupData::GetSpanCount() const
+{
+   return GetPierCount()-1;
 }
 
 Float64 CGirderGroupData::GetLength() const
@@ -1170,7 +1235,9 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             pPier = pPier->GetNextSpan()->GetNextPier();
             if ( pPier == pEndPier )
+            {
                bDone = true;
+            }
          }
       }
 #if defined _DEBUG
@@ -1204,7 +1271,9 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             pPier = pPier->GetNextSpan()->GetNextPier();
             if ( pPier == pEndPier )
+            {
                bDone = true;
+            }
          }
       }
 #endif
@@ -1268,7 +1337,7 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
@@ -1495,6 +1564,6 @@ void CGirderGroupData::AssertValid()
    }
 
    ATLASSERT(m_pPier[pgsTypes::metStart]->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1 == m_Girders.size());
-   ATLASSERT(m_pPier[pgsTypes::metEnd  ]->GetGirderSpacing(pgsTypes::Back)->GetSpacingCount()+1 == m_Girders.size());
+   ATLASSERT(m_pPier[pgsTypes::metEnd  ]->GetGirderSpacing(pgsTypes::Back )->GetSpacingCount()+1 == m_Girders.size());
 }
 #endif // _DEBUG

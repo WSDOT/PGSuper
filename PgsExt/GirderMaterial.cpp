@@ -71,7 +71,9 @@ CGirderMaterial& CGirderMaterial::operator= (const CGirderMaterial& rOther)
 bool CGirderMaterial::operator==(const CGirderMaterial& rOther) const
 {
    if ( Concrete != rOther.Concrete )
+   {
       return false;
+   }
 
    return true;
 }

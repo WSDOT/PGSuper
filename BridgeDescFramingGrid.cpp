@@ -293,7 +293,9 @@ void CBridgeDescFramingGrid::OnRemovePier()
          SpanIndexType spanIdx = (SpanIndexType)pierIdx;
          pgsTypes::RemovePierType removePier = (spanIdx == 0) ? pgsTypes::PrevPier : pgsTypes::NextPier;
          if (pierIdx == nPiers-1 )
+         {
             spanIdx--;
+         }
 
          pDlg->m_BridgeDesc.RemoveSpan(spanIdx,removePier);
       }
@@ -328,21 +330,29 @@ void CBridgeDescFramingGrid::OnRemoveTemporarySupport()
 bool CBridgeDescFramingGrid::EnableRemovePierBtn()
 {
 	if (GetParam() == NULL)
+   {
 		return false;
+   }
 
    if ( GetPierCount() == 2 )
+   {
       return false; // can't delete the last span
+   }
 
    CRowColArray selRows;
    ROWCOL nSelRows  = GetSelectedRows(selRows);
    if ( nSelRows != 1 )
+   {
       return false; // only one selection at a time
+   }
 
    ROWCOL selRow = selRows.GetAt(0);
    PierIndexType pierIdx = GetPierIndex(selRow);
 
    if ( pierIdx == INVALID_INDEX )
+   {
       return false;
+   }
 
    return true;
 }
@@ -350,18 +360,24 @@ bool CBridgeDescFramingGrid::EnableRemovePierBtn()
 bool CBridgeDescFramingGrid::EnableRemoveTemporarySupportBtn()
 {
 	if (GetParam() == NULL)
+   {
 		return false;
+   }
 
    CRowColArray selRows;
    ROWCOL nSelRows  = GetSelectedRows(selRows);
    if ( nSelRows != 1 )
+   {
       return false; // only one selection at a time
+   }
 
    ROWCOL selRow = selRows.GetAt(0);
    SupportIndexType tsIdx = GetTemporarySupportIndex(selRow);
 
    if ( tsIdx == INVALID_INDEX )
+   {
       return false;
+   }
 
    return true;
 }
@@ -579,7 +595,9 @@ void CBridgeDescFramingGrid::FillGrid(const CBridgeDescription2& bridgeDesc)
    // remove all rows
    ROWCOL rows = GetRowCount();
    if ( 1 < rows )
+   {
       RemoveRows(1, rows);
+   }
 
    const CPierData2* pPier = bridgeDesc.GetPier(0);
 
@@ -647,7 +665,7 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pPierData->GetStation());
 
    CString strPierLabel;
-   strPierLabel.Format(_T("Pier %d"),LABEL_PIER(pPierData->GetIndex()));
+   strPierLabel.Format(_T("%s %d"),pPierData->IsAbutment() ? _T("Abut") : _T("Pier"),LABEL_PIER(pPierData->GetIndex()));
 
    int col = 0;
    // left column header
@@ -1002,7 +1020,9 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 void CBridgeDescFramingGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
 {
    if ( nCol != 5 && nCol != 6 )
+   {
       return;
+   }
  
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -1071,7 +1091,9 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       }
 
       if ( strOrientation == _T("NORMAL") || (strOrientation.GetLength() == 1 && strOrientation[0] == 'N') )
+      {
          return TRUE;
+      }
 
       HRESULT hr_angle = m_objAngle->FromString(CComBSTR(strOrientation));
       if ( SUCCEEDED(hr_angle) )
@@ -1111,7 +1133,9 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    // variable to keep track if this function has already been entered
    static bool bHasThisMethodBeenCalled = false;
    if ( bHasThisMethodBeenCalled )
+   {
       return TRUE;
+   }
 
    bHasThisMethodBeenCalled = true;
    if ( nCol == 1 || nCol == 2 )
@@ -1148,7 +1172,9 @@ PierIndexType CBridgeDescFramingGrid::GetSelectedPier()
    CRowColArray selRows;
    ROWCOL nSelRows  = GetSelectedRows(selRows);
    if ( nSelRows != 1 )
+   {
       return INVALID_INDEX; // only one selection at a time
+   }
 
    ROWCOL selRow = selRows.GetAt(0);
    PierIndexType pierIdx = GetPierIndex(selRow);
@@ -1168,7 +1194,9 @@ PierIndexType CBridgeDescFramingGrid::GetPierCount()
          const CRowType& rowType = dynamic_cast<const CRowType&>(style.GetUserAttribute(0));
 
          if ( rowType.m_Type == CRowType::Pier )
+         {
             nPiers++;
+         }
       }
    }
 
@@ -1264,7 +1292,9 @@ ROWCOL CBridgeDescFramingGrid::GetPierRow(PierIndexType pierIdx)
    for (ROWCOL row = 1; row <= nRows; row++ )
    {
       if ( GetPierIndex(row) == pierIdx )
+      {
          return row;
+      }
    }
 
    return 1;
@@ -1279,9 +1309,13 @@ PierIndexType CBridgeDescFramingGrid::GetPierIndex(ROWCOL nRow)
    {
       const CRowType& rowType = dynamic_cast<const CRowType&>(style.GetUserAttribute(0));
       if ( rowType.m_Type == CRowType::Pier )
+      {
          return rowType.m_Index;
+      }
       else
+      {
          return INVALID_INDEX;
+      }
    }
    else
    {
@@ -1295,7 +1329,9 @@ ROWCOL CBridgeDescFramingGrid::GetTemporarySupportRow(SupportIndexType tsIdx)
    for (ROWCOL row = 1; row <= nRows; row++ )
    {
       if ( GetTemporarySupportIndex(row) == tsIdx )
+      {
          return row;
+      }
    }
 
    return 1;

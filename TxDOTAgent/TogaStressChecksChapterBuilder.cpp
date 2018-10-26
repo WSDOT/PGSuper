@@ -379,7 +379,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       }
 
       const pgsPointOfInterest& poi(pFactoredStressArtifact->GetPointOfInterest());
-      (*p_table)(row,col) << location.SetValue( intervalIdx, poi, end_size );
+      (*p_table)(row,col) << location.SetValue( (intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT), poi, end_size );
 
       Float64 fTop, fBot;
       // prestress

@@ -131,7 +131,9 @@ BOOL CPGSpliceDoc::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINF
         if ( notify->pNMHDR->code == TBN_DROPDOWN )
         {
            if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_EDIT_GIRDER )
+           {
               return OnEditGirderDropDown(notify->pNMHDR,notify->pResult); 
+           }
         }
     }
 	
@@ -188,7 +190,9 @@ BOOL CPGSpliceDoc::OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr)
    // It creates the drop down menu with the edit choices on it
    NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
    if ( pnmtb->iItem != ID_EDIT_GIRDER )
+   {
       return FALSE; // not our button
+   }
 
    CMenu menu;
    VERIFY( menu.LoadMenu(IDR_EDIT_GIRDER) );
@@ -238,7 +242,9 @@ void CPGSpliceDoc::OnEditGirder()
       dlg.m_Segment = selection.SegmentIdx == INVALID_INDEX ? 0 : selection.SegmentIdx;
 
       if ( dlg.DoModal() != IDOK )
+      {
          bEdit = FALSE;
+      }
 
       selection.GroupIdx   = dlg.m_Group;
       selection.GirderIdx  = dlg.m_Girder;
@@ -248,7 +254,9 @@ void CPGSpliceDoc::OnEditGirder()
    CSegmentKey segmentKey(selection.GroupIdx,selection.GirderIdx,selection.SegmentIdx);
 
    if ( bEdit )
+   {
       EditGirderSegmentDescription(segmentKey,EGS_GENERAL);
+   }
 }
 
 void CPGSpliceDoc::OnEditClosureJoint()
@@ -315,7 +323,9 @@ void CPGSpliceDoc::OnEditClosureJoint()
 
       // ask the user
       if ( dlg.DoModal() != IDOK )
+      {
          return;
+      }
 
       selection.GirderIdx = dlg.m_GirderIdx;
       if (dlg.m_TempSupportID != INVALID_ID )
@@ -398,20 +408,28 @@ void CPGSpliceDoc::OnEditTemporarySupport()
 
          CString strChoice;
          if ( tsIdx == 0 )
+         {
             strChoice = GetLabel(pTS,pDisplayUnits);
+         }
          else
+         {
             strChoice.Format(_T("\n%s"),GetLabel(pTS,pDisplayUnits));
+         }
 
          strChoices += strChoice;
       }
 
       int result = AfxChoose(_T("Select Temporary Support"),_T("Select temporary support to edit"),strChoices,0,TRUE);
       if ( 0 <= result )
+      {
          tsID = pBridgeDesc->GetTemporarySupport(result)->GetID();
+      }
    }
 
    if ( tsID != INVALID_ID )
+   {
       EditTemporarySupportDescription(tsID,ETSD_GENERAL);
+   }
 }
 
 void CPGSpliceDoc::OnUpdateEditTemporarySupport(CCmdUI* pCmdUI)
@@ -675,7 +693,9 @@ LPCTSTR CPGSpliceDoc::GetTemplateExtension()
 BOOL CPGSpliceDoc::InitMainMenu()
 {
    if ( ! __super::InitMainMenu() )
+   {
       return FALSE;
+   }
 
    // PGSplice Documents don't use the concentrated moment load
    // Remove it from the Loads menu

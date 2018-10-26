@@ -35,6 +35,7 @@
 #include <IFace\VersionInfo.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -51,10 +52,10 @@ CGirderViewPrintJob::CGirderViewPrintJob(CGirderModelElevationView* pev,
                                          CGirderModelChildFrame* pframe,
                                          IBroker* pBroker)
 {
-   CHECK(pev!=0);
-   CHECK(psv!=0);
-   m_pEv=pev;
-   m_pSv=psv;
+   ATLASSERT(pev!=0);
+   ATLASSERT(psv!=0);
+   m_pElevationView=pev;
+   m_pSectionView=psv;
    m_pBroker = pBroker;
    m_pFrame = pframe;
 
@@ -95,15 +96,13 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    PGSuperCalculationSheet border(m_pBroker);
    CString title;
 
-   CDocument* pDoc = (CDocument*)(m_pSv->GetDocument());
-   BOOL bPGSuper = m_pSv->GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
-#pragma Reminder("UPDATE: there is a more generic way to get the application name")
-   // figure it out and use the more generic approach...
+   CDocument* pDoc = (CDocument*)(m_pSectionView->GetDocument());
 
    GET_IFACE(IVersionInfo,pVerInfo);
+   GET_IFACE(IDocumentType,pDocType);
 
    const CGirderKey& girderKey = m_pFrame->GetSelection();
-   if ( bPGSuper == TRUE )
+   if ( pDocType->IsPGSuperDocument() )
    {
       if ( girderKey.groupIndex == ALL_GROUPS )
          title.Format(_T("Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());  
@@ -155,7 +154,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    top_clip.CreateRectRgnIndirect(&top);
    pDC->SelectClipRgn(&top_clip);
 
-   m_pEv->DoPrint(pDC,pInfo);
+   m_pElevationView->DoPrint(pDC,pInfo);
 
    CRgn old_clip;
    old_clip.CreateRectRgnIndirect(&orig_clip);
@@ -184,7 +183,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    bot_clip.CreateRectRgnIndirect(&svrect);
    pDC->SelectClipRgn(&bot_clip);
 
-   m_pSv->DoPrint(pDC, pInfo);
+   m_pSectionView->DoPrint(pDC, pInfo);
 
    CRgn bot_old_clip;
    bot_old_clip.CreateRectRgnIndirect(&orig_clip);

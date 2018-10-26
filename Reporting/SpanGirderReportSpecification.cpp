@@ -56,11 +56,15 @@ int CSpanReportHint::IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec)
 {
    CSpanReportSpecification* pSpanRptSpec = dynamic_cast<CSpanReportSpecification*>(pRptSpec);
    if ( pSpanRptSpec == NULL )
+   {
       return -1;
+   }
 
    CSpanReportHint* pSpanRptHint = dynamic_cast<CSpanReportHint*>(pHint);
    if ( pSpanRptHint == NULL )
+   {
       return -1;
+   }
 
    return (pSpanRptHint->m_SpanIdx == pSpanRptSpec->GetSpan() ? 1 : 0);
 }
@@ -102,10 +106,14 @@ int CGirderLineReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* p
 {
    CGirderLineReportHint* pGirderRptHint = dynamic_cast<CGirderLineReportHint*>(pHint);
    if ( pGirderRptHint == NULL )
+   {
       return -1;
+   }
 
    if (pGirderRptHint->m_GroupIdx == ALL_SPANS && pGirderRptHint->m_GirderIdx == ALL_GIRDERS)
+   {
       return 1;
+   }
 
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    if ( pGdrRptSpec != NULL )
@@ -166,33 +174,14 @@ int CGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptS
 {
    CGirderReportHint* pGirderRptHint = dynamic_cast<CGirderReportHint*>(pHint);
    if ( pGirderRptHint == NULL )
+   {
       return -1;
+   }
 
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    if ( pGirderRptSpec != NULL )
    {
       return (pGirderRptHint->m_GirderKey == pGirderRptSpec->GetGirderKey() ? 1 : 0);
-//      if( pSGRptHint->m_SpanIdx == pSGRptSpec->GetSpan() && pSGRptHint->m_GdrIdx == pSGRptSpec->GetGirder() )
-      //{
-        // return 1;
-      //}
-      //else if ( pSGRptHint->m_SpanIdx == ALL_SPANS && pSGRptHint->m_GdrIdx == ALL_GIRDERS )
-      //{
-         //return 1;
-      //}
-      //else if ( pSGRptHint->m_SpanIdx == ALL_SPANS && pSGRptHint->m_GdrIdx == pSGRptSpec->GetGirder() )
-      //{
-         //return 1;
-      //}
-      //else if( pSGRptHint->m_SpanIdx == pSGRptSpec->GetSpan() && pSGRptHint->m_GdrIdx == ALL_GIRDERS )
-      //{
-         //return 1;
-      //}
-      //else
-      //{
-         //return 0;
-      //}
-
    }
    else
    {
@@ -252,7 +241,9 @@ HRESULT CSpanReportSpecification::Validate() const
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    if ( nSpans <= m_Span )
+   {
       return RPT_E_INVALIDSPAN;
+   }
 
    return CBrokerReportSpecification::Validate();
 }
@@ -330,7 +321,9 @@ HRESULT CGirderReportSpecification::Validate() const
    }
 
    if ( nGirders <= m_GirderKey.girderIndex )
+   {
       return RPT_E_INVALIDGIRDER;
+   }
 
    return CBrokerReportSpecification::Validate();
 }
@@ -500,12 +493,16 @@ HRESULT CMultiViewSpanGirderReportSpecification::Validate() const
       const CGirderKey& girderKey(*iter);
 
       if ( nGroups <= girderKey.groupIndex )
+      {
          return RPT_E_INVALIDSPAN;
+      }
 
       GirderIndexType nGdrs = pBridge->GetGirderCount(girderKey.groupIndex);
 
       if ( nGdrs <= girderKey.groupIndex )
+      {
          return RPT_E_INVALIDGIRDER;
+      }
    }
 
    return CBrokerReportSpecification::Validate();

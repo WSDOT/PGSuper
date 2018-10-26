@@ -232,15 +232,13 @@ void CEditLoadsView::OnAddMomentload()
 void CEditLoadsView::OnDeleteLoad() 
 {
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
-   if (pos!=NULL)
+   if (pos != NULL)
    {
       int nItem = m_LoadsListCtrl.GetNextSelectedItem(pos);
 
       DWORD_PTR data = m_LoadsListCtrl.GetItemData(nItem);
       WORD load_type = LOWORD(data);
       WORD load_idx = HIWORD(data);
-
-      GET_IFACE(IUserDefinedLoadData, pUdl);
 
       if (load_type == W_POINT_LOAD)
       {
@@ -252,13 +250,15 @@ void CEditLoadsView::OnDeleteLoad()
          txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(load_idx);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
-      else if (load_type ==W_MOMENT_LOAD)
+      else if (load_type == W_MOMENT_LOAD)
       {
          txnDeleteMomentLoad* pTxn = new txnDeleteMomentLoad(load_idx);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
       else
-         CHECK(0);
+      {
+         ATLASSERT(false);
+      }
    }
 }
 
@@ -266,7 +266,7 @@ void CEditLoadsView::OnEditLoad()
 {
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
 
-   if (pos!=NULL)
+   if (pos != NULL)
    {
       EditLoad(pos);
    }
@@ -276,7 +276,7 @@ void CEditLoadsView::OnDblclkLoadsList(NMHDR* pNMHDR, LRESULT* pResult)
 {
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
 
-   if (pos!=NULL)
+   if (pos != NULL)
    {
       EditLoad(pos);
    }
@@ -308,48 +308,48 @@ void CEditLoadsView::InsertData()
    GET_IFACE(IUserDefinedLoadData, pUdl);
    CollectionIndexType pl_cnt = pUdl->GetPointLoadCount();
    CollectionIndexType ipl;
-   for (ipl=0; ipl<pl_cnt; ipl++)
+   for (ipl = 0; ipl < pl_cnt; ipl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Point"));
 
       // use item data to save/retreive type information and location in vectors
       m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_POINT_LOAD, ipl) );
 
-      CPointLoadData rld = pUdl->GetPointLoad(ipl);
+      const CPointLoadData* pLoad = pUdl->GetPointLoad(ipl);
 
-      UpdatePointLoadItem(irow, rld);
+      UpdatePointLoadItem(irow, *pLoad);
 
       irow++;
    }
 
    // Add Moment Loads
    pl_cnt = pUdl->GetMomentLoadCount();
-   for (ipl=0; ipl<pl_cnt; ipl++)
+   for (ipl = 0; ipl < pl_cnt; ipl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Moment"));
 
       // use item data to save/retreive type information and location in vectors
       m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_MOMENT_LOAD, ipl) );
 
-      CMomentLoadData rld = pUdl->GetMomentLoad(ipl);
+      const CMomentLoadData* pLoad = pUdl->GetMomentLoad(ipl);
 
-      UpdateMomentLoadItem(irow, rld);
+      UpdateMomentLoadItem(irow, *pLoad);
 
       irow++;
    }
 
    // Add Distributed Loads
    CollectionIndexType dl_cnt = pUdl->GetDistributedLoadCount();
-   for (CollectionIndexType idl=0; idl<dl_cnt; idl++)
+   for (CollectionIndexType idl = 0; idl < dl_cnt; idl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Distributed"));
 
       // use item data to save/retreive type information and location in vectors
       m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_DISTRIBUTED_LOAD, idl) );
 
-      CDistributedLoadData rld = pUdl->GetDistributedLoad(idl);
+      const CDistributedLoadData* pLoad = pUdl->GetDistributedLoad(idl);
 
-      UpdateDistributedLoadItem(irow, rld);
+      UpdateDistributedLoadItem(irow, *pLoad);
 
       irow++;
    }
@@ -375,19 +375,23 @@ void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(ptLoad.m_LoadCase).c_str());
 
    CString strSpan;
-   if ( ptLoad.m_SpanGirderKey.spanIndex == ALL_SPANS )
+   if ( ptLoad.m_spanKey.spanIndex == ALL_SPANS )
+   {
       strSpan.Format(_T("%s"),_T("All Spans"));
+   }
    else
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(ptLoad.m_SpanGirderKey.spanIndex));
+   {
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(ptLoad.m_spanKey.spanIndex));
+   }
 
    CString strGirder;
-   if ( ptLoad.m_SpanGirderKey.girderIndex == ALL_GIRDERS )
+   if ( ptLoad.m_spanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(ptLoad.m_SpanGirderKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(ptLoad.m_spanKey.girderIndex));
    }
 
    CString strLocation;
@@ -429,19 +433,23 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
 
    CString strSpan;
-   if ( load.m_SpanGirderKey.spanIndex == ALL_SPANS )
+   if ( load.m_spanKey.spanIndex == ALL_SPANS )
+   {
       strSpan.Format(_T("%s"),_T("All Spans"));
+   }
    else
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_SpanGirderKey.spanIndex));
+   {
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_spanKey.spanIndex));
+   }
 
    CString strGirder;
-   if ( load.m_SpanGirderKey.girderIndex == ALL_GIRDERS )
+   if ( load.m_spanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_SpanGirderKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_spanKey.girderIndex));
    }
 
    CString strLocation;
@@ -488,19 +496,23 @@ void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& load)
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
 
    CString strSpan;
-   if ( load.m_SpanGirderKey.spanIndex == ALL_SPANS )
+   if ( load.m_spanKey.spanIndex == ALL_SPANS )
+   {
       strSpan.Format(_T("%s"),_T("All Spans"));
+   }
    else
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_SpanGirderKey.spanIndex));
+   {
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_spanKey.spanIndex));
+   }
 
    CString strGirder;
-   if ( load.m_SpanGirderKey.girderIndex == ALL_GIRDERS )
+   if ( load.m_spanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_SpanGirderKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_spanKey.girderIndex));
    }
 
    CString strLocation;
@@ -540,14 +552,14 @@ void CEditLoadsView::EditLoad(POSITION pos)
    if (load_type == W_POINT_LOAD)
    {
       // edit our point load
-      CPointLoadData rld = pUdl->GetPointLoad(load_idx);
+      const CPointLoadData* pLoad = pUdl->GetPointLoad(load_idx);
 
-	   CEditPointLoadDlg dlg(rld);
+	   CEditPointLoadDlg dlg(*pLoad);
       if (dlg.DoModal() == IDOK)
       {
-         if (rld != dlg.m_Load)
+         if (*pLoad != dlg.m_Load)
          {
-            txnEditPointLoad* pTxn = new txnEditPointLoad(load_idx,rld,dlg.m_Load);
+            txnEditPointLoad* pTxn = new txnEditPointLoad(load_idx,*pLoad,dlg.m_Load);
             txnTxnManager::GetInstance()->Execute(pTxn);
             UpdatePointLoadItem(nItem, dlg.m_Load);
          }
@@ -556,37 +568,39 @@ void CEditLoadsView::EditLoad(POSITION pos)
    else if (load_type == W_MOMENT_LOAD)
    {
       // edit our moment load
-      CMomentLoadData rld = pUdl->GetMomentLoad(load_idx);
+      const CMomentLoadData* pLoad = pUdl->GetMomentLoad(load_idx);
 
-	   CEditMomentLoadDlg dlg(rld);
+	   CEditMomentLoadDlg dlg(*pLoad);
       if (dlg.DoModal() == IDOK)
       {
-         if (rld!=dlg.m_Load)
+         if (*pLoad != dlg.m_Load)
          {
-            txnEditMomentLoad* pTxn = new txnEditMomentLoad(load_idx,rld,dlg.m_Load);
+            txnEditMomentLoad* pTxn = new txnEditMomentLoad(load_idx,*pLoad,dlg.m_Load);
             txnTxnManager::GetInstance()->Execute(pTxn);
             UpdateMomentLoadItem(nItem, dlg.m_Load);
          }
       }
    }
-   else if (load_type ==W_DISTRIBUTED_LOAD)
+   else if (load_type == W_DISTRIBUTED_LOAD)
    {
       // edit our distributed load
-      CDistributedLoadData rld = pUdl->GetDistributedLoad(load_idx);
+      const CDistributedLoadData* pLoad = pUdl->GetDistributedLoad(load_idx);
 
-	   CEditDistributedLoadDlg dlg(rld);
+	   CEditDistributedLoadDlg dlg(*pLoad);
       if (dlg.DoModal() == IDOK)
       {
-         if (rld!=dlg.m_Load)
+         if (*pLoad != dlg.m_Load)
          {
-            txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(load_idx,rld,dlg.m_Load);
+            txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(load_idx,*pLoad,dlg.m_Load);
             txnTxnManager::GetInstance()->Execute(pTxn);
             UpdateDistributedLoadItem(nItem, dlg.m_Load);
          }
       }
    }
    else
-      CHECK(0);
+   {
+      ATLASSERT(false);
+   }
 
 }
 
@@ -605,7 +619,9 @@ void CEditLoadsView::OnContextMenu(CWnd* pWnd,CPoint point)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    if ( pWnd->GetSafeHwnd() != this->m_LoadsListCtrl.GetSafeHwnd() )
+   {
       return;
+   }
 
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition();
    if ( pos == NULL )
@@ -636,7 +652,9 @@ void CEditLoadsView::OnSize(UINT nType, int cx, int cy)
 	
    CWnd* pLoads  = GetDlgItem(IDC_LOADS_LIST);
    if ( pLoads == NULL)
+   {
       return;
+   }
 
    CWnd* pAddP   = GetDlgItem(IDC_ADD_POINTLOAD);
    CWnd* pAddM   = GetDlgItem(IDC_ADD_MOMENTLOAD);
@@ -706,14 +724,15 @@ void CEditLoadsView::OnSize(UINT nType, int cx, int cy)
 void CEditLoadsView::OnHelp() 
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_EDIT_LOADS );
-	
 }
 
 BOOL CEditLoadsView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    if ( !CFormView::Create(lpszClassName, lpszWindowName, dwStyle, rect, pParentWnd, nID, pContext) )
+   {
       return FALSE;
+   }
 
    CWinApp* pApp = AfxGetApp();
    m_SortColIdx = pApp->GetProfileInt(_T("Settings"),_T("LoadViewSortColumn"),-1);
@@ -761,18 +780,18 @@ std::_tstring SortObject::GetEvent(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIndex) );
+      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      return std::_tstring( pEventMap->GetEventName(pLoadData->m_EventIndex) );
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIndex) );
+      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      return std::_tstring( pEventMap->GetEventName(pLoadData->m_EventIndex) );
    }
    else
    {
-      const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIndex) );
+      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      return std::_tstring( pEventMap->GetEventName(pLoadData->m_EventIndex) );
    }
 }
 
@@ -783,18 +802,18 @@ UserLoads::LoadCase SortObject::GetLoadCase(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return loadData.m_LoadCase;
+      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      return pLoadData->m_LoadCase;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return loadData.m_LoadCase;
+      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      return pLoadData->m_LoadCase;
    }
    else
    {
-      const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return loadData.m_LoadCase;
+      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      return pLoadData->m_LoadCase;
    }
 }
 
@@ -805,18 +824,18 @@ SpanIndexType SortObject::GetSpan(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return loadData.m_SpanGirderKey.spanIndex;
+      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      return pLoadData->m_spanKey.spanIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return loadData.m_SpanGirderKey.spanIndex;
+      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      return pLoadData->m_spanKey.spanIndex;
    }
    else
    {
-      const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return loadData.m_SpanGirderKey.spanIndex;
+      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      return pLoadData->m_spanKey.spanIndex;
    }
 }
 
@@ -827,18 +846,18 @@ GirderIndexType SortObject::GetGirder(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return loadData.m_SpanGirderKey.girderIndex;
+      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      return pLoadData->m_spanKey.girderIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return loadData.m_SpanGirderKey.girderIndex;
+      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      return pLoadData->m_spanKey.girderIndex;
    }
    else
    {
-      const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return loadData.m_SpanGirderKey.girderIndex;
+      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      return pLoadData->m_spanKey.girderIndex;
    }
 }
 
@@ -849,21 +868,25 @@ Float64 SortObject::GetLocation(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return (loadData.m_Fractional ? -1 : 1)*loadData.m_Location;
+      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      return (pLoadData->m_Fractional ? -1 : 1)*pLoadData->m_Location;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      if ( loadData.m_Type == UserLoads::Uniform )
+      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      if ( pLoadData->m_Type == UserLoads::Uniform )
+      {
          return 0;
+      }
       else
-         return (loadData.m_Fractional ? -1 : 1)*loadData.m_StartLocation;
+      {
+         return (pLoadData->m_Fractional ? -1 : 1)*pLoadData->m_StartLocation;
+      }
    }
    else
    {
-      const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return (loadData.m_Fractional ? -1 : 1)*loadData.m_Location;
+      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      return (pLoadData->m_Fractional ? -1 : 1)*pLoadData->m_Location;
    }
 }
 
@@ -874,18 +897,18 @@ Float64 SortObject::GetMagnitude(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return loadData.m_Magnitude;
+      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      return pLoadData->m_Magnitude;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return loadData.m_WStart;
+      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      return pLoadData->m_WStart;
    }
    else
    {
-      const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return loadData.m_Magnitude;
+      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      return pLoadData->m_Magnitude;
    }
 }
 
@@ -896,18 +919,18 @@ CString SortObject::GetDescription(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return loadData.m_Description.c_str();
+      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      return pLoadData->m_Description.c_str();
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return loadData.m_Description.c_str();
+      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      return pLoadData->m_Description.c_str();
    }
    else
    {
-      const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return loadData.m_Description.c_str();
+      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      return pLoadData->m_Description.c_str();
    }
 }
 
@@ -956,7 +979,9 @@ int SortObject::SortFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort)
 }
 
    if ( !SortObject::m_bSortAscending )
+   {
       result = !result;
+   }
 
    return result;
 }
@@ -973,17 +998,25 @@ void CEditLoadsView::OnHeaderClicked(NMHDR* pNMHDR, LRESULT* pResult)
 void CEditLoadsView::Sort(int columnIdx,bool bReverse)
 {
    if ( columnIdx < 0 )
+   {
       return; 
+   }
 
    if ( m_LoadsListCtrl.GetItemCount() <= 0 )
+   {
       return; // nothing to sort if there aren't any items... leave now and don't mess with icons in the header
+   }
 
    if ( bReverse )
+   {
       SortObject::m_bSortAscending = !m_bSortAscending;
+   }
    else
+   {
       SortObject::m_bSortAscending = m_bSortAscending;
+   }
 
-   GET_IFACE(IUserDefinedLoadData, pUdl);
+   GET_IFACE_NOCHECK(IUserDefinedLoadData, pUdl);
    SortObject::m_pUdl = pUdl;
  
    m_LoadsListCtrl.SortItems(SortObject::SortFunc,columnIdx);

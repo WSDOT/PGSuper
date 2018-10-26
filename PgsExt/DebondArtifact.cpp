@@ -261,10 +261,14 @@ bool pgsDebondArtifact::RowPassed(CollectionIndexType rowIndex) const
    bool bPassed = true;
 
    if ( m_MaxFraDebondedStrandsInRow[rowIndex] < m_FraDebondedStrandsInRow[rowIndex] )
+   {
       bPassed = false;
+   }
 
    if ( m_IsExteriorStrandDebonded[rowIndex] )
+   {
       bPassed = false;
+   }
 
 
    return bPassed;

@@ -80,9 +80,12 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      *pChapter << pPara;
-      *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+      if ( 1 < nSegments )
+      {
+         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         *pChapter << pPara;
+         *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+      }
 
       CSegmentKey segmentKey(girderKey,segIdx);
 
@@ -96,7 +99,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    // Report for Closure Joints
    // need to report for all spec-check intervals after a closure joint
    // is composite with the girder
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there is more than one segment in the girder
    std::vector<IntervalIndexType> vSpecCheckIntervals = pIntervals->GetSpecCheckIntervals(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
    {
@@ -195,7 +198,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
    FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
 
    *pPara << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
-   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the bottom of the girder") << rptNewLine;
+   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the girder") << rptNewLine;
 }
 
 void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const
@@ -211,7 +214,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
    FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
 
    *pPara << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
-   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the bottom of the closure joint") << rptNewLine;
+   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the closure joint") << rptNewLine;
 }
 
 void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx) const
@@ -231,7 +234,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
    FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
 
    *pPara << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
-   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the bottom of the deck") << rptNewLine;
+   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the non-composite girder") << rptNewLine;
 }
 
 rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IEAFDisplayUnits* pDisplayUnits) const
@@ -287,13 +290,13 @@ rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(const CGirde
    (*pTable)(1,col++) << COLHDR(RPT_STRESS(_T("t")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*pTable)(1,col++) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*pTable)(1,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("s"))<< rptNewLine << _T("Required"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(1,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*pTable)(1,col++) << COLHDR(RPT_STRESS(_T("b")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*pTable)(1,col++) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*pTable)(1,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("s"))<< rptNewLine << _T("Required"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(1,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
 
    return pTable;
 }
@@ -305,10 +308,9 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
-   // allowable tension stresses are check in the Service I limit state before live load is applied and in the
+   // allowable tension stresses are checked in the Service I limit state before live load is applied and in the
    // Service III limit state after live load is applied
    pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
@@ -332,6 +334,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    SegmentIndexType firstSegIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
    SegmentIndexType lastSegIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegIdx );
 
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    for ( SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++ )
    {
@@ -341,7 +344,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
       CollectionIndexType nArtifacts;
       if ( poi.GetID() == INVALID_ID )
       {
-         // reporting for all pois
+         // reporting for all vPoi
          nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension);
       }
       else
@@ -349,6 +352,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
          // reporting for a specific POI
          nArtifacts = 1;
       }
+
       for ( CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
       {
          const pgsFlexuralStressArtifact* pArtifact;
@@ -370,6 +374,8 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
 
          const pgsPointOfInterest& thisPoi(pArtifact->GetPointOfInterest());
 
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisPoi.GetSegmentKey());
+
          (*pTable)(row,0) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, thisPoi );
 
          Float64 Yna,At,T,AsProvided,AsRequired;
@@ -385,7 +391,12 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
          }
          else
          {
-            (*pTable)(row,1) << dim.SetValue(Yna);
+            // report depth to neutral axis from top of girder... tension usually governs on the top
+            // and top rebar is usually measured from the top downwards
+            Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,thisPoi);
+            Float64 Y = Hg - Yna;
+
+            (*pTable)(row,1) << dim.SetValue(Y);
 
             // We have a neutral axis. See which side is in tension
             Float64 fTop = pArtifact->GetDemand(topLocation);
@@ -424,8 +435,8 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
             col = dataStart;
             (*pTable)(row,col++) << area.SetValue(At);
             (*pTable)(row,col++) << force.SetValue(T);
-            (*pTable)(row,col++) << area.SetValue(AsProvided);
             (*pTable)(row,col++) << area.SetValue(AsRequired);
+            (*pTable)(row,col++) << area.SetValue(AsProvided);
             ATLASSERT(col==dataEnd);
          }
 

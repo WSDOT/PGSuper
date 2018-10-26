@@ -78,7 +78,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    if ( bIgnoreInitialRelaxation ) // for perm strands
       numColumns--;
 
-   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
       numColumns++;
 
    if ( bTemporaryStrands )
@@ -99,7 +99,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    *pChapter << pParagraph;
    *pParagraph << _T("Losses at Shipping") << rptNewLine;
 
-   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
       *pParagraph << _T("Prestressed Permanent Strands") << rptNewLine;
    }
@@ -115,7 +115,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
 
-   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << rptNewLine;
@@ -155,7 +155,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       if ( bIgnoreInitialRelaxation )
          colspan--;
 
-      table->SetColumnSpan(0,2,colspan + (pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ? 1 : 0));
+      table->SetColumnSpan(0,2,colspan + (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ? 1 : 0));
       (*table)(0,2) << _T("Permanent Strands");
 
       table->SetColumnSpan(0,3,colspan);
@@ -174,7 +174,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
+      if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
       {
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
@@ -198,7 +198,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
+      if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
       {
          (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
@@ -224,7 +224,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
 
    (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
    (*this)(row+rowOffset,col++) << stress.SetValue(fpLTH);
-   if ( m_pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
       (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
    }

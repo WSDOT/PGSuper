@@ -99,7 +99,9 @@ COLORREF CGraphColor::GetColor(IndexType graphIndex)
 void CGraphColor::ComputeColorParameters()
 {
    if ( m_nGraphs == 0 )
+   {
       return;
+   }
 
    // number of color bands
    m_nColorBands = (IndexType)ceil( (Float64)m_nGraphs / (Float64)m_ColorsPerBand );

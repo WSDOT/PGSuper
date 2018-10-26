@@ -81,7 +81,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,
                                       bool bGirderStresses
                                       ) const
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals); // only used if there are more than one segment in the girder
 
    bool bAreSegmentsJoined = true;
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -211,17 +211,25 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    if ( bCompression )
    {
       if ( bIsStressingInterval )
+      {
          *pPara << _T("Compression Stresses [5.9.4.1.1]") << rptNewLine;
+      }
       else
+      {
          *pPara << _T("Compression Stresses [5.9.4.2.1]") << rptNewLine;
+      }
    }
    
    if ( bTension )
    {
       if ( bIsStressingInterval )
+      {
          *pPara << _T("Tension Stresses [5.9.4.1.2]") << rptNewLine;
+      }
       else
+      {
          *pPara << _T("Tension Stresses [5.9.4.2.2]") << rptNewLine;
+      }
    }
 }
 
@@ -281,7 +289,8 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPressureSectionValue,   stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS || segIdx == ALL_SEGMENTS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
+
    rptCapacityToDemand cap_demand;
 
    bool bIncludePrestress = (bGirderStresses ? true : false);
@@ -349,14 +358,21 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    nColumns += columnInc;
 
    // Tension allowable with rebar
-   if ( bApplicableTensionTop && bWasWithRebarAllowableUsedTop )
+   if ( bWasWithRebarAllowableUsedTop && bWasWithRebarAllowableUsedBot )
    {
-      nColumns++;
+      nColumns += 2;
    }
-
-   if ( bApplicableTensionBot && bWasWithRebarAllowableUsedBot )
+   else
    {
-      nColumns++;
+      if ( bApplicableTensionTop && bWasWithRebarAllowableUsedTop )
+      {
+         nColumns++;
+      }
+
+      if ( bApplicableTensionBot && bWasWithRebarAllowableUsedBot )
+      {
+         nColumns++;
+      }
    }
 
    // Precompressed Tensile Zone
@@ -364,11 +380,14 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
    // Status
    if ( bApplicableTensionTop || bApplicableTensionBot )
+   {
       nColumns++; // tension status
+   }
 
    if ( bApplicableCompressionTop || bApplicableCompressionBot )
+   {
       nColumns++; // compression status
-
+   }
 
    p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
    *p << p_table << rptNewLine;
@@ -385,9 +404,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    p_table->SetRowSpan(0,col1,2);
    p_table->SetRowSpan(1,col2++,SKIP_CELL);
    if ( intervalIdx == releaseIntervalIdx )
+   {
       (*p_table)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   }
    else
+   {
       (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   }
 
 
    GET_IFACE2(pBroker, IEventMap, pEventMap );
@@ -517,19 +540,15 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    // Fill up the table
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
    if ( intervalIdx == releaseIntervalIdx )
+   {
       end_size = 0; // don't adjust if CY stage
+   }
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
    for ( SegmentIndexType sIdx = firstSegIdx; sIdx <= lastSegIdx; sIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(sIdx);
-
-#pragma Reminder("UPDATE: get list of POIs from segment artifact to report on")
-      // Use the list instead of the loop on artifact index...
-      // Use the Find artifact method to get the artifact at a POI
-      //
-      // It may be a little slower, but we are guarenteed to get the report correct
 
       CollectionIndexType nArtifacts = Max(
          pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Compression),
@@ -551,7 +570,18 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 #endif
 
          if ( pTensionArtifact == NULL && pCompressionArtifact == NULL )
+         {
             continue;
+         }
+
+#if defined _DEBUG
+         if ( pTensionArtifact && pCompressionArtifact )
+         {
+            // artifacts should be reporting at the same poi
+            ATLASSERT(pTensionArtifact->GetPointOfInterest().GetID() == pCompressionArtifact->GetPointOfInterest().GetID());
+            ATLASSERT(pTensionArtifact->GetPointOfInterest().GetID() != INVALID_ID);
+         }
+#endif
 
 
          const pgsPointOfInterest& poi( pTensionArtifact ? pTensionArtifact->GetPointOfInterest() : pCompressionArtifact->GetPointOfInterest());
@@ -686,9 +716,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                Float64 cdr  = bGirderStresses ? pTensionArtifact->GetBeamCDRatio() : pTensionArtifact->GetDeckCDRatio();
 
                if ( bPassed )
+               {
                  (*p_table)(row,col) << RPT_PASS;
+               }
                else
+               {
                  (*p_table)(row,col) << RPT_FAIL;
+               }
 
                (*p_table)(row,col) << rptNewLine << _T("(") << cap_demand.SetValue(cdr) << _T(")");
                
@@ -799,9 +833,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                bool bPassed = bGirderStresses ? pCompressionArtifact->BeamPassed()     : pCompressionArtifact->DeckPassed();
                Float64 cdr  = bGirderStresses ? pCompressionArtifact->GetBeamCDRatio() : pCompressionArtifact->GetDeckCDRatio();
                if ( bPassed )
+               {
                  (*p_table)(row,col) << RPT_PASS;
+               }
                else
+               {
                  (*p_table)(row,col) << RPT_FAIL;
+               }
 
                (*p_table)(row,col) << rptNewLine << _T("(") << cap_demand.SetValue(cdr) << _T(")");
                
@@ -899,11 +937,8 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
    GET_IFACE2(pBroker,IMaterials,pMaterials);
 
 
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateTableNoHeading(2);
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
    *pPara << pLayoutTable;
-   pLayoutTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
-   pLayoutTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
-
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
    SegmentIndexType firstSegIdx = (segIdx == ALL_SEGMENTS ? 0 : segIdx);
@@ -927,9 +962,13 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
 
       Float64 fc = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
       if ( intervalIdx == releaseIntervalIdx )
+      {
          *p << RPT_FCI << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
+      }
       else
+      {
          *p << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
+      }
 
       IndexType nArtifacts = Max(pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension),
                                  pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Compression));
@@ -972,15 +1011,21 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
          p = &(*pLayoutTable)(rowIdx,1);
 
          if ( firstSegIdx != lastSegIdx )
+         {
             *p << _T("Closure Joint ") << LABEL_SEGMENT(sIdx) << rptNewLine;
+         }
 
          IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(segmentKey);
 
          Float64 fc = pMaterials->GetClosureJointFc(segmentKey,intervalIdx);
          if ( intervalIdx == compositeClosureIntervalIdx )
+         {
             *p << RPT_FCI << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
+         }
          else
+         {
             *p << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
+         }
 
          BuildAllowClosureJointStressInformation(p, pBroker, pSegmentArtifact, nArtifacts-1, pDisplayUnits, intervalIdx, limitState);
 
@@ -1007,7 +1052,6 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    Float64 fc = pMaterials->GetDeckFc(girderKey,intervalIdx);
    *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
@@ -1039,6 +1083,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       const pgsFlexuralStressArtifact* pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,0);
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
 
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
       bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(girderKey,intervalIdx);
 
       Float64 t;            // tension coefficient
@@ -1149,9 +1194,13 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
       *pPara << _T("Allowable compressive stress = -") << c;
 
       if ( bFci )
+      {
          (*pPara) << RPT_FCI;
+      }
       else
+      {
          (*pPara) << RPT_FC;
+      }
       
       *pPara << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
    }
@@ -1184,9 +1233,13 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
                   << tension_coeff.SetValue(t) << symbol(ROOT);
          
          if ( bFci )
+         {
             (*pPara) << RPT_FCI;
+         }
          else
+         {
             (*pPara) << RPT_FC;
+         }
 
          if ( b_t_max )
          {
@@ -1206,9 +1259,13 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
                      << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
 
             if ( bFci )
+            {
                (*pPara) << RPT_FCI;
+            }
             else
+            {
                (*pPara) << RPT_FC;
+            }
 
             (*pPara) << _T(" = ") << stress_u.SetValue(fAllowable)
                      << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
@@ -1221,9 +1278,13 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
                   << tension_coeff.SetValue(t) << symbol(ROOT);
 
          if ( bFci )
+         {
             (*pPara) << RPT_FCI;
+         }
          else
+         {
             (*pPara) << RPT_FC;
+         }
 
          if ( b_t_max )
          {
@@ -1294,9 +1355,13 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
       Float64 fAllowable = pAllowable->GetClosureJointAllowableCompressionStress(poi,intervalIdx,limitState);
       *pPara << _T("Allowable compressive stress = -") << c;
       if (bFci)
+      {
          *pPara << RPT_FCI;
+      }
       else
+      {
          *pPara << RPT_FC;
+      }
 
       *pPara << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
    }
@@ -1328,9 +1393,13 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
                   << tension_coeff.SetValue(t) << symbol(ROOT);
          
       if ( bFci )
+      {
          *pPara << RPT_FCI;
+      }
       else
+      {
          *pPara << RPT_FC;
+      }
 
       if ( b_t_max )
       {
@@ -1360,9 +1429,13 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
                   << tension_coeff.SetValue(t) << symbol(ROOT);
          
       if ( bFci )
+      {
          *pPara << RPT_FCI;
+      }
       else
+      {
          *pPara << RPT_FC;
+      }
 
       if ( b_t_max )
       {

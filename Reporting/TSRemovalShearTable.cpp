@@ -85,21 +85,20 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
    GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
 
-   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(girderKey);
 
 
    // Get the results
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec); // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoads, pUDL);           // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi);             // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker,IProductForces2,pForces2);           // only used if there are temporary supports to be removed
+
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
-
 
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
@@ -110,7 +109,9 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
       if ( tsrIntervals.size() == 0 )
+      {
          continue; // next group
+      }
 
 
       // determine if any user defined loads where applied before the first temporary
@@ -158,7 +159,7 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bIsFutureOverlay,false,bPedLoading,
                                                                                                  bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
                                                                                                  pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
@@ -180,32 +181,32 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
          }
 
          CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-         std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );
+         std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );
 
          // Get the results for this span (it is faster to get them as a vector rather than individually)
-         std::vector<sysSectionValue> girder    = pForces2->GetShear(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, ctIncremental);
-         std::vector<sysSectionValue> diaphragm = pForces2->GetShear(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, ctIncremental);
+         std::vector<sysSectionValue> girder    = pForces2->GetShear(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, rtIncremental);
+         std::vector<sysSectionValue> diaphragm = pForces2->GetShear(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, rtIncremental);
 
          std::vector<sysSectionValue> minSlab, maxSlab;
          std::vector<sysSectionValue> minSlabPad, maxSlabPad;
-         maxSlab = pForces2->GetShear( tsrIntervalIdx, pftSlab, vPoi, maxBAT, ctIncremental );
-         minSlab = pForces2->GetShear( tsrIntervalIdx, pftSlab, vPoi, minBAT, ctIncremental );
+         maxSlab = pForces2->GetShear( tsrIntervalIdx, pftSlab, vPoi, maxBAT, rtIncremental );
+         minSlab = pForces2->GetShear( tsrIntervalIdx, pftSlab, vPoi, minBAT, rtIncremental );
 
-         maxSlabPad = pForces2->GetShear( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, ctIncremental );
-         minSlabPad = pForces2->GetShear( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, ctIncremental );
+         maxSlabPad = pForces2->GetShear( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, rtIncremental );
+         minSlabPad = pForces2->GetShear( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, rtIncremental );
 
          std::vector<sysSectionValue> minDeckPanel, maxDeckPanel;
          if ( bDeckPanels )
          {
-            maxDeckPanel = pForces2->GetShear( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, ctIncremental );
-            minDeckPanel = pForces2->GetShear( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, ctIncremental );
+            maxDeckPanel = pForces2->GetShear( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, rtIncremental );
+            minDeckPanel = pForces2->GetShear( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, rtIncremental );
          }
 
          std::vector<sysSectionValue> minConstruction, maxConstruction;
          if ( bConstruction )
          {
-            maxConstruction = pForces2->GetShear( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, ctIncremental );
-            minConstruction = pForces2->GetShear( tsrIntervalIdx, pftConstruction, vPoi, minBAT, ctIncremental );
+            maxConstruction = pForces2->GetShear( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, rtIncremental );
+            minConstruction = pForces2->GetShear( tsrIntervalIdx, pftConstruction, vPoi, minBAT, rtIncremental );
          }
 
          std::vector<sysSectionValue> minOverlay, maxOverlay;
@@ -215,30 +216,30 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
 
          if ( bSidewalk )
          {
-            maxSidewalk = pForces2->GetShear( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, ctIncremental );
-            minSidewalk = pForces2->GetShear( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, ctIncremental );
+            maxSidewalk = pForces2->GetShear( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, rtIncremental );
+            minSidewalk = pForces2->GetShear( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, rtIncremental );
          }
 
          if ( bShearKey )
          {
-            maxShearKey = pForces2->GetShear( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, ctIncremental );
-            minShearKey = pForces2->GetShear( tsrIntervalIdx, pftShearKey, vPoi, minBAT, ctIncremental );
+            maxShearKey = pForces2->GetShear( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, rtIncremental );
+            minShearKey = pForces2->GetShear( tsrIntervalIdx, pftShearKey, vPoi, minBAT, rtIncremental );
          }
 
-         maxTrafficBarrier = pForces2->GetShear( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, ctIncremental );
-         minTrafficBarrier = pForces2->GetShear( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, ctIncremental );
+         maxTrafficBarrier = pForces2->GetShear( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtIncremental );
+         minTrafficBarrier = pForces2->GetShear( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtIncremental );
          if ( overlayIntervalIdx != INVALID_INDEX )
          {
-            maxOverlay = pForces2->GetShear( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, ctIncremental );
-            minOverlay = pForces2->GetShear( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, ctIncremental );
+            maxOverlay = pForces2->GetShear( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, rtIncremental );
+            minOverlay = pForces2->GetShear( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, rtIncremental );
          }
 
          std::vector<sysSectionValue> userDC, userDW, userLLIM;
          if ( bAreThereUserLoads )
          {
-            userDC   = pForces2->GetShear(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT, ctIncremental);
-            userDW   = pForces2->GetShear(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT, ctIncremental);
-            userLLIM = pForces2->GetShear(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental);
+            userDC   = pForces2->GetShear(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT, rtIncremental);
+            userDW   = pForces2->GetShear(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT, rtIncremental);
+            userLLIM = pForces2->GetShear(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, rtIncremental);
          }
 
          // write out the results
@@ -323,8 +324,11 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
                (*p_table)(row,col++) << shear.SetValue( maxTrafficBarrier[index] );
                (*p_table)(row,col++) << shear.SetValue( minTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << shear.SetValue( maxOverlay[index] );
-               (*p_table)(row,col++) << shear.SetValue( minOverlay[index] );
+               if ( overlayIntervalIdx != INVALID_INDEX )
+               {
+                  (*p_table)(row,col++) << shear.SetValue( maxOverlay[index] );
+                  (*p_table)(row,col++) << shear.SetValue( minOverlay[index] );
+               }
             }
             else
             {
@@ -335,7 +339,10 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
 
                (*p_table)(row,col++) << shear.SetValue( maxTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << shear.SetValue( maxOverlay[index] );
+               if ( overlayIntervalIdx != INVALID_INDEX )
+               {
+                  (*p_table)(row,col++) << shear.SetValue( maxOverlay[index] );
+               }
             }
 
             if ( bAreThereUserLoads )

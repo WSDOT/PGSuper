@@ -58,10 +58,14 @@ CStressTendonActivity& CStressTendonActivity::operator= (const CStressTendonActi
 bool CStressTendonActivity::operator==(const CStressTendonActivity& rOther) const
 {
    if ( m_bEnabled != rOther.m_bEnabled )
+   {
       return false;
+   }
 
    if ( m_Tendons != rOther.m_Tendons )
+   {
       return false;
+   }
 
    return true;
 }
@@ -108,11 +112,42 @@ void CStressTendonActivity::RemoveTendon(const CGirderKey& girderKey,DuctIndexTy
    if ( found != m_Tendons.end() )
    {
       m_Tendons.erase(found);
+
+      // adjust the remaining keys for this girder.
+      // if we remove ductIdx 0, ductIdx 1 becomes 0, 2 becomes 1, etc
+      std::set<CTendonKey>::iterator iter(m_Tendons.begin());
+      std::set<CTendonKey>::iterator end(m_Tendons.end());
+      for ( ; iter != end; iter++ )
+      {
+         CTendonKey& thisKey = *iter;
+         if ( thisKey.girderKey.IsEqual(girderKey) && ductIdx < thisKey.ductIdx )
+         {
+            thisKey.ductIdx--;
+         }
+      }
    }
    else
    {
       ATLASSERT(false); // not found???
    }
+}
+
+class MatchGirderKey
+{
+public:
+   MatchGirderKey(const CGirderKey& girderKey) : m_GirderKey(girderKey) {}
+   bool operator()(const CTendonKey& tendonKey) const
+   {
+      return( tendonKey.girderKey.IsEqual(m_GirderKey) ? true : false);
+   }
+
+private:
+   CGirderKey m_GirderKey;
+};
+
+void CStressTendonActivity::RemoveTendons(const CGirderKey& girderKey)
+{
+   m_Tendons.erase(std::remove_if(m_Tendons.begin(),m_Tendons.end(),MatchGirderKey(girderKey)),m_Tendons.end());
 }
 
 bool CStressTendonActivity::IsTendonStressed(const CGirderKey& girderKey,DuctIndexType ductIdx) const

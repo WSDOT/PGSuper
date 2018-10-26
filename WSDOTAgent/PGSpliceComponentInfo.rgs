@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSplice.WSDOTComponentInfo.1 = s 'WSDOT Component Information'
+	{
+		CLSID = s '{E389A200-D722-4977-AE9F-939F9C121A1C}'
+	}
+	PGSplice.WSDOTComponentInfo = s 'WSDOT Component Information'
+	{
+		CLSID = s '{E389A200-D722-4977-AE9F-939F9C121A1C}'
+		CurVer = s 'PGSplice.WSDOTComponentInfo.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {E389A200-D722-4977-AE9F-939F9C121A1C} = s 'WSDOT Component Information'
+		{
+			ProgID = s 'PGSplice.WSDOTComponentInfo.1'
+			VersionIndependentProgID = s 'PGSplice.WSDOTComponentInfo'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{3B6BF48B-C530-486E-918F-7705E13D6330}'
+		}
+	}
+}

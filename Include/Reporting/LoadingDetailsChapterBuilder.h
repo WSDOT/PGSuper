@@ -86,11 +86,11 @@ protected:
    void ReportShearKeyLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey,bool& one_girder_has_shear_key) const;
    void ReportEndDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const;
    
-   void ReportEquivPTLoads(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const;
+   void ReportEquivPostTensionLoads(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const;
 
    void ReportLiveLoad(rptChapter* pChapter,bool bDesign,bool bRating,IRatingSpecification* pRatingSpec,bool& bPermit) const;
    void ReportLimitStates(rptChapter* pChapter,bool bDesign,bool bRating,bool bPermit,bool one_girder_has_shear_key,IRatingSpecification* pRatingSpec) const;
-   void ReportCamberLoads(rptChapter* pChatper,bool bRating,IBridge* pBridge,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const;
+   void ReportEquivPretensionLoads(rptChapter* pChatper,bool bRating,IBridge* pBridge,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

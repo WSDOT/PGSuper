@@ -29,8 +29,7 @@ CCastClosureJointDlg::CCastClosureJointDlg(const CTimelineManager* pTimelineMgr,
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   m_pDisplayUnits = pDisplayUnits;
+   pBroker->GetInterface(IID_IEAFDisplayUnits,(IUnknown**)&m_pDisplayUnits);
 }
 
 CCastClosureJointDlg::~CCastClosureJointDlg()
@@ -40,10 +39,6 @@ CCastClosureJointDlg::~CCastClosureJointDlg()
 void CCastClosureJointDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    if ( pDX->m_bSaveAndValidate )
    {

@@ -62,7 +62,9 @@ pgsPoiArtifactKey::~pgsPoiArtifactKey()
 pgsPoiArtifactKey& pgsPoiArtifactKey::operator = (const pgsPoiArtifactKey& rOther)
 {
    if ( this != &rOther )
+   {
       MakeAssignment( rOther );
+   }
 
    return *this;
 }
@@ -70,22 +72,34 @@ pgsPoiArtifactKey& pgsPoiArtifactKey::operator = (const pgsPoiArtifactKey& rOthe
 bool pgsPoiArtifactKey::operator<(const pgsPoiArtifactKey& rOther) const
 {
    if ( m_IntervalIdx < rOther.m_IntervalIdx )
+   {
       return true;
+   }
 
    if ( m_IntervalIdx > rOther.m_IntervalIdx )
+   {
       return false;
+   }
 
    if ( m_LimitState < rOther.m_LimitState )
+   {
       return true;
+   }
 
    if ( m_LimitState > rOther.m_LimitState )
+   {
       return false;
+   }
 
    if ( m_DistFromStart < rOther.m_DistFromStart )
+   {
       return true;
+   }
 
    if ( IsEqual(m_DistFromStart,rOther.m_DistFromStart) || m_DistFromStart > rOther.m_DistFromStart )
+   {
       return false;
+   }
 
    return true;
 }

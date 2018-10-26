@@ -76,12 +76,13 @@ void CConcreteManager::Reset()
 void CConcreteManager::ValidateConcrete()
 {
    if ( m_bIsValidated )
+   {
       return;
+   }
 
    GET_IFACE(IIntervals,pIntervals);
 
 #pragma Reminder("UPDATE: using dummy POI to compute V/S for time-dependent properties")
-   GET_IFACE(ISectionProperties,pSectProp);
    pgsPointOfInterest poi(CSegmentKey(0,0,0),0.0); // dummy POI
 
    const CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
@@ -260,23 +261,24 @@ void CConcreteManager::ValidateConcrete()
    //
    //////////////////////////////////////////////////////////////////////////////
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   GET_IFACE(ILimits,pLimits);
+   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
    bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
    Float64 fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    // check railing system
    if ( !IsConcreteDensityInRange(m_pRailingConc[pgsTypes::tboLeft]->GetStrengthDensity(),(pgsTypes::ConcreteType)m_pRailingConc[pgsTypes::tboLeft]->GetType()) )
    {
       std::_tostringstream os;
       if ( m_pRailingConc[pgsTypes::tboLeft]->GetType() == pgsTypes::Normal )
+      {
          os << _T("Left railing system concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
+      }
       else
+      {
          os << _T("Left railing system concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+      }
 
       std::_tstring strMsg = os.str();
 
@@ -289,9 +291,13 @@ void CConcreteManager::ValidateConcrete()
    {
       std::_tostringstream os;
       if ( m_pRailingConc[pgsTypes::tboRight]->GetType() == pgsTypes::Normal )
+      {
          os << _T("Right railing system concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
+      }
       else
+      {
          os << _T("Right railing system concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+      }
 
       std::_tstring strMsg = os.str();
 
@@ -303,6 +309,9 @@ void CConcreteManager::ValidateConcrete()
    // Check Deck concrete
    if ( pDeck->DeckType != pgsTypes::sdtNone )
    {
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE(ILimits,pLimits);
+
       Float64 time = m_pDeckConc->GetTimeAtCasting() + m_pDeckConc->GetCureTime() + 28.0;
       Float64 fc28 = m_pDeckConc->GetFc(time);
       if ( fc28 < fcMin && !IsEqual(fc28,fcMin) )
@@ -365,9 +374,13 @@ void CConcreteManager::ValidateConcrete()
       {
          std::_tostringstream os;
          if ( m_pDeckConc->GetType() == pgsTypes::Normal )
+         {
             os << _T("Slab concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
+         }
          else
+         {
             os << _T("Slab concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+         }
 
          std::_tstring strMsg = os.str();
 
@@ -430,8 +443,9 @@ void CConcreteManager::ValidateConcrete(boost::shared_ptr<matConcreteBase> pConc
 {
    ATLASSERT(elementType == pgsConcreteStrengthStatusItem::GirderSegment || elementType == pgsConcreteStrengthStatusItem::ClosureJoint);
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(ILimits,pLimits);
+
+   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    pgsTypes::ConcreteType concreteType = (pgsTypes::ConcreteType)pConcrete->GetType();
 
@@ -525,9 +539,13 @@ void CConcreteManager::ValidateConcrete(boost::shared_ptr<matConcreteBase> pConc
    {
       std::_tostringstream os;
       if ( concreteType == pgsTypes::Normal )
+      {
          os << strLabel << _T(": concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
+      }
       else
+      {
          os << strLabel << _T(": concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+      }
 
       strMsg = os.str();
 
@@ -922,54 +940,78 @@ pgsTypes::ConcreteType CConcreteManager::GetDeckConcreteType()
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return (pgsTypes::ConcreteType)m_pDeckConc->GetType();
+   }
    else
+   {
       return pgsTypes::Normal;
+   }
 }
 
 bool CConcreteManager::DoesDeckConcreteHaveAggSplittingStrength()
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->HasAggSplittingStrength();
+   }
    else
+   {
       return false;
+   }
 }
 
 Float64 CConcreteManager::GetDeckConcreteAggSplittingStrength()
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetAggSplittingStrength();
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckStrengthDensity()
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetStrengthDensity();
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckWeightDensity()
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetWeightDensity();
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckMaxAggrSize()
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetMaxAggregateSize();
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckEccK1()
@@ -1084,9 +1126,13 @@ Float64 CConcreteManager::GetNWCDensityLimit()
 {
    Float64 limit;
    if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
+   {
       limit = ::ConvertToSysUnits(135.0,unitMeasure::LbfPerFeet3);
+   }
    else
+   {
       limit = ::ConvertToSysUnits(2150.0,unitMeasure::KgPerMeter3);
+   }
 
    return limit;
 }
@@ -1095,9 +1141,13 @@ Float64 CConcreteManager::GetLWCDensityLimit()
 {
    Float64 limit;
    if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
+   {
       limit = ::ConvertToSysUnits(120.0,unitMeasure::LbfPerFeet3);
+   }
    else
+   {
       limit = ::ConvertToSysUnits(1925.0,unitMeasure::KgPerMeter3);
+   }
 
    return limit;
 }
@@ -1151,63 +1201,91 @@ Float64 CConcreteManager::GetDeckCastingTime()
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetTimeAtCasting();
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckFc(Float64 t)
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetFc(t);
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckEc(Float64 t)
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetEc(t);
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckFlexureFr(Float64 t)
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetFlexureFr(t);
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckShearFr(Float64 t)
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetShearFr(t);
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t)
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetFreeShrinkageStrain(t);
+   }
    else
+   {
       return 0;
+   }
 }
 
 Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
 {
    ValidateConcrete();
    if ( m_pDeckConc.get() != NULL )
+   {
       return m_pDeckConc->GetCreepCoefficient(t,tla);
+   }
    else
+   {
       return 0;
+   }
 }
 
 matConcreteBase* CConcreteManager::GetDeckConcrete()
@@ -1364,7 +1442,6 @@ matACI209Concrete* CConcreteManager::CreateACI209Model(const CConcreteMaterial& 
    if ( concrete.bBasePropertiesOnInitialValues )
    {
       // back out Fc28 and Ec28 based on properties at time of casting
-      GET_IFACE(IIntervals,pIntervals);
       pConcrete->SetFc28(concrete.Fci,ageAtInitialLoading);
       pConcrete->UserEc28(concrete.bUserEci);
       pConcrete->SetEc28(concrete.Eci,ageAtInitialLoading);

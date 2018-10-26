@@ -85,16 +85,26 @@ int CDuctGrid::GetColWidth(ROWCOL nCol)
 {
 	CRect rect = GetGridRect( );
    if ( nCol == nPjackUserCol )
+   {
       return 0;
+   }
 
    if ( nCol == 0 )
+   {
       return rect.Width()/18;
+   }
    else if ( nCol == nDuctSizeCol )
+   {
       return rect.Width()/9;
+   }
    else if ( nCol == nEventCol )
+   {
       return 2*rect.Width()/9;
+   }
    else if ( nCol == nPjackCheckCol )
+   {
       return 20; // want it to just fit the check box
+   }
 
    return rect.Width()/9;
 }
@@ -292,7 +302,9 @@ void CDuctGrid::SetRowStyle(ROWCOL row)
    for (Uint32 i = 0; i < CDuctSize::nDuctSizes; i++ )
    {
       if ( i != 0 )
+      {
          ductSizes += _T("\n");
+      }
 
       ductSizes += CDuctSize::DuctSizes[i].Name;
    }
@@ -319,15 +331,12 @@ void CDuctGrid::SetRowStyle(ROWCOL row)
    SetStyleRange(CGXRange(row,nPjackCheckCol), CGXStyle()
       .SetControl(GX_IDS_CTRL_CHECKBOX3D)
       .SetHorizontalAlignment(DT_LEFT)
-      //.SetChoiceList(_T("Calculate"))
       );
 
-#pragma Reminder("UPDATE: add other duct geometry types") // commented out for alpha release to TxDOT
-   //CString strDuctType = _T("Linear\nParabolic");
+   CString strDuctType = _T("Linear\nParabolic");
+   // offset ducts not supported yet
    //if ( row != 1 )
    //   strDuctType += _T("\nOffset");
-
-   CString strDuctType = _T("Parabolic");
 
    SetStyleRange(CGXRange(row,nDuctGeomTypeCol), CGXStyle()
       .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
@@ -357,9 +366,13 @@ void CDuctGrid::UpdateEventList(ROWCOL row)
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       CString label;
       if ( eventIdx == 0 )
+      {
          label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
+      }
       else
+      {
          label.Format(_T("\nEvent %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
+      }
 
       events += label;
    }
@@ -426,6 +439,11 @@ void CDuctGrid::OnCalcPjack(ROWCOL nRow)
 void CDuctGrid::OnDuctTypeChanged(ROWCOL nRow)
 {
    CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
+   DuctIndexType ductIdx = DuctIndexType(nRow-1);
+
+   CDuctGeometry::GeometryType geomType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(nRow,nDuctGeomTypeCol));
+   m_pPTData->GetDuct(ductIdx)->DuctGeometryType = geomType;
+
    pParent->Invalidate();
    pParent->UpdateWindow();
 }
@@ -434,10 +452,8 @@ void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
 {
    CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
 
-#pragma Reminder("UPDATE: add other duct geometry types") // commented out for alpha release to TxDOT
-//   CDuctGeometry::GeometryType geomType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(nRow,nDuctGeomTypeCol));
-   CDuctGeometry::GeometryType geomType = CDuctGeometry::Parabolic;
-   int ductIdx = nRow-1;
+   CDuctGeometry::GeometryType geomType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(nRow,nDuctGeomTypeCol));
+   DuctIndexType ductIdx = DuctIndexType(nRow-1);
    if ( geomType == CDuctGeometry::Linear )
    {
       CLinearDuctDlg dlg(pParent);
@@ -462,6 +478,7 @@ void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
    }
    else if ( geomType == CDuctGeometry::Offset )
    {
+      ATLASSERT(false);// not supported yet
       COffsetDuctDlg dlg(pParent);
       dlg.m_DuctGeometry = m_pPTData->GetDuct(ductIdx)->OffsetDuctGeometry;
       if ( dlg.DoModal() == IDOK )
@@ -494,9 +511,11 @@ CString CDuctGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
         CGXControl* pControl = GetControl(nRow, nCol);
         pControl->GetValue(s);
         return s;
-  }
+    }
     else
+    {
         return GetValueRowCol(nRow, nCol);
+    }
 }
 
 void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
@@ -521,9 +540,13 @@ void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
       TCHAR label[10];
 
       if ( nWebs == 1 )
+      {
          _stprintf_s(label,sizeof(label)/sizeof(TCHAR),_T("%d"),first_duct_in_row);
+      }
       else
+      {
          _stprintf_s(label,sizeof(label)/sizeof(TCHAR),_T("%d - %d"),first_duct_in_row,last_duct_in_row);
+      }
 
       SetValueRange(CGXRange(row,0),label);
    }
@@ -541,7 +564,9 @@ void CDuctGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
       // #of strand changed
       CString strCheck = GetCellValue(nRow,nPjackCheckCol);
       if ( strCheck == _T("0") ) // check box for Calc Pjack is unchecked
+      {
          UpdateMaxPjack(nRow);
+      }
    }
    else if ( nCol == nEventCol )
    {
@@ -610,13 +635,19 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
       );
 
    if ( nStrands < maxStrands )
+   {
       SetValueRange(CGXRange(nRow,nNumStrandCol),(LONG)nStrands);
+   }
    else
+   {
       SetValueRange(CGXRange(nRow,nNumStrandCol),(LONG)maxStrands);
+   }
 
    // If the Calc Pjack box is unchecked, update the jacking force
    if ( GetCellValue(nRow,nPjackCheckCol) == _T("0") )
+   {
       UpdateMaxPjack(nRow);
+   }
 }
 
 void CDuctGrid::UpdateMaxPjack(ROWCOL nRow)
@@ -655,12 +686,10 @@ void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressing
    duct.JackingEnd       = (pgsTypes::JackingEndType)_tstoi(GetCellValue(row,nJackEndCol));
    duct.bPjCalc          = 0 < _tstoi(GetCellValue(row,nPjackCheckCol)) ? false : true;
    duct.Pj               = _tstof(GetCellValue(row,nPjackCol));
-   duct.Pj = ::ConvertToSysUnits(duct.Pj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   duct.Pj               = ::ConvertToSysUnits(duct.Pj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    duct.LastUserPj       = _tstof(GetCellValue(row,nPjackUserCol));
-   duct.LastUserPj = ::ConvertToSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
-#pragma Reminder("UPDATE: add other duct geometry types") // commented out for alpha release to TxDOT
-//   duct.DuctGeometryType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(row,nDuctGeomTypeCol));
-   duct.DuctGeometryType = CDuctGeometry::Parabolic;
+   duct.LastUserPj       = ::ConvertToSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   duct.DuctGeometryType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(row,nDuctGeomTypeCol));
 
    stressingEvent = (EventIndexType)_tstoi(GetCellValue(row,nEventCol));
 }
@@ -679,9 +708,7 @@ void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stre
    SetValueRange(CGXRange(row,nPjackCheckCol),  (LONG)!duct.bPjCalc);
    SetValueRange(CGXRange(row,nPjackCol),       ::ConvertFromSysUnits(duct.Pj,        pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
    SetValueRange(CGXRange(row,nPjackUserCol),   ::ConvertFromSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
-#pragma Reminder("UPDATE: add other duct geometry types") // commented out for alpha release to TxDOT
-   //SetValueRange(CGXRange(row,nDuctGeomTypeCol),(LONG)duct.DuctGeometryType);
-   SetValueRange(CGXRange(row,nDuctGeomTypeCol),0L);
+   SetValueRange(CGXRange(row,nDuctGeomTypeCol),(LONG)duct.DuctGeometryType);
    SetValueRange(CGXRange(row,nEventCol),       (LONG)stressingEvent);
    
    OnCalcPjack(row);
@@ -759,7 +786,7 @@ EventIndexType CDuctGrid::CreateEvent()
    if ( dlg.DoModal() == IDOK )
    {
       return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
-  }
+   }
 
    return INVALID_INDEX;
 }

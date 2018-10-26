@@ -135,7 +135,9 @@ CGraphBuilder* CDeflectionHistoryGraphBuilder::Clone()
 int CDeflectionHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
 {
    if ( CEAFAutoCalcGraphBuilder::InitializeGraphController(pParent,nID) < 0 )
+   {
       return -1;
+   }
 
    EAFGetBroker(&m_pBroker);
 
@@ -204,27 +206,28 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& 
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IPointOfInterest,pPoi);
-   Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
+   SpanIndexType spanIdx;
+   Float64 Xspan;
+   pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
+
    CString strSubtitle;
-   std::_tstring strAttributes = poi.GetAttributes(POI_ERECTED_SEGMENT,false);
+   std::_tstring strAttributes = poi.GetAttributes(POI_SPAN,false);
    if ( strAttributes.size() == 0 )
    {
-      strSubtitle.Format(_T("Group %d Girder %s Segment %d, %s (X=%s)"),
+      strSubtitle.Format(_T("Group %d Girder %s Span %d (%s)"),
          LABEL_GROUP(segmentKey.groupIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
-         LABEL_SEGMENT(segmentKey.segmentIndex),
-         FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()),
-         FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit()));
+         LABEL_SPAN(spanIdx),
+         FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
    }
    else
    {
-      strSubtitle.Format(_T("Group %d Girder %s Segment %d, %s (%s) (X=%s)"),
+      strSubtitle.Format(_T("Group %d Girder %s Span %d, (%s (%s))"),
          LABEL_GROUP(segmentKey.groupIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
-         LABEL_SEGMENT(segmentKey.segmentIndex),
-         FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()),
-         strAttributes.c_str(),
-         FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit()));
+         LABEL_SPAN(spanIdx),
+         FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()),
+         strAttributes.c_str());
    }
 
    m_Graph.SetSubtitle(std::_tstring(strSubtitle));
@@ -239,13 +242,17 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
 
    COLORREF color = BLUE;
 
-   IndexType minDataSeriesIdx = m_Graph.CreateDataSeries(_T(""), PS_SOLID, 1, color);
-   IndexType maxDataSeriesIdx = m_Graph.CreateDataSeries(_T(""), PS_SOLID, 1, color);
-   IndexType dataSeriesIdx    = m_Graph.CreateDataSeries(_T(""), PS_DASH,  1, color);
+   int penWeight = GRAPH_PEN_WEIGHT;
 
-   GET_IFACE(ICombinedForces,pCombinedForces);
+   IndexType minDataSeriesIdx = m_Graph.CreateDataSeries(_T(""), PS_DOT,   penWeight, color);
+   IndexType maxDataSeriesIdx = m_Graph.CreateDataSeries(_T(""), PS_DOT,   penWeight, color);
+   IndexType dataSeriesIdx    = m_Graph.CreateDataSeries(_T(""), PS_SOLID, penWeight, color);
+
+   GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(ILimitStateForces,pLimitStateForces);
    GET_IFACE(IIntervals,pIntervals);
+
+   bool bIncludeElevationAdjustment = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeElevationAdjustment();
 
    IntervalIndexType nIntervals          = pIntervals->GetIntervalCount(segmentKey);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
@@ -268,35 +275,39 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
 
       Float64 yStartMin(0), yStartMax(0);
       Float64 yEndMin(0), yEndMax(0);
-      Float64 yStartLLMin(0), yStartLLMax(0);
-      Float64 yEndLLMin(0), yEndLLMax(0);
+      Float64 yStartNoLLMin(0), yStartNoLLMax(0);
+      Float64 yEndNoLLMin(0), yEndNoLLMax(0);
       if ( releaseIntervalIdx <= intervalIdx )
       {
-#pragma Reminder("UPDATE: hard coded bridge analysis type")
-         // this is ok if this is only for spliced girder bridges, otherwise
-         // query for this information
-         pgsTypes::BridgeAnalysisType bat = pgsTypes::ContinuousSpan;
+         pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+         pgsTypes::BridgeAnalysisType batMax = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
-         pLimitStateForces->GetDeflection(pgsTypes::ServiceI,prevIntervalIdx,poi,true/*include prestress*/,bat,&yStartMin,&yStartMax);
-
-         pLimitStateForces->GetDeflection(pgsTypes::ServiceI,intervalIdx,poi,true/*include prestress*/,bat,&yEndMin,&yEndMax);
-
-         if ( liveLoadIntervalIdx <= prevIntervalIdx )
+         bool bIncludePrestress = true;
+         bool bIncludeLiveLoad = true;
+         Float64 yDummy;
+         if ( batMin == batMax )
          {
-            pCombinedForces->GetCombinedLiveLoadDeflection(pgsTypes::lltDesign,prevIntervalIdx,poi,bat,&yStartLLMin,&yStartLLMax);
+            pLimitStateForces->GetDeflection(prevIntervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yStartMin,&yStartMax);
+            pLimitStateForces->GetDeflection(    intervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yEndMin,  &yEndMax);
+         }
+         else
+         {
+            pLimitStateForces->GetDeflection(prevIntervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yStartMin,&yDummy);
+            pLimitStateForces->GetDeflection(    intervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yEndMin,  &yDummy);
+
+            pLimitStateForces->GetDeflection(prevIntervalIdx,pgsTypes::ServiceI,poi,batMax,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yDummy,&yStartMax);
+            pLimitStateForces->GetDeflection(    intervalIdx,pgsTypes::ServiceI,poi,batMax,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yDummy,&yEndMax);
          }
 
-         if ( liveLoadIntervalIdx <= intervalIdx )
-         {
-            pCombinedForces->GetCombinedLiveLoadDeflection(pgsTypes::lltDesign,intervalIdx,poi,bat,&yEndLLMin,&yEndLLMax);
-         }
+         pLimitStateForces->GetDeflection(prevIntervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,false,bIncludeElevationAdjustment,&yStartNoLLMin,&yStartNoLLMax);
+         pLimitStateForces->GetDeflection(    intervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,false,bIncludeElevationAdjustment,&yEndNoLLMin,  &yEndNoLLMax);
       }
 
       AddGraphPoint(minDataSeriesIdx,xStart,yStartMin);
       AddGraphPoint(minDataSeriesIdx,xEnd,  yEndMin);
 
-      AddGraphPoint(dataSeriesIdx, xStart, yStartMin - yStartLLMin);
-      AddGraphPoint(dataSeriesIdx, xEnd,   yEndMin   - yEndLLMin);
+      AddGraphPoint(dataSeriesIdx, xStart, yStartNoLLMin);
+      AddGraphPoint(dataSeriesIdx, xEnd,   yEndNoLLMin);
 
       AddGraphPoint(maxDataSeriesIdx,xStart,yStartMax);
       AddGraphPoint(maxDataSeriesIdx,xEnd,  yEndMax);

@@ -27,6 +27,7 @@
 #include "LinearDuctGrid.h"
 #include "LinearDuctDlg.h"
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\Bridge.h>
 #include "PGSuperUnits.h"
 
 #ifdef _DEBUG
@@ -37,7 +38,8 @@ static char THIS_FILE[] = __FILE__;
 
 GRID_IMPLEMENT_REGISTER(CLinearDuctGrid, CS_DBLCLKS, 0, 0, 0);
 
-ROWCOL nDistanceCol   = 0;
+ROWCOL nLocationCol   = 0;
+ROWCOL nUnitCol       = 0;
 ROWCOL nOffsetCol     = 0;
 ROWCOL nOffsetTypeCol = 0;
 
@@ -77,7 +79,7 @@ void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
 	this->GetParam( )->EnableUndo(FALSE);
 
    const int num_rows=0;
-   const int num_cols=3;
+   const int num_cols=4;
 
 	this->SetRowCount(num_rows);
 	this->SetColCount(num_cols);
@@ -103,21 +105,22 @@ void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
    col++;
 
    // set text along top row
-   nDistanceCol = col++;
-   CString strDistance;
-   strDistance.Format(_T("Distance\n(%s)"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
-	this->SetStyleRange(CGXRange(0,nDistanceCol), CGXStyle()
+   nLocationCol = col++;
+   nUnitCol     = col++;
+	this->SetStyleRange(CGXRange(0,nLocationCol,0,nUnitCol), CGXStyle()
          .SetWrapText(TRUE)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetValue(strDistance)
+         .SetValue(_T("Location"))
+         .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
 		);
 
-   nOffsetCol = col++;
+   nOffsetCol     = col++;
+   nOffsetTypeCol = col++;
    CString strOffset;
    strOffset.Format(_T("Offset\n(%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
-	this->SetStyleRange(CGXRange(0,nOffsetCol), CGXStyle()
+	this->SetStyleRange(CGXRange(0,nOffsetCol,0,nOffsetTypeCol), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -125,16 +128,6 @@ void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
 			.SetValue(strOffset)
          .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
 		);
-
-   nOffsetTypeCol = col++;
-	this->SetStyleRange(CGXRange(0,nOffsetTypeCol), CGXStyle()
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(strOffset)
-         .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
- 	);
 
    // don't allow users to resize grids
    this->GetParam( )->EnableTrackColWidth(0); 
@@ -149,97 +142,235 @@ void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
 	this->GetParam( )->EnableUndo(TRUE);
 }
 
-CLinearDuctGeometry CLinearDuctGrid::GetData()
+void CLinearDuctGrid::GetData(CLinearDuctGeometry& ductGeometry)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   ductGeometry.Clear(); // make sure there aren't any points in the geometry object
 
-   CLinearDuctGeometry ductGeometry;
    ROWCOL nRows = GetRowCount();
    for ( ROWCOL row = 1; row <= nRows; row++ )
    {
-      Float64 distFromPrev = _tstof(GetCellValue(row,nDistanceCol));
-      Float64 offset       = _tstof(GetCellValue(row,nOffsetCol));
-      CLinearDuctGeometry::OffsetType offsetType = CLinearDuctGeometry::OffsetType(_tstoi(GetCellValue(row,nOffsetTypeCol)));
-
-      distFromPrev = ::ConvertToSysUnits(distFromPrev,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      offset       = ::ConvertToSysUnits(offset,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
-      ductGeometry.AddPoint(distFromPrev,offset,offsetType);
+      Float64 location,offset;
+      CLinearDuctGeometry::OffsetType offsetType;
+      GetPoint(row,&location,&offset,&offsetType);
+      ductGeometry.AddPoint(location,offset,offsetType);
    }
-
-   return ductGeometry;
 }
 
 void CLinearDuctGrid::SetData(const CLinearDuctGeometry& ductGeometry)
 {
+   // remove existing rows (clears the grid)
+   ROWCOL nRows = GetRowCount();
+   if ( 0 < nRows )
+   {
+	   RemoveRows(1,nRows);
+   }
+
    CollectionIndexType nPoints = ductGeometry.GetPointCount();
+   InsertRows(1,(ROWCOL)nPoints);
    for (CollectionIndexType idx = 0; idx < nPoints; idx++ )
    {
       ROWCOL row = ROWCOL(idx+1);
-      InsertRows(row,1);
       SetRowStyle(row);
-      FillRow(row);
+
+      Float64 location;
+      Float64 offset;
+      CLinearDuctGeometry::OffsetType offsetType;
+      ductGeometry.GetPoint(idx,&location,&offset,&offsetType);
+      FillRow(row,location,offset,offsetType);
    }
 }
 
 void CLinearDuctGrid::AddPoint()
 {
-   ROWCOL nRow = GetRowCount()+1;
+   ROWCOL nRow = GetRowCount();
    GetParam()->EnableUndo(FALSE);
 
    InsertRows(nRow,1);
+   
    SetRowStyle(nRow);
 
-   Float64 distFromPrev = ::ConvertToSysUnits(nRow == 1 ? 0.0 : 1.0,unitMeasure::Feet);
-   Float64 offset = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   Float64 location = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+   Float64 offset   = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+
+   FillRow(nRow,location,offset,CLinearDuctGeometry::BottomGirder);
 
    CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
-   pParent->m_DuctGeometry.AddPoint(distFromPrev,offset,CLinearDuctGeometry::BottomGirder);
+   if ( pParent->GetMeasurementType() == CLinearDuctGeometry::FromPrevious )
+   {
+      // need to adjust last point so it isn't past the end of the girder
+      CLinearDuctGeometry::OffsetType offsetType;
+      Float64 distance;
+      GetPoint(GetRowCount(),&distance,&offset,&offsetType);
+      distance -= location;
+      FillRow(GetRowCount(),distance,offset,offsetType);
+   }
 
-   FillRow(nRow);
 
 	Invalidate();
    GetParam()->EnableUndo(TRUE);
 
    if ( m_pCallback )
+   {
       m_pCallback->OnDuctChanged();
+   }
 }
 
-void CLinearDuctGrid::FillRow(ROWCOL row)
+void CLinearDuctGrid::DeletePoint()
 {
-   // I dont' like this method as it call back to the parent dialog... SetData and GetData don't do that
+#pragma Reminder("UPDATE: can't delete last row")
 
+	CGXRangeList* pSelList = GetParam()->GetRangeList();
+	if (pSelList->IsAnyCellFromCol(0) && pSelList->GetCount() == 1)
+	{
+		CGXRange range = pSelList->GetHead();
+		range.ExpandRange(1, 0, GetRowCount(), 0);
+		RemoveRows(range.top, range.bottom);
+	}
+
+   SetDeleteButtonState();
+
+   if ( m_pCallback )
+   {
+      m_pCallback->OnDuctChanged();
+   }
+}
+
+void CLinearDuctGrid::SetMeasurementType(CLinearDuctGeometry::MeasurementType mt)
+{
+   CLinearDuctGeometry ductGeometry;
+   ductGeometry.SetMeasurementType(mt); // this is important.. want the current state
+   // to be opposite what we will be setting it to below.
+
+   // set the duct geometry type to the opposite value than it is getting set to
+   // this was the value before the combo box selection changed
+   if ( mt == CLinearDuctGeometry::AlongGirder )
+   {
+      ductGeometry.SetMeasurementType(CLinearDuctGeometry::FromPrevious);
+   }
+   else
+   {
+      ductGeometry.SetMeasurementType(CLinearDuctGeometry::AlongGirder);
+   }
+   GetData(ductGeometry);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
+   const CGirderKey& girderKey = pParent->GetGirderKey();
+
+   // convert the duct geometry to the new measurement type
+   Float64 Lg = pBridge->GetGirderLength(girderKey);
+   ductGeometry.ConvertMeasurementType(mt,Lg);
+
+   // put the data back in the grid
+   SetData(ductGeometry);
+
+   if ( m_pCallback )
+   {
+      m_pCallback->OnDuctChanged();
+   }
+}
+
+void CLinearDuctGrid::FillRow(ROWCOL row,Float64 location,Float64 offset,CLinearDuctGeometry::OffsetType offsetType)
+{
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   Float64 distFromPrev;
-   Float64 offset;
-   CLinearDuctGeometry::OffsetType offsetType;
-
-   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
-   pParent->m_DuctGeometry.GetPoint(CollectionIndexType(row-1),&distFromPrev,&offset,&offsetType);
-
-   CString strDist;
-   strDist.Format(_T("%s"),FormatDimension(distFromPrev,pDisplayUnits->GetSpanLengthUnit(),false));
-   SetValueRange(CGXRange(row,nDistanceCol),strDist);
+   CString strLocation;
+   if ( location < 0 )
+   {
+      // fractional measure
+      SetValueRange(CGXRange(row,nLocationCol),-100.*location);
+      SetValueRange(CGXRange(row,nUnitCol),1L);
+   }
+   else
+   {
+      strLocation.Format(_T("%s"),FormatDimension(location,pDisplayUnits->GetSpanLengthUnit(),false));
+      SetValueRange(CGXRange(row,nLocationCol),strLocation);
+      SetValueRange(CGXRange(row,nUnitCol),0L);
+   }
 
    CString strOffset;
    strOffset.Format(_T("%s"),FormatDimension(offset,pDisplayUnits->GetComponentDimUnit(),false));
    SetValueRange(CGXRange(row,nOffsetCol),strOffset);
 
    SetValueRange(CGXRange(row,nOffsetTypeCol),(long)offsetType);
+
+   this->ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
+}
+
+void CLinearDuctGrid::GetPoint(ROWCOL row,Float64* pLocation,Float64* pOffset,CLinearDuctGeometry::OffsetType* pOffsetType)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   *pLocation = _tstof(GetCellValue(row,nLocationCol));
+   if (_tstoi(GetCellValue(row,nUnitCol)) == 1L )
+   {
+      *pLocation /= -100.0;
+   }
+   else
+   {
+      *pLocation = ::ConvertToSysUnits(*pLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   }
+
+   *pOffset = _tstof(GetCellValue(row,nOffsetCol));
+   *pOffset = ::ConvertToSysUnits(*pOffset, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   *pOffsetType = CLinearDuctGeometry::OffsetType(_tstoi(GetCellValue(row,nOffsetTypeCol)));
 }
 
 void CLinearDuctGrid::SetRowStyle(ROWCOL nRow)
-{
+{  
+   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
+   CLinearDuctGeometry::MeasurementType measurementType = pParent->GetMeasurementType();
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   CString strUnits;
+   strUnits.Format(_T("%s\n%s"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str(),_T("%"));
+   SetStyleRange(CGXRange(nRow,nUnitCol), CGXStyle()
+      .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
+	   .SetChoiceList(strUnits)
+	   .SetValue(0L)
+      );
+
+   if ( measurementType == CLinearDuctGeometry::FromPrevious )
+   {
+      SetStyleRange(CGXRange(nRow,nUnitCol), CGXStyle()
+         .SetEnabled(FALSE)
+         .SetInterior(::GetSysColor(COLOR_BTNFACE))
+         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+         );
+   }
+   else
+   {
+      SetStyleRange(CGXRange(nRow,nUnitCol), CGXStyle()
+         .SetEnabled(TRUE)
+         .SetInterior(::GetSysColor(COLOR_WINDOW))
+         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+         );
+   }
+
    SetStyleRange(CGXRange(nRow,nOffsetTypeCol), CGXStyle()
       .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
-   	.SetChoiceList(_T("Bottom Girder\nTop Girder\nTop Slab"))
+   	.SetChoiceList(_T("Bottom Girder\nTop Girder"))
 		.SetValue(0L)
       );
+
+   if ( nRow == 1 || nRow == GetRowCount() )
+   {
+      // first row or last row... location is not editable
+      SetStyleRange(CGXRange(nRow,nLocationCol,nRow,nUnitCol), CGXStyle()
+         .SetEnabled(FALSE)
+         .SetInterior(::GetSysColor(COLOR_BTNFACE))
+         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+         );
+   }
 }
 
 CString CLinearDuctGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
@@ -250,43 +381,57 @@ CString CLinearDuctGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
         CGXControl* pControl = GetControl(nRow, nCol);
         pControl->GetValue(s);
         return s;
-  }
+    }
     else
+    {
         return GetValueRowCol(nRow, nCol);
+    }
 }
 
-void CLinearDuctGrid::DeletePoint()
+void CLinearDuctGrid::OnChangedSelection(const CGXRange* pRange,BOOL bIsDragging,BOOL bKey)
 {
-	CGXRangeList* pSelList = GetParam()->GetRangeList();
-	if (pSelList->IsAnyCellFromCol(0) && pSelList->GetCount() == 1)
-	{
-		CGXRange range = pSelList->GetHead();
-		range.ExpandRange(1, 0, GetRowCount(), 0);
-		RemoveRows(range.top, range.bottom);
-	}
-
-   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
-   pParent->EnableDeleteBtn(FALSE);
+   SetDeleteButtonState();
 }
 
 BOOL CLinearDuctGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
+{
+   SetDeleteButtonState();
+   return TRUE;
+}
+
+BOOL CLinearDuctGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
+{
+   if ( m_pCallback )
+   {
+      m_pCallback->OnDuctChanged();
+   }
+
+   return CGXGridWnd::OnEndEditing(nRow,nCol);
+}
+
+void CLinearDuctGrid::SetDeleteButtonState()
 {
    CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
 
 	if (GetParam() == NULL)
 	{
+      // grid isn't ready yet
       pParent->EnableDeleteBtn(FALSE);
-		return TRUE;
 	}
-
-   if ( nCol == 0 )
-   {
-      pParent->EnableDeleteBtn(TRUE);
-   }
    else
    {
-      pParent->EnableDeleteBtn(FALSE);
+      // which rows are selected
+      CRowColArray awRows;
+      ROWCOL nSelRows = GetSelectedRows(awRows);
+      if ( 0 < nSelRows && (awRows[0] != 1 && awRows[nSelRows-1] != GetRowCount()) )
+      {
+         // rows can be deleted if the first and last rows are not selected
+         // (first and last row can never be deleted)
+         pParent->EnableDeleteBtn(TRUE);
+      }
+      else
+      {
+         pParent->EnableDeleteBtn(FALSE);
+      }
    }
-
-   return TRUE;
 }

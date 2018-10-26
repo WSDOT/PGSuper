@@ -714,6 +714,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PGSpliceComponentInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperComponentInfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SelectPOIDlg.cpp"
 				>
 			</File>
@@ -785,10 +793,6 @@
 				RelativePath=".\WSDOTAgentImp.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\WSDOTComponentInfo.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -828,6 +832,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PGSpliceComponentInfo.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperComponentInfo.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Resource.h"
 				>
 			</File>
@@ -841,10 +853,6 @@
 			</File>
 			<File
 				RelativePath=".\WSDOTAgentImp.h"
-				>
-			</File>
-			<File
-				RelativePath=".\WSDOTComponentInfo.h"
 				>
 			</File>
 		</Filter>
@@ -866,6 +874,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PGSpliceComponentInfo.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperComponentInfo.rgs"
+				>
+			</File>
+			<File
 				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
@@ -879,10 +895,6 @@
 			</File>
 			<File
 				RelativePath=".\WSDOTAgentImp.rgs"
-				>
-			</File>
-			<File
-				RelativePath=".\WSDOTComponentInfo.rgs"
 				>
 			</File>
 		</Filter>

@@ -49,7 +49,13 @@ public:
    virtual void UpdateYAxis();
 
    void ShowGrid(bool bShow);
+   bool ShowGrid() const;
+
    void ShowBeam(bool bShow);
+   bool ShowBeam() const;
+
+   void Shift(bool bShift);
+   bool Shift() const;
 
 protected:
    CGirderGraphControllerBase* m_pGraphController;
@@ -60,14 +66,12 @@ protected:
    DECLARE_MESSAGE_MAP()
 
    CComPtr<IBroker> m_pBroker;
-
+   grGraphXY m_Graph;
    arvPhysicalConverter* m_pXFormat;
    arvPhysicalConverter* m_pYFormat;
-   grGraphXY m_Graph;
 
-   bool m_bShowBeam;
-
-   void GetXValues(const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>& xVals);
+   Float64 ComputeShift(const CGirderKey& girderKey);
+   void GetXValues(const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pXVals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
@@ -75,4 +79,8 @@ protected:
 
    // returns the interval for when the beam is drawn
    virtual IntervalIndexType GetBeamDrawInterval() = 0;
+
+private:
+   bool m_bShowBeam;
+   bool m_bShift;
 };

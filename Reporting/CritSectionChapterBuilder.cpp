@@ -61,14 +61,25 @@ LPCTSTR CCritSectionChapterBuilder::GetName() const
 rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
 
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CComPtr<IBroker> pBroker;
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2_NOCHECK(pBroker,IRatingSpecification,pRatingSpec);
 
    bool bDesign = m_bDesign;
    bool bRating;
@@ -82,7 +93,6 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
       // include load rating results if we are always load rating
       bRating = pRatingSpec->AlwaysLoadRate();
 
-
       // if none of the rating types are enabled, skip the rating
       if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
            !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
@@ -95,14 +105,13 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEdition2004 ? true : false );
 
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLimitStateForces); // not used if bDesign = false
    GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -132,7 +141,9 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
             Build(pChapter,pgsTypes::StrengthI,pBroker,thisGirderKey,pDisplayUnits,level);
 
             if ( pLimitStateForces->IsStrengthIIApplicable(thisGirderKey) && !bAfterThirdEdition )
+            {
                Build(pChapter,pgsTypes::StrengthII,pBroker,thisGirderKey,pDisplayUnits,level);
+            }
          }
 
          if ( bRating )
@@ -144,22 +155,34 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
             else
             {
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+               {
                   Build(pChapter,pgsTypes::StrengthI_Inventory,pBroker,thisGirderKey,pDisplayUnits,level);
+               }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+               {
                   Build(pChapter,pgsTypes::StrengthI_Operating,pBroker,thisGirderKey,pDisplayUnits,level);
+               }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+               {
                   Build(pChapter,pgsTypes::StrengthI_LegalRoutine,pBroker,thisGirderKey,pDisplayUnits,level);
+               }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+               {
                   Build(pChapter,pgsTypes::StrengthI_LegalSpecial,pBroker,thisGirderKey,pDisplayUnits,level);
+               }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+               {
                   Build(pChapter,pgsTypes::StrengthII_PermitRoutine,pBroker,thisGirderKey,pDisplayUnits,level);
+               }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+               {
                   Build(pChapter,pgsTypes::StrengthII_PermitSpecial,pBroker,thisGirderKey,pDisplayUnits,level);
+               }
             }
          }
       }
@@ -180,7 +203,6 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    locationp.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -248,9 +270,13 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
 
       Float64 end_size;
       if ( csDetails.bAtFaceOfSupport )
+      {
          end_size = pBridge->GetSegmentStartEndDistance(csDetails.poiFaceOfSupport.GetSegmentKey());
+      }
       else
+      {
          end_size = pBridge->GetSegmentStartEndDistance(csDetails.pCriticalSection->Poi.GetSegmentKey());
+      }
 
       std::vector<CRITSECTIONDETAILSATPOI>::const_iterator iter(csDetails.PoiData.begin());
       std::vector<CRITSECTIONDETAILSATPOI>::const_iterator iterEnd(csDetails.PoiData.end());
@@ -264,9 +290,13 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
          (*ptable)(row,2) << dim.SetValue(csDetailsAtPoi.Dv);
 
          if (csDetailsAtPoi.Intersection == CRITSECTIONDETAILSATPOI::DvIntersection)
+         {
             (*ptable)(row,3) << _T("*Yes");
+         }
          else
+         {
             (*ptable)(row,3) << _T("No");
+         }
 
          if ( !bAfterThirdEdition )
          {
@@ -276,9 +306,13 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
                (*ptable)(row,5) << dim.SetValue(csDetailsAtPoi.CotanThetaDv05);
 
                if (csDetailsAtPoi.Intersection == CRITSECTIONDETAILSATPOI::ThetaIntersection)
+               {
                   (*ptable)(row,6) << _T("*Yes");
+               }
                else
+               {
                   (*ptable)(row,6) << _T("No");
+               }
             }
             else
             {
@@ -294,7 +328,9 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
 
       *pPara << _T("* - Intersection values are linearly interpolated") <<rptNewLine;
       if (!all_in_range)
+      {
          *pPara << _T("** - Theta could not be calculated because shear stress exceeded max.")<<rptNewLine<<rptNewLine;
+      }
 
       if ( csDetails.bAtFaceOfSupport )
       {

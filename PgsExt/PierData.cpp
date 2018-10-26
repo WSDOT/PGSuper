@@ -191,7 +191,7 @@ LPCTSTR CPierData::AsString(pgsTypes::PierConnectionType type)
       return _T("Integral on back side before deck placement; Hinged on ahead side");
    
    default:
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    };
 
@@ -1289,7 +1289,7 @@ CPierData::LLDF& CPierData::GetLLDF(GirderIndexType igs) const
       }
       else
       {
-         ATLASSERT(0); // something went wrong on load
+         ATLASSERT(false); // something went wrong on load
       }
    }
 
@@ -1331,12 +1331,12 @@ CPierData::LLDF& CPierData::GetLLDF(GirderIndexType igs) const
    // Next: let's deal with retrieval
    if (igs<0)
    {
-      ATLASSERT(0); // problemo in calling routine - let's not crash
+      ATLASSERT(false); // problemo in calling routine - let's not crash
       return m_LLDFs[0];
    }
    else if (igs>=ngdrs)
    {
-      ATLASSERT(0); // problemo in calling routine - let's not crash
+      ATLASSERT(false); // problemo in calling routine - let's not crash
       return m_LLDFs.back();
    }
    else
@@ -1359,7 +1359,7 @@ GirderIndexType CPierData::GetLldfGirderCount() const
 
    if (pBack==NULL && pAhead==NULL)
    {
-      ATLASSERT(0); // function called before bridge tied together - no good
+      ATLASSERT(false); // function called before bridge tied together - no good
       return 0;
    }
    else

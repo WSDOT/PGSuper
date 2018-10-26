@@ -93,13 +93,13 @@ public:
 
    CDuctGeometry& operator=(const CDuctGeometry& rOther);
 
-   void SetGirder(const CSplicedGirderData* pGirder);
+   virtual void SetGirder(const CSplicedGirderData* pGirder);
    const CSplicedGirderData* GetGirder() const;
 
+protected:
    void MakeCopy(const CDuctGeometry& rOther);
    virtual void MakeAssignment(const CDuctGeometry& rOther);
 
-protected:
    const CSplicedGirderData* m_pGirder;
 };
 
@@ -118,36 +118,74 @@ COPYRIGHT
 class PGSEXTCLASS CLinearDuctGeometry : public CDuctGeometry
 {
 public:
+   enum MeasurementType { AlongGirder, FromPrevious };
+
    CLinearDuctGeometry();
    CLinearDuctGeometry(const CSplicedGirderData* pGirder);
+   CLinearDuctGeometry(const CLinearDuctGeometry& rOther);
+
+   CLinearDuctGeometry& operator=(const CLinearDuctGeometry& rOther);
 
    bool operator==(const CLinearDuctGeometry& rOther) const;
    bool operator!=(const CLinearDuctGeometry& rOther) const;
 
-   void AddPoint(Float64 distFromPrev,Float64 offset,OffsetType offsetType);
+   void Init();
+
+   // sets the measurement type, clears any previously stored points
+   void SetMeasurementType(MeasurementType mt);
+
+   // sets the measurement type and converts any previous stored points
+   void ConvertMeasurementType(MeasurementType mt,Float64 Lg);
+
+   // returns the measurement type
+   MeasurementType GetMeasurementType() const;
+
+   // removes previously stored points
+   void Clear();
+
+   // adds a point to the duct geometry. location is defined by measurementType
+   // if measurementType is AlongGirder, location values that are less than zero
+   // are taken to be fractional distances (-0.5 = 50% Lg)
+   void AddPoint(Float64 location,Float64 offset,OffsetType offsetType);
+
+   // returns the number of points
    CollectionIndexType GetPointCount() const;
-   void GetPoint(CollectionIndexType pntIdx,Float64* pDistFromPrev,Float64 *pOffset,OffsetType *pOffsetType) const;
+
+   // gets a specific point
+   void GetPoint(CollectionIndexType pntIdx,Float64* location,Float64 *pOffset,OffsetType *pOffsetType) const;
 
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 
 protected:
+   void MakeCopy(const CLinearDuctGeometry& rOther);
+   virtual void MakeAssignment(const CLinearDuctGeometry& rOther);
+
+   MeasurementType m_MeasurementType;
+
    struct PointRecord 
    { 
-      Float64 distFromPrev; 
+      Float64 location; // if measurementType is AlongGirder, location is a coordinate in the Girder Coordinate System
+                        // if measurementType is FromPrevious, location is the distance from the previous point
       Float64 offset; 
       OffsetType offsetType; 
 
       bool operator==(const PointRecord& rOther) const
       {
-         if ( !IsEqual(distFromPrev,rOther.distFromPrev) )
+         if ( !IsEqual(location,rOther.location) )
+         {
             return false;
+         }
 
          if ( !IsEqual(offset,rOther.offset) )
+         {
             return false;
+         }
 
          if ( offsetType != rOther.offsetType )
+         {
             return false;
+         }
 
          return true;
       }
@@ -185,6 +223,7 @@ public:
    bool operator!=(const CParabolicDuctGeometry& rOther) const;
 
    void Init();
+
    SpanIndexType GetSpanCount() const;
    void InsertSpan(SpanIndexType newSpanIdx);
    void RemoveSpan(SpanIndexType spanIdx,PierIndexType pierIdx);
@@ -208,13 +247,13 @@ public:
    void SetEndPoint(Float64 dist,Float64 offset,OffsetType offsetType);
    void GetEndPoint(Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const;
 
-   void MakeCopy(const CParabolicDuctGeometry& rOther);
-   virtual void MakeAssignment(const CParabolicDuctGeometry& rOther);
-
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 
 private:
+   void MakeCopy(const CParabolicDuctGeometry& rOther);
+   virtual void MakeAssignment(const CParabolicDuctGeometry& rOther);
+
    struct HighPoint
    {
       Float64 distLeftIP;
@@ -237,18 +276,24 @@ private:
       bool operator==(const HighPoint& rOther) const
       {
          if ( !IsEqual(distLeftIP,rOther.distLeftIP) )
+         {
             return false;
-
+         }
 
          if ( !IsEqual(highOffset,rOther.highOffset) )
+         {
             return false;
+         }
 
          if ( highOffsetType != rOther.highOffsetType )
+         {
             return false;
-
+         }
 
          if ( !IsEqual(distRightIP,rOther.distRightIP) )
+         {
             return false;
+         }
 
          return true;
       }
@@ -263,13 +308,19 @@ private:
       bool operator==(const Point& rOther) const
       {
          if ( !IsEqual(Distance,rOther.Distance) )
+         {
             return false;
+         }
 
          if ( !IsEqual(Offset,rOther.Offset) )
+         {
             return false;
+         }
 
          if ( OffsetType != rOther.OffsetType )
+         {
             return false;
+         }
 
          return true;
       }
@@ -320,10 +371,14 @@ public:
    bool operator==(const COffsetDuctGeometry& rOther) const
    {
       if ( RefDuctIdx != rOther.RefDuctIdx )
+      {
          return false;
+      }
 
       if ( Points != rOther.Points )
+      {
          return false;
+      }
 
       return true;
    }
@@ -341,10 +396,14 @@ public:
       bool operator==(const COffsetDuctGeometry::Point& rOther) const
       {
          if ( !IsEqual(distance,rOther.distance) )
+         {
             return false;
+         }
 
          if ( !IsEqual(offset,rOther.offset) )
+         {
             return false;
+         }
 
          return true;
       }
@@ -358,10 +417,14 @@ public:
    Float64 GetOffset(Float64 x) const
    {
       if ( Points.size() == 0 )
+      {
          return 0;
+      }
 
       if ( Points.size() == 1 )
+      {
          return Points.front().offset;
+      }
 
       std::vector<Point>::const_iterator iter1(Points.begin());
       std::vector<Point>::const_iterator iter2(iter1+1);
@@ -369,7 +432,9 @@ public:
 
       Float64 x1 = iter1->distance;
       if ( x < x1 )
+      {
          return iter1->offset;
+      }
 
       for (; iter2 != iterEnd; iter1++, iter2++ )
       {
@@ -394,7 +459,9 @@ public:
    bool IsUniformOffset() const
    {
       if ( Points.size() <= 1 )
+      {
          return true;
+      }
 
       std::vector<Point>::const_iterator iter(Points.begin());
       std::vector<Point>::const_iterator end(Points.end());
@@ -403,7 +470,9 @@ public:
       {
          Float64 offset2 = (*iter).offset;
          if ( !IsEqual(offset1,offset2) )
+         {
             return false;
+         }
 
          offset1 = offset2;
       }
@@ -517,6 +586,8 @@ public:
    bool    bPjTempCalc;   // true if Pj was calculated.
    Float64 LastUserPjTemp;   // Last Pj entered by user
    const matPsStrand* pStrand; // tendon strand type
+
+   pgsTypes::DuctType DuctType;
 
 protected:
    std::vector<CDuctData> m_Ducts;

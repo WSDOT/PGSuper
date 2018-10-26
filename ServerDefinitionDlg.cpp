@@ -80,7 +80,7 @@ CServerDefinitionDlg::CServerDefinitionDlg(const CPGSuperCatalogServers& servers
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
 }
@@ -100,7 +100,7 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
    //   else if (m_ServerType==Local)
    //      server_type=2;
    //   else
-   //      ATLASSERT(0);
+   //      ATLASSERT(false);
    //}
    //DDX_CBItemData
    DDX_CBItemData(pDX, IDC_SERVER_TYPE, m_ServerType);
@@ -113,7 +113,7 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
    //   else if (server_type==2)
    //      m_ServerType=Local;
    //   else
-   //      ATLASSERT(0);
+   //      ATLASSERT(false);
    //}
 
    //{{AFX_DATA_MAP(CServerDefinitionDlg)
@@ -274,7 +274,7 @@ CPGSuperCatalogServer* CServerDefinitionDlg::CreateServer()
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    return NULL;

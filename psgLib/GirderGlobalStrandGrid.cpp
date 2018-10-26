@@ -72,7 +72,7 @@ static ROWCOL GetEntryLoad(const CGirderGlobalStrandGrid::GlobalStrandGridEntry&
 CGirderGlobalStrandGrid::CGirderGlobalStrandGrid(CGirderGlobalStrandGridClient* pClient):
 m_pClient(pClient)
 {
-   CHECK(m_pClient!=0);
+   ATLASSERT(m_pClient!=0);
 }
 
 CGirderGlobalStrandGrid::~CGirderGlobalStrandGrid()
@@ -756,7 +756,7 @@ ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridE
       stype =LABEL_HARP_TYPE( !webStrandsHarped );
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    this->SetStyleRange(CGXRange(nRow,0), CGXStyle()
          .SetEnabled(FALSE));

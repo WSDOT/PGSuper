@@ -297,7 +297,7 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
       }
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
-      ZoneIndexType nZones = pStirrupGeometry->GetNumPrimaryZones(segmentKey);
+      ZoneIndexType nZones = pStirrupGeometry->GetPrimaryZoneCount(segmentKey);
       for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++, row++)
       {
          (*p_table)(row,0) << LABEL_STIRRUP_ZONE(zoneIdx);

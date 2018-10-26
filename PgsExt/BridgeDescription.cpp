@@ -614,7 +614,19 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
 
          CPrecastSegmentData* pNewSegment = pNewGirder->GetSegment(0);
 
-         pNewSegment->HandlingData          = girderData.HandlingData;
+         // copy handling data. storage configuration was added in PGSuper Version 3
+         // the assumed storage configuration was at the permanent support locations.
+         // use the girder end distance as the default storage location.
+         pNewSegment->HandlingData = girderData.HandlingData;
+         CPierData2* pPier = pNewSpan->GetPier(pgsTypes::metStart);
+         Float64 endDist;  
+         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
+         pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&endDistMeasure);
+         pNewSegment->HandlingData.LeftStoragePoint = endDist;
+         pPier = pNewSpan->GetPier(pgsTypes::metEnd);
+         pPier->GetGirderEndDistance(pgsTypes::Back,&endDist,&endDistMeasure);
+         pNewSegment->HandlingData.RightStoragePoint = endDist;
+
          pNewSegment->LongitudinalRebarData = girderData.LongitudinalRebarData;
          pNewSegment->Material              = girderData.Material;
          pNewSegment->Material.Concrete.CureMethod = pgsTypes::Steam; // Steam for precast components
@@ -634,8 +646,8 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
 
          pNewSegment->Strands = girderData.Strands;
 
-         pGroup->SetSlabOffset(pgsTypes::metStart,gdrIdx,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart));
-         pGroup->SetSlabOffset(pgsTypes::metEnd,  gdrIdx,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd)  );
+         pGroup->SetSlabOffset(pNewSpan->GetPrevPier()->GetIndex(),gdrIdx,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart));
+         pGroup->SetSlabOffset(pNewSpan->GetNextPier()->GetIndex(),gdrIdx,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd)  );
 
 
          // copy over distribution factor data
@@ -647,18 +659,6 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
             pNewSpan->SetLLDFPosMoment(gdrIdx,ls,pOldSpan->GetLLDFPosMoment(gdrIdx,ls));
             pNewSpan->SetLLDFShear(    gdrIdx,ls,pOldSpan->GetLLDFShear(gdrIdx,ls));
          }
-      }
-
-      // Copy the girder type groups
-      // Girders 1-3: WF74G, Girders 4-5: WF74G_Modified, Girders 6-9: WF74G
-      pGroup->ExpandAll();
-      GroupIndexType nGirderTypeGroups = pGirderTypes->GetGirderGroupCount();
-      for ( GroupIndexType girderTypeGroupIdx = 0; girderTypeGroupIdx < nGirderTypeGroups; girderTypeGroupIdx++ )
-      {
-         GirderIndexType firstGirderIdx,lastGirderIdx;
-         std::_tstring strName;
-         pGirderTypes->GetGirderGroup(girderTypeGroupIdx,&firstGirderIdx,&lastGirderIdx,strName);
-         pGroup->Join(firstGirderIdx,lastGirderIdx,firstGirderIdx);
       }
 
       // Copy over girder spacing
@@ -676,6 +676,18 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
       CGirderSpacing2* pSpacingAtNextPier = pNextPier->GetGirderSpacing(pgsTypes::Back);
       pSpacingAtNextPier->InitGirderCount(nGirders);
       pGirderSpacingEnd->SetSpacingData(pSpacingAtNextPier);
+
+      // Copy the girder type groups
+      // Girders 1-3: WF74G, Girders 4-5: WF74G_Modified, Girders 6-9: WF74G
+      pGroup->ExpandAll();
+      GroupIndexType nGirderTypeGroups = pGirderTypes->GetGirderGroupCount();
+      for ( GroupIndexType girderTypeGroupIdx = 0; girderTypeGroupIdx < nGirderTypeGroups; girderTypeGroupIdx++ )
+      {
+         GirderIndexType firstGirderIdx,lastGirderIdx;
+         std::_tstring strName;
+         pGirderTypes->GetGirderGroup(girderTypeGroupIdx,&firstGirderIdx,&lastGirderIdx,strName);
+         pGroup->Join(firstGirderIdx,lastGirderIdx,firstGirderIdx);
+      }
    }
 }
 

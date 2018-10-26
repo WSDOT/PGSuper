@@ -30,11 +30,11 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 pgsSpanGirderRelatedStatusItem::pgsSpanGirderRelatedStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                                                               const CSpanGirderKey& spanGirderKey):
+                                                               const CSpanKey& spanKey):
 CEAFStatusItem(statusGroupID,callbackID,strDescription),
 m_EntireBridge(false)
 {
-   AddRelationshipTo(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
+   AddRelationshipTo(spanKey.spanIndex,spanKey.girderIndex);
 }
 
 bool pgsSpanGirderRelatedStatusItem::IsRelatedTo(SpanIndexType span,GirderIndexType gdr)
@@ -63,8 +63,8 @@ bool pgsSpanGirderRelatedStatusItem::IsRelatedTo(SpanIndexType span,GirderIndexT
    }
 
    // Individual girders
-   CSpanGirderKey key(span,gdr);
-   std::set<CSpanGirderKey>::iterator it = m_SpanGirders.find(key);
+   CSpanKey key(span,gdr);
+   std::set<CSpanKey>::iterator it = m_SpanGirders.find(key);
    return it != m_SpanGirders.end();
 }
 
@@ -84,7 +84,7 @@ void pgsSpanGirderRelatedStatusItem::AddRelationshipTo(SpanIndexType span,Girder
    }
    else
    {
-      m_SpanGirders.insert(CSpanGirderKey(span,gdr));
+      m_SpanGirders.insert(CSpanKey(span,gdr));
    }
 }
 

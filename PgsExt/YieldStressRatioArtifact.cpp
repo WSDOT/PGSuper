@@ -275,17 +275,25 @@ Float64 pgsYieldStressRatioArtifact::GetExcessMoment() const
    {
       // negative moment
       if ( m_Mcr < M )
+      {
          return 0; // section isn't cracked
+      }
       else
+      {
          return M - m_Mcr;
+      }
    }
    else
    {
       // positive moment
       if ( M < m_Mcr )
+      {
          return 0; // section isn't cracked
+      }
       else
+      {
          return M - m_Mcr;
+      }
    }
 }
 
@@ -298,7 +306,9 @@ Float64 pgsYieldStressRatioArtifact::GetStrandStress() const
 Float64 pgsYieldStressRatioArtifact::GetStressRatio() const
 {
    if ( m_bRFComputed )
+   {
       return m_RF;
+   }
 
    // moment in excess of cracking
    Float64 M = GetExcessMoment();
@@ -314,7 +324,9 @@ Float64 pgsYieldStressRatioArtifact::GetStressRatio() const
    }
 
    if ( m_RF < 0 )
+   {
       m_RF = 0;
+   }
 
    m_bRFComputed = true;
    return m_RF;

@@ -137,10 +137,10 @@ BOOL CGirderDescLiftingPage::OnSetActive()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
 
-   if(!pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   if(!pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
       int cntrls[] = {IDC_STATIC_LL,IDC_STATIC_LLE,IDC_LIFTING_LOOP_LOCATION,
                       IDC_LIFTING_LOOP_LOCATION_UNITS};
@@ -153,11 +153,13 @@ BOOL CGirderDescLiftingPage::OnSetActive()
          pwnd->EnableWindow(FALSE);
 
          if (cntrls[ic++] == IDC_LIFTING_LOOP_LOCATION_UNITS)
+         {
             break;
+         }
       }
    }
    
-   if (!pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       int cntrls[] = {IDC_HAULINGOVERHANGS,IDC_STATIC_TLSO,IDC_TRAILINGOVERHANG,IDC_TRAILINGOVERHANG_UNITS,
                       IDC_STATIC_SLLO,IDC_LEADINGOVERHANG,IDC_LEADINGOVERHANG_UNITS,IDC_STATICSLGL,
@@ -172,7 +174,9 @@ BOOL CGirderDescLiftingPage::OnSetActive()
          pwnd->EnableWindow(FALSE);
 
          if (cntrls[ic++] == IDC_STATIC_SL)
+         {
             break;
+         }
       }
    }
 

@@ -29,7 +29,7 @@
 #include "PGSuperCommandLineInfo.h"
 
 // Base class for all PGSuper Document-type application plugins
-// Performs common initialization expected by the CPGSuperDoc class
+// Performs common initialization expected by the CPGSuperDocBase class
 class CPGSuperBaseAppPlugin
 {
 public:
@@ -71,11 +71,11 @@ public:
    void SetDoDisplayFavoriteReports(bool doDisplay);
 
    // Current list of favorite reports
-   std::vector<std::_tstring> GetFavoriteReports() const;
-   void SetFavoriteReports( std::vector<std::_tstring> reports);
+   const std::vector<std::_tstring>& GetFavoriteReports() const;
+   void SetFavoriteReports(const std::vector<std::_tstring>& reports);
 
    // Custom, user-defined reports
-   CEAFCustomReports GetCustomReports() const;
+   const CEAFCustomReports& GetCustomReports() const;
    void SetCustomReports(const CEAFCustomReports& reports);
 
 protected:
@@ -100,9 +100,15 @@ protected:
 
    CEAFCustomReports m_CustomReports;
 
-   void RegistryConvert(); // Convert any old registry settings for current program (move into app plugin class)
-   void LoadRegistryValues();
-   void SaveRegistryValues();
+   virtual void RegistryConvert(); // Convert any old registry settings for current program (move into app plugin class)
+   virtual void LoadRegistryValues();
+   virtual void LoadSettings();
+   virtual void LoadOptions();
+   virtual void LoadReportOptions();
+   virtual void SaveRegistryValues();
+   virtual void SaveSettings();
+   virtual void SaveOptions();
+   virtual void SaveReportOptions();
 
    bool IsTimeToUpdateCache();
    bool AreUpdatesPending();

@@ -108,9 +108,13 @@ CComVariant GetOffsetTypeProperty(CDuctGeometry::OffsetType offsetType)
 CDuctGeometry::OffsetType GetOffsetType(VARIANT& var)
 {
    if ( CComBSTR(_T("TopGirder")) == CComBSTR(var.bstrVal) )
+   {
       return CDuctGeometry::TopGirder;
+   }
    else if ( CComBSTR(_T("BottomGirder")) == CComBSTR(var.bstrVal) )
+   {
       return CDuctGeometry::BottomGirder;
+   }
 
    ATLASSERT(false);
    return CDuctGeometry::BottomGirder;
@@ -171,13 +175,31 @@ CLinearDuctGeometry::CLinearDuctGeometry()
 }
 
 CLinearDuctGeometry::CLinearDuctGeometry(const CSplicedGirderData* pGirder) :
-CDuctGeometry(pGirder)
+CDuctGeometry(pGirder),
+m_MeasurementType(AlongGirder)
 {
+   Init();
+}
+
+CLinearDuctGeometry::CLinearDuctGeometry(const CLinearDuctGeometry& rOther) :
+CDuctGeometry(rOther)
+{
+   MakeCopy(rOther);
+}
+
+CLinearDuctGeometry& CLinearDuctGeometry::operator=(const CLinearDuctGeometry& rOther)
+{
+   if ( &rOther != this )
+   {
+      MakeAssignment(rOther);
+   }
+
+   return *this;
 }
 
 bool CLinearDuctGeometry::operator==(const CLinearDuctGeometry& rOther) const
 {
-   return m_Points == rOther.m_Points;
+   return m_MeasurementType == rOther.m_MeasurementType && m_Points == rOther.m_Points;
 }
 
 bool CLinearDuctGeometry::operator!=(const CLinearDuctGeometry& rOther) const
@@ -185,10 +207,98 @@ bool CLinearDuctGeometry::operator!=(const CLinearDuctGeometry& rOther) const
    return !operator==(rOther);
 }
 
-void CLinearDuctGeometry::AddPoint(Float64 distFromPrev,Float64 offset,OffsetType offsetType)
+void CLinearDuctGeometry::SetMeasurementType(CLinearDuctGeometry::MeasurementType mt)
 {
+   if ( m_MeasurementType != mt )
+   {
+      m_MeasurementType = mt;
+      m_Points.clear();
+   }
+}
+
+void CLinearDuctGeometry::ConvertMeasurementType(CLinearDuctGeometry::MeasurementType mt,Float64 Lg)
+{
+   if ( m_MeasurementType != mt )
+   {
+      // only convert of measurement type is changing
+
+      if ( mt == AlongGirder )
+      {
+         // changing from FromPrevious to AlongGirder
+         Float64 Xg = 0;
+         std::vector<PointRecord>::iterator iter(m_Points.begin());
+         std::vector<PointRecord>::iterator end(m_Points.end());
+         for ( ; iter != end; iter++ )
+         {
+            PointRecord& record = *iter;
+#if defined _DEBUG
+            if ( iter == m_Points.begin() )
+            {
+               ATLASSERT(IsZero(record.location)); // first record should start at 0
+            }
+#endif
+            Xg += record.location;
+            record.location = Xg;
+         }
+      }
+      else
+      {
+         // changing form AlongGirder to FromPrevious
+         Float64 XgPrev = 0;
+         std::vector<PointRecord>::iterator iter(m_Points.begin());
+         std::vector<PointRecord>::iterator end(m_Points.end());
+         for ( ; iter != end; iter++ )
+         {
+            PointRecord& record = *iter;
+#if defined _DEBUG
+            if ( iter == m_Points.begin() )
+            {
+               ATLASSERT(IsZero(record.location)); // first record should start at 0
+            }
+#endif
+            Float64 Xg = record.location;
+            if ( Xg < 0 )
+            {
+               // Xg is fractional
+               Xg *= -Lg;
+            }
+
+            Float64 dXg = Xg - XgPrev;
+            record.location = dXg;
+
+            XgPrev = Xg;
+         }
+      }
+   }
+}
+
+CLinearDuctGeometry::MeasurementType CLinearDuctGeometry::GetMeasurementType() const
+{
+   return m_MeasurementType;
+}
+
+void CLinearDuctGeometry::Clear()
+{
+   m_Points.clear();
+}
+
+void CLinearDuctGeometry::AddPoint(Float64 location,Float64 offset,OffsetType offsetType)
+{
+#if defined _DEBUG
+   if ( location < 0 )
+   {
+      // < 0 is a fractional measure so measurementType must be AlongGirder
+      ATLASSERT(m_MeasurementType == AlongGirder); 
+   }
+
+   if ( m_MeasurementType == AlongGirder && location < 0 )
+   {
+      // can't be more that 100% of the girder length
+      ATLASSERT( ::InRange(-1.0,location,0.0) );
+   }
+#endif
    PointRecord record;
-   record.distFromPrev = distFromPrev;
+   record.location = location;
    record.offset       = offset;
    record.offsetType   = offsetType;
    m_Points.push_back(record);
@@ -199,17 +309,19 @@ CollectionIndexType CLinearDuctGeometry::GetPointCount() const
    return m_Points.size();
 }
 
-void CLinearDuctGeometry::GetPoint(CollectionIndexType pntIdx,Float64* pDistFromPrev,Float64 *pOffset,OffsetType *pOffsetType) const
+void CLinearDuctGeometry::GetPoint(CollectionIndexType pntIdx,Float64* pLocation,Float64 *pOffset,OffsetType *pOffsetType) const
 {
    PointRecord record = m_Points[pntIdx];
-   *pDistFromPrev     = record.distFromPrev;
-   *pOffset           = record.offset;
-   *pOffsetType       = record.offsetType;
+   *pLocation     = record.location;
+   *pOffset       = record.offset;
+   *pOffsetType   = record.offsetType;
 }
 
 HRESULT CLinearDuctGeometry::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    pStrSave->BeginUnit(_T("LinearDuctGeometry"),1.0);
+
+   pStrSave->put_Property(_T("MeasurementType"),CComVariant(m_MeasurementType));
 
    pStrSave->put_Property(_T("PointCount"),CComVariant(m_Points.size()));
 
@@ -219,7 +331,7 @@ HRESULT CLinearDuctGeometry::Save(IStructuredSave* pStrSave,IProgress* pProgress
    {
       PointRecord& point = *iter;
       pStrSave->BeginUnit(_T("Point"),1.0);
-      pStrSave->put_Property(_T("DistanceFromPrevious"),CComVariant(point.distFromPrev));
+      pStrSave->put_Property(_T("Location"),CComVariant(point.location));
       pStrSave->put_Property(_T("Offset"),CComVariant(point.offset));
       pStrSave->put_Property(_T("OffsetFrom"),GetOffsetTypeProperty(point.offsetType));
       pStrSave->EndUnit();
@@ -235,6 +347,10 @@ HRESULT CLinearDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
    pStrLoad->BeginUnit(_T("LinearDuctGeometry"));
 
    CComVariant var;
+   var.vt = VT_I4;
+   pStrLoad->get_Property(_T("MeasurementType"),&var);
+   m_MeasurementType = (MeasurementType)var.lVal;
+
    var.vt = VT_INDEX;
    pStrLoad->get_Property(_T("PointCount"),&var);
    CollectionIndexType nPoints = VARIANT2INDEX(var);
@@ -247,8 +363,8 @@ HRESULT CLinearDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       pStrLoad->BeginUnit(_T("Point"));
 
       var.vt = VT_R8;
-      pStrLoad->get_Property(_T("DistanceFromPrevious"),&var);
-      point.distFromPrev = var.dblVal;
+      pStrLoad->get_Property(_T("Location"),&var);
+      point.location = var.dblVal;
 
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("Offset"),&var);
@@ -264,6 +380,26 @@ HRESULT CLinearDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
    pStrLoad->EndUnit();
    return S_OK;
+}
+
+void CLinearDuctGeometry::Init()
+{
+   m_MeasurementType = AlongGirder;
+   Float64 Y = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   AddPoint( 0.0,Y,CDuctGeometry::BottomGirder);
+   AddPoint(-1.0,Y,CDuctGeometry::BottomGirder);
+}
+
+void CLinearDuctGeometry::MakeCopy(const CLinearDuctGeometry& rOther)
+{
+   m_MeasurementType = rOther.m_MeasurementType;
+   m_Points = rOther.m_Points;
+}
+
+void CLinearDuctGeometry::MakeAssignment(const CLinearDuctGeometry& rOther)
+{
+   __super::MakeAssignment(rOther);
+   MakeCopy(rOther);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -296,16 +432,24 @@ CParabolicDuctGeometry& CParabolicDuctGeometry::operator=(const CParabolicDuctGe
 bool CParabolicDuctGeometry::operator==(const CParabolicDuctGeometry& rOther) const
 {
    if ( StartPoint != rOther.StartPoint )
+   {
       return false;
+   }
 
    if ( EndPoint != rOther.EndPoint )
+   {
       return false;
+   }
 
    if ( LowPoints != rOther.LowPoints )
+   {
       return false;
+   }
 
    if ( HighPoints != rOther.HighPoints )
+   {
       return false;
+   }
 
    return true;
 }
@@ -805,48 +949,69 @@ const CSplicedGirderData* CDuctData::GetGirder() const
 void CDuctData::Init(const CSplicedGirderData* pGirder)
 {
    LinearDuctGeometry.SetGirder(pGirder);
+   LinearDuctGeometry.Init();
+
    ParabolicDuctGeometry.SetGirder(pGirder);
    ParabolicDuctGeometry.Init();
+
    OffsetDuctGeometry.SetGirder(pGirder);
 }
 
 bool CDuctData::operator==(const CDuctData& rOther) const
 {
    if ( Size != rOther.Size )
+   {
       return false;
+   }
 
    if ( nStrands != rOther.nStrands )
+   {
       return false;
+   }
 
    if ( bPjCalc != rOther.bPjCalc )
+   {
       return false;
+   }
 
    if ( !IsEqual(Pj,rOther.Pj) )
+   {
       return false;
+   }
 
    if ( DuctGeometryType != rOther.DuctGeometryType )
+   {
       return false;
+   }
 
    if ( JackingEnd != rOther.JackingEnd )
+   {
       return false;
+   }
 
    switch (DuctGeometryType)
    {
    case CDuctGeometry::Linear:
       if ( LinearDuctGeometry != rOther.LinearDuctGeometry )
+      {
          return false;
+      }
 
       break;
 
    case CDuctGeometry::Parabolic:
       if ( ParabolicDuctGeometry != rOther.ParabolicDuctGeometry )
+      {
          return false;
+      }
 
       break;
 
    case CDuctGeometry::Offset:
       if ( OffsetDuctGeometry != rOther.OffsetDuctGeometry )
+      {
          return false;
+      }
 
       break;
 
@@ -861,13 +1026,17 @@ bool CDuctData::operator==(const CDuctData& rOther) const
 void CDuctData::InsertSpan(SpanIndexType newSpanIndex)
 {
    if ( DuctGeometryType == CDuctGeometry::Parabolic )
+   {
       ParabolicDuctGeometry.InsertSpan(newSpanIndex);
+   }
 }
 
 void CDuctData::RemoveSpan(SpanIndexType spanIdx,PierIndexType pierIdx)
 {
    if ( DuctGeometryType == CDuctGeometry::Parabolic )
+   {
       ParabolicDuctGeometry.RemoveSpan(spanIdx,pierIdx);
+   }
 }
 
 HRESULT CDuctData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
@@ -900,11 +1069,17 @@ HRESULT CDuctData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    var.vt = VT_BSTR;
    pStrLoad->get_Property(_T("StressingEnd"),&var);
    if ( CComBSTR(_T("Left")) == CComBSTR(var.bstrVal) )
+   {
       JackingEnd = pgsTypes::jeLeft;
+   }
    else if ( CComBSTR(_T("Right")) == CComBSTR(var.bstrVal) )
+   {
       JackingEnd = pgsTypes::jeRight;
+   }
    else
+   {
       JackingEnd = pgsTypes::jeBoth;
+   }
 
    var.vt = VT_BSTR;
    pStrLoad->get_Property(_T("Geometry"),&var);
@@ -973,6 +1148,8 @@ CPTData::CPTData()
    bPjTempCalc    = true;
    LastUserPjTemp = 0;
 
+   DuctType = pgsTypes::dtMetal;
+
    pStrand = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860,matPsStrand::LowRelaxation,matPsStrand::D1524);
 }  
 
@@ -1000,22 +1177,39 @@ CPTData& CPTData::operator= (const CPTData& rOther)
 bool CPTData::operator==(const CPTData& rOther) const
 {
    if ( pStrand != rOther.pStrand )
+   {
       return false;
+   }
 
    if (m_Ducts != rOther.m_Ducts)
+   {
       return false;
+   }
 
    if(nTempStrands != rOther.nTempStrands)
+   {
       return false;
+   }
 
    if(PjTemp != rOther.PjTemp)
+   {
       return false;
+   }
 
    if(bPjTempCalc != rOther.bPjTempCalc)
+   {
       return false;
+   }
 
    if(LastUserPjTemp != rOther.LastUserPjTemp)
+   {
       return false;
+   }
+
+   if ( DuctType != rOther.DuctType )
+   {
+      return false;
+   }
 
    return true;
 }
@@ -1084,7 +1278,9 @@ bool CPTData::CanRemoveDuct(DuctIndexType idx) const
       if ( ductData.DuctGeometryType == CDuctGeometry::Offset )
       {
          if ( ductData.OffsetDuctGeometry.RefDuctIdx == idx )
+         {
             return false;
+         }
       }
    }
 
@@ -1107,7 +1303,9 @@ void CPTData::RemoveDuct(DuctIndexType idx)
       {
          ATLASSERT( idx != ductData.OffsetDuctGeometry.RefDuctIdx );
          if ( idx < ductData.OffsetDuctGeometry.RefDuctIdx )
+         {
             ductData.OffsetDuctGeometry.RefDuctIdx--;
+         }
       }
    }
 
@@ -1136,9 +1334,13 @@ StrandIndexType CPTData::GetStrandCount() const
 Float64 CPTData::GetPjack(DuctIndexType ductIndex) const
 {
    if ( m_Ducts[ductIndex].bPjCalc )
+   {
       return m_Ducts[ductIndex].Pj;
+   }
    else
+   {
       return m_Ducts[ductIndex].LastUserPj;
+   }
 }
 
 void CPTData::InsertSpan(SpanIndexType newSpanIndex)
@@ -1175,11 +1377,14 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    pStrLoad->BeginUnit(_T("PTData"));
 
+   Float64 version;
+   pStrLoad->get_Version(&version);
+
    m_Ducts.clear();
 
-   var.vt = VT_I2;
+   var.vt = VT_INDEX;
    pStrLoad->get_Property(_T("DuctCount"),&var);
-   DuctIndexType ductCount = var.iVal;
+   DuctIndexType ductCount = VARIANT2INDEX(var);
 
    for ( DuctIndexType ductIdx = 0; ductIdx < ductCount; ductIdx++ )
    {
@@ -1205,6 +1410,14 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    pStrLoad->get_Property(_T("LastUserPjTemp"), &var);
    LastUserPjTemp = var.dblVal;
 
+   // added in version 2
+   if ( 1 < version )
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("DuctType"),&var);
+      DuctType = (pgsTypes::DuctType)var.lVal;
+   }
+
    pStrLoad->EndUnit();
 
    return hr;
@@ -1214,7 +1427,7 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PTData"),1.0);
+   pStrSave->BeginUnit(_T("PTData"),2.0);
 
    DuctIndexType ductCount = m_Ducts.size();
    pStrSave->put_Property(_T("DuctCount"),CComVariant(ductCount));
@@ -1227,6 +1440,9 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("CalcPjTemp"),CComVariant(bPjTempCalc ? VARIANT_TRUE : VARIANT_FALSE));
    pStrSave->put_Property(_T("PjTemp"), CComVariant(PjTemp));
    pStrSave->put_Property(_T("LastUserPjTemp"),CComVariant(LastUserPjTemp));
+
+   // added in version 2
+   pStrSave->put_Property(_T("DuctType"),CComVariant(DuctType));
 
    pStrSave->EndUnit();
 
@@ -1255,6 +1471,8 @@ void CPTData::MakeCopy(const CPTData& rOther)
    }
 
    pStrand = rOther.pStrand;
+
+   DuctType = rOther.DuctType;
 }
 
 void CPTData::MakeAssignment(const CPTData& rOther)
@@ -1287,7 +1505,7 @@ void CPTData::RemoveFromTimeline()
    {
       CGirderKey girderKey(m_pGirder->GetGirderKey());
       DuctIndexType nDucts = GetDuctCount();
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      for ( DuctIndexType ductIdx = nDucts-1; 0 <= ductIdx && ductIdx != INVALID_INDEX; ductIdx-- )
       {
          EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(girderKey,ductIdx);
          CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);

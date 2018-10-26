@@ -514,7 +514,7 @@ void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
             tmp = _T("Mid-Girder-Ends");
          else
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             tmp = _T("Full-Length");
          }
 
@@ -633,7 +633,7 @@ pgsTypes::RebarLayoutType CLongSteelGrid::GetLayout(ROWCOL nRow)
       type = pgsTypes::blMidGirderEnds;
    else
    {
-      ATLASSERT(0); // should not happen
+      ATLASSERT(false); // should not happen
       type = pgsTypes::blFullLength;
    }
 

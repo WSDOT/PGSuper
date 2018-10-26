@@ -295,7 +295,7 @@ STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnChanged(
       ppdo->SetPosition(pnt, TRUE, FALSE);
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 }
 
 

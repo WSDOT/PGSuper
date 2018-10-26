@@ -25,6 +25,7 @@
 #pragma once
 
 #include "resource.h"       // main symbols
+#include "GrapherBase.h"
 
 #include <EAF\EAFInterfaceCache.h>
 
@@ -40,6 +41,7 @@ class ATL_NO_VTABLE CPGSuperGrapherImp :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CPGSuperGrapherImp, &CLSID_PGSuperGraphingAgent>,
 	public IConnectionPointContainerImpl<CPGSuperGrapherImp>,
+   public CGrapherBase,
    public IAgentEx
 {
 public:
@@ -71,7 +73,7 @@ public:
    STDMETHOD(GetClassID)(CLSID* pCLSID);
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 
    HRESULT InitGraphBuilders();
 };

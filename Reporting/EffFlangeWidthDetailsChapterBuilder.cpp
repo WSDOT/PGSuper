@@ -58,17 +58,29 @@ LPCTSTR CEffFlangeWidthDetailsChapterBuilder::GetName() const
 rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+
    CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->IsCompositeDeck() )
    {
       GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
       GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
       GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);

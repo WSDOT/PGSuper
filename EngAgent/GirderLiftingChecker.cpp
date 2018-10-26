@@ -43,6 +43,7 @@
 #include <PgsExt\GirderModelFactory.H>
 
 #include "DesignCodes.h"
+#include "AlternativeTensileStressCalculator.h"
 
 #include "GirderHandlingChecker.h"
 #include "GirderLiftingChecker.h"
@@ -85,35 +86,35 @@ pgsGirderLiftingChecker::~pgsGirderLiftingChecker()
 
 void pgsGirderLiftingChecker::CheckLifting(const CSegmentKey& segmentKey,pgsLiftingAnalysisArtifact* pArtifact)
 {
-   GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
+   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
 
-   if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
        // Use poi's from global pool
-      GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
+      GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
       HANDLINGCONFIG dummy_config;
 
       // Compute lifting response
-      AnalyzeLifting(segmentKey,false,dummy_config,pGirderLiftingPointsOfInterest,pArtifact);
+      AnalyzeLifting(segmentKey,false,dummy_config,pSegmentLiftingPointsOfInterest,pArtifact);
    }
 }
 
 void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact)
 {
-   GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
+   GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
    HANDLINGCONFIG dummy_config;
    dummy_config.bIgnoreGirderConfig = true;
    dummy_config.LeftOverhang = supportLoc;
    dummy_config.RightOverhang = supportLoc;
-   AnalyzeLifting(segmentKey,true,dummy_config,pGirderLiftingPointsOfInterest,pArtifact);
+   AnalyzeLifting(segmentKey,true,dummy_config,pSegmentLiftingPointsOfInterest,pArtifact);
 }
 
-void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig,IGirderLiftingDesignPointsOfInterest* pPoiD, pgsLiftingAnalysisArtifact* pArtifact)
+void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD, pgsLiftingAnalysisArtifact* pArtifact)
 {
    AnalyzeLifting(segmentKey,true,liftConfig,pPoiD,pArtifact);
 }
 
-void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,IGirderLiftingDesignPointsOfInterest* pPoiD,pgsLiftingAnalysisArtifact* pArtifact)
+void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,pgsLiftingAnalysisArtifact* pArtifact)
 {
    // calc some initial information
    GET_IFACE(IIntervals,pIntervals);
@@ -124,23 +125,24 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
    Float64 Loh, Roh, Eci, Fci;
    pgsTypes::ConcreteType concType;
 
-   std::vector<pgsPointOfInterest> poi_vec;
+   std::vector<pgsPointOfInterest> vPoi;
    if ( bUseConfig )
    {
       Loh = liftConfig.LeftOverhang;
       Roh = liftConfig.RightOverhang;
 
-      poi_vec = pPoiD->GetLiftingDesignPointsOfInterest(segmentKey,Loh);
+      vPoi = pPoiD->GetLiftingDesignPointsOfInterest(segmentKey,Loh);
    }
    else
    {
-      GET_IFACE(IGirderLifting,pGirderLifting);
-      Loh = pGirderLifting->GetLeftLiftingLoopLocation(segmentKey);
-      Roh = pGirderLifting->GetRightLiftingLoopLocation(segmentKey);
+      GET_IFACE(ISegmentLifting,pSegmentLifting);
+      Loh = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
+      Roh = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
 
-      GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
-      poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(segmentKey,0,POIFIND_OR);
+      GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
+      vPoi = pSegmentLiftingPointsOfInterest->GetLiftingPointsOfInterest(segmentKey,0);
    }
+   ATLASSERT(0 < vPoi.size());
 
    if ( !bUseConfig || liftConfig.bIgnoreGirderConfig )
    {
@@ -156,11 +158,15 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
       ATLASSERT(liftConfig.bIgnoreGirderConfig == false);
 
       if ( liftConfig.GdrConfig.bUserEci )
+      {
          Eci = liftConfig.GdrConfig.Eci;
+      }
       else
+      {
          Eci = pMaterial->GetEconc(liftConfig.GdrConfig.Fci, pMaterial->GetSegmentStrengthDensity(segmentKey),
                                                              pMaterial->GetSegmentEccK1(segmentKey),
                                                              pMaterial->GetSegmentEccK2(segmentKey));
+      }
 
       Fci = liftConfig.GdrConfig.Fci;
       concType = liftConfig.GdrConfig.ConcType;
@@ -169,16 +175,14 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
    
    PrepareLiftingAnalysisArtifact(segmentKey,Loh,Roh,Fci,Eci,concType,pArtifact);
 
-   pArtifact->SetLiftingPointsOfInterest(poi_vec);
-
    // get moments at pois  and mid-span deflection due to dead vertical lifting
-   std::vector<Float64> moment_vec;
+   std::vector<Float64> vMoment;
    Float64 mid_span_deflection;
-   ComputeLiftingMoments(segmentKey, *pArtifact, poi_vec, &moment_vec,&mid_span_deflection);
+   ComputeLiftingMoments(segmentKey, *pArtifact, vPoi, &vMoment,&mid_span_deflection);
 
-   ComputeLiftingStresses(segmentKey, bUseConfig, liftConfig, poi_vec, moment_vec, pArtifact);
+   ComputeLiftingStresses(segmentKey, bUseConfig, liftConfig, vPoi, vMoment, pArtifact);
 
-   if (ComputeLiftingFsAgainstCracking(segmentKey, bUseConfig, liftConfig, poi_vec, moment_vec, mid_span_deflection, pArtifact))
+   if (ComputeLiftingFsAgainstCracking(segmentKey, bUseConfig, liftConfig, vPoi, vMoment, mid_span_deflection, pArtifact))
    {
       ComputeLiftingFsAgainstFailure(segmentKey, pArtifact);
    }
@@ -189,14 +193,14 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
    }
 }
 
-pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmentKey& segmentKey,const GDRCONFIG& config,IGirderLiftingDesignPointsOfInterest* pPoiD,pgsLiftingAnalysisArtifact* pArtifact,SHARED_LOGFILE LOGFILE)
+pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmentKey& segmentKey,const GDRCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPoiD,pgsLiftingAnalysisArtifact* pArtifact,SHARED_LOGFILE LOGFILE)
 {
    //
    // Range of lifting loop locations and step increment
    //
-   GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   Float64 min_location = Max(pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metStart),pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metEnd));
-   Float64 location_accuracy = pGirderLiftingSpecCriteria->GetLiftingPointLocationAccuracy();
+   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   Float64 min_location = Max(pSegmentLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metStart),pSegmentLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metEnd));
+   Float64 location_accuracy = pSegmentLiftingSpecCriteria->GetLiftingPointLocationAccuracy();
 
    Float64 bigInc = 8*location_accuracy;
    Float64 smallInc = location_accuracy;
@@ -210,7 +214,7 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
 
    Float64 maxLoc = 0.4*girder_length;
 
-   if (0 < config.PrestressConfig.GetNStrands(pgsTypes::Harped)) // only look at harping point if we have harped strands
+   if (0 < config.PrestressConfig.GetStrandCount(pgsTypes::Harped)) // only look at harping point if we have harped strands
    {
       Float64 lhp,rhp;
       GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -223,7 +227,7 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
    // Find a lifting location that makes the factor of safety against failure
    // equal to 1.5 or better
    Float64 FSf = 0;
-   Float64 FSfMin = pGirderLiftingSpecCriteria->GetLiftingFailureFs();
+   Float64 FSfMin = pSegmentLiftingSpecCriteria->GetLiftingFailureFs();
    Float64 loc = min_location;
 
    HANDLINGCONFIG lift_config;
@@ -231,7 +235,6 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
    lift_config.GdrConfig = config;
 
    pgsLiftingAnalysisArtifact artifact;
-   GET_IFACE(ILosses,pLosses);
    while ( loc <= maxLoc )
    {
       LOG(_T(""));
@@ -371,12 +374,12 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(const CSegmentKey& 
       THROW_UNWIND(str.c_str(),-1);
    }
 
-   GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   pArtifact->SetAllowableFsForCracking(pGirderLiftingSpecCriteria->GetLiftingCrackingFs());
-   pArtifact->SetAllowableFsForFailure(pGirderLiftingSpecCriteria->GetLiftingFailureFs());
+   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   pArtifact->SetAllowableFsForCracking(pSegmentLiftingSpecCriteria->GetLiftingCrackingFs());
+   pArtifact->SetAllowableFsForFailure(pSegmentLiftingSpecCriteria->GetLiftingFailureFs());
 
-   Float64 min_lift_point_start = pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metStart);
-   Float64 min_lift_point_end   = pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metEnd);
+   Float64 min_lift_point_start = pSegmentLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metStart);
+   Float64 min_lift_point_end   = pSegmentLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metEnd);
    if ( Loh < min_lift_point_start )
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
@@ -402,27 +405,27 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(const CSegmentKey& 
    pArtifact->SetClearSpanBetweenPickPoints(span_len);
    pArtifact->SetOverhangs(Loh,Roh);
 
-   Float64 bracket_hgt = pGirderLiftingSpecCriteria->GetHeightOfPickPointAboveGirderTop();
+   Float64 bracket_hgt = pSegmentLiftingSpecCriteria->GetHeightOfPickPointAboveGirderTop();
    Float64 ycgt = pSectProp->GetY(liftSegmentIntervalIdx,pgsPointOfInterest(segmentKey,0.00),pgsTypes::TopGirder);
    Float64 e_hgt = bracket_hgt+ycgt;
    pArtifact->SetVerticalDistanceFromPickPointToGirderCg(e_hgt);
 
    Float64 upwardi, downwardi;
-   pGirderLiftingSpecCriteria->GetLiftingImpact(&downwardi, &upwardi);
+   pSegmentLiftingSpecCriteria->GetLiftingImpact(&downwardi, &upwardi);
    pArtifact->SetUpwardImpact(upwardi);
    pArtifact->SetDownwardImpact(downwardi);
 
-   pArtifact->SetSweepTolerance(pGirderLiftingSpecCriteria->GetLiftingSweepTolerance());
-   pArtifact->SetLiftingDeviceTolerance(pGirderLiftingSpecCriteria->GetLiftingLoopPlacementTolerance());
+   pArtifact->SetSweepTolerance(pSegmentLiftingSpecCriteria->GetLiftingSweepTolerance());
+   pArtifact->SetLiftingDeviceTolerance(pSegmentLiftingSpecCriteria->GetLiftingLoopPlacementTolerance());
 
    pArtifact->SetConcreteStrength(Fci);
-   pArtifact->SetModRupture( pGirderLiftingSpecCriteria->GetLiftingModulusOfRupture(Fci,concType) );
-   pArtifact->SetModRuptureCoefficient( pGirderLiftingSpecCriteria->GetLiftingModulusOfRuptureFactor(concType) );
+   pArtifact->SetModRupture( pSegmentLiftingSpecCriteria->GetLiftingModulusOfRupture(Fci,concType) );
+   pArtifact->SetModRuptureCoefficient( pSegmentLiftingSpecCriteria->GetLiftingModulusOfRuptureFactor(concType) );
 
    pArtifact->SetElasticModulusOfGirderConcrete(Eci);
 
    Float64 gird_weight = pArtifact->GetGirderWeight();
-   Float64 ang = pGirderLiftingSpecCriteria->GetLiftingCableMinInclination();
+   Float64 ang = pSegmentLiftingSpecCriteria->GetLiftingCableMinInclination();
 
    // Use the complementary angle = 180 - 90 - ang
    // This way we don't divide by zero if tan(theta) = 0
@@ -436,11 +439,11 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(const CSegmentKey& 
    offset_factor = offset_factor*offset_factor - 1/3.;
    pArtifact->SetOffsetFactor(offset_factor);
 
-   Float64 sweep = pGirderLiftingSpecCriteria->GetLiftingSweepTolerance();
+   Float64 sweep = pSegmentLiftingSpecCriteria->GetLiftingSweepTolerance();
    Float64 e_sweep = sweep * girder_length;
    pArtifact->SetEccentricityDueToSweep(e_sweep);
 
-   Float64 e_placement = pGirderLiftingSpecCriteria->GetLiftingLoopPlacementTolerance();
+   Float64 e_placement = pSegmentLiftingSpecCriteria->GetLiftingLoopPlacementTolerance();
    pArtifact->SetEccentricityDueToPlacementTolerance(e_placement);
 
    pArtifact->SetTotalInitialEccentricity(e_sweep*offset_factor + e_placement);
@@ -448,8 +451,8 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(const CSegmentKey& 
 
 void pgsGirderLiftingChecker::ComputeLiftingMoments(const CSegmentKey& segmentKey,
                                                      const pgsLiftingAnalysisArtifact& rArtifact, 
-                                                     const std::vector<pgsPointOfInterest>& rpoiVec,
-                                                     std::vector<Float64>* pmomVec, 
+                                                     const std::vector<pgsPointOfInterest>& vPoi,
+                                                     std::vector<Float64>* pvMoment, 
                                                      Float64* pMidSpanDeflection)
 {
    // build a model
@@ -468,31 +471,31 @@ void pgsGirderLiftingChecker::ComputeLiftingMoments(const CSegmentKey& segmentKe
                                             leftOH, glen, rightOH,
                                             E,
                                             POI_LIFT_SEGMENT,
-                                            rpoiVec,
-                                            pmomVec, 
+                                            vPoi,
+                                            pvMoment, 
                                             pMidSpanDeflection);
 }
 
 void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentKey,bool bUseConfig,
                                                       const HANDLINGCONFIG& liftConfig,
-                                                      const std::vector<pgsPointOfInterest>& rpoiVec,
-                                                      const std::vector<Float64>& momVec,
+                                                      const std::vector<pgsPointOfInterest>& vPoi,
+                                                      const std::vector<Float64>& vMoment,
                                                       pgsLiftingAnalysisArtifact* pArtifact)
 {
-   GET_IFACE(IPretensionForce,pPrestressForce);
-   GET_IFACE(IStrandGeometry,pStrandGeometry);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IPretensionForce,           pPrestressForce);
+   GET_IFACE(IStrandGeometry,            pStrandGeometry);
+   GET_IFACE(ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
+   GET_IFACE(IBridge,                    pBridge);
+   GET_IFACE(IGirder,                    pGirder);
+   GET_IFACE(ISectionProperties,         pSectProps);
+   GET_IFACE(IShapes,                    pShapes);
+   GET_IFACE(IMaterials,                 pMaterials);
+   GET_IFACE(ILongRebarGeometry,         pRebarGeom);
+   GET_IFACE(IPointOfInterest,           pPoi);
+   GET_IFACE(IIntervals,                 pIntervals);
    
-   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
-   GET_IFACE(IBridge, pBridge);
-   GET_IFACE(IGirder,pGirder);
-   GET_IFACE(ISectionProperties,pSectProps);
-   GET_IFACE(IShapes,pShapes);
-   GET_IFACE(IMaterials,pMaterials);
-   GET_IFACE(ILongRebarGeometry, pRebarGeom);
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
+
 
    // get poi-independent values used for stress calc
    // factor in forces from inclined lifting cables
@@ -501,9 +504,9 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
    Float64 impact_up   = 1.0 - pArtifact->GetUpwardImpact();
    Float64 impact_down = 1.0 + pArtifact->GetDownwardImpact();
 
-   IndexType psiz = rpoiVec.size();
-   IndexType msiz = momVec.size();
-   CHECK(psiz==msiz);
+   IndexType psiz = vPoi.size();
+   IndexType msiz = vMoment.size();
+   ATLASSERT(psiz==msiz);
 
    Float64 glen    = pArtifact->GetGirderLength();
    Float64 leftOH  = pArtifact->GetLeftOverhang();
@@ -518,28 +521,28 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
 #endif
 
    // Get allowable tension for with and without rebar cases
-   Float64 fLowTensAllowable  = pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
-   Float64 fHighTensAllowable = pGirderLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
-   Float64 fCompAllowable     = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
+   Float64 fLowTensAllowable  = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
+   Float64 fHighTensAllowable = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
+   Float64 fCompAllowable     = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
 
    // Parameters for computing required concrete strengths
-   Float64 rcsC = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressionFactor();
+   Float64 rcsC = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressionFactor();
    Float64 rcsT;
    bool    rcsBfmax;
    Float64 rcsFmax;
-   pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressParameters(&rcsT,&rcsBfmax,&rcsFmax);
-   Float64 rcsTalt = pGirderLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStressFactor();
+   pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressParameters(&rcsT,&rcsBfmax,&rcsFmax);
+   Float64 rcsTalt = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStressFactor();
 
    bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
 
    // Use calculator object to deal with casting yard higher allowable stress
-   pgsAlternativeTensileStressCalculator altCalc(segmentKey, liftSegmentIntervalIdx, pBridge, pGirder, pShapes,pSectProps, pRebarGeom, pMaterials, true/*limit bar stress*/, bSISpec, true /*girder stresses*/);
+   pgsAlternativeTensileStressCalculator altCalc(segmentKey, liftSegmentIntervalIdx, pBridge, pGirder, pShapes,pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress*/, bSISpec, true /*girder stresses*/);
 
    Float64 AsMax = 0;
    Float64 As = 0;
    for(IndexType i=0; i<psiz; i++)
    {
-      const pgsPointOfInterest& poi = rpoiVec[i];
+      const pgsPointOfInterest& poi = vPoi[i];
 
       Float64 ag,stg,sbg;
       if ( bUseConfig && !liftConfig.bIgnoreGirderConfig )
@@ -607,7 +610,7 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
       lift_artifact.SetEccentricityPsForce(total_e);
 
       // impacted moments
-      Float64 mom_no   = momVec[i] + Mlift;
+      Float64 mom_no   = vMoment[i] + Mlift;
       Float64 mom_up   = impact_up   * mom_no;
       Float64 mom_down = impact_down * mom_no;
       lift_artifact.SetMomentImpact(mom_up,mom_no, mom_down);
@@ -674,14 +677,14 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
 
       lift_artifact.SetRequiredConcreteStrength(fc_compression,fc_tens_norebar,fc_tens_withrebar);
 
-      pArtifact->AddLiftingStressAnalysisArtifact(poi.GetDistFromStart(),lift_artifact);
+      pArtifact->AddLiftingStressAnalysisArtifact(poi,lift_artifact);
    }
 }
 
 bool pgsGirderLiftingChecker::ComputeLiftingFsAgainstCracking(const CSegmentKey& segmentKey,bool bUseConfig,
                                                                const HANDLINGCONFIG& liftConfig,
-                                                               const std::vector<pgsPointOfInterest>& rpoiVec,
-                                                               const std::vector<Float64>& momVec,
+                                                               const std::vector<pgsPointOfInterest>& vPoi,
+                                                               const std::vector<Float64>& vMoment,
                                                                Float64 midSpanDeflection,
                                                                pgsLiftingAnalysisArtifact* pArtifact)
 {
@@ -695,8 +698,8 @@ bool pgsGirderLiftingChecker::ComputeLiftingFsAgainstCracking(const CSegmentKey&
    // get mid-span poi so we can calc camber due to ps
    pgsPointOfInterest poi_ms;
    bool found=false;
-   std::vector<pgsPointOfInterest>::const_iterator iter(rpoiVec.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(rpoiVec.end());
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    while( iter != end )
    {
       const pgsPointOfInterest& rpoi = *iter;
@@ -762,8 +765,8 @@ bool pgsGirderLiftingChecker::ComputeLiftingFsAgainstCracking(const CSegmentKey&
    Float64 theta_i = ei/ayr;
    pArtifact->SetInitialTiltAngle(theta_i);
 
-   GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   Float64 fs_all_cr = pGirderLiftingSpecCriteria->GetLiftingCrackingFs();
+   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   Float64 fs_all_cr = pSegmentLiftingSpecCriteria->GetLiftingCrackingFs();
 
    // If at this point, yr is negative, then the girder is unstable for
    // lifting and we can do no more calculations. So return false.
@@ -775,13 +778,14 @@ bool pgsGirderLiftingChecker::ComputeLiftingFsAgainstCracking(const CSegmentKey&
       Float64 bt_top = pGdr->GetTopWidth(poi_ms);
 
       // loop over all pois and calculate cracking fs
-      IndexType psiz = rpoiVec.size();
-      IndexType msiz = momVec.size();
-      ATLASSERT(psiz==msiz);
-      for(IndexType i = 0; i < psiz; i++)
+      ATLASSERT(vPoi.size() == vMoment.size());
+      std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+      std::vector<Float64>::const_iterator momentIter(vMoment.begin());
+      for ( ; poiIter != poiIterEnd; poiIter++, momentIter++ )
       {
-         const pgsPointOfInterest& poi( rpoiVec[i] );
-         Float64 mom_vert = momVec[i];
+         const pgsPointOfInterest& poi( *poiIter );
+         Float64 mom_vert = *momentIter;
 
          pgsLiftingCrackingAnalysisArtifact crack_artifact;
          crack_artifact.SetVerticalMoment(mom_vert);
@@ -790,8 +794,8 @@ bool pgsGirderLiftingChecker::ComputeLiftingFsAgainstCracking(const CSegmentKey&
 
          // determine lateral moment that will cause cracking in section
          // upward impact will crack top flange and downward impact will crack bottom
-         const pgsLiftingStressAnalysisArtifact* pstr = pArtifact->GetLiftingStressAnalysisArtifact(poi.GetDistFromStart());
-         CHECK(pstr!=0);
+         const pgsLiftingStressAnalysisArtifact* pstr = pArtifact->GetLiftingStressAnalysisArtifact(poi);
+         ATLASSERT(pstr!=0);
 
          // top flange cracking
          Float64 ftop_ps, ftop_up, ftop_no, ftop_down;
@@ -821,7 +825,7 @@ bool pgsGirderLiftingChecker::ComputeLiftingFsAgainstCracking(const CSegmentKey&
 
          Float64 theta_max;
          // if m_lat is negative, this means that beam cracks even if it's not tilted
-         if (m_lat > 0.0)
+         if (0.0 < m_lat)
          {
             crack_artifact.SetLateralMoment(m_lat);
 
@@ -842,7 +846,7 @@ bool pgsGirderLiftingChecker::ComputeLiftingFsAgainstCracking(const CSegmentKey&
             crack_artifact.SetFsCracking(0.0);
          }
 
-         pArtifact->AddLiftingCrackingAnalysisArtifact(poi.GetDistFromStart(),crack_artifact);
+         pArtifact->AddLiftingCrackingAnalysisArtifact(poi,crack_artifact);
       }
    }
    else
@@ -862,7 +866,7 @@ void pgsGirderLiftingChecker::ComputeLiftingFsAgainstFailure(const CSegmentKey& 
 {
 
    Float64 zo = pArtifact->GetZo();
-   CHECK(zo>0.0);
+   ATLASSERT(0.0 < zo);
    Float64 ei = pArtifact->GetTotalInitialEccentricity();
 
    Float64 theta_max = sqrt(ei/(2.5*zo));

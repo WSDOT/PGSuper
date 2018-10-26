@@ -124,11 +124,15 @@ HRESULT RegisterAgent(bool bRegister)
    HRESULT hr = S_OK;
    hr = sysComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSuperAgent,bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    hr = sysComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSpliceAgent,bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    return S_OK;
 }
@@ -138,7 +142,9 @@ STDAPI DllRegisterServer(void)
 	// registers object, typelib and all interfaces in typelib
 	HRESULT hr = _Module.RegisterServer(FALSE);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    return RegisterAgent(true);
 }

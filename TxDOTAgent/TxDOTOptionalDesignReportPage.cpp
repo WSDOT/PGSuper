@@ -324,7 +324,7 @@ void CTxDOTOptionalDesignReportPage::OnCmenuSelected(UINT id)
 
   default:
      // must be a toc anchor
-     CHECK(cmd>=CCS_RB_TOC);
+     ATLASSERT(cmd>=CCS_RB_TOC);
      m_pBrowser->NavigateAnchor(cmd-CCS_RB_TOC);
   }
 }

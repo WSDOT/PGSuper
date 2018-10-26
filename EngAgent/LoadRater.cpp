@@ -34,18 +34,6 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\Intervals.h>
 
-#pragma Reminder("BUG: Load Rater doesn't work correctly")
-// The load rater is supposed to do a load rating along an entire girder line (first to last pier)
-// When the girder line index was passed, it did that. Now that we are using GirderIDType for
-// a single girder that can be made of 1 (precast girder bridge) or more (spliced girder bridge)
-// segments, this function only details with a single superstructure member and it is assumed
-// it has only one segment
-//
-// GetPointsOfInterest is using a dummy parameter (ALL_SEGMENTS) just so I can get
-// this thing to compile.
-
-#define RF_MAX 9999999
-Float64 sum_values(Float64 a,Float64 b) { return a + b; }
 void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pIntervals,
                        std::vector<pgsPointOfInterest>::const_iterator poiBeginIter,
                        std::vector<pgsPointOfInterest>::const_iterator poiEndIter,
@@ -77,19 +65,26 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
 
+   GET_IFACE(IPointOfInterest,pPOI);
+   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+
    pgsRatingArtifact ratingArtifact;
 
    // Rate for positive moment - flexure
-   MomentRating(girderKey,true,ratingType,vehicleIdx,ratingArtifact);
+   MomentRating(girderKey,vPoi,true,ratingType,vehicleIdx,ratingArtifact);
 
    // Rate for negative moment - flexure, if applicable
    GET_IFACE(IBridge,pBridge);
    if ( pBridge->ProcessNegativeMoments(ALL_SPANS) )
-      MomentRating(girderKey,false,ratingType,vehicleIdx,ratingArtifact);
+   {
+      MomentRating(girderKey,vPoi,false,ratingType,vehicleIdx,ratingArtifact);
+   }
 
    // Rate for shear if applicable
    if ( pRatingSpec->RateForShear(ratingType) )
-      ShearRating(girderKey,ratingType,vehicleIdx,ratingArtifact);
+   {
+      ShearRating(girderKey,vPoi,ratingType,vehicleIdx,ratingArtifact);
+   }
 
    // Rate for stress if applicable
    if ( pRatingSpec->RateForStress(ratingType) )
@@ -97,44 +92,49 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
       if ( ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special )
       {
          // Service I reinforcement yield check if permit rating
-         CheckReinforcementYielding(girderKey,ratingType,vehicleIdx,true,ratingArtifact);
+         CheckReinforcementYielding(girderKey,vPoi,ratingType,vehicleIdx,true,ratingArtifact);
 
          if ( pBridge->ProcessNegativeMoments(ALL_SPANS) )
-            CheckReinforcementYielding(girderKey,ratingType,vehicleIdx,false,ratingArtifact);
+         {
+            CheckReinforcementYielding(girderKey,vPoi,ratingType,vehicleIdx,false,ratingArtifact);
+         }
       }
       else
       {
          // Service III flexure if other rating type
-         StressRating(girderKey,ratingType,vehicleIdx,ratingArtifact);
+         StressRating(girderKey,vPoi,ratingType,vehicleIdx,ratingArtifact);
       }
    }
 
    return ratingArtifact;
 }
 
-void pgsLoadRater::MomentRating(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
+void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
-   GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
-
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;
    std::vector<Float64> vLLIMmin,vLLIMmax;
    std::vector<Float64> vPLmin,vPLmax;
    std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
-   GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
+   GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPoi, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
+
+   CGirderKey thisGirderKey(girderKey);
+   if ( thisGirderKey.groupIndex == ALL_GROUPS )
+   {
+      thisGirderKey.groupIndex = 0;
+   }
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(girderKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
-   std::vector<MOMENTCAPACITYDETAILS> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPOI,bPositiveMoment);
-   std::vector<MINMOMENTCAPDETAILS> vMmin = pMomentCapacity->GetMinMomentCapacityDetails(loadRatingIntervalIdx,vPOI,bPositiveMoment);
+   std::vector<MOMENTCAPACITYDETAILS> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
+   std::vector<MINMOMENTCAPDETAILS> vMmin = pMomentCapacity->GetMinMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
 
-   ATLASSERT(vPOI.size()     == vDCmax.size());
-   ATLASSERT(vPOI.size()     == vDWmax.size());
-   ATLASSERT(vPOI.size()     == vLLIMmax.size());
-   ATLASSERT(vPOI.size()     == vM.size());
+   ATLASSERT(vPoi.size()     == vDCmax.size());
+   ATLASSERT(vPoi.size()     == vDWmax.size());
+   ATLASSERT(vPoi.size()     == vLLIMmax.size());
+   ATLASSERT(vPoi.size()     == vM.size());
    ATLASSERT(vDCmin.size()   == vDCmax.size());
    ATLASSERT(vDWmin.size()   == vDWmax.size());
    ATLASSERT(vLLIMmin.size() == vLLIMmax.size());
@@ -152,14 +152,13 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,bool bPositiveMoment
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
-   GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   CollectionIndexType nPOI = vPOI.size();
+   CollectionIndexType nPOI = vPoi.size();
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
-      pgsPointOfInterest& poi = vPOI[i];
+      const pgsPointOfInterest& poi = vPoi[i];
 
       Float64 condition_factor = (bPositiveMoment ? pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey()) 
                                                   : pRatingSpec->GetDeckConditionFactor() );
@@ -171,23 +170,27 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,bool bPositiveMoment
 
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
+      {
          truck_index = (bPositiveMoment ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
+      }
 
       Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
       if ( gLL < 0 )
       {
          if ( ::IsStrengthLimitState(ls) )
          {
+            GET_IFACE(IProductForces,pProductForces);
+
             Float64 Mmin, Mmax, Dummy;
             AxleConfiguration MinAxleConfig, MaxAxleConfig, DummyAxleConfig;
             if ( analysisType == pgsTypes::Envelope )
             {
-               pProductForces->GetVehicularLiveLoadMoment(llType,truck_index,loadRatingIntervalIdx,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,&Mmin,&Dummy,&MinAxleConfig,&DummyAxleConfig);
-               pProductForces->GetVehicularLiveLoadMoment(llType,truck_index,loadRatingIntervalIdx,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&Dummy,&Mmax,&DummyAxleConfig,&MaxAxleConfig);
+               pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,&Mmin,&Dummy,&MinAxleConfig,&DummyAxleConfig);
+               pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&Dummy,&Mmax,&DummyAxleConfig,&MaxAxleConfig);
             }
             else
             {
-               pProductForces->GetVehicularLiveLoadMoment(llType,truck_index,loadRatingIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&Mmin,&Mmax,&MinAxleConfig,&MaxAxleConfig);
+               pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,truck_index,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&Mmin,&Mmax,&MinAxleConfig,&MaxAxleConfig);
             }
             gLL = GetStrengthLiveLoadFactor(ratingType,bPositiveMoment ? MaxAxleConfig : MinAxleConfig);
          }
@@ -208,8 +211,9 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,bool bPositiveMoment
       // No adjustment needs to be made for underreinforcement so take K = 1.0
       Float64 K = (IsZero(vMmin[i].MrMin) ? 1.0 : vMmin[i].Mr/vMmin[i].MrMin);
       if ( K < 0.0 || 1.0 < K )
+      {
          K = 1.0;
-
+      }
 
       std::_tstring strVehicleName = strLLNames[truck_index];
       Float64 W = pProductLoads->GetVehicleWeight(llType,truck_index);
@@ -236,16 +240,19 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,bool bPositiveMoment
    }
 }
 
-void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
+void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
+   CGirderKey thisGirderKey(girderKey);
+   if ( thisGirderKey.groupIndex == ALL_GROUPS )
+   {
+      thisGirderKey.groupIndex = 0;
+   }
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(girderKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
 
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
-   GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
 
    std::vector<sysSectionValue> vDCmin, vDCmax;
    std::vector<sysSectionValue> vDWmin, vDWmax;
@@ -260,49 +267,53 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
    GET_IFACE(IProductForces2,pProductForces);
    if ( analysisType == pgsTypes::Envelope )
    {
-      vDCmin = pCombinedForces->GetShear(lcDC,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MinSimpleContinuousEnvelope);
-      vDCmax = pCombinedForces->GetShear(lcDC,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MaxSimpleContinuousEnvelope);
-      vDWmin = pCombinedForces->GetShear(lcDW,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MinSimpleContinuousEnvelope);
-      vDWmax = pCombinedForces->GetShear(lcDW,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MaxSimpleContinuousEnvelope);
+      vDCmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDC,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative);
+      vDCmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDC,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative);
+      vDWmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDWRating,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative);
+      vDWmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDWRating,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative);
 
       if ( vehicleIdx == INVALID_INDEX )
       {
-         pProductForces->GetLiveLoadShear( llType, loadRatingIntervalIdx, vPOI, pgsTypes::MinSimpleContinuousEnvelope, true, true, &vLLIMmin, &vUnused, &vMinTruckIndex, &vUnusedIndex );
-         pProductForces->GetLiveLoadShear( llType, loadRatingIntervalIdx, vPOI, pgsTypes::MaxSimpleContinuousEnvelope, true, true, &vUnused, &vLLIMmax, &vUnusedIndex, &vMaxTruckIndex );
+         pProductForces->GetLiveLoadShear( loadRatingIntervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, true, &vLLIMmin, &vUnused, &vMinTruckIndex, &vUnusedIndex );
+         pProductForces->GetLiveLoadShear( loadRatingIntervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, true, &vUnused, &vLLIMmax, &vUnusedIndex, &vMaxTruckIndex );
       }
       else
       {
-         pProductForces->GetVehicularLiveLoadShear( llType, vehicleIdx, loadRatingIntervalIdx, vPOI, pgsTypes::MinSimpleContinuousEnvelope, true, true, &vLLIMmin, &vUnused, NULL,NULL,NULL,NULL);
-         pProductForces->GetVehicularLiveLoadShear( llType, vehicleIdx, loadRatingIntervalIdx, vPOI, pgsTypes::MaxSimpleContinuousEnvelope, true, true, &vUnused, &vLLIMmax, NULL,NULL,NULL,NULL);
+         pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, true, &vLLIMmin, &vUnused, NULL,NULL,NULL,NULL);
+         pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, true, &vUnused, &vLLIMmax, NULL,NULL,NULL,NULL);
       }
 
-      pCombinedForces->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, pgsTypes::MaxSimpleContinuousEnvelope, false, &vUnused, &vPLmax );
-      pCombinedForces->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, pgsTypes::MinSimpleContinuousEnvelope, false, &vPLmin, &vUnused );
+      pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, false, &vUnused, &vPLmax );
+      pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, pgsTypes::MinSimpleContinuousEnvelope, false, &vPLmin, &vUnused );
    }
    else
    {
-      vDCmax = pCombinedForces->GetShear(lcDC,loadRatingIntervalIdx,vPOI,ctCumulative,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+      vDCmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDC,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative);
       vDCmin = vDCmax;
-      vDWmax = pCombinedForces->GetShear(lcDW,loadRatingIntervalIdx,vPOI,ctCumulative,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+      vDWmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDWRating,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative);
       vDWmin = vDWmax;
 
       if ( vehicleIdx == INVALID_INDEX )
-         pProductForces->GetLiveLoadShear( llType, loadRatingIntervalIdx, vPOI, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, true, &vLLIMmin, &vLLIMmax, &vMinTruckIndex, &vMaxTruckIndex );
+      {
+         pProductForces->GetLiveLoadShear( loadRatingIntervalIdx, llType, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, true, &vLLIMmin, &vLLIMmax, &vMinTruckIndex, &vMaxTruckIndex );
+      }
       else
-         pProductForces->GetVehicularLiveLoadShear( llType, vehicleIdx, loadRatingIntervalIdx, vPOI, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, true, &vLLIMmin, &vLLIMmax, NULL, NULL, NULL, NULL);
+      {
+         pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, true, &vLLIMmin, &vLLIMmax, NULL, NULL, NULL, NULL);
+      }
 
-      pCombinedForces->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, false, &vPLmin, &vPLmax );
+      pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, false, &vPLmin, &vPLmax );
    }
 
    pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
 
    GET_IFACE(IShearCapacity,pShearCapacity);
-   std::vector<SHEARCAPACITYDETAILS> vVn = pShearCapacity->GetShearCapacityDetails(ls,loadRatingIntervalIdx,vPOI);
+   std::vector<SHEARCAPACITYDETAILS> vVn = pShearCapacity->GetShearCapacityDetails(ls,loadRatingIntervalIdx,vPoi);
 
-   ATLASSERT(vPOI.size()     == vDCmax.size());
-   ATLASSERT(vPOI.size()     == vDWmax.size());
-   ATLASSERT(vPOI.size()     == vLLIMmax.size());
-   ATLASSERT(vPOI.size()     == vVn.size());
+   ATLASSERT(vPoi.size()     == vDCmax.size());
+   ATLASSERT(vPoi.size()     == vDWmax.size());
+   ATLASSERT(vPoi.size()     == vLLIMmax.size());
+   ATLASSERT(vPoi.size()     == vVn.size());
    ATLASSERT(vDCmin.size()   == vDCmax.size());
    ATLASSERT(vDWmin.size()   == vDWmax.size());
    ATLASSERT(vLLIMmin.size() == vLLIMmax.size());
@@ -318,12 +329,10 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
    GET_IFACE(IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
-   GET_IFACE(IProductForces,pProductForce);
-
-   CollectionIndexType nPOI = vPOI.size();
+   CollectionIndexType nPOI = vPoi.size();
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
-      pgsPointOfInterest& poi = vPOI[i];
+      const pgsPointOfInterest& poi = vPoi[i];
 
       Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
 
@@ -342,7 +351,9 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
       Float64 PL   = (bIncludePL ? Max(fabs(PLmin),fabs(PLmax)) : 0);
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
+      {
          truck_index = (fabs(LLIMmin) < fabs(LLIMmax) ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
+      }
 
       Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
       if ( gLL < 0 )
@@ -350,31 +361,41 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
          // need to compute gLL based on axle weights
          if ( ::IsStrengthLimitState(ls) )
          {
+            GET_IFACE(IProductForces,pProductForce);
+
             sysSectionValue Vmin, Vmax, Dummy;
             AxleConfiguration MinLeftAxleConfig, MaxLeftAxleConfig, MinRightAxleConfig, MaxRightAxleConfig, DummyLeftAxleConfig, DummyRightAxleConfig;
             if ( analysisType == pgsTypes::Envelope )
             {
-               pProductForce->GetVehicularLiveLoadShear(llType,truck_index,loadRatingIntervalIdx,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,&Vmin,&Dummy,&MinLeftAxleConfig,&MinRightAxleConfig,&DummyLeftAxleConfig,&DummyRightAxleConfig);
-               pProductForce->GetVehicularLiveLoadShear(llType,truck_index,loadRatingIntervalIdx,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&Dummy,&Vmax,&DummyLeftAxleConfig,&DummyRightAxleConfig,&MaxLeftAxleConfig,&MaxRightAxleConfig);
+               pProductForce->GetVehicularLiveLoadShear(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,&Vmin,&Dummy,&MinLeftAxleConfig,&MinRightAxleConfig,&DummyLeftAxleConfig,&DummyRightAxleConfig);
+               pProductForce->GetVehicularLiveLoadShear(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&Dummy,&Vmax,&DummyLeftAxleConfig,&DummyRightAxleConfig,&MaxLeftAxleConfig,&MaxRightAxleConfig);
             }
             else
             {
-               pProductForce->GetVehicularLiveLoadShear(llType,truck_index,loadRatingIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&Vmin,&Vmax,&MinLeftAxleConfig,&MinRightAxleConfig,&MaxLeftAxleConfig,&MaxRightAxleConfig);
+               pProductForce->GetVehicularLiveLoadShear(loadRatingIntervalIdx,llType,truck_index,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&Vmin,&Vmax,&MinLeftAxleConfig,&MinRightAxleConfig,&MaxLeftAxleConfig,&MaxRightAxleConfig);
             }
 
             if ( fabs(LLIMmin) < fabs(LLIMmax) )
             {
                if (IsEqual(fabs(vLLIMmax[i].Left()),fabs(LLIMmax)))
+               {
                   gLL = GetStrengthLiveLoadFactor(ratingType,MaxLeftAxleConfig);
+               }
                else
+               {
                   gLL = GetStrengthLiveLoadFactor(ratingType,MaxRightAxleConfig);
+               }
             }
             else
             {
                if (IsEqual(fabs(vLLIMmin[i].Left()),fabs(LLIMmin)))
+               {
                   gLL = GetStrengthLiveLoadFactor(ratingType,MinLeftAxleConfig);
+               }
                else
+               {
                   gLL = GetStrengthLiveLoadFactor(ratingType,MinRightAxleConfig);
+               }
             }
          }
          else
@@ -411,9 +432,8 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
       SHEARCAPACITYDETAILS scd;
       pgsDesigner2 designer;
       designer.SetBroker(m_pBroker);
-      std::vector<CRITSECTDETAILS> vCSDetails = pShearCapacity->GetCriticalSectionDetails(ls,poi.GetSegmentKey());
       pShearCapacity->GetShearCapacityDetails(ls,loadRatingIntervalIdx,poi,&scd);
-      designer.InitShearCheck(poi.GetSegmentKey(),loadRatingIntervalIdx,ls,vCSDetails,NULL);
+      designer.InitShearCheck(poi.GetSegmentKey(),loadRatingIntervalIdx,ls,NULL);
       designer.CheckLongReinfShear(poi,loadRatingIntervalIdx,ls,scd,NULL,&l_artifact);
       shearArtifact.SetLongReinfShearArtifact(l_artifact);
 
@@ -421,21 +441,24 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
    }
 }
 
-void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
+void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
    ATLASSERT(ratingType == pgsTypes::lrDesign_Inventory || 
              ratingType == pgsTypes::lrLegal_Routine    ||
              ratingType == pgsTypes::lrLegal_Special ); // see MBE C6A.5.4.1
 
 
+   CGirderKey thisGirderKey(girderKey);
+   if ( thisGirderKey.groupIndex == ALL_GROUPS )
+   {
+      thisGirderKey.groupIndex = 0;
+   }
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(girderKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
 
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
-   GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
 
    std::vector<Float64> vDCTopMin, vDCBotMin, vDCTopMax, vDCBotMax;
    std::vector<Float64> vDWTopMin, vDWBotMin, vDWTopMax, vDWBotMax;
@@ -454,62 +477,66 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
    GET_IFACE(IProductForces2,pProductForces);
    if ( analysisType == pgsTypes::Envelope )
    {
-      pCombinedForces->GetStress(lcDC,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MinSimpleContinuousEnvelope,topLocation,botLocation,&vDCTopMin,&vDCBotMin);
-      pCombinedForces->GetStress(lcDC,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MaxSimpleContinuousEnvelope,topLocation,botLocation,&vDCTopMax,&vDCBotMax);
-      pCombinedForces->GetStress(lcDW,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MinSimpleContinuousEnvelope,topLocation,botLocation,&vDWTopMin,&vDWBotMin);
-      pCombinedForces->GetStress(lcDW,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MaxSimpleContinuousEnvelope,topLocation,botLocation,&vDWTopMax,&vDWBotMax);
+      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDC,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vDCTopMin,&vDCBotMin);
+      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDC,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vDCTopMax,&vDCBotMax);
+      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDWRating,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vDWTopMin,&vDWBotMin);
+      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDWRating,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative,topLocation,botLocation,&vDWTopMax,&vDWBotMax);
 
       if ( vehicleIdx == INVALID_INDEX )
       {
-         pProductForces->GetLiveLoadStress(llType,loadRatingIntervalIdx,vPOI,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,&vTruckIndexTopMin, &vUnusedIndex1, &vTruckIndexBotMin, &vUnusedIndex2);
-         pProductForces->GetLiveLoadStress(llType,loadRatingIntervalIdx,vPOI,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,&vUnusedIndex1, &vTruckIndexTopMax, &vUnusedIndex2, &vTruckIndexBotMax);
+         pProductForces->GetLiveLoadStress(loadRatingIntervalIdx,llType,vPoi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,&vTruckIndexTopMin, &vUnusedIndex1, &vTruckIndexBotMin, &vUnusedIndex2);
+         pProductForces->GetLiveLoadStress(loadRatingIntervalIdx,llType,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,&vUnusedIndex1, &vTruckIndexTopMax, &vUnusedIndex2, &vTruckIndexBotMax);
       }
       else
       {
-         pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,loadRatingIntervalIdx,vPOI,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,NULL,NULL,NULL,NULL);
-         pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,loadRatingIntervalIdx,vPOI,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,NULL,NULL,NULL,NULL);
+         pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,NULL,NULL,NULL,NULL);
+         pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,NULL,NULL,NULL,NULL);
       }
 
-      pCombinedForces->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, pgsTypes::MaxSimpleContinuousEnvelope, topLocation, botLocation, &vUnused1,  &vPLTopMax, &vUnused2, &vPLBotMax );
-      pCombinedForces->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, pgsTypes::MinSimpleContinuousEnvelope, topLocation, botLocation, &vPLTopMin, &vUnused2,  &vPLBotMin, &vUnused2 );
+      pCombinedForces->GetCombinedLiveLoadStress( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, topLocation, botLocation, &vUnused1,  &vPLTopMax, &vUnused2, &vPLBotMax );
+      pCombinedForces->GetCombinedLiveLoadStress( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, pgsTypes::MinSimpleContinuousEnvelope, topLocation, botLocation, &vPLTopMin, &vUnused2,  &vPLBotMin, &vUnused2 );
    }
    else
    {
-      pCombinedForces->GetStress(lcDC,loadRatingIntervalIdx,vPOI,ctCumulative,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,topLocation,botLocation,&vDCTopMin,&vDCBotMin);
+      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDC,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative,topLocation,botLocation,&vDCTopMin,&vDCBotMin);
       vDCTopMax = vDCTopMin;
       vDCBotMax = vDCBotMin;
 
-      pCombinedForces->GetStress(lcDW,loadRatingIntervalIdx,vPOI,ctCumulative,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,topLocation,botLocation,&vDWTopMin,&vDWBotMin);
+      pCombinedForces->GetStress(loadRatingIntervalIdx,lcDWRating,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative,topLocation,botLocation,&vDWTopMin,&vDWBotMin);
       vDWTopMax = vDWTopMin;
       vDWBotMax = vDWBotMin;
 
       if ( vehicleIdx == INVALID_INDEX )
-         pProductForces->GetLiveLoadStress(llType,loadRatingIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,&vTruckIndexTopMin, &vTruckIndexTopMax, &vTruckIndexBotMin, &vTruckIndexBotMax);
+      {
+         pProductForces->GetLiveLoadStress(loadRatingIntervalIdx,llType,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,&vTruckIndexTopMin, &vTruckIndexTopMax, &vTruckIndexBotMin, &vTruckIndexBotMax);
+      }
       else
-         pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,loadRatingIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,NULL,NULL,NULL,NULL);
+      {
+         pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,NULL,NULL,NULL,NULL);
+      }
 
-      pCombinedForces->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, topLocation, botLocation, &vPLTopMin, &vPLTopMax,  &vPLBotMin, &vPLBotMax );
+      pCombinedForces->GetCombinedLiveLoadStress( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, topLocation, botLocation, &vPLTopMin, &vPLTopMax,  &vPLBotMin, &vPLBotMax );
    }
 
-   ATLASSERT(vPOI.size()     == vDCTopMin.size());
-   ATLASSERT(vPOI.size()     == vDCTopMax.size());
-   ATLASSERT(vPOI.size()     == vDCBotMin.size());
-   ATLASSERT(vPOI.size()     == vDCBotMax.size());
-   ATLASSERT(vPOI.size()     == vDWTopMin.size());
-   ATLASSERT(vPOI.size()     == vDWTopMax.size());
-   ATLASSERT(vPOI.size()     == vDWBotMin.size());
-   ATLASSERT(vPOI.size()     == vDWBotMax.size());
-   ATLASSERT(vPOI.size()     == vLLIMTopMin.size());
-   ATLASSERT(vPOI.size()     == vLLIMTopMax.size());
-   ATLASSERT(vPOI.size()     == vLLIMBotMin.size());
-   ATLASSERT(vPOI.size()     == vLLIMBotMax.size());
-   ATLASSERT(vPOI.size()     == vPLTopMin.size());
-   ATLASSERT(vPOI.size()     == vPLTopMax.size());
-   ATLASSERT(vPOI.size()     == vPLBotMin.size());
-   ATLASSERT(vPOI.size()     == vPLBotMax.size());
+   ATLASSERT(vPoi.size() == vDCTopMin.size());
+   ATLASSERT(vPoi.size() == vDCTopMax.size());
+   ATLASSERT(vPoi.size() == vDCBotMin.size());
+   ATLASSERT(vPoi.size() == vDCBotMax.size());
+   ATLASSERT(vPoi.size() == vDWTopMin.size());
+   ATLASSERT(vPoi.size() == vDWTopMax.size());
+   ATLASSERT(vPoi.size() == vDWBotMin.size());
+   ATLASSERT(vPoi.size() == vDWBotMax.size());
+   ATLASSERT(vPoi.size() == vLLIMTopMin.size());
+   ATLASSERT(vPoi.size() == vLLIMTopMax.size());
+   ATLASSERT(vPoi.size() == vLLIMBotMin.size());
+   ATLASSERT(vPoi.size() == vLLIMBotMax.size());
+   ATLASSERT(vPoi.size() == vPLTopMin.size());
+   ATLASSERT(vPoi.size() == vPLTopMax.size());
+   ATLASSERT(vPoi.size() == vPLBotMin.size());
+   ATLASSERT(vPoi.size() == vPLBotMax.size());
 
    GET_IFACE(IPretensionStresses,pPrestress);
-   std::vector<Float64> vPS = pPrestress->GetStress(loadRatingIntervalIdx,vPOI,pgsTypes::BottomGirder);
+   std::vector<Float64> vPS = pPrestress->GetStress(loadRatingIntervalIdx,vPoi,pgsTypes::BottomGirder);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
 
@@ -524,12 +551,10 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
    GET_IFACE(IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
-   GET_IFACE(IProductForces,pProductForce);
-
-   CollectionIndexType nPOI = vPOI.size();
+   CollectionIndexType nPOI = vPoi.size();
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
-      pgsPointOfInterest& poi = vPOI[i];
+      const pgsPointOfInterest& poi = vPoi[i];
 
       Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
       Float64 fr               = pRatingSpec->GetAllowableTension(ratingType,poi.GetSegmentKey());
@@ -542,7 +567,9 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
 
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
+      {
          truck_index = vTruckIndexBotMax[i];
+      }
 
       Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
       if ( gLL < 0 )
@@ -550,16 +577,18 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
          if ( ::IsStrengthLimitState(ls) )
          {
             // need to compute gLL based on axle weights
+            GET_IFACE(IProductForces,pProductForce);
+
             Float64 fMinTop, fMinBot, fMaxTop, fMaxBot, fDummyTop, fDummyBot;
             AxleConfiguration MinAxleConfigTop, MinAxleConfigBot, MaxAxleConfigTop, MaxAxleConfigBot, DummyAxleConfigTop, DummyAxleConfigBot;
             if ( analysisType == pgsTypes::Envelope )
             {
-               pProductForce->GetVehicularLiveLoadStress(llType,truck_index,loadRatingIntervalIdx,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fMinTop,&fDummyTop,&fMinBot,&fDummyBot,&MinAxleConfigTop,&DummyAxleConfigTop,&MinAxleConfigBot,&DummyAxleConfigBot);
-               pProductForce->GetVehicularLiveLoadStress(llType,truck_index,loadRatingIntervalIdx,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fDummyTop,&fMaxTop,&fDummyBot,&fMaxBot,&DummyAxleConfigTop,&MaxAxleConfigTop,&DummyAxleConfigBot,&MaxAxleConfigBot);
+               pProductForce->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fMinTop,&fDummyTop,&fMinBot,&fDummyBot,&MinAxleConfigTop,&DummyAxleConfigTop,&MinAxleConfigBot,&DummyAxleConfigBot);
+               pProductForce->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fDummyTop,&fMaxTop,&fDummyBot,&fMaxBot,&DummyAxleConfigTop,&MaxAxleConfigTop,&DummyAxleConfigBot,&MaxAxleConfigBot);
             }
             else
             {
-               pProductForce->GetVehicularLiveLoadStress(llType,truck_index,loadRatingIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
+               pProductForce->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
             }
 
             gLL = GetStrengthLiveLoadFactor(ratingType,MaxAxleConfigBot);
@@ -593,21 +622,25 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
    }
 }
 
-void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact)
+void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact)
 {
+   CGirderKey thisGirderKey(girderKey);
+   if ( thisGirderKey.groupIndex == ALL_GROUPS )
+   {
+      thisGirderKey.groupIndex = 0;
+   }
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(girderKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
 
    ATLASSERT(ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special);
-   GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
 
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;
    std::vector<Float64> vLLIMmin,vLLIMmax;
    std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
    std::vector<Float64> vPLmin,vPLmax;
-   GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
+   GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPoi, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
    pgsTypes::LimitState ls = GetServiceLimitStateType(ratingType);
@@ -616,18 +649,18 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
-   std::vector<CRACKINGMOMENTDETAILS> vMcr = pMomentCapacity->GetCrackingMomentDetails(loadRatingIntervalIdx,vPOI,bPositiveMoment);
-   std::vector<MOMENTCAPACITYDETAILS> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPOI,bPositiveMoment);
+   std::vector<CRACKINGMOMENTDETAILS> vMcr = pMomentCapacity->GetCrackingMomentDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
+   std::vector<MOMENTCAPACITYDETAILS> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
 
    GET_IFACE(ICrackedSection,pCrackedSection);
-   std::vector<CRACKEDSECTIONDETAILS> vCrackedSection = pCrackedSection->GetCrackedSectionDetails(vPOI,bPositiveMoment);
+   std::vector<CRACKEDSECTIONDETAILS> vCrackedSection = pCrackedSection->GetCrackedSectionDetails(vPoi,bPositiveMoment);
    
-   ATLASSERT(vPOI.size()     == vDCmax.size());
-   ATLASSERT(vPOI.size()     == vDWmax.size());
-   ATLASSERT(vPOI.size()     == vLLIMmax.size());
-   ATLASSERT(vPOI.size()     == vMcr.size());
-   ATLASSERT(vPOI.size()     == vM.size());
-   ATLASSERT(vPOI.size()     == vCrackedSection.size());
+   ATLASSERT(vPoi.size()     == vDCmax.size());
+   ATLASSERT(vPoi.size()     == vDWmax.size());
+   ATLASSERT(vPoi.size()     == vLLIMmax.size());
+   ATLASSERT(vPoi.size()     == vMcr.size());
+   ATLASSERT(vPoi.size()     == vM.size());
+   ATLASSERT(vPoi.size()     == vCrackedSection.size());
    ATLASSERT(vDCmin.size()   == vDCmax.size());
    ATLASSERT(vDWmin.size()   == vDWmax.size());
    ATLASSERT(vLLIMmin.size() == vLLIMmax.size());
@@ -646,7 +679,6 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
    GET_IFACE(IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
-   GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -654,13 +686,10 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
 
    // Create artifacts
-   GET_IFACE(IPretensionForce,pPrestressForce);
-   GET_IFACE(ISectionProperties,pSectProp);
-   GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
-   CollectionIndexType nPOI = vPOI.size();
+   CollectionIndexType nPOI = vPoi.size();
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
-      pgsPointOfInterest& poi = vPOI[i];
+      const pgsPointOfInterest& poi = vPoi[i];
 
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -693,6 +722,8 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
 
          Float64 gpM_Old, gnM_Old, gV;
          Float64 gpM_New, gnM_New;
+      
+         GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
          pLLDF->GetDistributionFactors(poi,pgsTypes::FatigueI,              &gpM_Old,&gnM_Old,&gV);
          pLLDF->GetDistributionFactors(poi,pgsTypes::ServiceI_PermitSpecial,&gpM_New,&gnM_New,&gV);
 
@@ -714,8 +745,9 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
       Float64 PL   = (bIncludePL ? (bPositiveMoment ? vPLmax[i]   : vPLmin[i]) : 0.0);
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
+      {
          truck_index = (bPositiveMoment ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
-
+      }
 
       Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
       if ( gLL < 0 )
@@ -723,16 +755,17 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
          if ( ::IsStrengthLimitState(ls) )
          {
             // need to compute gLL based on axle weights
+            GET_IFACE(IProductForces,pProductForces);
             Float64 fMinTop, fMinBot, fMaxTop, fMaxBot, fDummyTop, fDummyBot;
             AxleConfiguration MinAxleConfigTop, MinAxleConfigBot, MaxAxleConfigTop, MaxAxleConfigBot, DummyAxleConfigTop, DummyAxleConfigBot;
             if ( analysisType == pgsTypes::Envelope )
             {
-               pProductForces->GetVehicularLiveLoadStress(llType,truck_index,loadRatingIntervalIdx,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fMinTop,&fDummyTop,&fMinBot,&fDummyBot,&MinAxleConfigTop,&DummyAxleConfigTop,&MinAxleConfigBot,&DummyAxleConfigBot);
-               pProductForces->GetVehicularLiveLoadStress(llType,truck_index,loadRatingIntervalIdx,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fDummyTop,&fMaxTop,&fDummyBot,&fMaxBot,&DummyAxleConfigTop,&MaxAxleConfigTop,&DummyAxleConfigBot,&MaxAxleConfigBot);
+               pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fMinTop,&fDummyTop,&fMinBot,&fDummyBot,&MinAxleConfigTop,&DummyAxleConfigTop,&MinAxleConfigBot,&DummyAxleConfigBot);
+               pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fDummyTop,&fMaxTop,&fDummyBot,&fMaxBot,&DummyAxleConfigTop,&MaxAxleConfigTop,&DummyAxleConfigBot,&MaxAxleConfigBot);
             }
             else
             {
-               pProductForces->GetVehicularLiveLoadStress(llType,truck_index,loadRatingIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
+               pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
             }
 
             gLL = GetStrengthLiveLoadFactor(ratingType,MaxAxleConfigBot);
@@ -755,11 +788,13 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
       if ( bPositiveMoment )
       {
          // positive moment - use fpe (effective prestress)
+         GET_IFACE(IPretensionForce,pPrestressForce);
          fpe = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,loadRatingIntervalIdx,pgsTypes::Middle);
       }
       else
       {
          // negative moment - compute stress in deck rebar for uncracked section
+         GET_IFACE(ISectionProperties,pSectProp);
          Float64 I = pSectProp->GetIx(loadRatingIntervalIdx,poi);
          Float64 y = pSectProp->GetY(loadRatingIntervalIdx,poi,pgsTypes::TopDeck);
          
@@ -868,7 +903,7 @@ pgsTypes::LimitState pgsLoadRater::GetServiceLimitStateType(pgsTypes::LoadRating
    return ls;
 }
 
-void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex,std::vector<Float64>& vPLmin,std::vector<Float64>& vPLmax)
+void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPoi, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex,std::vector<Float64>& vPLmin,std::vector<Float64>& vPLmax)
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -877,12 +912,18 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
+   CGirderKey thisGirderKey(girderKey);
+   if ( thisGirderKey.groupIndex == ALL_GROUPS )
+   {
+      thisGirderKey.groupIndex = 0;
+   }
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(girderKey);
-   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
+   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
@@ -895,38 +936,42 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
    {
       if ( analysisType == pgsTypes::Envelope )
       {
-         vDCmin = pCombinedForces->GetMoment(lcDC,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MinSimpleContinuousEnvelope);
-         vDCmax = pCombinedForces->GetMoment(lcDC,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MaxSimpleContinuousEnvelope);
-         vDWmin = pCombinedForces->GetMoment(lcDW,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MinSimpleContinuousEnvelope);
-         vDWmax = pCombinedForces->GetMoment(lcDW,loadRatingIntervalIdx,vPOI,ctCumulative,pgsTypes::MaxSimpleContinuousEnvelope);
+         vDCmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDC,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative);
+         vDCmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDC,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative);
+         vDWmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDWRating,vPoi,pgsTypes::MinSimpleContinuousEnvelope,rtCumulative);
+         vDWmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDWRating,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,rtCumulative);
 
          if ( vehicleIdx == INVALID_INDEX )
          {
-            pProductForces->GetLiveLoadMoment(llType,loadRatingIntervalIdx,vPOI,pgsTypes::MinSimpleContinuousEnvelope,true,true,&vLLIMmin,&vUnused,&vMinTruckIndex,&vUnusedIndex);
-            pProductForces->GetLiveLoadMoment(llType,loadRatingIntervalIdx,vPOI,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&vUnused,&vLLIMmax,&vUnusedIndex,&vMaxTruckIndex);
+            pProductForces->GetLiveLoadMoment(loadRatingIntervalIdx,llType,vPoi,pgsTypes::MinSimpleContinuousEnvelope,true,true,&vLLIMmin,&vUnused,&vMinTruckIndex,&vUnusedIndex);
+            pProductForces->GetLiveLoadMoment(loadRatingIntervalIdx,llType,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&vUnused,&vLLIMmax,&vUnusedIndex,&vMaxTruckIndex);
          }
          else
          {
-            pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,loadRatingIntervalIdx,vPOI,pgsTypes::MinSimpleContinuousEnvelope,true,true,&vLLIMmin,&vUnused,NULL,NULL);
-            pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,loadRatingIntervalIdx,vPOI,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&vUnused,&vLLIMmax,NULL,NULL);
+            pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,pgsTypes::MinSimpleContinuousEnvelope,true,true,&vLLIMmin,&vUnused,NULL,NULL);
+            pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&vUnused,&vLLIMmax,NULL,NULL);
          }
 
-         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, pgsTypes::MaxSimpleContinuousEnvelope, &vUnused, &vPLmax );
-         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, pgsTypes::MinSimpleContinuousEnvelope, &vPLmin, &vUnused );
+         pCombinedForces->GetCombinedLiveLoadMoment( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, &vUnused, &vPLmax );
+         pCombinedForces->GetCombinedLiveLoadMoment( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, pgsTypes::MinSimpleContinuousEnvelope, &vPLmin, &vUnused );
       }
       else
       {
-         vDCmax = pCombinedForces->GetMoment(lcDC,loadRatingIntervalIdx,vPOI,ctCumulative,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+         vDCmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDC,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative);
          vDCmin = vDCmax;
-         vDWmax = pCombinedForces->GetMoment(lcDW,loadRatingIntervalIdx,vPOI,ctCumulative,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+         vDWmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDWRating,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative);
          vDWmin = vDWmax;
 
          if ( vehicleIdx == INVALID_INDEX )
-            pProductForces->GetLiveLoadMoment(llType,loadRatingIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,&vMinTruckIndex,&vMaxTruckIndex);
+         {
+            pProductForces->GetLiveLoadMoment(loadRatingIntervalIdx,llType,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,&vMinTruckIndex,&vMaxTruckIndex);
+         }
          else
-            pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,loadRatingIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,NULL,NULL);
+         {
+            pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,NULL,NULL);
+         }
 
-         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &vPLmin, &vPLmax );
+         pCombinedForces->GetCombinedLiveLoadMoment( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &vPLmin, &vPLmax );
       }
    }
    else
@@ -958,154 +1003,158 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
       if ( analysisType == pgsTypes::Envelope )
       {
          // Get all the product loads
-         vConstructionMin = pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vConstructionMax = pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vConstructionMin = pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vConstructionMax = pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vSlabMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vSlabMax = pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vSlabMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vSlabMax = pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vSlabPanelMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vSlabPanelMax = pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vSlabPanelMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vSlabPanelMax = pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vDiaphragmMin = pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vDiaphragmMax = pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vDiaphragmMin = pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vDiaphragmMax = pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vShearKeyMin = pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vShearKeyMax = pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vShearKeyMin = pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vShearKeyMax = pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vUserDC1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vUserDC1Max = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vUserDC1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vUserDC1Max = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vUserDW1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vUserDW1Max = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vUserDW1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vUserDW1Max = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vUserDC2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDC,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vUserDC2Max = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDC,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vUserDC2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDC,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vUserDC2Max = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDC,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vUserDW2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDW,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vUserDW2Max = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDW,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vUserDW2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDW,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vUserDW2Max = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDW,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vTrafficBarrierMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftTrafficBarrier,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vTrafficBarrierMax = pProductForces->GetMoment(railingSystemIntervalIdx,pftTrafficBarrier,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vTrafficBarrierMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftTrafficBarrier,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vTrafficBarrierMax = pProductForces->GetMoment(railingSystemIntervalIdx,pftTrafficBarrier,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
-         vSidewalkMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftSidewalk,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-         vSidewalkMax = pProductForces->GetMoment(railingSystemIntervalIdx,pftSidewalk,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+         vSidewalkMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftSidewalk,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+         vSidewalkMax = pProductForces->GetMoment(railingSystemIntervalIdx,pftSidewalk,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
 
          if ( !bFutureOverlay )
          {
-            vOverlayMin = pProductForces->GetMoment(overlayIntervalIdx,pftOverlay,vPOI,pgsTypes::MinSimpleContinuousEnvelope, ctIncremental);
-            vOverlayMax = pProductForces->GetMoment(overlayIntervalIdx,pftOverlay,vPOI,pgsTypes::MaxSimpleContinuousEnvelope, ctIncremental);
+            vOverlayMin = pProductForces->GetMoment(overlayIntervalIdx,pftOverlay,vPoi,pgsTypes::MinSimpleContinuousEnvelope, rtIncremental);
+            vOverlayMax = pProductForces->GetMoment(overlayIntervalIdx,pftOverlay,vPoi,pgsTypes::MaxSimpleContinuousEnvelope, rtIncremental);
          }
          else
          {
-            vOverlayMin.resize(vPOI.size(),0);
-            vOverlayMax.resize(vPOI.size(),0);
+            vOverlayMin.resize(vPoi.size(),0);
+            vOverlayMax.resize(vPoi.size(),0);
          }
 
          if ( vehicleIdx == INVALID_INDEX )
          {
-            pProductForces->GetLiveLoadMoment( llType, loadRatingIntervalIdx, vPOI, pgsTypes::MinSimpleContinuousEnvelope, true, true, &vLLIMmin, &vUnused, &vMinTruckIndex, &vUnusedIndex );
-            pProductForces->GetLiveLoadMoment( llType, loadRatingIntervalIdx, vPOI, pgsTypes::MaxSimpleContinuousEnvelope, true, true, &vUnused, &vLLIMmax, &vUnusedIndex, &vMaxTruckIndex );
+            pProductForces->GetLiveLoadMoment( loadRatingIntervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, true, &vLLIMmin, &vUnused, &vMinTruckIndex, &vUnusedIndex );
+            pProductForces->GetLiveLoadMoment( loadRatingIntervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, true, &vUnused, &vLLIMmax, &vUnusedIndex, &vMaxTruckIndex );
          }
          else
          {
-            pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,loadRatingIntervalIdx,vPOI,pgsTypes::MinSimpleContinuousEnvelope,true,true,&vLLIMmin,&vUnused,NULL,NULL);
-            pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,loadRatingIntervalIdx,vPOI,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&vUnused,&vLLIMmax,NULL,NULL);
+            pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,pgsTypes::MinSimpleContinuousEnvelope,true,true,&vLLIMmin,&vUnused,NULL,NULL);
+            pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&vUnused,&vLLIMmax,NULL,NULL);
          }
       }
       else
       {
-         vConstructionMin = pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vConstructionMin = pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vConstructionMax = vConstructionMin;
 
-         vSlabMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vSlabMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vSlabMax = vSlabMin;
 
-         vSlabPanelMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vSlabPanelMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vSlabPanelMax = vSlabPanelMin;
 
-         vDiaphragmMin = pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vDiaphragmMin = pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vDiaphragmMax = vDiaphragmMin;
 
-         vShearKeyMin = pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vShearKeyMin = pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vShearKeyMax = vShearKeyMin;
 
-         vUserDC1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vUserDC1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vUserDC1Max = vUserDC1Min;
 
-         vUserDW1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vUserDW1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vUserDW1Max = vUserDW1Min;
 
-         vUserDC2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDC,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vUserDC2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDC,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vUserDC2Max = vUserDC2Min;
 
-         vUserDW2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDW,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vUserDW2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDW,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vUserDW2Max = vUserDW2Min;
 
-         vTrafficBarrierMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftTrafficBarrier,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vTrafficBarrierMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftTrafficBarrier,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vTrafficBarrierMax = vTrafficBarrierMin;
 
-         vSidewalkMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftSidewalk,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+         vSidewalkMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftSidewalk,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          vSidewalkMax = vSidewalkMin;
 
          if ( !bFutureOverlay )
          {
-            vOverlayMin = pProductForces->GetMoment(overlayIntervalIdx,pftOverlay,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental);
+            vOverlayMin = pProductForces->GetMoment(overlayIntervalIdx,pftOverlay,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtIncremental);
          }
          else
          {
-            vOverlayMin.resize(vPOI.size(),0);
+            vOverlayMin.resize(vPoi.size(),0);
          }
          vOverlayMax = vOverlayMin;
 
          if ( vehicleIdx == INVALID_INDEX )
-            pProductForces->GetLiveLoadMoment(llType,loadRatingIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,&vMinTruckIndex,&vMaxTruckIndex);
+         {
+            pProductForces->GetLiveLoadMoment(loadRatingIntervalIdx,llType,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,&vMinTruckIndex,&vMaxTruckIndex);
+         }
          else
-            pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,loadRatingIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,NULL,NULL);
+         {
+            pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,NULL,NULL);
+         }
 
-         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, loadRatingIntervalIdx, vPOI, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &vPLmin, &vPLmax );
+         pCombinedForces->GetCombinedLiveLoadMoment( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &vPLmin, &vPLmax );
       }
 
       // sum DC and DW
 
       // initialize
-      vDCmin.resize(vPOI.size(),0);
-      vDCmax.resize(vPOI.size(),0);
-      vDWmin.resize(vPOI.size(),0);
-      vDWmax.resize(vPOI.size(),0);
+      vDCmin.resize(vPoi.size(),0);
+      vDCmax.resize(vPoi.size(),0);
+      vDWmin.resize(vPoi.size(),0);
+      vDWmax.resize(vPoi.size(),0);
 
       GET_IFACE(IPointOfInterest,pPoi);
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vConstructionMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vConstructionMax.begin(),vDCmax.begin(),vDCmax.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vSlabMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vSlabMax.begin(),vDCmax.begin(),vDCmax.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vSlabPanelMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vSlabPanelMax.begin(),vDCmax.begin(),vDCmax.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vDiaphragmMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vDiaphragmMax.begin(),vDCmax.begin(),vDCmax.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vShearKeyMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPOI.begin(),vPOI.end(),vShearKeyMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vConstructionMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vConstructionMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vSlabMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vSlabMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vSlabPanelMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vSlabPanelMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vDiaphragmMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vDiaphragmMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vShearKeyMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vShearKeyMax.begin(),vDCmax.begin(),vDCmax.begin());
 
-      std::transform(vUserDC1Min.begin(),vUserDC1Min.end(),vDCmin.begin(),vDCmin.begin(),sum_values);
-      std::transform(vUserDC1Max.begin(),vUserDC1Max.end(),vDCmax.begin(),vDCmax.begin(),sum_values);
+      std::transform(vUserDC1Min.begin(),vUserDC1Min.end(),vDCmin.begin(),vDCmin.begin(),std::plus<Float64>());
+      std::transform(vUserDC1Max.begin(),vUserDC1Max.end(),vDCmax.begin(),vDCmax.begin(),std::plus<Float64>());
 
-      std::transform(vUserDW1Min.begin(),vUserDW1Min.end(),vDWmin.begin(),vDWmin.begin(),sum_values);
-      std::transform(vUserDW1Max.begin(),vUserDW1Max.end(),vDWmax.begin(),vDWmax.begin(),sum_values);
+      std::transform(vUserDW1Min.begin(),vUserDW1Min.end(),vDWmin.begin(),vDWmin.begin(),std::plus<Float64>());
+      std::transform(vUserDW1Max.begin(),vUserDW1Max.end(),vDWmax.begin(),vDWmax.begin(),std::plus<Float64>());
 
-      std::transform(vUserDC2Min.begin(),vUserDC2Min.end(),vDCmin.begin(),vDCmin.begin(),sum_values);
-      std::transform(vUserDC2Max.begin(),vUserDC2Max.end(),vDCmax.begin(),vDCmax.begin(),sum_values);
+      std::transform(vUserDC2Min.begin(),vUserDC2Min.end(),vDCmin.begin(),vDCmin.begin(),std::plus<Float64>());
+      std::transform(vUserDC2Max.begin(),vUserDC2Max.end(),vDCmax.begin(),vDCmax.begin(),std::plus<Float64>());
 
-      std::transform(vUserDW2Min.begin(),vUserDW2Min.end(),vDWmin.begin(),vDWmin.begin(),sum_values);
-      std::transform(vUserDW2Max.begin(),vUserDW2Max.end(),vDWmax.begin(),vDWmax.begin(),sum_values);
+      std::transform(vUserDW2Min.begin(),vUserDW2Min.end(),vDWmin.begin(),vDWmin.begin(),std::plus<Float64>());
+      std::transform(vUserDW2Max.begin(),vUserDW2Max.end(),vDWmax.begin(),vDWmax.begin(),std::plus<Float64>());
 
-      std::transform(vTrafficBarrierMin.begin(),vTrafficBarrierMin.end(),vDCmin.begin(),vDCmin.begin(),sum_values);
-      std::transform(vTrafficBarrierMax.begin(),vTrafficBarrierMax.end(),vDCmax.begin(),vDCmax.begin(),sum_values);
+      std::transform(vTrafficBarrierMin.begin(),vTrafficBarrierMin.end(),vDCmin.begin(),vDCmin.begin(),std::plus<Float64>());
+      std::transform(vTrafficBarrierMax.begin(),vTrafficBarrierMax.end(),vDCmax.begin(),vDCmax.begin(),std::plus<Float64>());
 
-      std::transform(vSidewalkMin.begin(),vSidewalkMin.end(),vDCmin.begin(),vDCmin.begin(),sum_values);
-      std::transform(vSidewalkMax.begin(),vSidewalkMax.end(),vDCmax.begin(),vDCmax.begin(),sum_values);
+      std::transform(vSidewalkMin.begin(),vSidewalkMin.end(),vDCmin.begin(),vDCmin.begin(),std::plus<Float64>());
+      std::transform(vSidewalkMax.begin(),vSidewalkMax.end(),vDCmax.begin(),vDCmax.begin(),std::plus<Float64>());
 
-      std::transform(vOverlayMin.begin(),vOverlayMin.end(),vDWmin.begin(),vDWmin.begin(),sum_values);
-      std::transform(vOverlayMax.begin(),vOverlayMax.end(),vDWmax.begin(),vDWmax.begin(),sum_values);
+      std::transform(vOverlayMin.begin(),vOverlayMin.end(),vDWmin.begin(),vDWmin.begin(),std::plus<Float64>());
+      std::transform(vOverlayMax.begin(),vOverlayMax.end(),vDWmax.begin(),vDWmax.begin(),std::plus<Float64>());
    }
 }
 
@@ -1126,7 +1175,9 @@ void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pInte
    {
       const pgsPointOfInterest& poi = *poiIter;
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
-      SpanIndexType spanIdx = pPoi->GetSpan(poi);
+      SpanIndexType spanIdx;
+      Float64 Xspan;
+      pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
 
       EventIndexType start,end,dummy;
       PierIndexType prevPierIdx = spanIdx;
@@ -1162,7 +1213,9 @@ Float64 pgsLoadRater::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingT
       if ( !IsZero(axle_placement.Weight) )
       {
          if ( firstAxleLocation < 0 )
+         {
             firstAxleLocation = axle_placement.Location;
+         }
 
          lastAxleLocation = axle_placement.Location;
       }
@@ -1178,11 +1231,17 @@ Float64 pgsLoadRater::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingT
    {
       CLiveLoadFactorModel model;
       if ( ratingType == pgsTypes::lrPermit_Routine )
+      {
          model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
+      }
       else if ( ratingType == pgsTypes::lrPermit_Special )
+      {
          model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
+      }
       else
+      {
          model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
+      }
 
       gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),sum_axle_weight);
    }
@@ -1192,11 +1251,17 @@ Float64 pgsLoadRater::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingT
       Float64 PermitWeightRatio = IsZero(AL) ? 0 : GVW/AL;
       CLiveLoadFactorModel2 model;
       if ( ratingType == pgsTypes::lrPermit_Routine )
+      {
          model = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
+      }
       else if ( ratingType == pgsTypes::lrPermit_Special )
+      {
          model = pRatingEntry->GetLiveLoadFactorModel2(pRatingSpec->GetSpecialPermitType());
+      }
       else
+      {
          model = pRatingEntry->GetLiveLoadFactorModel2(ratingType);
+      }
 
       gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),PermitWeightRatio);
    }
@@ -1214,11 +1279,17 @@ Float64 pgsLoadRater::GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingTy
    {
       CLiveLoadFactorModel model;
       if ( ratingType == pgsTypes::lrPermit_Routine )
+      {
          model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
+      }
       else if ( ratingType == pgsTypes::lrPermit_Special )
+      {
          model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
+      }
       else
+      {
          model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
+      }
 
       gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
    }
@@ -1226,11 +1297,17 @@ Float64 pgsLoadRater::GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingTy
    {
       CLiveLoadFactorModel2 model;
       if ( ratingType == pgsTypes::lrPermit_Routine )
+      {
          model = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
+      }
       else if ( ratingType == pgsTypes::lrPermit_Special )
+      {
          model = pRatingEntry->GetLiveLoadFactorModel2(pRatingSpec->GetSpecialPermitType());
+      }
       else
+      {
          model = pRatingEntry->GetLiveLoadFactorModel2(ratingType);
+      }
 
       gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
    }

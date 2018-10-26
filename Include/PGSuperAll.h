@@ -29,6 +29,9 @@
 #define VC_EXTRALEAN
 #define COM_STDMETHOD_CAN_THROW
 
+#define _USE_MULTITHREADING    // When defined, multi-threading is used
+//#define _REDUCE_POI            // When defined, the number of POIs is reduced
+
 #include <PGSuperVersion.h>
 
 #if defined _M_IX86
@@ -59,6 +62,7 @@
 using namespace ATL;
 
 #include <WBFLAll.h>
+#include <WBFLAtlExt.h>
 #include <PGSuperTypes.h>
 #include <PGSuperDebug.h>
 #include <PGSuperUnits.h>

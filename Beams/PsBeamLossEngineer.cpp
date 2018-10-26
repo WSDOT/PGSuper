@@ -44,22 +44,28 @@ void CDesignLosses::Invalidate()
 
 const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, const GDRCONFIG& config)
 {
-   Losses* pLosses = 0;
+   Losses* pLosses = NULL;
 
-   std::map<pgsPointOfInterest,Losses>::iterator iter(m_Losses.begin() );
-   std::map<pgsPointOfInterest,Losses>::iterator end(m_Losses.end() );
-   for ( ; iter != end; iter++ )
+   std::map<pgsPointOfInterest,Losses>::iterator found(m_Losses.find(poi));
+   if ( found != m_Losses.end() )
    {
-      const pgsPointOfInterest& p = iter->first;
-      // check equality based only on location, not POI ID... sometimes temporary POIs (ID < 0) are 
-      // used during design
-      if ( p.GetSegmentKey() == poi.GetSegmentKey() && IsEqual(p.GetDistFromStart(),poi.GetDistFromStart()) )
-      {
-         // Found it!
-         pLosses = &(iter->second);
-         break;
-      }
+      pLosses = &(found->second);
    }
+
+   //std::map<pgsPointOfInterest,Losses>::iterator iter(m_Losses.begin() );
+   //std::map<pgsPointOfInterest,Losses>::iterator end(m_Losses.end() );
+   //for ( ; iter != end; iter++ )
+   //{
+   //   const pgsPointOfInterest& p = iter->first;
+   //   // check equality based only on location, not POI ID... sometimes temporary POIs (ID < 0) are 
+   //   // used during design
+   //   if ( p.GetSegmentKey() == poi.GetSegmentKey() && IsEqual(p.GetDistFromStart(),poi.GetDistFromStart()) )
+   //   {
+   //      // Found it!
+   //      pLosses = &(iter->second);
+   //      break;
+   //   }
+   //}
 
    if ( pLosses == NULL )
       return NULL; // not found... we don't have it cached
@@ -74,7 +80,7 @@ const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, co
    {
       // the one that was found doesn't match for this POI, so remove it because
       // we have new values for this POI
-      m_Losses.erase(iter);
+      m_Losses.erase(found);
       return NULL;
    }
 
@@ -106,8 +112,9 @@ void CPsBeamLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGro
    m_Engineer.Init(m_pBroker,m_StatusGroupID);
 }
 
-const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi)
+const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
 {
+   ATLASSERT(poi.GetID() != INVALID_ID);
    std::map<PoiIDKey,LOSSDETAILS>::const_iterator found;
    PoiIDKey key(poi.GetID(),poi);
    found = m_PsLosses.find( key );
@@ -123,8 +130,10 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi)
    return &(*found).second;
 }
 
-const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config)
+const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx)
 {
+   ATLASSERT(intervalIdx == INVALID_INDEX); // this kind of loss calculation is for all intervals... always
+
    const LOSSDETAILS* pLossDetails = m_DesignLosses.GetFromCache(poi,config);
    if ( pLossDetails == NULL )
    {
@@ -165,4 +174,13 @@ Float64 CPsBeamLossEngineer::GetElongation(const CGirderKey& girderKey,DuctIndex
    // there is no anchor set... this implementation keeps the compiler happy
    ATLASSERT(false); // why did this method get called? it shouldn't happen
    return 0;
+}
+
+void CPsBeamLossEngineer::GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA)
+{
+   // This returns basically a dummy object... non-spliced girders don't have PT so
+   // there is no anchor set... this implementation keeps the compiler happy
+   ATLASSERT(false); // why did this method get called? it shouldn't happen
+   *pfpF = 0;
+   *pfpA = 0;
 }

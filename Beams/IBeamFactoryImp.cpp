@@ -219,9 +219,6 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    ATLASSERT(segment != NULL);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -287,7 +284,6 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
       ebSegment->AddShape(shape,material,NULL);
    }
 
-
    ssmbr->AddSegment(segment);
 }
 
@@ -326,9 +322,6 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
    pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
    pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
    pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
-
-#pragma Reminder("UPDATE: need POI at profile transition points")
-   // if this object continues to work for precast and spliced girder segments
 }
 
 void CIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
@@ -342,11 +335,8 @@ void CIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType 
 
 void CIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
 {
-   GET_IFACE2(pBroker,ILibrary,       pLib);
-   GET_IFACE2(pBroker,ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
       CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -696,7 +686,7 @@ Float64 CIBeamFactory::GetVolume(IBroker* pBroker,const CSegmentKey& segmentKey)
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
@@ -735,7 +725,7 @@ Float64 CIBeamFactory::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segmen
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 S = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );

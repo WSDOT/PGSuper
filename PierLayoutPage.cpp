@@ -618,10 +618,6 @@ LRESULT CPierLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
    pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
 
@@ -656,6 +652,10 @@ LRESULT CPierLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
       // going from span-by-span to one for the entire bridge
       // need to check the span values and if they are different, ask the user which one is to
       // be used for the entire bridge
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // get current values out of the controls
       Float64 slabOffset[2];

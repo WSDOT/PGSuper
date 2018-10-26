@@ -187,7 +187,9 @@ LRESULT CSplicedGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
 	}
 	else
+   {
 		return 0;
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -205,8 +207,8 @@ LRESULT CSplicedGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 //
 //   GET_IFACE2(pBroker,IShear,pShear);
 //   GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinaRebar);
-//   GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
-//   GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
+//   GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
+//   GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
 //   GET_IFACE2(pBroker,IBridge,pBridge);
 //   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 //

@@ -140,7 +140,6 @@ private:
    GirderIndexType m_nGirders; // # girders in this span
 
    // girder spacing for this span
-   bool m_bUseSameSpacing;
    CGirderSpacing m_GirderSpacing[2]; // index 0 is at start of span, index 1 at end
 
    Float64 m_SlabOffset[2]; // slab offset if defined by span (0 = start, 1 = end);

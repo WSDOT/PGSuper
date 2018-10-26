@@ -69,7 +69,7 @@ std::_tstring get_bearing_measure_string(ConnectionLibraryEntry::BearingOffsetMe
       return _T("Measured From and Normal to Pier Centerline");
 
    default:
-      ATLASSERT(0);
+      ATLASSERT(false);
       return _T("");
    }
 }
@@ -91,7 +91,7 @@ inline std::_tstring get_end_distance_measure_string(ConnectionLibraryEntry::End
       return _T("Measured From and Normal to Pier Centerline");
 
    default:
-      ATLASSERT(0);
+      ATLASSERT(false);
       return _T("");
    }
 }
@@ -122,10 +122,21 @@ LPCTSTR CBridgeDescDetailsChapterBuilder::GetName() const
 rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
 
-   pGdrRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CComPtr<IBroker> pBroker;
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -387,10 +398,14 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
 
    ColumnIndexType ncols = 4;
    if (has_sw)
+   {
       ncols++;
+   }
 
    if(has_overlay)
+   {
       ncols++;
+   }
    
    rptRcTable* pTable1 = pgsReportStyleHolder::CreateDefaultTable(ncols,_T("Deck and Roadway Widths"));
    *pPara << pTable1;
@@ -401,14 +416,18 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
    (*pTable1)(0,col++) << COLHDR(_T("Deck")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable1)(0,col++) << COLHDR(_T("Exterior")<<rptNewLine<<_T("Curb-Curb")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    if (has_sw)
+   {
       (*pTable1)(0,col++) << COLHDR(_T("Interior")<<rptNewLine<<_T("Curb-Curb")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   }
 
    if (has_overlay)
+   {
       (*pTable1)(0,col++) << COLHDR(_T("Overlay")<<rptNewLine<<_T("Toe-Toe")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   }
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_TENTH_POINTS,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_SPAN) );
    std::vector<pgsPointOfInterest>::iterator iter( vPoi.begin() );
    std::vector<pgsPointOfInterest>::iterator iterEnd( vPoi.end() );
    RowIndexType row(1);
@@ -420,7 +439,7 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
       pBridge->GetStationAndOffset(poi,&station,&offset);
       Float64 dist_from_start = pBridge->GetDistanceFromStartOfBridge(station);
 
-      (*pTable1)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*pTable1)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
       (*pTable1)(row,col++) << rptRcStation(station, &pDisplayUnits->GetStationFormat() );
 
        Float64 lft_off = pBridge->GetLeftSlabEdgeOffset(dist_from_start);
@@ -597,7 +616,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
    GET_IFACE2(pBroker, ISegmentData,pSegmentData);
    const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
-   CHECK(pstrand!=0);
+   ATLASSERT(pstrand!=0);
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,pstrand->GetName().c_str());
    *pPara << pTable << rptNewLine;
@@ -710,11 +729,11 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
 
 void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey)
 {
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   bool dolift = pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled();
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   bool dolift = pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled();
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   bool dohaul = pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled();
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   bool dohaul = pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled();
 
    if (dolift || dohaul)
    {
@@ -729,16 +748,16 @@ void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDis
 
       if (dolift)
       {
-         GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
-         *pPara<<_T("Left Lifting Loop  = ")<<loc.SetValue(pGirderLifting->GetLeftLiftingLoopLocation(segmentKey))<<rptNewLine;
-         *pPara<<_T("Right Lifting Loop  = ")<<loc.SetValue(pGirderLifting->GetRightLiftingLoopLocation(segmentKey))<<rptNewLine;
+         GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
+         *pPara<<_T("Left Lifting Loop  = ")<<loc.SetValue(pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey))<<rptNewLine;
+         *pPara<<_T("Right Lifting Loop  = ")<<loc.SetValue(pSegmentLifting->GetRightLiftingLoopLocation(segmentKey))<<rptNewLine;
       }
 
       if (dohaul)
       {
-         GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
-         *pPara<<_T("Leading Truck Support = ")<<loc.SetValue(pGirderHauling->GetLeadingOverhang(segmentKey))<<rptNewLine;
-         *pPara<<_T("Trailing Truck Support = ")<<loc.SetValue(pGirderHauling->GetTrailingOverhang(segmentKey))<<rptNewLine;
+         GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
+         *pPara<<_T("Leading Truck Support = ")<<loc.SetValue(pSegmentHauling->GetLeadingOverhang(segmentKey))<<rptNewLine;
+         *pPara<<_T("Trailing Truck Support = ")<<loc.SetValue(pSegmentHauling->GetTrailingOverhang(segmentKey))<<rptNewLine;
       }
    }
 }

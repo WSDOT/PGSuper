@@ -125,7 +125,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(thisGirderKey,0));
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
       std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
       std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       for ( ; i != end; i++ )
@@ -137,7 +137,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
          (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
 
          Float64 Vi, Mmax;
-         pLsForces->GetViMmax(pgsTypes::StrengthI,intervalIdx,poi,bat,&Vi,&Mmax);
+         pLsForces->GetViMmax(intervalIdx,pgsTypes::StrengthI,poi,bat,&Vi,&Mmax);
 
          (*p_table)(row,col++) << moment.SetValue( Mmax );
          (*p_table)(row,col++) << shear.SetValue(  Vi );

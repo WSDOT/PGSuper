@@ -59,7 +59,9 @@ Uint32 get_index( SpanIndexType spanIdx, CBrgPointIdMgr::Location loc )
    ATLASSERT(spanIdx != ALL_SPANS);
    Uint32 idx = Uint32(2*spanIdx - 2);
    if ( loc == CBrgPointIdMgr::End )
+   {
       idx++;
+   }
 
    return idx;
 }
@@ -73,7 +75,9 @@ void CBrgPointIdMgr::SetId( SpanIndexType spanIdx, Location loc, Int32 id)
 {
    Uint32 idx = get_index(spanIdx,loc);
    if ( m_Ids.size() <= idx )
+   {
       m_Ids.resize( 2*idx );
+   }
 
    m_Ids[idx] = id;
 }

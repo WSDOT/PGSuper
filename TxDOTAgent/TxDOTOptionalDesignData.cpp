@@ -408,7 +408,7 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 

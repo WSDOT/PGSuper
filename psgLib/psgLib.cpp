@@ -203,7 +203,7 @@ std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib)
 {
    libKeyListType key_list;
    rlib.KeyList(key_list);
-   CHECK(key_list.size()>0);
+   ATLASSERT(key_list.size()>0);
    return key_list[0];
 }
 
@@ -258,7 +258,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
                pList->AddConflict(*pMasterLib, name, name);
             }
             else
-               CHECK(0);
+               ATLASSERT(false);
          }
          pmaster->Release();
          pproject->Release();
@@ -430,9 +430,9 @@ bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryM
    return true;
 }
 
-HRESULT pgslibPGSuperDocHeader(IStructuredLoad* pStrLoad)
+HRESULT pgslibReadProjectDocHeader(LPCTSTR lpszRootNodeName,IStructuredLoad* pStrLoad)
 {
-   HRESULT hr = pStrLoad->BeginUnit(_T("PGSuper"));
+   HRESULT hr = pStrLoad->BeginUnit(lpszRootNodeName);
    if ( FAILED(hr) )
       return hr;
 

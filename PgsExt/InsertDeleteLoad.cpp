@@ -124,7 +124,7 @@ bool txnDeletePointLoad::Execute()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   m_LoadData = pUdl->GetPointLoad(m_LoadIdx);
+   m_LoadData = *(pUdl->GetPointLoad(m_LoadIdx));
    pUdl->DeletePointLoad(m_LoadIdx);
 
    pEvents->FirePendingEvents();
@@ -294,7 +294,7 @@ bool txnDeleteDistributedLoad::Execute()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   m_LoadData = pUdl->GetDistributedLoad(m_LoadIdx);
+   m_LoadData = *(pUdl->GetDistributedLoad(m_LoadIdx));
    pUdl->DeleteDistributedLoad(m_LoadIdx);
 
    pEvents->FirePendingEvents();
@@ -463,7 +463,7 @@ bool txnDeleteMomentLoad::Execute()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   m_LoadData = pUdl->GetMomentLoad(m_LoadIdx);
+   m_LoadData = *(pUdl->GetMomentLoad(m_LoadIdx));
    pUdl->DeleteMomentLoad(m_LoadIdx);
 
    pEvents->FirePendingEvents();

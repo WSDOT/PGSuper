@@ -106,9 +106,13 @@ BOOL CGirderDescLongRebarGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, 
    ASSERT (pdlg);
 
    if (nCol==0 && nRow!=0)
+   {
       pdlg->OnEnableDelete(true);
+   }
    else
+   {
       pdlg->OnEnableDelete(false);
+   }
 
    return TRUE;
 }
@@ -126,9 +130,13 @@ void CGirderDescLongRebarGrid::Insertrow()
 	// copy the current cell's coordinates
 	CGXRangeList selList;
 	if (CopyRangeList(selList, TRUE))
+   {
 		nRow = selList.GetHead()->top;
+   }
 	else
+   {
 		nRow = GetRowCount()+1;
+   }
 
 	nRow = Max((ROWCOL)1, nRow);
 
@@ -364,9 +372,11 @@ CString CGirderDescLongRebarGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
         CGXControl* pControl = GetControl(nRow, nCol);
         pControl->GetValue(s);
         return s;
-  }
+    }
     else
+    {
         return GetValueRowCol(nRow, nCol);
+    }
 }
 
 void CGirderDescLongRebarGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
@@ -385,7 +395,9 @@ matRebar::Size CGirderDescLongRebarGrid::GetBarSize(ROWCOL row)
    CString s2 = s.Right(l-1);
    int i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
+   {
       return matRebar::bsNone;
+   }
 
    switch(i)
    {
@@ -431,9 +443,13 @@ bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::R
          s = GetCellValue(nRow, 3);
          d = _tstof(s);
          if (s.IsEmpty())
+         {
             d=0;
+         }
          else if (d==0.0 && s[0]!=_T('0'))
+         {
             return false;
+         }
 
          if (d<=0.0)
          {
@@ -455,25 +471,37 @@ bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::R
          s = GetCellValue(nRow, 2);
          d = _tstof(s);
          if (s.IsEmpty())
+         {
             d=0;
+         }
          else if (d==0.0 && s[0]!=_T('0'))
+         {
             return false;
+         }
          plsi->DistFromEnd = d;
       }
    }
 
    CString s = GetCellValue(nRow, 4);
    if (s==_T("Top"))
+   {
       plsi->Face = pgsTypes::TopFace;
+   }
    else
+   {
       plsi->Face = pgsTypes::BottomFace;
+   }
 
    s = GetCellValue(nRow, 5);
    d = _tstof(s);
    if (s.IsEmpty())
+   {
       d=0;
+   }
    else if (d==0.0 && s[0]!=_T('0'))
+   {
       return false;
+   }
 
    if (d<0.0)
    {
@@ -490,9 +518,13 @@ bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::R
    s = GetCellValue(nRow, 7);
    i = _tstoi(s);
    if (s.IsEmpty())
+   {
       i=0;
+   }
    else if (i==0 && s[0]!=_T('0'))
+   {
       return false;
+   }
 
    if (i<=0)
    {
@@ -507,9 +539,13 @@ bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::R
    s = GetCellValue(nRow, 8);
    d = _tstof(s);
    if (s.IsEmpty())
+   {
       d=0;
+   }
    else if (d==0.0 && s[0]!=_T('0'))
+   {
       return false;
+   }
 
    if (d<0.0)
    {
@@ -529,15 +565,19 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
    GetParam()->SetLockReadOnly(FALSE);
 
    ROWCOL rows = GetRowCount();
-   if (rows>=1)
+   if (1 <= rows)
+   {
 	   RemoveRows(1, rows);
+   }
 
    CollectionIndexType size = rebarData.RebarRows.size();
-   if (size>0)
+   if (0 < size)
    {
       // size grid
       for (CollectionIndexType i=0; i<size; i++)
+      {
 	      Insertrow();
+      }
 
       // fill grid
       ROWCOL nRow=1;
@@ -546,18 +586,28 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
          CString tmp;
          pgsTypes::RebarLayoutType layout = (*it).BarLayout;
          if (layout == pgsTypes::blFullLength)
+         {
             tmp = _T("Full-Length");
+         }
          else if (layout == pgsTypes::blFromLeft)
+         {
             tmp = _T("Left End");
+         }
          else if (layout == pgsTypes::blFromRight)
+         {
             tmp = _T("Right End");
+         }
          else if (layout == pgsTypes::blMidGirderLength)
+         {
             tmp = _T("Mid-Girder-Length");
+         }
          else if (layout == pgsTypes::blMidGirderEnds)
+         {
             tmp = _T("Mid-Girder-Ends");
+         }
          else
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             tmp = _T("Full-Length");
          }
 
@@ -568,9 +618,13 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 
          pgsTypes::FaceType face = (*it).Face;
          if (face==pgsTypes::BottomFace)
+         {
             tmp = _T("Bottom");
+         }
          else
+         {
             tmp = _T("Top");
+         }
             
          VERIFY(SetValueRange(CGXRange(nRow, 4), tmp));
 
@@ -628,18 +682,28 @@ pgsTypes::RebarLayoutType CGirderDescLongRebarGrid::GetLayout(ROWCOL nRow)
 
    CString s = GetCellValue(nRow, 1);
    if (s==_T("Full-Length"))
+   {
       type = pgsTypes::blFullLength;
+   }
    else if (s==_T("Left End"))
+   {
       type = pgsTypes::blFromLeft;
+   }
    else if (s==_T("Right End"))
+   {
       type = pgsTypes::blFromRight;
+   }
    else if (s==_T("Mid-Girder-Length"))
+   {
       type = pgsTypes::blMidGirderLength;
+   }
    else if (s==_T("Mid-Girder-Ends"))
+   {
       type = pgsTypes::blMidGirderEnds;
+   }
    else
    {
-      ATLASSERT(0); // should not happen
+      ATLASSERT(false); // should not happen
       type = pgsTypes::blFullLength;
    }
 

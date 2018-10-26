@@ -34,6 +34,8 @@
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 
+#include <limits>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -100,8 +102,8 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    *pChapter << p;
 
 
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   if (!pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   if (!pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
       *p <<color(Red)<<_T("Lifting analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
       return pChapter;
@@ -137,7 +139,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
             const pgsLiftingAnalysisArtifact* pLiftingArtifact = pArtifacts->GetLiftingAnalysisArtifact(thisSegmentKey);
 
-            Float64 bracket_hgt = pGirderLiftingSpecCriteria->GetHeightOfPickPointAboveGirderTop();
+            Float64 bracket_hgt = pSegmentLiftingSpecCriteria->GetHeightOfPickPointAboveGirderTop();
 
             *p << Sub2(_T("L"),_T("g")) << _T(" = Overall Length of girder = ")<<loc.SetValue(pLiftingArtifact->GetGirderLength())<<_T(" ")<<loc.GetUnitTag()<<rptNewLine;
 
@@ -193,31 +195,32 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
             (*p_table)(0,4) << COLHDR(_T("Moment") << rptNewLine << _T("No Impact"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
             (*p_table)(0,5) << COLHDR(_T("Moment") << rptNewLine << _T("Impact Down"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
-            GET_IFACE2(pBroker,IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
-            std::vector<pgsPointOfInterest> poi_vec;
-            poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(thisSegmentKey,0,POIFIND_OR);
+            const std::vector<pgsPointOfInterest>& vPoi(pLiftingArtifact->GetLiftingPointsOfInterest());
 
             RowIndexType row=1;
-            std::vector<pgsPointOfInterest>::const_iterator i;
-            for ( i = poi_vec.begin(); i!= poi_vec.end(); i++)
+            std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+            std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+            for ( ; poiIter != poiIterEnd; poiIter++ )
             {
-               const pgsPointOfInterest& poi = *i;
+               const pgsPointOfInterest& poi(*poiIter);
 
-               const pgsLiftingStressAnalysisArtifact* stressArtifact =  pLiftingArtifact->GetLiftingStressAnalysisArtifact(poi.GetDistFromStart());
-               if(stressArtifact==NULL)
+               const pgsLiftingStressAnalysisArtifact* pStressArtifact =  pLiftingArtifact->GetLiftingStressAnalysisArtifact(poi);
+               if( pStressArtifact == NULL)
                {
-                  ATLASSERT(0);
+                  ATLASSERT(false);
                   continue;
                }
           
                (*p_table)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi, leftOH );
-               (*p_table)(row,1) << force.SetValue( stressArtifact->GetEffectiveHorizPsForce());
-               (*p_table)(row,2) << dim.SetValue( stressArtifact->GetEccentricityPsForce());
+               (*p_table)(row,1) << force.SetValue( pStressArtifact->GetEffectiveHorizPsForce());
+               (*p_table)(row,2) << dim.SetValue( pStressArtifact->GetEccentricityPsForce());
+
                Float64 up, down, no;
-               stressArtifact->GetMomentImpact(&up,&no,&down);
+               pStressArtifact->GetMomentImpact(&up,&no,&down);
                (*p_table)(row,3) << moment.SetValue(up);
                (*p_table)(row,4) << moment.SetValue(no);
                (*p_table)(row,5) << moment.SetValue(down);
+
                row++;
             }
 
@@ -252,25 +255,28 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
             (*p_table)(1,8) << COLHDR(_T("Impact") << rptNewLine << _T("Down"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
             RowIndexType row1=2;
-            for (i = poi_vec.begin(); i!= poi_vec.end(); i++)
+            poiIter = vPoi.begin();
+            for ( ; poiIter != poiIterEnd; poiIter++ )
             {
-               const pgsPointOfInterest& poi = *i;
+               const pgsPointOfInterest& poi( *poiIter );
 
-               const pgsLiftingStressAnalysisArtifact* stressArtifact =  pLiftingArtifact->GetLiftingStressAnalysisArtifact(poi.GetDistFromStart());
-               if(stressArtifact==NULL)
+               const pgsLiftingStressAnalysisArtifact* pStressArtifact =  pLiftingArtifact->GetLiftingStressAnalysisArtifact(poi);
+               if(pStressArtifact == NULL)
                {
-                  ATLASSERT(0);
+                  ATLASSERT(false);
                   continue;
                }
           
                (*p_table)(row1,0) << location.SetValue( POI_LIFT_SEGMENT, poi, leftOH );
+
                Float64 ps, up, down, no;
-               stressArtifact->GetTopFiberStress(&ps,&up,&no,&down);
+               pStressArtifact->GetTopFiberStress(&ps,&up,&no,&down);
                (*p_table)(row1,1) << stress.SetValue( ps );
                (*p_table)(row1,2) << stress.SetValue( up );
                (*p_table)(row1,3) << stress.SetValue( no );
                (*p_table)(row1,4) << stress.SetValue( down );
-               stressArtifact->GetBottomFiberStress(&ps,&up,&no,&down);
+
+               pStressArtifact->GetBottomFiberStress(&ps,&up,&no,&down);
                (*p_table)(row1,5) << stress.SetValue( ps );
                (*p_table)(row1,6) << stress.SetValue( up );
                (*p_table)(row1,7) << stress.SetValue( no );
@@ -281,12 +287,16 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
             // Rebar requirements tables. Only build table if impact is non zero
             if (0.0 < pLiftingArtifact->GetDownwardImpact())
+            {
                BuildRebarTable(pBroker, pChapter, thisSegmentKey, idDown);
+            }
 
             BuildRebarTable(pBroker, pChapter, thisSegmentKey, idNone);
 
             if (0.0 < pLiftingArtifact->GetUpwardImpact())
+            {
                BuildRebarTable(pBroker, pChapter, thisSegmentKey, idUp);
+            }
             
             p = new rptParagraph;
             *pChapter << p;
@@ -309,29 +319,43 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
             (*p_table)(0,6) << Sub2(_T("FS"),_T("cr"));
 
             row=1;
-            for (i = poi_vec.begin(); i!= poi_vec.end(); i++)
+            poiIter = vPoi.begin();
+            for ( ; poiIter != poiIterEnd; poiIter++ )
             {
-               const pgsPointOfInterest& poi = *i;
+               const pgsPointOfInterest& poi( *poiIter );
 
-               const pgsLiftingCrackingAnalysisArtifact* crackArtifact =  pLiftingArtifact->GetLiftingCrackingAnalysisArtifact(poi.GetDistFromStart());
-               if (crackArtifact == NULL)
+               const pgsLiftingCrackingAnalysisArtifact* pCrackArtifact =  pLiftingArtifact->GetLiftingCrackingAnalysisArtifact(poi);
+               if (pCrackArtifact == NULL)
                {
-                  ATLASSERT(0);
+                  ATLASSERT(false);
                   continue;
                }
           
                (*p_table)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi, leftOH);
-               (*p_table)(row,1) << stress.SetValue( crackArtifact->GetLateralMomentStress() );
+               (*p_table)(row,1) << stress.SetValue( pCrackArtifact->GetLateralMomentStress() );
 
-               if (crackArtifact->GetCrackedFlange() == BottomFlange)
+               if (pCrackArtifact->GetCrackedFlange() == BottomFlange)
+               {
                   (*p_table)(row,2) << _T("Bottom");
+               }
                else
+               {
                   (*p_table)(row,2) << _T("Top");
+               }
 
-               (*p_table)(row,3) << moment.SetValue( crackArtifact->GetLateralMoment() );
-               (*p_table)(row,4) << moment.SetValue( crackArtifact->GetVerticalMoment() );
-               (*p_table)(row,5) << angle.SetValue( crackArtifact->GetThetaCrackingMax() );
-               (*p_table)(row,6) << scalar.SetValue(crackArtifact->GetFsCracking());
+               (*p_table)(row,3) << moment.SetValue( pCrackArtifact->GetLateralMoment() );
+               (*p_table)(row,4) << moment.SetValue( pCrackArtifact->GetVerticalMoment() );
+               (*p_table)(row,5) << angle.SetValue( pCrackArtifact->GetThetaCrackingMax() );
+
+               Float64 FScr = pCrackArtifact->GetFsCracking();
+               if ( FScr == Float64_Inf )
+               {
+                  (*p_table)(row,6) << symbol(INFINITY);
+               }
+               else
+               {
+                  (*p_table)(row,6) << scalar.SetValue(pCrackArtifact->GetFsCracking());
+               }
                row++;
             }
 
@@ -363,11 +387,11 @@ void CLiftingCheckDetailsChapterBuilder::BuildRebarTable(IBroker* pBroker,rptCha
    scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
    scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
    scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,        pDisplayUnits->GetAreaUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
+
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,     pDisplayUnits->GetAreaUnit(),         false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
 
    rptCapacityToDemand cap_demand;
@@ -380,17 +404,22 @@ void CLiftingCheckDetailsChapterBuilder::BuildRebarTable(IBroker* pBroker,rptCha
 
    Float64 leftOH  = pLiftingArtifact->GetLeftOverhang();
 
-   GET_IFACE2(pBroker,IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
-   std::vector<pgsPointOfInterest> vPoi = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(segmentKey,0,POIFIND_OR);
-   CHECK(vPoi.size()>0);
+   const std::vector<pgsPointOfInterest>& vPoi(pLiftingArtifact->GetLiftingPointsOfInterest());
+   ATLASSERT(0 < vPoi.size());
 
    std::_tstring tablename;
    if (dir==idDown)
+   {
       tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Lifting, Downward Impact");
+   }
    else if (dir==idNone)
+   {
       tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Lifting, Without Impact");
+   }
    else
+   {
       tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Lifting, Upward Impact");
+   }
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,tablename.c_str());
    *p << pTable << rptNewLine;
@@ -408,20 +437,21 @@ void CLiftingCheckDetailsChapterBuilder::BuildRebarTable(IBroker* pBroker,rptCha
    (*pTable)(0,col++) <<_T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
 
    Int16 row=1;
-   for (std::vector<pgsPointOfInterest>::iterator i = vPoi.begin(); i!= vPoi.end(); i++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-#pragma Reminder("UPDATE: lift stress analysis artifacts should be stored at known POI, shouldn't have to get them by distance")
-      const pgsLiftingStressAnalysisArtifact* stressArtifact =  pLiftingArtifact->GetLiftingStressAnalysisArtifact(poi.GetDistFromStart());
-      if(stressArtifact==NULL)
+      const pgsLiftingStressAnalysisArtifact* pStressArtifact =  pLiftingArtifact->GetLiftingStressAnalysisArtifact(poi);
+      if(pStressArtifact == NULL)
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
          continue;
       }
 
       Float64 Yna, At, T, AsProvd, AsReqd, fAllow;
-      stressArtifact->GetAlternativeTensileStressParameters(dir, &Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
+      pStressArtifact->GetAlternativeTensileStressParameters(dir, &Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
 
       (*pTable)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi, leftOH );
 
@@ -440,16 +470,16 @@ void CLiftingCheckDetailsChapterBuilder::BuildRebarTable(IBroker* pBroker,rptCha
          Float64 fps;
          Float64 fTopUp, fTopNone, fTopDown;
          Float64 fBottomUp, fBottomNone, fBottomDown;
-         stressArtifact->GetTopFiberStress(&fps, &fTopUp, &fTopNone, &fTopDown);
-         stressArtifact->GetBottomFiberStress(&fps, &fBottomUp, &fBottomNone, &fBottomDown);
+         pStressArtifact->GetTopFiberStress(&fps, &fTopUp, &fTopNone, &fTopDown);
+         pStressArtifact->GetBottomFiberStress(&fps, &fBottomUp, &fBottomNone, &fBottomDown);
 
          Float64 fTop, fBot;
-         if(dir==idDown)
+         if(dir == idDown)
          {
             fTop = fTopDown;
             fBot = fBottomDown;
          }
-         else if(dir==idNone)
+         else if (dir == idNone)
          {
             fTop = fTopNone;
             fBot = fBottomNone;
@@ -461,7 +491,7 @@ void CLiftingCheckDetailsChapterBuilder::BuildRebarTable(IBroker* pBroker,rptCha
          }
 
          Float64 fTens;
-         if (fTop>0.0)
+         if (0.0 < fTop)
          {
             fTens = fTop;
             (*pTable)(row,1) << _T("Top");

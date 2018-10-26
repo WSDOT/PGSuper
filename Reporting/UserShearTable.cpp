@@ -109,7 +109,7 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS)) );
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
 
@@ -118,14 +118,14 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
       std::vector<sysSectionValue> minLLIM, maxLLIM;
 
 
-      maxDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, maxBAT, ctIncremental );
-      minDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, minBAT, ctIncremental );
+      maxDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, maxBAT, rtIncremental );
+      minDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, minBAT, rtIncremental );
 
-      maxDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, maxBAT, ctIncremental );
-      minDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, minBAT, ctIncremental );
+      maxDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, maxBAT, rtIncremental );
+      minDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, minBAT, rtIncremental );
 
-      maxLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental );
-      minLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, minBAT, ctIncremental );
+      maxLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, maxBAT, rtIncremental );
+      minLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, minBAT, rtIncremental );
 
       // Fill up the table
       IndexType index = 0;

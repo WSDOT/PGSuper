@@ -104,9 +104,13 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    *pChapter << pBody;
 
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   {
       *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+   }
    else
+   {
       *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+   }
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    *pBody << table;
@@ -139,7 +143,9 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == NULL )
+         {
             continue;
+         }
 
          const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
 
@@ -158,9 +164,13 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
             bool bPassed = pArtifact->Passed();
             if ( bPassed )
+            {
                (*table)(row,4) << RPT_PASS;
+            }
             else
+            {
                (*table)(row,4) << RPT_FAIL;
+            }
 
             Float64 ratio = IsZero(D) ? DBL_MAX : C/D;
             if ( bPassed && fabs(pArtifact->GetMu()) <= fabs(pArtifact->GetMr()) && ratio < 1.0 )
@@ -211,9 +221,13 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    *pChapter << pBody;
 
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   {
       *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+   }
    else
+   {
       *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+   }
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    *pBody << table;
@@ -230,7 +244,6 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
    const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(girderKey,ratingType,INVALID_INDEX);
@@ -254,7 +267,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( POI_GIRDER, poi, end_size );
+         (*table)(row,0) << location.SetValue( POI_SPAN, poi, end_size );
 
          Float64 C = artifact.GetCapacityForce();
          Float64 D = artifact.GetDemandForce();
@@ -265,9 +278,13 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
          bool bPassed = artifact.Passed();
          if ( bPassed )
+         {
             (*table)(row,4) << RPT_PASS;
+         }
          else
+         {
             (*table)(row,4) << RPT_FAIL;
+         }
 
          Float64 ratio = IsZero(D) ? DBL_MAX : C/D;
          if ( artifact.Passed() && fabs(artifact.GetMu()) <= fabs(artifact.GetMr()) && ratio < 1.0 )

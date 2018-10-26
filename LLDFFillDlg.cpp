@@ -198,7 +198,7 @@ void CLLDFFillDlg::OnCbnSelchangeGirderSpan()
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 }
 
@@ -247,7 +247,7 @@ void CLLDFFillDlg::OnCbnSelchangePier()
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 }
 

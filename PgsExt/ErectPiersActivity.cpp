@@ -56,13 +56,19 @@ CSupportActivityBase& CSupportActivityBase::operator= (const CSupportActivityBas
 bool CSupportActivityBase::operator==(const CSupportActivityBase& rOther) const
 {
    if ( m_bEnabled != rOther.m_bEnabled )
+   {
       return false;
+   }
 
    if (m_Piers != rOther.m_Piers )
+   {
       return false;
+   }
 
    if ( m_TempSupports != rOther.m_TempSupports )
+   {
       return false;
+   }
 
    return true;
 }
@@ -306,10 +312,14 @@ CCastClosureJointActivity& CCastClosureJointActivity::operator= (const CCastClos
 bool CCastClosureJointActivity::operator==(const CCastClosureJointActivity& rOther) const
 {
    if ( CSupportActivityBase::operator !=(rOther) )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_Age,rOther.m_Age) )
+   {
       return false;
+   }
 
    return true;
 }
@@ -348,7 +358,9 @@ HRESULT CCastClosureJointActivity::LoadSubclassData(IStructuredLoad* pStrLoad,IP
       var.vt = VT_R8;
       HRESULT hr = pStrLoad->get_Property(_T("AgeAtContinuity"),&var);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
       m_Age = var.dblVal;
    }

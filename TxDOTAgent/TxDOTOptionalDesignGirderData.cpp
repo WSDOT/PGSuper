@@ -225,7 +225,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    pStrSave->EndUnit();
@@ -399,7 +399,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
          hr = pStrLoad->BeginUnit(_T("DirectSelectStrandFill"));
          if (FAILED(hr))
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             return hr;
          }
 
@@ -440,14 +440,14 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
       }
 
       hr = pStrLoad->EndUnit(); // TxDOTOptionalGirderData
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 

@@ -81,6 +81,7 @@ public:
    void SetIndex(PierIndexType pierIdx);
    void SetID(PierIDType pierID);
    void SetBridgeDescription(CBridgeDescription2* pBridge);
+   void SetSpan(pgsTypes::PierFaceType face,CSpanData2* pSpan);
    void SetSpans(CSpanData2* pPrevSpan,CSpanData2* pNextSpan);
 
    // configures this pier with data from the old CPierData object

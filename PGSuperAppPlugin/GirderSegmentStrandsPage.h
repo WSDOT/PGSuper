@@ -49,12 +49,14 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
    CDrawStrandControl m_DrawStrands;
+   CMetaFileStatic m_Picture;
 
 	//{{AFX_MSG(CGirderSegmentStrandsPage)
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnSetActive();
 	virtual BOOL OnKillActive();
 	afx_msg void OnUpdateTemporaryStrandPjEdit();
+	afx_msg void OnUpdateHarpedStrandPjEdit();
 	afx_msg void OnUpdateStraightStrandPjEdit();
 	afx_msg void OnHelp();
    afx_msg void OnStrandTypeChanged();
@@ -67,7 +69,7 @@ protected:
    void UpdateStrandList(UINT nIDC);
 
    void InitPjackEdits();
-   void InitPjackEdits(UINT nCalcPjack,UINT nNumStrands,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType);
+   void InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType);
 
    CStrandGrid m_Grid;
 	int	m_StrandSizeIdx;

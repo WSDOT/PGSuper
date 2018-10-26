@@ -89,11 +89,13 @@ public:
 
    // Shear capacity
    //------------------------------------------------------------------------
-   void ComputeShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
+   void ComputeShearCapacity(IntervalIndexType intervalIdx,
+                             pgsTypes::LimitState limitState, 
                              const pgsPointOfInterest& poi,
                              SHEARCAPACITYDETAILS* pmcd);
 
-   void ComputeShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
+   void ComputeShearCapacity(IntervalIndexType intervalIdx,
+                             pgsTypes::LimitState limitState, 
                              const pgsPointOfInterest& poi,const GDRCONFIG& config,
                              SHEARCAPACITYDETAILS* pmcd);
 
@@ -141,14 +143,14 @@ private:
    // GROUP: OPERATIONS
    
 
-   bool GetGeneralInformation(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
+   bool GetGeneralInformation(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState,
 				  		            const pgsPointOfInterest& poi,
                               const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd);
-   bool GetInformation(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
+   bool GetInformation(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState,
 				  		     const pgsPointOfInterest& poi, 
                        const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd);
 
-   void ComputeShearCapacityDetails(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
+   void ComputeShearCapacityDetails(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, 
                              const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd);
 
    bool ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd);

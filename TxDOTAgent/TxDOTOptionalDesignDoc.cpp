@@ -56,6 +56,8 @@
 
 #include <PsgLib\BeamFamilyManager.h>
 
+#include <MFCTools\AutoRegistry.h>
+
 #include <limits>
 
 #ifdef _DEBUG
@@ -464,6 +466,7 @@ BOOL CTxDOTOptionalDesignDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
    m_ProjectData.SetBeamType(name, false); // don't fire
 
    // Use pgsuper's engineer name and company if available
+   //CAutoRegistry autoReg(_T("PGSuper"));
    CEAFApp* pApp = EAFGetApp();
    CString engName    = pApp->GetProfileString(_T("Options"),_T("EngineerName"));
    m_ProjectData.SetEngineer(engName);
@@ -524,10 +527,12 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName, bool isNew
 
 CString CTxDOTOptionalDesignDoc::GetRootNodeName()
 {
-   if ( m_InExportMode )
-      return _T("PGSuper");
-   else
-      return __super::GetRootNodeName();
+   //if ( m_InExportMode )
+   //   return _T("PGSuper");
+   //else
+   //   return __super::GetRootNodeName();
+
+   return _T("PGSuper");
 }
 
 Float64 CTxDOTOptionalDesignDoc::GetRootNodeVersion()
@@ -819,8 +824,8 @@ SpecLibrary* CTxDOTOptionalDesignDoc::GetSpecLibrary()
 
 void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
 {
-
    // Use same master library as PGSuper
+   CAutoRegistry autoReg(_T("PGSuper"));
    CEAFApp* pApp = EAFGetApp();
    CString strMasterLibaryFile    = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache"));
    if (strMasterLibaryFile.IsEmpty())
@@ -1001,7 +1006,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    pProps->SetCompany( std::_tstring( m_ProjectData.GetCompany() ) );
    pProps->SetComments( std::_tstring( m_ProjectData.GetComments() ) );
    pProps->SetBridgeName( std::_tstring( m_ProjectData.GetBridge() ) );
-   pProps->SetBridgeId( std::_tstring( m_ProjectData.GetBridgeID() ) );
+   pProps->SetBridgeID( std::_tstring( m_ProjectData.GetBridgeID() ) );
    pProps->SetJobNumber( std::_tstring( m_ProjectData.GetJobNumber() ) );
 
    // Start off by setting whole bridge data
@@ -1269,11 +1274,11 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wncdc.m_Fractional = true;
    wncdc.m_StartLocation = 0.0;
    wncdc.m_EndLocation = -1.0;
-   wncdc.m_SpanGirderKey.spanIndex = 0;
-   wncdc.m_SpanGirderKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
+   wncdc.m_spanKey.spanIndex = 0;
+   wncdc.m_spanKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
    pUserDefinedLoadData->AddDistributedLoad(wncdc);
 
-   wncdc.m_SpanGirderKey.girderIndex = TOGA_FABR_GDR;
+   wncdc.m_spanKey.girderIndex = TOGA_FABR_GDR;
    pUserDefinedLoadData->AddDistributedLoad(wncdc);
 
    // w comp, dc
@@ -1288,11 +1293,11 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wcdc.m_Fractional = true;
    wcdc.m_StartLocation = 0.0;
    wcdc.m_EndLocation = -1.0;
-   wcdc.m_SpanGirderKey.spanIndex = 0;
-   wcdc.m_SpanGirderKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
+   wcdc.m_spanKey.spanIndex = 0;
+   wcdc.m_spanKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
    pUserDefinedLoadData->AddDistributedLoad(wcdc);
 
-   wcdc.m_SpanGirderKey.girderIndex = TOGA_FABR_GDR;
+   wcdc.m_spanKey.girderIndex = TOGA_FABR_GDR;
    pUserDefinedLoadData->AddDistributedLoad(wcdc);
 
    // w overlay 
@@ -1382,8 +1387,9 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    for ( int i = 0; i < 3; i++ )
    {
-      strands.StrandMaterial[i] = pPool->GetStrand(grade,type,size);
-      ASSERT(strands.StrandMaterial[i]);
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      strands.SetStrandMaterial(strandType, pPool->GetStrand(grade,type,size));
+      ASSERT(strands.GetStrandMaterial(strandType) != NULL);
    }
 
    // Set seed data
@@ -1394,7 +1400,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    CTxDOTOptionalDesignGirderData::StrandFillType fill_type =  pOdGirderData->GetStrandFillType();
    if (fill_type == CTxDOTOptionalDesignGirderData::sfStandard)
    {
-      strands.NumPermStrandsType = CStrandData::npsTotal;
+      strands.SetStrandDefinitionType(CStrandData::npsTotal);
 
       StrandIndexType ntot = pOdGirderData->GetStrandCount();
 
@@ -1403,12 +1409,12 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       bool st = pGdrEntry->GetPermStrandDistribution(ntot, &ns, &nh);
       ASSERT(st);
 
-      strands.Nstrands[pgsTypes::Permanent] = ntot;
-      strands.Nstrands[pgsTypes::Straight ] = ns;
-      strands.Nstrands[pgsTypes::Harped]    = nh;
+      strands.SetStrandCount(pgsTypes::Permanent, ntot);
+      strands.SetStrandCount(pgsTypes::Straight,  ns);
+      strands.SetStrandCount(pgsTypes::Harped,    nh);
 
-      strands.HsoEndMeasurement = hsoTOP2BOTTOM;
-      strands.HpOffsetAtEnd = pOdGirderData->GetStrandTo();
+      strands.SetHarpStrandOffsetMeasurementAtEnd(hsoTOP2BOTTOM);
+      strands.SetHarpStrandOffsetAtEnd(pOdGirderData->GetStrandTo());
    }
    else if (fill_type == CTxDOTOptionalDesignGirderData::sfHarpedRows)
    {
@@ -1519,23 +1525,23 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       // Must set strands after library entry, otherwise data is reset
       strands.SetDirectStrandFillStraight(pOdGirderData->GetDirectFilledStraightStrands());
       strands.ClearDebondData();
-      strands.Debond[pgsTypes::Straight] = pOdGirderData->GetDirectFilledStraightDebond();
+      strands.SetDebonding(pgsTypes::Straight,pOdGirderData->GetDirectFilledStraightDebond());
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    // Get Jacking 
    GET_IFACE(IPretensionForce, pPrestress );
 
-   strands.bPjackCalculated[pgsTypes::Permanent] = true;
-   strands.bPjackCalculated[pgsTypes::Straight] = true;
-   strands.bPjackCalculated[pgsTypes::Harped] = true;
+   strands.IsPjackCalculated(pgsTypes::Permanent, true);
+   strands.IsPjackCalculated(pgsTypes::Straight,  true);
+   strands.IsPjackCalculated(pgsTypes::Harped,    true);
 
    CSegmentKey segmentKey(TOGA_SPAN,gdr,0);
 
-   strands.Pjack[pgsTypes::Permanent] = pPrestress->GetPjackMax(segmentKey, *(strands.StrandMaterial[pgsTypes::Straight]), strands.Nstrands[pgsTypes::Permanent]);
-   strands.Pjack[pgsTypes::Straight]  = pPrestress->GetPjackMax(segmentKey, *(strands.StrandMaterial[pgsTypes::Straight]), strands.Nstrands[pgsTypes::Straight]);;
-   strands.Pjack[pgsTypes::Harped]    = pPrestress->GetPjackMax(segmentKey, *(strands.StrandMaterial[pgsTypes::Harped]),   strands.Nstrands[pgsTypes::Harped]);;
+   strands.SetPjack(pgsTypes::Permanent, pPrestress->GetPjackMax(segmentKey, *(strands.GetStrandMaterial(pgsTypes::Straight)), strands.GetStrandCount(pgsTypes::Permanent)));
+   strands.SetPjack(pgsTypes::Straight,  pPrestress->GetPjackMax(segmentKey, *(strands.GetStrandMaterial(pgsTypes::Straight)), strands.GetStrandCount(pgsTypes::Straight)));
+   strands.SetPjack(pgsTypes::Harped,    pPrestress->GetPjackMax(segmentKey, *(strands.GetStrandMaterial(pgsTypes::Harped)),   strands.GetStrandCount(pgsTypes::Harped)));
 }
 
 void CTxDOTOptionalDesignDoc::VerifyPgsuperTemplateData(CBridgeDescription2& bridgeDesc)

@@ -28,6 +28,7 @@ protected:
 
 public:
    virtual BOOL OnInitDialog();
+   afx_msg void OnHelp();
 
    virtual void OnDuctChanged();
 };

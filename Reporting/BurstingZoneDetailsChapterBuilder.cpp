@@ -84,11 +84,13 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+
    bool bInitialRelaxation = ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 || 
-                               pSpecEntry->GetLossMethod() == pgsTypes::WSDOT_REFINED                 ||
-                               pSpecEntry->GetLossMethod() == pgsTypes::TXDOT_REFINED_2004            ||
-                               pSpecEntry->GetLossMethod() == pgsTypes::WSDOT_LUMPSUM                 ||
-                               pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP               ? true : false );
+                               pLossParams->GetLossMethod() == pgsTypes::WSDOT_REFINED                 ||
+                               pLossParams->GetLossMethod() == pgsTypes::TXDOT_REFINED_2004            ||
+                               pLossParams->GetLossMethod() == pgsTypes::WSDOT_LUMPSUM                 ||
+                               pLossParams->GetLossMethod() == pgsTypes::TIME_STEP               ? true : false );
 
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(),   true );

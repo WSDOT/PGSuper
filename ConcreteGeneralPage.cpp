@@ -303,7 +303,6 @@ void CConcreteGeneralPage::OnConcreteType()
 
 HBRUSH CConcreteGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
    if ( pWnd->GetDlgCtrlID() == IDC_DS && 0 < pWnd->GetWindowTextLength())
@@ -330,6 +329,7 @@ HBRUSH CConcreteGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
          {
             CDataExchange dx(this,TRUE);
 
+            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
             Float64 value;
             DDX_UnitValue(&dx, IDC_DS, value, pDisplayUnits->GetDensityUnit() );
 

@@ -136,7 +136,7 @@ public:
 
 
 private:
-   CComPtr<IBroker> m_pBroker;
+   IBroker* m_pBroker; // weak reference
    StatusGroupIDType m_StatusGroupID;
    bool m_bIsValidated;
    const CBridgeDescription2* m_pBridgeDesc;

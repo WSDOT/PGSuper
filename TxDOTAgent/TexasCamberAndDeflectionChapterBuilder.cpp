@@ -192,7 +192,6 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    // Get the interfaces we need
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
    GET_IFACE2(pBroker,IProductForces, pProductForces);
@@ -232,9 +231,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
       IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(girderKey);
 
-      // Get Midspan std::vector<pgsPointOfInterest>
-      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_MIDSPAN);
-      CHECK(vPoi.size()==1);
+      // Get Midspan poi
+      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_5L | POI_ERECTED_SEGMENT);
+      ATLASSERT(vPoi.size()==1);
       pgsPointOfInterest poi = *vPoi.begin();
 
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -252,25 +251,25 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
 
       delta_gdr = pProductForces->GetGirderDeflectionForCamber( poi );
 
-      pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+      pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
-      delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab, poi, bat, ctIncremental )
-               + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, poi, bat, ctIncremental );
+      delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab, poi, bat, rtCumulative, false )
+               + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, poi, bat, rtCumulative, false );
 
-      delta_sk = pProductForces->GetDeflection(castDeckIntervalIdx, pftShearKey, poi, bat, ctIncremental );
+      delta_sk = pProductForces->GetDeflection(castDeckIntervalIdx, pftShearKey, poi, bat, rtCumulative, false );
       
-      delta_ol = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, poi, bat, ctIncremental );
+      delta_ol = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, poi, bat, rtCumulative, false );
 
-      delta_tb = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, ctIncremental );
-      delta_sw = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, ctIncremental );
+      delta_tb = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, rtCumulative, false );
+      delta_sw = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, rtCumulative, false );
 
-      Float64 delta_dcu = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDC, poi, bat, ctIncremental);
-      delta_dcu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pftUserDC, poi, bat, ctIncremental);
+      Float64 delta_dcu = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDC, poi, bat, rtCumulative, false);
+      delta_dcu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pftUserDC, poi, bat, rtCumulative, false);
 
-      Float64 delta_dwu = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDW, poi, bat, ctIncremental);
-      delta_dwu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pftUserDW, poi, bat, ctIncremental);
+      Float64 delta_dwu = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDW, poi, bat, rtCumulative, false);
+      delta_dwu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pftUserDW, poi, bat, rtCumulative, false);
 
-      pProductForces->GetLiveLoadDeflection(pgsTypes::lltDesign, liveLoadIntervalIdx, poi, bat, true, false, &delta_ll, &temp );
+      pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi, bat, true, false, &delta_ll, &temp );
 
       pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi, bat, &delta_oll, &temp );
 
@@ -365,7 +364,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
          row++;
       }
 
-      if ( 0 < pSegmentData->GetStrandData(segmentKey)->Nstrands[pgsTypes::Temporary] && pSegmentData->GetStrandData(segmentKey)->TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
+      if ( 0 < pSegmentData->GetStrandData(segmentKey)->GetStrandCount(pgsTypes::Temporary) && pSegmentData->GetStrandData(segmentKey)->GetTemporaryStrandUsage() != pgsTypes::ttsPTBeforeShipping )
       {
          if (bFirst)
             (*pTable)(row,0) << _T("Deflection (Prestressing including temp strands)");
@@ -387,7 +386,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       }
       row++;
 
-      if ( 0 < pSegmentData->GetStrandData(segmentKey)->Nstrands[pgsTypes::Temporary] && pSegmentData->GetStrandData(segmentKey)->TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
+      if ( 0 < pSegmentData->GetStrandData(segmentKey)->GetStrandCount(pgsTypes::Temporary) && pSegmentData->GetStrandData(segmentKey)->GetTemporaryStrandUsage() != pgsTypes::ttsPTBeforeShipping )
       {
          if (bFirst)
             (*pTable)(row,0) << _T("Deflection (Temporary Strand Removal)");

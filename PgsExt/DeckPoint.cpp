@@ -72,22 +72,34 @@ CDeckPoint& CDeckPoint::operator= (const CDeckPoint& rOther)
 bool CDeckPoint::operator == (const CDeckPoint& rOther) const
 {
    if ( !IsEqual(Station,rOther.Station) )
+   {
       return false;
+   }
 
    if ( !IsEqual(LeftEdge,rOther.LeftEdge) )
+   {
       return false;
+   }
    
    if ( !IsEqual(RightEdge,rOther.RightEdge) )
+   {
       return false;
+   }
 
    if ( MeasurementType != rOther.MeasurementType )
+   {
       return false;
+   }
 
    if ( LeftTransitionType != rOther.LeftTransitionType )
+   {
       return false;
+   }
 
    if ( RightTransitionType != rOther.RightTransitionType )
+   {
       return false;
+   }
 
    return true;
 }
@@ -145,7 +157,7 @@ HRESULT CDeckPoint::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 

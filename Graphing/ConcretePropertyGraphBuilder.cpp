@@ -138,7 +138,9 @@ CGraphBuilder* CConcretePropertyGraphBuilder::Clone()
 int CConcretePropertyGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
 {
    if ( CEAFAutoCalcGraphBuilder::InitializeGraphController(pParent,nID) < 0 )
+   {
       return -1;
+   }
 
    // create the graph definitions before creating the graph controller.
    // our graph controller will call GetLoadCaseNames to populate the 
@@ -317,9 +319,13 @@ void CConcretePropertyGraphBuilder::UpdateGraphTitle()
       const CClosureJointData* pClosure = pIBridgeDesc->GetClosureJointData(m_ClosureKey);
       CString strLabel;
       if ( pClosure->GetTemporarySupport() )
+      {
          strLabel = GetLabel(pClosure->GetTemporarySupport(),pDisplayUnits);
+      }
       else
+      {
          strLabel = GetLabel(pClosure->GetPier(),pDisplayUnits);
+      }
 
 
       strElement.Format(_T("Closure Joint at %s"),strLabel);
@@ -340,8 +346,10 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    // clear graph
    m_Graph.ClearData();
 
+   int penWeight = GRAPH_PEN_WEIGHT;
+
    CString strLabel = (m_GraphType == GRAPH_TYPE_FC ? _T("f'c") : _T("Ec"));
-   IndexType dataSeries = m_Graph.CreateDataSeries(strLabel, PS_SOLID,1,ORANGE);
+   IndexType dataSeries = m_Graph.CreateDataSeries(strLabel, PS_SOLID, penWeight, ORANGE);
 
    GET_IFACE(IMaterials,pMaterials);
    GET_IFACE(IIntervals,pIntervals);
@@ -349,11 +357,17 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    if ( m_XAxisType == X_AXIS_AGE_LINEAR  || m_XAxisType == X_AXIS_AGE_LOG )
    {
       if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
+      {
          startIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
+      }
       else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
+      {
          startIntervalIdx = pIntervals->GetCompositeClosureJointInterval(m_ClosureKey);
+      }
       else
+      {
          startIntervalIdx = pIntervals->GetCompositeDeckInterval(m_SegmentKey);
+      }
    }
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount(m_SegmentKey);
@@ -367,11 +381,17 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       else if ( m_XAxisType == X_AXIS_AGE_LINEAR || m_XAxisType == X_AXIS_AGE_LOG )
       {
          if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
+         {
             xMiddle = pMaterials->GetSegmentConcreteAge(m_SegmentKey,intervalIdx);
+         }
          else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
+         {
             xMiddle = pMaterials->GetClosureJointConcreteAge(m_ClosureKey,intervalIdx);
+         }
          else
+         {
             xMiddle = pMaterials->GetDeckConcreteAge(m_ClosureKey,intervalIdx);
+         }
       }
       else
       {

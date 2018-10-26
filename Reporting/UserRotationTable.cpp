@@ -145,12 +145,12 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, maxBAT, ctIncremental ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, minBAT, ctIncremental ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, maxBAT, ctIncremental ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, minBAT, ctIncremental ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, ctIncremental ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, minBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC,   poi, minBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW,   poi, minBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, minBAT, rtCumulative, false ) );
          }
          else
          {
@@ -166,9 +166,9 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, maxBAT, ctIncremental ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, maxBAT, ctIncremental ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
          }
          else
          {

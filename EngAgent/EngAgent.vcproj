@@ -676,6 +676,10 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath=".\AlternativeTensileStressCalculator.cpp"
+				>
+			</File>
+			<File
 				RelativePath="Designer2.cpp"
 				>
 				<FileConfiguration
@@ -1366,6 +1370,10 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath=".\AlternativeTensileStressCalculator.h"
+				>
+			</File>
 			<File
 				RelativePath="DesignCodes.h"
 				>

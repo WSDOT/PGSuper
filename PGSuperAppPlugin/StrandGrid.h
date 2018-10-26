@@ -61,7 +61,6 @@ protected:
 
    // virtual overrides for grid
    virtual int GetColWidth(ROWCOL nCol);
-////   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
    virtual void OnClickedButtonRowCol(ROWCOL nHitRow, ROWCOL nHitCol);
    virtual void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey);
@@ -95,7 +94,7 @@ private:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
    CStrandRow GetStrandRow(ROWCOL nRow);
 
-   void UpdateExtendedStrandProperties(ROWCOL nRow, ROWCOL nCol);
+   void UpdateExtendedStrandProperties(ROWCOL nRow);
 
    bool Validate(ROWCOL nRow,CStrandRow& strandRow);
 };

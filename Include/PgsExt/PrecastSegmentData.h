@@ -89,7 +89,7 @@ public:
    Float64 EndBlockWidth[2];
 
    // Copies only segment definition data. Does not copy ID or Index
-   void CopySegmentData(const CPrecastSegmentData* pSegment);
+   void CopySegmentData(const CPrecastSegmentData* pSegment,bool bCopyLocation);
 
    void SetSpans(const CSpanData2* pStartSpan,const CSpanData2* pEndSpan);
    void SetSpan(pgsTypes::MemberEndType endType,const CSpanData2* pSpan);
@@ -114,10 +114,8 @@ public:
 
    // Returns the support at the start of the segment. The support could be a
    // pier or a temporary support. The support pointer is not NULL, the other pointer is NULL
-   void GetStartSupport(const CPierData2** ppPier,const CTemporarySupportData** ppTS) const;
-   void GetStartSupport(CPierData2** ppPier,CTemporarySupportData** ppTS);
-   void GetEndSupport(const CPierData2** ppPier,const CTemporarySupportData** ppTS) const;
-   void GetEndSupport(CPierData2** ppPier,CTemporarySupportData** ppTS);
+   void GetSupport(pgsTypes::MemberEndType endType,const CPierData2** ppPier,const CTemporarySupportData** ppTS) const;
+   void GetSupport(pgsTypes::MemberEndType endType,CPierData2** ppPier,CTemporarySupportData** ppTS);
    void GetStations(Float64* pStartStation,Float64* pEndStation) const;
 
    void GetSpacing(const CGirderSpacing2** ppStartSpacing,const CGirderSpacing2** ppEndSpacing) const;
@@ -160,7 +158,7 @@ public:
 
 protected:
    void Init();
-   void MakeCopy(const CPrecastSegmentData& rOther,bool bCopyDataOnly);
+   void MakeCopy(const CPrecastSegmentData& rOther,bool bCopyIdentity,bool bCopyLocation,bool bCopyProperties);
    virtual void MakeAssignment(const CPrecastSegmentData& rOther);
    void ResolveReferences();
 

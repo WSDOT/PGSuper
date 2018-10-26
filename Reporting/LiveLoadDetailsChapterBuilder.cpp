@@ -55,7 +55,7 @@ void ReportPedestrian(ILiveLoads::PedestrianLoadApplicationType pedType, rptPara
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 }
 

@@ -27,6 +27,7 @@
 #include "BulbTeeFactory.h"
 #include "BulbTeeDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
+#include "TimeStepLossEngineer.h"
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
@@ -156,10 +157,9 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType stat
    }
    else
    {
-#pragma Reminder("UPDATE: Assuming uniform spacing")
-      // uniform spacing is required for this type of girder so maybe this is ok
+      // Assumes uniform girder spacing
 
-      // use raw input here because requesting it from the bridge will cause an infite loop.
+      // use raw input here because requesting it from the bridge will cause an infinite loop.
       // bridge agent calls this during validation
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -243,9 +243,6 @@ void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,c
    ATLASSERT(segment != NULL);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -334,7 +331,6 @@ void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType
 {
    GET_IFACE2(pBroker, ISpecification,    pSpec);
    GET_IFACE2(pBroker, ILibrary,          pLib);
-   GET_IFACE2(pBroker, IBridge,           pBridge);
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -362,14 +358,26 @@ void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType
    (*ppEng)->AddRef();
 }
 
-void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
+void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
 {
-    CComObject<CPsBeamLossEngineer>* pEngineer;
-    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(IBeam);
-    pEngineer->SetBroker(pBroker,statusID);
-    (*ppEng) = pEngineer;
-    (*ppEng)->AddRef();
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      CComObject<CTimeStepLossEngineer>* pEngineer;
+      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
+   else
+   {
+       CComObject<CPsBeamLossEngineer>* pEngineer;
+       CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
+       pEngineer->Init(IBeam);
+       pEngineer->SetBroker(pBroker,statusGroupID);
+       (*ppEng) = pEngineer;
+       (*ppEng)->AddRef();
+   }
 }
 
 void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
@@ -718,7 +726,7 @@ Float64 CBulbTeeFactory::GetVolume(IBroker* pBroker,const CSegmentKey& segmentKe
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
@@ -757,7 +765,7 @@ Float64 CBulbTeeFactory::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segm
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 S = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
@@ -1035,12 +1043,12 @@ void CBulbTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
       }
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    };
 }
 

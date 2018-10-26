@@ -42,10 +42,10 @@ static char THIS_FILE[]=__FILE__;
 
 CBridgeViewPrintJob::CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBridgePlanView* ppv, CBridgeSectionView* psv, IBroker* pBroker)
 {
-   CHECK(ppv!=0);
-   CHECK(psv!=0);
-   m_pPv=ppv;
-   m_pSv=psv;
+   ATLASSERT(ppv!=0);
+   ATLASSERT(psv!=0);
+   m_pPlanView=ppv;
+   m_pSectionView=psv;
    m_pFrame = pFrame;
    m_pBroker = pBroker;
 
@@ -86,7 +86,7 @@ void CBridgeViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    // print calc sheet border
    PGSuperCalculationSheet border(m_pBroker);
-   CDocument* pdoc = m_pPv->GetDocument();
+   CDocument* pdoc = m_pPlanView->GetDocument();
    CString path = pdoc->GetPathName();
    border.SetFileName(path);
    CRect rcPrint = border.Print(pDC, 1);
@@ -125,7 +125,7 @@ void CBridgeViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    top_clip.CreateRectRgnIndirect(&top);
    pDC->SelectClipRgn(&top_clip);
 
-   m_pPv->DoPrint(pDC,pInfo,pvrect);
+   m_pPlanView->DoPrint(pDC,pInfo,pvrect);
 
    CRgn old_clip;
    old_clip.CreateRectRgnIndirect(&orig_clip);
@@ -142,7 +142,7 @@ void CBridgeViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    bot_clip.CreateRectRgnIndirect(&svrect);
    pDC->SelectClipRgn(&bot_clip);
 
-   m_pSv->DoPrint(pDC, pInfo, svrect); 
+   m_pSectionView->DoPrint(pDC, pInfo, svrect); 
 
    CRgn bot_old_clip;
    bot_old_clip.CreateRectRgnIndirect(&orig_clip);

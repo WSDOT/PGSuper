@@ -204,24 +204,24 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             // Sum of railing system loads not shown in simplified version
             if ( !m_bSimplifiedVersion )
             {
-            if ( pProdLoads->HasSidewalkLoad(thisSegmentKey) )
-            {
-               (*p_table)(row,0) << _T("Sidewalk");
-               (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetSidewalkLoad(thisSegmentKey));
-            }
+               if ( pProdLoads->HasSidewalkLoad(thisSegmentKey) )
+               {
+                  (*p_table)(row,0) << _T("Sidewalk");
+                  (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetSidewalkLoad(thisSegmentKey));
+               }
 
-            Float64 tb_load = pProdLoads->GetTrafficBarrierLoad(thisSegmentKey);
-            if (tb_load!=0.0)
-            {
-               (*p_table)(row,0) << _T("Traffic Barrier");
-               (*p_table)(row++,1) << fpl.SetValue(-tb_load);
-            }
+               Float64 tb_load = pProdLoads->GetTrafficBarrierLoad(thisSegmentKey);
+               if (tb_load!=0.0)
+               {
+                  (*p_table)(row,0) << _T("Traffic Barrier");
+                  (*p_table)(row++,1) << fpl.SetValue(-tb_load);
+               }
 
-            if ( pProdLoads->HasPedestrianLoad(thisSegmentKey) )
-            {
-               (*p_table)(row,0) << _T("Pedestrian Live Load");
-               (*p_table)(row++,1) << fpl.SetValue(pProdLoads->GetPedestrianLoad(thisSegmentKey));
-            }
+               if ( pProdLoads->HasPedestrianLoad(thisSegmentKey) )
+               {
+                  (*p_table)(row,0) << _T("Pedestrian Live Load");
+                  (*p_table)(row++,1) << fpl.SetValue(pProdLoads->GetPedestrianLoad(thisSegmentKey));
+               }
             }
 
             if ( !bUniformGirderDeadLoad )
@@ -269,29 +269,29 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       GirderIndexType lastGirderIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
-         CSpanGirderKey spanGirderKey(spanIdx,gdrIdx);
+         CSpanKey spanKey(spanIdx,gdrIdx);
 
          // User Defined Loads
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
          *pPara<< _T("User Defined Loads")<<rptNewLine;
-         pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanGirderKey, pDisplayUnits, level, m_bSimplifiedVersion);
+         pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
          *pChapter << pPara;
-         pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanGirderKey, pDisplayUnits, level, m_bSimplifiedVersion);
+         pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
          *pChapter << pPara;
-         pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, spanGirderKey, pDisplayUnits, level, m_bSimplifiedVersion);
+         pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
          *pChapter << pPara;
       }
    }
 
 
-   ReportEquivPTLoads(pChapter,pDisplayUnits,girderKey);
+   ReportEquivPostTensionLoads(pChapter,pDisplayUnits,girderKey);
 
    bool bPermit;
    ReportLiveLoad(pChapter,bDesign,bRating,pRatingSpec,bPermit);
    ReportLimitStates(pChapter,bDesign,bRating,bPermit,one_girder_has_shear_key,pRatingSpec);
 
-   ReportCamberLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
+   ReportEquivPretensionLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
 
    return pChapter;
 }
@@ -638,7 +638,9 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
    // overlay laod
    bool bReportOverlay = pBridge->HasOverlay();
    if ( bRating && pBridge->IsFutureOverlay() ) // don't report future overlay load for ratings
+   {
       bReportOverlay = false;
+   }
 
    if ( bReportOverlay )
    {
@@ -921,7 +923,9 @@ void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBri
 void CLoadingDetailsChapterBuilder::ReportEndDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    if ( m_bSimplifiedVersion )
+   {
       return;
+   }
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
@@ -1079,31 +1083,35 @@ void CLoadingDetailsChapterBuilder::ReportEndDiaphragmLoad(rptChapter* pChapter,
 }
 
 
-void CLoadingDetailsChapterBuilder::ReportEquivPTLoads(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const
+void CLoadingDetailsChapterBuilder::ReportEquivPostTensionLoads(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,ITendonGeometry,pTendons);
-   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there are tendons in the model
 
-   std::vector<EquivPTPointLoad> ptLoads;
-   std::vector<EquivPTDistributedLoad> distLoads;
-   std::vector<EquivPTMomentLoad> momentLoads;
+   std::vector<EquivPostTensionPointLoad> ptLoads;
+   std::vector<EquivPostTensionDistributedLoad> distLoads;
+   std::vector<EquivPostTensionMomentLoad> momentLoads;
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,  pDisplayUnits->GetGeneralForceUnit(),   false );
-
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,         ecc,    pDisplayUnits->GetComponentDimUnit(),     false );
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<< _T("Equivalent Loading for Post-tensioning")<<rptNewLine;
 
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : firstGroupIdx);
+   GroupIndexType lastGroupIdx  = firstGroupIdx;
+   if ( girderKey.groupIndex == ALL_GROUPS )
+   {
+      GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+      lastGroupIdx = pBridgeDesc->GetGirderGroupCount()-1;
+   }
 
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
@@ -1125,7 +1133,17 @@ void CLoadingDetailsChapterBuilder::ReportEquivPTLoads(rptChapter* pChapter,IEAF
 
          (*pPara) << _T("Duct ") << LABEL_DUCT(ductIdx) << rptNewLine;
 
-         pProductLoads->GetEquivPTLoads(thisGirderKey,ductIdx,ptLoads,distLoads,momentLoads);
+         pProductLoads->GetEquivPostTensionLoads(thisGirderKey,ductIdx,ptLoads,distLoads,momentLoads);
+
+         ColumnIndexType nLayoutColumns = 0;
+         nLayoutColumns += (0 < ptLoads.size()     ? 1 : 0);
+         nLayoutColumns += (0 < distLoads.size()   ? 1 : 0);
+         nLayoutColumns += (0 < momentLoads.size() ? 1 : 0);
+
+         rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nLayoutColumns);
+         *pPara << pLayoutTable << rptNewLine;
+
+         ColumnIndexType layoutCol = 0;
 
          rptRcTable* p_table = 0;
          RowIndexType row = 0;
@@ -1133,19 +1151,21 @@ void CLoadingDetailsChapterBuilder::ReportEquivPTLoads(rptChapter* pChapter,IEAF
          // Point Loads
          if ( 0 < ptLoads.size() )
          {
-            p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
-            *pPara << p_table << rptNewLine;
+            rptParagraph* p = &(*pLayoutTable)(0,layoutCol++);
+
+            p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Point"));
+            *p << p_table;
 
             (*p_table)(0,0) << _T("Span");
-            (*p_table)(0,1) << _T("X");
+            (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
             (*p_table)(0,2) << COLHDR(_T("P"),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
 
             row = p_table->GetNumberOfHeaderRows();
-            std::vector<EquivPTPointLoad>::const_iterator ptIter(ptLoads.begin());
-            std::vector<EquivPTPointLoad>::const_iterator ptIterEnd(ptLoads.end());
+            std::vector<EquivPostTensionPointLoad>::const_iterator ptIter(ptLoads.begin());
+            std::vector<EquivPostTensionPointLoad>::const_iterator ptIterEnd(ptLoads.end());
             for ( ; ptIter != ptIterEnd; ptIter++ )
             {
-               const EquivPTPointLoad& ptLoad = *ptIter;
+               const EquivPostTensionPointLoad& ptLoad = *ptIter;
                (*p_table)(row,0) << LABEL_SPAN(ptLoad.spanIdx);
                (*p_table)(row,1) << loc.SetValue(ptLoad.X);
                (*p_table)(row,2) << force.SetValue(ptLoad.P);
@@ -1157,26 +1177,41 @@ void CLoadingDetailsChapterBuilder::ReportEquivPTLoads(rptChapter* pChapter,IEAF
          // Distributed Loads
          if ( 0 < distLoads.size() )
          {
-            p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
-            *pPara << p_table << rptNewLine;
+            rptParagraph* p = &(*pLayoutTable)(0,layoutCol++);
+
+            ColumnIndexType nCol = 10;
+
+            p_table = pgsReportStyleHolder::CreateDefaultTable(nCol,_T("Linear"));
+            *p << p_table;
 
             (*p_table)(0,0) << _T("Span");
-            (*p_table)(0,1) << _T("X Start");
-            (*p_table)(0,2) << _T("X End");
-            (*p_table)(0,3) << COLHDR(_T("W Start"),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
-            (*p_table)(0,4) << COLHDR(_T("W End"),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
+            (*p_table)(0,1) << COLHDR(Sub2(_T("X"),_T("start")),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+            (*p_table)(0,2) << COLHDR(Sub2(_T("X"),_T("end")),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+            (*p_table)(0,3) << COLHDR(Sub2(_T("W"),_T("start")),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
+            (*p_table)(0,4) << COLHDR(Sub2(_T("W"),_T("end")),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
+            (*p_table)(0,5) << COLHDR(Sub2(_T("e"),_T("start")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+            (*p_table)(0,6) << COLHDR(Sub2(_T("e"),_T("end")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+            (*p_table)(0,7) << COLHDR(_T("e'"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+            (*p_table)(0,8) << COLHDR(_T("X"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+            (*p_table)(0,9) << COLHDR(Sub2(_T("P"),_T("e")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
 
             row = p_table->GetNumberOfHeaderRows();
-            std::vector<EquivPTDistributedLoad>::const_iterator distIter(distLoads.begin());
-            std::vector<EquivPTDistributedLoad>::const_iterator distIterEnd(distLoads.end());
+            std::vector<EquivPostTensionDistributedLoad>::const_iterator distIter(distLoads.begin());
+            std::vector<EquivPostTensionDistributedLoad>::const_iterator distIterEnd(distLoads.end());
             for ( ; distIter != distIterEnd; distIter++ )
             {
-               const EquivPTDistributedLoad& distLoad = *distIter;
+               const EquivPostTensionDistributedLoad& distLoad = *distIter;
                (*p_table)(row,0) << LABEL_SPAN(distLoad.spanIdx);
                (*p_table)(row,1) << loc.SetValue(distLoad.Xstart);
                (*p_table)(row,2) << loc.SetValue(distLoad.Xend);
                (*p_table)(row,3) << fpl.SetValue(distLoad.Wstart);
                (*p_table)(row,4) << fpl.SetValue(distLoad.Wend);
+               (*p_table)(row,5) << ecc.SetValue(distLoad.eStart);
+               (*p_table)(row,6) << ecc.SetValue(distLoad.eEnd);
+               (*p_table)(row,7) << ecc.SetValue(distLoad.e_prime);
+               (*p_table)(row,8) << loc.SetValue(distLoad.x);
+               (*p_table)(row,9) << force.SetValue(distLoad.P);
+
                row++;
             }
          }
@@ -1185,22 +1220,24 @@ void CLoadingDetailsChapterBuilder::ReportEquivPTLoads(rptChapter* pChapter,IEAF
          // Moment Loads
          if ( 0 < momentLoads.size() )
          {
-            p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
-            *pPara << p_table << rptNewLine;
+            rptParagraph* p = &(*pLayoutTable)(0,layoutCol++);
+
+            p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Moment"));
+            *p << p_table;
 
             (*p_table)(0,0) << _T("Span");
-            (*p_table)(0,1) << _T("X");
+            (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
             (*p_table)(0,2) << COLHDR(_T("M"),rptMomentUnitTag,pDisplayUnits->GetMomentUnit());
 
             row = p_table->GetNumberOfHeaderRows();
-            std::vector<EquivPTMomentLoad>::const_iterator momIter(momentLoads.begin());
-            std::vector<EquivPTMomentLoad>::const_iterator momIterEnd(momentLoads.end());
+            std::vector<EquivPostTensionMomentLoad>::const_iterator momIter(momentLoads.begin());
+            std::vector<EquivPostTensionMomentLoad>::const_iterator momIterEnd(momentLoads.end());
             for ( ; momIter != momIterEnd; momIter++ )
             {
-               const EquivPTMomentLoad& momLoad = *momIter;
+               const EquivPostTensionMomentLoad& momLoad = *momIter;
                (*p_table)(row,0) << LABEL_SPAN(momLoad.spanIdx);
                (*p_table)(row,1) << loc.SetValue(momLoad.X);
-               (*p_table)(row,2) << moment.SetValue(momLoad.P);
+               (*p_table)(row,2) << moment.SetValue(momLoad.M);
                row++;
             }
          }
@@ -1211,7 +1248,9 @@ void CLoadingDetailsChapterBuilder::ReportEquivPTLoads(rptChapter* pChapter,IEAF
 void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDesign,bool bRating,IRatingSpecification* pRatingSpec,bool& bPermit) const
 {
    if ( m_bSimplifiedVersion )
+   {
       return;
+   }
 
    // live loads
    CComPtr<IBroker> pBroker;
@@ -1404,7 +1443,9 @@ void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDe
 void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool bDesign,bool bRating,bool bPermit,bool one_girder_has_shear_key,IRatingSpecification* pRatingSpec) const
 {
    if ( m_bSimplifiedVersion)
+   {
       return;
+   }
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -1489,7 +1530,9 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
    ColumnIndexType nColumns = 4;
    if ( loss_method == pgsTypes::TIME_STEP )
+   {
       nColumns = 7;
+   }
 
    p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
    p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -1955,13 +1998,17 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportCamberLoads(rptChapter* pChapter,bool bRating,IBridge* pBridge,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const
+void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChapter,bool bRating,IBridge* pBridge,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const
 {
    if ( m_bSimplifiedVersion || bRating )
+   {
       return;
+   }
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     true );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         true );
@@ -1970,14 +2017,13 @@ void CLoadingDetailsChapterBuilder::ReportCamberLoads(rptChapter* pChapter,bool 
    // Equivalent prestress loading for camber
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<< _T("Equivalent Prestress Loading for Camber")<<rptNewLine<<rptNewLine;
+   *pPara<< _T("Equivalent Pretension Loading")<<rptNewLine<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
    *pPara << _T("Loads shown in positive directions") << rptNewLine;
 
-   GET_IFACE2(pBroker,ICamber,pCamber);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
@@ -2003,43 +2049,67 @@ void CLoadingDetailsChapterBuilder::ReportCamberLoads(rptChapter* pChapter,bool 
             pPara = new rptParagraph;
             *pChapter << pPara;
 
-            std::vector<std::pair<Float64,Float64> > loads;
-            pCamber->GetStraightStrandEquivLoading(thisSegmentKey,&loads);
-            std::vector<std::pair<Float64,Float64> >::iterator iter;
-            *pPara << Bold(_T("Straight Strands")) << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StraightStrandCamberLoading.gif")) << rptNewLine;
-            for ( iter = loads.begin(); iter != loads.end(); iter++ )
+            std::vector<EquivPretensionLoad> vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey,pgsTypes::Straight);
+            std::vector<EquivPretensionLoad>::iterator loadIter;
+            std::vector<EquivPretensionLoad>::iterator loadIterEnd;
+            if ( 0 < vEquivLoad.size() )
             {
-               Float64 M = iter->first;
-               Float64 X = iter->second;
+               *pPara << Bold(_T("Straight Strands")) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StraightStrandCamberLoading.gif")) << rptNewLine;
+               loadIter    = vEquivLoad.begin();
+               loadIterEnd = vEquivLoad.end();
+               for ( ; loadIter != loadIterEnd; loadIter++ )
+               {
+                  EquivPretensionLoad& equivLoad = *loadIter;
+                  Float64 X = equivLoad.Xs;
+                  Float64 M = equivLoad.M;
+                  ATLASSERT(IsZero(equivLoad.P));
 
-               *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
+                  *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
+               }
+
+               *pPara << rptNewLine;
             }
 
-            *pPara << rptNewLine;
-
-            Float64 Ml,Mr,Nl,Nr,Xl,Xr;
-            pCamber->GetHarpedStrandEquivLoading(thisSegmentKey,&Ml, &Mr, &Nl, &Nr, &Xl, &Xr);
-            *pPara << Bold(_T("Harped Strands")) << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
-            *pPara << _T("End moments, M = ") << moment.SetValue(Ml);
-            *pPara << _T(" and ") << moment.SetValue(Mr) << rptNewLine;
-            *pPara << _T("Left Harp Point, N = ") << force.SetValue(Nl) << _T(" at = ") << loc.SetValue(Xl) << rptNewLine;
-            *pPara << _T("Right Harp Point, N = ") << force.SetValue(Nr) << _T(" at = ") << loc.SetValue(Xr) << rptNewLine;
-
-            *pPara << rptNewLine;
-         
-            GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-            if ( 0 < pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Temporary) )
+            vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey,pgsTypes::Harped);
+            if ( 0 < vEquivLoad.size() )
             {
-               Float64 MxferL, MxferR, MremoveL, MremoveR;
-               pCamber->GetTempStrandEquivLoading(thisSegmentKey,&MxferL,&MxferR,&MremoveL,&MremoveR);
+               *pPara << Bold(_T("Harped Strands")) << rptNewLine;
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
+               loadIter    = vEquivLoad.begin();
+               loadIterEnd = vEquivLoad.end();
+               for ( ; loadIter != loadIterEnd; loadIter++ )
+               {
+                  EquivPretensionLoad& equivLoad = *loadIter;
+                  if ( IsZero(equivLoad.M) )
+                  {
+                     *pPara << _T("P = ") << force.SetValue(equivLoad.P) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                  }
+                  else
+                  {
+                     *pPara << _T("M = ") << moment.SetValue(equivLoad.M) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                  }
+               }
+
+               *pPara << rptNewLine;
+            }
+         
+            vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey,pgsTypes::Temporary);
+            if ( 0 < vEquivLoad.size() )
+            {
                *pPara << Bold(_T("Temporary Strands")) << rptNewLine;
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("TempStrandCamberLoading.gif")) << rptNewLine;
-               *pPara << _T("End moments at prestressing, M = ") << moment.SetValue(MxferL) << _T(" and ");
-               *pPara << moment.SetValue(-MxferR) << rptNewLine;
-               *pPara << _T("Moment at strand removal, M = ") << moment.SetValue(MremoveL) << _T(" and ");
-               *pPara << moment.SetValue(-MremoveR) << rptNewLine;
+               loadIter    = vEquivLoad.begin();
+               loadIterEnd = vEquivLoad.end();
+               for ( ; loadIter != loadIterEnd; loadIter++ )
+               {
+                  EquivPretensionLoad& equivLoad = *loadIter;
+                  Float64 X = equivLoad.Xs;
+                  Float64 M = equivLoad.M;
+                  ATLASSERT(IsZero(equivLoad.P));
+
+                  *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
+               }
             } // end if
          } // segmentIdx
       } // gdrIdx
@@ -2068,7 +2138,9 @@ void CLoadingDetailsChapterBuilder::ReportCamberLoads(rptChapter* pChapter,bool 
 static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::SupportedDeckType deckType)
 {
    if ( slabLoads.size() == 0 )
+   {
       return true;
+   }
 
    bool is_panel = deckType==pgsTypes::sdtCompositeSIP ? true : false;
 
@@ -2083,13 +2155,19 @@ static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::
 
       // only takes one difference to be nonuniform
       if ( !IsEqual(slab_load_1.MainSlabLoad,slab_load_2.MainSlabLoad) )
+      {
          return false;
+      }
 
       if ( is_panel && !IsEqual(slab_load_1.PanelLoad,slab_load_2.PanelLoad) )
+      {
          return false;
+      }
 
       if ( !IsEqual(slab_load_1.PadLoad,slab_load_2.PadLoad) )
+      {
          return false;
+      }
    }
 
    return true;
@@ -2098,7 +2176,9 @@ static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::
 static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
 {
    if ( overlayLoads.size() == 0 )
+   {
       return true;
+   }
 
    std::vector<OverlayLoad>::const_iterator i1,i2;
    i1 = overlayLoads.begin();
@@ -2111,10 +2191,14 @@ static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
 
       // only takes one difference to be nonuniform
       if ( !IsEqual(load_1.wStart,load_2.wStart) )
+      {
          return false;
+      }
 
       if ( !IsEqual(load_1.wEnd,load_2.wEnd) )
+      {
          return false;
+      }
    }
 
    return true;
@@ -2123,7 +2207,9 @@ static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
 static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
 {
    if ( loads.size() == 0 )
+   {
       return true;
+   }
 
    std::vector<ShearKeyLoad>::const_iterator i1,i2;
    i1 = loads.begin();
@@ -2136,13 +2222,19 @@ static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
 
       // only takes one difference to be nonuniform
       if ( !IsEqual(load_1.UniformLoad,load_2.UniformLoad) )
+      {
          return false;
+      }
 
       if ( !IsEqual(load_1.StartJointLoad,load_2.StartJointLoad) )
+      {
          return false;
+      }
 
       if ( !IsEqual(load_1.EndJointLoad,load_2.EndJointLoad) )
+      {
          return false;
+      }
    }
 
    return true;
@@ -2151,7 +2243,9 @@ static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
 static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads)
 {
    if ( loads.size() == 0 )
+   {
       return true;
+   }
 
    std::vector<ConstructionLoad>::const_iterator i1,i2;
    i1 = loads.begin();
@@ -2164,10 +2258,14 @@ static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads
 
       // only takes one difference to be nonuniform
       if ( !IsEqual(load_1.wStart,load_2.wStart) )
+      {
          return false;
+      }
 
       if ( !IsEqual(load_1.wEnd,load_2.wEnd) )
+      {
          return false;
+      }
    }
 
    return true;

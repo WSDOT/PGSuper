@@ -1,3 +1,25 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2014  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 // ApplyLoadsDlg.cpp : implementation file
 //
 
@@ -277,7 +299,9 @@ void CApplyLoadsDlg::InitUserLoads()
    if ( nItems == 0 )
    {
       for ( int i = 0; i < nCol; i++ )
+      {
          m_ctrlUserLoads.SetColumnWidth(i,LVSCW_AUTOSIZE_USEHEADER);
+      }
    }
    else
    {
@@ -298,13 +322,14 @@ void CApplyLoadsDlg::AddDistributedLoad(int rowIdx,LoadIDType loadID)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
-   const CDistributedLoadData& loadData = pUserDefinedLoads->FindDistributedLoad(loadID);
+   const CDistributedLoadData* pLoadData = pUserDefinedLoads->FindDistributedLoad(loadID);
+   ATLASSERT(pLoadData != NULL);
 
    m_ctrlUserLoads.InsertItem(rowIdx, _T("Distributed"));
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   if (loadData.m_Type == UserLoads::Uniform)
+   if (pLoadData->m_Type == UserLoads::Uniform)
    {
       m_ctrlUserLoads.SetItemText(rowIdx, 0, _T("Uniform"));
    }
@@ -313,38 +338,42 @@ void CApplyLoadsDlg::AddDistributedLoad(int rowIdx,LoadIDType loadID)
       m_ctrlUserLoads.SetItemText(rowIdx, 0, _T("Trapezoidal"));
    }
 
-   m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(loadData.m_LoadCase).c_str());
+   m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(pLoadData->m_LoadCase).c_str());
 
    CString strSpan;
-   if ( loadData.m_SpanGirderKey.spanIndex == ALL_SPANS )
+   if ( pLoadData->m_spanKey.spanIndex == ALL_SPANS )
+   {
       strSpan.Format(_T("%s"),_T("All Spans"));
+   }
    else
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(loadData.m_SpanGirderKey.spanIndex));
+   {
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_spanKey.spanIndex));
+   }
 
    CString strGirder;
-   if ( loadData.m_SpanGirderKey.girderIndex == ALL_GIRDERS )
+   if ( pLoadData->m_spanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(loadData.m_SpanGirderKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_spanKey.girderIndex));
    }
 
    CString strLocation;
-   if ( loadData.m_Type == UserLoads::Uniform )
+   if ( pLoadData->m_Type == UserLoads::Uniform )
    {
       strLocation.Format(_T("%s"),_T("Entire Span"));
    }
    else
    {
-      if (loadData.m_Fractional)
+      if (pLoadData->m_Fractional)
       {
-         strLocation.Format(_T("%s - %s"),FormatPercentage(loadData.m_StartLocation,false),FormatPercentage(loadData.m_EndLocation));
+         strLocation.Format(_T("%s - %s"),FormatPercentage(pLoadData->m_StartLocation,false),FormatPercentage(pLoadData->m_EndLocation));
       }
       else
       {
-         strLocation.Format(_T("%s - %s"),FormatDimension(loadData.m_StartLocation,pDisplayUnits->GetSpanLengthUnit(),false),FormatDimension(loadData.m_EndLocation,pDisplayUnits->GetSpanLengthUnit()));
+         strLocation.Format(_T("%s - %s"),FormatDimension(pLoadData->m_StartLocation,pDisplayUnits->GetSpanLengthUnit(),false),FormatDimension(pLoadData->m_EndLocation,pDisplayUnits->GetSpanLengthUnit()));
       }
    }
 
@@ -354,17 +383,17 @@ void CApplyLoadsDlg::AddDistributedLoad(int rowIdx,LoadIDType loadID)
    m_ctrlUserLoads.SetItemText(rowIdx,2,strLabel);
 
    CString strMagnitude;
-   if (loadData.m_Type == UserLoads::Uniform)
+   if (pLoadData->m_Type == UserLoads::Uniform)
    {
-      strMagnitude.Format(_T("%s"),FormatDimension(loadData.m_WStart,pDisplayUnits->GetForcePerLengthUnit()));
+      strMagnitude.Format(_T("%s"),FormatDimension(pLoadData->m_WStart,pDisplayUnits->GetForcePerLengthUnit()));
    }
    else
    {
-      strMagnitude.Format(_T("%s - %s"),FormatDimension(loadData.m_WStart,pDisplayUnits->GetForcePerLengthUnit(),false),FormatDimension(loadData.m_WEnd,pDisplayUnits->GetForcePerLengthUnit()));
+      strMagnitude.Format(_T("%s - %s"),FormatDimension(pLoadData->m_WStart,pDisplayUnits->GetForcePerLengthUnit(),false),FormatDimension(pLoadData->m_WEnd,pDisplayUnits->GetForcePerLengthUnit()));
    }
 
    m_ctrlUserLoads.SetItemText(rowIdx, 3, strMagnitude);
-   m_ctrlUserLoads.SetItemText(rowIdx, 4, loadData.m_Description.c_str());
+   m_ctrlUserLoads.SetItemText(rowIdx, 4, pLoadData->m_Description.c_str());
 }
 
 void CApplyLoadsDlg::AddPointLoad(int rowIdx,LoadIDType loadID)
@@ -373,38 +402,43 @@ void CApplyLoadsDlg::AddPointLoad(int rowIdx,LoadIDType loadID)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
-   const CPointLoadData& loadData = pUserDefinedLoads->FindPointLoad(loadID);
+   const CPointLoadData* pLoadData = pUserDefinedLoads->FindPointLoad(loadID);
+   ATLASSERT(pLoadData != NULL);
 
    m_ctrlUserLoads.InsertItem(rowIdx, _T("Point"));
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(loadData.m_LoadCase).c_str());
+   m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(pLoadData->m_LoadCase).c_str());
 
    CString strSpan;
-   if ( loadData.m_SpanGirderKey.spanIndex == ALL_SPANS )
+   if ( pLoadData->m_spanKey.spanIndex == ALL_SPANS )
+   {
       strSpan.Format(_T("%s"),_T("All Spans"));
+   }
    else
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(loadData.m_SpanGirderKey.spanIndex));
+   {
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_spanKey.spanIndex));
+   }
 
    CString strGirder;
-   if ( loadData.m_SpanGirderKey.girderIndex == ALL_GIRDERS )
+   if ( pLoadData->m_spanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(loadData.m_SpanGirderKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_spanKey.girderIndex));
    }
 
    CString strLocation;
-   if (loadData.m_Fractional)
+   if (pLoadData->m_Fractional)
    {
-      strLocation.Format(_T("%s"),FormatPercentage(loadData.m_Location));
+      strLocation.Format(_T("%s"),FormatPercentage(pLoadData->m_Location));
    }
    else
    {
-      strLocation.Format(_T("%s"),FormatDimension(loadData.m_Location,pDisplayUnits->GetSpanLengthUnit()));
+      strLocation.Format(_T("%s"),FormatDimension(pLoadData->m_Location,pDisplayUnits->GetSpanLengthUnit()));
    }
 
    CString strLabel;
@@ -413,10 +447,10 @@ void CApplyLoadsDlg::AddPointLoad(int rowIdx,LoadIDType loadID)
    m_ctrlUserLoads.SetItemText(rowIdx,2,strLabel);
 
    CString strMagnitude;
-   strMagnitude.Format(_T("%s"),FormatDimension(loadData.m_Magnitude,pDisplayUnits->GetGeneralForceUnit()));
+   strMagnitude.Format(_T("%s"),FormatDimension(pLoadData->m_Magnitude,pDisplayUnits->GetGeneralForceUnit()));
 
    m_ctrlUserLoads.SetItemText(rowIdx, 3, strMagnitude);
-   m_ctrlUserLoads.SetItemText(rowIdx, 4, loadData.m_Description.c_str());
+   m_ctrlUserLoads.SetItemText(rowIdx, 4, pLoadData->m_Description.c_str());
 }
 
 void CApplyLoadsDlg::AddMomentLoad(int rowIdx,LoadIDType loadID)
@@ -425,38 +459,43 @@ void CApplyLoadsDlg::AddMomentLoad(int rowIdx,LoadIDType loadID)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
-   const CMomentLoadData& loadData = pUserDefinedLoads->FindMomentLoad(loadID);
+   const CMomentLoadData* pLoadData = pUserDefinedLoads->FindMomentLoad(loadID);
+   ATLASSERT(pLoadData != NULL);
 
    m_ctrlUserLoads.InsertItem(rowIdx, _T("Moment"));
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(loadData.m_LoadCase).c_str());
+   m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(pLoadData->m_LoadCase).c_str());
 
    CString strSpan;
-   if ( loadData.m_SpanGirderKey.spanIndex == ALL_SPANS )
+   if ( pLoadData->m_spanKey.spanIndex == ALL_SPANS )
+   {
       strSpan.Format(_T("%s"),_T("All Spans"));
+   }
    else
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(loadData.m_SpanGirderKey.spanIndex));
+   {
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_spanKey.spanIndex));
+   }
 
    CString strGirder;
-   if ( loadData.m_SpanGirderKey.girderIndex == ALL_GIRDERS )
+   if ( pLoadData->m_spanKey.girderIndex == ALL_GIRDERS )
    {
       strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(loadData.m_SpanGirderKey.girderIndex));
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_spanKey.girderIndex));
    }
 
    CString strLocation;
-   if (loadData.m_Fractional)
+   if (pLoadData->m_Fractional)
    {
-      strLocation.Format(_T("%s"),FormatPercentage(loadData.m_Location));
+      strLocation.Format(_T("%s"),FormatPercentage(pLoadData->m_Location));
    }
    else
    {
-      strLocation.Format(_T("%s"),FormatDimension(loadData.m_Location,pDisplayUnits->GetSpanLengthUnit()));
+      strLocation.Format(_T("%s"),FormatDimension(pLoadData->m_Location,pDisplayUnits->GetSpanLengthUnit()));
    }
 
    CString strLabel;
@@ -465,8 +504,8 @@ void CApplyLoadsDlg::AddMomentLoad(int rowIdx,LoadIDType loadID)
    m_ctrlUserLoads.SetItemText(rowIdx,2,strLabel);
 
    CString strMagnitude;
-   strMagnitude.Format(_T("%s"),FormatDimension(loadData.m_Magnitude,pDisplayUnits->GetMomentUnit()));
+   strMagnitude.Format(_T("%s"),FormatDimension(pLoadData->m_Magnitude,pDisplayUnits->GetMomentUnit()));
 
    m_ctrlUserLoads.SetItemText(rowIdx, 3, strMagnitude);
-   m_ctrlUserLoads.SetItemText(rowIdx, 4, loadData.m_Description.c_str());
+   m_ctrlUserLoads.SetItemText(rowIdx, 4, pLoadData->m_Description.c_str());
 }

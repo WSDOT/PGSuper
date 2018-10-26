@@ -66,7 +66,7 @@ inline void UpdateHarpedOffsetLabel(CWnd* pwnd, HarpedStrandOffsetType type, boo
          break;
       default:
          msg = _T("Unknown Adjustment type");
-         ATLASSERT(0);
+         ATLASSERT(false);
    }
 
    pwnd->SetWindowText(msg);
@@ -106,16 +106,32 @@ void CGirderSelectStrandsPage::DoDataExchange(CDataExchange* pDX)
    DDX_Check(pDX, IDC_SHOW_NUMBERS, m_DrawNumbers);
    DDX_CBIndex(pDX,IDC_COMBO_VIEWLOC, m_IsMidSpan);
 
-   DDX_Check_Bool(pDX, IDC_SS_JACK, m_pStrands->bPjackCalculated[pgsTypes::Straight]);
-   DDX_Check_Bool(pDX, IDC_HS_JACK, m_pStrands->bPjackCalculated[pgsTypes::Harped]);
-   DDX_Check_Bool(pDX, IDC_TS_JACK, m_pStrands->bPjackCalculated[pgsTypes::Temporary]);
+   bool bPjackCalculated[3];
+   Float64 Pjack[3];
+   for (int i = 0; i < 3; i++ )
+   {
+      pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
+      bPjackCalculated[strandType] = m_pStrands->IsPjackCalculated(strandType);
+      Pjack[strandType]            = m_pStrands->GetPjack(strandType);
+   }
 
-   DDX_UnitValueAndTag(pDX, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, m_pStrands->Pjack[pgsTypes::Straight],  pDisplayUnits->GetGeneralForceUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, m_pStrands->Pjack[pgsTypes::Harped],    pDisplayUnits->GetGeneralForceUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_TS_JACK_FORCE, IDC_TS_JACK_FORCE_UNIT, m_pStrands->Pjack[pgsTypes::Temporary], pDisplayUnits->GetGeneralForceUnit() );
+   DDX_Check_Bool(pDX, IDC_SS_JACK, bPjackCalculated[pgsTypes::Straight]);
+   DDX_Check_Bool(pDX, IDC_HS_JACK, bPjackCalculated[pgsTypes::Harped]);
+   DDX_Check_Bool(pDX, IDC_TS_JACK, bPjackCalculated[pgsTypes::Temporary]);
+
+   DDX_UnitValueAndTag(pDX, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack[pgsTypes::Straight],  pDisplayUnits->GetGeneralForceUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack[pgsTypes::Harped],    pDisplayUnits->GetGeneralForceUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_TS_JACK_FORCE, IDC_TS_JACK_FORCE_UNIT, Pjack[pgsTypes::Temporary], pDisplayUnits->GetGeneralForceUnit() );
 
    if (pDX->m_bSaveAndValidate)
    {
+      for ( int i = 0; i < 3; i++ )
+      {
+         pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+         m_pStrands->IsPjackCalculated(strandType,bPjackCalculated[strandType]);
+         m_pStrands->SetPjack(strandType,Pjack[strandType]);
+      }
+
       // must call grid to exchange its data
       if(!m_Grid.UpdateData(true))
       {
@@ -126,18 +142,18 @@ void CGirderSelectStrandsPage::DoDataExchange(CDataExchange* pDX)
 
       if(m_bAllowEndAdjustment)
       {
-         m_pStrands->HpOffsetAtEnd = m_HpOffsetAtEnd;
+         m_pStrands->SetHarpStrandOffsetAtEnd(m_HpOffsetAtEnd);
       }
 
       if(m_bAllowHpAdjustment)
       {
-         m_pStrands->HpOffsetAtHp = m_HpOffsetAtHp;
+         m_pStrands->SetHarpStrandOffsetAtHarpPoint(m_HpOffsetAtHp);
       }
 
       if (m_bCanDebondStrands)
       {
-         m_pStrands->Debond[pgsTypes::Straight] = m_StraightDebond;
-         m_pStrands->bSymmetricDebond           = m_bSymmetricDebond!=FALSE;
+         m_pStrands->SetDebonding(pgsTypes::Straight, m_StraightDebond);
+         m_pStrands->IsSymmetricDebond( m_bSymmetricDebond != FALSE ? true : false );
       }
    }
 }
@@ -236,8 +252,8 @@ void CGirderSelectStrandsPage::InitializeData(const CSegmentKey& segmentKey, CSt
 
    // Get current offset input values - we will force in bounds if needed
    // Make sure legacy values can't sneak in
-   m_HsoEndMeasurement = (endMeasureType == hsoLEGACY ? hsoCGFROMTOP    : m_pStrands->HsoEndMeasurement);
-   m_HsoHpMeasurement  = (hpMeasureType  == hsoLEGACY ? hsoCGFROMBOTTOM : m_pStrands->HsoHpMeasurement);
+   m_HsoEndMeasurement = (endMeasureType == hsoLEGACY ? hsoCGFROMTOP    : m_pStrands->GetHarpStrandOffsetMeasurementAtEnd());
+   m_HsoHpMeasurement  = (hpMeasureType  == hsoLEGACY ? hsoCGFROMBOTTOM : m_pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint());
 
    m_HpOffsetAtEnd = hpOffsetAtEnd;
    m_HpOffsetAtHp  = hpOffsetAtHp;
@@ -247,8 +263,8 @@ void CGirderSelectStrandsPage::InitializeData(const CSegmentKey& segmentKey, CSt
    m_ExtendedStrands[pgsTypes::metEnd]   = m_pStrands->GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
 
    m_bCanDebondStrands = pGdrEntry->CanDebondStraightStrands();
-   m_StraightDebond    = m_pStrands->Debond[pgsTypes::Straight];
-   m_bSymmetricDebond  = m_pStrands->bSymmetricDebond;
+   m_StraightDebond    = m_pStrands->GetDebonding(pgsTypes::Straight);
+   m_bSymmetricDebond  = m_pStrands->IsSymmetricDebond();
 
    m_MaxDebondLength = maxDebondLength;
 
@@ -634,7 +650,7 @@ void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, I
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
       }
 
       grid_row--;
@@ -1364,7 +1380,7 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    Float64 PjackMax;
    try
    {
-      PjackMax = pPSForce->GetPjackMax(m_SegmentKey, *m_pStrands->StrandMaterial[strandType], nStrands);
+      PjackMax = pPSForce->GetPjackMax(m_SegmentKey, *m_pStrands->GetStrandMaterial(strandType), nStrands);
    }
    catch (... )
    {
@@ -1384,11 +1400,11 @@ Float64 CGirderSelectStrandsPage::GetUltPjack(StrandIndexType nStrands,pgsTypes:
    if ( strandType == pgsTypes::Permanent )
       strandType = pgsTypes::Straight;
 
-   const matPsStrand& strand = *(m_pStrands->StrandMaterial[strandType]);
+   const matPsStrand* pStrand = m_pStrands->GetStrandMaterial(strandType);
 
    // Ultimate strength of strand group
-   Float64 ult = strand.GetUltimateStrength();
-   Float64 area = strand.GetNominalArea();
+   Float64 ult  = pStrand->GetUltimateStrength();
+   Float64 area = pStrand->GetNominalArea();
 
    return nStrands*area*ult;
 }

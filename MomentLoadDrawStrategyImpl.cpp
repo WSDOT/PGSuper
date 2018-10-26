@@ -409,16 +409,16 @@ void CMomentLoadDrawStrategyImpl::EditLoad()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    GET_IFACE( IUserDefinedLoadData, pUdl);
 
-   CHECK(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetMomentLoadCount());
+   ATLASSERT(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetMomentLoadCount());
 
-   CMomentLoadData rld = pUdl->GetMomentLoad(m_LoadIndex);
+   const CMomentLoadData* pLoad = pUdl->GetMomentLoad(m_LoadIndex);
 
-	CEditMomentLoadDlg dlg(rld);
+	CEditMomentLoadDlg dlg(*pLoad);
    if (dlg.DoModal() == IDOK)
    {
-      if (rld!=dlg.m_Load)
+      if (*pLoad != dlg.m_Load)
       {
-         txnEditMomentLoad* pTxn = new txnEditMomentLoad(m_LoadIndex,rld,dlg.m_Load);
+         txnEditMomentLoad* pTxn = new txnEditMomentLoad(m_LoadIndex,*pLoad,dlg.m_Load);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
    }

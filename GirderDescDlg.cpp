@@ -199,11 +199,6 @@ void CGirderDescDlg::DoUpdate()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IShear,pShear);
-   GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinaRebar);
-   GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
-   GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -305,12 +300,12 @@ void CGirderDescDlg::SetDebondTabName()
 
 StrandIndexType CGirderDescDlg::GetStraightStrandCount()
 {
-   return m_Segment.Strands.Nstrands[pgsTypes::Straight];
+   return m_Segment.Strands.GetStrandCount(pgsTypes::Straight);
 }
 
 StrandIndexType CGirderDescDlg::GetHarpedStrandCount()
 {
-   return m_Segment.Strands.Nstrands[pgsTypes::Harped];
+   return m_Segment.Strands.GetStrandCount(pgsTypes::Harped);
 }
 
 void CGirderDescDlg::SetSegment(const CPrecastSegmentData& segment)
@@ -347,7 +342,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
-   if (m_Segment.Strands.NumPermStrandsType == CStrandData::npsDirectSelection)
+   if (m_Segment.Strands.GetStrandDefinitionType() == CStrandData::npsDirectSelection)
    {
       // first get in girderdata format
       const CDirectStrandFillCollection* pDirectFillData(NULL);
@@ -381,7 +376,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
                vec[idx] = it->numFilled;
             }
             else
-               ATLASSERT(0); 
+               ATLASSERT(false); 
 
             it++;
          }
@@ -392,7 +387,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    else
    {
       // Continuous fill
-      StrandIndexType Ns = m_Segment.Strands.GetNstrands(type);
+      StrandIndexType Ns = m_Segment.Strands.GetStrandCount(type);
 
       return pStrandGeometry->ComputeStrandFill(m_SegmentKey, type, Ns);
    }
@@ -410,11 +405,11 @@ void CGirderDescDlg::AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool 
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   GET_IFACE2_NOCHECK(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2_NOCHECK(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
 
    // don't add page if both hauling and lifting checks are disabled
-   if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled() || pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       AddPage( &m_Lifting );
    }

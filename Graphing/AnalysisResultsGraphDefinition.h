@@ -46,14 +46,14 @@ class CAnalysisResultsGraphDefinition
 public:
 
    IDType m_ID;
-   CString m_Name;
+   std::_tstring m_Name;
    GraphType m_GraphType;
 
    union LoadType 
    {
       pgsTypes::LimitState         LimitStateType;
       ProductForceType             ProductLoadType;
-      LoadingCombination           CombinedLoadType;
+      LoadingCombinationType       CombinedLoadType;
       pgsTypes::LiveLoadType       LiveLoadType;
    } m_LoadType;
 
@@ -64,36 +64,36 @@ public:
    CAnalysisResultsGraphDefinition();
    
    // constructor for limit states
-   CAnalysisResultsGraphDefinition(IDType id,const CString& name,
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,
                 pgsTypes::LimitState ls,
                 const std::vector<IntervalIndexType>& intervals,int actions);
    
    // constructor for combinations
-   CAnalysisResultsGraphDefinition(IDType id,const CString& name,
-                LoadingCombination comb,
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,
+                LoadingCombinationType comb,
                 const std::vector<IntervalIndexType>& intervals,int actions);
    
    // constructor for product loads
-   CAnalysisResultsGraphDefinition(IDType id,const CString& name,
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,
                 ProductForceType type,
                 const std::vector<IntervalIndexType>& intervals,int actions);
    
    // constructor for live loads
-   CAnalysisResultsGraphDefinition(IDType id,const CString& name,
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,
                 const std::vector<IntervalIndexType>& intervals,int actions);
    
    // constructor for prestress
-   CAnalysisResultsGraphDefinition(IDType id,const CString& name,GraphType type,const std::vector<IntervalIndexType>& intervals);
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,GraphType type,const std::vector<IntervalIndexType>& intervals);
    
    // constructor for demands
-   CAnalysisResultsGraphDefinition(IDType id,const CString& name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals);
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals);
 
    // constructor for vehicular live loads
-   CAnalysisResultsGraphDefinition(IDType id,const CString& name,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<IntervalIndexType>& intervals,int apaction);
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<IntervalIndexType>& intervals,int apaction);
 
    // constructor for ultimate forces
-   CAnalysisResultsGraphDefinition(IDType id,const CString& name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals,int apaction);
-   CAnalysisResultsGraphDefinition(IDType id,const CString& name,pgsTypes::LiveLoadType llType,const std::vector<IntervalIndexType>& intervals,int apaction);
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals,int apaction);
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LiveLoadType llType,const std::vector<IntervalIndexType>& intervals,int apaction);
 
    void AddIntervals(const std::vector<IntervalIndexType>& intervals);
 
@@ -114,9 +114,9 @@ public:
    IndexType GetGraphIndex(IDType graphID) const;
    void RemoveGraphDefinition(IDType graphID);
 
-   CString GetDefaultLoadCase(IntervalIndexType intervalIdx) const;
+   std::_tstring GetDefaultLoadCase(IntervalIndexType intervalIdx) const;
    
-   std::vector< std::pair<CString,IDType> > GetLoadings(IntervalIndexType intervalIdx, ActionType action) const;
+   std::vector< std::pair<std::_tstring,IDType> > GetLoadings(IntervalIndexType intervalIdx, ActionType action) const;
 
    void Clear();
 

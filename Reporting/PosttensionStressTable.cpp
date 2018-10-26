@@ -83,9 +83,6 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
 
    location.IncludeSpanAndGirder(true);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
    IntervalIndexType compositeDeckIntervalIdx        = pIntervals->GetCompositeDeckInterval(girderKey);
@@ -173,7 +170,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
 
       const pgsPointOfInterest& poi = *iter;
 
-      (*p_table)(row,col++) << location.SetValue( POI_GIRDER, poi );
+      (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
       Float64 fTop, fBot;
       if ( bDesign )

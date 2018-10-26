@@ -182,12 +182,12 @@ BOOL CMultiGirderReportDlg::OnInitDialog()
          }
          else
          {
-            ATLASSERT(0); // might be a problem?
+            ATLASSERT(false); // might be a problem?
          }
       }
       else
       {
-         ATLASSERT(0); // might be a problem?
+         ATLASSERT(false); // might be a problem?
       }
    }
 

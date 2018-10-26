@@ -65,9 +65,21 @@ LPCTSTR CUserDefinedLoadsChapterBuilder::GetName() const
 rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+
    CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -93,7 +105,7 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
          {
             rptParagraph* pParagraph;
 
-            CSpanGirderKey spanGirderKey(spanIdx,gdrIdx);
+            CSpanKey spanKey(spanIdx,gdrIdx);
 
             // Only print span and girder if we are in a multi span or multi girder loop
             if (lastSpanIdx != firstSpanIdx || lastGirderIdx != firstGirderIdx)
@@ -108,15 +120,15 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
             *pParagraph << _T("Locations are measured from left support.") << rptNewLine;
 
             // tables of details - point loads first
-            rptParagraph* ppar1 = CreatePointLoadTable(pBroker, spanGirderKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            rptParagraph* ppar1 = CreatePointLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
             *pChapter << ppar1;
 
             // distributed loads
-            ppar1 = CreateDistributedLoadTable(pBroker, spanGirderKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            ppar1 = CreateDistributedLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
             *pChapter << ppar1;
 
             // moments loads
-            ppar1 = CreateMomentLoadTable(pBroker, spanGirderKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            ppar1 = CreateMomentLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
             *pChapter << ppar1;
          } // gdrIdx
       } // spanIdx
@@ -151,7 +163,7 @@ CChapterBuilder* CUserDefinedLoadsChapterBuilder::Clone() const
 //======================== INQUERY    =======================================
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBroker,
-                           const CSpanGirderKey& spanGirderKey,
+                           const CSpanKey& spanKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion)
 {
@@ -162,11 +174,11 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    INIT_UV_PROTOTYPE( rptForceUnitValue,   shear,   pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
+   Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
-   ASSERT_SPAN_GIRDER_KEY(spanGirderKey);
-   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanGirderKey.spanIndex);
-   CGirderKey girderKey(grpIdx,spanGirderKey.girderIndex);
+   ASSERT_SPAN_GIRDER_KEY(spanKey);
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
+   CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
 
@@ -197,8 +209,8 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
-      const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(intervalIdx, spanGirderKey);
-      if ( ppl != 0 )
+      const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(intervalIdx, spanKey);
+      if ( ppl != NULL )
       {
          IndexType npl = ppl->size();
 
@@ -210,13 +222,21 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
 
              std::_tstring strLoadCaseName;
              if (upl.m_LoadCase==IUserDefinedLoads::userDC)
+             {
                 strLoadCaseName = _T("DC");
+             }
              else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
+             {
                 strLoadCaseName = _T("DW");
+             }
              else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
+             {
                 strLoadCaseName = _T("LL+IM");
+             }
              else
-                ATLASSERT(0);
+             {
+                ATLASSERT(false);
+             }
 
             (*table)(row,0) << strEventName;
             (*table)(row,1) << strLoadCaseName;
@@ -238,14 +258,16 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
       delete table;
 
       if (!bSimplifiedVersion)
+      {
          *pParagraph << _T("Point loads were not defined for this girder")<<rptNewLine;
+      }
    }
 
    return pParagraph;
 }
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroker* pBroker,
-                           const CSpanGirderKey& spanGirderKey,
+                           const CSpanKey& spanKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion)
 {
@@ -255,11 +277,11 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue,   fplu,   pDisplayUnits->GetForcePerLengthUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
+   Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
-   ASSERT_SPAN_GIRDER_KEY(spanGirderKey);
-   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanGirderKey.spanIndex);
-   CGirderKey girderKey(grpIdx,spanGirderKey.girderIndex);
+   ASSERT_SPAN_GIRDER_KEY(spanKey);
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
+   CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -289,8 +311,8 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
-      const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(intervalIdx, spanGirderKey);
-      if (ppl !=0 )
+      const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(intervalIdx, spanKey);
+      if (ppl != NULL)
       {
          IndexType npl = ppl->size();
          for (IndexType ipl = 0; ipl < npl; ipl++)
@@ -301,13 +323,21 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
              std::_tstring strLoadCaseName;
              if (upl.m_LoadCase==IUserDefinedLoads::userDC)
+             {
                 strLoadCaseName = _T("DC");
+             }
              else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
+             {
                 strLoadCaseName = _T("DW");
+             }
              else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
+             {
                 strLoadCaseName = _T("LL+IM");
+             }
              else
-                ATLASSERT(0);
+             {
+                ATLASSERT(false);
+             }
 
             (*table)(row,0) << strEventName;
             (*table)(row,1) << strLoadCaseName;
@@ -331,7 +361,9 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
       delete table;
 
       if (! bSimplifiedVersion)
+      {
          *pParagraph << _T("Distributed loads were not defined for this girder")<<rptNewLine;
+      }
    }
 
    return pParagraph;
@@ -339,7 +371,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pBroker,
-                           const CSpanGirderKey& spanGirderKey,
+                           const CSpanKey& spanKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion)
 {
@@ -349,11 +381,11 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,   pDisplayUnits->GetMomentUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
+   Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
-   ASSERT_SPAN_GIRDER_KEY(spanGirderKey);
-   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanGirderKey.spanIndex);
-   CGirderKey girderKey(grpIdx,spanGirderKey.girderIndex);
+   ASSERT_SPAN_GIRDER_KEY(spanKey);
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
+   CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -381,8 +413,8 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
-      const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(intervalIdx, spanGirderKey);
-      if (ppl != 0)
+      const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(intervalIdx, spanKey);
+      if (ppl != NULL)
       {
          IndexType npl = ppl->size();
 
@@ -394,21 +426,33 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
 
              std::_tstring strLoadCaseName;
              if (upl.m_LoadCase==IUserDefinedLoads::userDC)
+             {
                 strLoadCaseName = _T("DC");
+             }
              else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
+             {
                 strLoadCaseName = _T("DW");
+             }
              else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
+             {
                 strLoadCaseName = _T("LL+IM");
+             }
              else
-                ATLASSERT(0);
+             {
+                ATLASSERT(false);
+             }
 
             (*table)(row,0) << strEventName;
             (*table)(row,1) << strLoadCaseName;
 
             if ( IsZero(upl.m_Location) )
+            {
                (*table)(row,2) << _T("Start of span");
+            }
             else
+            {
                (*table)(row,2) << _T("End of span");
+            }
 
             (*table)(row,3) << moment.SetValue( upl.m_Magnitude );
             (*table)(row,4) << upl.m_Description;
@@ -427,7 +471,9 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
       delete table;
 
       if (!bSimplifiedVersion)
+      {
          *pParagraph << _T("Moment loads were not defined for this girder")<<rptNewLine;
+      }
    }
 
    return pParagraph;

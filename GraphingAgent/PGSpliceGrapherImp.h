@@ -25,6 +25,8 @@
 
 #include "resource.h"       // main symbols
 
+#include "GrapherBase.h"
+
 #include <EAF\EAFInterfaceCache.h>
 
 #include <boost\shared_ptr.hpp>
@@ -39,6 +41,7 @@ class ATL_NO_VTABLE CPGSpliceGrapherImp :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CPGSpliceGrapherImp, &CLSID_PGSpliceGraphingAgent>,
 	public IConnectionPointContainerImpl<CPGSpliceGrapherImp>,
+   public CGrapherBase,
    public IAgentEx
 {
 public:
@@ -70,7 +73,7 @@ public:
    STDMETHOD(GetClassID)(CLSID* pCLSID);
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 
    HRESULT InitGraphBuilders();
 };

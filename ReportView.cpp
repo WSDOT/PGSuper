@@ -139,7 +139,9 @@ void CPGSuperReportView::OnInitialUpdate()
 void CPGSuperReportView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
    if ( m_bIsNewReport )
+   {
       return; // this the OnUpdate that comes from OnInitialUpdate() ... nothing to do here
+   }
 
    if ( lHint == HINT_GIRDERLABELFORMATCHANGED )
    {
@@ -147,7 +149,9 @@ void CPGSuperReportView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    }
 
    if ( 0 < lHint && lHint <= MAX_DISPLAY_HINT )
+   {
       return; // some display feature changed... not data... nothing to do here
+   }
 
 
    CEAFAutoCalcReportView::OnUpdate(pSender,lHint,pHint);
@@ -217,7 +221,9 @@ CReportHint* CPGSuperReportView::TranslateHint(CView* pSender, LPARAM lHint, COb
 int CPGSuperReportView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CEAFAutoCalcReportView::OnCreate(lpCreateStruct) == -1)
+   {
 		return -1;
+   }
 
    return 0;
 }
@@ -278,13 +284,14 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptFor
 
          AFX_MANAGE_STATE(AfxGetStaticModuleState()); /////////
 
-         GET_IFACE2(pBroker,IProgress,pProgress);
-         CEAFAutoProgress ap(pProgress,0,PW_ALL | PW_NOGAUGE); // progress window has a cancel button
-
-         std::_tstring reportName = pSGRptSpec->GetReportName();
-
          const std::vector<CGirderKey>& girderKeys( pSGRptSpec->GetGirderKeys() );
          ATLASSERT(!girderKeys.empty()); // UI should not allow this
+
+         GET_IFACE2(pBroker,IProgress,pProgress);
+         DWORD dwMask(girderKeys.size() == 1 ? PW_ALL | PW_NOGAUGE | PW_NOCANCEL : PW_ALL | PW_NOGAUGE);
+         CEAFAutoProgress ap(pProgress,0,dwMask); // progress window has a cancel button
+
+         std::_tstring reportName = pSGRptSpec->GetReportName();
 
          bool first(true);
          std::vector<CGirderKey>::const_iterator iter(girderKeys.begin());
@@ -306,7 +313,9 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptFor
             pProgress->UpdateMessage(os.str().c_str());
 
             if ( pProgress->Continue() != S_OK )
+            {
                break; // cancel button pressed... quit creating reports
+            }
 
 
             // Creata a CSegmentReportSpecification. A single report view news a specification for a 

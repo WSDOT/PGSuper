@@ -101,7 +101,7 @@ std::_tstring GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMea
       return bAbutment ? _T("Measured From and Normal to Abutment Line") : _T("Measured From and Normal to Pier Line");
 
    default:
-      ATLASSERT(0);
+      ATLASSERT(false);
       return _T("");
    }
 }
@@ -117,7 +117,7 @@ std::_tstring GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffse
       return bAbutment ? _T("Measured From and Normal to Abutment Line") : _T("Measured From and Normal to Pier Line");
 
    default:
-      ATLASSERT(0);
+      ATLASSERT(false);
       return _T("");
    }
 }
@@ -145,7 +145,6 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -166,6 +165,8 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
    {
       if ( concrete.bACIUserParameters )
       {
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
          strLabel.Format(_T("%s, ACI 209R-92, A=%s, B=%4.2f"),
             matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
             ::FormatDimension(concrete.A,pDisplayUnits->GetLongTimeUnit()),

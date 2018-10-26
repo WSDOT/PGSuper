@@ -94,7 +94,7 @@ LOG
    rdp : 3.22.2007 : Created file 
 *****************************************************************************/
 
-class pgsStrandDesignTool : public IGirderLiftingDesignPointsOfInterest, public IGirderHaulingDesignPointsOfInterest
+class pgsStrandDesignTool : public ISegmentLiftingDesignPointsOfInterest, public ISegmentHaulingDesignPointsOfInterest
 {
 public:
    // Reasons for adjusting strands
@@ -116,7 +116,7 @@ public:
    // Default constructor
    pgsStrandDesignTool(SHARED_LOGFILE lf);
    
-   void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsDesignArtifact* pArtifact);
+   void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
 
    void InitReleaseStrength(Float64 fci);
 
@@ -270,11 +270,11 @@ public:
    std::vector<pgsPointOfInterest> GetDesignPoiEndZone(IntervalIndexType intervalIdx,PoiAttributeType attrib);
 
    pgsPointOfInterest GetDebondSamplingPOI(IntervalIndexType intervalIdx) const;
-   // interface IGirderLiftingDesignPointsOfInterest
+   // interface ISegmentLiftingDesignPointsOfInterest
    // locations of points of interest
    virtual std::vector<pgsPointOfInterest> GetLiftingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 overhang,PoiAttributeType attrib,Uint32 mode);
 
-   //IGirderLiftingDesignPointsOfInterest
+   //ISegmentLiftingDesignPointsOfInterest
    virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
 
    // Concrete
@@ -314,10 +314,10 @@ public:
    Float64 GetLeadingOverhang() const;
    Float64 GetTrailingOverhang() const;
 
-   void SetOutcome(pgsDesignArtifact::Outcome outcome);
+   void SetOutcome(pgsSegmentDesignArtifact::Outcome outcome);
 
-   pgsDesignArtifact::ConcreteStrengthDesignState GetReleaseConcreteDesignState() const;
-   pgsDesignArtifact::ConcreteStrengthDesignState GetFinalConcreteDesignState() const;
+   pgsSegmentDesignArtifact::ConcreteStrengthDesignState GetReleaseConcreteDesignState() const;
+   pgsSegmentDesignArtifact::ConcreteStrengthDesignState GetFinalConcreteDesignState() const;
 
    // GROUP: INQUIRY
    void DumpDesignParameters();
@@ -359,7 +359,7 @@ private:
 
    Float64 m_ConcreteAccuracy; // 100 PSI
 
-   pgsDesignArtifact* m_pArtifact;
+   pgsSegmentDesignArtifact* m_pArtifact;
    CSegmentKey m_SegmentKey;
    arDesignOptions m_DesignOptions;
 
@@ -431,10 +431,10 @@ private:
       bool WasSet() const {return m_Control!=fciInitial;} // if false, minimum strength controlled
 
 
-      pgsDesignArtifact::ConcreteStrengthDesignState::Action ControllingAction() const
+      pgsSegmentDesignArtifact::ConcreteStrengthDesignState::Action ControllingAction() const
       {
-         return m_Control==fciSetShear ? pgsDesignArtifact::ConcreteStrengthDesignState::actShear : 
-                                      pgsDesignArtifact::ConcreteStrengthDesignState::actStress;
+         return m_Control==fciSetShear ? pgsSegmentDesignArtifact::ConcreteStrengthDesignState::actShear : 
+                                      pgsSegmentDesignArtifact::ConcreteStrengthDesignState::actStress;
       }
       Float64    Strength() const {return m_CurrentState.m_Strength;}
       IntervalIndexType Interval() const {return m_CurrentState.m_IntervalIdx;}
@@ -539,7 +539,7 @@ private:
          }
          else
          {
-            ATLASSERT(0); // bad condition??
+            ATLASSERT(false); // bad condition??
          }
 
          *pCurrStrength = m_CurrentState.m_Strength;
@@ -647,6 +647,7 @@ private:
    // locate mid-zone
    void ComputeMidZoneBoundaries();
    // compute and cache pois
+   void ClearHandingAttributes(pgsPointOfInterest& poi);
    void ValidatePointsOfInterest();
    void AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn,PoiAttributeType attribute);
 

@@ -96,40 +96,64 @@ bool CLoadFactors::operator==(const CLoadFactors& rOther) const
    for ( int i = 0; i < 6; i++ )
    {
       if ( DCmin[i] != rOther.DCmin[i] )
+      {
          return false;
+      }
 
       if ( DWmin[i] != rOther.DWmin[i] )
+      {
          return false;
+      }
 
       if ( CRmin[i] != rOther.CRmin[i] )
+      {
          return false;
+      }
 
       if ( SHmin[i] != rOther.SHmin[i] )
+      {
          return false;
+      }
 
       if ( PSmin[i] != rOther.PSmin[i] )
+      {
          return false;
+      }
 
       if ( LLIMmin[i] != rOther.LLIMmin[i] )
+      {
          return false;
+      }
 
       if ( DCmax[i] != rOther.DCmax[i] )
+      {
          return false;
+      }
 
       if ( DWmax[i] != rOther.DWmax[i] )
+      {
          return false;
+      }
 
       if ( CRmax[i] != rOther.CRmax[i] )
+      {
          return false;
+      }
 
       if ( SHmax[i] != rOther.SHmax[i] )
+      {
          return false;
+      }
 
       if ( PSmax[i] != rOther.PSmax[i] )
+      {
          return false;
+      }
 
       if ( LLIMmax[i] != rOther.LLIMmax[i] )
+      {
          return false;
+      }
    }
 
    return true;

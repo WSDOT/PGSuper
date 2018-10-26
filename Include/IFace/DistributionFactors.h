@@ -83,7 +83,7 @@ interface ILiveLoadDistributionFactors : IUnknown
 
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V) = 0;
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V) = 0;
-   virtual void GetNegMomentDistFactorPoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* dfPoints,Uint32* nPoints) = 0;
+   virtual void GetNegMomentDistFactorPoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* dfPoints,IndexType* nPoints) = 0;
 
    virtual void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
    virtual bool Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) = 0;

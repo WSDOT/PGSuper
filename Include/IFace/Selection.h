@@ -24,18 +24,7 @@
 
 #include <WbflTypes.h>
 #include <PgsExt\SegmentKey.h>
-
-struct CSelection
-{
-public:
-   enum Type { None, Pier, Span, Girder, Segment, ClosureJoint, TemporarySupport, Deck, Alignment } Type;
-   SpanIndexType SpanIdx;
-   PierIndexType PierIdx;
-   GroupIndexType GroupIdx;
-   GirderIndexType GirderIdx;
-   SegmentIndexType SegmentIdx;
-   SupportIDType tsID; // ID of the selected temporary support
-};
+#include <PgsExt\Selection.h>
 
 /*****************************************************************************
 INTERFACE

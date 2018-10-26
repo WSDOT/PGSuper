@@ -31,6 +31,8 @@
 
 #include <map>
 
+#include <ReporterBase.h>
+
 class rptReport;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -38,6 +40,7 @@ class rptReport;
 class ATL_NO_VTABLE CPGSpliceReporterImp : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CPGSpliceReporterImp, &CLSID_PGSpliceReportAgent>,
+   public CReporterBase,
 	public IConnectionPointContainerImpl<CPGSpliceReporterImp>,
    public IAgentEx
 {
@@ -69,8 +72,12 @@ public:
    STDMETHOD(Init2)();
    STDMETHOD(GetClassID)(CLSID* pCLSID);
 
+protected:
+   // CReporterBase implementation
+   virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true);
+
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 
    HRESULT InitReportBuilders();
 };

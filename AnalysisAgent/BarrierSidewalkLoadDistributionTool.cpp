@@ -142,7 +142,7 @@ void pgsBarrierSidewalkLoadDistributionTool::GetTrafficBarrierLoadFraction(Girde
    }
    else
    {
-      ATLASSERT(0); // girder is out of range, this should never happen.
+      ATLASSERT(false); // girder is out of range, this should never happen.
       *pFraExtLeft  = 0.0;
       *pFraIntLeft  = 0.0;
       *pFraExtRight = 0.0;
@@ -169,7 +169,7 @@ void pgsBarrierSidewalkLoadDistributionTool::GetSidewalkLoadFraction(GirderIndex
    }
    else
    {
-      ATLASSERT(0); // girder is out of range, this should never happen.
+      ATLASSERT(false); // girder is out of range, this should never happen.
       *pFraSwLeft  = 0.0;
       *pFraSwRight = 0.0;
    }
@@ -338,17 +338,15 @@ void pgsBarrierSidewalkLoadDistributionTool::DistributeBSWLoadToNNearest(pgsType
 
    // Compute distances between barrer/sidewalk and all GMSW intersections
    std::vector<SwBDist> distances;
+   distances.reserve(m_GMSWInterSectionPoints.size());
 
-   GMSWInterSectionIterator it(m_GMSWInterSectionPoints.begin());
-   GMSWInterSectionIterator it_end(m_GMSWInterSectionPoints.end());
-   while(it!= it_end)
+   GMSWInterSectionIterator iter(m_GMSWInterSectionPoints.begin());
+   GMSWInterSectionIterator iterEnd(m_GMSWInterSectionPoints.end());
+   for ( ; iter != iterEnd; iter++ )
    {
       Float64 dist;
-      barswIntersect->DistanceEx(it->m_IntersectionPoint, &dist);
-
-      distances.push_back(SwBDist(it->m_Gdr, dist));
-
-      it++;
+      barswIntersect->DistanceEx(iter->m_IntersectionPoint, &dist);
+      distances.push_back(SwBDist(iter->m_Gdr, dist));
    }
 
    // We have distances. Now sort them to get N nearest GMSW's
@@ -390,6 +388,7 @@ bool pgsBarrierSidewalkLoadDistributionTool::DistributeSidewalkLoadUnderSw(pgsTy
    // Any GMSW's outboard of the interior edge of the sidewalk are considered to be underneath the sidwalk.
    // This might be considered a bug if a girder is outboard of the exterior barrier and ends up picking up sw load? (to me, models should never be this way-rdp)
    std::vector<GirderIndexType> GMSWs_under_sidewalk;
+   GMSWs_under_sidewalk.reserve(m_GMSWInterSectionPoints.size());
 
    GMSWInterSectionIterator it(m_GMSWInterSectionPoints.begin());
    GMSWInterSectionIterator it_end(m_GMSWInterSectionPoints.end());
@@ -445,8 +444,8 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    const CPierData2* pEndPier;
    const CTemporarySupportData* pStartTS;
    const CTemporarySupportData* pEndTS;
-   pSegment->GetStartSupport(&pStartPier,&pStartTS);
-   pSegment->GetEndSupport(&pEndPier,&pEndTS);
+   pSegment->GetSupport(pgsTypes::metStart,&pStartPier,&pStartTS);
+   pSegment->GetSupport(pgsTypes::metEnd,  &pEndPier,  &pEndTS);
 
    Float64 startStation = (pStartPier ? pStartPier->GetStation() : pStartTS->GetStation());
    Float64 endStation   = (pEndPier   ? pEndPier->GetStation()   : pEndTS->GetStation());
@@ -455,14 +454,22 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
 
    CComPtr<IDirection> startDirection, endDirection; 
    if ( pStartPier )
+   {
       m_pIBridge->GetPierDirection(pStartPier->GetIndex(),&startDirection);
+   }
    else
+   {
       m_pIBridge->GetTemporarySupportDirection(pStartTS->GetIndex(),&startDirection);
+   }
 
    if ( pEndPier )
+   {
       m_pIBridge->GetPierDirection(pEndPier->GetIndex(),&endDirection);
+   }
    else
+   {
       m_pIBridge->GetTemporarySupportDirection(pEndTS->GetIndex(),&endDirection);
+   }
 
 
    Float64 startDirVal, endDirVal;

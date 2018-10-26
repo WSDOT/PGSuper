@@ -45,13 +45,19 @@ bool pgsAlignmentDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsAlignmentDescriptionStatusItem* other = dynamic_cast<pgsAlignmentDescriptionStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    if ( this->GetDescription() != other->GetDescription() )
+   {
       return false;
+   }
 
    if ( m_DlgPage != other->m_DlgPage )
+   {
       return false;
+   }
 
    return true;
 }
@@ -91,7 +97,9 @@ bool pgsConcreteStrengthStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsConcreteStrengthStatusItem* other = dynamic_cast<pgsConcreteStrengthStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    return (other->m_ConcreteType == m_ConcreteType && other->m_ElementType == m_ElementType && other->m_SegmentKey == m_SegmentKey);
 }
@@ -135,9 +143,9 @@ void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////
 
-pgsPointLoadStatusItem::pgsPointLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey) :
-pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanGirderKey), 
-m_LoadIndex(value), m_SpanGirderKey(spanGirderKey)
+pgsPointLoadStatusItem::pgsPointLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey) :
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanKey), 
+m_LoadIndex(value), m_spanKey(spanKey)
 {
 }
 
@@ -145,9 +153,11 @@ bool pgsPointLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsPointLoadStatusItem* other = dynamic_cast<pgsPointLoadStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
-   return (other->m_LoadIndex == m_LoadIndex && other->m_SpanGirderKey == m_SpanGirderKey);
+   return (other->m_LoadIndex == m_LoadIndex && other->m_spanKey == m_spanKey);
 }
 
 ///////////////////////////////
@@ -174,7 +184,6 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_Message = pItem->GetDescription().c_str();
 
    INT_PTR result = dlg.DoModal();
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(IEAFTransactions,pTxn);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
@@ -183,6 +192,7 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       pTxn->Execute(txn);
 
       StatusItemIDType id = pItem->GetID();
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
    else if (result == CDealWithLoadDlg::IDEDITLOAD)
@@ -191,6 +201,7 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       if ( pEdit->EditPointLoad(pItem->m_LoadIndex) )
       {
          StatusItemIDType id = pItem->GetID();
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }
@@ -202,9 +213,9 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////////////////
 
-pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey) :
-pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanGirderKey), 
-m_LoadIndex(value), m_SpanGirderKey(spanGirderKey)
+pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey) :
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanKey), 
+m_LoadIndex(value), m_spanKey(spanKey)
 {
 }
 
@@ -212,9 +223,11 @@ bool pgsDistributedLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsDistributedLoadStatusItem* other = dynamic_cast<pgsDistributedLoadStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
-   return (other->m_LoadIndex == m_LoadIndex && other->m_SpanGirderKey == m_SpanGirderKey);
+   return (other->m_LoadIndex == m_LoadIndex && other->m_spanKey == m_spanKey);
 }
 
 //////////////////////////////////////////////////////////
@@ -241,7 +254,6 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_Message = pItem->GetDescription().c_str();
 
    INT_PTR result = dlg.DoModal();
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(IEAFTransactions,pTxn);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
@@ -250,6 +262,7 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       pTxn->Execute(txn);
 
       StatusItemIDType id = pItem->GetID();
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
    else if (result == CDealWithLoadDlg::IDEDITLOAD)
@@ -258,6 +271,7 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       if ( pEdit->EditDistributedLoad(pItem->m_LoadIndex) )
       {
          StatusItemIDType id = pItem->GetID();
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }
@@ -269,9 +283,9 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////
 
-pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey):
-pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanGirderKey), 
-m_LoadIndex(value), m_SpanGirderKey(spanGirderKey)
+pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey):
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanKey), 
+m_LoadIndex(value), m_spanKey(spanKey)
 {
 }
 
@@ -279,9 +293,11 @@ bool pgsMomentLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsMomentLoadStatusItem* other = dynamic_cast<pgsMomentLoadStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
-   return (other->m_LoadIndex == m_LoadIndex && other->m_SpanGirderKey == m_SpanGirderKey);
+   return (other->m_LoadIndex == m_LoadIndex && other->m_spanKey == m_spanKey);
 }
 ///////////////////////////
 
@@ -307,7 +323,6 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_Message = pItem->GetDescription().c_str();
 
    INT_PTR result = dlg.DoModal();
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(IEAFTransactions,pTxn);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
@@ -316,6 +331,7 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       pTxn->Execute(txn);
 
       StatusItemIDType id = pItem->GetID();
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
    else if (result == CDealWithLoadDlg::IDEDITLOAD)
@@ -324,6 +340,7 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       if ( pEdit->EditMomentLoad(pItem->m_LoadIndex) )
       {
          StatusItemIDType id = pItem->GetID();
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }

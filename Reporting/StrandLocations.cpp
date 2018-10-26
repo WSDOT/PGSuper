@@ -86,7 +86,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   if (pStrands->NumPermStrandsType == CStrandData::npsDirectSelection)
+   if (pStrands->GetStrandDefinitionType() == CStrandData::npsDirectSelection)
    {
       rptParagraph* p = new rptParagraph;
       *pChapter << p;
@@ -106,10 +106,14 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
       ColumnIndexType nColumns = 3;
       if ( 0 < nDebonded )
+      {
          nColumns += 2;
+      }
 
       if ( 0 < nExtendedLeft || 0 < nExtendedRight )
+      {
          nColumns += 2;
+      }
 
       rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Straight Strand Locations"));
       *pPara << p_table;
@@ -169,14 +173,22 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
          if ( 0 < nExtendedLeft || 0 < nExtendedRight )
          {
             if ( pStrandGeometry->IsExtendedStrand(segmentKey,pgsTypes::metStart,is,pgsTypes::Straight) )
+            {
                (*p_table)(row,col++) << symbol(DOT);
+            }
             else
+            {
                (*p_table)(row,col++) << _T("");
+            }
 
             if ( pStrandGeometry->IsExtendedStrand(segmentKey,pgsTypes::metEnd,is,pgsTypes::Straight) )
+            {
                (*p_table)(row,col++) << symbol(DOT);
+            }
             else
+            {
                (*p_table)(row,col++) << _T("");
+            }
          }
 
          row++;
@@ -199,7 +211,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    {
       StrandIndexType nts = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
       nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
-      if (nts >0)
+      if (0 < nts)
       {
          rptParagraph* pPara = new rptParagraph;
          *pChapter << pPara;
@@ -371,7 +383,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    {
       StrandIndexType nts = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
       nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
-      if (nts >0)
+      if (0 < nts)
       {
          rptParagraph* pPara = new rptParagraph;
          *pChapter << pPara;

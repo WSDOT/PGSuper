@@ -23,9 +23,14 @@
 #ifndef INCLUDED_PHYSICALCONVERTER_H_
 #define INCLUDED_PHYSICALCONVERTER_H_
 
-class arvPhysicalConverter: public sysINumericFormatToolBase
+class arvPhysicalConverter: public sysNumericFormatTool
 {
 public:
+   arvPhysicalConverter(Format format = Automatic, Uint16 width = 0, Uint16 precision = 0) :
+      sysNumericFormatTool(format,width,precision)
+      {
+      }
+
    virtual Float64 Convert(Float64 value) const=0;
    virtual std::_tstring UnitTag() const =0;
 };
@@ -37,8 +42,7 @@ class PhysicalFormatTool : public arvPhysicalConverter
 public:
    // built to take a unitmgtIndirectMeasureDataT
    PhysicalFormatTool(const T& umd) :
-      // these formats are for reports, let's graphs a bit less precision
-      m_FormatTool(umd.Format, umd.Width, umd.Precision),
+      arvPhysicalConverter(umd.Format, umd.Width, umd.Precision),
       m_rT(umd)
       {
       }
@@ -46,9 +50,9 @@ public:
    std::_tstring AsString(Float64 val) const
    {
       if (fabs(val) > m_rT.Tol/10.)
-         return m_FormatTool.AsString(val);
+         return arvPhysicalConverter::AsString(val);
       else
-         return m_FormatTool.AsString(0.0);
+         return arvPhysicalConverter::AsString(0.0);
    }
 
    Float64 Convert(Float64 value) const
@@ -61,7 +65,6 @@ public:
       return m_rT.UnitOfMeasure.UnitTag();
    }
 private:
-   sysNumericFormatTool m_FormatTool;
    const T&             m_rT;
 };
 
@@ -72,16 +75,9 @@ class ScalarFormatTool : public arvPhysicalConverter
 public:
    // built to take a unitmgtIndirectMeasureDataT
    ScalarFormatTool(const T& umd) :
-      // these formats are for reports, let's graphs a bit less precision
-      m_FormatTool(umd.Format, umd.Width, umd.Precision),
-      m_rT(umd)
+      arvPhysicalConverter(umd.Format,umd.Width,umd.Precision)
       {
       }
-
-   std::_tstring AsString(Float64 val) const
-   {
-      return m_FormatTool.AsString(val);
-   }
 
    Float64 Convert(Float64 value) const
    {
@@ -92,15 +88,13 @@ public:
    {
       return _T("");
    }
-private:
-   sysNumericFormatTool m_FormatTool;
-   const T&             m_rT;
 };
 
 typedef ScalarFormatTool<unitmgtScalar>        ScalarTool;
 typedef PhysicalFormatTool<unitmgtLengthData>  LengthTool;
 typedef PhysicalFormatTool<unitmgtMomentData>  MomentTool;
 typedef PhysicalFormatTool<unitmgtLengthData>  DeflectionTool;
+typedef PhysicalFormatTool<unitmgtAngleData>   RotationTool;
 typedef PhysicalFormatTool<unitmgtStressData>  StressTool;
 typedef PhysicalFormatTool<unitmgtForceData>   ShearTool;
 typedef PhysicalFormatTool<unitmgtForceData>   ForceTool;

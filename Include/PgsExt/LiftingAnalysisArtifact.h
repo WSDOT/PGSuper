@@ -500,11 +500,10 @@ public:
    void SetInitialTiltAngle(Float64 val);
 
    // points of interest used for this lifing analysis
-   void SetLiftingPointsOfInterest(const std::vector<pgsPointOfInterest>& rPois);
-   std::vector<pgsPointOfInterest> GetLiftingPointsOfInterest() const;
+   const std::vector<pgsPointOfInterest>& GetLiftingPointsOfInterest() const;
 
    // returns the top and bottom girder stresses for the supplied vector of locations
-   void GetGirderStress(std::vector<Float64> locs,bool bMin,bool bIncludePrestress,std::vector<Float64>& fTop,std::vector<Float64>& fBot) const;
+   void GetGirderStress(std::vector<pgsPointOfInterest> vPois,bool bMin,bool bIncludePrestress,std::vector<Float64>& fTop,std::vector<Float64>& fBot) const;
 
    void GetMinMaxStresses(Float64* minStress, Float64* maxStress,Float64* minDistFromStart,Float64* maxDistFromStart) const;
 
@@ -533,13 +532,11 @@ public:
 
    void GetMinMaxLiftingStresses(MaxLiftingStressCollection& rMaxStresses) const;
 
-   void AddLiftingStressAnalysisArtifact(Float64 distFromStart,
-                                         const pgsLiftingStressAnalysisArtifact& artifact);
-   const pgsLiftingStressAnalysisArtifact* GetLiftingStressAnalysisArtifact(Float64 distFromStart) const;
+   void AddLiftingStressAnalysisArtifact(const pgsPointOfInterest& poi,const pgsLiftingStressAnalysisArtifact& artifact);
+   const pgsLiftingStressAnalysisArtifact* GetLiftingStressAnalysisArtifact(const pgsPointOfInterest& poi) const;
 
-   void AddLiftingCrackingAnalysisArtifact(Float64 distFromStart,
-                                           const pgsLiftingCrackingAnalysisArtifact& artifact);
-   const pgsLiftingCrackingAnalysisArtifact* GetLiftingCrackingAnalysisArtifact(Float64 distFromStart) const;
+   void AddLiftingCrackingAnalysisArtifact(const pgsPointOfInterest& poi,const pgsLiftingCrackingAnalysisArtifact& artifact);
+   const pgsLiftingCrackingAnalysisArtifact* GetLiftingCrackingAnalysisArtifact(const pgsPointOfInterest& poi) const;
 
    void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const;
 
@@ -607,8 +604,8 @@ private:
    Float64 m_AllowableFsForFailure;
 
    std::vector<pgsPointOfInterest> m_LiftingPois; // sorted same as below collections
-   std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less> m_LiftingStressAnalysisArtifacts;
-   std::map<Float64,pgsLiftingCrackingAnalysisArtifact,Float64_less> m_LiftingCrackingAnalysisArtifacts;
+   std::map<pgsPointOfInterest,pgsLiftingStressAnalysisArtifact> m_LiftingStressAnalysisArtifacts;
+   std::map<pgsPointOfInterest,pgsLiftingCrackingAnalysisArtifact> m_LiftingCrackingAnalysisArtifacts;
 
 public:
    #if defined _DEBUG

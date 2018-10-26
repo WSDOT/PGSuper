@@ -109,7 +109,7 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
 
-      if (pSegment->Strands.NumPermStrandsType == CStrandData::npsDirectSelection)
+      if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::npsDirectSelection)
       {
          *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizes Direct Strand Fill. WSDOT Standard Girders utilize sequentially filled strands.")) << color(Black) << rptNewLine;
       }
@@ -175,8 +175,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptLengthUnitValue* pUnitValue = (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) ? &glength : &spacing);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
-   GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
+   GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
+   GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
 
    std::_tstring strGirderSpacingMeasureAtStartOfSpan, strGirderSpacingMeasureAtEndOfSpan;
    std::_tstring* pStr;
@@ -197,9 +197,13 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       if ( hash == HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::AlongItem) )
       {
          if ( (i == 0 && pPrevPier->GetPrevSpan() == NULL) || (i == 1 && pNextPier->GetNextSpan() == NULL) )
+         {
             *pStr = _T("Measured at and along the abutment line");
+         }
          else
+         {
             *pStr = _T("Measured at and along the pier line");
+         }
       }
       else if ( hash == HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::AlongItem) )
       {
@@ -208,9 +212,13 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       else if ( hash == HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem) )
       {
          if ( (i == 0 && pPrevPier->GetPrevSpan() == NULL) || (i == 1 && pNextPier->GetNextSpan() == NULL) )
+         {
             *pStr = _T("Measured normal to alignment at abutment line");
+         }
          else
+         {
             *pStr = _T("Measured normal to alignment at pier line");
+         }
       }
       else if ( hash == HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::NormalToItem) )
 	   {
@@ -250,9 +258,13 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
 
       if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+      {
          (*pTable)(row++,1) << pUnitValue->SetValue(pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing(segmentKey.girderIndex-1));
+      }
       else
+      {
          (*pTable)(row++,1) << _T(" - ");
+      }
 
       if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
       {
@@ -264,9 +276,13 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
 
       if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+      {
          (*pTable)(row++,1) << pUnitValue->SetValue(pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing(segmentKey.girderIndex));
+      }
       else
+      {
          (*pTable)(row++,1) << _T(" - ");
+      }
 
 
       if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
@@ -283,19 +299,31 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
 
       if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+      {
          (*pTable)(row++,1) << pUnitValue->SetValue(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing(segmentKey.girderIndex-1));
+      }
       else
+      {
          (*pTable)(row++,1) << _T(" - ");
+      }
 
       if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
+      {
          (*pTable)(row,0) << _T("Right Girder Spacing\nEnd of Span");
+      }
       else
+      {
          (*pTable)(row,0) << _T("Right Joint Spacing\nEnd of Span");
+      }
 
       if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+      {
          (*pTable)(row++,1) << pUnitValue->SetValue(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing(segmentKey.girderIndex));
+      }
       else
+      {
          (*pTable)(row++,1) << _T(" - ");
+      }
    }
    else
    {
@@ -315,9 +343,13 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          }
 
          if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+         {
             (*pTable)(row++,1) << pUnitValue->SetValue(pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing(segmentKey.girderIndex));
+         }
          else
+         {
             (*pTable)(row++,1) << _T(" - ");
+         }
 
          if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
          {
@@ -333,37 +365,56 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          }
 
          if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+         {
             (*pTable)(row++,1) << pUnitValue->SetValue(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing(segmentKey.girderIndex));
+         }
          else
+         {
             (*pTable)(row++,1) << _T(" - ");
+         }
       }
       else
       {
          if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
+         {
             (*pTable)(row,0) << _T("Left Girder Spacing\nStart of Span");
+         }
          else
+         {
             (*pTable)(row,0) << _T("Left Joint Spacing\nStart of Span");
+         }
 
          GirderIndexType nGirders = pGroup->GetGirderCount();
 
          if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+         {
             (*pTable)(row++,1) << pUnitValue->SetValue(pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing( SpacingIndexType(nGirders-2) ));
+         }
          else
+         {
             (*pTable)(row++,1) << _T(" - ");
+         }
 
          if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
+         {
             (*pTable)(row,0) << _T("Left Girder Spacing\nEnd of Span");
+         }
          else
+         {
             (*pTable)(row,0) << _T("Left Joint Spacing\nEnd of Span");
+         }
 
          if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+         {
             (*pTable)(row++,1) << pUnitValue->SetValue(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing( SpacingIndexType(nGirders-2) ));
+         }
          else
+         {
             (*pTable)(row++,1) << _T(" - ");
+         }
       }
    }
 
-#pragma Reminder("UPDATE: Assumes constant deck thickness")   
    pgsPointOfInterest poi(segmentKey,0.00);
    (*pTable)(row,0) << _T("Slab Thickness for Design");
    (*pTable)(row++,1) << component.SetValue(pBridge->GetStructuralSlabDepth( poi ));
@@ -380,13 +431,6 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,0) << _T("Overlay");
    (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
 
-#pragma Reminder("#*#*#*#*#*# WSDOT girder summary - Diaphragms #*#*#*#*#*#")
-//   (*pTable)(row,0) << _T("Intermediate Diaphragm (H x W)");
-//   (*pTable)(row,1) << component.SetValue( pXSectData->pGirderEntry->GetDiaphragmHeight() );
-//   (*pTable)(row,1) << _T(" x ");
-//   (*pTable)(row++,1) << component.SetValue( pXSectData->pGirderEntry->GetDiaphragmWidth() );
-
-#pragma Reminder("UPDATE - update for new railing/sidewalk model")
    (*pTable)(row,0) << _T("Left Traffic Barrier");
    (*pTable)(row++,1) << pBridgeDesc->GetLeftRailingSystem()->strExteriorRailing;
 
@@ -418,24 +462,24 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,0) << _T("Connection Boundary Condition at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(pNextPier->GetIndex());
    (*pTable)(row++,1) << CPierData2::AsString(pNextPier->GetPierConnectionType());
 
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
       (*pTable)(row,0) << _T("Left Lifting Point Location");
-      (*pTable)(row++,1) << length.SetValue(pGirderLifting->GetLeftLiftingLoopLocation(segmentKey));
+      (*pTable)(row++,1) << length.SetValue(pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey));
 
       (*pTable)(row,0) << _T("Right Lifting Point Location");
-      (*pTable)(row++,1) << length.SetValue(pGirderLifting->GetRightLiftingLoopLocation(segmentKey));
+      (*pTable)(row++,1) << length.SetValue(pSegmentLifting->GetRightLiftingLoopLocation(segmentKey));
    }
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   if (pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       (*pTable)(row,0) << _T("Leading Truck Support Location");
-      (*pTable)(row++,1) << length.SetValue(pGirderHauling->GetLeadingOverhang(segmentKey));
+      (*pTable)(row++,1) << length.SetValue(pSegmentHauling->GetLeadingOverhang(segmentKey));
 
       (*pTable)(row,0) << _T("Trailing Truck Support Location");
-      (*pTable)(row++,1) << length.SetValue(pGirderHauling->GetTrailingOverhang(segmentKey));
+      (*pTable)(row++,1) << length.SetValue(pSegmentHauling->GetTrailingOverhang(segmentKey));
    }
 }
 
@@ -499,7 +543,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    GET_IFACE2(pBroker,IPointOfInterest, pIPOI);
-   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_MIDSPAN) );
+   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_RELEASED_SEGMENT) );
    pgsPointOfInterest poi(*vPoi.begin());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -568,9 +612,13 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    GirderLibraryEntry::MeasurementLocation hpRef = pGdrEntry->GetHarpingPointReference();
    (*pTable)(row,0) << _T("Harping Point");
    if ( hpRef == GirderLibraryEntry::mlEndOfGirder )
+   {
       (*pTable)(row,0) << _T(" (measured from end of girder)");
+   }
    else
+   {
       (*pTable)(row,0) << _T(" (measured from bearing point)");
+   }
 
    Float64 hpLoc = pGdrEntry->GetHarpingPointLocation();
    GirderLibraryEntry::MeasurementType hpMeasure = pGdrEntry->GetHarpingPointMeasure();
@@ -605,7 +653,9 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    (*pTable)(row,1) << pStrandGeom->GetStrandCount( segmentKey, pgsTypes::Straight );
    StrandIndexType nDebonded = pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
    if ( nDebonded != 0 )
+   {
       (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
+   }
    row++;
 
    (*pTable)(row,0) << _T("Straight Strand ") << Sub2(_T("P"),_T("jack"));
@@ -627,7 +677,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
       row++;
 
       (*pTable)(row,0) << _T("Number of Temporary Strands");
-      switch ( pStrands->TempStrandUsage )
+      switch ( pStrands->GetTemporaryStrandUsage() )
       {
       case pgsTypes::ttsPTAfterLifting:
          (*pTable)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately after lifting");

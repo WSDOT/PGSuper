@@ -118,13 +118,13 @@ boost::shared_ptr<CReportSpecification> CGirderLineReportSpecificationBuilder::C
    girderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
    girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanGirderAndChapters,pRptSpec);
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,GirderAndChapters,pRptSpec);
    dlg.m_Group  = girderKey.groupIndex;
    dlg.m_Girder = girderKey.girderIndex;
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,CGirderKey(dlg.m_Group,dlg.m_Girder)) );
+      boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderLineReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder) );
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
       rptDesc.ConfigureReportSpecification(chList,pRptSpec);

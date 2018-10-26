@@ -330,7 +330,7 @@ struct CREEPCOEFFICIENTDETAILS
 
 #define TIMESTEP_CR  0
 #define TIMESTEP_SH  1
-#define TIMESTEP_PS  2
+#define TIMESTEP_RE  2
 
 // This struct holds the computation details for a cross section of a concrete part
 // for a specific interval for a time step loss analysis
@@ -356,7 +356,17 @@ struct TIME_STEP_CONCRETE
       Float64 Cs;
       Float64 Ce;
       Float64 e;
+      CREEP_STRAIN()
+      {
+         P = 0;
+         E = 0;
+         A = 0;
+         Cs = 0;
+         Ce = 0;
+         e = 0;
+      }
    };
+
    struct CREEP_CURVATURE
    {
       Float64 M;
@@ -365,6 +375,15 @@ struct TIME_STEP_CONCRETE
       Float64 Cs;
       Float64 Ce;
       Float64 r;
+      CREEP_CURVATURE()
+      {
+         M = 0;
+         E = 0;
+         I = 0;
+         Cs = 0;
+         Ce = 0;
+         r = 0;
+      }
    };
    std::vector<CREEP_STRAIN> ec;    // = (dN(j)/(AE(j))*[C(i+1/2,j) - C(i-1/2,j)]
    std::vector<CREEP_CURVATURE> rc; // = (dM(j)/(IE(j))*[C(i+1/2,j) - C(i-1/2,j)]
@@ -388,15 +407,14 @@ struct TIME_STEP_CONCRETE
    Float64 dP[19]; // index is one of the ProductForceType enum values
    Float64 dM[19];
 
-
    // Force on this concrete part at the end of this interval
-   Float64 P; // = (P in previous interval) + dP;
-   Float64 M; // = (M in previous interval) + dM;
+   Float64 P[19]; // = (P in previous interval) + dP;
+   Float64 M[19]; // = (M in previous interval) + dM;
 
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
    // where y is the depth from the top of the concrete part
    Float64 f[2][19][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the ProductForceType enum values
-                        // third index is one of the CombinationType enum values
+                        // third index is one of the ResultsType enum values
 
    // Stress in this due to live load
    Float64 fLLMin[2]; // index is pgsTypes::FaceType
@@ -418,13 +436,14 @@ struct TIME_STEP_CONCRETE
 
       PrShrinkage = 0;
 
-      P = 0;
-      M = 0;
-
-      for ( int i = 0; i < 19 ; i++ )
+      int n = sizeof(dP)/sizeof(dP[0]);
+      for ( int i = 0; i < n ; i++ )
       {
          dP[i] = 0;
          dM[i] = 0;
+
+         P[i] = 0;
+         M[i] = 0;
 
          f[pgsTypes::TopFace][i][0] = 0;
          f[pgsTypes::TopFace][i][1] = 0;
@@ -569,6 +588,11 @@ struct TIME_STEP_DETAILS
    // upto and including pftRelaxation
    Float64 dP[19], dM[19];
 
+   // Total loading on the section due to externally applied loads in all intervals upto
+   // and including this interval. Array index is one of the ProductForceType enum values
+   // upto and including pftRelaxation
+   Float64 P[19], M[19];
+
    // Time step parameters for girder and deck
    TIME_STEP_CONCRETE Girder;
    TIME_STEP_CONCRETE Deck;
@@ -606,11 +630,17 @@ struct TIME_STEP_DETAILS
    Float64 er[19]; // axial strain
    Float64 rr[19]; // curvature
 
-   // Vertical due to externally applied loads and restaining forces during this interval
+   // Vertical deflection due to externally applied loads and restaining forces during this interval
    Float64 dD[19];
 
    // Total vertical deflection due to externally applied loads and restraining forces
    Float64 D[19];
+
+   // Rotation due to externally applied loads and restaining forces during this interval
+   Float64 dR[19];
+
+   // Total rotation due to externally applied loads and restraining forces
+   Float64 R[19];
 
    // Sum of vertical deflections due to externally applied loads and restraining forces during this interval
    Float64 dY;
@@ -635,16 +665,23 @@ struct TIME_STEP_DETAILS
       Ytr = 0;
       Itr = 0;
 
-      for ( int i = 0; i < 19; i++ )
+      int n = sizeof(dP)/sizeof(dP[0]);
+      for ( int i = 0; i < n ; i++ )
       {
          dP[i] = 0;
          dM[i] = 0;
+
+         P[i] = 0;
+         M[i] = 0;
 
          der[i] = 0;
          drr[i] = 0;
 
          er[i] = 0;
          rr[i] = 0;
+
+         dR[i] = 0;
+         R[i] = 0;
 
          dD[i] = 0;
          D[i] = 0;
@@ -784,7 +821,7 @@ struct LOSSDETAILS
    std::vector<TIME_STEP_DETAILS> TimeStepDetails;
 
 #if defined _DEBUG
-   pgsPointOfInterest POI; // this is the POI what this loss details applies to
+   pgsPointOfInterest POI; // this is the POI that this loss details applies to
 #endif
 };
 

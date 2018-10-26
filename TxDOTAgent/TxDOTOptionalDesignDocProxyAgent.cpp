@@ -69,7 +69,7 @@ void CTxDOTOptionalDesignDocProxyAgent::SetDocument(CTxDOTOptionalDesignDoc* pDo
 // IAgentEx
 STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::SetBroker(IBroker* pBroker)
 {
-   AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_SET_BROKER(pBroker);
    return S_OK;
 }
 
@@ -86,7 +86,7 @@ STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::RegInterfaces()
 
 STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::Init()
 {
-//   AGENT_INIT;
+//   EAF_AGENT_INIT;
 
    return S_OK;
 }
@@ -103,9 +103,8 @@ STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::Reset()
 
 STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::ShutDown()
 {
+   EAF_AGENT_CLEAR_INTERFACE_CACHE;
 //   CLOSE_LOGFILE;
-
-   AGENT_CLEAR_INTERFACE_CACHE;
 
    return S_OK;
 }
@@ -393,7 +392,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       // Our model is always prismatic - max's will occur at mid-span poi
       GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-      std::vector<pgsPointOfInterest> vPOI( pIPoi->GetPointsOfInterest(origSegmentKey, POI_MIDSPAN) );
+      std::vector<pgsPointOfInterest> vPOI( pIPoi->GetPointsOfInterest(origSegmentKey, POI_5L | POI_ERECTED_SEGMENT) );
       ATLASSERT( vPOI.size() == 1 );
       pgsPointOfInterest orig_ms_poi = vPOI.front();
 
@@ -453,7 +452,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       for (int icase=0; icase<num_cases; icase++)
       {
          vPOI = pIPoi->GetPointsOfInterest(fabrSegmentKey);
-         CHECK(vPOI.size()>0);
+         ATLASSERT(vPOI.size()>0);
 
          if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
               (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& lstates[icase] == pgsTypes::ServiceIA)
@@ -561,7 +560,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       }
    
       // mid span in fab model
-      vPOI = pIPoi->GetPointsOfInterest(fabrSegmentKey, POI_MIDSPAN);
+      vPOI = pIPoi->GetPointsOfInterest(fabrSegmentKey, POI_5L | POI_ERECTED_SEGMENT);
       ATLASSERT( vPOI.size() == 1 );
       pgsPointOfInterest fabr_ms_poi = vPOI.front();
 

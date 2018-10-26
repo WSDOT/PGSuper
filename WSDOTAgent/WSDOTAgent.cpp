@@ -32,6 +32,7 @@
 
 #include "BridgeLinkCATID.h"
 #include "PGSuperCatCom.h"
+#include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 #include "PGSComponentInfo.h"
 
@@ -75,35 +76,57 @@ HRESULT RegisterAgent(bool bRegister)
 
    hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_PGSuperComponentInfo,bRegister);
+   hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponentInfo,bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_PGSpliceComponentInfo,bRegister);
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
 
    hr = sysComCatMgr::RegWithCategory(CLSID_CurvelImporter,  CATID_PGSuperDataImporter,    bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    hr = sysComCatMgr::RegWithCategory(CLSID_CurvelImporter,  CATID_PGSpliceDataImporter,    bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    hr = sysComCatMgr::RegWithCategory(CLSID_CurvelExporter,  CATID_PGSuperDataExporter,    bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    hr = sysComCatMgr::RegWithCategory(CLSID_CurvelExporter,  CATID_PGSpliceDataExporter,    bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    hr = sysComCatMgr::RegWithCategory(CLSID_GenCompExporter,  CATID_PGSuperDataExporter,    bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    hr = sysComCatMgr::RegWithCategory(CLSID_GenCompExporter,  CATID_PGSpliceDataExporter,    bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    return S_OK;
 }
@@ -114,7 +137,9 @@ STDAPI DllRegisterServer(void)
     // registers object, typelib and all interfaces in typelib
     HRESULT hr = _AtlModule.DllRegisterServer();
     if ( FAILED(hr) )
+    {
        return hr;
+    }
 
     return RegisterAgent(true);
 }
@@ -125,7 +150,9 @@ STDAPI DllUnregisterServer(void)
 {
    HRESULT hr = RegisterAgent(false);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
 	return _AtlModule.DllUnregisterServer();
 }

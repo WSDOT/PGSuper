@@ -71,7 +71,7 @@ const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(const CString& st
 
    if(found == m_Servers.end())
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return NULL;
    }
    else

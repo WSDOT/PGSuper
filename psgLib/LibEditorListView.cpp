@@ -65,7 +65,7 @@ BEGIN_MESSAGE_MAP(CLibEditorListView, CListView)
 	ON_WM_RBUTTONDOWN()
 	ON_WM_KEYDOWN()
 	ON_WM_DESTROY()
-	ON_NOTIFY_REFLECT(LVN_ENDLABELEDIT, OnEndlabeledit)
+	ON_NOTIFY_REFLECT(LVN_ENDLABELEDIT, OnEndEditLabel)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -112,7 +112,7 @@ void CLibEditorListView::Dump(CDumpContext& dc) const
 // CLibEditorListView message handlers
 void CLibEditorListView::OnLibrarySelected(int libnum, const CString& name)
 {
-   if (libnum==-1)
+   if (libnum == -1)
    {
       // user selected a library manager node - display a blank list
       CListCtrl& rlist = this->GetListCtrl( );
@@ -149,7 +149,7 @@ void CLibEditorListView::RedrawAllEntries()
       // first we need to determine the total number of images in our imagelist
       CollectionIndexType num_entries=0;
       CollectionIndexType ilm = 0;
-      for (ilm=0; ilm<num_managers; ilm++)
+      for (ilm = 0; ilm < num_managers; ilm++)
       {
          libLibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
          ASSERT(plm!=0);
@@ -166,7 +166,7 @@ void CLibEditorListView::RedrawAllEntries()
       images = rlist.GetImageList(LVSIL_SMALL);
       images->SetImageCount((UINT)num_entries);
       
-      for (ilm=0; ilm<num_managers; ilm++)
+      for (ilm = 0; ilm < num_managers; ilm++)
       {
          libLibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
          ASSERT(plm!=0);
@@ -176,16 +176,18 @@ void CLibEditorListView::RedrawAllEntries()
 
          if ( !plib->IsDepreciated() )
          {
-            int i=0;
+            int i = 0;
             libKeyListType key_list;
             plib->KeyList(key_list);
-            for (libKeyListIterator kit = key_list.begin(); kit != key_list.end(); kit++)
+            libKeyListIterator iter(key_list.begin());
+            libKeyListIterator iterEnd(key_list.end());
+            for ( ; iter != iterEnd; iter++ )
             {
-               const std::_tstring& name = *kit;
-               const libLibraryEntry* pentry = plib->GetEntry(name.c_str());
-               CHECK(pentry);
-               int st = InsertEntryToList(pentry, plib, i);
-               CHECK(st!=-1);
+               const std::_tstring& name = *iter;
+               const libLibraryEntry* pEntry = plib->GetEntry(name.c_str());
+               ATLASSERT(pEntry);
+               int st = InsertEntryToList(pEntry, plib, i);
+               ATLASSERT(st!=-1);
                i++;
             }
          }
@@ -198,10 +200,10 @@ bool CLibEditorListView::AddNewEntry()
    CDocument* pDoc = GetDocument();
    libISupportLibraryManager* pLibMgr = dynamic_cast<libISupportLibraryManager*>(pDoc);
    libLibraryManager* plib_man = pLibMgr->GetTargetLibraryManager();
-   ASSERT(plib_man!=0);
+   ASSERT(plib_man != NULL);
 
    libILibrary* plib = plib_man->GetLibrary(m_LibName);
-   ASSERT(plib!=0);
+   ASSERT(plib != NULL);
 
    std::_tstring name = plib->GetUniqueEntryName();
    if (plib->NewEntry(name.c_str()))
@@ -219,7 +221,7 @@ bool CLibEditorListView::AddNewEntry()
       CollectionIndexType n = plib->GetCount();
       const libLibraryEntry* pentry = plib->GetEntry(name.c_str());
       CollectionIndexType it = InsertEntryToList(pentry, plib, ni-1);
-      if (it!=-1)
+      if (it != -1)
       {
          m_ItemSelected = (int)it;
          rlist.EditLabel((int)it);
@@ -238,7 +240,9 @@ void CLibEditorListView::OnLButtonDblClk(UINT nFlags, CPoint point)
    CString entry_name;
    libILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
+   {
       this->EditEntry(plib,entry_name);
+   }
 
 	CListView::OnLButtonDblClk(nFlags, point);
 }
@@ -307,11 +311,12 @@ bool CLibEditorListView::EditEntry(libILibrary* plib, LPCTSTR entryName)
          CListCtrl& rlist = this->GetListCtrl();
          rlist.SetItemState( m_ItemSelected,LVIS_SELECTED | LVIS_FOCUSED , LVIS_SELECTED | LVIS_FOCUSED);   
       }
-
       return true;
+
    case libILibrary::RenameFailed:
       AfxMessageBox(_T("The new name for the entry was invalid - Keeping the original name"));
       break;
+
    case libILibrary::NotFound:
       ASSERT(0); // this should never happen
       break;
@@ -424,7 +429,9 @@ bool CLibEditorListView::IsEditableItemSelected()const
    CString entry_name;
    libILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
+   {
       return plib->IsEditingEnabled(entry_name);
+   }
 
    return false;
 }
@@ -442,10 +449,14 @@ void CLibEditorListView::DeleteSelectedEntry()
    if(GetSelectedEntry(&entry_name, &plib))
    {
       if (plib->IsEditingEnabled(entry_name))
+      {
          this->DeleteEntry(plib, entry_name);
+      }
    }
    else
+   {
       ASSERT(0);
+   }
 }
 
 void CLibEditorListView::DuplicateSelectedEntry()
@@ -463,9 +474,13 @@ void CLibEditorListView::EditSelectedEntry()
    CString entry_name;
    libILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
+   {
       this->EditEntry(plib,entry_name);
+   }
    else
+   {
       ASSERT(0);
+   }
 }
 
 void CLibEditorListView::RenameSelectedEntry()
@@ -480,7 +495,9 @@ void CLibEditorListView::RenameSelectedEntry()
       pDoc->SetModifiedFlag(true);
    }
    else
+   {
       ASSERT(0);
+   }
 }
 
 BOOL CLibEditorListView::PreCreateWindow(CREATESTRUCT& cs) 
@@ -489,13 +506,21 @@ BOOL CLibEditorListView::PreCreateWindow(CREATESTRUCT& cs)
    CEAFApp* pApp = EAFGetApp();
    CString list_settings = pApp->GetProfileString(_T("Settings"),_T("LibView"),_T("Large Icons"));
    if (list_settings==_T("Large Icons"))
+   {
       cs.style |= LVS_ICON;
+   }
    else if (list_settings==_T("Report View"))
+   {
       cs.style |= LVS_REPORT;
+   }
    else if (list_settings==_T("List View"))
+   {
       cs.style |= LVS_LIST;
+   }
    else
+   {
       cs.style |= LVS_SMALLICON;
+   }
 
    // allow single selection of entries only.
    cs.style |= LVS_SINGLESEL;
@@ -507,22 +532,18 @@ BOOL CLibEditorListView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CLibEditorListView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
 {
-	if (nChar == VK_DELETE)
+	if (nChar == VK_DELETE && IsItemSelected())
    {
-      if (IsItemSelected())
-         DeleteSelectedEntry();
+      DeleteSelectedEntry();
    }
-   else 	if (nChar == VK_RETURN)
+   else if (nChar == VK_RETURN && IsItemSelected() )
    {
-      if (IsItemSelected())
-         EditSelectedEntry();
+      EditSelectedEntry();
    }
-   else if ( nChar == VK_F2 )
+   else if ( nChar == VK_F2 && IsEditableItemSelected() )
    {
-      if ( IsEditableItemSelected() )
-         RenameSelectedEntry();
+      RenameSelectedEntry();
    }
-
 	
 	CListView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
@@ -534,11 +555,17 @@ void CLibEditorListView::OnDestroy()
    DWORD	dwStyle = GetWindowLong(GetSafeHwnd(), GWL_STYLE);
 					
    if ((dwStyle & LVS_TYPEMASK) == LVS_ICON)
+   {
       mode = _T("Large Icons");
+   }
    else if ((dwStyle & LVS_TYPEMASK) == LVS_REPORT)
+   {
       mode = _T("Report View");
+   }
    else if ((dwStyle & LVS_TYPEMASK) == LVS_LIST)
+   {
       mode = _T("List View");
+   }
 
    CEAFApp* pApp = EAFGetApp();
    ASSERT(pApp);
@@ -566,7 +593,9 @@ bool CLibEditorListView::DoesEntryExist(const CString& entryName)
       ASSERT(plib!=0);
 
       if (plib->IsEntry(entryName))
+      {
          return true;
+      }
    }
    return false;
 }
@@ -587,7 +616,7 @@ bool CLibEditorListView::GetSelectedEntry(CString* pentryName, libILibrary** ppl
    return false;
 }
 
-void CLibEditorListView::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult) 
+void CLibEditorListView::OnEndEditLabel(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	LV_DISPINFO* pDispInfo = (LV_DISPINFO*)pNMHDR;
 
@@ -638,7 +667,9 @@ void CLibEditorListView::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
          }
       }
       else
+      {
          ASSERT(0);
+      }
 
    }
 }
@@ -672,14 +703,22 @@ int CLibEditorListView::InsertEntryToList(const libLibraryEntry* pentry, const l
 
    // need to put a wart on the entry to show that it's read-only or in use
    int iconnum;
-   if (ref_cnt>0 && read_only)
+   if (0 < ref_cnt && read_only)
+   {
       iconnum = CLibraryEditorView::InUseAndReadOnly;
-   else if (ref_cnt>0)
+   }
+   else if (0 < ref_cnt)
+   {
       iconnum = CLibraryEditorView::InUse;
+   }
    else if (read_only)
+   {
       iconnum = CLibraryEditorView::ReadOnly;
+   }
    else
+   {
       iconnum = 0;
+   }
 
     LV_ITEM  lvi;
     lvi.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_STATE | LVIF_PARAM;
@@ -688,7 +727,7 @@ int CLibEditorListView::InsertEntryToList(const libLibraryEntry* pentry, const l
 
     // Set the text of the item.
     TCHAR text[256];
-    CHECK(entryName.size()<256);
+    ATLASSERT(entryName.size()<256);
     _tcscpy_s(text,sizeof(text)/sizeof(TCHAR), entryName.c_str());
     lvi.pszText        = text;  
 

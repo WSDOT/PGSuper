@@ -110,7 +110,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -173,7 +172,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
    else
    {
-      ATLASSERT(fci_reqd != -99999);
+      ATLASSERT(fci_reqd == -99999);
       *p << _T("Required ") << RPT_FCI << _T(" = Regardless of the release strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 
@@ -203,7 +202,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       // skip lifting and hauling... the reporting is different. See below
       if ( intervalIdx == liftingIntervalIdx || intervalIdx == haulingIntervalIdx )
+      {
          continue;
+      }
 
       std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
       std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());
@@ -252,7 +253,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
          // skipping everything before the deck is composite
          if ( intervalIdx < compositeDeckIntervalIdx )
+         {
             continue;
+         }
 
          std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
          std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());
@@ -403,8 +406,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    COptionalDeflectionCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Lifting
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
       p = new rptParagraph;
       p->SetName(_T("Lifting"));
@@ -414,8 +417,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // Hauling
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   if (pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       p = new rptParagraph;
       p->SetName(_T("Hauling"));
@@ -463,7 +466,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Load rating
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    if ( !pRatingSpec->AlwaysLoadRate() )
+   {
       return pChapter;
+   }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
@@ -489,22 +494,30 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Routine);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
 
          pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Routine);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Special);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
 
          pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Special);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
       }
    }
 
@@ -522,14 +535,18 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrPermit_Routine);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrPermit_Special);
          if ( pTable )
+         {
             (*pPara) << pTable << rptNewLine;
+         }
       }
    }
  
@@ -566,7 +583,6 @@ void write_splitting_zone_check(IBroker* pBroker,
                                rptChapter* pChapter)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IStirrupGeometry, pStirrupGeometry);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
@@ -575,9 +591,13 @@ void write_splitting_zone_check(IBroker* pBroker,
 
    std::_tstring strName;
    if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   {
       strName = _T("Splitting");
+   }
    else
+   {
       strName = _T("Bursting");
+   }
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -604,9 +624,13 @@ void write_splitting_zone_check(IBroker* pBroker,
       (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetStartSplittingResistance()) << rptNewLine;
       (*pPara) << _T("Status = ");
       if ( pArtifact->StartPassed() )
+      {
          (*pPara) << RPT_PASS;
+      }
       else
+      {
          (*pPara) << RPT_FAIL;
+      }
 
       (*pPara) <<rptNewLine<<rptNewLine;
 
@@ -616,9 +640,13 @@ void write_splitting_zone_check(IBroker* pBroker,
       (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetEndSplittingResistance()) << rptNewLine;
       (*pPara) << _T("Status = ");
       if ( pArtifact->EndPassed() )
+      {
          (*pPara) << RPT_PASS;
+      }
       else
+      {
          (*pPara) << RPT_FAIL;
+      }
    } // next segment
 }
 
@@ -627,7 +655,6 @@ void write_confinement_check(IBroker* pBroker,
                              const pgsGirderArtifact* pGirderArtifact,
                              rptChapter* pChapter)
 {
-   GET_IFACE2(pBroker,IStirrupGeometry, pStirrupGeometry);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -669,9 +696,13 @@ void write_confinement_check(IBroker* pBroker,
       (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetStartS()) << rptNewLine;
       (*pPara) << _T("  Status = ");
       if ( rConfine.StartPassed() )
+      {
          (*pPara) << RPT_PASS;
+      }
       else
+      {
          (*pPara) << RPT_FAIL;
+      }
 
       (*pPara) <<rptNewLine<<rptNewLine;
 
@@ -685,8 +716,12 @@ void write_confinement_check(IBroker* pBroker,
       (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetEndS()) << rptNewLine;
       (*pPara) << _T("  Status = ");
       if ( rConfine.EndPassed() )
+      {
          (*pPara) << RPT_PASS;
+      }
       else
+      {
          (*pPara) << RPT_FAIL;
+      }
    } // next segment
 }

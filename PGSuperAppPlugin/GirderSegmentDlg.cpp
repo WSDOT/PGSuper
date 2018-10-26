@@ -112,11 +112,12 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    m_SegmentKey = segmentKey;
    m_SegmentID = pSegment->GetID();
 
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   // if statement short circuit evaluation can cause interface to not be used
+   GET_IFACE2_NOCHECK(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2_NOCHECK(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria); 
 
    // don't add page if both hauling and lifting checks are disabled
-   if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled() || pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       AddPage( &m_LiftingPage );
    }
@@ -274,7 +275,7 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CPrecastSegmentData* pSegment = m_Girder.GetSegment(m_SegmentKey.segmentIndex);
-   if (pSegment->Strands.NumPermStrandsType == CStrandData::npsDirectSelection)
+   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::npsDirectSelection)
    {
       // first get in girderdata format
       const CDirectStrandFillCollection* pDirectFillData(NULL);
@@ -308,7 +309,7 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
                vec[idx] = it->numFilled;
             }
             else
-               ATLASSERT(0); 
+               ATLASSERT(false); 
 
             it++;
          }
@@ -319,7 +320,7 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
    else
    {
       // Continuous fill
-      StrandIndexType Ns = pSegment->Strands.GetNstrands(type);
+      StrandIndexType Ns = pSegment->Strands.GetStrandCount(type);
 
       return pStrandGeometry->ComputeStrandFill(m_SegmentKey, type, Ns);
    }

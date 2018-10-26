@@ -103,14 +103,16 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    RowIndexType row_step = 4; // number of rows reported for each web
 
+   SpanIndexType nSpans = pBridge->GetSpanCount();
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   SpanIndexType startSpanIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : pBridge->GetGirderGroupStartSpan(girderKey.groupIndex));
+   SpanIndexType endSpanIdx   = (girderKey.groupIndex == ALL_GROUPS ? nSpans-1 : pBridge->GetGirderGroupEndSpan(girderKey.groupIndex));
+
+   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
       std::_tostringstream os;
-      os << _T("Group ") << LABEL_GROUP(grpIdx) << std::endl;
+      os << _T("Span ") << LABEL_SPAN(spanIdx) << std::endl;
       rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(14,os.str().c_str());
       (*pPara) << pTable << rptNewLine;
 
@@ -143,20 +145,19 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
       RowIndexType row = pTable->GetNumberOfHeaderRows();
       col = 0;
 
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
       GirderIndexType startGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
       GirderIndexType endGirderIdx   = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : startGirderIdx);
 
       for ( GirderIndexType gdrIdx = startGirderIdx; gdrIdx <= endGirderIdx; gdrIdx++ )
       {
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-         // either report elevations at 10th points for all segments or need to get
-         // span 10th points
+         CSpanKey spanKey(spanIdx,gdrIdx);
+
+         std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(spanKey,POI_SPAN | POI_TENTH_POINTS) );
+         ATLASSERT(vPoi.size() == 11);
+
+         GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
          CSegmentKey segmentKey(grpIdx,gdrIdx,0);
-
-         Float64 length = pBridge->GetSegmentSpanLength(segmentKey);
-
-         std::vector<pgsPointOfInterest> vPoi( pPOI->GetSegmentTenthPointPOIs( POI_ERECTED_SEGMENT, segmentKey) );
 
          MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(segmentKey);
          pTable->SetRowSpan(row,0,Int16(row_step*nWebs));

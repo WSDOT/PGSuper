@@ -78,7 +78,6 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 
 #if defined _DEBUG
    {
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
       GET_IFACE2(pBroker,IGirder,pGirder);
@@ -159,8 +158,11 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, force_per_length, pDisplayUnits->GetForcePerLengthUnit(), false );
 
-   // DUMMY POI, but the section is prismatic so it is as good as any other
-   pgsPointOfInterest poi(segmentKey,0.00);
+   // The section is prismatic so any poi will do
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L));
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poi(vPoi.front());
 
     // Write non-composite properties
    row = xs_table->GetNumberOfHeaderRows();

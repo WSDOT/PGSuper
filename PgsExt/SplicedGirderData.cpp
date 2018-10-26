@@ -255,29 +255,38 @@ void CSplicedGirderData::CopySplicedGirderData(const CSplicedGirderData* pGirder
 bool CSplicedGirderData::operator==(const CSplicedGirderData& rOther) const
 {
    if ( !m_pGirderGroup->GetBridgeDescription()->UseSameGirderForEntireBridge() && m_GirderType != rOther.m_GirderType )
+   {
       return false;
+   }
 
    if ( m_PTData != rOther.m_PTData )
+   {
       return false;
+   }
 
    CollectionIndexType nSegments = m_Segments.size();
    for ( CollectionIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       if ( *m_Segments[segIdx] != *rOther.m_Segments[segIdx] )
-         return false;
-
-      if ( segIdx < nSegments-1 )
       {
-         if ( *m_Closures[segIdx] != *rOther.m_Closures[segIdx] )
-            return false;
+         return false;
+      }
+
+      if ( segIdx < nSegments-1 && (*m_Closures[segIdx] != *rOther.m_Closures[segIdx]) )
+      {
+         return false;
       }
    }
 
    if ( m_ConditionFactor != rOther.m_ConditionFactor )
+   {
       return false;
+   }
 
    if ( m_ConditionFactorType != rOther.m_ConditionFactorType )
+   {
       return false;
+   }
 
    return true;
 }
@@ -317,7 +326,7 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
       const CPrecastSegmentData* pOtherSegment = rOther.m_Segments[segIdx];
       if ( bCopyDataOnly )
       {
-         m_Segments[segIdx]->CopySegmentData(pOtherSegment);
+         m_Segments[segIdx]->CopySegmentData(pOtherSegment,true);
       }
       else
       {
@@ -385,7 +394,9 @@ HRESULT CSplicedGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    {
       m_Segments[segIdx]->Save(pStrSave,pProgress);
       if ( segIdx < nSegments-1 )
+      {
          m_Closures[segIdx]->Save(pStrSave,pProgress);
+      }
    }
 
    pStrSave->put_Property(_T("ConditionFactorType"),CComVariant(m_ConditionFactorType));
@@ -528,33 +539,49 @@ const CGirderGroupData* CSplicedGirderData::GetGirderGroup() const
 GroupIndexType CSplicedGirderData::GetGirderGroupIndex() const
 {
    if ( m_pGirderGroup )
+   {
       return m_pGirderGroup->GetIndex();
+   }
    else
+   {
       return m_GirderGroupIndex;
+   }
 }
 
 const CPierData2* CSplicedGirderData::GetPier(pgsTypes::MemberEndType end) const
 {
    if ( m_pGirderGroup )
+   {
       return m_pGirderGroup->GetPier(end);
+   }
    else
+   {
       return NULL;
+   }
 }
 
 CPierData2* CSplicedGirderData::GetPier(pgsTypes::MemberEndType end)
 {
    if ( m_pGirderGroup )
+   {
       return m_pGirderGroup->GetPier(end);
+   }
    else
+   {
       return NULL;
+   }
 }
 
 PierIndexType CSplicedGirderData::GetPierIndex(pgsTypes::MemberEndType end) const
 {
    if ( m_pGirderGroup )
+   {
       return m_pGirderGroup->GetPierIndex(end);
+   }
    else
+   {
       return m_PierIndex[end];
+   }
 }
 
 const CPTData* CSplicedGirderData::GetPostTensioning() const
@@ -583,14 +610,22 @@ void CSplicedGirderData::UpdateLinks()
       m_Segments[segIdx]->SetGirder(this);
 
       if ( segIdx == 0 )
+      {
          m_Segments[segIdx]->SetLeftClosure(NULL);
+      }
       else
+      {
          m_Segments[segIdx]->SetLeftClosure(m_Closures[segIdx-1]);
+      }
 
       if ( segIdx == nSegments-1 )
+      {
          m_Segments[segIdx]->SetRightClosure(NULL);
+      }
       else
+      {
          m_Segments[segIdx]->SetRightClosure(m_Closures[segIdx]);
+      }
 
       if ( segIdx < nSegments-1 )
       {
@@ -609,7 +644,9 @@ void CSplicedGirderData::UpdateSegments()
 
    // If girder is not part of a group, or group is not part of a bridge, then this can't be done
    if ( m_pGirderGroup == NULL || m_pGirderGroup->GetBridgeDescription() == NULL )
+   {
       return;
+   }
 
    const CPierData2* pStartPier = m_pGirderGroup->GetPier(pgsTypes::metStart);
    const CPierData2* pEndPier   = m_pGirderGroup->GetPier(pgsTypes::metEnd);
@@ -633,10 +670,14 @@ void CSplicedGirderData::UpdateSegments()
 
       pSegment->ResolveReferences();
       if ( pLeftClosure )
+      {
          pLeftClosure->ResolveReferences();
+      }
 
       if ( pRightClosure )
+      {
          pRightClosure->ResolveReferences();
+      }
 
       Float64 segmentStartStation, segmentEndStation;
       pSegment->GetStations(&segmentStartStation,&segmentEndStation);
@@ -690,7 +731,7 @@ const CPrecastSegmentData* CSplicedGirderData::GetSegment(SegmentIndexType idx) 
 
 void CSplicedGirderData::SetSegment(SegmentIndexType idx,const CPrecastSegmentData& segment)
 {
-   m_Segments[idx]->CopySegmentData(&segment);
+   m_Segments[idx]->CopySegmentData(&segment,false);
 }
 
 std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegmentVariations() const
@@ -718,7 +759,9 @@ CollectionIndexType CSplicedGirderData::GetClosureJointCount() const
 CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx)
 {
    if ( m_Closures.size() <= idx )
+   {
       return NULL;
+   }
 
    return m_Closures[idx];
 }
@@ -726,7 +769,9 @@ CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx)
 const CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx) const
 {
    if ( m_Closures.size() <= idx )
+   {
       return NULL;
+   }
 
    return m_Closures[idx];
 }
@@ -734,9 +779,13 @@ const CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType
 LPCTSTR CSplicedGirderData::GetGirderName() const
 {
    if ( m_pGirderGroup && m_pGirderGroup->GetBridgeDescription() && m_pGirderGroup->GetBridgeDescription()->UseSameGirderForEntireBridge() )
+   {
       return m_pGirderGroup->GetBridgeDescription()->GetGirderName();
+   }
    else
+   {
       return m_GirderType.c_str();
+   }
 }
 
 void CSplicedGirderData::SetGirderName(LPCTSTR strName)
@@ -973,7 +1022,9 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          pLeftSegment->SetSpan(pgsTypes::metEnd,pRightSegment->GetSpan(pgsTypes::metEnd));
          
          if ( pRightSegment->GetRightClosure() )
+         {
             pRightSegment->GetRightClosure()->SetLeftSegment(pLeftSegment);
+         }
 
          delete pClosure;
          m_Closures.erase(closureIter);
@@ -1039,7 +1090,9 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          pNewSegment->SetRightClosure(pSegment->GetRightClosure());
 
          if ( pSegment->GetRightClosure() )
+         {
             pSegment->GetRightClosure()->SetLeftSegment(pNewSegment);
+         }
 
          pSegment->SetSpan(pgsTypes::metEnd,pTS->GetSpan());
          pSegment->SetRightClosure(pNewClosure);
@@ -1128,7 +1181,9 @@ void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
          pLeftSegment->SetRightClosure( pRightSegment->GetRightClosure() );
          
          if ( pRightSegment->GetRightClosure() )
+         {
             pRightSegment->GetRightClosure()->SetLeftSegment(pLeftSegment);
+         }
 
          // the left segment now ends in the span where the right segment used to end
          pLeftSegment->SetSpan(pgsTypes::metEnd,pRightSegment->GetSpan(pgsTypes::metEnd));
@@ -1516,10 +1571,14 @@ void CSplicedGirderData::RemoveClosureJointFromTimelineManager(const CClosureJoi
             CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
 
             if ( pClosure->GetPier() )
+            {
                pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
+            }
 
             if ( pClosure->GetTemporarySupport() )
+            {
                pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
+            }
          }
       }
    }
@@ -1582,7 +1641,9 @@ CTimelineManager* CSplicedGirderData::GetTimelineManager()
 void CSplicedGirderData::AssertValid()
 {
    if ( m_pGirderGroup == NULL )
+   {
       return;
+   }
 
    std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
    std::vector<CPrecastSegmentData*>::iterator segIterEnd(m_Segments.end());
@@ -1617,7 +1678,7 @@ void CSplicedGirderData::AssertValid()
 
          if ( pEndSpan )
          {
-            _ASSERT( ::IsGE(segEndLoc,pEndSpan->GetNextPier()->GetStation()) );
+            _ASSERT( ::IsLE(segEndLoc,pEndSpan->GetNextPier()->GetStation()) );
          }
       }
 

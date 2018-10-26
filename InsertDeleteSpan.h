@@ -41,8 +41,6 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   void Init();
-   void DoExecute(int i);
    CBridgeDescription2 m_BridgeDescription[2];
 
    PierIndexType m_RefPierIdx;
@@ -67,9 +65,11 @@ public:
 private:
    PierIndexType m_RefPierIdx;
    pgsTypes::PierFaceType m_PierFace;
-   void Init();
-   void DoExecute(int i);
-   CBridgeDescription2 m_BridgeDescription[2];
+   CSpanData2* m_pDeletedSpan;
+   CPierData2* m_pDeletedPier;
+   Float64  m_SpanLength; // length of deleted span
+   bool m_bCreateNewGroup;
+   EventIndexType m_PierErectionEventIdx;
 };
 
 #endif // INCLUDED_INSERTDELETESPAN_H_

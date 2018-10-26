@@ -92,12 +92,16 @@ HRESULT CDebondData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 bool CDebondData::operator==(const CDebondData& rOther) const
 {
    if ( strandTypeGridIdx != rOther.strandTypeGridIdx )
+   {
       return false;
+   }
 
    for ( int i = 0; i < 2; i++ )
    {
       if ( Length[i] != rOther.Length[i] )
+      {
          return false;
+      }
    }
 
    return true;

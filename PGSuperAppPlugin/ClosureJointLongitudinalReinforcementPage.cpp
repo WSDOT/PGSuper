@@ -37,10 +37,6 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
    // longitudinal steel information from grid and store it
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    if (pDX->m_bSaveAndValidate)
    {
       CLongitudinalRebarData rebarData;
@@ -52,6 +48,10 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
          if (m_Grid.GetRowData(i,&row))
          {
             // values are in display units - must convert to system
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
             row.Cover      = ::ConvertToSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
             row.BarSpacing = ::ConvertToSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
             rebarData.RebarRows.push_back(row);
@@ -69,6 +69,10 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
    {
       int idx = GetStirrupMaterialIndex(pParent->m_ClosureJoint.GetStirrups().ShearBarType,pParent->m_ClosureJoint.GetStirrups().ShearBarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // only used if there are rebar rows
 
       CLongitudinalRebarData rebardata;
       std::vector<CLongitudinalRebarData::RebarRow>::iterator iter;

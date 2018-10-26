@@ -65,7 +65,6 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILibrary, pLib );
    GET_IFACE2(pBroker,ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
@@ -81,13 +80,16 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       return pChapter;
    }
 
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
-//   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_SPANS);
+   location.IncludeSpanAndGirder(true);
+
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, comp, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, defl, pDisplayUnits->GetDeflectionUnit(), false );
 
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
-   GET_IFACE2(pBroker,IGirder,pGdr);
 
    HAUNCHDETAILS haunch_details;
    pGdrHaunch->GetHaunchDetails(girderKey,&haunch_details);
@@ -148,25 +150,15 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
       (*pTable1)(row1,0) << location.SetValue( POI_ERECTED_SEGMENT, haunch.PointOfInterest, end_size );
       (*pTable1)(row1,1) << rptRcStation(haunch.Station, &pDisplayUnits->GetStationFormat() );
-
-      (*pTable1)(row1,2) << dim.SetValue( fabs(haunch.Offset) );
-#pragma Reminder("REVIEW: i think there is an Offset reporting object that automatically takes care of L/R")
-      if ( haunch.Offset < 0 )
-      {
-         (*pTable1)(row1,2) << _T(" (L)");
-      }
-      else if ( 0 < haunch.Offset )
-      {
-         (*pTable1)(row1,2) << _T(" (R)");
-      }
+      (*pTable1)(row2,2) << RPT_OFFSET(haunch.Offset,dim);
 
       (*pTable1)(row1,3) << dim.SetValue( haunch.ElevAlignment );
       (*pTable1)(row1,4) << dim.SetValue( haunch.ElevGirder );
       (*pTable1)(row1,5) << comp.SetValue( haunch.tSlab );
       (*pTable1)(row1,6) << comp.SetValue( haunch.Fillet );
-      (*pTable1)(row1,7) << comp.SetValue( haunch.D );
-      (*pTable1)(row1,8) << comp.SetValue( haunch.C );
-      (*pTable1)(row1,9) << comp.SetValue( haunch.CamberEffect);
+      (*pTable1)(row1,7) << defl.SetValue( haunch.D );
+      (*pTable1)(row1,8) << defl.SetValue( haunch.C );
+      (*pTable1)(row1,9) << defl.SetValue( haunch.CamberEffect);
 
       row1++;
 

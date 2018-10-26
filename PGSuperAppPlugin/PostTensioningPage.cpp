@@ -78,16 +78,18 @@ BOOL CPostTensioningPage::OnInitDialog()
 
    // TODO:  Add extra initialization here
    BOOL bShow;
-   CEAFDocument* pEAFDoc = EAFGetDocument();
-   if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      m_ctrlDescription.SetWindowText(_T("These parameters are used for determining initial losses in post-tensioned temporary strands"));
-      bShow = FALSE;
-   }
-   else
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
    {
       m_ctrlDescription.SetWindowText(_T("These parameters are used for determining initial losses in post-tensioned tendons and temporary strands"));
       bShow = TRUE;
+   }
+   else
+   {
+      m_ctrlDescription.SetWindowText(_T("These parameters are used for determining initial losses in post-tensioned temporary strands"));
+      bShow = FALSE;
    }
 
    GetDlgItem(IDC_TENDON_LABEL)->ShowWindow(bShow ? SW_SHOW : SW_HIDE);

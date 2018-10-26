@@ -153,7 +153,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       bCanReportPrestressInformation = false;
    }
 
-   if (pSegment->Strands.NumPermStrandsType == CStrandData::npsDirectSelection)
+   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::npsDirectSelection)
    {
       bCanReportPrestressInformation = false;
    }
@@ -193,7 +193,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
 
    GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_MIDSPAN, POIFIND_AND);
+   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L, POIFIND_AND);
    ATLASSERT(pmid.size()==1);
    pgsPointOfInterest poiMidSpan(pmid.front());
 
@@ -368,7 +368,9 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
          if ( nDebonded != 0 )
+         {
             (*p_table)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
+         }
 
          (*p_table)(++row,0) << _T("Number of Harped Strands");
          (*p_table)(row  ,1) << Nh;
@@ -379,7 +381,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
          StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
          (*p_table)(++row,0) << _T("Number of Temporary Strands");
 
-         switch ( pSegment->Strands.TempStrandUsage )
+         switch ( pSegment->Strands.GetTemporaryStrandUsage() )
          {
          case pgsTypes::ttsPTAfterLifting:
             (*p_table)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately after lifting");
@@ -413,18 +415,26 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    Float64 sse = pStrandGeometry->GetSsEccentricity(releaseIntervalIdx,poiMidSpan, &nEff);
    (*p_table)(++row,0) << _T("E");
    if (0 < Ns)
+   {
       (*p_table)(row,1) << gdim.SetValue(ybg-sse);
+   }
    else
+   {
       (*p_table)(row,1) << RPT_NA;
+   }
 
    if ( CLSID_SlabBeamFamily != familyCLSID )
    {
       Float64 hse = pStrandGeometry->GetHsEccentricity(releaseIntervalIdx,poiMidSpan, &nEff);
       (*p_table)(++row,0) << Sub2(_T("F"),_T("C.L."));
       if (0 < Nh)
+      {
          (*p_table)(row,1) << gdim.SetValue(ybg-hse);
+      }
       else
+      {
          (*p_table)(row,1) << RPT_NA;
+      }
 
 
       Float64 ytg = pSectProp->GetY(releaseIntervalIdx,poiStart,pgsTypes::TopGirder);
@@ -551,25 +561,37 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
       (*p_table)(++row,0) << _T("D @ ") << max_days << _T(" days (") << Sub2(_T("D"),max_days) << _T(")");
       if ( D < 0 )
+      {
          (*p_table)(row  ,1) << color(Red) << gdim.SetValue(D) << color(Black);
+      }
       else
+      {
          (*p_table)(row  ,1) << gdim.SetValue(D);
+      }
    }
    else
    {
       D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
       (*p_table)(++row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, 50% of D") <<Sub(min_days);
       if ( D < 0 )
+      {
          (*p_table)(row  ,1) << color(Red) << gdim.SetValue(D) << color(Black);
+      }
       else
+      {
          (*p_table)(row  ,1) << gdim.SetValue(D);
+      }
 
       (*p_table)(++row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
       Float64 D120 = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME) ;
       if ( D120 < 0 )
+      {
          (*p_table)(row  ,1) << color(Red) << gdim.SetValue(D120) << color(Black);
+      }
       else
+      {
          (*p_table)(row  ,1) << gdim.SetValue(D120);
+      }
    }
 
 
@@ -688,9 +710,13 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    else if ( reinfDetailsResult == STIRRUP_ERROR_LASTZONE )
    {
       if ( familyCLSID == CLSID_SlabBeamFamily )
+      {
          *p << _T("### Reinforcement details could not be listed because spacing in the last zone is not 9\" per the standard WSDOT details.") << rptNewLine;
+      }
       else
+      {
          *p << _T("### Reinforcement details could not be listed because spacing in the last zone is not 1'-6\" per the standard WSDOT details.") << rptNewLine;
+      }
    }
    else if ( reinfDetailsResult == STIRRUP_ERROR_BARSIZE )
    {
@@ -735,13 +761,17 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
    if ( !pStirrupGeometry->AreStirrupZonesSymmetrical(segmentKey) )
+   {
       return STIRRUP_ERROR_SYMMETRIC;
+   }
 
    // Check if the number of zones is consistent with the girder schedule
-   ZoneIndexType nZones = pStirrupGeometry->GetNumPrimaryZones(segmentKey); // this is total number of zones
+   ZoneIndexType nZones = pStirrupGeometry->GetPrimaryZoneCount(segmentKey); // this is total number of zones
    nZones = nZones/2 + 1; // this is the input number of zones (and it must be symmetric)
    if ( nZones != 5 && nZones != 6 )
+   {
       return STIRRUP_ERROR_ZONES;
+   }
 
    // Check first zone... it must be 1-1/2" long with 1-1/2" spacing... one space
    matRebar::Size barSize;
@@ -755,10 +785,14 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    Float64 v = zoneLength/spacing;
 
    if ( barSize != matRebar::bs5 )
+   {
       return STIRRUP_ERROR_BARSIZE;
+   }
 
    if ( !IsEqual(v,1.0) && !IsEqual(spacing,::ConvertToSysUnits(1.5,unitMeasure::Inch)) )
+   {
       return STIRRUP_ERROR_STARTZONE;
+   }
 
    // So far, so good... start figuring out the V values
 
@@ -768,10 +802,14 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    zoneLength = zoneEnd - zoneStart;
    v = zoneLength/spacing;
    if ( !IsEqual(v,Round(v)) )
+   {
       return STIRRUP_ERROR_ZONES;
+   }
 
    if ( barSize != matRebar::bs5 )
+   {
       return STIRRUP_ERROR_BARSIZE;
+   }
 
    *pV1 = IndexType(floor(v));
    *pV2 = spacing;
@@ -782,10 +820,14 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    zoneLength = zoneEnd - zoneStart;
    v = zoneLength/spacing;
    if ( !IsEqual(v,Round(v)) )
+   {
       return STIRRUP_ERROR_ZONES;
+   }
 
    if ( barSize != matRebar::bs5 )
+   {
       return STIRRUP_ERROR_BARSIZE;
+   }
 
    *pV3 = IndexType(Round(v));
    *pV4 = spacing;
@@ -800,17 +842,23 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
       zoneLength = zoneEnd - zoneStart;
       v = zoneLength/spacing;
       if ( !IsEqual(v,Round(v)) )
+      {
          return STIRRUP_ERROR_ZONES;
+      }
 
       if ( familyCLSID == CLSID_UBeamFamily )
       {
          if ( barSize != matRebar::bs4 )
+         {
             return STIRRUP_ERROR_BARSIZE;
+         }
       }
       else
       {
          if ( barSize != matRebar::bs5 )
+         {
             return STIRRUP_ERROR_BARSIZE;
+         }
       }
 
       if ( !IsEqual(zoneLength,spacing) )
@@ -827,17 +875,23 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    zoneLength = zoneEnd - zoneStart;
    v = zoneLength/spacing;
    if ( !IsEqual(v,Round(v)) )
+   {
       return STIRRUP_ERROR_ZONES;
+   }
 
    if ( familyCLSID == CLSID_UBeamFamily )
    {
       if ( barSize != matRebar::bs4 )
+      {
          return STIRRUP_ERROR_BARSIZE;
+      }
    }
    else
    {
       if ( barSize != matRebar::bs5 )
+      {
          return STIRRUP_ERROR_BARSIZE;
+      }
    }
 
    *pV5 = IndexType(Round(v)) - (nZones == 5 ? 1 : 0);
@@ -854,24 +908,32 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    if ( familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily )
    {
       if ( !IsEqual(spacing,::ConvertToSysUnits(18.0,unitMeasure::Inch)) )
+      {
          return STIRRUP_ERROR_LASTZONE;
+      }
    }
    else
    {
       if ( !IsEqual(spacing,::ConvertToSysUnits(9.0,unitMeasure::Inch)) )
+      {
          return STIRRUP_ERROR_LASTZONE;
+      }
    }
 
 
    if ( familyCLSID == CLSID_UBeamFamily || familyCLSID == CLSID_SlabBeamFamily )
    {
       if ( barSize != matRebar::bs4 )
+      {
          return STIRRUP_ERROR_BARSIZE;
+      }
    }
    else
    {
       if ( barSize != matRebar::bs5 )
+      {
          return STIRRUP_ERROR_BARSIZE;
+      }
    }
 
    return STIRRUP_ERROR_NONE;
@@ -881,7 +943,9 @@ int CGirderScheduleChapterBuilder::GetDebondDetails(IBroker* pBroker,const CSegm
 {
    GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
    if ( !pStrandGeometry->IsDebondingSymmetric(segmentKey) )
+   {
       return DEBOND_ERROR_SYMMETRIC;
+   }
 
    // fail if not symmetric
    SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metStart,pgsTypes::Straight);

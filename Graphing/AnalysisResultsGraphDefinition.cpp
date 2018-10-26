@@ -35,7 +35,7 @@ CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition()
 
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString& name,
+const std::_tstring& name,
 pgsTypes::LimitState ls,
 const std::vector<IntervalIndexType>& intervals,
 int actions
@@ -51,8 +51,8 @@ int actions
 // constructor for combinations
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString& name,
-LoadingCombination comb,
+const std::_tstring& name,
+LoadingCombinationType comb,
 const std::vector<IntervalIndexType>& intervals,
 int actions
 ): m_ID(id),m_Name(name)
@@ -67,7 +67,7 @@ int actions
 // constructor for product loads
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString& name,
+const std::_tstring& name,
 ProductForceType type,
 const std::vector<IntervalIndexType>& intervals,
 int actions
@@ -84,7 +84,7 @@ int actions
 // constructor for live loads
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString& name,
+const std::_tstring& name,
 const std::vector<IntervalIndexType>& intervals,
 int actions
 ): m_ID(id),m_Name(name)
@@ -98,7 +98,7 @@ int actions
 // constructor for prestress
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString& name,
+const std::_tstring& name,
 GraphType type,
 const std::vector<IntervalIndexType>& intervals
 ): m_ID(id),m_Name(name),m_GraphType(type),m_ApplicableActions(ACTIONS_STRESS_ONLY | ACTIONS_DEFLECTION_ONLY)
@@ -109,7 +109,7 @@ const std::vector<IntervalIndexType>& intervals
 // constructor for demands
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString& name,
+const std::_tstring& name,
 pgsTypes::LimitState lstype,
 GraphType grtype,
 const std::vector<IntervalIndexType>& intervals
@@ -125,7 +125,7 @@ const std::vector<IntervalIndexType>& intervals
 // constructor for vehicular live loads
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString& name,
+const std::_tstring& name,
 pgsTypes::LiveLoadType llType,
 VehicleIndexType vehicleIndex,
 const std::vector<IntervalIndexType>& intervals,
@@ -143,7 +143,7 @@ int apaction
 // constructor for ultimate forces
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString& name,
+const std::_tstring& name,
 pgsTypes::LimitState lstype,
 GraphType grtype,
 const std::vector<IntervalIndexType>& intervals,
@@ -159,7 +159,7 @@ int apaction
 
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString& name,
+const std::_tstring& name,
 pgsTypes::LiveLoadType llType,
 const std::vector<IntervalIndexType>& intervals,
 int apaction
@@ -235,7 +235,7 @@ void CAnalysisResultsGraphDefinitions::RemoveGraphDefinition(IDType graphID)
    m_Definitions.erase(found);
 }
 
-CString CAnalysisResultsGraphDefinitions::GetDefaultLoadCase(IntervalIndexType intervalIdx) const
+std::_tstring CAnalysisResultsGraphDefinitions::GetDefaultLoadCase(IntervalIndexType intervalIdx) const
 {
    // return the of the first graph definition that is applicable to the given stage
    ConstGraphDefinitionIterator iter;
@@ -244,15 +244,17 @@ CString CAnalysisResultsGraphDefinitions::GetDefaultLoadCase(IntervalIndexType i
       const CAnalysisResultsGraphDefinition& def = *iter;
       std::set<IntervalIndexType>::const_iterator found = def.m_IntervalApplicability.find(intervalIdx);
       if (found != def.m_IntervalApplicability.end())
+      {
          return def.m_Name;
+      }
    }
 
-   return "DC";
+   return _T("DC");
 }
    
-std::vector< std::pair<CString,IDType> > CAnalysisResultsGraphDefinitions::GetLoadings(IntervalIndexType intervalIdx, ActionType action) const
+std::vector< std::pair<std::_tstring,IDType> > CAnalysisResultsGraphDefinitions::GetLoadings(IntervalIndexType intervalIdx, ActionType action) const
 {
-   std::vector< std::pair<CString,IDType> > lcNames;
+   std::vector< std::pair<std::_tstring,IDType> > lcNames;
 
    ConstGraphDefinitionIterator iter(m_Definitions.begin());
    ConstGraphDefinitionIterator iterEnd(m_Definitions.end());
@@ -268,10 +270,12 @@ std::vector< std::pair<CString,IDType> > CAnalysisResultsGraphDefinitions::GetLo
             break;
 
          case actionShear:
+         case actionReaction:
             bApplicableAction = def.m_ApplicableActions & ACTIONS_SHEAR_ONLY ? true : false;
             break;
 
          case actionDeflection:
+         case actionRotation:
             bApplicableAction = def.m_ApplicableActions & ACTIONS_DEFLECTION_ONLY ? true : false;
             break;
 

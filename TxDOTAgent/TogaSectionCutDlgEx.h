@@ -38,7 +38,7 @@ class CTogaSectionCutDlgEx : public CDialog
 public:
    CTogaSectionCutDlgEx(CWnd* pParent=NULL);   // standard constructor
 
-	CTogaSectionCutDlgEx(long nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
+	CTogaSectionCutDlgEx(IndexType nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
 		CTxDOTOptionalDesignGirderViewPage::CutLocation, CWnd* pParent = NULL);
 
    void SetValue(Float64 value);
@@ -79,7 +79,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   long m_nHarpPoints;
+   IndexType m_nHarpPoints;
    Float64	 m_Value;
    Float64   m_LowerBound;
    Float64   m_UpperBound;

@@ -110,7 +110,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
       if (bPedestrian)
+      {
          *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+      }
    }
    else
    {
@@ -167,7 +169,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
    if (bPedestrian)
+   {
       *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+   }
 
    CTSRemovalRotationTable().Build(pChapter,pBroker,girderKey,pSpec->GetAnalysisType(),pDisplayUnits);
 
@@ -255,9 +259,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       pgsTypes::PierFaceType pierFace = (pierIdx == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
 
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
+      {
          (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
+      }
       else
+      {
          (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
+      }
 
       pgsPointOfInterest poi;
       if ( pierIdx == startPierIdx )
@@ -329,20 +337,20 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       Float64 fdummy;
 
       // reactions and corresponding rotations
-      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, intervalIdx, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, true,
+      pBearing->GetBearingLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, true,
                                            &fdummy, &startRPmax, &fdummy, &startTCmax, &fdummy, &endRPmax, &fdummy, &endTCmax,
                                            NULL, NULL, NULL, NULL);
 
-      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, intervalIdx, girderKey, pgsTypes::MinSimpleContinuousEnvelope, false, true,
+      pBearing->GetBearingLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, girderKey, pgsTypes::MinSimpleContinuousEnvelope, false, true,
                                            &startRPmin, &fdummy, &startTCmin, &fdummy, &endRPmin, &fdummy, &endTCmin, &fdummy,
                                            NULL, NULL, NULL, NULL);
 
       // rotations and corresponding reactions
-      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, intervalIdx, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, true,
+      pBearing->GetBearingLiveLoadRotation( intervalIdx, pgsTypes::lltDesign, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, true,
                                            &fdummy, &startTPmax, &fdummy, &startRCmax, &fdummy, &endTPmax, &fdummy, &endRCmax,
                                            NULL, NULL, NULL, NULL);
 
-      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, intervalIdx, girderKey, pgsTypes::MinSimpleContinuousEnvelope, false, true,
+      pBearing->GetBearingLiveLoadRotation( intervalIdx, pgsTypes::lltDesign, girderKey, pgsTypes::MinSimpleContinuousEnvelope, false, true,
                                            &startTPmin, &fdummy, &startRCmin, &fdummy, &endTPmin, &fdummy, &endRCmin, &fdummy,
                                            NULL, NULL, NULL, NULL);
    }
@@ -350,11 +358,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    {
       pgsTypes::BridgeAnalysisType batype = analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan;
 
-      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, intervalIdx, girderKey, batype, false, true,
+      pBearing->GetBearingLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, girderKey, batype, false, true,
                                            &startRPmin, &startRPmax, &startTCmin, &startTCmax, &endRPmin, &endRPmax, &endTCmin, &endTCmax,
                                            NULL, NULL, NULL, NULL);
 
-      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, intervalIdx, girderKey, batype, false, true,
+      pBearing->GetBearingLiveLoadRotation( intervalIdx, pgsTypes::lltDesign, girderKey, batype, false, true,
                                            &startTPmin, &startTPmax, &startRCmin, &startRCmax, &endTPmin, &endTPmax, &endRCmin, &endRCmax,
                                            NULL, NULL, NULL, NULL);
    }
@@ -366,9 +374,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    if(doStartPier)
    {
       if ( startPierIdx == 0 || startPierIdx == nPiers-1 )
+      {
          (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(startPierIdx);
+      }
       else
+      {
          (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(startPierIdx);
+      }
 
       (*pTable)(row,col++) << reaction.SetValue( startRPmax );
       (*pTable)(row,col++) << rotation.SetValue( startTCmax );
@@ -390,9 +402,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       col = 0;
 
       if ( endPierIdx == 0 || endPierIdx == nPiers-1 )
+      {
          (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(endPierIdx);
+      }
       else
+      {
          (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(endPierIdx);
+      }
 
       (*pTable)(row,col++) << reaction.SetValue( endRPmax );
       (*pTable)(row,col++) << rotation.SetValue( endTCmax );
@@ -445,9 +461,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       pgsTypes::PierFaceType pierFace = (pierIdx == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
 
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
+      {
          (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
+      }
       else
+      {
          (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
+      }
 
 
       Float64 slope1 = pBridge->GetSegmentSlope( pierIdx == startPierIdx ? CSegmentKey(girderKey,0) : CSegmentKey(girderKey,nSegments-1) );

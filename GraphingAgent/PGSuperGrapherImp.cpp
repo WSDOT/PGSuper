@@ -25,18 +25,6 @@
 #include "GraphingAgent_i.h"
 #include "PGSuperGrapherImp.h"
 
-// Interfaces
-#include <IFace\Project.h>
-#include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
-#include <IFace\StatusCenter.h>
-#include <IGraphManager.h>
-
-// Graph Builders
-#include <Graphing\AnalysisResultsGraphBuilder.h>
-#include <Graphing\StabilityGraphBuilder.h>
-#include <Graphing\InfluenceLineGraphBuilder.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -56,18 +44,14 @@ static char THIS_FILE[] = __FILE__;
 
 HRESULT CPGSuperGrapherImp::InitGraphBuilders()
 {
-   GET_IFACE(IGraphManager,pGraphMgr);
-
-   pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
-   //pGraphMgr->AddGraphBuilder(new CInfluenceLineGraphBuilder);
-
+   CGrapherBase::InitCommonGraphBuilders();
    return S_OK;
 }
 
 STDMETHODIMP CPGSuperGrapherImp::SetBroker(IBroker* pBroker)
 {
-   AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_SET_BROKER(pBroker);
+   CGrapherBase::SetBroker(pBroker);
    return S_OK;
 }
 
@@ -85,7 +69,7 @@ STDMETHODIMP CPGSuperGrapherImp::RegInterfaces()
 STDMETHODIMP CPGSuperGrapherImp::Init()
 {
    /* Gets done at project load time */
-   AGENT_INIT;
+   EAF_AGENT_INIT;
 
    return AGENT_S_SECONDPASSINIT;
 }
@@ -110,6 +94,6 @@ STDMETHODIMP CPGSuperGrapherImp::Reset()
 /*--------------------------------------------------------------------*/
 STDMETHODIMP CPGSuperGrapherImp::ShutDown()
 {
-   AGENT_CLEAR_INTERFACE_CACHE;
+   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    return S_OK;
 }

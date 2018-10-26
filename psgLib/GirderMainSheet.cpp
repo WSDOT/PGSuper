@@ -443,7 +443,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
             m_Entry.m_PermanentStrands.push_back(GirderLibraryEntry::PermanentStrand(GirderLibraryEntry::stHarped, num_harped++));
          }
          else
-            ATLASSERT(0);
+            ATLASSERT(false);
       }
    }
 
@@ -479,7 +479,7 @@ void CGirderMainSheet::UploadStrandData()
          m_Entry.GetHarpedStrandCoordinates(strand_idx, &start_x, &start_y, &x, &y, &end_x, &end_y);
       }
       else
-         ATLASSERT(0);
+         ATLASSERT(false);
 
       CGirderGlobalStrandGrid::GlobalStrandGridEntry entry;
       entry.m_X =  ::ConvertFromSysUnits(x, pDisplayUnits->ComponentDim.UnitOfMeasure );

@@ -162,10 +162,6 @@ void CParabolicDuctGrid::CustomInit(CParabolicDuctGridCallback* pCallback)
 
 CParabolicDuctGeometry CParabolicDuctGrid::GetData()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    CParabolicDuctGeometry ductGeometry(m_pGirder);
 
    PierIndexType startPierIdx = m_pGirder->GetPierIndex(pgsTypes::metStart);
@@ -252,6 +248,8 @@ void CParabolicDuctGrid::SetData(const CParabolicDuctGeometry& ductGeometry)
 
    ductGeometry.GetEndPoint(&distance,&offset,&offsetType);
    InsertLastPoint(endSpanIdx,distance,offset,offsetType);
+
+   ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 }
 
 void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance,Float64 offset,CDuctGeometry::OffsetType offsetType)
@@ -552,9 +550,11 @@ CString CParabolicDuctGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
         CGXControl* pControl = GetControl(nRow, nCol);
         pControl->GetValue(s);
         return s;
-  }
+    }
     else
+    {
         return GetValueRowCol(nRow, nCol);
+    }
 }
 
 BOOL CParabolicDuctGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
@@ -572,9 +572,13 @@ void CParabolicDuctGrid::GetRowValues(ROWCOL row,Float64* pDistance,Float64* pOf
 
    long locationType = _tstol(GetCellValue(row,3));
    if ( locationType == 0 )
+   {
       distance = ::ConvertToSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   }
    else
+   {
       distance /= -100; // fraction
+   }
 
    Float64 offset = _tstof(GetCellValue(row,4));
    offset = ::ConvertToSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);

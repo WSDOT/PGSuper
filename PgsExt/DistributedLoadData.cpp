@@ -63,7 +63,7 @@ bool CDistributedLoadData::operator == (const CDistributedLoadData& rOther) cons
    if (m_LoadCase != rOther.m_LoadCase)
       return false;
 
-   if ( !m_SpanGirderKey.IsEqual(rOther.m_SpanGirderKey) )
+   if ( !m_spanKey.IsEqual(rOther.m_spanKey) )
       return false;
 
    if (m_Type != rOther.m_Type)
@@ -118,8 +118,8 @@ HRESULT CDistributedLoadData::Save(IStructuredSave* pSave)
    if ( FAILED(hr) )
       return hr;
 
-   SpanIndexType spanIdx  = m_SpanGirderKey.spanIndex;
-   GirderIndexType gdrIdx = m_SpanGirderKey.girderIndex;
+   SpanIndexType spanIdx  = m_spanKey.spanIndex;
+   GirderIndexType gdrIdx = m_spanKey.girderIndex;
 
    // In pre Jan, 2011 versions, all spans and all girders were hardcoded to 10000, then we changed to the ALL_SPANS/ALL_GIRDERS value
    // Keep backward compatibility by saving the 10k value
@@ -205,7 +205,7 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
       m_LoadCase = UserLoads::LL_IM;
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return STRLOAD_E_INVALIDFORMAT;
    }
 
@@ -249,7 +249,7 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
       m_Type = UserLoads::Trapezoidal;
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return STRLOAD_E_INVALIDFORMAT;
    }
 
@@ -274,8 +274,8 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
    if ( 10000 == gdrIdx )
       gdrIdx = ALL_GIRDERS;
 
-   m_SpanGirderKey.spanIndex   = spanIdx;
-   m_SpanGirderKey.girderIndex = gdrIdx;
+   m_spanKey.spanIndex   = spanIdx;
+   m_spanKey.girderIndex = gdrIdx;
    
    var.vt = VT_R8;
    hr = pLoad->get_Property(_T("StartLocation"),&var);

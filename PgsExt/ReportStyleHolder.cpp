@@ -82,7 +82,7 @@ void pgsReportStyleHolder::InitStyles()
    rpttitle.SetFontType(rptRiStyle::SWISS);
    rpttitle.SetAlignment(rptRiStyle::CENTER);
    flag = psl->AddNamedStyle(ms_ReportTitleStyle, rpttitle);
-   //CHECK(flag);
+   //ATLASSERT(flag);
 
    // Report Subtitle
    rptRiStyle rptsubtitle;
@@ -91,7 +91,7 @@ void pgsReportStyleHolder::InitStyles()
    rptsubtitle.SetFontType(rptRiStyle::SWISS);
    rptsubtitle.SetAlignment(rptRiStyle::CENTER);
    flag = psl->AddNamedStyle(ms_ReportSubtitleStyle, rptsubtitle);
-   //CHECK(flag);
+   //ATLASSERT(flag);
 
    // Chapter Titles
    rptRiStyle  chaptertitle;
@@ -101,7 +101,7 @@ void pgsReportStyleHolder::InitStyles()
    chaptertitle.SetBold( true );
    chaptertitle.SetColor( rptRiStyle::Blue );
    flag = psl->AddNamedStyle(ms_ChapterTitleStyle, chaptertitle);
-   //CHECK(flag);
+   //ATLASSERT(flag);
    
    // Headings
    rptRiStyle headings;
@@ -109,7 +109,7 @@ void pgsReportStyleHolder::InitStyles()
    headings.SetFontSize(11);
    headings.SetBold( true );
    flag = psl->AddNamedStyle(ms_HeadingStyle, headings);
-   //CHECK(flag);
+   //ATLASSERT(flag);
    
    // SubHeadings
    rptRiStyle subheadings;
@@ -118,7 +118,7 @@ void pgsReportStyleHolder::InitStyles()
    subheadings.SetItalic( true );
    subheadings.SetBold( true );
    flag = psl->AddNamedStyle(ms_SubheadingStyle, subheadings);
-   //CHECK(flag);
+   //ATLASSERT(flag);
 
    // Table Column Headings
    rptRiStyle colheadings;
@@ -129,7 +129,7 @@ void pgsReportStyleHolder::InitStyles()
    colheadings.SetBold( true );
    colheadings.SetBGColor( rptRiStyle::LightSteelBlue );
    flag = psl->AddNamedStyle(ms_TableColumnHeadingStyle, colheadings);
-   //CHECK(flag);
+   //ATLASSERT(flag);
 
    // Setup basic style
    rptRiStyle cell;
@@ -251,18 +251,28 @@ const std::_tstring& pgsReportStyleHolder::GetTableCellStyle(Uint32 style)
    Int16 index = 0;
 
    if ( style & CB_NONE )
+   {
       index |= 0x0000;
+   }
    else if ( style & CB_THIN )
+   {
       index |= 0x0001;
+   }
    
    if ( style & CJ_LEFT )
+   {
       index |= 0x0000;
+   }
    else if ( style & CJ_RIGHT )
+   {
       index |= 0x0002;
+   }
    else if ( style & CJ_CENTER )
+   {
       index |= 0x0004;
+   }
 
-   CHECK( 0 <= index && index <= 5 );
+   ATLASSERT( 0 <= index && index <= 5 );
 
    return ms_TableCellStyle[index];
 }
@@ -282,18 +292,28 @@ const std::_tstring& pgsReportStyleHolder::GetTableStripeRowCellStyle(Uint32 sty
    Int16 index = 0;
 
    if ( style & CB_NONE )
+   {
       index |= 0x0000;
+   }
    else if ( style & CB_THIN )
+   {
       index |= 0x0001;
+   }
    
    if ( style & CJ_LEFT )
+   {
       index |= 0x0000;
+   }
    else if ( style & CJ_RIGHT )
+   {
       index |= 0x0002;
+   }
    else if ( style & CJ_CENTER )
+   {
       index |= 0x0004;
+   }
 
-   CHECK( 0 <= index && index <= 5 );
+   ATLASSERT( 0 <= index && index <= 5 );
 
    return ms_TableStripeRowCellStyle[index];
 }
@@ -322,7 +342,9 @@ rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns,
 {
    rptRcTable* pTable = new rptRcTable( numColumns, 0.0/*pgsReportStyleHolder::GetMaxTableWidth()*/ );
    if (lpszLabel != NULL)
+   {
       pTable->TableLabel() << lpszLabel;
+   }
 
    pgsReportStyleHolder::ConfigureTable(pTable);
 
@@ -348,6 +370,19 @@ rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumn
    }
 
    return pTable;
+}
+
+rptRcTable* pgsReportStyleHolder::CreateLayoutTable(ColumnIndexType nColumns,const std::_tstring& strLabel)
+{
+   return CreateLayoutTable(nColumns,strLabel.c_str());
+}
+
+rptRcTable* pgsReportStyleHolder::CreateLayoutTable(ColumnIndexType nColumns,LPCTSTR lpszLabel)
+{
+   rptRcTable* pLayoutTable = CreateTableNoHeading(nColumns,lpszLabel);
+   pLayoutTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
+   pLayoutTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
+   return pLayoutTable;
 }
 
 void pgsReportStyleHolder::ConfigureTable(rptRcTable* pTable)

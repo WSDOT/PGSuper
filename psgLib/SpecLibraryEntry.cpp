@@ -4090,7 +4090,7 @@ Float64 SpecLibraryEntry::GetLLDeflectionLimit() const
 
 void SpecLibraryEntry::SetLLDeflectionLimit(Float64 limit)
 {
-   CHECK(limit>0.0);
+   ATLASSERT(limit>0.0);
    m_DeflectionLimit = limit;
 }
 

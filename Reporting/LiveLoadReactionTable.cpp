@@ -84,6 +84,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ICombinedForces,pCmbForces);
+   GET_IFACE2(pBroker,IReactions,pReactions);
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
@@ -92,7 +93,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    std::auto_ptr<ICmbLsReactionAdapter> pForces;
    if(  tableType==PierReactionsTable )
    {
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CombinedLsForcesReactionAdapter(pCmbForces,pLsForces,girderKey));
+      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CombinedLsForcesReactionAdapter(pReactions,pLsForces,girderKey));
    }
    else
    {
@@ -211,81 +212,81 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
      if ( analysisType == pgsTypes::Envelope )
      {
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCumulative, pgsTypes::MaxSimpleContinuousEnvelope ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCumulative, pgsTypes::MinSimpleContinuousEnvelope ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCumulative, pgsTypes::MaxSimpleContinuousEnvelope ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCumulative, pgsTypes::MinSimpleContinuousEnvelope ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcDC, reactionLocation, pgsTypes::MaxSimpleContinuousEnvelope, rtCumulative ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcDC, reactionLocation, pgsTypes::MinSimpleContinuousEnvelope, rtCumulative ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcDW, reactionLocation, pgsTypes::MaxSimpleContinuousEnvelope, rtCumulative ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcDW, reactionLocation, pgsTypes::MinSimpleContinuousEnvelope, rtCumulative ) );
 
         if ( bPedLoading )
         {
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, liveLoadIntervalIdx, reactionLocation, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
 
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, liveLoadIntervalIdx, reactionLocation, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pForces->GetCombinedLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
+        pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
 
-        pForces->GetCombinedLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
+        pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPermit, liveLoadIntervalIdx, reactionLocation, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPermit, reactionLocation, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
 
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPermit, liveLoadIntervalIdx, reactionLocation, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPermit, reactionLocation, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pLsForces->GetReaction( pgsTypes::StrengthI, intervalIdx, reactionLocation.PierIdx, reactionLocation.GirderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
+        pLsForces->GetReaction( intervalIdx, pgsTypes::StrengthI, reactionLocation.PierIdx, reactionLocation.GirderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
 
-        pLsForces->GetReaction( pgsTypes::StrengthI, intervalIdx, reactionLocation.PierIdx, reactionLocation.GirderKey, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
+        pLsForces->GetReaction( intervalIdx, pgsTypes::StrengthI, reactionLocation.PierIdx, reactionLocation.GirderKey, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pLsForces->GetReaction( pgsTypes::StrengthII, intervalIdx, reactionLocation.PierIdx, reactionLocation.GirderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
+           pLsForces->GetReaction( intervalIdx, pgsTypes::StrengthII, reactionLocation.PierIdx, reactionLocation.GirderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
 
-           pLsForces->GetReaction( pgsTypes::StrengthII, intervalIdx, reactionLocation.PierIdx, reactionLocation.GirderKey, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
+           pLsForces->GetReaction( intervalIdx, pgsTypes::StrengthII, reactionLocation.PierIdx, reactionLocation.GirderKey, pgsTypes::MinSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
      }
      else
      {
         pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCumulative, bat ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCumulative, bat ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcDC, reactionLocation, bat, rtCumulative ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcDW, reactionLocation, bat, rtCumulative ) );
 
         if ( bPedLoading )
         {
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPedestrian, liveLoadIntervalIdx, reactionLocation, bat, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, bat, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pForces->GetCombinedLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, bat, false, &min, &max );
+        pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, bat, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pForces->GetCombinedLiveLoadReaction( pgsTypes::lltPermit, liveLoadIntervalIdx, reactionLocation, bat, false, &min, &max );
+           pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPermit, reactionLocation, bat, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pLsForces->GetReaction( pgsTypes::StrengthI, intervalIdx, reactionLocation.PierIdx, reactionLocation.GirderKey, bat, false, &min, &max );
+        pLsForces->GetReaction( intervalIdx, pgsTypes::StrengthI, reactionLocation.PierIdx, reactionLocation.GirderKey, bat, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pLsForces->GetReaction( pgsTypes::StrengthII, intervalIdx, reactionLocation.PierIdx, reactionLocation.GirderKey, bat, false, &min, &max );
+           pLsForces->GetReaction( intervalIdx, pgsTypes::StrengthII, reactionLocation.PierIdx, reactionLocation.GirderKey, bat, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }

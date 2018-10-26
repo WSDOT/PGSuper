@@ -163,7 +163,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
-   CHECK(grpIdx < nSpans);
+   ATLASSERT(grpIdx < nSpans);
 
 #pragma Reminder("UPDATE: assuming precast girder bridge")
    bool bTempStrands = (0 < pStrandGeometry->GetMaxStrands(CSegmentKey(grpIdx,0,0),pgsTypes::Temporary) ? true : false);
@@ -253,9 +253,9 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
 
       ColumnIndexType col = 0;
       (*p_table)(row,col++) << LABEL_GIRDER(gdrIdx);
-      (*p_table)(row,col++) << pStrands->StrandMaterial[pgsTypes::Straight]->GetName();
+      (*p_table)(row,col++) << pStrands->GetStrandMaterial(pgsTypes::Straight)->GetName();
 
-      (*p_table)(row,col) << pStrands->Nstrands[pgsTypes::Straight];
+      (*p_table)(row,col) << pStrands->GetStrandCount(pgsTypes::Straight);
       StrandIndexType nd = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
       if (0 < nd)
       {
@@ -272,31 +272,31 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
 
       col++;
 
-      (*p_table)(row,col++) << force.SetValue(pStrands->Pjack[pgsTypes::Straight]);
+      (*p_table)(row,col++) << force.SetValue(pStrands->GetPjack(pgsTypes::Straight));
 
       // Right now, straight and harped strnads must have the same material
-      ATLASSERT( pStrands->StrandMaterial[pgsTypes::Straight] == pStrands->StrandMaterial[pgsTypes::Harped] );
+      ATLASSERT( pStrands->GetStrandMaterial(pgsTypes::Straight) == pStrands->GetStrandMaterial(pgsTypes::Harped) );
 
       (*p_table)(row,col++) << LABEL_HARP_TYPE(pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey));
-      (*p_table)(row,col++) << pStrands->Nstrands[pgsTypes::Harped];
-      (*p_table)(row,col++) << force.SetValue(pStrands->Pjack[pgsTypes::Harped]);
+      (*p_table)(row,col++) << pStrands->GetStrandCount(pgsTypes::Harped);
+      (*p_table)(row,col++) << force.SetValue(pStrands->GetPjack(pgsTypes::Harped));
 
-      ConfigStrandFillVector confvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetNstrands(pgsTypes::Harped));
+      ConfigStrandFillVector confvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
 
       // convert to absolute adjustment
       Float64 adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, confvec, 
-                                                           pStrands->HsoEndMeasurement, pStrands->HpOffsetAtEnd);
+                                                           pStrands->GetHarpStrandOffsetMeasurementAtEnd(), pStrands->GetHarpStrandOffsetAtEnd());
       (*p_table)(row,col++) << dim.SetValue(adjustment);
 
       adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, confvec, 
-                                                                  pStrands->HsoHpMeasurement, pStrands->HpOffsetAtHp);
+                                                                  pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint(), pStrands->GetHarpStrandOffsetAtHarpPoint());
       (*p_table)(row,col++) << dim.SetValue(adjustment);
 
       if ( bTempStrands )
       {
-         (*p_table)(row,col++) << pStrands->StrandMaterial[pgsTypes::Temporary]->GetName();
-         (*p_table)(row,col++) << pStrands->Nstrands[pgsTypes::Temporary];
-         (*p_table)(row,col++) << force.SetValue(pStrands->Pjack[pgsTypes::Temporary]);
+         (*p_table)(row,col++) << pStrands->GetStrandMaterial(pgsTypes::Temporary)->GetName();
+         (*p_table)(row,col++) << pStrands->GetStrandCount(pgsTypes::Temporary);
+         (*p_table)(row,col++) << force.SetValue(pStrands->GetPjack(pgsTypes::Temporary));
       }
 
       row++;
@@ -594,7 +594,7 @@ void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nspans = pBridge->GetSpanCount();
-   CHECK(grpIdx<nspans);
+   ATLASSERT(grpIdx<nspans);
 
    rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter<<pHead;
@@ -661,11 +661,11 @@ void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
 void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
 {
-   GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
-   GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
+   GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
+   GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nspans = pBridge->GetSpanCount();
-   CHECK(grpIdx<nspans);
+   ATLASSERT(grpIdx<nspans);
 
    rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter<<pHead;
@@ -692,10 +692,10 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
       CSegmentKey segmentKey(grpIdx,gdrIdx,0);
 
       (*p_table)(row,0) << LABEL_GIRDER(gdrIdx);
-      (*p_table)(row,1) << loc.SetValue(pGirderLifting->GetLeftLiftingLoopLocation(segmentKey));
-      (*p_table)(row,2) << loc.SetValue(pGirderLifting->GetRightLiftingLoopLocation(segmentKey));
-      (*p_table)(row,3) << loc.SetValue(pGirderHauling->GetLeadingOverhang(segmentKey));
-      (*p_table)(row,4) << loc.SetValue(pGirderHauling->GetTrailingOverhang(segmentKey));
+      (*p_table)(row,1) << loc.SetValue(pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey));
+      (*p_table)(row,2) << loc.SetValue(pSegmentLifting->GetRightLiftingLoopLocation(segmentKey));
+      (*p_table)(row,3) << loc.SetValue(pSegmentHauling->GetLeadingOverhang(segmentKey));
+      (*p_table)(row,4) << loc.SetValue(pSegmentHauling->GetTrailingOverhang(segmentKey));
       row++;
    }
 }

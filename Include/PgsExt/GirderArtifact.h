@@ -78,6 +78,11 @@ public:
    // if a previously stored one does not exist
    pgsSegmentArtifact* GetSegmentArtifact(SegmentIndexType segIdx);
 
+   
+   void SetConstructabilityArtifact(const pgsConstructabilityArtifact& artifact);
+   const pgsConstructabilityArtifact* GetConstructabilityArtifact() const;
+   pgsConstructabilityArtifact* GetConstructabilityArtifact();
+
    void SetTendonStressArtifact(DuctIndexType ductIdx,const pgsTendonStressArtifact& artifact);
    const pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx) const;
    pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx);
@@ -117,6 +122,8 @@ private:
    std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>> m_FlexuralCapacityArtifacts[pgsTypes::LimitStateCount];
 
    std::set<pgsSegmentArtifact> m_SegmentArtifacts;
+
+   pgsConstructabilityArtifact m_ConstructabilityArtifact;
 
    std::vector<pgsDeflectionCheckArtifact> m_DeflectionCheckArtifact;
 };

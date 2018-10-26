@@ -115,7 +115,7 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    pDad->m_Entry.GetBeamFactory(&pFactory);
 
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(pFactory);
-   if ( splicedBeamFactory && !splicedBeamFactory->SupportsVariableDepthSection() )
+   if ( !splicedBeamFactory || !splicedBeamFactory->SupportsVariableDepthSection() )
    {
       GetDlgItem(IDC_VARIABLE_DEPTH_GROUP)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_VARIABLE_DEPTH_CHECK)->ShowWindow(SW_HIDE);
@@ -199,17 +199,32 @@ void CGirderDimensionsPage::OnBeamTypeChanged()
       strMsg.Format(_T("Unable to create \"%s\"."),strGirderName);
       AfxMessageBox(strMsg);
       if ( m_LastBeamType != CB_ERR )
+      {
          pComboBox->SetCurSel(m_LastBeamType);
+      }
 
       return;
    }
+
+   CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
+   pDad->SetBeamFactory(pFactory);
 
    m_Grid.ResetGrid();
    UpdateData(FALSE);
 	m_Grid.ResizeRowHeightsToFit(CGXRange(0,0,0,m_Grid.GetColCount()));
 
-   CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
-   pDad->SetBeamFactory(pFactory);
+   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(pFactory);
+   if ( !splicedBeamFactory || !splicedBeamFactory->SupportsVariableDepthSection() )
+   {
+      GetDlgItem(IDC_VARIABLE_DEPTH_GROUP)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_VARIABLE_DEPTH_CHECK)->ShowWindow(SW_HIDE);
+   }
+   else
+   {
+      GetDlgItem(IDC_VARIABLE_DEPTH_GROUP)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_VARIABLE_DEPTH_CHECK)->ShowWindow(SW_SHOW);
+   }
+   OnBnClickedVariableDepthCheck();
 }
 
 void CGirderDimensionsPage::OnViewSection()

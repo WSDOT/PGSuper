@@ -76,15 +76,14 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                                             bool bDesign,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, gdrpoi, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, spanpoi, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, rptReleasePoi, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, rptErectedPoi, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    //gdrpoi.IncludeSpanAndGirder(span == ALL_SPANS);
    //spanpoi.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
@@ -140,7 +139,10 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey, POI_RELEASED_SEGMENT ) );
+   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest( segmentKey, POI_ERECTED_SEGMENT ) );
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   std::sort(vPoi.begin(),vPoi.end());
 
    // don't want to report at these locations since the are off segment
    // and don't have stresses due to pre-tensioning.
@@ -150,62 +152,51 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
 
    // Fill up the table
-   pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.0);
-   bool bSkipToNextRow = false;
-
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; iter != end; iter++ )
    {
-      bSkipToNextRow = false;
       col = 0;
 
       const pgsPointOfInterest& poi = *iter;
       const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
 
-      if ( row != 1 && IsEqual(poi.GetDistFromStart(),prev_poi.GetDistFromStart()) )
-      {
-         bSkipToNextRow = true;
-         row--;
-      }
-
       Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-      (*p_table)(row,col++) << gdrpoi.SetValue( POI_RELEASED_SEGMENT, poi );
-      (*p_table)(row,col++) << spanpoi.SetValue( POI_ERECTED_SEGMENT, poi, end_size  );
-
-      if ( !bSkipToNextRow )
+      if ( bDesign )
       {
-         Float64 fTop, fBot;
-         if ( bDesign )
-         {
-            std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-            std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-            for ( ; iter != end; iter++ )
-            {
-               IntervalIndexType intervalIdx = *iter;
+         (*p_table)(row,col++) << rptReleasePoi.SetValue( POI_RELEASED_SEGMENT, poi );
+      }
+      (*p_table)(row,col++) << rptErectedPoi.SetValue( POI_ERECTED_SEGMENT, poi, end_size  );
 
-               fTop = pPrestress->GetStress(intervalIdx,poi,pgsTypes::TopGirder);
-               fBot = pPrestress->GetStress(intervalIdx,poi,pgsTypes::BottomGirder);
-               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
-               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
-               col++;
-            }
-         }
-         else
+      Float64 fTop, fBot;
+      if ( bDesign )
+      {
+         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+         for ( ; iter != end; iter++ )
          {
-            // Rating
-            fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder);
-            fBot = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::BottomGirder);
+            IntervalIndexType intervalIdx = *iter;
+
+            fTop = pPrestress->GetStress(intervalIdx,poi,pgsTypes::TopGirder);
+            fBot = pPrestress->GetStress(intervalIdx,poi,pgsTypes::BottomGirder);
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
             col++;
          }
       }
+      else
+      {
+         // Rating
+         fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder);
+         fBot = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::BottomGirder);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
+         col++;
+      }
 
       row++;
-      prev_poi = poi;
    }
 
    return p_table;

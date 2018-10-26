@@ -47,7 +47,7 @@ CLASS
 void write_cracked_section_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                             const std::vector<pgsPointOfInterest>& pois,
+                             const std::vector<pgsPointOfInterest>& vPoi,
                              rptChapter* pChapter,
                              bool bIncludeNegMoment);
 
@@ -64,9 +64,21 @@ LPCTSTR CCrackedSectionDetailsChapterBuilder::GetName() const
 rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+
    CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -125,7 +137,7 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
          CGirderKey thisGirderKey(grpIdx,gdrIdx);
-         std::vector<pgsPointOfInterest> vPoi(pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)));
+         std::vector<pgsPointOfInterest> vPoi(pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT));
          write_cracked_section_table(pBroker,pDisplayUnits, thisGirderKey, vPoi, pChapter, bProcessNegativeMoments);
       }
    }
@@ -141,7 +153,7 @@ CChapterBuilder* CCrackedSectionDetailsChapterBuilder::Clone() const
 void write_cracked_section_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                             const std::vector<pgsPointOfInterest>& pois,
+                             const std::vector<pgsPointOfInterest>& vPoi,
                              rptChapter* pChapter,
                              bool bIncludeNegMoment)
 {
@@ -206,8 +218,8 @@ void write_cracked_section_table(IBroker* pBroker,
 
    GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;

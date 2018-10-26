@@ -56,10 +56,14 @@ CTemporarySupportActivityBase& CTemporarySupportActivityBase::operator= (const C
 bool CTemporarySupportActivityBase::operator==(const CTemporarySupportActivityBase& rOther) const
 {
    if ( m_bEnabled != rOther.m_bEnabled )
+   {
       return false;
+   }
 
    if ( m_TempSupports != rOther.m_TempSupports )
+   {
       return false;
+   }
 
    return true;
 }

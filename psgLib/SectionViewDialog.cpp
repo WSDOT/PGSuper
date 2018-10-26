@@ -353,7 +353,7 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
          total_strand_cnt = DrawStrand(pDC, Mapper, x, y, total_strand_cnt);
       }
       else
-         ATLASSERT(0);
+         ATLASSERT(false);
    }
 
    // temporary strands

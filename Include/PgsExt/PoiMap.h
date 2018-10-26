@@ -20,15 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_POIMAP_H_
-#define INCLUDED_POIMAP_H_
+#pragma once
+
 #include <PgsExt\PgsExtExp.h>
-
+#include <PgsExt\PointOfInterest.h>
 #include <map>
-#include <PgsExt\GirderPointOfInterest.h>
 
-// Private class used by the analysis agent.
-// Maps Product and Analysis model poi's
+// Utility class to mape points of interest to model POI IDs.
+// Model POI IDs can be any POI-type ID in any model. This
 class PGSEXTCLASS pgsPoiMap
 {
 public:
@@ -38,12 +37,10 @@ public:
 
    void AddMap(const pgsPointOfInterest& poi,PoiIDType modelPoi);
    void Clear();
-   PoiIDType GetProductPoi(PoiIDType modelPoi) const;
+
    PoiIDType GetModelPoi(const pgsPointOfInterest& productPoi) const;
    std::vector<PoiIDType> GetModelPois() const;
 
 private:
-   std::map<pgsPointOfInterest,PoiIDType> m_Map; // key = product POI;
+   std::map<PoiIDType,PoiIDType> m_Map; // key = product POI, value = model POI;
 };
-
-#endif // INCLUDED_POIMAP_H_

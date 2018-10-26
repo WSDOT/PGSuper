@@ -107,86 +107,136 @@ CConcreteMaterial& CConcreteMaterial::operator= (const CConcreteMaterial& rOther
 bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
 {
    if ( Type != rOther.Type )
+   {
       return false;
+   }
 
    if ( Fc != rOther.Fc )
+   {
       return false;
+   }
 
    if ( bUserEc != rOther.bUserEc )
+   {
       return false;
+   }
 
    if ( bUserEc && !IsEqual(Ec,rOther.Ec) )
+   {
       return false;
+   }
 
    if ( bHasInitial != rOther.bHasInitial )
+   {
       return false;
+   }
 
    if ( bHasInitial )
    {
       if ( Fci != rOther.Fci )
+      {
          return false;
+      }
 
       if ( bUserEci != rOther.bUserEci )
+      {
          return false;
+      }
 
       if ( bUserEci && !IsEqual(Eci,rOther.Eci) )
+      {
          return false;
+      }
    }
 
    if ( !IsEqual( WeightDensity, rOther.WeightDensity ) )
+   {
       return false;
+   }
 
    if ( StrengthDensity != rOther.StrengthDensity )
+   {
       return false;
+   }
 
    if ( MaxAggregateSize != rOther.MaxAggregateSize )
+   {
       return false;
+   }
 
    if ( EcK1 != rOther.EcK1 )
+   {
       return false;
+   }
 
    if ( EcK2 != rOther.EcK2 )
+   {
       return false;
+   }
 
    if ( CreepK1 != rOther.CreepK1 )
+   {
       return false;
+   }
 
    if ( CreepK2 != rOther.CreepK2 )
+   {
       return false;
+   }
 
    if ( ShrinkageK1 != rOther.ShrinkageK1 )
+   {
       return false;
+   }
 
    if ( ShrinkageK2 != rOther.ShrinkageK2 )
+   {
       return false;
+   }
 
    if ( bHasFct != rOther.bHasFct )
+   {
       return false;
+   }
 
    if ( bHasFct && !IsEqual(Fct,rOther.Fct) )
+   {
       return false;
+   }
 
    if ( bBasePropertiesOnInitialValues != rOther.bBasePropertiesOnInitialValues )
+   {
       return false;
+   }
 
    if ( bACIUserParameters != rOther.bACIUserParameters )
+   {
       return false;
+   }
 
    if ( bACIUserParameters )
    {
       if ( !IsEqual(A,rOther.A) )
+      {
          return false;
+      }
 
       if ( !IsEqual(B,rOther.B) )
+      {
          return false;
+      }
    }
    else
    {
       if ( CureMethod != rOther.CureMethod )
+      {
          return false;
+      }
 
       if ( CementType != rOther.CementType )
+      {
          return false;
+      }
    }
 
 
@@ -248,7 +298,9 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("UserEc"),           CComVariant(bUserEc));
 
    if ( bUserEc )
+   {
       pStrSave->put_Property(_T("Ec"),               CComVariant(Ec));
+   }
 
    pStrSave->put_Property(_T("WeightDensity"),    CComVariant(WeightDensity));
    pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(StrengthDensity));
@@ -261,7 +313,9 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("UserEci"),          CComVariant(bUserEci));
       
       if ( bUserEci )
+      {
          pStrSave->put_Property(_T("Eci"),              CComVariant(Eci));
+      }
    }
 
 
@@ -278,7 +332,9 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    {
       pStrSave->put_Property(_T("HasFct"),CComVariant(bHasFct));
       if ( bHasFct )
+      {
          pStrSave->put_Property(_T("Fct"),CComVariant(Fct));
+      }
    }
    pStrSave->EndUnit(); // AASHTO
 

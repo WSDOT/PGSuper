@@ -194,18 +194,18 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* p
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
-   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlab,      poi, m_BAT, ctIncremental ) );
+   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlab,      poi, m_BAT, rtIncremental ) );
    if ( m_bHasDeckPanel )
    {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPanel,      poi, m_BAT, ctIncremental ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPanel,      poi, m_BAT, rtIncremental ) );
    }
-   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPad,   poi, m_BAT, ctIncremental ) );
-   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftDiaphragm, poi, m_BAT, ctIncremental ) + 
-                                          pProdForces->GetMoment( castDeckIntervalIdx, pftShearKey,  poi, m_BAT, ctIncremental ));
+   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPad,   poi, m_BAT, rtIncremental ) );
+   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftDiaphragm, poi, m_BAT, rtIncremental ) + 
+                                          pProdForces->GetMoment( castDeckIntervalIdx, pftShearKey,  poi, m_BAT, rtIncremental ));
    if ( m_bHasUserLoads )
    {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftUserDC, poi, m_BAT, ctIncremental ) );
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftUserDW, poi, m_BAT, ctIncremental ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftUserDC, poi, m_BAT, rtIncremental ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftUserDW, poi, m_BAT, rtIncremental ) );
    }
 
    (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetAddlGdrMoment() );

@@ -50,7 +50,9 @@ bool pgsRefinedAnalysisStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsRefinedAnalysisStatusItem* other = dynamic_cast<pgsRefinedAnalysisStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    return true;
 }
@@ -78,7 +80,6 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    if ( dlg.DoModal() == IDOK )
    {
-      GET_IFACE(ILiveLoads,pLiveLoads);
       GET_IFACE(IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -107,8 +108,11 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          break;
 
       case CRefinedAnalysisOptionsDlg::lldfDefault:
+         {
+         GET_IFACE(ILiveLoads,pLiveLoads);
          method = pBridgeDesc->GetDistributionFactorMethod();
          roaAction = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+         }
          break;
 
       default:
@@ -131,10 +135,14 @@ bool pgsInstallationErrorStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsInstallationErrorStatusItem* other = dynamic_cast<pgsInstallationErrorStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    if ( m_Component != other->m_Component)
+   {
       return false;
+   }
 
    return true;
 }
@@ -171,13 +179,19 @@ bool pgsUnknownErrorStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsUnknownErrorStatusItem* other = dynamic_cast<pgsUnknownErrorStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    if ( m_File != other->m_File )
+   {
       return false;
+   }
 
    if ( m_Line != other->m_Line )
+   {
       return false;
+   }
 
    return true;
 }
@@ -215,10 +229,14 @@ bool pgsInformationalStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsInformationalStatusItem* other = dynamic_cast<pgsInformationalStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    if ( GetDescription() != other->GetDescription())
+   {
       return false;
+   }
 
    return true;
 }
@@ -278,16 +296,24 @@ bool pgsGirderDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsGirderDescriptionStatusItem* other = dynamic_cast<pgsGirderDescriptionStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    if ( this->GetDescription() != other->GetDescription() )
+   {
       return false;
+   }
 
    if ( m_SegmentKey != other->m_SegmentKey )
+   {
       return false;
+   }
 
    if ( m_Page != other->m_Page )
+   {
       return false;
+   }
 
    return true;
 }
@@ -337,7 +363,9 @@ bool pgsStructuralAnalysisTypeStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsStructuralAnalysisTypeStatusItem* other = dynamic_cast<pgsStructuralAnalysisTypeStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    return true;
 }
@@ -367,13 +395,19 @@ bool pgsBridgeDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsBridgeDescriptionStatusItem* other = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    if ( this->GetDescription() != other->GetDescription() )
+   {
       return false;
+   }
 
    if ( m_IssueType != other->m_IssueType )
+   {
       return false;
+   }
 
    return true;
 }
@@ -464,7 +498,9 @@ bool pgsLldfWarningStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsLldfWarningStatusItem* other = dynamic_cast<pgsLldfWarningStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    return true;
 }
@@ -508,7 +544,9 @@ bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
    // we only want one of these in the status center
    pgsEffectiveFlangeWidthStatusItem* other = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pOther);
    if ( !other )
+   {
       return false;
+   }
 
    return true;
 }

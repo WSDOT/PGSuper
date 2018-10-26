@@ -76,7 +76,9 @@ ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometr
          vec[idx] = it->numFilled;
       }
       else
-         ATLASSERT(0); 
+      {
+         ATLASSERT(false); 
+      }
 
       it++;
    }
@@ -102,7 +104,9 @@ ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometr
          vec[idx] = it->numFilled;
       }
       else
-         ATLASSERT(0); 
+      {
+         ATLASSERT(false); 
+      }
 
       it++;
    }
@@ -149,7 +153,7 @@ void ConfigStrandFillTool::StrandPositionIndexToGridIndex(StrandIndexType strand
       it++;
    }
 
-   ATLASSERT(0); // We shouldn't be sending in invalid positions
+   ATLASSERT(false); // We shouldn't be sending in invalid positions
    *pGridIndex = INVALID_INDEX;
    *pOtherStrandPosition = INVALID_INDEX;
 }
@@ -196,7 +200,7 @@ ConfigStrandFillTool::ConfigStrandFillTool(const ConfigStrandFillVector& rFillVe
 //ZoneIndexType GetZoneIndexAtLocation(Float64 location, Float64 girderLength, Float64 startSupportLoc, Float64 endSupportLoc,
 //                             bool bSymmetrical, IteratorType& rItBegin, IteratorType& rItEnd, ZoneIndexType collSize)
 //{
-//   CHECK(collSize>0);
+//   ATLASSERT(collSize>0);
 //
 //   ZoneIndexType zone = 0;
 //
@@ -323,7 +327,7 @@ Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType typ
                                                 config.ShearZones.begin(), config.ShearZones.end(), 
                                                 config.ShearZones.size());
 
-   if (zone>=0)
+   if (0 <= zone)
    {
       const STIRRUPCONFIG::SHEARZONEDATA& rzd = config.ShearZones[zone];
       *pSpacing = rzd.BarSpacing;
@@ -339,7 +343,7 @@ Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType typ
          *pNBars = rzd.nHorzInterfaceBars;
       }
 
-      if (*pSpacing > 0.0)
+      if (0.0 < *pSpacing )
       {
          return (*pSingleBarArea)*(*pNBars)/(*pSpacing);
       }
@@ -350,7 +354,7 @@ Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType typ
    }
    else
    {
-      ATLASSERT(0); // this should never happen
+      ATLASSERT(false); // this should never happen
       *pSize = matRebar::bsNone;
       *pNBars = 0.0;
       *pSpacing = 0.0;
@@ -366,7 +370,7 @@ Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 loca
    ZoneIndexType zone =  GetZoneIndexAtLocation(location, gdrLength, leftSupportLoc, rgtSupportLoc, config.bAreZonesSymmetrical, 
                                                 config.HorizontalInterfaceZones.begin(), config.HorizontalInterfaceZones.end(), 
                                                 config.HorizontalInterfaceZones.size());
-   if (zone>=0)
+   if (0 <= zone)
    {
       const STIRRUPCONFIG::HORIZONTALINTERFACEZONEDATA& rzd = config.HorizontalInterfaceZones[zone];
       *pSize = rzd.BarSize;
@@ -374,7 +378,7 @@ Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 loca
       *pSpacing = rzd.BarSpacing;
       *pSingleBarArea = rzd.ABar;
 
-      if (rzd.BarSpacing > 0.0)
+      if (0.0 < rzd.BarSpacing)
       {
          return rzd.ABar*rzd.nBars/rzd.BarSpacing;
       }
@@ -385,7 +389,7 @@ Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 loca
    }
    else
    {
-      ATLASSERT(0); // this should never happen
+      ATLASSERT(false); // this should never happen
       *pSize = matRebar::bsNone;
       *pNBars = 0.0;
       *pSpacing = 0.0;
@@ -460,7 +464,7 @@ void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
          endloc=0.0;
          for(STIRRUPCONFIG::ShearZoneConstReverseIterator itr = config.ShearZones.rbegin(); itr != config.ShearZones.rend(); itr++)
          {
-            if (endloc>=reqdEndZl)
+            if (reqdEndZl <= endloc)
             {
                break;
             }
@@ -497,7 +501,7 @@ Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type barType,
    Float64 endloc=0.0;
    for(STIRRUPCONFIG::ShearZoneConstIterator itl = config.ShearZones.begin(); itl != config.ShearZones.end(); itl++)
    {
-      if (endloc>=rangeLength)
+      if (rangeLength <= endloc)
       {
          break; // done
       }
@@ -516,7 +520,7 @@ Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type barType,
          Float64 Abars = pRebar->GetNominalArea() * zd.nVertBars;
          Float64 spacing = zd.BarSpacing;
 
-         if (endloc+zd.ZoneLength > rangeLength)
+         if (rangeLength < endloc+zd.ZoneLength)
          {
             // Range covers partial zone
             Float64 lastzl = rangeLength-endloc;
@@ -555,7 +559,7 @@ Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType
       Float64 endloc=0.0;
       for(STIRRUPCONFIG::ShearZoneConstReverseIterator itl = config.ShearZones.rbegin(); itl != config.ShearZones.rend(); itl++)
       {
-         if (endloc>=rangeLength)
+         if (rangeLength <= endloc)
          {
             break; // done
          }
@@ -574,7 +578,7 @@ Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType
             Float64 Abars = pRebar->GetNominalArea() * zd.nVertBars;
             Float64 spacing = zd.BarSpacing;
 
-            if (endloc+zd.ZoneLength > rangeLength)
+            if (rangeLength < endloc+zd.ZoneLength)
             {
                // Range covers partial zone
                Float64 lastzl = rangeLength-endloc;
@@ -731,7 +735,9 @@ bool DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config)
          if (zd.VertBarSize==matRebar::bsNone  ||
              zd.nVertBars <= 0                ||
              zd.nHorzInterfaceBars < zd.nVertBars)
+         {
             return false;
+         }
       }
    }
 

@@ -15,6 +15,7 @@ IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignStandardFillDlg, CDialog)
 CTxDOTOptionalDesignStandardFillDlg::CTxDOTOptionalDesignStandardFillDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CTxDOTOptionalDesignStandardFillDlg::IDD, pParent)
    , m_strNumStrands(_T(""))
+   , m_NumStrands(0)
    , m_To(0)
    , m_bFirstActive(true)
 {
@@ -59,11 +60,9 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    if (pBroker==NULL)
       return;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    DDX_CBStringExactCase(pDX, IDC_OPT_NUM_STRANDS, m_strNumStrands);
 
-   bool st = sysTokenizer::ParseLong(m_strNumStrands, (long*)&m_NumStrands);  // save num strands as integral value as well
+   bool st = sysTokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
    ASSERT(st);
 
    // only parse To value if we have harped strands
@@ -77,6 +76,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    {
       if (numHarped>0) 
       {
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
          DDX_UnitValueAndTag(pDX,IDC_OPT_TO, IDC_OPT_TO_UNITS, m_To, pDisplayUnits->GetComponentDimUnit() );
 
          if (pDX->m_bSaveAndValidate)
@@ -90,7 +90,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      ATLASSERT(0); // should never happen
+      ATLASSERT(false); // should never happen
    }
 
    if (pDX->m_bSaveAndValidate)
@@ -144,7 +144,7 @@ void CTxDOTOptionalDesignStandardFillDlg::OnCbnSelchangeOptNumStrands()
    if (sel!=CB_ERR)
    {
       pBox->GetLBText(sel,m_strNumStrands);
-      bool st = sysTokenizer::ParseLong(m_strNumStrands, (long*)&m_NumStrands);  // save num strands as integral value as well
+      bool st = sysTokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
       ASSERT(st);
    }
    else

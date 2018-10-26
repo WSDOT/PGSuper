@@ -102,6 +102,7 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    {
       pGdrLineRptSpec->GetBroker(&pBroker);
       girderKey = pGdrLineRptSpec->GetGirderKey();
+      girderKey.groupIndex = 0;
    }
    else
    {
@@ -109,6 +110,8 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+
+#pragma Reminder("UPDATE: Bridge Description Chapter - need to include temporary supports, erection sequence, post-tensioning, etc")
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    //write_alignment_data( pBroker, pDisplayUnits, pChapter, level);
@@ -452,7 +455,6 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
 void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
-   GET_IFACE2(pBroker, IRoadway, pRoadway);
    GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
    rptParagraph* pPara;
 
@@ -471,8 +473,11 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    *pPara << _T("Grade: ") << profile.Grade*100 << _T("%") << rptNewLine;
 
    if ( profile.VertCurves.size() == 0 )
+   {
       return;
+   }
 
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
 
    // Setup the table
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(profile.VertCurves.size()+1,_T("Vertical Curve Data"));
@@ -675,8 +680,6 @@ void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapte
 
 void write_bridge_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
-   GET_IFACE2(pBroker, ISegmentData,pSegmentData);
-
    rptParagraph* pPara;
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -964,7 +967,6 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
    row = pTable->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -1757,7 +1759,6 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
    GET_IFACE2(pBroker, ISegmentData,      pSegmentData);
    GET_IFACE2(pBroker, IBridge,           pBridge ); 
-   GET_IFACE2(pBroker, ILibrary,          pLib );
    GET_IFACE2(pBroker, IStrandGeometry,   pStrand);
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker, IDocumentType,     pDocType);
@@ -1807,32 +1808,33 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
             PierIndexType startPierIdx, endPierIdx;
             pBridge->GetGirderGroupPiers(grpIdx,&startPierIdx,&endPierIdx);
-            ATLASSERT(endPierIdx == startPierIdx+1);
-
-            (*pTable)(row,0) << _T("Slab Offset at Start (\"A\" Dimension)");
-            (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey.groupIndex,startPierIdx,thisSegmentKey.girderIndex));
-            row++;
-
-            (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
-            (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey.groupIndex,endPierIdx,thisSegmentKey.girderIndex));
-            row++;
+            for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+            {
+               (*pTable)(row,0) << _T("Slab Offset (\"A\" Dimension) at Pier ") << LABEL_PIER(pierIdx);
+               (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey.groupIndex,pierIdx,thisSegmentKey.girderIndex));
+               row++;
+            }
 
             CString strFillType;
-            if (pStrands->NumPermStrandsType == CStrandData::npsTotal)
+            if (pStrands->GetStrandDefinitionType() == CStrandData::npsTotal)
             {
                strFillType = "Sequence of Permanent Strands";
             }
-            else if (pStrands->NumPermStrandsType == CStrandData::npsStraightHarped)
+            else if (pStrands->GetStrandDefinitionType() == CStrandData::npsStraightHarped)
             {
                strFillType = "Sequence of Straight/Harped Strands";
             }
-            else if (pStrands->NumPermStrandsType == CStrandData::npsDirectSelection)
+            else if (pStrands->GetStrandDefinitionType() == CStrandData::npsDirectSelection)
             {
                strFillType = "Non-Sequential, Direct Fill";
             }
+            else if (pStrands->GetStrandDefinitionType() == CStrandData::npsUser)
+            {
+               strFillType = "User Defined Strands";
+            }
             else
             {
-               ATLASSERT(0);
+               ATLASSERT(false);
             }
 
             (*pTable)(row,0) << _T("Strand Fill Type");
@@ -1859,7 +1861,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             row++;
 
             (*pTable)(row,0) << _T("Straight Strand P") << Sub(_T("jack"));
-            (*pTable)(row,1) << force.SetValue(pStrands->Pjack[pgsTypes::Straight]);
+            (*pTable)(row,1) << force.SetValue(pStrands->GetPjack(pgsTypes::Straight));
             row++;
 
             (*pTable)(row,0) << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" Strands");
@@ -1870,7 +1872,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             row++;
 
             (*pTable)(row,0) << LABEL_HARP_TYPE(harpedAreStraight) << _T(" Strand P") << Sub(_T("jack"));
-            (*pTable)(row,1) << force.SetValue(pStrands->Pjack[pgsTypes::Harped]);
+            (*pTable)(row,1) << force.SetValue(pStrands->GetPjack(pgsTypes::Harped));
             row++;
 
             (*pTable)(row,0) << _T("Total Number of Permanent Strands");
@@ -1887,120 +1889,120 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                row++;
 
                (*pTable)(row,0) << _T("Temporary Strand P") << Sub(_T("jack"));
-               (*pTable)(row,1) << force.SetValue(pStrands->Pjack[pgsTypes::Temporary]);
+               (*pTable)(row,1) << force.SetValue(pStrands->GetPjack(pgsTypes::Temporary));
                row++;
             }
 
             std::_tstring endoff;
             if (harpedAreStraight)
             {
-            if( pStrands->HsoEndMeasurement==hsoLEGACY)
+            if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
             {    // Method used pre-version 6.0
                endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at girder ends");
             }
-            else if( pStrands->HsoEndMeasurement==hsoCGFROMTOP)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMTOP)
             {
                endoff = _T("Distance from top of girder to CG of harped strands at girder ends");
             }
-            else if( pStrands->HsoEndMeasurement==hsoCGFROMBOTTOM)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMBOTTOM)
             {
                endoff = _T("Distance from bottom of girder to CG of harped strands at girder ends");
             }
-            else if( pStrands->HsoEndMeasurement==hsoTOP2TOP)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2TOP)
             {
                endoff = _T("Distance from top of girder to top-most harped strand at girder ends");
             }
-            else if( pStrands->HsoEndMeasurement==hsoTOP2BOTTOM)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2BOTTOM)
             {
                endoff = _T("Distance from bottom of girder to top-most harped strand at girder ends");
             }
-            else if( pStrands->HsoEndMeasurement==hsoBOTTOM2BOTTOM)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoBOTTOM2BOTTOM)
             {
                endoff = _T("Distance from bottom of girder to lowest harped strand at girder ends");
             }
-            else if( pStrands->HsoEndMeasurement==hsoECCENTRICITY)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoECCENTRICITY)
             {
                endoff = _T("Eccentricity of harped strand group at girder ends");
             }
             else
-               ATLASSERT(0);
+               ATLASSERT(false);
             }
             else
             {
-               if( pStrands->HsoEndMeasurement==hsoLEGACY)
+               if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
                {    // Method used pre-version 6.0
                   endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at girder ends");
                }
-               else if( pStrands->HsoEndMeasurement==hsoCGFROMTOP)
+               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMTOP)
                {
                   endoff = _T("Distance from top of girder to CG of harped strands at girder ends");
                }
-               else if( pStrands->HsoEndMeasurement==hsoCGFROMBOTTOM)
+               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMBOTTOM)
                {
                   endoff = _T("Distance from bottom of girder to CG of harped strands at girder ends");
                }
-               else if( pStrands->HsoEndMeasurement==hsoTOP2TOP)
+               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2TOP)
                {
                   endoff = _T("Distance from top of girder to top-most harped strand at girder ends");
                }
-               else if( pStrands->HsoEndMeasurement==hsoTOP2BOTTOM)
+               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2BOTTOM)
                {
                   endoff = _T("Distance from bottom of girder to top-most harped strand at girder ends");
                }
-               else if( pStrands->HsoEndMeasurement==hsoBOTTOM2BOTTOM)
+               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoBOTTOM2BOTTOM)
                {
                   endoff = _T("Distance from bottom of girder to lowest harped strand at girder ends");
                }
-               else if( pStrands->HsoEndMeasurement==hsoECCENTRICITY)
+               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoECCENTRICITY)
                {
                   endoff = _T("Eccentricity of harped strand group at girder ends");
                }
                else
-                  ATLASSERT(0);
+                  ATLASSERT(false);
             }
 
 
             (*pTable)(row,0) << endoff;
-            (*pTable)(row,1) << cmpdim.SetValue(pStrands->HpOffsetAtEnd);
+            (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtEnd());
             row++;
 
             if(!harpedAreStraight)
             {
             std::_tstring hpoff;
-            if( pStrands->HsoHpMeasurement==hsoLEGACY)
+            if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoLEGACY)
             {    // Method used pre-version 6.0
                hpoff = _T("Distance from lowest location in harped strand grid to lowest harped strand at harping points");
             }
-            else if( pStrands->HsoHpMeasurement==hsoCGFROMTOP)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoCGFROMTOP)
             {
                hpoff = _T("Distance from top of girder to CG of harped strands at harping points");
             }
-            else if( pStrands->HsoHpMeasurement==hsoCGFROMBOTTOM)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoCGFROMBOTTOM)
             {
                hpoff = _T("Distance from bottom of girder to CG of harped strands at harping points");
             }
-            else if( pStrands->HsoHpMeasurement==hsoTOP2TOP)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoTOP2TOP)
             {
                hpoff = _T("Distance from top of girder to top-most harped strand at harping points");
             }
-            else if( pStrands->HsoHpMeasurement==hsoTOP2BOTTOM)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoTOP2BOTTOM)
             {
                hpoff = _T("Distance from bottom of girder to top-most harped strand at harping points");
             }
-            else if( pStrands->HsoHpMeasurement==hsoBOTTOM2BOTTOM)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoBOTTOM2BOTTOM)
             {
                hpoff = _T("Distance from bottom of girder to lowest harped strand at harping points");
             }
-            else if( pStrands->HsoHpMeasurement==hsoECCENTRICITY)
+            else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoECCENTRICITY)
             {
                hpoff = _T("Eccentricity of harped strand group at harping points");
             }
             else
-               ATLASSERT(0);
+               ATLASSERT(false);
 
 
             (*pTable)(row,0) << hpoff;
-            (*pTable)(row,1) << cmpdim.SetValue(pStrands->HpOffsetAtHp);
+            (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtHarpPoint());
             row++;
             }
 
@@ -2013,7 +2015,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             row++;
 
             const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(thisSegmentKey,pgsTypes::Straight);
-            CHECK(pstrand!=0);
+            ATLASSERT(pstrand!=0);
 
             (*pTable)(row,0) << _T("Prestressing Strand (Permanent)");
             if ( IS_SI_UNITS(pDisplayUnits) )
@@ -2052,7 +2054,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             if ( 0 < pStrand->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary) )
             {
                const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(thisSegmentKey,pgsTypes::Temporary);
-               CHECK(pstrand!=0);
+               ATLASSERT(pstrand!=0);
 
                (*pTable)(row,0) << _T("Prestressing Strand (Temporary)");
                if ( IS_SI_UNITS(pDisplayUnits) )
@@ -2088,7 +2090,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                row++;
             }
 
-            switch ( pStrands->TempStrandUsage )
+            switch ( pStrands->GetTemporaryStrandUsage() )
             {
             case pgsTypes::ttsPTBeforeLifting:
                *pPara << _T("NOTE: Temporary strands post-tensioned immediately before lifting") << rptNewLine;
@@ -2351,81 +2353,81 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          //}
 
          //std::_tstring endoff;
-         //if( pStrands->HsoEndMeasurement==hsoLEGACY)
+         //if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
          //{    // Method used pre-version 6.0
          //   endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at girder ends");
          //}
-         //else if( pStrands->HsoEndMeasurement==hsoCGFROMTOP)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMTOP)
          //{
          //   endoff = _T("Distance from top of girder to CG of harped strands at girder ends");
          //}
-         //else if( pStrands->HsoEndMeasurement==hsoCGFROMBOTTOM)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMBOTTOM)
          //{
          //   endoff = _T("Distance from bottom of girder to CG of harped strands at girder ends");
          //}
-         //else if( pStrands->HsoEndMeasurement==hsoTOP2TOP)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2TOP)
          //{
          //   endoff = _T("Distance from top of girder to top-most harped strand at girder ends");
          //}
-         //else if( pStrands->HsoEndMeasurement==hsoTOP2BOTTOM)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2BOTTOM)
          //{
          //   endoff = _T("Distance from bottom of girder to top-most harped strand at girder ends");
          //}
-         //else if( pStrands->HsoEndMeasurement==hsoBOTTOM2BOTTOM)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoBOTTOM2BOTTOM)
          //{
          //   endoff = _T("Distance from bottom of girder to lowest harped strand at girder ends");
          //}
-         //else if( pStrands->HsoEndMeasurement==hsoECCENTRICITY)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoECCENTRICITY)
          //{
          //   endoff = _T("Eccentricity of harped strand group at girder ends");
          //}
          //else
-         //   ATLASSERT(0);
+         //   ATLASSERT(false);
 
 
          //(*pTable)(row,0) << endoff;
-         //(*pTable)(row,1) << cmpdim.SetValue(pStrands->HpOffsetAtEnd);
+         //(*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtEnd());
          //row++;
 
          //std::_tstring hpoff;
-         //if( pStrands->HsoHpMeasurement==hsoLEGACY)
+         //if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoLEGACY)
          //{    // Method used pre-version 6.0
          //   hpoff = _T("Distance from lowest location in harped strand grid to lowest harped strand at harping points");
          //}
-         //else if( pStrands->HsoHpMeasurement==hsoCGFROMTOP)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoCGFROMTOP)
          //{
          //   hpoff = _T("Distance from top of girder to CG of harped strands at harping points");
          //}
-         //else if( pStrands->HsoHpMeasurement==hsoCGFROMBOTTOM)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoCGFROMBOTTOM)
          //{
          //   hpoff = _T("Distance from bottom of girder to CG of harped strands at harping points");
          //}
-         //else if( pStrands->HsoHpMeasurement==hsoTOP2TOP)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoTOP2TOP)
          //{
          //   hpoff = _T("Distance from top of girder to top-most harped strand at harping points");
          //}
-         //else if( pStrands->HsoHpMeasurement==hsoTOP2BOTTOM)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoTOP2BOTTOM)
          //{
          //   hpoff = _T("Distance from bottom of girder to top-most harped strand at harping points");
          //}
-         //else if( pStrands->HsoHpMeasurement==hsoBOTTOM2BOTTOM)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoBOTTOM2BOTTOM)
          //{
          //   hpoff = _T("Distance from bottom of girder to lowest harped strand at harping points");
          //}
-         //else if( pStrands->HsoHpMeasurement==hsoECCENTRICITY)
+         //else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoECCENTRICITY)
          //{
          //   hpoff = _T("Eccentricity of harped strand group at harping points");
          //}
          //else
-         //   ATLASSERT(0);
+         //   ATLASSERT(false);
 
 
          //(*pTable)(row,0) << hpoff;
-         //(*pTable)(row,1) << cmpdim.SetValue(pStrands->HpOffsetAtHp);
+         //(*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtHarpPoint());
          //row++;
 
          //const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
-         //CHECK(pstrand!=0);
+         //ATLASSERT(pstrand!=0);
 
          //(*pTable)(row,0) << _T("Prestressing Strand (Permanent)");
          //if ( IS_SI_UNITS(pDisplayUnits) )
@@ -2464,7 +2466,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          //if ( 0 < pStrand->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
          //{
          //   const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
-         //   CHECK(pstrand!=0);
+         //   ATLASSERT(pstrand!=0);
 
          //   (*pTable)(row,0) << _T("Prestressing Strand (Temporary)");
          //   if ( IS_SI_UNITS(pDisplayUnits) )
@@ -2500,7 +2502,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          //   row++;
          //}
 
-         //switch ( pStrands->TempStrandUsage )
+         //switch ( pStrands->GetTemporaryStrandUsage() )
          //{
          //case pgsTypes::ttsPTBeforeLifting:
          //   *pPara << _T("NOTE: Temporary strands post-tensioned immediately before lifting") << rptNewLine;
@@ -2574,7 +2576,6 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    
    pgsTypes::SupportedDeckType deckType = pDeck->DeckType;
 
-#pragma Reminder("UPDATE: using hard coded groupIndex and girderIndex")
    const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetGirderGroup((GroupIndexType)0)->GetGirder(0)->GetGirderLibraryEntry();
    CComPtr<IBeamFactory> pFactory;
    pGdrEntry->GetBeamFactory(&pFactory);

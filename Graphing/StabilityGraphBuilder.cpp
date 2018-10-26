@@ -50,9 +50,9 @@ static char THIS_FILE[] = __FILE__;
 
 static const COLORREF CURVE1_COLOR      = RGB(0,0,200);
 static const COLORREF CURVE2_COLOR      = RGB(200,0,0);
-static const int      CURVE_WIDTH      = 1;
-static const int      CURVE_STYLE      = PS_SOLID;
-static const int      LIMIT_STYLE      = PS_DASH;
+static const int      CURVE_PEN_WEIGHT  = GRAPH_PEN_WEIGHT;
+static const int      CURVE_STYLE       = PS_SOLID;
+static const int      LIMIT_STYLE       = PS_DASH;
 
 // create a dummy unit conversion tool to pacify the graph constructor
 static unitmgtLengthData DUMMY(unitMeasure::Meter);
@@ -119,7 +119,9 @@ CGraphBuilder* CStabilityGraphBuilder::Clone()
 int CStabilityGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
 {
    if ( CEAFAutoCalcGraphBuilder::InitializeGraphController(pParent,nID) < 0 )
+   {
       return -1;
+   }
 
    EAFGetBroker(&m_pBroker);
 
@@ -167,7 +169,9 @@ BOOL CStabilityGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
 void CStabilityGraphBuilder::UpdateXAxis()
 {
    if ( m_pXFormat )
+   {
       delete m_pXFormat;
+   }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
@@ -198,14 +202,14 @@ bool CStabilityGraphBuilder::UpdateNow()
    m_Graph.ClearData();
 
    IndexType seriesFS1 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(seriesFS1, CURVE_STYLE, CURVE_WIDTH, CURVE1_COLOR);
+   m_Graph.SetPenStyle(seriesFS1, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
    IndexType seriesFS2 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(seriesFS2, CURVE_STYLE, CURVE_WIDTH, CURVE2_COLOR);
+   m_Graph.SetPenStyle(seriesFS2, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
 
    IndexType limitFS1 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(limitFS1, LIMIT_STYLE, CURVE_WIDTH, CURVE1_COLOR);
+   m_Graph.SetPenStyle(limitFS1, LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
    IndexType limitFS2 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(limitFS2, LIMIT_STYLE, CURVE_WIDTH, CURVE2_COLOR);
+   m_Graph.SetPenStyle(limitFS2, LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
 
    GET_IFACE(IArtifact,pArtifact);
    GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -213,9 +217,13 @@ bool CStabilityGraphBuilder::UpdateNow()
 
    CString subtitle;
    if ( pDocType->IsPGSuperDocument() )
+   {
       subtitle.Format(_T("Span %d Girder %s"), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+   }
    else
+   {
       subtitle.Format(_T("Group %d Girder %s Segment %d"), LABEL_GROUP(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex), LABEL_SEGMENT(segmentKey.segmentIndex));
+   }
 
    m_PrintSubtitle = std::_tstring(subtitle);
 
@@ -224,16 +232,16 @@ bool CStabilityGraphBuilder::UpdateNow()
 
    if ( graphType == GT_LIFTING )
    {
-      GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-      if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+      GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+      if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
       {
          CString strTitle;
          strTitle.Format(_T("Effect of support location - Lifting Stage - %s"),m_PrintSubtitle.c_str());
          m_Graph.SetTitle(std::_tstring(strTitle));
          m_Graph.SetXAxisTitle(_T("Lift Point Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")"));
 
-         Float64 FS1 = pGirderLiftingSpecCriteria->GetLiftingCrackingFs();
-         Float64 FS2 = pGirderLiftingSpecCriteria->GetLiftingFailureFs();
+         Float64 FS1 = pSegmentLiftingSpecCriteria->GetLiftingCrackingFs();
+         Float64 FS2 = pSegmentLiftingSpecCriteria->GetLiftingFailureFs();
 
          Float64 loc = 0.0;
          Float64 stepSize = (hp1-loc)/20;
@@ -255,21 +263,19 @@ bool CStabilityGraphBuilder::UpdateNow()
    }
    else
    {
-      GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-      if (pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pGirderHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
+      GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+      if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
       {
          CString strTitle;
          strTitle.Format(_T("Effect of support location - Transportation Stage - %s"),m_PrintSubtitle.c_str());
          m_Graph.SetTitle(std::_tstring(strTitle));
          m_Graph.SetXAxisTitle(_T("Truck Support Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")"));
 
-         GET_IFACE(IGirderHaulingPointsOfInterest,pHaulingPoi);
+         Float64 FS1 = pSegmentHaulingSpecCriteria->GetHaulingCrackingFs();
+         Float64 FS2 = pSegmentHaulingSpecCriteria->GetHaulingRolloverFs();
 
-         Float64 FS1 = pGirderHaulingSpecCriteria->GetHaulingCrackingFs();
-         Float64 FS2 = pGirderHaulingSpecCriteria->GetHaulingRolloverFs();
-
-         Float64 loc = Min(pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart),
-                           pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metEnd));
+         Float64 loc = Min(pSegmentHaulingSpecCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart),
+                           pSegmentHaulingSpecCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metEnd));
          Float64 stepSize = (hp1-loc)/20;
          while ( loc <= hp1 )
          {
@@ -320,8 +326,8 @@ void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
    if ( graphType == GT_LIFTING )
    {
-      GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-      if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+      GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+      if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
       {
          DrawTheGraph(pGraphWnd,pDC);
       }
@@ -330,18 +336,22 @@ void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
          CFont font;
          CFont* pOldFont = NULL;
          if ( font.CreatePointFont(100,_T("Arial"),pDC) )
+         {
             pOldFont = pDC->SelectObject(&font);
+         }
 
          MultiLineTextOut(pDC,0,0,_T("Lifting Analysis Disabled (See Project Criteria Library)\nUnable to create lifting stability graph."));
 
          if ( pOldFont )
+         {
             pDC->SelectObject(pOldFont);
+         }
       }
    }
    else
    {
-      GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-      if (pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+      GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+      if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
       {
          DrawTheGraph(pGraphWnd,pDC);
       }
@@ -350,12 +360,16 @@ void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
          CFont font;
          CFont* pOldFont = NULL;
          if ( font.CreatePointFont(100,_T("Arial"),pDC) )
+         {
             pOldFont = pDC->SelectObject(&font);
+         }
 
          MultiLineTextOut(pDC,0,0,_T("Hauling Analysis Disabled (See Project Criteria Library)\nUnable to create hauling stability graph."));
 
          if ( pOldFont )
+         {
             pDC->SelectObject(pOldFont);
+         }
       }
    }
 }
@@ -374,14 +388,14 @@ void CStabilityGraphBuilder::DrawTheGraph(CWnd* pGraphWnd,CDC* pDC)
    TCHAR buffer[45];
    if (  m_pGraphController->GetGraphType() == GT_LIFTING )
    {
-      GET_IFACE(IGirderLiftingSpecCriteria,pCriteria);
+      GET_IFACE(ISegmentLiftingSpecCriteria,pCriteria);
       _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSf = %3.1f"),
          pCriteria->GetLiftingCrackingFs(),
          pCriteria->GetLiftingFailureFs() );
    }
    else
    {
-      GET_IFACE(IGirderHaulingSpecCriteria,pCriteria);
+      GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
       _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSr = %3.1f"),
          pCriteria->GetHaulingCrackingFs(),
          pCriteria->GetHaulingRolloverFs() );
@@ -399,8 +413,8 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
    // Graph doesn't support legends... Draw a legend in the top
    // left corner of the graph's client area
 
-   CPen pen1(CURVE_STYLE,CURVE_WIDTH,CURVE1_COLOR);
-   CPen pen2(CURVE_STYLE,CURVE_WIDTH,CURVE2_COLOR);
+   CPen pen1(CURVE_STYLE,CURVE_PEN_WEIGHT,CURVE1_COLOR);
+   CPen pen2(CURVE_STYLE,CURVE_PEN_WEIGHT,CURVE2_COLOR);
 
    CFont font;
    font.CreatePointFont(80,_T("Arial"),pDC);

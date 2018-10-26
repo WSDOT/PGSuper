@@ -34,7 +34,7 @@ public:
    CDrawBeamTool();
    virtual ~CDrawBeamTool();
 
-   void DrawBeam(IBroker* pBroker,CDC* pDC,grlibPointMapper mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType intervalIdx,const CGirderKey& girderKey);
+   void DrawBeam(IBroker* pBroker,CDC* pDC,grlibPointMapper mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType intervalIdx,const CGirderKey& girderKey,Float64 beamShift);
 
 protected:
    IBroker* m_pBroker;
@@ -55,5 +55,5 @@ protected:
    void DrawIntegral(CPoint p,CDC* pDC);
    void DrawIntegralHingeBack(CPoint p,CDC* pDC);
    void DrawIntegralHingeAhead(CPoint p,CDC* pDC);
-   void DrawTendons(Float64 beamShift,const CGirderKey& girderKey,IntervalIndexType intervalIndexType,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC);
+   void DrawTendons(Float64 beamShift,IntervalIndexType intervalIndexType,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC);
 };

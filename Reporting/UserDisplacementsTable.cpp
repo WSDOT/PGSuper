@@ -109,7 +109,7 @@ rptRcTable* CUserDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& gird
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS)) );
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
 
@@ -118,14 +118,14 @@ rptRcTable* CUserDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& gird
       std::vector<Float64> minLLIM, maxLLIM;
 
 
-      maxDC = pForces2->GetDeflection( intervalIdx, pftUserDC, vPoi, maxBAT, ctIncremental );
-      minDC = pForces2->GetDeflection( intervalIdx, pftUserDC, vPoi, minBAT, ctIncremental );
+      maxDC = pForces2->GetDeflection( intervalIdx, pftUserDC, vPoi, maxBAT, rtCumulative, false );
+      minDC = pForces2->GetDeflection( intervalIdx, pftUserDC, vPoi, minBAT, rtCumulative, false );
 
-      maxDW = pForces2->GetDeflection( intervalIdx, pftUserDW, vPoi, maxBAT, ctIncremental );
-      minDW = pForces2->GetDeflection( intervalIdx, pftUserDW, vPoi, minBAT, ctIncremental );
+      maxDW = pForces2->GetDeflection( intervalIdx, pftUserDW, vPoi, maxBAT, rtCumulative, false );
+      minDW = pForces2->GetDeflection( intervalIdx, pftUserDW, vPoi, minBAT, rtCumulative, false );
 
-      maxLLIM = pForces2->GetDeflection( intervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental );
-      minLLIM = pForces2->GetDeflection( intervalIdx, pftUserLLIM, vPoi, minBAT, ctIncremental );
+      maxLLIM = pForces2->GetDeflection( intervalIdx, pftUserLLIM, vPoi, maxBAT, rtCumulative, false );
+      minLLIM = pForces2->GetDeflection( intervalIdx, pftUserLLIM, vPoi, minBAT, rtCumulative, false );
 
       // Fill up the table
       IndexType index = 0;

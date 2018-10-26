@@ -231,7 +231,9 @@ const pgsLongReinfShearArtifact& pgsShearRatingArtifact::GetLongReinfShearArtifa
 Float64 pgsShearRatingArtifact::GetRatingFactor() const
 {
    if ( m_bRFComputed )
+   {
       return m_RF;
+   }
 
 
    if ( IsZero(m_Vllim) || IsZero(m_gLL) )
@@ -242,13 +244,17 @@ Float64 pgsShearRatingArtifact::GetRatingFactor() const
    {
       Float64 p = m_SystemFactor * m_ConditionFactor;
       if ( p < 0.85 )
+      {
          p = 0.85; // 6A.4.2.1-3)
+      }
 
       Float64 C = p * m_CapacityRedutionFactor * m_Vn;
       Float64 RF = (C - m_gDC*m_Vdc - m_gDW*m_Vdw)/(m_gLL*m_Vllim);
 
       if ( RF < 0 )
+      {
          RF = 0;
+      }
 
       m_RF = RF;
    }

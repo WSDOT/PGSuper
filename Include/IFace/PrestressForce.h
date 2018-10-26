@@ -122,16 +122,24 @@ interface IPosttensionForce : IUnknown
    virtual Float64 GetPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) = 0;
    virtual Float64 GetPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) = 0;
 
+   // Returns the force in the tendon at jacking including the effect of friction. 
+   // If bIncludeAnchorSet, anchor set losses are taken into account as well. This force
+   // is based on the actual values and not the values computed using the average friction and anchor set loss
+   virtual Float64 GetInitialTendonForce(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) = 0;
+   virtual Float64 GetInitialTendonStress(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) = 0;
+
    // returns the force in a tendon in a particular interval. (use ALL_DUCTS for all tendons)
    // if bIncludeMinLiveLoad is true, the force related to the elastic stress due to the minimum Service III live load is included in the tendon force.
    // if bIncludeMaxLiveLoad is true, the force related to the elastic stress due to the maximum Service III live load is included in the tendon force.
    // if both bIncludeMinLiveLoad and bIncludeMaxLiveLoad are true, the live load that maximizes the tendon force is used.
+   // these values are based on the average friction and anchor set loss being applied to fpj.
    virtual Float64 GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad=false,bool bIncludeMaxLiveLoad=false) = 0;
 
    // returns the effective stress in a tendon in a particular interval.
    // if bIncludeMinLiveLoad is true, the elastic stress due to the minimum Service III live load is included in the tendon stress.
    // if bIncludeMaxLiveLoad is true, the elastic stress due to the maximum Service III live load is included in the tendon stress.
    // if both bIncludeMinLiveLoad and bIncludeMaxLiveLoad are true, the live load stress that maximizes the tendon stress is used.
+   // these values are based on the average friction and anchor set loss being applied to fpj.
    virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad=false,bool bIncludeMaxLiveLoad=false) = 0;
 
    // returns the vertical component of the post-tension force
@@ -154,13 +162,18 @@ DEFINE_GUID(IID_ILosses,
 0x3d91150, 0x6dbb, 0x11d2, 0x8e, 0xe9, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
 interface ILosses : IUnknown
 {
+   // Returns the details of the prestress loss calculation for losses computed upto and including
+   // intervalIdx. Loses may be computed beyond this interval as well, however they are only
+   // guarenteed to be computed upto and including the specified interval. An intervalIdx of
+   // INVALID_INDEX means that losses are computed through all intervals
+   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx = INVALID_INDEX) = 0;
+
    // losses based on current input
    virtual Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi) = 0;
 
    // losses based on a girder configuration and slab offset
    virtual Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
+   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx=INVALID_INDEX) = 0;
    virtual void ClearDesignLosses() = 0;
 
    virtual void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
@@ -175,6 +188,8 @@ interface ILosses : IUnknown
    virtual Float64 GetAnchorSetZoneLength(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) = 0;
    virtual Float64 GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) = 0;
    virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) = 0;
+   virtual Float64 GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
+   virtual Float64 GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
 };
 
 #endif // INCLUDED_IFACE_PRESTRESS_H_

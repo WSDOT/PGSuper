@@ -78,7 +78,7 @@ public:
    STDMETHOD(GetClassID)(CLSID* pCLSID);
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(WSDOTAgent), CWSDOTAgentImp)

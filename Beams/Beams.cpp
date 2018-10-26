@@ -53,6 +53,7 @@
 #include "DeckedSlabBeamFactory.h"
 #include "VoidedSlab2DistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
+#include "TimeStepLossEngineer.h"
 
 #include "SplicedIBeamFactoryImpl.h"
 #include "SplicedUBeamFactory.h"
@@ -126,7 +127,9 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_SplicedUBeamFamily,    CSplicedUBeamFamily)
 
    OBJECT_ENTRY(CLSID_StrandMoverImpl, CStrandMoverImpl)
-   OBJECT_ENTRY(CLSID_PsBeamLossEngineer,CPsBeamLossEngineer)
+
+   OBJECT_ENTRY(CLSID_PsBeamLossEngineer,   CPsBeamLossEngineer)
+   OBJECT_ENTRY(CLSID_TimeStepLossEngineer, CTimeStepLossEngineer)
 END_OBJECT_MAP()
 
 class CBeamsApp : public CWinApp

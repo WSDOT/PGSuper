@@ -77,6 +77,8 @@ void txnEditLossParameters::DoExecute(int i)
 
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
 
+   pLossParameters->IgnoreTimeDependentEffects(m_LossParameters[i].bIgnoreTimeDependentEffects);
+
    pLossParameters->SetTendonPostTensionParameters(m_LossParameters[i].Dset_PT,
                                                    m_LossParameters[i].WobbleFriction_PT,
                                                    m_LossParameters[i].FrictionCoefficient_PT);

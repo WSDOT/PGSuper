@@ -218,7 +218,7 @@ STDMETHODIMP CStrandMoverImpl::SetHarpedStrandOffsetBounds(Float64 topElevation,
        0 < topEndElevationBoundary ||
        0 < botEndElevationBoundary )
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return E_INVALIDARG;
    }
 

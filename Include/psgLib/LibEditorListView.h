@@ -77,7 +77,7 @@ protected:
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnDestroy();
-	afx_msg void OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnEndEditLabel(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

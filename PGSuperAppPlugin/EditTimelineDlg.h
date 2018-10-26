@@ -42,6 +42,7 @@ public:
    virtual BOOL OnInitDialog();
    afx_msg void OnAddEvent();
    afx_msg void OnRemoveEvent();
+   afx_msg void OnHelp();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

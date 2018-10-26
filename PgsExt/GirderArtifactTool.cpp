@@ -63,7 +63,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2_NOCHECK(pBroker,IEventMap,pEventMap); // only used if there are failues
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -78,10 +78,9 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
       const pgsTendonStressArtifact* pTendonStress = pGirderArtifact->GetTendonStressArtifact(ductIdx);
       if ( !pTendonStress->Passed() )
       {
-   #pragma Reminder("UPDATE: need to do a better job reporting tendon stress failures")
-         // Which duct?
-         // There are several reasons - what failed?
-         rFailures.push_back(_T("Stresses in the tendons are too high."));
+         CString strMsg;
+         strMsg.Format(_T("Tendon %d is overstressed"),LABEL_DUCT(ductIdx));
+         rFailures.push_back(std::_tstring(strMsg.GetBuffer()));
       }
    }
 
@@ -103,9 +102,13 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
       if ( !pStrandStress->Passed() )
       {
          if (referToDetailsReport)
+         {
             rFailures.push_back(_T("Strand Stresses [5.9.3] have been exceeded.  See the Details Report for more information"));
+         }
          else
+         {
             rFailures.push_back(_T("Stresses in the prestressing strands are too high."));
+         }
       }
 
       const pgsStrandSlopeArtifact* pStrandSlope = pArtifact->GetStrandSlopeArtifact();
@@ -291,7 +294,9 @@ bool MomentCapacityFailures(IBroker* pBroker,const pgsGirderArtifact* pGirderArt
          pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifact( intervalIdx, ls, artifactIdx ) );
 
       if ( !pFlexure->Passed() )
+      {
          return true;
+      }
    } // next artifact
 
    return false;
@@ -301,7 +306,7 @@ void ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailures,const pg
 {
    USES_CONVERSION;
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2_NOCHECK(pBroker,IEventMap,pEventMap); // only used if there is a failure
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
@@ -376,7 +381,9 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
          }
 
          if ( !bContinue1 && !bContinue2 )
+         {
             return;
+         }
       }
    } // next segment
 }
@@ -473,9 +480,13 @@ void ListDebondingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGird
       {
          CString strMsg;
          if ( 1 < nSegments )
+         {
             strMsg.Format(_T("Debond arrangement checks failed for Segment %d."),LABEL_SEGMENT(segIdx));
+         }
          else
+         {
             strMsg.Format(_T("Debond arrangement checks failed."));
+         }
 
          rFailures.push_back(strMsg.GetBuffer());
       }
@@ -497,9 +508,13 @@ void ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgs
          CString strZone( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() ? _T("Splitting") : _T("Bursting") );
          CString strMsg;
          if ( 1 < nSegments )
+         {
             strMsg.Format(_T("%s zone check failed for Segment %d."),strZone,LABEL_SEGMENT(segIdx));
+         }
          else
+         {
             strMsg.Format(_T("%s zone check failed."),strZone);
+         }
 
          rFailures.push_back(strMsg.GetBuffer());
       }
@@ -560,23 +575,8 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
          rFailures.push_back(strMsg.GetBuffer());
       }
 
-      // Constructability
-      const pgsConstructabilityArtifact* pConstruct = pArtifact->GetConstructabilityArtifact();
-      if ( !pConstruct->SlabOffsetPassed() )
-      {
-         CString strMsg;
-         if ( 1 < nSegments )
-         {
-            strMsg.Format(_T("Slab Offset (\"A\" Dimension) check failed for Segment %d."),LABEL_SEGMENT(segIdx));
-         }
-         else
-         {
-            strMsg.Format(_T("Slab Offset (\"A\" Dimension) check failed"));
-         }
-         rFailures.push_back(strMsg.GetBuffer());
-      }
-
-      if ( !pConstruct->GlobalGirderStabilityPassed() )
+      const pgsSegmentStabilityArtifact* pSegmentStability = pArtifact->GetSegmentStabilityArtifact();
+      if ( !pSegmentStability->Passed() )
       {
          CString strMsg;
          if ( 1 < nSegments )
@@ -589,6 +589,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
          }
          rFailures.push_back(strMsg.GetBuffer());
       }
+
       // Lifting
       const pgsLiftingAnalysisArtifact* pLifting = pArtifact->GetLiftingAnalysisArtifact();
       if (pLifting!=NULL && !pLifting->Passed() )
@@ -620,19 +621,35 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
          }
          rFailures.push_back(strMsg.GetBuffer());
       }
-
-      // Live Load Deflection
-   #pragma Reminder("UPDATE: Need to fix deflection check failure notice")
-      // commented out because deflection checks are now done on the girder level, not the segment level
-      //
-      //const pgsDeflectionCheckArtifact* pDef = pArtifact->GetDeflectionCheckArtifact();
-      //if (pDef!=NULL && !pDef->Passed())
-      //{
-      //   if (referToDetails)
-      //      rFailures.push_back(_T("Live Load Deflection check failed. Refer to the Details or Specification Check Report for more information"));
-      //   else
-      //      rFailures.push_back(_T("Live Load Deflection check failed"));
-      //}
    } // next segment
+
+
+   // Constructability
+   const pgsConstructabilityArtifact* pConstruct = pGirderArtifact->GetConstructabilityArtifact();
+   if ( !pConstruct->SlabOffsetPassed() )
+   {
+      CString strMsg(_T("Slab Offset (\"A\" Dimension) check failed"));
+      rFailures.push_back(strMsg.GetBuffer());
+   }
+
+   // Live Load Deflection
+   SpanIndexType startSpanIdx, endSpanIdx;
+   pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
+   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+   {
+      IndexType index = spanIdx - startSpanIdx;
+      const pgsDeflectionCheckArtifact* pDef = pGirderArtifact->GetDeflectionCheckArtifact(index);
+      if (pDef!=NULL && !pDef->Passed())
+      {
+         if (referToDetails)
+         {
+            rFailures.push_back(_T("Live Load Deflection check failed. Refer to the Details or Specification Check Report for more information"));
+         }
+         else
+         {
+            rFailures.push_back(_T("Live Load Deflection check failed"));
+         }
+      }
+   }
 }
 

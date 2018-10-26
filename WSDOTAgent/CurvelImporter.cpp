@@ -128,7 +128,9 @@ STDMETHODIMP CCurvelImporter::Import(IBroker* pBroker)
       pRoadway->SetProfileData2(profileData);
 
       if ( bCrossSectionData )
+      {
          pRoadway->SetRoadwaySectionData(sectionData);
+      }
 
       pEvents->FirePendingEvents();
 

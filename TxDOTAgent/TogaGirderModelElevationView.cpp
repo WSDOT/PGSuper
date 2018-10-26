@@ -1177,7 +1177,7 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(segmentKey);
 
-   ZoneIndexType nStirrupZones = pStirrupGeom->GetNumPrimaryZones(segmentKey);
+   ZoneIndexType nStirrupZones = pStirrupGeom->GetPrimaryZoneCount(segmentKey);
    for ( ZoneIndexType zoneIdx = 0; zoneIdx < nStirrupZones; zoneIdx++ )
    {
       Float64 start, end;
@@ -1244,7 +1244,7 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
                pSimple->SetEndType(leNone);
             }
             else
-               ATLASSERT(0);
+               ATLASSERT(false);
 
             // Attach connector to the sockets 
             CComPtr<iConnector> connector;
@@ -1303,7 +1303,7 @@ void CTogaGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromP
       pSimple->SetColor(color);
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    // Attach connector to the sockets 
    CComPtr<iConnector> connector;
@@ -1393,6 +1393,7 @@ iDimensionLine* CTogaGirderModelElevationView::BuildDimensionLine(iDisplayList* 
    CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 
    textBlock->SetText(strDimension);
+   textBlock->SetBkMode(TRANSPARENT);
 
    dimLine->SetTextBlock(textBlock);
 

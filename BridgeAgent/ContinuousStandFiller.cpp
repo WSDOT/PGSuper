@@ -69,7 +69,7 @@ static HRESULT GetPrevNumStrands(StrandIndexType currNum, IIndexArray* array, St
 {
    if (currNum <= 0 || currNum == INVALID_INDEX)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return E_INVALIDARG;
    }
    else if (currNum == 1)
@@ -152,14 +152,14 @@ HRESULT CStrandFiller::SetStraightContinuousFill(IPrecastGirder* girder, StrandI
    HRESULT hr = ComputeStraightStrandFill(girder,nStrands, &array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
    hr = girder->put_StraightStrandFill(array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -172,14 +172,14 @@ HRESULT CStrandFiller::SetHarpedContinuousFill(IPrecastGirder* girder,  StrandIn
    HRESULT hr = ComputeHarpedStrandFill(girder,nStrands, &array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
    hr = girder->put_HarpedStrandFill(array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -192,14 +192,14 @@ HRESULT CStrandFiller::SetTemporaryContinuousFill(IPrecastGirder* girder, Strand
    HRESULT hr = ComputeTemporaryStrandFill(girder,nStrands, &array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
    hr = girder->put_TemporaryStrandFill(array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -269,7 +269,7 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridFiller* pGridFiller,
    HRESULT hr = pGridFiller->GetMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -300,14 +300,14 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridFiller* pGridFiller,
             else
             {
                // nStrands does not fit into this array
-//               ATLASSERT(0);
+//               ATLASSERT(false);
                return E_INVALIDARG;
             }
          }
       }
 
       // not enough strand locations available in girder to fit
-//      ATLASSERT(0);
+//      ATLASSERT(false);
       return E_INVALIDARG;
    }
    else
@@ -377,14 +377,14 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(bool bAllowOddNumberOfHarpedStran
                }
 
                // Nope, doesn't fit
-               ATLASSERT(0);
+               ATLASSERT(false);
                return E_INVALIDARG;
             }
          }
       }
 
       // not enough strand locations available in girder to fit
-      //ATLASSERT(0);
+      //ATLASSERT(false);
       return E_INVALIDARG;
    }
    else
@@ -411,7 +411,7 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IStrandGridFiller* pGridFiller
    HRESULT hr = pGridFiller->GetMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -443,14 +443,14 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IStrandGridFiller* pGridFiller
             else
             {
                // nStrands does not fit into this array
-               //ATLASSERT(0);
+               //ATLASSERT(false);
                return E_INVALIDARG;
             }
          }
       }
 
       // not enough strand locations available in girder to fit
-//      ATLASSERT(0);
+//      ATLASSERT(false);
       return E_INVALIDARG;
    }
    else
@@ -471,7 +471,7 @@ HRESULT CStrandFiller::GetNextNumberOfStrands(IStrandGridFiller* pGridFiller, St
    HRESULT hr = pGridFiller->GetMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -484,7 +484,7 @@ HRESULT CStrandFiller::GetPrevNumberOfStrands(IStrandGridFiller* pGridFiller, St
    HRESULT hr = pGridFiller->GetMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -507,7 +507,7 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(bool bAllowOddStrand,IStrand
    HRESULT hr = pGridFiller->GetMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -530,7 +530,7 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(bool bAllowOddStrand,IStrand
          HRESULT hr = pGridFiller->get_MaxStrandCount(&max_harped);
          if (FAILED(hr))
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             return hr;
          }
 
@@ -558,7 +558,7 @@ HRESULT CStrandFiller::GetPrevNumberOfHarpedStrands(bool bAllowOddStrand,IStrand
    // get the no-brainers out of the way
    if (currNum <= 0)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return E_INVALIDARG;
    }
    else if (currNum == 1)
@@ -571,7 +571,7 @@ HRESULT CStrandFiller::GetPrevNumberOfHarpedStrands(bool bAllowOddStrand,IStrand
    HRESULT hr = pGridFiller->GetMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -587,7 +587,7 @@ HRESULT CStrandFiller::GetPrevNumberOfHarpedStrands(bool bAllowOddStrand,IStrand
          HRESULT hr = pGridFiller->get_MaxStrandCount(&max_harped);
          if (FAILED(hr))
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             return hr;
          }
 
@@ -598,7 +598,7 @@ HRESULT CStrandFiller::GetPrevNumberOfHarpedStrands(bool bAllowOddStrand,IStrand
          }
          else
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             return hr;
          }
       }
@@ -632,7 +632,7 @@ HRESULT CStrandFiller::GetNextNumberOfStraightStrands(IPrecastGirder* girder, St
    HRESULT hr = girder->get_StraightMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -645,7 +645,7 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* girder, Stra
    HRESULT hr = girder->get_HarpedMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -670,7 +670,7 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* girder, Stra
          HRESULT hr = girder->get_MaxHarpedStrands(&max_harped);
          if (FAILED(hr))
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             return hr;
          }
 
@@ -699,7 +699,7 @@ HRESULT CStrandFiller::GetNextNumberOfTemporaryStrands(IPrecastGirder* girder, S
    HRESULT hr = girder->get_TemporaryMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -712,7 +712,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfStraightStrands(IPrecastGirder* girder
    HRESULT hr = girder->get_StraightMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -724,7 +724,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder* girder, 
    // get the no-brainers out of the way
    if (currNum <= 0)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return E_INVALIDARG;
    }
    else if (currNum == 1)
@@ -737,7 +737,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder* girder, 
    HRESULT hr = girder->get_HarpedMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -755,7 +755,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder* girder, 
          HRESULT hr = girder->get_MaxHarpedStrands(&max_harped);
          if (FAILED(hr))
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             return hr;
          }
 
@@ -766,7 +766,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder* girder, 
          }
          else
          {
-            ATLASSERT(0);
+            ATLASSERT(false);
             return hr;
          }
       }
@@ -782,7 +782,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfTemporaryStrands(IPrecastGirder* girde
    HRESULT hr = girder->get_TemporaryMaxStrandFill(&array);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -840,7 +840,7 @@ HRESULT CStrandFiller::GetNextNumberOfPermanentStrands(IPrecastGirder* girder, S
       }
       else
       {
-         ATLASSERT(0);   // this should never happen if m_PermStrands is build correctly
+         ATLASSERT(false);   // this should never happen if m_PermStrands is build correctly
          *nextNum = INVALID_INDEX;
       }
 
@@ -860,9 +860,13 @@ HRESULT CStrandFiller::GetPreviousNumberOfPermanentStrands(IPrecastGirder* girde
       *nextNum = INVALID_INDEX;
 
       if (currNum==0 && m_PermStrands[0]!=GirderLibraryEntry::ptNone)
+      {
          return S_OK;
+      }
       else
+      {
          return S_FALSE;
+      }
 
    }
    else if (s_size <= currNum)
@@ -893,7 +897,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfPermanentStrands(IPrecastGirder* girde
          }
          else
          {
-            ATLASSERT(0);   // this should never happen if m_PermStrands is build correctly
+            ATLASSERT(false);   // this should never happen if m_PermStrands is build correctly
             *nextNum = -1;
          }
       }
@@ -909,7 +913,7 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, const C
    HRESULT hr = girder->get_StraightMaxStrandFill(&maxarray);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -940,13 +944,13 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, const C
          else
          {
             // Somehow fill value is greater than max - something is wrong
-            ATLASSERT(0);
+            ATLASSERT(false);
             m_TempArray->put_Item(it->permStrandGridIdx, maxf);
          }
       }
       else
       {
-         ATLASSERT(0); // should never happen
+         ATLASSERT(false); // should never happen
       }
 
       it++;
@@ -961,7 +965,7 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, const CDi
    HRESULT hr = girder->get_HarpedMaxStrandFill(&maxarray);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -992,13 +996,13 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, const CDi
          else
          {
             // Somehow fill value is greater than max - something is wrong
-            ATLASSERT(0);
+            ATLASSERT(false);
             m_TempArray->put_Item(it->permStrandGridIdx, maxf);
          }
       }
       else
       {
-         ATLASSERT(0); // should never happen
+         ATLASSERT(false); // should never happen
       }
 
       it++;
@@ -1013,7 +1017,7 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, const 
    HRESULT hr = girder->get_TemporaryMaxStrandFill(&maxarray);
    if (FAILED(hr))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return hr;
    }
 
@@ -1044,13 +1048,13 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, const 
          else
          {
             // Somehow fill value is greater than max - something is wrong
-            ATLASSERT(0);
+            ATLASSERT(false);
             m_TempArray->put_Item(it->permStrandGridIdx, maxf);
          }
       }
       else
       {
-         ATLASSERT(0); // should never happen
+         ATLASSERT(false); // should never happen
       }
 
       it++;

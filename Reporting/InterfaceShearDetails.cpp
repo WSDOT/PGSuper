@@ -65,8 +65,6 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   GET_IFACE2(pBroker,IStirrupGeometry, pStirrupGeometry);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
 
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 

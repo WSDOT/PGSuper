@@ -112,6 +112,12 @@ static char THIS_FILE[] = __FILE__;
 
 HRESULT CPGSuperReporterImp::InitReportBuilders()
 {
+   HRESULT hr = CReporterBase::InitCommonReportBuilders();
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
+
    GET_IFACE(IReportManager,pRptMgr);
 
    //
@@ -146,16 +152,6 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDesignOutcomeChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
-   // Geometry Report
-   pRptBuilder = new CReportBuilder(_T("Bridge Geometry Report"));
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pBrokerRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CPierGeometryChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderGeometryChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder );
-
    // Details Report
    pRptBuilder = new CReportBuilder(_T("Details Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
@@ -185,7 +181,6 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLongReinfShearCheckChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSplittingZoneDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorSummaryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CCreepCoefficientChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CCamberChapterBuilder) );
@@ -193,7 +188,6 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBearingDesignParametersChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiftingCheckDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CHaulingCheckDetailsChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new COptimizedFabricationChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Bearing Design Report
@@ -310,7 +304,8 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
 
 STDMETHODIMP CPGSuperReporterImp::SetBroker(IBroker* pBroker)
 {
-   AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_SET_BROKER(pBroker);
+   CReporterBase::SetBroker(pBroker);
    return S_OK;
 }
 
@@ -328,13 +323,34 @@ STDMETHODIMP CPGSuperReporterImp::RegInterfaces()
 STDMETHODIMP CPGSuperReporterImp::Init()
 {
    /* Gets done at project load time */
-   AGENT_INIT;
+   EAF_AGENT_INIT;
 
-   return InitReportBuilders();
+   HRESULT hr = InitReportBuilders();
+   ATLASSERT(SUCCEEDED(hr));
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
+
+   return AGENT_S_SECONDPASSINIT;
 }
 
 STDMETHODIMP CPGSuperReporterImp::Init2()
 {
+   //
+   // Attach to connection points
+   //
+   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
+   CComPtr<IConnectionPoint> pCP;
+   HRESULT hr = S_OK;
+
+   // Connection point for the specification
+   hr = pBrokerInit->FindConnectionPoint( IID_ISpecificationEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Advise( GetUnknown(), &m_dwSpecCookie );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+
    return S_OK;
 }
 
@@ -353,6 +369,58 @@ STDMETHODIMP CPGSuperReporterImp::Reset()
 /*--------------------------------------------------------------------*/
 STDMETHODIMP CPGSuperReporterImp::ShutDown()
 {
-   AGENT_CLEAR_INTERFACE_CACHE;
+   //
+   // Detach to connection points
+   //
+   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
+   CComPtr<IConnectionPoint> pCP;
+   HRESULT hr = S_OK;
+
+   hr = pBrokerInit->FindConnectionPoint(IID_ISpecificationEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Unadvise( m_dwSpecCookie );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the connection point
+
+   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// ISpecificationEventSink
+//
+HRESULT CPGSuperReporterImp::OnSpecificationChanged()
+{
+   // Show/Hide time-step analysis reports based on the loss method
+
+   GET_IFACE(IReportManager,pRptMgr);
+   std::vector<boost::shared_ptr<CReportBuilder>> vRptBuilders;
+   vRptBuilders.push_back( pRptMgr->GetReportBuilder(_T("Stage by Stage Details Report")) );
+
+   bool bHidden = true;
+   GET_IFACE( ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      bHidden = false;
+   }
+
+   std::vector<boost::shared_ptr<CReportBuilder>>::iterator iter(vRptBuilders.begin());
+   std::vector<boost::shared_ptr<CReportBuilder>>::iterator end(vRptBuilders.end());
+   for ( ; iter != end; iter++ )
+   {
+      boost::shared_ptr<CReportBuilder> pRptBuilder(*iter);
+      pRptBuilder->Hidden(bHidden);
+   }
+
+   return S_OK;
+}
+
+HRESULT CPGSuperReporterImp::OnAnalysisTypeChanged()
+{
+   return S_OK;
+}
+
+CTitlePageBuilder* CPGSuperReporterImp::CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion)
+{
+   return new CPGSuperTitlePageBuilder(m_pBroker,strReportName,bFullVersion);
 }

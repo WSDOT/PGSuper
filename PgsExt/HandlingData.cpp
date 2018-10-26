@@ -68,22 +68,34 @@ CHandlingData& CHandlingData::operator= (const CHandlingData& rOther)
 bool CHandlingData::operator==(const CHandlingData& rOther) const
 {
    if ( !IsEqual(LeftStoragePoint,rOther.LeftStoragePoint) )
+   {
       return false;
+   }
 
    if ( !IsEqual(RightStoragePoint,rOther.RightStoragePoint) )
+   {
       return false;
+   }
 
    if ( !IsEqual(LeftLiftPoint,rOther.LeftLiftPoint) )
+   {
       return false;
+   }
 
    if ( !IsEqual(RightLiftPoint,rOther.RightLiftPoint) )
+   {
       return false;
+   }
 
    if ( !IsEqual(LeadingSupportPoint,rOther.LeadingSupportPoint) )
+   {
       return false;
+   }
 
    if ( !IsEqual(TrailingSupportPoint,rOther.TrailingSupportPoint) )
+   {
       return false;
+   }
 
    return true;
 }
@@ -133,7 +145,7 @@ HRESULT CHandlingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 

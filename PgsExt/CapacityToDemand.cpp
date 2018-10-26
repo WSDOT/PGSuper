@@ -37,9 +37,13 @@ bool IsCDLess(cdSense sense, Float64 capacity1, Float64 demand1, Float64 capacit
    // First do some input sanity checking
 #if defined _DEBUG
    if (sense==cdPositive)
+   {
       ATLASSERT(capacity1>=0.0 && capacity2>=0.0); // Signs of capacites cannot be different
+   }
    else
+   {
       ATLASSERT(capacity1<=0.0 && capacity2<=0.0); // ""
+   }
 #endif
 
    // We must deal with all of the edge cases
@@ -208,7 +212,9 @@ rptRcString(rOther)
 rptCapacityToDemand& rptCapacityToDemand::operator = (const rptCapacityToDemand& rOther)
 {
    if ( this != &rOther )
+   {
       MakeAssignment( rOther );
+   }
 
    return *this;
 }
@@ -222,15 +228,25 @@ rptReportContent& rptCapacityToDemand::SetValue(Float64 cdr)
 {
    m_CDR = cdr;
    if ( cdr == CDR_INF )
+   {
       return m_RcSymbolInfinity;
+   }
    else if ( cdr == CDR_NA )
+   {
       return rptRcString::SetValue(_T("N/A"));
+   }
    else if ( cdr == CDR_SKIP )
+   {
       return rptRcString::SetValue(_T("-"));
+   }
    else if ( CDR_LARGE <= cdr )
+   {
       return rptRcString::SetValue(_T("10+"));
+   }
    else
+   {
       return rptRcString::SetValue(m_FormatTool.AsString(cdr).c_str());
+   }
 }
 
 rptReportContent& rptCapacityToDemand::SetValue(Float64 capacity, Float64 demand, bool passed)
@@ -240,9 +256,13 @@ rptReportContent& rptCapacityToDemand::SetValue(Float64 capacity, Float64 demand
    m_Passed = passed;
 
    if (!IsEqual(m_Capacity,0.0) && IsEqual(m_Demand,0.0))
+   {
       return m_RcSymbolInfinity;
+   }
    else
+   {
       return rptRcString::SetValue(this->AsString().c_str());
+   }
 }
 
 std::_tstring rptCapacityToDemand::AsString() const
@@ -254,7 +274,7 @@ std::_tstring rptCapacityToDemand::AsString() const
    }
    else if(IsEqual(m_Capacity,0.0))
    {
-//      ATLASSERT(0); // c/d for c==0.0 makes no sense - return return 0.00, but this should be caught by caller
+//      ATLASSERT(false); // c/d for c==0.0 makes no sense - return return 0.00, but this should be caught by caller
       return std::_tstring(_T("0.00")); 
    }
    else if (IsEqual(m_Demand,0.0))

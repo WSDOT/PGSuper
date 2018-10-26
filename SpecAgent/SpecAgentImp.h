@@ -45,9 +45,9 @@ class ATL_NO_VTABLE CSpecAgentImp :
    public IAllowableConcreteStress,
    public ITransverseReinforcementSpec,
    public IPrecastIGirderDetailsSpec,
-   public IGirderHaulingSpecCriteria,
+   public ISegmentHaulingSpecCriteria,
    public IKdotGirderHaulingSpecCriteria,
-   public IGirderLiftingSpecCriteria,
+   public ISegmentLiftingSpecCriteria,
    public IDebondLimits,
    public IResistanceFactors
 {
@@ -67,8 +67,8 @@ BEGIN_COM_MAP(CSpecAgentImp)
    COM_INTERFACE_ENTRY(IAllowableConcreteStress)
    COM_INTERFACE_ENTRY(ITransverseReinforcementSpec)
    COM_INTERFACE_ENTRY(IPrecastIGirderDetailsSpec)
-   COM_INTERFACE_ENTRY(IGirderLiftingSpecCriteria)
-   COM_INTERFACE_ENTRY(IGirderHaulingSpecCriteria)
+   COM_INTERFACE_ENTRY(ISegmentLiftingSpecCriteria)
+   COM_INTERFACE_ENTRY(ISegmentHaulingSpecCriteria)
    COM_INTERFACE_ENTRY(IKdotGirderHaulingSpecCriteria)
    COM_INTERFACE_ENTRY(IDebondLimits)
    COM_INTERFACE_ENTRY(IResistanceFactors)
@@ -168,7 +168,7 @@ public:
    virtual Float64 GetMinWebThickness() const;
    virtual Float64 GetMinBottomFlangeThickness() const;
 
-// IGirderLiftingSpecCriteria
+// ISegmentLiftingSpecCriteria
 public:
    virtual bool IsLiftingAnalysisEnabled() const;
    virtual void GetLiftingImpact(Float64* pDownward, Float64* pUpward) const;
@@ -193,7 +193,7 @@ public:
    virtual Float64 GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const;
    virtual Float64 GetLiftingPointLocationAccuracy() const;
 
-// IGirderHaulingSpecCriteria
+// ISegmentHaulingSpecCriteria
 public:
    virtual bool IsHaulingAnalysisEnabled() const;
    virtual pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const;
@@ -207,7 +207,7 @@ public:
    virtual Float64 GetHaulingAllowableCompressionFactor();
    virtual Float64 GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar);
    virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc);
-   virtual IGirderHaulingSpecCriteria::RollStiffnessMethod GetRollStiffnessMethod() const;
+   virtual ISegmentHaulingSpecCriteria::RollStiffnessMethod GetRollStiffnessMethod() const;
    virtual Float64 GetLumpSumRollStiffness() const;
    virtual Float64 GetAxleWeightLimit() const;
    virtual Float64 GetAxleStiffness() const;
@@ -266,12 +266,12 @@ public:
 
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 
    const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey) const;
    const SpecLibraryEntry* GetSpec() const;
 
-   bool IsLoadRatingLimitState(pgsTypes::LimitState ls);
+   bool IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls);
    Float64 GetLoadRatingAllowableTension(const CSegmentKey& segmentKey,pgsTypes::LimitState ls);
 };
 

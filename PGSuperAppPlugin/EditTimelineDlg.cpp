@@ -63,6 +63,7 @@ void CEditTimelineDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CEditTimelineDlg, CDialog)
    ON_BN_CLICKED(IDC_ADD, &CEditTimelineDlg::OnAddEvent)
    ON_BN_CLICKED(IDC_REMOVE, &CEditTimelineDlg::OnRemoveEvent)
+   ON_BN_CLICKED(ID_HELP, &CEditTimelineDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -126,4 +127,11 @@ void CEditTimelineDlg::OnRemoveEvent()
 {
    m_Grid.RemoveEvents();
    m_Grid.Refresh();
+}
+
+void CEditTimelineDlg::OnHelp()
+{
+   // TODO: Add your control notification handler code here
+#pragma Reminder("IMPLEMENT")
+   AfxMessageBox(_T("Implement"));
 }

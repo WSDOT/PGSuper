@@ -49,12 +49,9 @@ rptChapter* CCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
    rptChapter* pChapter;
-   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
       pChapter = CTimeStepCamberChapterBuilder().Build(pRptSpec,level);
    }

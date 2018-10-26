@@ -76,25 +76,39 @@ CGirderSpacingData& CGirderSpacingData::operator= (const CGirderSpacingData& rOt
 bool CGirderSpacingData::operator == (const CGirderSpacingData& rOther) const
 {
    if ( m_MeasurementType != rOther.m_MeasurementType )
+   {
       return false;
+   }
 
    if ( m_MeasurementLocation != rOther.m_MeasurementLocation )
+   {
       return false;
+   }
 
    if ( m_RefGirderIdx != rOther.m_RefGirderIdx )
+   {
       return false;
+   }
 
    if ( m_RefGirderOffsetType != rOther.m_RefGirderOffsetType )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_RefGirderOffset,rOther.m_RefGirderOffset) )
+   {
       return false;
+   }
 
    if ( m_GirderSpacing != rOther.m_GirderSpacing )
+   {
       return false;
+   }
 
    if ( m_SpacingGroups != rOther.m_SpacingGroups )
+   {
       return false;
+   }
 
    return true;
 }
@@ -198,7 +212,7 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
@@ -388,7 +402,9 @@ void CGirderSpacingData::Expand(GroupIndexType groupIdx)
    GetSpacingGroup(groupIdx,&firstGdrIdx,&lastGdrIdx,&spacing);
 
    if ( (lastGdrIdx - firstGdrIdx) <= 1 )
+   {
       return; // there is only one girder in the group...nothing to expand
+   }
 
    std::vector<SpacingGroup>::iterator iter = m_SpacingGroups.begin() + groupIdx;
    std::vector<SpacingGroup>::iterator pos  = m_SpacingGroups.erase(iter); // returns the iter the element after the one removed
@@ -405,7 +421,9 @@ void CGirderSpacingData::Expand(GroupIndexType groupIdx)
 void CGirderSpacingData::JoinAll(SpacingIndexType spacingKey)
 {
    if ( m_GirderSpacing.size() == 0 )
+   {
       return;
+   }
 
    Float64 spacing = m_GirderSpacing[spacingKey];
    SpacingGroup firstGroup = m_SpacingGroups.front();
@@ -460,9 +478,13 @@ void CGirderSpacingData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGd
    {
       SpacingGroup spacingGroup = *iter;
       if ( spacingGroup.first == firstGdrIdx )
+      {
          break;
+      }
       else
+      {
          spacingGroups.push_back(spacingGroup);
+      }
    }
 
    _ASSERT(iter != m_SpacingGroups.end()); // shouldn't have gone through the full vector
@@ -486,7 +508,9 @@ void CGirderSpacingData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGd
 
    // copy the remaining groups
    if ( iter != m_SpacingGroups.end() )
+   {
       spacingGroups.insert(spacingGroups.end(),iter,m_SpacingGroups.end());
+   }
 
    // finally replace the data member with the local girder groups
    m_SpacingGroups = spacingGroups;
@@ -616,18 +640,28 @@ void CGirderSpacingData::SetSpacingData(CGirderSpacing2* pGirderSpacing) const
 void CGirderSpacingData::SetGirderCount(GirderIndexType nGirders)
 {
    if ( m_GirderSpacing.size() == 0 && nGirders == 1 )
+   {
       return;
+   }
 
    GirderIndexType nDeltaGirders;
    if ( m_GirderSpacing.size() == 0 )
+   {
       nDeltaGirders = nGirders;
+   }
    else
+   {
       nDeltaGirders = nGirders - (m_GirderSpacing.size()+1);
+   }
 
    if ( nDeltaGirders < 0 )
+   {
       RemoveGirders(nDeltaGirders);
+   }
    else
+   {
       AddGirders(nDeltaGirders);
+   }
 }
 
 
@@ -735,7 +769,9 @@ pgsTypes::OffsetMeasurementType CGirderSpacing::GetRefGirderOffsetType() const
 void CGirderSpacing::SetGirderSpacing(GroupIndexType grpIdx,Float64 s)
 {
    if ( m_pSpan && m_pSpan->GetGirderCount() < 2 )
+   {
       return;
+   }
 
    CGirderSpacingData::SetGirderSpacing(grpIdx,s);
 }

@@ -76,14 +76,15 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
    }
 
    if (ls == pgsTypes::StrengthI)
+   {
       table->TableLabel() << _T("Ultimate Shears for Strength I Limit State [5.8]");
+   }
    else
+   {
       table->TableLabel() << _T("Ultimate Shears for Strength II Limit State [5.8]");
+   }
   
-   //if ( stage == constructionStageIdx )
-   //   (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   //else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    (*table)(0,1) << _T("Stirrups") << rptNewLine << _T("Required");
    (*table)(0,2) << _T("Stirrups") << rptNewLine << _T("Provided");
@@ -119,7 +120,9 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == NULL )
+         {
             continue;
+         }
 
          const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
 
@@ -142,13 +145,19 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
             (*table)(row,4) << shear.SetValue( Vr );
 
             if(needs_strut_tie)
+            {
                (*table)(row,5) << _T("*");
+            }
 
             bool bPassed = pArtifact->Passed();
             if ( bPassed )
+            {
                (*table)(row,5) << RPT_PASS;
+            }
             else
+            {
                (*table)(row,5) << RPT_FAIL;
+            }
 
             (*table)(row,5) << rptNewLine << _T("(") << cap_demand.SetValue(Vr,Vu,bPassed) << _T(")");
 
@@ -156,7 +165,9 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
          }// next artifact
 
          if (needs_strut_tie)
+         {
             bIsStrutAndTieRequired = true;
+         }
 
       }
 
@@ -205,7 +216,9 @@ void CShearCheckTable::BuildNotes(rptChapter* pChapter,
          {
             const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
             if ( psArtifact == NULL )
+            {
                continue;
+            }
 
             const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
 

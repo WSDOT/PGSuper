@@ -56,13 +56,21 @@ void CLossParametersDlg::Init()
 
    m_Pretensioning.m_psp.dwFlags  |= PSP_HASHELP;
    m_PostTensioning.m_psp.dwFlags |= PSP_HASHELP;
+   m_TimeStepProperties.m_psp.dwFlags |= PSP_HASHELP;
 
-   CEAFDocument* pDoc = EAFGetDocument();
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   if ( pLossParameters->GetLossMethod() != pgsTypes::TIME_STEP )
    {
-      // General lump sum is only available for PGSuper
+      // General lump sum is only available if we aren't doing a time-step analysis
       AddPage(&m_Pretensioning);
    }
 
    AddPage(&m_PostTensioning);
+
+   if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      AddPage(&m_TimeStepProperties);
+   }
 }

@@ -56,8 +56,8 @@ private:
 	CString	m_csFtPrint;// font type name
 	int      m_iFtPrint;	// font size
 
-   CGirderModelElevationView*    m_pEv;
-   CGirderModelSectionView* m_pSv;
+   CGirderModelElevationView*    m_pElevationView;
+   CGirderModelSectionView* m_pSectionView;
    CGirderModelChildFrame* m_pFrame;
    IBroker* m_pBroker;
 };

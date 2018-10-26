@@ -406,16 +406,16 @@ void CPointLoadDrawStrategyImpl::EditLoad()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    GET_IFACE(IUserDefinedLoadData, pUdl);
 
-   CHECK(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetPointLoadCount());
+   ATLASSERT(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetPointLoadCount());
 
-   const CPointLoadData& load = pUdl->GetPointLoad(m_LoadIndex);
+   const CPointLoadData* pLoad = pUdl->GetPointLoad(m_LoadIndex);
 
-	CEditPointLoadDlg dlg(load);
+	CEditPointLoadDlg dlg(*pLoad);
    if (dlg.DoModal() == IDOK)
    {
-      if (load != dlg.m_Load)
+      if (*pLoad != dlg.m_Load)
       {
-         txnEditPointLoad* pTxn = new txnEditPointLoad(m_LoadIndex,load,dlg.m_Load);
+         txnEditPointLoad* pTxn = new txnEditPointLoad(m_LoadIndex,*pLoad,dlg.m_Load);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
    }

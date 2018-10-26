@@ -116,100 +116,164 @@ CXSectionData& CXSectionData::operator= (const CXSectionData& rOther)
 bool CXSectionData::operator == (const CXSectionData& rOther) const
 {
    if ( DeckType == rOther.DeckType )
+   {
       return false;
+   }
 
    if ( TransverseConnectivity == rOther.TransverseConnectivity )
+   {
       return false;
+   }
 
    if ( !IsEqual( GdrSpacing, rOther.GdrSpacing ) )
+   {
       return false;
+   }
 
    if ( GdrSpacingMeasurement == rOther.GdrSpacingMeasurement )
+   {
       return false;
+   }
 
    if ( GdrLineCount != rOther.GdrLineCount )
+   {
       return false;
+   }
 
    if ( Girder != rOther.Girder )
+   {
       return false;
+   }
 
    if ( GirderOrientation != rOther.GirderOrientation )
+   {
       return false;
+   }
 
    if ( LeftTrafficBarrier != rOther.LeftTrafficBarrier )
+   {
       return false;
+   }
 
    if ( RightTrafficBarrier != rOther.RightTrafficBarrier )
+   {
       return false;
+   }
 
    if ( !IsEqual( GrossDepth, rOther.GrossDepth ) )
+   {
       return false;
+   }
 
    if ( !IsEqual( LeftOverhang, rOther.LeftOverhang ) )
+   {
       return false;
+   }
 
    if ( !IsEqual( RightOverhang, rOther.RightOverhang ) )
+   {
       return false;
+   }
 
    if ( !IsEqual( SlabOffset, rOther.SlabOffset ) )
+   {
       return false;
+   }
 
    if ( !IsEqual( Fillet, rOther.Fillet ) )
+   {
       return false;
+   }
 
    if ( SlabFc != rOther.SlabFc )
+   {
       return false;
+   }
 
    if ( !IsEqual( SlabWeightDensity, rOther.SlabWeightDensity ) )
+   {
       return false;
+   }
 
    if ( SlabStrengthDensity != rOther.SlabStrengthDensity )
+   {
       return false;
+   }
 
    if ( SlabMaxAggregateSize != rOther.SlabMaxAggregateSize )
+   {
       return false;
+   }
 
    if ( SlabEcK1 != rOther.SlabEcK1 )
+   {
       return false;
+   }
 
    if ( SlabEcK2 != rOther.SlabEcK2 )
+   {
       return false;
+   }
 
    if ( SlabCreepK1 != rOther.SlabCreepK1 )
+   {
       return false;
+   }
 
    if ( SlabCreepK2 != rOther.SlabCreepK2 )
+   {
       return false;
+   }
 
    if ( SlabShrinkageK1 != rOther.SlabShrinkageK1 )
+   {
       return false;
+   }
 
    if ( SlabShrinkageK2 != rOther.SlabShrinkageK2 )
+   {
       return false;
+   }
 
    if ( SlabUserEc != rOther.SlabUserEc )
+   {
       return false;
+   }
 
    if ( !IsEqual(SlabEc,rOther.SlabEc) )
+   {
       return false;
+   }
 
    if ( !IsEqual( OverlayWeight, rOther.OverlayWeight ) )
+   {
       return false;
+   }
 
 	if ( !IsEqual( SacrificialDepth, rOther.SacrificialDepth ) )
+   {
       return false;
+   }
 
    if ( PanelDepth != rOther.PanelDepth )
+   {
       return false;
+   }
 
    if ( PanelSupport != rOther.PanelSupport )
+   {
       return false;
+   }
 
    if ( DeckRebarData != rOther.DeckRebarData )
+   {
       return false;
+   }
 
    if ( WearingSurface != rOther.WearingSurface )
+   {
       return false;
+   }
 
    return true;
 }
@@ -410,7 +474,9 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
          // if deck type is none, wearing surface cannot be sacrificial depth
          // fix it if that happens
          if ( DeckType == pgsTypes::sdtNone && WearingSurface == pgsTypes::wstSacrificialDepth )
+         {
             WearingSurface = pgsTypes::wstOverlay;
+         }
       }
 
       var.Clear();
@@ -430,7 +496,9 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
          // if we don't have a future overlay, but overlay depth and density is non-zero
          // then we have a regular overlay
          if ( WearingSurface == pgsTypes::wstSacrificialDepth && (!IsZero(OverlayDepth) && !IsZero(OverlayDensity)) )
+         {
             WearingSurface = pgsTypes::wstOverlay;
+         }
       }
 
       var.Clear();
@@ -521,7 +589,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 

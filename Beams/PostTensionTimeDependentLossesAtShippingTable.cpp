@@ -58,8 +58,8 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   if ( pStrands->TempStrandUsage == pgsTypes::ttsPTBeforeLifting ||
-        pStrands->TempStrandUsage == pgsTypes::ttsPTAfterLifting 
+   if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting ||
+        pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting 
       ) 
    {
       ColumnIndexType numColumns = 7;

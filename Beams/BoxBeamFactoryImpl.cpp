@@ -30,6 +30,7 @@
 #include "BoxBeamDistFactorEngineer.h"
 #include "UBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
+#include "TimeStepLossEngineer.h"
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
@@ -84,8 +85,6 @@ void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType status
    HRESULT hr = segment.CoCreateInstance(CLSID_BoxBeamEndBlockSegment);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -204,14 +203,26 @@ void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,StatusItemID
    }
 }
 
-void CBoxBeamFactoryImpl::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
+void CBoxBeamFactoryImpl::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
 {
-    CComObject<CPsBeamLossEngineer>* pEngineer;
-    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(BoxBeam);
-    pEngineer->SetBroker(pBroker,statusID);
-    (*ppEng) = pEngineer;
-    (*ppEng)->AddRef();
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      CComObject<CTimeStepLossEngineer>* pEngineer;
+      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
+   else
+   {
+       CComObject<CPsBeamLossEngineer>* pEngineer;
+       CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
+       pEngineer->Init(BoxBeam);
+       pEngineer->SetBroker(pBroker,statusGroupID);
+       (*ppEng) = pEngineer;
+       (*ppEng)->AddRef();
+   }
 }
 
 
@@ -252,7 +263,7 @@ Float64 CBoxBeamFactoryImpl::GetVolume(IBroker* pBroker,const CSegmentKey& segme
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );

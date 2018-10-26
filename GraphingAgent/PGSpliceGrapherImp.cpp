@@ -25,19 +25,6 @@
 #include "GraphingAgent_i.h"
 #include "PGSpliceGrapherImp.h"
 
-// Interfaces
-#include <IGraphManager.h>
-
-// Graph Builders
-#include <Graphing\AnalysisResultsGraphBuilder.h>
-#include <Graphing\TendonStressGraphBuilder.h>
-#include <Graphing\StabilityGraphBuilder.h>
-#include <Graphing\StressHistoryGraphBuilder.h>
-#include <Graphing\GirderPropertiesGraphBuilder.h>
-#include <Graphing\ConcretePropertyGraphBuilder.h>
-#include <Graphing\InfluenceLineGraphBuilder.h>
-#include <Graphing\DeflectionHistoryGraphBuilder.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -57,23 +44,14 @@ static char THIS_FILE[] = __FILE__;
 
 HRESULT CPGSpliceGrapherImp::InitGraphBuilders()
 {
-   GET_IFACE(IGraphManager,pGraphMgr);
-
-   pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CTendonStressGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CConcretePropertyGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
-   //pGraphMgr->AddGraphBuilder(new CInfluenceLineGraphBuilder);
-
+   CGrapherBase::InitCommonGraphBuilders();
    return S_OK;
 }
 
 STDMETHODIMP CPGSpliceGrapherImp::SetBroker(IBroker* pBroker)
 {
-   AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_SET_BROKER(pBroker);
+   CGrapherBase::SetBroker(pBroker);
    return S_OK;
 }
 
@@ -91,7 +69,7 @@ STDMETHODIMP CPGSpliceGrapherImp::RegInterfaces()
 STDMETHODIMP CPGSpliceGrapherImp::Init()
 {
    /* Gets done at project load time */
-   AGENT_INIT;
+   EAF_AGENT_INIT;
 
    return InitGraphBuilders();
 }
@@ -116,6 +94,6 @@ STDMETHODIMP CPGSpliceGrapherImp::Reset()
 /*--------------------------------------------------------------------*/
 STDMETHODIMP CPGSpliceGrapherImp::ShutDown()
 {
-   AGENT_CLEAR_INTERFACE_CACHE;
+   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    return S_OK;
 }

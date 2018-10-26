@@ -234,7 +234,7 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
-      pPGSuperDoc->BuildReportMenu(pMenu,true);
+      pPGSuperDoc->BuildReportMenu(pMenu,false);
 
       const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
@@ -524,11 +524,15 @@ STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnContex
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+      {
          pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
+      }
       else
+      {
          pMenu->LoadMenu(IDR_SELECTED_GIRDER_SEGMENT_CONTEXT,NULL);
+      }
 
-      pPGSuperDoc->BuildReportMenu(pMenu,true);
+      pPGSuperDoc->BuildReportMenu(pMenu,false);
 
       std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
@@ -613,9 +617,13 @@ void CBridgeSectionViewGirderDisplayObjectEvents::EditGirder(iDisplayObject* pDO
 {
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
       m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
+   }
    else if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   {
       m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDERLINE,0);
+   }
 }
 
 void CBridgeSectionViewGirderDisplayObjectEvents::SelectGirder(iDisplayObject* pDO)
@@ -768,7 +776,7 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
       }
 
       CPGSuperDocBase* pBaseDoc = (CPGSuperDocBase*)(pDoc);
-      pBaseDoc->BuildReportMenu(pMenu,true);
+      pBaseDoc->BuildReportMenu(pMenu,false);
 
       const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pBaseDoc->GetBridgeSectionViewCallbacks();
       std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());

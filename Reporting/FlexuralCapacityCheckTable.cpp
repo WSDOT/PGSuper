@@ -163,28 +163,30 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
    // Fill up the p_table
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
-   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
-
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
+   // report all the artifacts there were created.
    CollectionIndexType nArtifacts = pGirderArtifact->GetFlexuralCapacityArtifactCount(intervalIdx,ls);
+   ATLASSERT(0 < nArtifacts); // why aren't there any capacity artifacts?
    for (CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
    {
       col = 0;
 
       const pgsFlexuralCapacityArtifact* pArtifact;
       if ( bPositiveMoment )
+      {
          pArtifact = pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifact( intervalIdx, ls, artifactIdx );
+      }
       else
+      {
          pArtifact = pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifact( intervalIdx, ls, artifactIdx );
+      }
 
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
 
-      (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
 
 
       if ( c_over_de )
@@ -211,17 +213,25 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
       bool bPassed = !pArtifact->IsUnderReinforced();
       if ( bPassed )
+      {
          (*p_table)(row,col) << RPT_PASS;
+      }
       else
+      {
          (*p_table)(row,col) << RPT_FAIL;
+      }
 
       (*p_table)(row,col++) << rptNewLine << _T("(") << cdRatio.SetValue(Mr,MrMin,bPassed) << _T(")");
 
       bPassed = pArtifact->CapacityPassed();
       if ( bPassed )
+      {
          (*p_table)(row,col) << RPT_PASS;
+      }
       else
+      {
          (*p_table)(row,col) << RPT_FAIL;
+      }
 
       (*p_table)(row,col++) << rptNewLine << _T("(") << cdRatio.SetValue(Mr,Mu,bPassed) << _T(")");
 
@@ -234,6 +244,12 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
             // Show limiting capacity of over reinforced section
             MOMENTCAPACITYDETAILS mcd;
+         
+            GET_IFACE2(pBroker,IMomentCapacity,pMomentCap); 
+            // it may seem wasteful to get this interface in this scope, inside a loop
+            // however, the c_over_de method isn't used in the current LRFD so the reality is
+            // that this interface wont be requested very often
+
             pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
             (*p_table)(row,5) << rptNewLine << _T("(") << moment.SetValue( mcd.Phi * mcd.MnMin ) << _T(")");
          }

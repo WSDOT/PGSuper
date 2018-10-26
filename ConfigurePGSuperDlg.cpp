@@ -480,7 +480,7 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
             }
             catch(CCatalogServerException exp)
             {
-               ATLASSERT(0); // not sure why this would happen this late in the game.
+               ATLASSERT(false); // not sure why this would happen this late in the game.
                CString msg = exp.GetErrorMessage();
             }
 

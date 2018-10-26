@@ -33,7 +33,7 @@
 #include <IFace\TxDOTCadExport.h>
 #include "TxDOTCommandLineInfo.h"
 
-#include <PgsExt\DesignArtifact.h>
+#include <PgsExt\GirderDesignArtifact.h>
 
 
 #if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)
@@ -102,13 +102,13 @@ protected:
    void ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo);
    bool CreateTxDOTFileNames(const CString& output, CString* pErrFileName);
    bool DoTxDotCadReport(const CString& outputFileName, const CString& errorFileName, const CTxDOTCommandLineInfo& txInfo);
-   void SaveFlexureDesign(const CSegmentKey& segmentKey,const arDesignOptions& designOptions, const pgsDesignArtifact* pArtifact);
+   void SaveFlexureDesign(const CSegmentKey& segmentKey,const arDesignOptions& designOptions, const pgsSegmentDesignArtifact* pArtifact);
 
    void ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo);
    bool DoTOGAReport(const CString& outputFileName, const CTxDOTCommandLineInfo& txInfo);
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(TxDOTAgent), CTxDOTAgentImp)

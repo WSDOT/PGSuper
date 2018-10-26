@@ -56,7 +56,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 {
    // Grab the interfaces that are needed
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(ILiveLoads,pLiveLoads);
+   GET_IFACE(IPointOfInterest,pPoi);
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -159,10 +159,12 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
+      // get poi at controlling location
+      pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanIdx,girderKey.girderIndex,span_lldf.ControllingLocation);
+      const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
       Float64 station,offset;
-#pragma Reminder("UPDATE: need to figure out the actual group, girder, and segment")
-      CSegmentKey segmentKey(girderKey,0);
-      pBridge->GetStationAndOffset(pgsPointOfInterest(segmentKey,span_lldf.ControllingLocation),&station, &offset);
+      pBridge->GetStationAndOffset(poi,&station, &offset);
       Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetSegmentStartEndDistance(segmentKey);
       (*pPara) << _T("Deck Width, Girder Spacing and Slab Overhang are measured along a line that is normal to the alignment and passing through a point ") << location.SetValue(supp_dist) << _T(" from the left support along the centerline of girder. ");
       (*pPara) << _T("The measurement line passes through Station ") << rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << _T(" (") << RPT_OFFSET(offset,offsetFormatter) << _T(")") << rptNewLine;
@@ -408,12 +410,12 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
 {
    GET_IFACE(IMaterials,    pMaterials);
    GET_IFACE(ISectionProperties,        pSectProp);
-   GET_IFACE(IGirder,           pGdr);
    GET_IFACE(ILibrary,          pLib);
    GET_IFACE(ISpecification,    pSpec);
    GET_IFACE(IBridge,           pBridge);
    GET_IFACE(ILiveLoads,        pLiveLoads);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IPointOfInterest,  pPoi);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    ATLASSERT( pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::DirectlyInput );
@@ -441,10 +443,9 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    // determine overhang and spacing base data
    GetGirderSpacingAndOverhang(span,gdrIdx,dfType, plldf);
 
-   // put a poi at controlling location from spacing comp
-#pragma Reminder("BUG: need to figure out which segment the LLDF cut line intersects")
-   CSegmentKey segmentKey(pGroup->GetIndex(),gdrIdx,0);
-   pgsPointOfInterest poi(segmentKey,plldf->ControllingLocation);
+   // get poi at controlling location
+   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(span,gdrIdx,plldf->ControllingLocation);
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
@@ -461,6 +462,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
    {
       // no deck so modular ratio is 1.0 (Eg/Eg)
+      GET_IFACE(IGirder,pGdr);
       plldf->n = 1.0;
       plldf->ts = pGdr->GetMinTopFlangeThickness(poi);
       plldf->eg = plldf->Yt - plldf->ts/2; // measure eg to the center of the top flange
@@ -1002,7 +1004,7 @@ std::_tstring CIBeamDistFactorEngineer::GetComputationDescription(const CGirderK
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    // Special text if ROA is ignored

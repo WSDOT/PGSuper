@@ -82,7 +82,7 @@ public:
                           const std::_tstring poiFileName);
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 
    std::_tstring GetBridgeID();
    std::_tstring GetProcessID();

@@ -56,8 +56,6 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-
    GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Ec  = pMaterials->GetSegmentEc(segmentKey,tsRemovalIntervalIdx);
    Float64 Ep  = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE();
@@ -95,7 +93,7 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
 
    *pParagraph << Sub2(_T("P"),_T("tr")) << _T(" = ") << Sub2(_T("A"),_T("t")) << _T("(") << Sub2(_T("f"),_T("pj")) << _T(" - ");
 
-   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
       *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("pF")) << _T(" - ");
       *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("pA")) << _T(" - ");

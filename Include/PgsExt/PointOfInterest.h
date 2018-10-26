@@ -28,107 +28,110 @@
 class pgsPoiMgr;
 
 // POI Attributes
-typedef Uint64 PoiAttributeType;
+typedef Uint32 PoiAttributeType; // NOTE: if more bits are needed use a 64-bit type
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // NOTE: There are several bits available for future expansion... see below
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Attributes with POI_xxxx_SEGMENT or POI_GIRDER qualify attributes such as 10th points, H, 15H, FACEOFSUPPORT
-// If the POI_xxxx_SEGMENT attribute is set, the meaning of, for example POI_MIDSPAN, is mid-span of the segment.
-// If the POI_GIRDER attribute is set, it would mean mid-span of the assembled girder
-
 // NOTE: PGSuper Version 3.0
 // POI_TABULAR, POI_GRAPHICAL, and POI_ALLOUTPUT have been removed... we always report and graph all POIs
 // POI_FLEXURESTRESS, POI_FLEXURECAPACITY, POI_SHEAR, POI_DEFLECTION, and POI_ALLACTIONS have been removed... we always analyze all effects at all POI
 
-// Start at bit 64 and work backwards
+//
+// Referenced Attributes
+//
+
+// Attributes with POI_xxxx_SEGMENT or POI_SPAN qualify 10th point attributes.
 
 // Reference
-#define POI_RELEASED_SEGMENT       0x8000000000000000 // segment at time of release
-#define POI_LIFT_SEGMENT           0x4000000000000000 // segment is being lifted
-#define POI_STORAGE_SEGMENT        0x2000000000000000 // segment during storage (not necessiarly stored at ends)
-#define POI_HAUL_SEGMENT           0x1000000000000000 // segment is being hauled
-#define POI_ERECTED_SEGMENT        0x0800000000000000 // erected segment before assembly into a girder
-#define POI_GIRDER                 0x0400000000000000 // fully assembled girder
-// Special Points
-#define POI_CRITSECTSHEAR1         0x0200000000000000 // critical section for shear, for strength I limit state
-#define POI_CRITSECTSHEAR2         0x0100000000000000 // critical section for shear, for strength II limit state
-#define POI_HARPINGPOINT           0x0080000000000000 // harping point
-#define POI_CONCLOAD               0x0040000000000000 // point of application of a concentrated load
-#define POI_MIDSPAN                0x0020000000000000 // POI is at the middle of the span
-#define POI_H                      0x0010000000000000 // POI at h from end of girder
-#define POI_15H                    0x0008000000000000 // POI at 1.5h from end of girder
-#define POI_PSXFER                 0x0004000000000000 // POI at end of prestress transfer length
-#define POI_PSDEV                  0x0002000000000000 // POI at end of prestress development length
-#define POI_DEBOND                 0x0001000000000000 // POI at debond location
-#define POI_DECKBARCUTOFF          0x0000800000000000 // POI at negative moment reinforcement cutoff point
-#define POI_BARCUTOFF              0x0000400000000000 // POI at negative moment reinforcement cutoff point
-#define POI_BARDEVELOP             0x0000200000000000 // POI at girder moment reinforcement development point
-#define POI_PICKPOINT              0x0000100000000000 // POI at lifting pick point
-#define POI_BUNKPOINT              0x0000080000000000 // POI at hauling bunk point
-#define POI_FACEOFSUPPORT          0x0000040000000000 // POI at face of support
-#define POI_CLOSURE                0x0000020000000000 // POI at center of closure joint
-// Section Changes
-#define POI_SECTCHANGE_TRANSITION  0x0000010000000000
-#define POI_SECTCHANGE_RIGHTFACE   0x0000008000000000
-#define POI_SECTCHANGE_LEFTFACE    0x0000004000000000
-#define POI_SECTCHANGE POI_SECTCHANGE_LEFTFACE | POI_SECTCHANGE_RIGHTFACE | POI_SECTCHANGE_TRANSITION
-// intermediate pier and temporary supports
-#define POI_INTERMEDIATE_TEMPSUPPORT 0x0000002000000000 // POI at a temporary support that occurs between the ends of a segment
-#define POI_INTERMEDIATE_PIER        0x0000001000000000 // POI at a pier that occurs between the ends of a segment
-#define POI_BOUNDARY_PIER            0x0000000800000000 // POI at a pier that occurs between groups
-#define POI_ABUTMENT                 0x0000000400000000 // POI at CL Bearing at start/end abutment
-#define POI_STIRRUP_ZONE             0x0000000200000000 // Stirrup Zone Boundary
+#define POI_RELEASED_SEGMENT       0x80000000 // segment at time of release
+#define POI_LIFT_SEGMENT           0x40000000 // segment is being lifted
+#define POI_STORAGE_SEGMENT        0x20000000 // segment during storage (not necessiarly stored at ends)
+#define POI_HAUL_SEGMENT           0x10000000 // segment is being hauled
+#define POI_ERECTED_SEGMENT        0x08000000 // erected segment before assembly into a girder
+#define POI_SPAN                   0x04000000 // location in fully assembled girder
 
-// The following POI attributes are undefined/unused.
-// If a new attribute is needed, take it from this list
-// starting with the highest value.
+// unused referenced poi
 // **** NOTE ****
 // If a new POI is defined, don't forget to update pgsPoiMgr::AndFind and pgsPoiMgr::OrFind
-//#define POI_UNDEFINED22            0x0000000100000000
-//#define POI_UNDEFINED21            0x0000000080000000
-//#define POI_UNDEFINED20            0x0000000040000000
-//#define POI_UNDEFINED19            0x0000000020000000
-//#define POI_UNDEFINED18            0x0000000010000000
-//#define POI_UNDEFINED17            0x0000000008000000
-//#define POI_UNDEFINED16            0x0000000004000000
-//#define POI_UNDEFINED15            0x0000000002000000
-//#define POI_UNDEFINED14            0x0000000001000000
-//#define POI_UNDEFINED13            0x0000000000800000
-//#define POI_UNDEFINED12            0x0000000000400000
-//#define POI_UNDEFINED11            0x0000000000200000
-//#define POI_UNDEFINED10            0x0000000000100000
-//#define POI_UNDEFINED9             0x0000000000080000
-//#define POI_UNDEFINED8             0x0000000000040000
-//#define POI_UNDEFINED7             0x0000000000020000
-//#define POI_UNDEFINED6             0x0000000000010000
-//#define POI_UNDEFINED5             0x0000000000008000
-//#define POI_UNDEFINED4             0x0000000000004000
-//#define POI_UNDEFINED3             0x0000000000002000
-//#define POI_UNDEFINED2             0x0000000000001000
-//#define POI_UNDEFINED1             0x0000000000000800
+//#define POI_REFERENCED13         0x02000000
+//#define POI_REFERENCED12         0x01000000
+//#define POI_REFERENCED11         0x00800000
+//#define POI_REFERENCED10         0x00400000
+//#define POI_REFERENCED9          0x00200000
+//#define POI_REFERENCED8          0x00100000
+//#define POI_REFERENCED7          0x00080000
+//#define POI_REFERENCED6          0x00040000
+//#define POI_REFERENCED5          0x00020000
+//#define POI_REFERENCED4          0x00010000
+//#define POI_REFERENCED3          0x00008000
+//#define POI_REFERENCED2          0x00004000
+//#define POI_REFERENCED1          0x00002000
+
+#define POI_PICKPOINT              0x00001000 // POI at lifting pick point
+#define POI_BUNKPOINT              0x00000800 // POI at hauling bunk point
+
 
 // The lower 12 bits are reserved for 10th point attributes
-#define POI_10L                    0x0000000000000400 //1.0L
-#define POI_9L                     0x0000000000000200 //0.9L
-#define POI_8L                     0x0000000000000100 //0.8L
-#define POI_7L                     0x0000000000000080 //0.7L
-#define POI_6L                     0x0000000000000040 //0.6L
-#define POI_5L                     0x0000000000000020 //0.5L
-#define POI_4L                     0x0000000000000010 //0.4L
-#define POI_3L                     0x0000000000000008 //0.3L
-#define POI_2L                     0x0000000000000004 //0.2L
-#define POI_1L                     0x0000000000000002 //0.1L
-#define POI_0L                     0x0000000000000001 //0.0L
-
-#define POI_ALLSPECIAL        POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD | \
-                              POI_MIDSPAN | POI_H | POI_15H | POI_PSXFER | POI_PSDEV | POI_DEBOND |  \
-                              POI_BARCUTOFF | POI_FACEOFSUPPORT | POI_SECTCHANGE | POI_INTERMEDIATE_PIER | POI_BOUNDARY_PIER | POI_INTERMEDIATE_TEMPSUPPORT
-                             // note PICKPOINT and BUNKPOINT skipped on purpose
-
+#define POI_10L                    0x00000400 //1.0L
+#define POI_9L                     0x00000200 //0.9L
+#define POI_8L                     0x00000100 //0.8L
+#define POI_7L                     0x00000080 //0.7L
+#define POI_6L                     0x00000040 //0.6L
+#define POI_5L                     0x00000020 //0.5L
+#define POI_4L                     0x00000010 //0.4L
+#define POI_3L                     0x00000008 //0.3L
+#define POI_2L                     0x00000004 //0.2L
+#define POI_1L                     0x00000002 //0.1L
+#define POI_0L                     0x00000001 //0.0L
 
 #define POI_TENTH_POINTS POI_0L | POI_1L | POI_2L | POI_3L | POI_4L | POI_5L | POI_6L | POI_7L | POI_8L | POI_9L | POI_10L
+
+//
+// Non-referenced Attributes
+//
+
+// unused non-referenced poi
+// **** NOTE ****
+// If a new POI is defined, don't forget to update pgsPoiMgr::AndFind and pgsPoiMgr::OrFind
+//#define POI_NONREF10               0x80000000
+//#define POI_NONREF9                0x40000000
+//#define POI_NONREF8                0x20000000
+//#define POI_NONREF7                0x10000000
+//#define POI_NONREF6                0x08000000
+//#define POI_NONREF5                0x04000000
+//#define POI_NONREF4                0x02000000
+//#define POI_NONREF3                0x01000000
+//#define POI_NONREF2                0x00800000
+//#define POI_NONREF1                0x00400000
+
+// Special Points
+#define POI_CRITSECTSHEAR1           0x00200000 // critical section for shear, for strength I limit state
+#define POI_CRITSECTSHEAR2           0x00100000 // critical section for shear, for strength II limit state
+#define POI_HARPINGPOINT             0x00080000 // harping point
+#define POI_CONCLOAD                 0x00040000 // point of application of a concentrated load
+#define POI_PSXFER                   0x00020000 // POI at end of prestress transfer length
+#define POI_PSDEV                    0x00010000 // POI at end of prestress development length
+#define POI_DEBOND                   0x00008000 // POI at debond location
+#define POI_DECKBARCUTOFF            0x00004000 // POI at negative moment reinforcement cutoff point
+#define POI_BARCUTOFF                0x00002000 // POI at negative moment reinforcement cutoff point
+#define POI_BARDEVELOP               0x00001000 // POI at girder moment reinforcement development point
+#define POI_H                        0x00000800 // POI at h from face of support
+#define POI_15H                      0x00000400 // POI at 1.5h from face of support
+#define POI_FACEOFSUPPORT            0x00000200 // POI at face of support
+#define POI_CLOSURE                  0x00000100 // POI at center of closure joint
+// Section Changes
+#define POI_SECTCHANGE_TRANSITION    0x00000080
+#define POI_SECTCHANGE_RIGHTFACE     0x00000040
+#define POI_SECTCHANGE_LEFTFACE      0x00000020
+#define POI_SECTCHANGE POI_SECTCHANGE_LEFTFACE | POI_SECTCHANGE_RIGHTFACE | POI_SECTCHANGE_TRANSITION
+// intermediate pier and temporary supports
+#define POI_INTERMEDIATE_TEMPSUPPORT 0x00000010 // POI at a temporary support that occurs between the ends of a segment
+#define POI_INTERMEDIATE_PIER        0x00000008 // POI at a pier that occurs between the ends of a segment
+#define POI_BOUNDARY_PIER            0x00000004 // POI at a pier that occurs between groups
+#define POI_ABUTMENT                 0x00000002 // POI at CL Bearing at start/end abutment
+#define POI_STIRRUP_ZONE             0x00000001 // Stirrup Zone Boundary
 
 
 /*****************************************************************************
@@ -175,8 +178,8 @@ class PGSEXTCLASS pgsPointOfInterest
 {
 public:
    pgsPointOfInterest();
-   pgsPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStartOfSegment,PoiAttributeType attrib=0);
-   pgsPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStartOfSegment,Float64 Xs,Float64 Xg,Float64 Xgp,PoiAttributeType attrib=0);
+   pgsPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi,PoiAttributeType attrib=0);
+   pgsPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi,Float64 Xs,Float64 Xg,Float64 Xgp,PoiAttributeType attrib=0);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -199,10 +202,13 @@ public:
    // Returns true if this poi is less than rOther, based on location
    bool operator==(const pgsPointOfInterest& rOther) const;
 
-
    //------------------------------------------------------------------------
    // A convient way to set the location of the POI.
-   void SetLocation(const CSegmentKey& segmentKey,Float64 distFromStart,Float64 Xs,Float64 Xg,Float64 Xgp);
+   void SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi,Float64 Xs,Float64 Xg,Float64 Xgp);
+
+   //------------------------------------------------------------------------
+   // A convient way to set the location of the POI. 
+   void SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi);
 
    // Offsets the POI by X
    void Offset(Float64 X);
@@ -240,15 +246,15 @@ public:
    // Returns the location of this poi, measured from the start of the segment.
    Float64 GetDistFromStart() const
    {
-      return m_DistFromStart;
+      return m_Xpoi;
    }
 
-   // Set/Get the location of this poi in Segment Coordinates
-   void SetSegmentCoordinate(Float64 Xs);
-   Float64 GetSegmentCoordinate() const;
+   // Set/Get the location of this poi in Segment Path Coordinates
+   void SetSegmentPathCoordinate(Float64 Xsp);
+   Float64 GetSegmentPathCoordinate() const;
 
-   // returns true if the segment coordinate has been set
-   bool HasSegmentCoordinate() const;
+   // returns true if the segment path coordinate has been set
+   bool HasSegmentPathCoordinate() const;
 
    // Set/Get the location of this poi in Girder Coordinates
    void SetGirderCoordinate(Float64 Xg);
@@ -265,19 +271,24 @@ public:
    bool HasGirderPathCoordinate() const;
 
    //------------------------------------------------------------------------
-   // Sets the POI attributes
-   void SetAttributes(PoiAttributeType attrib);
+   // Sets the non-referenced POI attributes
+   void SetNonReferencedAttributes(PoiAttributeType attrib);
+        
+   //------------------------------------------------------------------------
+   // Sets the referenced POI attributes
+   void SetReferencedAttributes(PoiAttributeType attrib);
 
    //------------------------------------------------------------------------
-   // Returns the attributes of this POI.
-   PoiAttributeType GetAttributes() const;
+   // Returns the non-referenced attributes of this POI.
+   PoiAttributeType GetNonReferencedAttributes() const;
+
+   //------------------------------------------------------------------------
+   // Returns the referenced attributes of this POI.
+   PoiAttributeType GetReferencedAttributes(PoiAttributeType refAttribute) const;
 
    //------------------------------------------------------------------------
    // Removes attributes from this POI.
    void RemoveAttributes(PoiAttributeType attrib);
-
-   // returns the reference attribute of this POI
-   PoiAttributeType GetReference() const;
 
    // returns all of the reference attributes encoded in attrib
    static PoiAttributeType GetReference(PoiAttributeType attrib);
@@ -286,19 +297,12 @@ public:
    static bool IsReferenceAttribute(PoiAttributeType attrib);
 
    // prevents POI merging
-   bool CanMerge() const
-   {
-      return m_bCanMerge;
-   }
-
-   void CanMerge(bool bCanMerge)
-   {
-      m_bCanMerge = bCanMerge;
-   }
+   bool CanMerge() const;
+   void CanMerge(bool bCanMerge);
 
    //------------------------------------------------------------------------
-   // Merge attributes for this POI with another's
-   void MergeAttributes(const pgsPointOfInterest& rOther);
+   // Merge attributes for this POI with another's. Returns true if successful
+   bool MergeAttributes(const pgsPointOfInterest& rOther);
 
    // This POI is a tenth point on this segment
    void MakeTenthPoint(PoiAttributeType poiReference,Uint16 tenthPoint);
@@ -321,19 +325,23 @@ public:
    bool IsMidSpan(PoiAttributeType reference) const;
 
    //------------------------------------------------------------------------
-   // Returns true if this poi is h from the end of the girder or face of support.
-   bool IsAtH(PoiAttributeType reference) const;
+   // Returns true if this poi is h from the face of support.
+   bool IsAtH() const;
 
    //------------------------------------------------------------------------
-   // Returns true if this poi is 1.5h from the end of the girder or face of support.
-   bool IsAt15H(PoiAttributeType reference) const;
+   // Returns true if this poi is 1.5h from the face of support.
+   bool IsAt15H() const;
 
    //------------------------------------------------------------------------
    // Returns 1-11 if this point is a tenth point, zero if not.
    // 1 is start , 11 is end
    Uint16 IsTenthPoint(PoiAttributeType reference) const;
 
+   // Returns true if this poi has a particular attribute
    bool HasAttribute(PoiAttributeType attribute) const;
+
+   // Returns true if this poi has attributes
+   bool HasAttributes() const;
 
    bool AtSamePlace(const pgsPointOfInterest& other) const;
 
@@ -348,9 +356,6 @@ protected:
    //------------------------------------------------------------------------
    virtual void MakeAssignment(const pgsPointOfInterest& rOther);
 
-   bool IsValidReference(PoiAttributeType reference) const;
-
-
    //------------------------------------------------------------------------
    // utility functions for inserting and extracting tenth point information
    // into attributies. 
@@ -360,10 +365,11 @@ protected:
 protected:
    PoiIDType m_ID;
    CSegmentKey m_SegmentKey;
-   Float64 m_DistFromStart; // distance from left end of segment (left face of the actual bridge member)
+   Float64 m_Xpoi; // distance from left end of segment (left face of the actual bridge member)
+   // AKA Segment Coorodinate
    
-   bool m_bHasSegmentCoordinate; // tracks if m_Xs has been set
-   Float64 m_Xs; // location of this POI in segment coordiantes (X=0 is at the CL Pier/CL TS at the start of this segment)
+   bool m_bHasSegmentPathCoordinate; // tracks if m_Xsp has been set
+   Float64 m_Xsp; // location of this POI in segment path coordiantes (X=0 is at the CL Pier/CL TS at the start of this segment)
 
    bool m_bHasGirderCoordinate; // tracks if m_Xg has been set
    Float64 m_Xg; // location of this POI in girder coordinates (X=0 is at the left face of the first segment in the girder)
@@ -373,7 +379,9 @@ protected:
 
    bool m_bCanMerge;
 
-   PoiAttributeType m_Attributes;
+   static IndexType GetIndex(PoiAttributeType refAttribute);
+   PoiAttributeType m_RefAttributes[6]; // referenced attributes (10th points)
+   PoiAttributeType m_Attributes; // non-referenced attributes
 
    static Float64 ms_Tol;
 

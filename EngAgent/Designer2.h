@@ -123,7 +123,7 @@ public:
    // Creates a hauling analysis artifact
    const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey);
 
-   pgsDesignArtifact Design(const CGirderKey& girderKey,arDesignOptions options);
+   pgsGirderDesignArtifact Design(const CGirderKey& girderKey,arDesignOptions options);
 
    void GetHaunchDetails(const CGirderKey& girderKey,HAUNCHDETAILS* pHaunchDetails);
    void GetHaunchDetails(const CGirderKey& girderKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
@@ -154,8 +154,8 @@ private:
    struct StressCheckTask
    {
       IntervalIndexType intervalIdx;
-      pgsTypes::LimitState ls;
-      pgsTypes::StressType type;
+      pgsTypes::LimitState limitState;
+      pgsTypes::StressType stressType;
    };
    std::vector<StressCheckTask> m_StressCheckTasks;
    void ConfigureStressCheckTasks(const CSegmentKey& segmentKey);
@@ -206,17 +206,19 @@ private:
    void CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandStressArtifact* pArtifact);
    void CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsSegmentArtifact* pSegmentArtifact);
    void CheckSegmentStresses(const CSegmentKey& segmentKey,const std::vector<pgsPointOfInterest>& vPoi,const StressCheckTask& task,pgsSegmentArtifact* pSegmentArtifact);
-   void CheckMomentCapacity(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsGirderArtifact* pGirderArtifact);
-   void CheckShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsGirderArtifact* pGirderArtifact);
-   void CheckShear(bool bDesign,const CSegmentKey&,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
+   void CheckMomentCapacity(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsGirderArtifact* pGirderArtifact);
+   void CheckShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsGirderArtifact* pGirderArtifact);
+   void CheckShear(bool bDesign,const CSegmentKey&,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
    void CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
    void CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmentArtifact* pGdrArtifact);
    void CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlopeArtifact* pArtifact);
    void CheckHoldDownForce(const CSegmentKey& segmentKey,pgsHoldDownForceArtifact* pArtifact);
-   void CheckConstructability(const CSegmentKey& segmentKey,pgsConstructabilityArtifact* pArtifact);
+   void CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmentStabilityArtifact* pArtifact);
    void CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,pgsDebondArtifact* pArtifact);
 
-   void UpdateSlabOffsetAdjustmentModel(pgsDesignArtifact* pArtifact);
+   void CheckConstructability(const CGirderKey& girderKey,pgsConstructabilityArtifact* pArtifact);
+
+   void UpdateSlabOffsetAdjustmentModel(pgsSegmentDesignArtifact* pArtifact);
 
    void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact);
 
@@ -229,16 +231,16 @@ private:
    void DesignSlabOffset(IProgress* pProgress);
    void DesignMidZoneFinalConcrete(IProgress* pProgress);
    void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress);
-   void DesignEndZone(bool firstTime, arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
+   void DesignEndZone(bool firstTime, arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress);
    void DesignForShipping(IProgress* pProgress);
    bool CheckShippingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config);
 
-   void DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
+   void DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress);
    void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,IProgress* pProgress);
    void DesignEndZoneReleaseHarping(const arDesignOptions& options, IProgress* pProgress);
    bool CheckLiftingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config);
 
-   void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsDesignArtifact& artifact, IProgress* pProgress);
+   void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress);
    std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress);
    std::vector<DebondLevelType> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress);
    std::vector<DebondLevelType> DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail = true);
@@ -247,27 +249,27 @@ private:
    void DesignConcreteRelease(Float64 topStress, Float64 botStress);
 
    void RefineDesignForAllowableStress(IProgress* pProgress);
-   void RefineDesignForAllowableStress(StressCheckTask task,IProgress* pProgress);
-   void RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,IProgress* pProgress);
+   void RefineDesignForAllowableStress(const StressCheckTask& task,IProgress* pProgress);
+   void RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,IProgress* pProgress);
    pgsPointOfInterest GetControllingFinalMidZonePoi(const CSegmentKey& segmentKey);
 
    // Shear design
-   void DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromScratch, bool bDoDesignFlexure);
+   void DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStartFromScratch, bool bDoDesignFlexure);
 
    Float64 GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd);
 
    Float64 GetNormalFrictionForce(const pgsPointOfInterest& poi);
 
-   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const GDRCONFIG& config,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact);
-   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact);
-   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const MINMOMENTCAPDETAILS& mmcd,pgsFlexuralCapacityArtifact* pArtifact);
+   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG& config,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact);
+   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact);
+   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const MINMOMENTCAPDETAILS& mmcd,pgsFlexuralCapacityArtifact* pArtifact);
 
    // poi based shear checks
-   void CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, pgsTypes::LimitState ls, Float64 vu,
+   void CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, Float64 vu,
                                          Float64 fcSlab,Float64 fcGdr, Float64 fy, bool checkConfinement,const GDRCONFIG* pConfig,
                                          pgsStirrupCheckAtPoisArtifact* pArtifact);
 
-   void InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<CRITSECTDETAILS>& vCSDetails,const GDRCONFIG* pConfig);
+   void InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig);
    bool IsDeepSection( const pgsPointOfInterest& poi);
    ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi);
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact );
@@ -292,7 +294,7 @@ public:
    // This function is needed by shear design tool
    void CheckLongReinfShear(const pgsPointOfInterest& poi, 
                             IntervalIndexType intervalIdx,
-                            pgsTypes::LimitState ls,
+                            pgsTypes::LimitState limitState,
                             const SHEARCAPACITYDETAILS& scd,
                             const GDRCONFIG* pConfig,
                             pgsLongReinfShearArtifact* pArtifact );

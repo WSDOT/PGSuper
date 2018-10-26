@@ -42,7 +42,9 @@ public:
    virtual CGraphBuilder* Clone();
 
    void UpdateGraphDefinitions();
-   std::vector<std::pair<CString,IDType>> GetLoadings(IntervalIndexType intervalIdx,ActionType actionType);
+   std::vector<std::pair<std::_tstring,IDType>> GetLoadings(IntervalIndexType intervalIdx,ActionType actionType);
+
+   GraphType GetGraphType(IDType graphID);
 
    void DumpLBAM();
 
@@ -72,6 +74,13 @@ protected:
    void LiveLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear);
    void VehicularLiveLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear);
 
+   void ProductReactionGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const CGirderKey& girderKey,SegmentIndexType segIdx);
+   void CombinedReactionGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const CGirderKey& girderKey,SegmentIndexType segIdx);
+   void LimitStateReactionGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const CGirderKey& girderKey,SegmentIndexType segIdx);
+   void VehicularLiveLoadReactionGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const CGirderKey& girderKey);
+   void LiveLoadReactionGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const CGirderKey& girderKey);
+
+
    void CyStressCapacityGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
 
    virtual IntervalIndexType GetBeamDrawInterval();
@@ -82,4 +91,10 @@ protected:
 
    std::vector<IntervalIndexType> AddTSRemovalIntervals(IntervalIndexType loadingIntervalIdx,const std::vector<IntervalIndexType>& vIntervals,const std::vector<IntervalIndexType>& vTSRIntervals);
    pgsTypes::AnalysisType GetAnalysisType();
+
+   Float64 m_GroupOffset;
+
+   void GetSecondaryXValues(const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,std::vector<pgsPointOfInterest>* pPoi,std::vector<Float64>* pXvalues);
+   void GetSegmentXValues(const CGirderKey& girderKey,SegmentIndexType segIdx,IntervalIndexType intervalIdx,std::vector<CSegmentKey>* pSegments,std::vector<Float64>* pLeftXVals,std::vector<Float64>* pRightXVals);
+   void GetSupportXValues(const CGirderKey& girderKey,bool bIncludeTemporarySupports,std::vector<Float64>* pXVals,std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>* pSupports);
 };

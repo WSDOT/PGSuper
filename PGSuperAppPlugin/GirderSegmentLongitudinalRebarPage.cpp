@@ -69,7 +69,7 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
    // longitudinal steel information from grid and store it
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // only used in certain cases... don't want to get the interface in a loop
 
    if (pDX->m_bSaveAndValidate)
    {

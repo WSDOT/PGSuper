@@ -114,7 +114,7 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
    // There are two block of code here, conditionally compiled with the TEST_CODE macro.
    // The TEST_CODE was used to prototype and test the OpenBridgeML Units implementation
    // RAB left it here for an example until such time a simple example is developed
-   // to deminstrate OpenBridgeML
+   // to demonstrate OpenBridgeML
 #if defined xTEST_CODE
 	CFileDialog fileDlg(FALSE,_T("curvel"),_T("Example1a.curvel"),OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Curvel File (*.curvel)|*.curvel||"));
 	if (fileDlg.DoModal() == IDOK)
@@ -427,7 +427,9 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
          CSuperelevationValidator validator;
          choices = AfxMultiChoice(_T("Select Cross Sections"),_T("Select three consecutive cross sections to export to Curvel."),strOptions,&validator,choices,TRUE);
          if ( choices.size() == 0 )
+         {
             return FALSE;
+         }
 
          ATLASSERT(choices.size()==3);
          std::vector<int>::iterator iter(choices.begin());
@@ -482,7 +484,9 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
          HorzCurveData& hCurve(*iter);
          SkewLineType skewLine(hCurve.PIStation,OffsetType::RadialFromCrownLine,0.0,"0.0 L",hCurve.Radius,0.0);
          if ( !IsZero(hCurve.EntrySpiral) || !IsZero(hCurve.ExitSpiral) )
+         {
             bSpiral = true;
+         }
 
          skewLines.SkewLine().push_back(skewLine);
       }
@@ -493,7 +497,9 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
 
          CString strMsg(_T("Horizontal curves have been modeled as Skew Line input in Curvel."));
          if ( bSpiral )
+         {
             strMsg += _T("\nEntry and Exit Spirals are not modeled in Curvel.");
+         }
 
          AfxMessageBox(strMsg,MB_OK | MB_ICONINFORMATION);
       }

@@ -50,7 +50,11 @@ pgsPoiMap& pgsPoiMap::operator=(const pgsPoiMap& rOther)
 
 void pgsPoiMap::AddMap(const pgsPointOfInterest& poi,PoiIDType modelPoi)
 {
-   m_Map.insert( std::make_pair(poi,modelPoi) );
+   PoiIDType poiID = poi.GetID();
+   if ( poiID != INVALID_ID )
+   {
+      m_Map.insert( std::make_pair(poiID,modelPoi) );
+   }
 }
 
 void pgsPoiMap::Clear()
@@ -60,9 +64,11 @@ void pgsPoiMap::Clear()
 
 PoiIDType pgsPoiMap::GetModelPoi(const pgsPointOfInterest& productPoi) const
 {
-   std::map<pgsPointOfInterest,PoiIDType>::const_iterator found( m_Map.find( productPoi ) );
+   std::map<PoiIDType,PoiIDType>::const_iterator found( m_Map.find( productPoi.GetID() ) );
    if ( found == m_Map.end() )
+   {
       return INVALID_ID;
+   }
 
    return found->second;
 }
@@ -71,8 +77,8 @@ std::vector<PoiIDType> pgsPoiMap::GetModelPois() const
 {
    std::vector<PoiIDType> poi;
 
-   std::map<pgsPointOfInterest,PoiIDType>::const_iterator i(m_Map.begin());
-   std::map<pgsPointOfInterest,PoiIDType>::const_iterator end(m_Map.begin());
+   std::map<PoiIDType,PoiIDType>::const_iterator i(m_Map.begin());
+   std::map<PoiIDType,PoiIDType>::const_iterator end(m_Map.begin());
    for ( ; i != end; i++ )
    {
       poi.push_back( (*i).second );

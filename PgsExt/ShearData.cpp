@@ -94,46 +94,74 @@ CShearData& CShearData::operator= (const CShearData& rOther)
 bool CShearData::operator == (const CShearData& rOther) const
 {
    if ( ShearZones != rOther.ShearZones )
+   {
       return false;
+   }
 
    if ( bIsRoughenedSurface != rOther.bIsRoughenedSurface )
+   {
       return false;
+   }
 
    if ( ShearBarGrade != rOther.ShearBarGrade )
+   {
       return false;
+   }
 
    if ( ShearBarType != rOther.ShearBarType )
+   {
       return false;
+   }
 
    if ( HorizontalInterfaceZones != rOther.HorizontalInterfaceZones )
+   {
       return false;
+   }
 
    if ( bAreZonesSymmetrical != rOther.bAreZonesSymmetrical )
+   {
       return false;
+   }
 
    if ( bUsePrimaryForSplitting != rOther.bUsePrimaryForSplitting )
+   {
       return false;
+   }
 
    if ( SplittingBarSize != rOther.SplittingBarSize )
+   {
       return false;
+   }
 
    if ( SplittingBarSpacing != rOther.SplittingBarSpacing )
+   {
       return false;
+   }
 
    if ( SplittingZoneLength != rOther.SplittingZoneLength )
+   {
       return false;
+   }
 
    if ( nSplittingBars != rOther.nSplittingBars )
+   {
       return false;
+   }
 
    if ( ConfinementBarSize != rOther.ConfinementBarSize )
+   {
       return false;
+   }
 
    if ( ConfinementBarSpacing != rOther.ConfinementBarSpacing )
+   {
       return false;
+   }
 
    if ( ConfinementZoneLength != rOther.ConfinementZoneLength )
+   {
       return false;
+   }
 
    return true;
 }
@@ -241,14 +269,18 @@ HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
    Int32 zcnt;
    hr = pStrLoad->Property(_T("ZoneCount"), &zcnt );
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    for ( int i = 0; i < zcnt; i++ )
    {
       CShearZoneData zd;
       hr = zd.Load(pStrLoad, bConvertToVersion9, legacy_ConfinementBarSize, NumConfinementZones, bDoStirrupsEngageDeck);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
       ShearZones.push_back( zd );
    }
@@ -274,14 +306,18 @@ HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
 
       hr = pStrLoad->Property(_T("HorizZoneCount"), &zcnt );
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
       for ( int i = 0; i < zcnt; i++ )
       {
          CHorizontalInterfaceZoneData zd;
          hr = zd.Load(pStrLoad);
          if ( FAILED(hr) )
+         {
             return hr;
+         }
 
          HorizontalInterfaceZones.push_back( zd );
       }
@@ -331,7 +367,9 @@ HRESULT CShearData::Save(sysIStructuredSave* pStrSave)
       CShearZoneData& pd = *i;
       hr = pd.Save(pStrSave);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
    }
 
    pStrSave->Property(_T("HorizZoneCount"), (Int32)HorizontalInterfaceZones.size() );
@@ -342,7 +380,9 @@ HRESULT CShearData::Save(sysIStructuredSave* pStrSave)
       CHorizontalInterfaceZoneData& rd = *ih;
       hr = rd.Save( pStrSave);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
    }
 
    pStrSave->Property(_T("SplittingBarSize"), (Uint32)SplittingBarSize );

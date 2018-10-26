@@ -105,18 +105,26 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    {
       std::_tstring load(*iter);
       if ( load.compare(_T("OL1")) == 0 )
+      {
          bOL1 = true;
+      }
 
       if ( load.compare(_T("OL2")) == 0 )
+      {
          bOL2 = true;
+      }
 
       // check for neg moment version of the OL trucks... if found and neg moment analysis is required
       // set the value to true.... if found and neg moment analysis is not required, set the value to vale
       if ( load.compare(_T("OL1 (Neg Moment)")) == 0 )
+      {
          bOL1NegMoment = (bNegMoments ? true : false);
+      }
 
       if ( load.compare(_T("OL2 (Neg Moment)")) == 0 )
+      {
          bOL2NegMoment = (bNegMoments ? true : false);
+      }
    }
    if ( bOL1 == false || bOL2 == false || bOL1NegMoment == false || bOL2NegMoment == false )
    {
@@ -131,22 +139,34 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->GetRatingSpecification() != _T("WSDOT") )
+   {
       bIsWSDOTRating = false;
+   }
 
    if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+   {
       bIsWSDOTRating = false;
+   }
 
    if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+   {
       bIsWSDOTRating = false;
+   }
 
    if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+   {
       bIsWSDOTRating = false;
+   }
 
    if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   {
       bIsWSDOTRating = false;
+   }
 
    if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+   {
       bIsWSDOTRating = false;
+   }
 
    if ( !bIsWSDOTRating )
    {
@@ -265,7 +285,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
 
    (*pPara) << _T("Bridge Name: ") << pProjectProperties->GetBridgeName() << rptNewLine;
-   (*pPara) << _T("Bridge Number: ") << pProjectProperties->GetBridgeId() << rptNewLine;
+   (*pPara) << _T("Bridge Number: ") << pProjectProperties->GetBridgeID() << rptNewLine;
    (*pPara) << _T("Span Types : PCG") << rptNewLine;
    (*pPara) << _T("Bridge Length : ") << length.SetValue(pBridge->GetLength()) << rptNewLine;
    (*pPara) << _T("Rated By: ") << pProjectProperties->GetEngineer() << rptNewLine;
@@ -383,9 +403,13 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       (*pTable)(row,0) << pPositiveMoment->GetVehicleName();
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
       (*pTable)(row,2) << scalar.SetValue(pPositiveMoment->GetLiveLoadFactor());
 
@@ -393,16 +417,20 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Positive Moment)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Positive Moment)");
    }
    else if ( pNegativeMoment )
    {
       (*pTable)(row,0) << pNegativeMoment->GetVehicleName();
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
       (*pTable)(row,2) << scalar.SetValue(pNegativeMoment->GetLiveLoadFactor());
 
@@ -410,16 +438,20 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Negative Moment)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Negative Moment)");
    }
    else if ( pShear )
    {
       (*pTable)(row,0) << pShear->GetVehicleName();
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
       (*pTable)(row,2) << scalar.SetValue(pShear->GetLiveLoadFactor());
 
@@ -427,16 +459,20 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Shear)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Shear)");
    }
    else if ( pStress )
    {
       (*pTable)(row,0) << pStress->GetVehicleName();
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
       (*pTable)(row,2) << scalar.SetValue(pStress->GetLiveLoadFactor());
 
@@ -444,16 +480,20 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Stress)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Stress)");
    }
    else if ( pYieldStressPositiveMoment )
    {
       (*pTable)(row,0) << pYieldStressPositiveMoment->GetVehicleName();
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
       (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
 
@@ -463,7 +503,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Yield Stress - Positive Moment)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Yield Stress - Positive Moment)");
 
       if ( 0 < pYieldStressPositiveMoment->GetCrackingStressIncrement() )
       {
@@ -475,9 +515,13 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       (*pTable)(row,0) << pYieldStressNegativeMoment->GetVehicleName();
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
       (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
 
@@ -487,7 +531,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Yield Stress - Negative Moment)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Yield Stress - Negative Moment)");
 
       if ( 0 < pYieldStressNegativeMoment->GetCrackingStressIncrement() )
       {
@@ -523,63 +567,79 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
       (*pTable)(row,0) << strTruck;
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
 
       pgsPointOfInterest poi(  pPositiveMoment->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,2) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Positive Moment)");
+      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Positive Moment)");
    }
    else if ( pNegativeMoment )
    {
       (*pTable)(row,0) << strTruck;
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
 
       pgsPointOfInterest poi( pNegativeMoment->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,2) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Negative Moment)");
+      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Negative Moment)");
    }
    else if ( pShear )
    {
       (*pTable)(row,0) << strTruck;
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
 
       pgsPointOfInterest poi( pShear->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,2) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Shear)");
+      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Shear)");
    }
    else if ( pStress )
    {
       (*pTable)(row,0) << strTruck;
       
       if ( RF < 1 )
+      {
          (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+      }
       else
+      {
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      }
 
 
       pgsPointOfInterest poi( pStress->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,2) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Stress)");
+      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Stress)");
    }
 }

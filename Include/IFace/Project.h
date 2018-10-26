@@ -85,7 +85,7 @@ inline long GetIntForLldfAction(LldfRangeOfApplicabilityAction action)
    }
    else
    {
-      ATLASSERT(0); // something new added to wbfl?
+      ATLASSERT(false); // something new added to wbfl?
       return 0;
    }
 }
@@ -106,7 +106,7 @@ inline LldfRangeOfApplicabilityAction GetLldfActionForInt(long iaction)
    }
    else
    {
-      ATLASSERT(0); // something got hosed?
+      ATLASSERT(false); // something got hosed?
       return roaEnforce;
    }
 }
@@ -127,8 +127,8 @@ interface IProjectProperties : IUnknown
 {
    virtual std::_tstring GetBridgeName() const = 0;
    virtual void SetBridgeName(const std::_tstring& name) = 0;
-   virtual std::_tstring GetBridgeId() const = 0;
-   virtual void SetBridgeId(const std::_tstring& bid) = 0;
+   virtual std::_tstring GetBridgeID() const = 0;
+   virtual void SetBridgeID(const std::_tstring& bid) = 0;
    virtual std::_tstring GetJobNumber() const = 0;
    virtual void SetJobNumber(const std::_tstring& jid) = 0;
    virtual std::_tstring GetEngineer() const = 0;
@@ -137,13 +137,6 @@ interface IProjectProperties : IUnknown
    virtual void SetCompany(const std::_tstring& company) = 0;
    virtual std::_tstring GetComments() const = 0;
    virtual void SetComments(const std::_tstring& comments) = 0;
-
-   // Enables/Disables the update mechanism.  If the update mechanism is
-   // disable, change notifications aren't fired to the event sinks.
-   // When enabled, a notification is fired if pending updates exist.
-   virtual void EnableUpdate(bool bEnable) = 0;
-   virtual bool IsUpdatedEnabled() = 0;
-   virtual bool AreUpdatesPending() = 0;
 };
 
 /*****************************************************************************
@@ -245,22 +238,32 @@ struct AlignmentData2
    bool operator==(const AlignmentData2& other) const
    {
       if ( Direction != other.Direction )
+      {
          return false;
+      }
 
       if ( HorzCurves != other.HorzCurves )
+      {
          return false;
+      }
 
       // NOTE: We had to change this to an IsZero test because
       //       with very large numbers, IsEqual would return true even
       //       though the weren't equal (IsEqual uses delta/max which produces a very small value)
       if ( !IsZero(RefStation-other.RefStation) )
+      {
          return false;
+      }
 
       if ( !IsZero(xRefPoint-other.xRefPoint) )
+      {
          return false;
+      }
 
       if ( !IsZero(yRefPoint-other.yRefPoint) )
+      {
          return false;
+      }
 
       return true;
    }
@@ -302,16 +305,24 @@ struct ProfileData2
    bool operator==(const ProfileData2& other) const
    {
       if ( Station != other.Station)
+      {
          return false;
+      }
 
       if ( Elevation != other.Elevation)
+      {
          return false;
+      }
 
       if ( Grade != other.Grade)
+      {
          return false;
+      }
 
       if ( VertCurves != other.VertCurves )
+      {
          return false;
+      }
 
       return true;
    }
@@ -710,8 +721,8 @@ interface IUserDefinedLoadData : IUnknown
    virtual CollectionIndexType GetPointLoadCount() const = 0;
    // add point load and return current count
    virtual CollectionIndexType AddPointLoad(const CPointLoadData& pld)= 0;
-   virtual const CPointLoadData& GetPointLoad(CollectionIndexType idx) const = 0;
-   virtual const CPointLoadData& FindPointLoad(LoadIDType loadID) const = 0;
+   virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const = 0;
+   virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const = 0;
    virtual void UpdatePointLoad(CollectionIndexType idx, const CPointLoadData& pld) = 0;
    virtual void DeletePointLoad(CollectionIndexType idx) = 0;
 
@@ -719,8 +730,8 @@ interface IUserDefinedLoadData : IUnknown
    virtual CollectionIndexType GetDistributedLoadCount() const = 0;
    // add distributed load and return current count
    virtual CollectionIndexType AddDistributedLoad(const CDistributedLoadData& pld)= 0;
-   virtual const CDistributedLoadData& GetDistributedLoad(CollectionIndexType idx) const = 0;
-   virtual const CDistributedLoadData& FindDistributedLoad(LoadIDType loadID) const = 0;
+   virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const = 0;
+   virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const = 0;
    virtual void UpdateDistributedLoad(CollectionIndexType idx, const CDistributedLoadData& pld) = 0;
    virtual void DeleteDistributedLoad(CollectionIndexType idx) = 0;
 
@@ -728,8 +739,8 @@ interface IUserDefinedLoadData : IUnknown
    virtual CollectionIndexType GetMomentLoadCount() const = 0;
    // add moment load and return current count
    virtual CollectionIndexType AddMomentLoad(const CMomentLoadData& pld)= 0;
-   virtual const CMomentLoadData& GetMomentLoad(CollectionIndexType idx) const = 0;
-   virtual const CMomentLoadData& FindMomentLoad(LoadIDType loadID) const = 0;
+   virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const = 0;
+   virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const = 0;
    virtual void UpdateMomentLoad(CollectionIndexType idx, const CMomentLoadData& pld) = 0;
    virtual void DeleteMomentLoad(CollectionIndexType idx) = 0;
 
@@ -981,6 +992,7 @@ interface IBridgeDescription : IUnknown
    virtual EventIndexType GetSegmentConstructionEventIndex(const CSegmentKey& segmentKey) = 0;
    virtual EventIDType GetSegmentConstructionEventID(const CSegmentKey& segmentKey) = 0;
 
+   virtual EventIndexType GetPierErectionEvent(PierIndexType pierIdx) = 0;
    virtual void SetPierErectionEventByIndex(PierIndexType pierIdx,EventIndexType eventIdx) = 0;
    virtual void SetPierErectionEventByID(PierIndexType pierIdx,EventIDType eventID) = 0;
    virtual void SetTempSupportEventsByIndex(SupportIndexType tsIdx,EventIndexType erectEventIdx,EventIndexType removeEventIdx) = 0;
@@ -1081,6 +1093,12 @@ interface ILossParameters : IUnknown
 {
    // Returns the method for computing prestress losses
    virtual pgsTypes::LossMethod GetLossMethod() = 0;
+
+   // Indicates if time dependent effects are ignored during time-step analysis.
+   // This setting only applies to time-step analysis. If ignored, the time-step
+   // analysis results are restricted to an elastic response.
+   virtual void IgnoreTimeDependentEffects(bool bIgnore) = 0;
+   virtual bool IgnoreTimeDependentEffects() = 0;
 
    // Set/Get the parameters for computing initial losses in post-tension tendons
    virtual void SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction) = 0;

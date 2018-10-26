@@ -68,7 +68,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    if ( 0 < NtMax )
    {
-      if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned ) 
+      if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ) 
       {
          numColumns++;
       }
@@ -79,7 +79,9 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    }
 
    if ( bIgnoreElasticGain )
+   {
       numColumns -= 2;
+   }
 
    CFinalPrestressLossTable* table = new CFinalPrestressLossTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
@@ -92,7 +94,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    std::_tstring strYear = (bIgnoreElasticGain ? _T("") : _T("_2005"));
    if ( 0 < NtMax )
    {
-      if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned ) 
+      if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ) 
       {
          *pParagraph << _T("Total Prestress Loss ") << rptNewLine << rptRcImage(strImagePath + _T("DeltaFpt_PS_TTS") + strYear + _T(".png")) << rptNewLine;
       }
@@ -114,7 +116,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
-   if ( 0 < NtMax && pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < NtMax && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -152,14 +154,14 @@ void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    boost::shared_ptr<const lrfdRefinedLosses> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return;
    }
 
    (*this)(row,col++) << stress.SetValue( ptl->PermanentStrand_RelaxationLossesAtXfer() );
    (*this)(row,col++) << stress.SetValue( pDetails->pLosses->PermanentStrand_ElasticShorteningLosses() );
    
-   if ( 0 < m_NtMax && m_pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
       (*this)(row,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
    }

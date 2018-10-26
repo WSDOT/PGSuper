@@ -71,7 +71,6 @@ void CContinuityCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,const CGirderKey& girderKey,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IContinuity,pContinuity);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISpecification,pSpec);
 
@@ -101,25 +100,28 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    (*pTable)(0,2) << _T("Boundary Condition");
    (*pTable)(0,3) << _T("Is Compressive?");
 
+   GET_IFACE2(pBroker,IContinuity,pContinuity);
+
    PierIndexType nPiers = pBridge->GetPierCount();
    RowIndexType row = 1;
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++, row++ )
    {
+      ColumnIndexType col = 0;
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
-         (*pTable)(row,0) << _T("Abut ") << LABEL_PIER(pierIdx);
+         (*pTable)(row,col++) << _T("Abut ") << LABEL_PIER(pierIdx);
       else
-         (*pTable)(row,0) << _T("Pier ") << LABEL_PIER(pierIdx);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
 
       if ( pBridge->IsInteriorPier(pierIdx) )
       {
-         (*pTable)(row,1) << _T("");
-         (*pTable)(row,2) << _T("");
-         (*pTable)(row,3) << _T("");
+         (*pTable)(row,col++) << _T("");
+         (*pTable)(row,col++) << _T("");
+         (*pTable)(row,col++) << _T("");
       }
       else
       {
          Float64 fBottom = pContinuity->GetContinuityStressLevel(pierIdx,girderKey);
-         (*pTable)(row,1) << stress.SetValue(fBottom);
+         (*pTable)(row,col++) << stress.SetValue(fBottom);
 
          bool bContinuousLeft, bContinuousRight;
          pBridge->IsContinuousAtPier(pierIdx,&bContinuousLeft,&bContinuousRight);
@@ -128,17 +130,15 @@ void CContinuityCheck::Build(rptChapter* pChapter,
          pBridge->IsIntegralAtPier(pierIdx,&bIntegralLeft,&bIntegralRight);
 
          if ( bContinuousLeft || bContinuousRight )
-            (*pTable)(row,2) << _T("Continuous");
+            (*pTable)(row,col++) << _T("Continuous");
          else if ( bIntegralLeft || bIntegralRight )
-            (*pTable)(row,2) << _T("Integral");
+            (*pTable)(row,col++) << _T("Integral");
          else
-            (*pTable)(row,2) << _T("Hinged");
+            (*pTable)(row,col++) << _T("Hinged");
 
          fBottom = IsZero(fBottom) ? 0 : fBottom;
-         (*pTable)(row,3) << (fBottom < 0 ? _T("Yes") : _T("No"));
+         (*pTable)(row,col++) << (fBottom < 0 ? _T("Yes") : _T("No"));
       }
-
-      row++;
    }
 
    pPara = new rptParagraph;

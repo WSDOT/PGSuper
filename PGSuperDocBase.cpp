@@ -99,6 +99,7 @@
 #include "BridgeLinkCATID.h"
 
 #include "Hints.h"
+#include "UIHintsDlg.h"
 
 #include "PGSuperException.h"
 #include <System\FileStream.h>
@@ -141,7 +142,7 @@
 
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\DesignArtifact.h>
+#include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 
@@ -165,6 +166,7 @@
 #include "EditLoadModifiers.h"
 #include "PGSuperAppPlugin\EditLossParameters.h"
 #include "PGSuperAppPlugin\EditPrecastSegment.h"
+#include "EditProjectProperties.h"
 
 // Logging
 #include <iostream>
@@ -203,14 +205,14 @@ static void UpdatePrestressForce(pgsTypes::StrandType type, const CSegmentKey& s
 {
 
       // If going from no strands - always compute pjack automatically
-      if(newSegmentData.Strands.bPjackCalculated[type] ||
-         (0 == oldSegmentData.Strands.GetNstrands(type) &&
-          0 < newSegmentData.Strands.GetNstrands(type)))
+      if(newSegmentData.Strands.IsPjackCalculated(type) ||
+         (0 == oldSegmentData.Strands.GetStrandCount(type) &&
+          0 < newSegmentData.Strands.GetStrandCount(type)))
       {
-         newSegmentData.Strands.bPjackCalculated[type]=true;
-         newSegmentData.Strands.Pjack[type]  = pPrestress->GetPjackMax(segmentKey, 
-                                                                 *(newSegmentData.Strands.StrandMaterial[type]),
-                                                                 newSegmentData.Strands.GetNstrands(type));
+         newSegmentData.Strands.IsPjackCalculated(type,true);
+         newSegmentData.Strands.SetPjack(type, pPrestress->GetPjackMax(segmentKey, 
+                                                                 *(newSegmentData.Strands.GetStrandMaterial(type)),
+                                                                 newSegmentData.Strands.GetStrandCount(type)));
       }
 }
 
@@ -342,7 +344,9 @@ void CPGSuperDocBase::EnableAutoCalc(bool bEnable)
       // If AutoCalc was off and now it is on,
       // Update the views.
       if ( bWasDisabled && IsAutoCalcEnabled() )
+      {
         OnUpdateNow();
+      }
    }
 }
 
@@ -418,9 +422,7 @@ void CPGSuperDocBase::EditBridgeDescription(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IRoadwayData,pAlignment);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GET_IFACE(ILiveLoads, pLiveLoads);
    GET_IFACE(IEnvironment, pEnvironment );
 
    const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -544,7 +546,7 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    oldSegmentData.m_ConstructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(pSegment->GetID());
    oldSegmentData.m_ErectionEventIdx     = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
 
-   if (pSegment->Strands.NumPermStrandsType != CStrandData::npsDirectSelection )
+   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::npsDirectSelection )
    {
       // We can go no further
       ::AfxMessageBox(_T("Programmer Error: EditDirectInputPrestressing - can only be called for Direct Select strand fill"),MB_OK | MB_ICONWARNING);
@@ -558,11 +560,11 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get current offset input values - dialog will force in bounds if needed
-   HarpedStrandOffsetType endMeasureType = pSegment->Strands.HsoEndMeasurement;
-   HarpedStrandOffsetType hpMeasureType  = pSegment->Strands.HsoHpMeasurement;
+   HarpedStrandOffsetType endMeasureType = pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd();
+   HarpedStrandOffsetType hpMeasureType  = pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint();
 
-   Float64 hpOffsetAtEnd = pSegment->Strands.HpOffsetAtEnd;
-   Float64 hpOffsetAtHp  = pSegment->Strands.HpOffsetAtHp;
+   Float64 hpOffsetAtEnd = pSegment->Strands.GetHarpStrandOffsetAtEnd();
+   Float64 hpOffsetAtHp  = pSegment->Strands.GetHarpStrandOffsetAtHarpPoint();
 
    bool allowEndAdjustment = pGdrEntry->IsVerticalAdjustmentAllowedEnd();
    bool allowHpAdjustment  = pGdrEntry->IsVerticalAdjustmentAllowedHP();
@@ -622,15 +624,15 @@ bool CPGSuperDocBase::EditPointLoad(CollectionIndexType loadIdx)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
-   const CPointLoadData& loadData = pUserDefinedLoads->GetPointLoad(loadIdx);
+   const CPointLoadData* pLoadData = pUserDefinedLoads->GetPointLoad(loadIdx);
 
-   CEditPointLoadDlg dlg(loadData);
+   CEditPointLoadDlg dlg(*pLoadData);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
-      if (loadData != dlg.m_Load)
+      if (*pLoadData != dlg.m_Load)
       {
-         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,loadData,dlg.m_Load);
+         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,*pLoadData,dlg.m_Load);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -668,15 +670,15 @@ bool CPGSuperDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
-   const CDistributedLoadData& loadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
+   const CDistributedLoadData* pLoadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
 
-   CEditDistributedLoadDlg dlg(loadData);
+   CEditDistributedLoadDlg dlg(*pLoadData);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
-      if (loadData != dlg.m_Load)
+      if (*pLoadData != dlg.m_Load)
       {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,loadData,dlg.m_Load);
+         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,*pLoadData,dlg.m_Load);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -714,15 +716,15 @@ bool CPGSuperDocBase::EditMomentLoad(CollectionIndexType loadIdx)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
-   const CMomentLoadData& loadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
+   const CMomentLoadData* pLoadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
 
-   CEditMomentLoadDlg dlg(loadData);
+   CEditMomentLoadDlg dlg(*pLoadData);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
-      if (loadData != dlg.m_Load)
+      if (*pLoadData != dlg.m_Load)
       {
-         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,loadData,dlg.m_Load);
+         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,*pLoadData,dlg.m_Load);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -799,7 +801,9 @@ BOOL CPGSuperDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
       CString strDir = dir_finder.GetFilePath();
 
       if ( !dir_finder.IsDots() && dir_finder.IsDirectory() )
+      {
          UpdateTemplates(pProgress,strDir);
+      }
    }
 
    // done with the directories below this leave. Process the templates at this level
@@ -818,7 +822,9 @@ BOOL CPGSuperDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
       pProgress->UpdateMessage(strMessage);
 
       if ( !OpenTheDocument(strTemplate) )
+      {
          return FALSE;
+      }
 
       CEAFBrokerDocument::SaveTheDocument(strTemplate);
 
@@ -842,7 +848,9 @@ BOOL CPGSuperDocBase::UpdateTemplates()
    pPGSuper->GetTemplateFolders(workgroup_folder);
 
    if  ( !Init() ) // load the agents and other necessary stuff
+   {
       return FALSE;
+   }
 
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
@@ -875,7 +883,9 @@ bool CPGSuperDocBase::UnregisterBridgePlanViewCallback(IDType ID)
 {
    std::map<IDType,IBridgePlanViewEventCallback*>::iterator found = m_BridgePlanViewCallbacks.find(ID);
    if ( found == m_BridgePlanViewCallbacks.end() )
+   {
       return false;
+   }
 
    m_BridgePlanViewCallbacks.erase(found);
 
@@ -898,7 +908,9 @@ bool CPGSuperDocBase::UnregisterBridgeSectionViewCallback(IDType ID)
 {
    std::map<IDType,IBridgeSectionViewEventCallback*>::iterator found = m_BridgeSectionViewCallbacks.find(ID);
    if ( found == m_BridgeSectionViewCallbacks.end() )
+   {
       return false;
+   }
 
    m_BridgeSectionViewCallbacks.erase(found);
 
@@ -921,7 +933,9 @@ bool CPGSuperDocBase::UnregisterGirderElevationViewCallback(IDType ID)
 {
    std::map<IDType,IGirderElevationViewEventCallback*>::iterator found = m_GirderElevationViewCallbacks.find(ID);
    if ( found == m_GirderElevationViewCallbacks.end() )
+   {
       return false;
+   }
 
    m_GirderElevationViewCallbacks.erase(found);
 
@@ -944,7 +958,9 @@ bool CPGSuperDocBase::UnregisterGirderSectionViewCallback(IDType ID)
 {
    std::map<IDType,IGirderSectionViewEventCallback*>::iterator found = m_GirderSectionViewCallbacks.find(ID);
    if ( found == m_GirderSectionViewCallbacks.end() )
+   {
       return false;
+   }
 
    m_GirderSectionViewCallbacks.erase(found);
 
@@ -967,7 +983,9 @@ bool CPGSuperDocBase::UnregisterEditPierCallback(IDType ID)
 {
    std::map<IDType,IEditPierCallback*>::iterator found = m_EditPierCallbacks.find(ID);
    if ( found == m_EditPierCallbacks.end() )
+   {
       return false;
+   }
 
    m_EditPierCallbacks.erase(found);
 
@@ -990,7 +1008,9 @@ bool CPGSuperDocBase::UnregisterEditTemporarySupportCallback(IDType ID)
 {
    std::map<IDType,IEditTemporarySupportCallback*>::iterator found = m_EditTemporarySupportCallbacks.find(ID);
    if ( found == m_EditTemporarySupportCallbacks.end() )
+   {
       return false;
+   }
 
    m_EditTemporarySupportCallbacks.erase(found);
 
@@ -1013,7 +1033,9 @@ bool CPGSuperDocBase::UnregisterEditSpanCallback(IDType ID)
 {
    std::map<IDType,IEditSpanCallback*>::iterator found = m_EditSpanCallbacks.find(ID);
    if ( found == m_EditSpanCallbacks.end() )
+   {
       return false;
+   }
 
    m_EditSpanCallbacks.erase(found);
 
@@ -1042,7 +1064,9 @@ bool CPGSuperDocBase::UnregisterEditGirderCallback(IDType ID)
 {
    std::map<IDType,IEditGirderCallback*>::iterator foundCallback = m_EditGirderCallbacks.find(ID);
    if ( foundCallback == m_EditGirderCallbacks.end() )
+   {
       return false;
+   }
 
    m_EditGirderCallbacks.erase(foundCallback);
 
@@ -1082,7 +1106,9 @@ bool CPGSuperDocBase::UnregisterEditSplicedGirderCallback(IDType ID)
 {
    std::map<IDType,IEditSplicedGirderCallback*>::iterator found = m_EditSplicedGirderCallbacks.find(ID);
    if ( found == m_EditSplicedGirderCallbacks.end() )
+   {
       return false;
+   }
 
    m_EditSplicedGirderCallbacks.erase(found);
 
@@ -1116,7 +1142,9 @@ bool CPGSuperDocBase::UnregisterEditSegmentCallback(IDType ID)
 {
    std::map<IDType,IEditSegmentCallback*>::iterator found = m_EditSegmentCallbacks.find(ID);
    if ( found == m_EditSegmentCallbacks.end() )
+   {
       return false;
+   }
 
    m_EditSegmentCallbacks.erase(found);
 
@@ -1139,7 +1167,9 @@ bool CPGSuperDocBase::UnregisterEditClosureJointCallback(IDType ID)
 {
    std::map<IDType,IEditClosureJointCallback*>::iterator found = m_EditClosureJointCallbacks.find(ID);
    if ( found == m_EditClosureJointCallbacks.end() )
+   {
       return false;
+   }
 
    m_EditClosureJointCallbacks.erase(found);
 
@@ -1162,7 +1192,9 @@ bool CPGSuperDocBase::UnregisterEditBridgeCallback(IDType ID)
 {
    std::map<IDType,IEditBridgeCallback*>::iterator found = m_EditBridgeCallbacks.find(ID);
    if ( found == m_EditBridgeCallbacks.end() )
+   {
       return false;
+   }
 
    m_EditBridgeCallbacks.erase(found);
 
@@ -1177,7 +1209,9 @@ const std::map<IDType,IEditBridgeCallback*>& CPGSuperDocBase::GetEditBridgeCallb
 BOOL CPGSuperDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 {
    if ( !CEAFDocument::OnNewDocumentFromTemplate(lpszPathName) )
+   {
       return FALSE;
+   }
 
    InitProjectProperties();
    return TRUE;
@@ -1227,7 +1261,9 @@ void CPGSuperDocBase::InitProjectProperties()
    pProjProp->SetCompany(std::_tstring(company));
 
    if ( ShowProjectPropertiesOnNewProject() )
+   {
       OnFileProjectProperties();
+   }
 }
 
 void CPGSuperDocBase::OnCreateInitialize()
@@ -1306,17 +1342,21 @@ void CPGSuperDocBase::OnCreateFinalize()
 BOOL CPGSuperDocBase::CreateBroker()
 {
    if ( !CEAFBrokerDocument::CreateBroker() )
+   {
       return FALSE;
+   }
 
+   // map old PGSuper (pre version 3.0) CLSID to current CLSID
+   // CLSID's where changed so that pre version 3.0 installations could co-exist with 3.0 and later installations
    CComQIPtr<ICLSIDMap> clsidMap(m_pBroker);
-   clsidMap->AddCLSID(_T("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),_T("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
-   clsidMap->AddCLSID(_T("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),_T("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
-   clsidMap->AddCLSID(_T("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),_T("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
-   clsidMap->AddCLSID(_T("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),_T("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
-   clsidMap->AddCLSID(_T("{59D50426-265C-11D2-8EB0-006097DF3C68}"),_T("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
-   clsidMap->AddCLSID(_T("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),_T("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
-   clsidMap->AddCLSID(_T("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),_T("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
-   clsidMap->AddCLSID(_T("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),_T("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
+   clsidMap->AddCLSID(CComBSTR("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),CComBSTR("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
+   clsidMap->AddCLSID(CComBSTR("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),CComBSTR("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
+   clsidMap->AddCLSID(CComBSTR("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),CComBSTR("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
+   clsidMap->AddCLSID(CComBSTR("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),CComBSTR("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
+   clsidMap->AddCLSID(CComBSTR("{59D50426-265C-11D2-8EB0-006097DF3C68}"),CComBSTR("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
+   clsidMap->AddCLSID(CComBSTR("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),CComBSTR("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
+   clsidMap->AddCLSID(CComBSTR("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),CComBSTR("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
+   clsidMap->AddCLSID(CComBSTR("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),CComBSTR("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
 
    return TRUE;
 }
@@ -1350,7 +1390,9 @@ BOOL CPGSuperDocBase::OpenTheDocument(LPCTSTR lpszPathName)
    // Events are released in OnCreateFinalize()
 
    if ( !CEAFBrokerDocument::OpenTheDocument(lpszPathName) )
+   {
       return FALSE;
+   }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    m_DocUnitSystem->put_UnitMode( IS_US_UNITS(pDisplayUnits) ? umUS : umSI );
@@ -1445,11 +1487,15 @@ HRESULT CPGSuperDocBase::OpenDocumentRootNode(IStructuredSave* pStrSave)
 {
   HRESULT hr = CEAFDocument::OpenDocumentRootNode(pStrSave);
   if ( FAILED(hr) )
+  {
      return hr;
+  }
 
   hr = pStrSave->put_Property(_T("Version"),CComVariant(theApp.GetVersion(true)));
   if ( FAILED(hr) )
+  {
      return hr;
+  }
 
   return S_OK;
 }
@@ -1458,12 +1504,16 @@ HRESULT CPGSuperDocBase::OpenDocumentRootNode(IStructuredLoad* pStrLoad)
 {
    HRESULT hr = CEAFDocument::OpenDocumentRootNode(pStrLoad);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    Float64 version;
    hr = pStrLoad->get_Version(&version);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    if ( 1.0 < version )
    {
@@ -1471,7 +1521,9 @@ HRESULT CPGSuperDocBase::OpenDocumentRootNode(IStructuredLoad* pStrLoad)
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("Version"),&var);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
    #if defined _DEBUG
       TRACE(_T("Loading data saved with PGSuper Version %s\n"),CComBSTR(var.bstrVal));
@@ -1565,21 +1617,27 @@ BOOL CPGSuperDocBase::Init()
    pMyApp->m_pszProfileName = _tcsdup(pPGSuper->GetAppName());
 
    if ( !CEAFBrokerDocument::Init() )
+   {
       return FALSE;
+   }
 
    // Application start up can be improved if this call
    // is executed in its own thread... Need to add some
    // code that indicates if the call fails.. then throw
    // a shut down exception
    if ( FAILED(CBeamFamilyManager::Init(GetBeamFamilyCategoryID())) )
+   {
       return FALSE;
+   }
 
    m_pPluginMgr = CreatePluginManager();
    m_pPluginMgr->LoadPlugins(); // these are the data importers and exporters
 
    // load up the library manager
    if ( !LoadMasterLibrary() )
+   {
       return FALSE;
+   }
 
    // Setup the library manager (same as if it changed)
    OnLibMgrChanged( &m_LibMgr );
@@ -1633,7 +1691,9 @@ BOOL CPGSuperDocBase::Init()
 BOOL CPGSuperDocBase::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
 {
    if ( !CEAFBrokerDocument::LoadSpecialAgents(pBrokerInit) )
+   {
       return FALSE;
+   }
 
    CComObject<CPGSuperDocProxyAgent>* pDocProxyAgent;
    CComObject<CPGSuperDocProxyAgent>::CreateInstance(&pDocProxyAgent);
@@ -1644,12 +1704,16 @@ BOOL CPGSuperDocBase::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
    
    HRESULT hr = pBrokerInit->AddAgent( pAgent );
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    // we want to use some special agents
    CLSID clsid[] = {CLSID_SysAgent,CLSID_ReportManagerAgent,CLSID_GraphManagerAgent};
    if ( !LoadAgents(pBrokerInit, clsid, sizeof(clsid)/sizeof(CLSID) ) )
+   {
       return FALSE;
+   }
 
    return TRUE;
 }
@@ -1663,7 +1727,7 @@ void CPGSuperDocBase::OnFileProjectProperties()
    CProjectPropertiesDlg dlg;
 
    dlg.m_Bridge    = pProjProp->GetBridgeName();
-   dlg.m_BridgeID  = pProjProp->GetBridgeId();
+   dlg.m_BridgeID  = pProjProp->GetBridgeID();
    dlg.m_JobNumber = pProjProp->GetJobNumber();
    dlg.m_Engineer  = pProjProp->GetEngineer();
    dlg.m_Company   = pProjProp->GetCompany();
@@ -1673,21 +1737,18 @@ void CPGSuperDocBase::OnFileProjectProperties()
 
    if ( dlg.DoModal() == IDOK )
    {
-      // Turn off update
-      pProjProp->EnableUpdate( false );
+      txnEditProjectProperties* pTxn = new txnEditProjectProperties( pProjProp->GetBridgeName(), dlg.m_Bridge,
+                                                                     pProjProp->GetBridgeID(),   dlg.m_BridgeID,
+                                                                     pProjProp->GetJobNumber(),  dlg.m_JobNumber,
+                                                                     pProjProp->GetEngineer(),   dlg.m_Engineer,
+                                                                     pProjProp->GetCompany(),    dlg.m_Company,
+                                                                     pProjProp->GetComments(),   dlg.m_Comments );
 
-      // Make all the changes
-      pProjProp->SetBridgeName( dlg.m_Bridge );
-      pProjProp->SetBridgeId( dlg.m_BridgeID );
-      pProjProp->SetJobNumber( dlg.m_JobNumber );
-      pProjProp->SetEngineer( dlg.m_Engineer );
-      pProjProp->SetCompany( dlg.m_Company );
-      pProjProp->SetComments( dlg.m_Comments );
+         
       ShowProjectPropertiesOnNewProject(dlg.m_bShowProjectProperties);
 
-      // Turn updates back on.  If something changed, this will cause an
-      // event to fire on the doc proxy event sink.
-      pProjProp->EnableUpdate( true );
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
    }
 }
 
@@ -2086,9 +2147,13 @@ void CPGSuperDocBase::OnProjectAutoCalc()
 void CPGSuperDocBase::OnUpdateProjectAutoCalc(CCmdUI* pCmdUI) 
 {
 	if ( IsAutoCalcEnabled() )
+   {
       pCmdUI->SetText( _T("Turn AutoCalc Off") );
+   }
    else
+   {
       pCmdUI->SetText( _T("Turn AutoCalc On") );
+   }
 }
 
 /*--------------------------------------------------------------------*/
@@ -2141,7 +2206,9 @@ void CPGSuperDocBase::OnExportToTemplateFile()
          msg += file_path + _T(" exists. Overwrite it?");
          int stm = AfxMessageBox(msg,MB_YESNOCANCEL|MB_ICONQUESTION);
          if (stm!=IDYES)
+         {
             return;
+         }
       }
 
       // write the file.
@@ -2152,7 +2219,9 @@ void CPGSuperDocBase::OnExportToTemplateFile()
 bool DoesFolderExist(const CString& dirname)
 {
    if (dirname.IsEmpty())
+   {
       return false;
+   }
    else
    {
       CFileFind finder;
@@ -2166,7 +2235,9 @@ bool DoesFolderExist(const CString& dirname)
 bool DoesFileExist(const CString& filename)
 {
    if (filename.IsEmpty())
+   {
       return false;
+   }
    else
    {
       CFileFind finder;
@@ -2278,7 +2349,9 @@ bool CPGSuperDocBase::LoadMasterLibrary()
 bool CPGSuperDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
 {
    if ( strMasterLibraryFile.GetLength() == 0 )
+   {
       return true;
+   }
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2369,8 +2442,7 @@ CSelection CPGSuperDocBase::GetSelection()
 
 void CPGSuperDocBase::SetSelection(const CSelection& selection)
 {
-#pragma Reminder("UPDATE: need a not equal operator for CSelection")
-   //if ( m_Selection != selection )
+   if ( m_Selection != selection )
    {
       m_Selection = selection;
       UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&m_Selection);
@@ -2380,7 +2452,9 @@ void CPGSuperDocBase::SetSelection(const CSelection& selection)
 void CPGSuperDocBase::SelectPier(PierIndexType pierIdx)
 {
    if ( m_Selection.Type == CSelection::Pier && m_Selection.PierIdx == pierIdx )
+   {
       return;
+   }
 
    m_Selection.Type       = CSelection::Pier;
    m_Selection.SegmentIdx = INVALID_INDEX;
@@ -2397,7 +2471,9 @@ void CPGSuperDocBase::SelectPier(PierIndexType pierIdx)
 void CPGSuperDocBase::SelectSpan(SpanIndexType spanIdx)
 {
    if ( m_Selection.Type == CSelection::Span && m_Selection.SpanIdx == spanIdx )
+   {
       return;
+   }
 
    m_Selection.Type       = CSelection::Span;
    m_Selection.SegmentIdx = INVALID_INDEX;
@@ -2413,7 +2489,9 @@ void CPGSuperDocBase::SelectSpan(SpanIndexType spanIdx)
 void CPGSuperDocBase::SelectGirder(const CGirderKey& girderKey)
 {
    if ( m_Selection.Type == CSelection::Girder && m_Selection.GroupIdx == girderKey.groupIndex && m_Selection.GirderIdx == girderKey.girderIndex )
+   {
       return;
+   }
 
    m_Selection.Type       = CSelection::Girder;
    m_Selection.GroupIdx   = girderKey.groupIndex;
@@ -2436,7 +2514,9 @@ void CPGSuperDocBase::SelectGirder(const CGirderKey& girderKey)
 void CPGSuperDocBase::SelectSegment(const CSegmentKey& segmentKey)
 {
    if ( m_Selection.Type == CSelection::Segment && m_Selection.GroupIdx == segmentKey.groupIndex && m_Selection.GirderIdx == segmentKey.girderIndex && m_Selection.SegmentIdx == segmentKey.segmentIndex )
+   {
       return;
+   }
 
    m_Selection.Type       = CSelection::Segment;
    m_Selection.GroupIdx   = segmentKey.groupIndex;
@@ -2459,7 +2539,9 @@ void CPGSuperDocBase::SelectSegment(const CSegmentKey& segmentKey)
 void CPGSuperDocBase::SelectClosureJoint(const CClosureKey& closureKey)
 {
    if ( m_Selection.Type == CSelection::ClosureJoint && m_Selection.GroupIdx == closureKey.groupIndex && m_Selection.GirderIdx == closureKey.girderIndex && m_Selection.SegmentIdx == closureKey.segmentIndex )
+   {
       return;
+   }
 
    m_Selection.Type       = CSelection::ClosureJoint;
    m_Selection.GroupIdx   = closureKey.groupIndex;
@@ -2482,7 +2564,9 @@ void CPGSuperDocBase::SelectClosureJoint(const CClosureKey& closureKey)
 void CPGSuperDocBase::SelectTemporarySupport(SupportIDType tsID)
 {
    if ( m_Selection.Type == CSelection::TemporarySupport && m_Selection.tsID == tsID )
+   {
       return;
+   }
 
    m_Selection.Type       = CSelection::TemporarySupport;
    m_Selection.GirderIdx  = INVALID_INDEX;
@@ -2504,7 +2588,9 @@ void CPGSuperDocBase::SelectTemporarySupport(SupportIDType tsID)
 void CPGSuperDocBase::SelectDeck()
 {
    if ( m_Selection.Type == CSelection::Deck )
+   {
       return;
+   }
 
    m_Selection.Type       = CSelection::Deck;
    m_Selection.SegmentIdx = INVALID_INDEX;
@@ -2521,7 +2607,9 @@ void CPGSuperDocBase::SelectDeck()
 void CPGSuperDocBase::SelectAlignment()
 {
    if ( m_Selection.Type == CSelection::Alignment )
+   {
       return;
+   }
 
    m_Selection.Type       = CSelection::Alignment;
    m_Selection.SegmentIdx = INVALID_INDEX;
@@ -2538,7 +2626,9 @@ void CPGSuperDocBase::SelectAlignment()
 void CPGSuperDocBase::ClearSelection()
 {
    if ( m_Selection.Type == CSelection::None )
+   {
       return;
+   }
 
    m_Selection.Type       = CSelection::None;
    m_Selection.SegmentIdx = INVALID_INDEX;
@@ -2601,14 +2691,23 @@ void CPGSuperDocBase::OnImportProjectLibrary()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   CDocTemplate* pTemplate = GetDocTemplate();
+   CString strFilterExt;
+   pTemplate->GetDocString(strFilterExt,CDocTemplate::filterExt);
+   strFilterExt.Replace(_T("."),_T("*."));
+
+   CString strFilter;
+   pTemplate->GetDocString(strFilter,CDocTemplate::filterName);
+
+   CString strFilter2;
+   strFilter2.Format(_T("%s|%s||"),strFilter,strFilterExt);
+
 	// ask user for file name
-   CFileDialog  fildlg(TRUE,_T("pgs"),NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
-                   _T("PGSuper Project File (*.pgs)|*.pgs||"));
-   INT_PTR stf = fildlg.DoModal();
-   if (stf==IDOK)
+   CFileDialog  fileDlg(TRUE,NULL,NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,strFilter2);
+   if (fileDlg.DoModal() == IDOK)
    {
       CString rPath;
-      rPath = fildlg.GetPathName();
+      rPath = fileDlg.GetPathName();
 
       GET_IFACE( IImportProjectLibrary, pImport );
 
@@ -2647,7 +2746,7 @@ void CPGSuperDocBase::OnImportProjectLibrary()
 
 
          // advance the structured load pointer to the correct point for agent
-         hr = pgslibPGSuperDocHeader(pStrLoad);
+         hr = pgslibReadProjectDocHeader(GetRootNodeName(),pStrLoad);
          if ( FAILED(hr) )
          {
             HandleOpenDocumentError(hr,rPath);
@@ -2677,6 +2776,8 @@ void CPGSuperDocBase::OnImportProjectLibrary()
 
       SetModifiedFlag();
       UpdateAllViews(NULL, HINT_LIBRARYCHANGED);
+
+      AfxMessageBox(_T("Done getting library entries"));
    }
 }
 
@@ -2699,8 +2800,6 @@ void CPGSuperDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,Lldf
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GET_IFACE(ILiveLoads,pLiveLoads);
-
    CLiveLoadDistFactorsDlg dlg;
    dlg.m_BridgeDesc = *pOldBridgeDesc;
    dlg.m_BridgeDesc.SetDistributionFactorMethod(method);
@@ -2709,6 +2808,8 @@ void CPGSuperDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,Lldf
 
    if ( dlg.DoModal() == IDOK )
    {
+      GET_IFACE(ILiveLoads,pLiveLoads);
+
       txnEditLLDF* pTxn = new txnEditLLDF(*pOldBridgeDesc,dlg.m_BridgeDesc,
                                           pLiveLoads->GetLldfRangeOfApplicabilityAction(),dlg.m_LldfRangeOfApplicabilityAction);
       GET_IFACE(IEAFTransactions,pTransactions);
@@ -2865,7 +2966,9 @@ BOOL CPGSuperDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) cons
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if ( __super::GetStatusBarMessageString(nID,rMessage) )
+   {
       return TRUE;
+   }
 
    CPGSuperDocBase* pThis = const_cast<CPGSuperDocBase*>(this);
    
@@ -2903,7 +3006,9 @@ BOOL CPGSuperDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if ( __super::GetToolTipMessageString(nID,rMessage) )
+   {
       return TRUE;
+   }
 
    CPGSuperDocBase* pThis = const_cast<CPGSuperDocBase*>(this);
    
@@ -2916,7 +3021,9 @@ BOOL CPGSuperDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
       CString string( OLE2T(bstr) );
       int pos = string.Find('\n');
       if ( 0 < pos )
+      {
          rMessage = string.Mid(pos+1);
+      }
 
       return TRUE;
    }
@@ -2930,7 +3037,9 @@ BOOL CPGSuperDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
       CString string( OLE2T(bstr) );
       int pos = string.Find('\n');
       if ( 0 < pos )
+      {
          rMessage = string.Mid(pos+1);
+      }
 
       return TRUE;
    }
@@ -3066,21 +3175,33 @@ void CPGSuperDocBase::DeletePier(PierIndexType pierIdx)
 
    CString strItems;
    if ( pierIdx == 0 )
+   {
       strItems.Format(_T("%s"),_T("Span 1\n"));
+   }
    else if ( pierIdx == nPiers-1)
+   {
       strItems.Format(_T("Span %d\n"),LABEL_SPAN(pierIdx-1));
+   }
    else
+   {
       strItems.Format(_T("Span %d\nSpan %d\n"),LABEL_SPAN(pierIdx-1),LABEL_SPAN(pierIdx));
+   }
 
    dlg.m_strItems = strItems;
    if ( dlg.DoModal() == IDOK )
    {
       if ( pierIdx == 0 )
+      {
          DeletePier(pierIdx,pgsTypes::Ahead);
+      }
       else if ( pierIdx == nPiers-1 )
+      {
          DeletePier(pierIdx,pgsTypes::Back);
+      }
       else
+      {
          DeletePier(pierIdx,dlg.m_ItemIdx == 0 ? pgsTypes::Back : pgsTypes::Ahead);
+      }
    }
 }
 
@@ -3106,11 +3227,17 @@ void CPGSuperDocBase::DeleteSpan(SpanIndexType spanIdx)
 
    CString strItems;
    if ( spanIdx == 0 )
+   {
       strItems.Format(_T("%s"),_T("Pier 1\nPier 2\n"));
+   }
    else if ( spanIdx == nSpans-1)
+   {
       strItems.Format(_T("Pier %d\nPier %d\n"),LABEL_PIER(nSpans-1),LABEL_PIER(nSpans));
+   }
    else
+   {
       strItems.Format(_T("Pier %d\nPier %d\n"),LABEL_PIER(spanIdx),LABEL_PIER(spanIdx+1));
+   }
 
    dlg.m_strItems = strItems;
    if ( dlg.DoModal() == IDOK )
@@ -3267,6 +3394,8 @@ void CPGSuperDocBase::OnLosses()
    pLossParameters->GetTendonPostTensionParameters(&oldData.Dset_PT,&oldData.WobbleFriction_PT,&oldData.FrictionCoefficient_PT);
    pLossParameters->GetTemporaryStrandPostTensionParameters(&oldData.Dset_TTS,&oldData.WobbleFriction_TTS,&oldData.FrictionCoefficient_TTS);
 
+   oldData.bIgnoreTimeDependentEffects = pLossParameters->IgnoreTimeDependentEffects();
+
    oldData.bUseLumpSumLosses             = pLossParameters->UseGeneralLumpSumLosses();
    oldData.BeforeXferLosses              = pLossParameters->GetBeforeXferLosses();
    oldData.AfterXferLosses               = pLossParameters->GetAfterXferLosses();
@@ -3277,6 +3406,8 @@ void CPGSuperDocBase::OnLosses()
    oldData.AfterDeckPlacementLosses      = pLossParameters->GetAfterDeckPlacementLosses();
    oldData.AfterSIDLLosses               = pLossParameters->GetAfterSIDLLosses();
    oldData.FinalLosses                   = pLossParameters->GetFinalLosses();
+
+   dlg.m_TimeStepProperties.m_bIgnoreTimeDependentEffects = oldData.bIgnoreTimeDependentEffects;
 
    dlg.m_PostTensioning.Dset_PT                = oldData.Dset_PT;
    dlg.m_PostTensioning.WobbleFriction_PT      = oldData.WobbleFriction_PT;
@@ -3300,6 +3431,8 @@ void CPGSuperDocBase::OnLosses()
    if ( dlg.DoModal() == IDOK )
    {
       txnEditLossParametersData newData;
+      newData.bIgnoreTimeDependentEffects = dlg.m_TimeStepProperties.m_bIgnoreTimeDependentEffects;
+
       newData.Dset_PT                = dlg.m_PostTensioning.Dset_PT;
       newData.WobbleFriction_PT      = dlg.m_PostTensioning.WobbleFriction_PT;
       newData.FrictionCoefficient_PT = dlg.m_PostTensioning.FrictionCoefficient_PT;
@@ -3338,10 +3471,14 @@ BOOL CPGSuperDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLER
         if ( notify->pNMHDR->code == TBN_DROPDOWN )
         {
            if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_VIEW_REPORTS )
+           {
               return OnViewReports(notify->pNMHDR,notify->pResult); 
+           }
 
            if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_VIEW_GRAPHS )
+           {
               return OnViewGraphs(notify->pNMHDR,notify->pResult); 
+           }
         }
     }
 	
@@ -3398,9 +3535,13 @@ void CPGSuperDocBase::LoadDocumentSettings()
    CString strAutoCalcDefault = pApp->GetLocalMachineString(_T("Settings"),_T("AutoCalc"), _T("On"));
    CString strAutoCalc = pApp->GetProfileString(_T("Settings"),_T("AutoCalc"),strAutoCalcDefault);
    if ( strAutoCalc.CompareNoCase(_T("Off")) == 0 )
+   {
       m_bAutoCalcEnabled = false;
+   }
    else
+   {
       m_bAutoCalcEnabled = true;
+   }
 
    // bridge model editor settings
    // turn on all settings for default
@@ -3424,17 +3565,25 @@ void CPGSuperDocBase::LoadDocumentSettings()
    CString strDefaultGirderLabelFormat = pApp->GetLocalMachineString(_T("Settings"),_T("GirderLabelFormat"),     _T("Alpha"));
    CString strGirderLabelFormat = pApp->GetProfileString(_T("Settings"),_T("GirderLabelFormat"),strDefaultGirderLabelFormat);
    if ( strGirderLabelFormat.CompareNoCase(_T("Alpha")) == 0 )
+   {
       pgsGirderLabel::UseAlphaLabel(true);
+   }
    else
+   {
       pgsGirderLabel::UseAlphaLabel(false);
+   }
 
 
    CString strShowProjectProperties = pApp->GetLocalMachineString(_T("Settings"),_T("ShowProjectProperties"), _T("On"));
    CString strProjectProperties = pApp->GetProfileString(_T("Settings"),_T("ShowProjectProperties"),strShowProjectProperties);
    if ( strProjectProperties.CompareNoCase(_T("Off")) == 0 )
+   {
       m_bShowProjectProperties = false;
+   }
    else
+   {
       m_bShowProjectProperties = true;
+   }
 
 
    CString strDefaultReportCoverImage = pApp->GetLocalMachineString(_T("Settings"),_T("ReportCoverImage"),_T(""));
@@ -3484,7 +3633,9 @@ void CPGSuperDocBase::OnStatusChanged()
 {
    CEAFBrokerDocument::OnStatusChanged();
    if ( m_pPGSuperDocProxyAgent )
+   {
       m_pPGSuperDocProxyAgent->OnStatusChanged();
+   }
 }
 
 void CPGSuperDocBase::LoadToolbarState()
@@ -3524,7 +3675,9 @@ BOOL CPGSuperDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr)
    // It creates the drop down menu with the report names on it
    NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
    if ( pnmtb->iItem != ID_VIEW_GRAPHS )
+   {
       return FALSE; // not our button
+   }
 
    CMenu menu;
    VERIFY( menu.LoadMenu(IDR_REPORTS) );
@@ -3563,7 +3716,9 @@ BOOL CPGSuperDocBase::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
    // It creates the drop down menu with the report names on it
    NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
    if ( pnmtb->iItem != ID_VIEW_REPORTS )
+   {
       return FALSE; // not our button
+   }
 
    CMenu menu;
    VERIFY( menu.LoadMenu(IDR_REPORTS) );
@@ -3594,7 +3749,9 @@ void CPGSuperDocBase::OnImportMenu(CCmdUI* pCmdUI)
 
 
    if ( pCmdUI->m_pMenu == NULL && pCmdUI->m_pSubMenu == NULL )
+   {
       return;
+   }
 
    CMenu* pMenu = (pCmdUI->m_pSubMenu ? pCmdUI->m_pSubMenu : pCmdUI->m_pMenu);
    UINT nItems = pMenu->GetMenuItemCount();
@@ -3649,7 +3806,9 @@ void CPGSuperDocBase::OnExportMenu(CCmdUI* pCmdUI)
 
 
    if ( pCmdUI->m_pMenu == NULL && pCmdUI->m_pSubMenu == NULL )
+   {
       return;
+   }
 
    CMenu* pMenu = (pCmdUI->m_pSubMenu ? pCmdUI->m_pSubMenu : pCmdUI->m_pMenu);
    UINT nItems = pMenu->GetMenuItemCount();
@@ -3797,15 +3956,35 @@ long CPGSuperDocBase::GetReportViewKey()
 }
 
 
-void CPGSuperDocBase::OnChangedFavoriteReports(bool isFavorites)
+void CPGSuperDocBase::OnChangedFavoriteReports(bool isFavorites,bool fromMenu)
 {
+   // Prompt user with hint about how this menu item works
+   if (fromMenu)
+   {
+      int mask = UIHINT_FAVORITES_MENU;
+      Uint32 hintSettings = GetUIHintSettings();
+      if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
+      {
+         AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+         CUIHintsDlg dlg;
+         dlg.m_strTitle = _T("Hint");
+         dlg.m_strText = _T("This menu item allows you to display only your favorite reports in the Reports menus, or display all available reports. The change will occur the next time you open a Report menu.");
+         dlg.DoModal();
+         if ( dlg.m_bDontShowAgain )
+         {
+            sysFlags<Uint32>::Set(&hintSettings,mask);
+            SetUIHintSettings(hintSettings);
+         }
+      }
+   }
+
    // update main menu submenu
    PopulateReportMenu();
 }
 
 void CPGSuperDocBase::OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName)
 {
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    std::_tostringstream os;
 
    switch(error)
@@ -3821,9 +4000,10 @@ void CPGSuperDocBase::OnCustomReportError(custReportErrorType error, const std::
          os << _T("For custom report \"")<<reportName<<_T("\": the following chapter ")<<otherName<<_T(" does not exist in the pareent report. The chapter was removed. Perhaps the chapter name changed? You may want to edit the report.");
          break;
       default:
-         ATLASSERT(0);
+         ATLASSERT(false);
    };
 
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,os.str().c_str());
    pStatusCenter->Add(pStatusItem);
 }

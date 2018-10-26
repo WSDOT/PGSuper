@@ -72,10 +72,14 @@ bool CGirderKey::operator!=(const CGirderKey& other) const
 bool CGirderKey::operator<(const CGirderKey& other) const
 {
    if ( groupIndex < other.groupIndex )
+   {
       return true;
+   }
 
    if ( other.groupIndex < groupIndex )
+   {
       return false;
+   }
 
    return girderIndex < other.girderIndex;
 }
@@ -164,16 +168,24 @@ bool CSegmentKey::operator!=(const CSegmentKey& other) const
 bool CSegmentKey::operator<(const CSegmentKey& other) const
 {
    if ( groupIndex < other.groupIndex )
+   {
       return true;
+   }
 
    if ( other.groupIndex < groupIndex )
+   {
       return false;
+   }
 
    if ( girderIndex < other.girderIndex )
+   {
       return true;
+   }
 
    if ( other.girderIndex < girderIndex )
+   {
       return false;
+   }
 
    return segmentIndex < other.segmentIndex;
 }
@@ -210,26 +222,26 @@ HRESULT CSegmentKey::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 }
 
 
-CSpanGirderKey::CSpanGirderKey(SpanIndexType spanIdx,GirderIndexType gdrIdx) : spanIndex(spanIdx), girderIndex(gdrIdx) 
+CSpanKey::CSpanKey(SpanIndexType spanIdx,GirderIndexType gdrIdx) : spanIndex(spanIdx), girderIndex(gdrIdx) 
 {
 }
 
-CSpanGirderKey::CSpanGirderKey() : spanIndex(INVALID_INDEX), girderIndex(INVALID_INDEX) 
+CSpanKey::CSpanKey() : spanIndex(INVALID_INDEX), girderIndex(INVALID_INDEX) 
 {
 }
 
-CSpanGirderKey::CSpanGirderKey(const CSpanGirderKey& other) : spanIndex(other.spanIndex), girderIndex(other.girderIndex) 
+CSpanKey::CSpanKey(const CSpanKey& other) : spanIndex(other.spanIndex), girderIndex(other.girderIndex) 
 {
 }
    
-CSpanGirderKey& CSpanGirderKey::operator=(const CSpanGirderKey& other) 
+CSpanKey& CSpanKey::operator=(const CSpanKey& other) 
 { 
    spanIndex = other.spanIndex; 
    girderIndex = other.girderIndex; 
    return *this;
 }
 
-bool CSpanGirderKey::IsEqual(const CSpanGirderKey& other) const
+bool CSpanKey::IsEqual(const CSpanKey& other) const
 {
    if ( (spanIndex    == other.spanIndex)  && 
         (girderIndex  == other.girderIndex) )
@@ -240,7 +252,7 @@ bool CSpanGirderKey::IsEqual(const CSpanGirderKey& other) const
    return false;
 }
 
-bool CSpanGirderKey::operator==(const CSpanGirderKey& other) const
+bool CSpanKey::operator==(const CSpanKey& other) const
 {
    if ( (spanIndex    == other.spanIndex    || spanIndex    == ALL_SPANS)  && 
         (girderIndex  == other.girderIndex  || girderIndex  == ALL_GIRDERS) )
@@ -251,25 +263,29 @@ bool CSpanGirderKey::operator==(const CSpanGirderKey& other) const
    return false;
 }
 
-bool CSpanGirderKey::operator!=(const CSpanGirderKey& other) const
+bool CSpanKey::operator!=(const CSpanKey& other) const
 {
    return !operator==(other);
 }
 
-bool CSpanGirderKey::operator<(const CSpanGirderKey& other) const
+bool CSpanKey::operator<(const CSpanKey& other) const
 {
    if ( spanIndex < other.spanIndex )
+   {
       return true;
+   }
 
    if ( other.spanIndex < spanIndex )
+   {
       return false;
+   }
 
    return girderIndex < other.girderIndex;
 }
 
-HRESULT CSpanGirderKey::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CSpanKey::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("SpanGirderKey"),1.0);
+   pStrSave->BeginUnit(_T("spanKey"),1.0);
    pStrSave->put_Property(_T("SpanIndex"),CComVariant(spanIndex));
    pStrSave->put_Property(_T("GirderIndex"),CComVariant(girderIndex));
    pStrSave->EndUnit();
@@ -277,11 +293,11 @@ HRESULT CSpanGirderKey::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    return S_OK;
 }
 
-HRESULT CSpanGirderKey::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
+HRESULT CSpanKey::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    CComVariant var;
    var.vt = VT_I8;
-   pStrLoad->BeginUnit(_T("SpanGirderKey"));
+   pStrLoad->BeginUnit(_T("spanKey"));
    
    pStrLoad->get_Property(_T("SpanIndex"),&var);
    spanIndex = var.iVal;
@@ -317,10 +333,14 @@ bool CTendonKey::operator==(const CTendonKey& other) const
 bool CTendonKey::operator<(const CTendonKey& other) const
 {
    if ( girderKey < other.girderKey )
+   {
       return true;
+   }
 
    if ( girderKey == other.girderKey && ductIdx < other.ductIdx )
+   {
       return true;
+   }
 
    return false;
 }

@@ -201,8 +201,10 @@ void CLibraryEditorChildFrame::DoListView()
 	dwStyle = GetWindowLong(pList->m_hWnd, GWL_STYLE);
 					
 	if ((dwStyle & LVS_TYPEMASK) != LVS_LIST)
+   {
 		SetWindowLong(pList->m_hWnd, GWL_STYLE,
 			(dwStyle & ~LVS_TYPEMASK) | LVS_LIST);
+   }
 }
 
 void CLibraryEditorChildFrame::DoReportView() 
@@ -214,8 +216,10 @@ void CLibraryEditorChildFrame::DoReportView()
 	dwStyle = GetWindowLong(pList->m_hWnd, GWL_STYLE);
 					
 	if ((dwStyle & LVS_TYPEMASK) != LVS_REPORT)
+   {
 		SetWindowLong(pList->m_hWnd, GWL_STYLE,
 			(dwStyle & ~LVS_TYPEMASK) | LVS_REPORT);
+   }
 }
 
 void CLibraryEditorChildFrame::DoLargeIcons() 
@@ -227,8 +231,10 @@ void CLibraryEditorChildFrame::DoLargeIcons()
 	dwStyle = GetWindowLong(pList->m_hWnd, GWL_STYLE);
 					
 	if ((dwStyle & LVS_TYPEMASK) != LVS_ICON)
+   {
 		SetWindowLong(pList->m_hWnd, GWL_STYLE,
 			(dwStyle & ~LVS_TYPEMASK) | LVS_ICON);
+   }
 }
 
 void CLibraryEditorChildFrame::DoSmallIcons()
@@ -240,8 +246,10 @@ void CLibraryEditorChildFrame::DoSmallIcons()
 	dwStyle = GetWindowLong(pList->m_hWnd, GWL_STYLE);
 					
 	if ((dwStyle & LVS_TYPEMASK) != LVS_SMALLICON)
+   {
 		SetWindowLong(pList->m_hWnd, GWL_STYLE,
 			(dwStyle & ~LVS_TYPEMASK) | LVS_SMALLICON);
+   }
 }
 
 bool CLibraryEditorChildFrame::DoUpdateListView()

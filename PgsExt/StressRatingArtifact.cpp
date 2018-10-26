@@ -199,7 +199,9 @@ Float64 pgsStressRatingArtifact::GetLiveLoadStress() const
 Float64 pgsStressRatingArtifact::GetRatingFactor() const
 {
    if ( m_bRFComputed )
+   {
       return m_RF;
+   }
 
 
    if ( IsZero(m_fllim) || IsZero(m_gLL) )
@@ -211,7 +213,9 @@ Float64 pgsStressRatingArtifact::GetRatingFactor() const
       Float64 RF = (m_fr - m_gDC*(m_fdc+m_fps) - m_gDW*m_fdw)/(m_gLL*m_fllim);
 
       if ( RF < 0 )
+      {
          RF = 0;
+      }
 
       m_RF = RF;
    }

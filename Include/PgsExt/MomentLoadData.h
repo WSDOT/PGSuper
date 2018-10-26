@@ -54,7 +54,7 @@ public:
    EventIndexType                 m_EventIndex;
    UserLoads::LoadCase            m_LoadCase;
 
-   CSpanGirderKey m_SpanGirderKey;
+   CSpanKey m_spanKey;
    Float64  m_Location;   // cannot be negative
    bool     m_Fractional;
    Float64  m_Magnitude;

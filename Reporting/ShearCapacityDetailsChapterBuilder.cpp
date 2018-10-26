@@ -73,112 +73,112 @@ CLASS
 
 void write_shear_dimensions_table(IBroker* pBroker,
                                 IEAFDisplayUnits* pDisplayUnits,
-                                const std::vector<pgsPointOfInterest>& pois,
+                                const std::vector<pgsPointOfInterest>& vPoi,
                                 rptChapter* pChapter,
                                 IntervalIndexType intervalIdx,
                                 const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_shear_stress_table(  IBroker* pBroker,
                                 IEAFDisplayUnits* pDisplayUnits,
-                                const std::vector<pgsPointOfInterest>& pois,
+                                const std::vector<pgsPointOfInterest>& vPoi,
                                 rptChapter* pChapter,
                                 IntervalIndexType intervalIdx,
                                 const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_fpo_table(IBroker* pBroker,
                        IEAFDisplayUnits* pDisplayUnits,
-                       const std::vector<pgsPointOfInterest>& pois,
+                       const std::vector<pgsPointOfInterest>& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_fpc_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
-                     const std::vector<pgsPointOfInterest>& pois,
+                     const std::vector<pgsPointOfInterest>& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_fpce_table(IBroker* pBroker,
                       IEAFDisplayUnits* pDisplayUnits,
-                      const std::vector<pgsPointOfInterest>& pois,
+                      const std::vector<pgsPointOfInterest>& vPoi,
                       rptChapter* pChapter,
                       IntervalIndexType intervalIdx,
                       const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_Fe_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_btsummary_table(IBroker* pBroker,
                        IEAFDisplayUnits* pDisplayUnits,
-                       const std::vector<pgsPointOfInterest>& pois,
+                       const std::vector<pgsPointOfInterest>& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_ex_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_Vs_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_theta_table(IBroker* pBroker,
                        IEAFDisplayUnits* pDisplayUnits,
-                       const std::vector<pgsPointOfInterest>& pois,
+                       const std::vector<pgsPointOfInterest>& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_Vc_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_Vci_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
-                     const std::vector<pgsPointOfInterest>& pois,
+                     const std::vector<pgsPointOfInterest>& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_Vcw_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_Vn_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_Avs_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
-                     const std::vector<pgsPointOfInterest>& pois,
+                     const std::vector<pgsPointOfInterest>& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_bar_spacing_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
-                     const std::vector<pgsPointOfInterest>& pois,
+                     const std::vector<pgsPointOfInterest>& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
@@ -202,13 +202,24 @@ LPCTSTR CShearCapacityDetailsChapterBuilder::GetName() const
 
 rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+
    CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
 
    bool bDesign = m_bDesign;
@@ -248,8 +259,6 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
-   std::_tstring stage_name( pIntervals->GetDescription(girderKey,intervalIdx) );
 
    GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -265,6 +274,9 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
       {
          CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
+         IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(thisGirderKey)-1;
+         std::_tstring stage_name( pIntervals->GetDescription(thisGirderKey,intervalIdx) );
+
          rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
 
@@ -278,29 +290,43 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
          {
             vLimitStates.push_back(pgsTypes::StrengthI);
             if ( bPermit )
+            {
                vLimitStates.push_back(pgsTypes::StrengthII);
+            }
          }
 
          if ( bRating )
          {
             GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
+            {
                vLimitStates.push_back(pgsTypes::StrengthI_Inventory);
+            }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) )
+            {
                vLimitStates.push_back(pgsTypes::StrengthI_Operating);
+            }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) )
+            {
                vLimitStates.push_back(pgsTypes::StrengthI_LegalRoutine);
+            }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
+            {
                vLimitStates.push_back(pgsTypes::StrengthI_LegalSpecial);
+            }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) )
+            {
                vLimitStates.push_back(pgsTypes::StrengthII_PermitRoutine);
+            }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Special) )
+            {
                vLimitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
+            }
          }
 
          std::vector<pgsTypes::LimitState>::iterator iter;
@@ -309,6 +335,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
             pgsTypes::LimitState ls = *iter;
 
             // Store css location for later use
+#pragma Reminder("UPDATE: need to fix this")
             std::vector<Float64> vcsLoc(pShearCapacity->GetCriticalSections(ls, thisGirderKey));
             //S_LeftCs = vcsLoc.front();
             //S_RightCs = vcsLoc.back();
@@ -374,7 +401,9 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
                CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthI);
 
                if ( bPermit )
+               {
                   CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthII);
+               }
             }
          }
       } // next girder
@@ -409,7 +438,7 @@ CChapterBuilder* CShearCapacityDetailsChapterBuilder::Clone() const
 
 void write_shear_dimensions_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
-                             const std::vector<pgsPointOfInterest>& pois,
+                             const std::vector<pgsPointOfInterest>& vPoi,
                              rptChapter* pChapter,
                              IntervalIndexType intervalIdx,
                              const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -427,7 +456,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
    *pParagraph << _T("Effective Shear Dimensions for ") << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(" [From Article 5.8.2.7]") << rptNewLine;
 
    
-   CGirderKey girderKey = pois.front().GetSegmentKey();
+   CGirderKey girderKey = vPoi.front().GetSegmentKey();
 
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
@@ -475,20 +504,22 @@ void write_shear_dimensions_table(IBroker* pBroker,
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -510,7 +541,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
 
 void write_shear_stress_table(IBroker* pBroker,
                               IEAFDisplayUnits* pDisplayUnits,
-                              const std::vector<pgsPointOfInterest>& pois,
+                              const std::vector<pgsPointOfInterest>& vPoi,
                               rptChapter* pChapter,
                               IntervalIndexType intervalIdx,
                               const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -556,14 +587,18 @@ void write_shear_stress_table(IBroker* pBroker,
 
    *pParagraph << Italic(_T("v")) << strEquation << rptNewLine;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+   {
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("vu.png")) << rptNewLine;
+   }
    else
+   {
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("vu_2005.png")) << rptNewLine;
+   }
 
    *pParagraph << rptNewLine;
 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   CGirderKey girderKey(pois.front().GetSegmentKey());
+   CGirderKey girderKey(vPoi.front().GetSegmentKey());
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
    ColumnIndexType nColumns = (nDucts == 0 ? 7 : 9);
@@ -605,12 +640,12 @@ void write_shear_stress_table(IBroker* pBroker,
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       col = 0;
@@ -639,7 +674,7 @@ void write_shear_stress_table(IBroker* pBroker,
 
 void write_fpc_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
-                     const std::vector<pgsPointOfInterest>& pois,
+                     const std::vector<pgsPointOfInterest>& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -653,7 +688,9 @@ void write_fpc_table(IBroker* pBroker,
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    if ( bAfter1999 && (shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001 ))
+   {
       return;
+   }
 
    rptParagraph* pParagraph;
 
@@ -677,7 +714,7 @@ void write_fpc_table(IBroker* pBroker,
 
 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   CGirderKey girderKey(pois.front().GetSegmentKey());
+   CGirderKey girderKey(vPoi.front().GetSegmentKey());
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    ColumnIndexType nCols = (0 == nDucts ? 8 : 10);
 
@@ -723,21 +760,23 @@ void write_fpc_table(IBroker* pBroker,
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
    
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       col = 0;
 
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       FPCDETAILS fpcd;
       pShearCap->GetFpcDetails(poi, &fpcd);
@@ -767,7 +806,7 @@ void write_fpc_table(IBroker* pBroker,
 
 void write_fpce_table(IBroker* pBroker,
                       IEAFDisplayUnits* pDisplayUnits,
-                      const std::vector<pgsPointOfInterest>& pois,
+                      const std::vector<pgsPointOfInterest>& vPoi,
                       rptChapter* pChapter,
                       IntervalIndexType intervalIdx,
                       const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -811,19 +850,21 @@ void write_fpce_table(IBroker* pBroker,
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -856,7 +897,7 @@ void write_fpce_table(IBroker* pBroker,
 
 void write_fpo_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
-                     const std::vector<pgsPointOfInterest>& pois,
+                     const std::vector<pgsPointOfInterest>& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -875,7 +916,9 @@ void write_fpo_table(IBroker* pBroker,
    *pParagraph << RPT_STRESS(_T("po"));
 
    if ( !bAfter1999 )
+   {
       *pParagraph << _T(" [Eqn C5.8.3.4.2-1]");
+   }
 
    GET_IFACE2(pBroker,IEventMap,pEventMap);
    *pParagraph << _T(" - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
@@ -886,11 +929,11 @@ void write_fpo_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    //const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
 #pragma Reminder("UPDATE") // this strand material is only for the first segment. it could be different for other segments
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(pois.front().GetSegmentKey(),pgsTypes::Permanent);
-   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(pois.front().GetSegmentKey());
+   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(vPoi.front().GetSegmentKey(),pgsTypes::Permanent);
+   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(vPoi.front().GetSegmentKey());
 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   CGirderKey girderKey(pois.front().GetSegmentKey());
+   CGirderKey girderKey(vPoi.front().GetSegmentKey());
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,   pDisplayUnits->GetStressUnit(),    true );
@@ -1007,21 +1050,23 @@ void write_fpo_table(IBroker* pBroker,
       //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
       GET_IFACE2(pBroker,IBridge,pBridge);
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+      Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
       RowIndexType row = 1;
       GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-      std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       for ( ; i != end; i++ )
       {
          col = 0;
 
          const pgsPointOfInterest& poi = *i;
 
-         // Don't print pois outside of CSS's
+         // Don't print vPoi outside of CSS's
          if (IsPoiInEndRegion(poi))
+         {
             continue;
+         }
 
          SHEARCAPACITYDETAILS scd;
          pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -1057,7 +1102,7 @@ void write_fpo_table(IBroker* pBroker,
 
 void write_Fe_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -1067,8 +1112,10 @@ void write_Fe_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims )
+   if ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType())
+   {
       return; // This is not applicable 2000 and later
+   }
 
    rptParagraph* pParagraph;
 
@@ -1086,7 +1133,7 @@ void write_Fe_table(IBroker* pBroker,
    *pParagraph << rptNewLine;
 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   CGirderKey girderKey(pois.front().GetSegmentKey());
+   CGirderKey girderKey(vPoi.front().GetSegmentKey());
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    ColumnIndexType nCols = (0 == nDucts ? 8 : 10);
 
@@ -1128,21 +1175,23 @@ void write_Fe_table(IBroker* pBroker,
    scalar.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    RowIndexType row = 1;
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
       col = 0;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -1186,7 +1235,7 @@ void write_Fe_table(IBroker* pBroker,
 
 void write_ex_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -1208,7 +1257,9 @@ void write_ex_table(IBroker* pBroker,
    *pChapter << pParagraph;
    *pParagraph << _T("Longitudinal Strain ") << Sub2(symbol(epsilon),_T("x"));
    if ( !bAfter1999 )
+   {
       *pParagraph << _T(" [Eqn 5.8.3.4.2-2] ");
+   }
 
    GET_IFACE2(pBroker,IEventMap,pEventMap);
    *pParagraph << _T("- ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
@@ -1233,27 +1284,41 @@ void write_ex_table(IBroker* pBroker,
    else if ( bAfter2004 )
    {
       if ( shear_capacity_method == scmWSDOT2007 )
+      {
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2008.png")) << rptNewLine;
+      }
       else if ( shear_capacity_method == scmWSDOT2001 )
+      {
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2003_WSDOT.png")) << rptNewLine;
+      }
       else
+      {
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2005.png")) << rptNewLine;
+      }
    }
    else if ( bAfter2003 )
    {
       ATLASSERT(shear_capacity_method != scmWSDOT2007);
 
       if ( shear_capacity_method == scmWSDOT2001 )
+      {
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2003_WSDOT.png")) << rptNewLine;
+      }
       else
+      {
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2003.png")) << rptNewLine;
+      }
    }
    else if ( bAfter1999 )
    {
       if ( shear_capacity_method == scmWSDOT2001 )
+      {
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2000_WSDOT.png")) << rptNewLine;
+      }
       else
+      {
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2000.png")) << rptNewLine;
+      }
    }
    else
    {
@@ -1285,7 +1350,7 @@ void write_ex_table(IBroker* pBroker,
 
 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   CGirderKey girderKey(pois.front().GetSegmentKey());
+   CGirderKey girderKey(vPoi.front().GetSegmentKey());
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    if ( 0 < nDucts )
    {
@@ -1371,22 +1436,24 @@ void write_ex_table(IBroker* pBroker,
    scalar.SetPrecision(3);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    bool print_footnote1 = false;
    bool print_footnote2 = false;
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -1483,13 +1550,19 @@ void write_ex_table(IBroker* pBroker,
       if ( print_footnote1 )
       {
          if ( shear_capacity_method == scmWSDOT2007 || shear_capacity_method == scmBTEquations )
+         {
             *pParagraph << _T("$ - Taken as |") << Sub2(_T("V"),_T("u")) << _T(" - ") << Sub2(_T("V"),_T("p")) << _T("|") << Sub2(_T("d"),_T("v")) << _T(" per definitions given in 5.8.3.4.2") << rptNewLine;
+         }
          else
+         {
             *pParagraph << _T("$ - Taken as ") << Sub2(_T("V"),_T("u")) << Sub2(_T("d"),_T("v")) << _T(" per definitions given in 5.8.3.4.2") << rptNewLine;
+         }
       }
 
       if ( print_footnote2 )
+      {
          *pParagraph << _T("* - Value could not be calculated. Shear crushing capacity of section exceeded")<< rptNewLine<<rptNewLine;
+      }
    }
 
 // To be removed from WSDOT BDM... 7/25/2006 RAB
@@ -1500,7 +1573,7 @@ void write_ex_table(IBroker* pBroker,
 
 void write_btsummary_table(IBroker* pBroker,
                        IEAFDisplayUnits* pDisplayUnits,
-                       const std::vector<pgsPointOfInterest>& pois,
+                       const std::vector<pgsPointOfInterest>& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -1552,7 +1625,7 @@ void write_btsummary_table(IBroker* pBroker,
       GET_IFACE2(pBroker,IMaterials,pMat);
 
    #pragma Reminder("UPDATE: assuming all segments are the same") // getting data for the first segment
-      CSegmentKey segmentKey = pois.front().GetSegmentKey();
+      CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
 
       Float64 ag = pMat->GetSegmentMaxAggrSize(segmentKey);
       *pParagraph << _T("a")<<Sub(_T("g"))<<_T(" = ")<<xdimu.SetValue(ag) << rptNewLine;
@@ -1606,21 +1679,23 @@ void write_btsummary_table(IBroker* pBroker,
    scalar.SetPrecision(3);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = pois.begin(); i != pois.end(); i++ )
+   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
    {
       col = 0;
 
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -1718,7 +1793,7 @@ void write_btsummary_table(IBroker* pBroker,
 
 void write_Vs_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -1769,13 +1844,13 @@ void write_Vs_table(IBroker* pBroker,
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
@@ -1789,7 +1864,7 @@ void write_Vs_table(IBroker* pBroker,
       (*table)(row,1) << stress.SetValue( scd.fy );
       (*table)(row,2) << area.SetValue( scd.Av );
       (*table)(row,3) << dim.SetValue( scd.S );
-      if (scd.S > 0.0)
+      if (0.0 < scd.S)
       {
          (*table)(row,4) << avs.SetValue( scd.Av/scd.S );
       }
@@ -1838,7 +1913,7 @@ void write_Vs_table(IBroker* pBroker,
 
 void write_Vc_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -1854,7 +1929,7 @@ void write_Vc_table(IBroker* pBroker,
    *pParagraph << _T("Shear Resistance Provided By Tensile Stress in the Concrete - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
 
 #pragma Reminder("UPDATE: assuming all segments are the same") // getting data for the first segment
-   CSegmentKey segmentKey = pois.front().GetSegmentKey();
+   CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    std::_tstring strImage;
@@ -1868,16 +1943,24 @@ void write_Vc_table(IBroker* pBroker,
 
    case pgsTypes::AllLightweight:
       if ( bHasAggSplittingStrength )
+      {
          strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
+      }
       else
+      {
          strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_ALWC_US.png") : _T("VcEquation_ALWC_SI.png"));
+      }
       break;
 
    case pgsTypes::SandLightweight:
       if ( bHasAggSplittingStrength )
+      {
          strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
+      }
       else
+      {
          strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_SLWC_US.png") : _T("VcEquation_SLWC_SI.png"));
+      }
       break;
 
    default:
@@ -1906,7 +1989,9 @@ void write_Vc_table(IBroker* pBroker,
    (*table)(0,colIdx++) << COLHDR( RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if ( concType != pgsTypes::Normal && bHasAggSplittingStrength )
+   {
       (*table)(0,colIdx++) << COLHDR( RPT_STRESS(_T("ct")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
 
    (*table)(0,colIdx++) << COLHDR( Sub2(_T("b"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,colIdx++) << COLHDR( Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -1925,21 +2010,23 @@ void write_Vc_table(IBroker* pBroker,
    scalar.SetPrecision(3);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       colIdx = 0;
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -1959,7 +2046,9 @@ void write_Vc_table(IBroker* pBroker,
       (*table)(row,colIdx++) << stress.SetValue( scd.fc );
 
       if ( concType != pgsTypes::Normal && bHasAggSplittingStrength )
+      {
          (*table)(row,colIdx++) << stress.SetValue( scd.fct );
+      }
 
       (*table)(row,colIdx++) << dim.SetValue( scd.bv );
       (*table)(row,colIdx++) << dim.SetValue( scd.dv );
@@ -1988,7 +2077,7 @@ void write_Vc_table(IBroker* pBroker,
 
 void write_Vci_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -2004,7 +2093,7 @@ void write_Vci_table(IBroker* pBroker,
    *pParagraph << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(" - ");
 
 #pragma Reminder("UPDATE: assuming all segments are the same") // getting data for the first segment
-   CSegmentKey segmentKey = pois.front().GetSegmentKey();
+   CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
 
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from combined shear and moment") << rptNewLine;
@@ -2020,16 +2109,24 @@ void write_Vci_table(IBroker* pBroker,
 
    case pgsTypes::AllLightweight:
       if ( bHasAggSplittingStrength )
+      {
          strImage = _T("Vci_LWC.png");
+      }
       else
+      {
          strImage = _T("Vci_ALWC.png");
+      }
       break;
 
    case pgsTypes::SandLightweight:
       if ( bHasAggSplittingStrength )
+      {
          strImage = _T("Vci_LWC.png");
+      }
       else
+      {
          strImage = _T("Vci_SLWC.png");
+      }
       break;
 
    default:
@@ -2068,19 +2165,21 @@ void write_Vci_table(IBroker* pBroker,
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -2100,7 +2199,7 @@ void write_Vci_table(IBroker* pBroker,
 
 void write_Vcw_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -2118,7 +2217,7 @@ void write_Vcw_table(IBroker* pBroker,
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from excessive principal tension in the web.") << rptNewLine;
 
 #pragma Reminder("UPDATE: assuming all segments are the same") // getting data for the first segment
-   CSegmentKey segmentKey = pois.front().GetSegmentKey();
+   CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
 
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
@@ -2133,16 +2232,24 @@ void write_Vcw_table(IBroker* pBroker,
 
    case pgsTypes::AllLightweight:
       if ( bHasAggSplittingStrength )
+      {
          strImage = _T("Vcw_LWC.png");
+      }
       else
+      {
          strImage = _T("Vcw_ALWC.png");
+      }
       break;
 
    case pgsTypes::SandLightweight:
       if ( bHasAggSplittingStrength )
+      {
          strImage = _T("Vcw_LWC.png");
+      }
       else
+      {
          strImage = _T("Vcw_SLWC.png");
+      }
       break;
 
    default:
@@ -2178,19 +2285,21 @@ void write_Vcw_table(IBroker* pBroker,
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -2207,7 +2316,7 @@ void write_Vcw_table(IBroker* pBroker,
 
 void write_theta_table(IBroker* pBroker,
                        IEAFDisplayUnits* pDisplayUnits,
-                       const std::vector<pgsPointOfInterest>& pois,
+                       const std::vector<pgsPointOfInterest>& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -2225,7 +2334,7 @@ void write_theta_table(IBroker* pBroker,
    *pParagraph << _T("Angle of inclination of diagonal compressive stress [LRFD 5.8.3.3 and 5.8.3.4.3]") << rptNewLine;
 
 #pragma Reminder("UPDATE: assuming all segments are the same") // getting data for the first segment
-   CSegmentKey segmentKey = pois.front().GetSegmentKey();
+   CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
 
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
@@ -2240,16 +2349,24 @@ void write_theta_table(IBroker* pBroker,
 
    case pgsTypes::AllLightweight:
       if ( bHasAggSplittingStrength )
+      {
          strImage = _T("cotan_theta_LWC.png");
+      }
       else
+      {
          strImage = _T("cotan_theta_ALWC.png");
+      }
       break;
 
    case pgsTypes::SandLightweight:
       if ( bHasAggSplittingStrength )
+      {
          strImage = _T("cotan_theta_LWC.png");
+      }
       else
+      {
          strImage = _T("cotan_theta_SLWC.png");
+      }
       break;
 
    default:
@@ -2290,19 +2407,21 @@ void write_theta_table(IBroker* pBroker,
    scalar.SetPrecision(3);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    RowIndexType row = 1;
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -2319,7 +2438,7 @@ void write_theta_table(IBroker* pBroker,
 
 void write_Vn_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
-                    const std::vector<pgsPointOfInterest>& pois,
+                    const std::vector<pgsPointOfInterest>& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -2366,9 +2485,13 @@ void write_Vn_table(IBroker* pBroker,
    }
 
    if ( shear_capacity_method == scmVciVcw )
+   {
       (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("c")) << Super(_T("&")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   }
    else
+   {
       (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("c")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   }
 
    (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("s")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("n1")) << Super(_T("$")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
@@ -2390,22 +2513,24 @@ void write_Vn_table(IBroker* pBroker,
    scalar.SetPrecision(2);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       col = 0;
 
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -2474,12 +2599,14 @@ void write_Vn_table(IBroker* pBroker,
 
    // print footnote if any values could not be calculated
    if (print_footnote)
+   {
       *pParagraph << _T("* - Value could not be calculated. Shear crushing capacity of section exceeded.")<< rptNewLine<<rptNewLine;
+   }
 }
 
 void write_Avs_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
-                     const std::vector<pgsPointOfInterest>& pois,
+                     const std::vector<pgsPointOfInterest>& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
@@ -2502,9 +2629,13 @@ void write_Avs_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    if ( shear_capacity_method != scmVciVcw )
+   {
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("RequiredShearReinforcement1.png"));
+   }
    else
+   {
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("RequiredShearReinforcement2.png"));
+   }
 
    CollectionIndexType nCol = (shear_capacity_method == scmVciVcw ? 8 : 9);
 
@@ -2525,7 +2656,9 @@ void write_Avs_table(IBroker* pBroker,
    (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("c")), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    if ( shear_capacity_method != scmVciVcw )
+   {
       (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("p")), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+   }
 
    (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("s")) << _T(" *"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << COLHDR( RPT_FY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -2544,21 +2677,23 @@ void write_Avs_table(IBroker* pBroker,
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    RowIndexType row = 1;
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       col = 0;
 
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -2568,7 +2703,9 @@ void write_Avs_table(IBroker* pBroker,
       (*table)(row,col++) << shear.SetValue( scd.Vc );
       
       if ( shear_capacity_method != scmVciVcw )
+      {
          (*table)(row,col++) << shear.SetValue( scd.Vp );
+      }
       
       (*table)(row,col++) << shear.SetValue( scd.VsReqd );
       (*table)(row,col++) << stress.SetValue( scd.fy );
@@ -2596,13 +2733,12 @@ void write_Avs_table(IBroker* pBroker,
 
 void write_bar_spacing_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
-                     const std::vector<pgsPointOfInterest>& pois,
+                     const std::vector<pgsPointOfInterest>& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
    USES_CONVERSION;
-   GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -2638,7 +2774,7 @@ void write_bar_spacing_table(IBroker* pBroker,
    Float64 nLegs = 2.0;
 
 #pragma Reminder("UPDATE: assuming all segments are the same") // getting data for the first segment
-   CSegmentKey segmentKey = pois.front().GetSegmentKey();
+   CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
 
    GET_IFACE2(pBroker,IShear,pShear);
    const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
@@ -2677,30 +2813,37 @@ void write_bar_spacing_table(IBroker* pBroker,
    Float64 Ab5 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,matRebar::bs5)->GetNominalArea();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(pois.front().GetSegmentKey());
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().GetSegmentKey());
 
    RowIndexType row = 1;
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       col = 0;
 
       const pgsPointOfInterest& poi = *i;
 
-      // Don't print pois outside of CSS's
+      // Don't print vPoi outside of CSS's
       if (IsPoiInEndRegion(poi))
+      {
          continue;
+      }
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
       (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
 
       if(0.0 < scd.Av && 0.0 < scd.S)
+      {
          (*table)(row,col++) << avs.SetValue( scd.Av/scd.S);
+      }
       else
+      {
          (*table)(row,col++) << _T("---");
+      }
 
       (*table)(row,col++) << avs.SetValue( scd.AvOverS_Reqd );
 

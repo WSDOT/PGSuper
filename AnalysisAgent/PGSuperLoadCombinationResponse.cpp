@@ -24,12 +24,9 @@
 #include "stdafx.h"
 #include "PGSuperLoadCombinationResponse.h"
 
-#include "AnalysisAgent.h"
-#include "AnalysisAgent_i.h"
-#include "AnalysisAgentImp.h"
+#include "GirderModelManager.h"
 
 #include <EAF\EAFUtilities.h>
-#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,25 +36,22 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperLoadCombinationResponse
-void CPGSuperLoadCombinationResponse::Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,CAnalysisAgentImp* pAnalysisAgent)
+void CPGSuperLoadCombinationResponse::Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,CGirderModelManager* pModelManager)
 {
    m_LCResponseDelegate = pLCResponse;
    m_LiveLoadResponse = pLLResponse;
    m_LoadGroupResponse = pLGResponse;
 
    m_Model = pModel;
-   m_pAnalysisAgent = pAnalysisAgent;
+   m_pGirderModelManager = pModelManager;
 
    m_Model->get_POIs(&m_POIs);
 
    // Get these interfaces once so we don't have to do it over and over
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   GET_IFACE2(broker,ILibrary,pLibrary);
-   GET_IFACE2(broker,IRatingSpecification,pRatingSpec);
-
-   m_pLibrary = pLibrary;
-   m_pRatingSpec = pRatingSpec;
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   pBroker->GetInterface(IID_ILibrary,(IUnknown**)&m_pLibrary);
+   pBroker->GetInterface(IID_IRatingSpecification,(IUnknown**)&m_pRatingSpec);
 }
 
 HRESULT CPGSuperLoadCombinationResponse::FinalConstruct()
@@ -467,8 +461,8 @@ void CPGSuperLoadCombinationResponse::GetNewLiveLoadFactors(BSTR bstrLoadCombina
 
    // convert the array of used axles to axle weights
    AxleConfiguration left_axle_config, right_axle_config;
-   m_pAnalysisAgent->CreateAxleConfig(m_Model, left_live_load_config,  &left_axle_config);
-   m_pAnalysisAgent->CreateAxleConfig(m_Model, right_live_load_config, &right_axle_config);
+   m_pGirderModelManager->CreateAxleConfig(m_Model, left_live_load_config,  &left_axle_config);
+   m_pGirderModelManager->CreateAxleConfig(m_Model, right_live_load_config, &right_axle_config);
 
    // sum the weights
    AxleConfiguration::iterator iter;
@@ -491,15 +485,21 @@ void CPGSuperLoadCombinationResponse::GetNewLiveLoadFactors(BSTR bstrLoadCombina
    const CLiveLoadFactorModel* pLFModel;
 
    // need to back out rating type from load combination name (need another back door into the agent)
-   pgsTypes::LimitState ls = m_pAnalysisAgent->GetLimitStateFromLoadCombination(bstrLoadCombination);
+   pgsTypes::LimitState ls = m_pGirderModelManager->GetLimitStateFromLoadCombination(bstrLoadCombination);
    pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
 
    if ( ratingType == pgsTypes::lrPermit_Routine )
+   {
       pLFModel = &pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
+   }
    else if ( ratingType == pgsTypes::lrPermit_Special )
+   {
       pLFModel = &pRatingEntry->GetLiveLoadFactorModel(m_pRatingSpec->GetSpecialPermitType());
+   }
    else
+   {
       pLFModel = &pRatingEntry->GetLiveLoadFactorModel(ratingType);
+   }
 
    Int16 adtt = m_pRatingSpec->GetADTT();
 

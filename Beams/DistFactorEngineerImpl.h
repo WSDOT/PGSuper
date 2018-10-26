@@ -277,7 +277,7 @@ void CDistFactorEngineerImpl<T>::GetPierReactionDF(PierIndexType pierIdx,GirderI
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
       }
 
       // see if we need to compare with lanes/beams
@@ -385,7 +385,7 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
       }
 
       // see if we need to compare with lanes/beams
@@ -518,7 +518,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(SpanIndexType spanIdx,GirderIndexType
       }
       else
       {
-         ATLASSERT(0); // should not be here?
+         ATLASSERT(false); // should not be here?
       }
 
       // see if we need to compare with lanes/beams
@@ -676,7 +676,6 @@ template <class T>
 void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType spanIdx,GirderIndexType gdrIdx,DFParam dfType,BASE_LLDFDETAILS* pDetails)
 {
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IGirder,pGirder);
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(IBarriers, pBarriers);
@@ -714,10 +713,10 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType spanI
       ctrl_loc_from_gdr = Max(loc1,loc2);
 
    CSegmentKey segmentKey;
-   Float64 distFromStartOfSegment;
-   pBridge->GetSegmentLocation(spanIdx,gdrIdx,ctrl_loc_from_gdr,&segmentKey,&distFromStartOfSegment);
+   Float64 Xs;
+   pBridge->GetSegmentLocation(spanIdx,gdrIdx,ctrl_loc_from_gdr,&segmentKey,&Xs);
 
-   pgsPointOfInterest ctrl_poi(segmentKey,distFromStartOfSegment);
+   pgsPointOfInterest ctrl_poi(segmentKey,Xs);
 
    // station of controlling loc
    Float64 ctrl_station, ctrl_offset;
@@ -736,8 +735,9 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType spanI
    if(pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
       // Use top width of beam as deck, for lack of better ideas
-      pDetails->leftSlabOverhang  = pGirder->GetTopWidth(pgsPointOfInterest(segmentKey,distFromStartOfSegment))/2.0;
-      pDetails->rightSlabOverhang = pGirder->GetTopWidth(pgsPointOfInterest(CSegmentKey(pGroup->GetIndex(),pDetails->Nb-1,segmentKey.segmentIndex),distFromStartOfSegment))/2.0;
+      GET_IFACE(IGirder,pGirder);
+      pDetails->leftSlabOverhang  = pGirder->GetTopWidth(pgsPointOfInterest(segmentKey,Xs))/2.0;
+      pDetails->rightSlabOverhang = pGirder->GetTopWidth(pgsPointOfInterest(CSegmentKey(pGroup->GetIndex(),pDetails->Nb-1,segmentKey.segmentIndex),Xs))/2.0;
    }
    else
    {

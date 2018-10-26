@@ -64,7 +64,7 @@ inline void UpdateHarpedOffsetLabel(CWnd* pwnd, HarpedStrandOffsetType type, boo
          break;
       default:
          msg = _T("Unknown Adjustment type");
-         ATLASSERT(0);
+         ATLASSERT(false);
    }
 
    pwnd->SetWindowText(msg);

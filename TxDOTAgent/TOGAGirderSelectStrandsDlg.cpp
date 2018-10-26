@@ -458,7 +458,7 @@ void CTOGAGirderSelectStrandsDlg::DrawStrands(CDC* pDC, grlibPointMapper& Mapper
       }
      else
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
       }
 
       grid_row--;

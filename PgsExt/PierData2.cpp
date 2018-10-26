@@ -144,24 +144,36 @@ void CPierData2::CopyPierData(const CPierData2* pPier)
 bool CPierData2::operator==(const CPierData2& rOther) const
 {
    if ( m_PierIdx != rOther.m_PierIdx )
+   {
       return false;
+   }
 
    if ( m_PierID != rOther.m_PierID )
+   {
       return false;
+   }
 
    if ( m_Station != rOther.m_Station )
+   {
       return false;
+   }
 
    if ( m_strOrientation != rOther.m_strOrientation )
+   {
       return false;
+   }
 
    if ( m_PierConnectionType != rOther.m_PierConnectionType )
+   {
       return false;
+   }
 
    if ( IsInteriorPier() )
    {
       if ( m_SegmentConnectionType != rOther.m_SegmentConnectionType )
+      {
          return false;
+      }
    }
 
    for ( int i = 0; i < 2; i++ )
@@ -169,37 +181,57 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
 
       if ( !IsEqual(m_GirderEndDistance[face], rOther.m_GirderEndDistance[face]) )
+      {
          return false;
+      }
 
       if ( m_EndDistanceMeasurementType[face] != rOther.m_EndDistanceMeasurementType[face] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_GirderBearingOffset[face], rOther.m_GirderBearingOffset[face]) )
+      {
          return false;
+      }
 
       if ( m_BearingOffsetMeasurementType[face] != rOther.m_BearingOffsetMeasurementType[face] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_SupportWidth[face], rOther.m_SupportWidth[face]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_DiaphragmHeight[face], rOther.m_DiaphragmHeight[face]) )
+      {
          return false;
+      }
       
       if ( !IsEqual(m_DiaphragmWidth[face], rOther.m_DiaphragmWidth[face]) )
+      {
          return false;
+      }
 
       if ( m_DiaphragmLoadType[face] != rOther.m_DiaphragmLoadType[face] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_DiaphragmLoadLocation[face], rOther.m_DiaphragmLoadLocation[face]) )
+      {
          return false;
+      }
    }
 
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
       if (m_LLDFs != rOther.m_LLDFs)
+      {
          return false;
+      }
    }
 
    if ( !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
@@ -209,19 +241,25 @@ bool CPierData2::operator==(const CPierData2& rOther) const
          if ( m_pPrevSpan )
          {
             if ( m_GirderSpacing[pgsTypes::Back] != rOther.m_GirderSpacing[pgsTypes::Back] )
+            {
                return false;
+            }
          }
 
          if ( m_pNextSpan )
          {
             if ( m_GirderSpacing[pgsTypes::Ahead] != rOther.m_GirderSpacing[pgsTypes::Ahead] )
+            {
                return false;
+            }
          }
       }
       else if (m_SegmentConnectionType == pgsTypes::psctContinousClosureJoint || m_SegmentConnectionType == pgsTypes::psctIntegralClosureJoint)
       {
          if ( m_GirderSpacing[pgsTypes::Back] != rOther.m_GirderSpacing[pgsTypes::Back] )
+         {
             return false;
+         }
       }
    }
 
@@ -269,7 +307,7 @@ LPCTSTR CPierData2::AsString(pgsTypes::PierConnectionType type)
       return _T("Integral on back side before deck placement; Hinged on ahead side");
    
    default:
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    };
 
@@ -293,7 +331,7 @@ LPCTSTR CPierData2::AsString(pgsTypes::PierSegmentConnectionType type)
       return _T("Integral Segment");
    
    default:
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    };
 
@@ -564,28 +602,36 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             {
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gM_Interior"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gM[pgsTypes::Interior][0] = var.dblVal;
                gM[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gM[pgsTypes::Exterior][0] = var.dblVal;
                gM[pgsTypes::Exterior][1] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Interior"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gR[pgsTypes::Interior][0] = var.dblVal;
                gR[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gR[pgsTypes::Exterior][0] = var.dblVal;
                gR[pgsTypes::Exterior][1] = var.dblVal;
@@ -594,49 +640,65 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             {
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Strength"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gM[pgsTypes::Interior][0] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior_Strength"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gM[pgsTypes::Exterior][0] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Strength"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gR[pgsTypes::Interior][0] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Strength"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gR[pgsTypes::Exterior][0] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Fatigue"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gM[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior_Fatigue"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gM[pgsTypes::Exterior][1] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Fatigue"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gR[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Fatigue"),&var)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                gR[pgsTypes::Exterior][1] = var.dblVal;
             }
@@ -931,6 +993,18 @@ CBridgeDescription2* CPierData2::GetBridgeDescription()
    return m_pBridgeDesc;
 }
 
+void CPierData2::SetSpan(pgsTypes::PierFaceType face,CSpanData2* pSpan)
+{
+   if ( face == pgsTypes::Back )
+   {
+      m_pPrevSpan = pSpan;
+   }
+   else
+   {
+      m_pNextSpan = pSpan;
+   }
+}
+
 void CPierData2::SetSpans(CSpanData2* pPrevSpan,CSpanData2* pNextSpan)
 {
    m_pPrevSpan = pPrevSpan;
@@ -1037,10 +1111,14 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
    pgsTypes::PierSegmentConnectionType oldType = m_SegmentConnectionType;
 
    if ( oldType == newType )
+   {
       return; // nothing is changing
+   }
 
    if ( !m_pBridgeDesc )
+   {
       return; // can't do anything else if this pier isn't attached to a bridge
+   }
 
    if ( newType == pgsTypes::psctContinuousSegment || newType == pgsTypes::psctIntegralSegment )
    {
@@ -1152,14 +1230,18 @@ CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx)
    }
 
    if ( m_SegmentConnectionType == pgsTypes::psctContinuousSegment || m_SegmentConnectionType == pgsTypes::psctIntegralSegment )
+   {
       return NULL;
+   }
 
    // If there is a closure at this pier, then this pier is in the middle of a group
    // so the group on the ahead and back side of this pier are the same. There can't
    // be a closure here if this is an end pier
    CGirderGroupData* pGroup = GetGirderGroup(pgsTypes::Ahead); // get on ahead side... could be back side
    if ( pGroup == NULL )
+   {
       return NULL;
+   }
 
    CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -1187,14 +1269,18 @@ const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) con
    }
 
    if ( m_SegmentConnectionType == pgsTypes::psctContinuousSegment || m_SegmentConnectionType == pgsTypes::psctIntegralSegment )
+   {
       return NULL;
+   }
 
    // If there is a closure at this pier, then this pier is in the middle of a group
    // so the group on the ahead and back side of this pier are the same. There can't
    // be a closure here if this is an end pier
    const CGirderGroupData* pGroup = GetGirderGroup(pgsTypes::Ahead); // get on ahead side... could be back side
    if ( pGroup == NULL )
+   {
       return NULL;
+   }
 
    const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -1481,12 +1567,12 @@ CPierData2::LLDF& CPierData2::GetLLDF(GirderIndexType igs) const
    // Next: let's deal with retrieval
    if (igs<0)
    {
-      ATLASSERT(0); // problemo in calling routine - let's not crash
+      ATLASSERT(false); // problemo in calling routine - let's not crash
       return m_LLDFs.front();
    }
    else if (nGirders <= igs)
    {
-      ATLASSERT(0); // problemo in calling routine - let's not crash
+      ATLASSERT(false); // problemo in calling routine - let's not crash
       return m_LLDFs.back();
    }
    else
@@ -1515,7 +1601,7 @@ GirderIndexType CPierData2::GetLldfGirderCount() const
 
    if (pBack == NULL && pAhead == NULL)
    {
-      ATLASSERT(0); // function called before bridge tied together - no good
+      ATLASSERT(false); // function called before bridge tied together - no good
       return 0;
    }
    else
@@ -1534,10 +1620,14 @@ HRESULT CPierData2::LoadOldPierData(Float64 version,IStructuredLoad* pStrLoad,IP
    CPierData pd;
    HRESULT hr2 = pd.Load(version,pStrLoad,pProgress,strUnitName);
    if ( FAILED(hr2))
+   {
       return hr2;
+   }
 
    if ( SUCCEEDED(hr) )
+   {
       pStrLoad->EndUnit(); // PierData
+   }
 
    // The data was loaded correctly, now convert the old data into the proper format for this class
    SetPierData(&pd);

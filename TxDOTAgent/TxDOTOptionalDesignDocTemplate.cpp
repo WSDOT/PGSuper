@@ -170,7 +170,7 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
       }
       else
       {
-         ATLASSERT(0); // problem parsing a template file. Probably need a better way to handle this error
+         ATLASSERT(false); // problem parsing a template file. Probably need a better way to handle this error
       }
    }
 
@@ -187,7 +187,7 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
       if ( hIcon )
          fileIcon = hIcon;
       else
-         ATLASSERT(0);
+         ATLASSERT(false);
 
       CEAFTemplateGroup* pNewGroup = new CEAFTemplateGroup();
       pNewGroup->SetGroupName(rfolder.Title.c_str());

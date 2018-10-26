@@ -602,6 +602,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\EffectivePrestressGraphBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\EffectivePrestressGraphController.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\GirderGraphBuilderBase.cpp"
 				>
 			</File>
@@ -630,11 +638,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\InfluenceLineGraphBuilder.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\InfluenceLineGraphController.cpp"
+				RelativePath=".\LocationGraphController.cpp"
 				>
 			</File>
 			<File
@@ -706,11 +710,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TendonStressGraphBuilder.cpp"
+				RelativePath=".\VirtualWorkGraphBuilder.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TendonStressGraphController.cpp"
+				RelativePath=".\VirtualWorkGraphController.cpp"
 				>
 			</File>
 		</Filter>
@@ -724,23 +728,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Graphing\AnalysisResultsGraphBuilder1.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Graphing\AnalysisResultsGraphBuilder2.h"
-				>
-			</File>
-			<File
 				RelativePath=".\AnalysisResultsGraphController.h"
-				>
-			</File>
-			<File
-				RelativePath=".\AnalysisResultsGraphController1.h"
-				>
-			</File>
-			<File
-				RelativePath=".\AnalysisResultsGraphController2.h"
 				>
 			</File>
 			<File
@@ -772,6 +760,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Graphing\EffectivePrestressGraphBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\EffectivePrestressGraphController.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Graphing\GirderGraphBuilderBase.h"
 				>
 			</File>
@@ -800,11 +796,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Graphing\InfluenceLineGraphBuilder.h"
+				RelativePath="..\Include\Graphing\GraphingTypes.h"
 				>
 			</File>
 			<File
-				RelativePath=".\InfluenceLineGraphController.h"
+				RelativePath=".\LocationGraphController.h"
 				>
 			</File>
 			<File
@@ -832,11 +828,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Graphing\TendonStressGraphBuilder.h"
+				RelativePath="..\Include\Graphing\VirtualWorkGraphBuilder.h"
 				>
 			</File>
 			<File
-				RelativePath=".\TendonStressGraphController.h"
+				RelativePath=".\VirtualWorkGraphController.h"
 				>
 			</File>
 		</Filter>

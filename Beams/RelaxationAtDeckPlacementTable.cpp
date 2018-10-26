@@ -65,7 +65,7 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return NULL;
    }
 
@@ -147,7 +147,7 @@ void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBrok
    boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return;
    }
 

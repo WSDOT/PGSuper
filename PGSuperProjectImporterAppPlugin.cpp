@@ -26,6 +26,20 @@ CString CPGSuperProjectImporterAppPlugin::GetTemplateFileExtension()
    return strTemplateSuffix;
 }
 
+// NOTE
+// PGSuper Project Importer application plug in is basically the same thing as the
+// PGSuper application plug in. The only differece is this plug-in provides a 
+// framework for creating new PGSuper project from extern data sources. When this
+// plug-in is loaded and unloaded it reads and writes from the registery. It reads
+// and writes to the same location as PGSuper app plugin. This works fine for 
+// everything except the custom reporting options. Which ever plug-in saves last
+// wins. Since we don't have any real project importers yet, it is just easier
+// to by-pass saving custom report information. This will have to be fixed later
+void CPGSuperProjectImporterAppPlugin::SaveReportOptions()
+{
+   // do nothing
+}
+
 HRESULT CPGSuperProjectImporterAppPlugin::FinalConstruct()
 {
    m_MyCmdTarget.m_pMyAppPlugin = this;
@@ -39,9 +53,11 @@ void CPGSuperProjectImporterAppPlugin::FinalRelease()
 
 void CPGSuperProjectImporterAppPlugin::ConfigureProjectImporters()
 {
-   std::vector<CEAFPluginState> pluginStates = EAFManagePlugins(_T("Manager PGSuper Project Importers"),CATID_PGSuperProjectImporter,EAFGetMainFrame());
+   std::vector<CEAFPluginState> pluginStates = EAFManageApplicationPlugins(_T("Manage PGSuper Project Importers"),CATID_PGSuperProjectImporter,EAFGetMainFrame());
    if ( pluginStates.size() == 0 )
+   {
       return;
+   }
 
    // Find our document template
    CEAFApp* pApp = EAFGetApp();
@@ -150,7 +166,7 @@ void CPGSuperProjectImporterAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    if ( bIntegrate )
    {
       // Append to the end of the Manage menu
-      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("Manage PGSuper Project Importers..."),this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSuper Project Importers..."),this);
    }
    else
    {
@@ -183,7 +199,9 @@ std::vector<CEAFDocTemplate*> CPGSuperProjectImporterAppPlugin::CreateDocTemplat
    }
 
    if ( pDocTemplate != NULL )
+   {
       vDocTemplates.push_back(pDocTemplate);
+   }
 
    return vDocTemplates;
 }
@@ -234,7 +252,9 @@ BOOL CPGSuperProjectImporterAppPlugin::GetToolTipMessageString(UINT nID, CString
 		// tip is after first newline 
       int pos = string.Find('\n');
       if ( 0 < pos )
+      {
          rMessage = string.Mid(pos+1);
+      }
 	}
 	else
 	{

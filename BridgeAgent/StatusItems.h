@@ -80,11 +80,11 @@ private:
 class pgsPointLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
-   pgsPointLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey);
+   pgsPointLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey);
    bool IsEqual(CEAFStatusItem* pOther);
 
    IndexType m_LoadIndex;
-   CSpanGirderKey m_SpanGirderKey;
+   CSpanKey m_spanKey;
 };
 
 class pgsPointLoadStatusCallback : public iStatusCallback
@@ -103,11 +103,11 @@ private:
 class pgsDistributedLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
-   pgsDistributedLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey);
+   pgsDistributedLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey);
    bool IsEqual(CEAFStatusItem* pOther);
 
    IndexType m_LoadIndex;
-   CSpanGirderKey m_SpanGirderKey;
+   CSpanKey m_spanKey;
 };
 
 ///////////////////////////
@@ -127,11 +127,11 @@ private:
 class pgsMomentLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
-   pgsMomentLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey);
+   pgsMomentLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey);
    bool IsEqual(CEAFStatusItem* pOther);
 
    IndexType m_LoadIndex;
-   CSpanGirderKey m_SpanGirderKey;
+   CSpanKey m_spanKey;
 };
 
 ///////////////////////////

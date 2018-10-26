@@ -29,8 +29,8 @@ template <class T>
 class TPoiKey
 {
 public:
-   TPoiKey(T subkey,GroupIndexType grpIdx,GirderIndexType gdrIdx,Float64 distFromStart) :
-      m_Subkey(subkey), m_Poi(grpIdx,gdrIdx,distFromStart) 
+   TPoiKey(T subkey,const CSegmentKey& segmentKey,Float64 Xpoi) :
+      m_Subkey(subkey), m_Poi(segmentKey,Xpoi) 
       {}
 
    TPoiKey(T subkey,const pgsPointOfInterest& poi) : 

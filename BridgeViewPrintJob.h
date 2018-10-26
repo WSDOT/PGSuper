@@ -57,8 +57,8 @@ private:
 	CString	m_csFtPrint;// font type name
 	int      m_iFtPrint;	// font size
 
-   CBridgePlanView*    m_pPv;
-   CBridgeSectionView* m_pSv;
+   CBridgePlanView*    m_pPlanView;
+   CBridgeSectionView* m_pSectionView;
    IBroker* m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
 };

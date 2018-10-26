@@ -38,6 +38,9 @@
 #include <IFace\Project.h>
 #include <IFace\PointOfInterest.h>
 
+#include <limits>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -143,7 +146,9 @@ bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassed() const
    Float64 max_comp_stress = GetCompressiveCapacity();
 
    if (comp_stress < max_comp_stress)
+   {
       return false;
+   }
 
    return true;
 }
@@ -269,7 +274,7 @@ void pgsWsdotHaulingStressAnalysisArtifact::GetMaxPlumbTensileStress(Float64* pf
    // Tensile allowable can change based on location. Most find max based on C/D
    Float64 capUp, capNone, capDown;
    GetTensileCapacities(&capUp, &capNone, &capDown);
-   ATLASSERT(capUp>0.0 && capNone>0.0 && capDown>0.0);
+   ATLASSERT(0.0 < capUp && 0.0 < capNone && 0.0 < capDown);
 
    // Do top of girder first
    Float64 fps;
@@ -695,49 +700,62 @@ bool pgsWsdotHaulingAnalysisArtifact::Passed() const
    // cracking
    Float64 fs_crack = this->GetMinFsForCracking();
    Float64 all_crack = this->GetAllowableFsForCracking();
-   if (fs_crack<all_crack)
+   if (fs_crack < all_crack)
+   {
       return false;
+   }
 
    // Rollover
    Float64 fs_roll = this->GetFsRollover();
    Float64 all_roll = this->GetAllowableFsForRollover();
    if (fs_roll<all_roll)
+   {
       return false;
+   }
 
    // stresses
    if (!PassedStressCheck())
+   {
       return false;
+   }
 
    // tolerance for distances
    Float64 TOL_DIST = ::ConvertToSysUnits(1.0,unitMeasure::Millimeter); 
 
    Float64 all_span = this->GetAllowableSpanBetweenSupportLocations();
    Float64 span = this->GetClearSpanBetweenSupportLocations();
-   if (span>all_span+TOL_DIST)
+   if (all_span+TOL_DIST < span)
+   {
       return false;
+   }
 
    Float64 allow_overhang = this->GetAllowableLeadingOverhang();
    Float64 overhang = this->GetLeadingOverhang();
-   if ( overhang > allow_overhang+TOL_DIST )
+   if ( allow_overhang+TOL_DIST < overhang)
+   {
       return false;
+   }
 
-
-   if ( GetGirderWeight() > GetMaxGirderWgt() )
+   if ( GetMaxGirderWgt() < GetGirderWeight() )
+   {
       return false;
+   }
 
    return true;
 }
 
 bool pgsWsdotHaulingAnalysisArtifact::PassedStressCheck() const
 {
-   for (std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin(); 
-        is!=m_HaulingStressAnalysisArtifacts.end(); is++)
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iter(m_HaulingStressAnalysisArtifacts.begin()); 
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iterEnd(m_HaulingStressAnalysisArtifacts.end()); 
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 distFromStart = is->first;
-      const pgsWsdotHaulingStressAnalysisArtifact& rart = is->second;
+      const pgsWsdotHaulingStressAnalysisArtifact& artifact = iter->second;
 
-      if (!rart.Passed())
+      if (!artifact.Passed())
+      {
          return false;
+      }
    }
 
    return true;
@@ -767,18 +785,18 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
    scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
    scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(),    false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,            pDisplayUnits->GetSpanLengthUnit(),    false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDisplayUnits->GetStressUnit(),        false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, mod_e,          pDisplayUnits->GetModEUnit(),          false );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,         pDisplayUnits->GetMomentUnit(),        false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue, angle,           pDisplayUnits->GetRadAngleUnit(),      false );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, wt_len, pDisplayUnits->GetForcePerLengthUnit(),false );
-   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(),false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,           pDisplayUnits->GetAreaUnit(),      false );
-   INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_I,  pDisplayUnits->GetMomentOfInertiaUnit(),         true );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDisplayUnits->GetSpanLengthUnit(),          false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,      pDisplayUnits->GetSpanLengthUnit(),          false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,          force,    pDisplayUnits->GetShearUnit(),               false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,      pDisplayUnits->GetComponentDimUnit(),        false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,         stress,   pDisplayUnits->GetStressUnit(),              false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,         mod_e,    pDisplayUnits->GetModEUnit(),                false );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment,   pDisplayUnits->GetMomentUnit(),              false );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,          angle,    pDisplayUnits->GetRadAngleUnit(),            false );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, wt_len,   pDisplayUnits->GetForcePerLengthUnit(),      false );
+   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring,   pDisplayUnits->GetMomentPerAngleUnit(),      false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,           area,     pDisplayUnits->GetAreaUnit(),                false );
+   INIT_UV_PROTOTYPE( rptLength4UnitValue,        mom_I,    pDisplayUnits->GetMomentOfInertiaUnit(),     true  );
 
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
@@ -799,8 +817,8 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    *pChapter << p;
 
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   if (!pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
    }
@@ -857,24 +875,21 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
 
    Float64 overhang = this->GetTrailingOverhang();
 
-   GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-   std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,POIFIND_OR);
-
    RowIndexType row = 1;
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for (i = poi_vec.begin(); i!= poi_vec.end(); i++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(m_HaulingPois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_HaulingPois.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsWsdotHaulingStressAnalysisArtifact* stressArtifact =  this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
+      const pgsWsdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
  
       (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
-      (*p_table)(row,1) << force.SetValue( stressArtifact->GetEffectiveHorizPsForce());
-      (*p_table)(row,2) << dim.SetValue( stressArtifact->GetEccentricityPsForce());
+      (*p_table)(row,1) << force.SetValue( pStressArtifact->GetEffectiveHorizPsForce());
+      (*p_table)(row,2) << dim.SetValue( pStressArtifact->GetEccentricityPsForce());
 
       Float64 M1,M2,M3;
-      stressArtifact->GetMomentImpact(&M1,&M2,&M3);
+      pStressArtifact->GetMomentImpact(&M1,&M2,&M3);
       (*p_table)(row,3) << moment.SetValue(M1);
       (*p_table)(row,4) << moment.SetValue(M2);
       (*p_table)(row,5) << moment.SetValue(M3);
@@ -927,22 +942,23 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
 
    RowIndexType row1 = 2;
    RowIndexType row2 = 1;
-   for (i = poi_vec.begin(); i!= poi_vec.end(); i++)
+   poiIter = m_HaulingPois.begin();
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsWsdotHaulingStressAnalysisArtifact* stressArtifact =  this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
+      const pgsWsdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
  
       (*p_table)(row1,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
       
       Float64 ps, up, down, no;
-      stressArtifact->GetTopFiberStress(&ps, &up,&no,&down);
+      pStressArtifact->GetTopFiberStress(&ps, &up,&no,&down);
       (*p_table)(row1,1) << stress.SetValue( ps );
       (*p_table)(row1,2) << stress.SetValue( up );
       (*p_table)(row1,3) << stress.SetValue( no );
       (*p_table)(row1,4) << stress.SetValue( down );
       
-      stressArtifact->GetBottomFiberStress(&ps,&up,&no,&down);
+      pStressArtifact->GetBottomFiberStress(&ps,&up,&no,&down);
       (*p_table)(row1,5) << stress.SetValue( ps );
       (*p_table)(row1,6) << stress.SetValue( up );
       (*p_table)(row1,7) << stress.SetValue( no );
@@ -951,15 +967,15 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
       (*p_table2)(row2,0) << location.SetValue(POI_HAUL_SEGMENT, poi, overhang);
 
       Float64 Mu,Mn,Md;
-      stressArtifact->GetMomentImpact(&Mu,&Mn,&Md);
+      pStressArtifact->GetMomentImpact(&Mu,&Mn,&Md);
 
       Float64 lat_moment;
-      lat_moment  = stressArtifact->GetLateralMoment();
+      lat_moment  = pStressArtifact->GetLateralMoment();
       (*p_table2)(row2,1) << moment.SetValue(Mn);
       (*p_table2)(row2,2) << moment.SetValue(lat_moment);
 
       Float64 ftu, ftd, fbu, fbd;
-      stressArtifact->GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
+      pStressArtifact->GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
       (*p_table2)(row2,3) << stress.SetValue(ftu);
       (*p_table2)(row2,4) << stress.SetValue(ftd);
       (*p_table2)(row2,5) << stress.SetValue(fbu);
@@ -991,24 +1007,38 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    (*p_table)(0,6) << Sub2(_T("FS"),_T("cr"));
 
    row=1;
-   for (i = poi_vec.begin(); i!= poi_vec.end(); i++)
+   poiIter = m_HaulingPois.begin();
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsWsdotHaulingCrackingAnalysisArtifact* crackArtifact =  this->GetHaulingCrackingAnalysisArtifact(poi.GetDistFromStart());
+      const pgsWsdotHaulingCrackingAnalysisArtifact* pCrackArtifact = GetHaulingCrackingAnalysisArtifact(poi);
  
       (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang);
-      (*p_table)(row,1) << stress.SetValue( crackArtifact->GetLateralMomentStress() );
+      (*p_table)(row,1) << stress.SetValue( pCrackArtifact->GetLateralMomentStress() );
 
-      if (crackArtifact->GetCrackedFlange()==BottomFlange)
+      if (pCrackArtifact->GetCrackedFlange()==BottomFlange)
+      {
          (*p_table)(row,2) << _T("Bottom");
+      }
       else
+      {
          (*p_table)(row,2) << _T("Top");
+      }
 
-      (*p_table)(row,3) << moment.SetValue( crackArtifact->GetLateralMoment() );
-      (*p_table)(row,4) << moment.SetValue( crackArtifact->GetVerticalMoment() );
-      (*p_table)(row,5) << angle.SetValue( crackArtifact->GetThetaCrackingMax() );
-      (*p_table)(row,6) << scalar.SetValue(crackArtifact->GetFsCracking());
+      (*p_table)(row,3) << moment.SetValue( pCrackArtifact->GetLateralMoment() );
+      (*p_table)(row,4) << moment.SetValue( pCrackArtifact->GetVerticalMoment() );
+      (*p_table)(row,5) << angle.SetValue(  pCrackArtifact->GetThetaCrackingMax() );
+
+      Float64 FScr = pCrackArtifact->GetFsCracking();
+      if ( FScr == Float64_Inf )
+      {
+         (*p_table)(row,6) << symbol(INFINITY);
+      }
+      else
+      {
+         (*p_table)(row,6) << scalar.SetValue( pCrackArtifact->GetFsCracking());
+      }
       row++;
    }
 
@@ -1031,25 +1061,25 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
 void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, IBroker* pBroker,
                                                     const std::_tstring& pid, const std::_tstring& bridgeId) const
 {
-   GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
+   GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
 
-   std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_HAUL_SEGMENT | POI_MIDSPAN);
-   CHECK(poi_vec.size()==1);
-   pgsPointOfInterest& poi = poi_vec[0];
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi = pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_HAUL_SEGMENT | POI_5L);
+   ATLASSERT(vPoi.size()==1);
+   pgsPointOfInterest& poi = vPoi[0];
    Float64 loc = poi.GetDistFromStart();
 
-   const pgsWsdotHaulingStressAnalysisArtifact* hStress = this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
+   const pgsWsdotHaulingStressAnalysisArtifact* pStress = GetHaulingStressAnalysisArtifact(poi);
 
    GirderIndexType gdr = segmentKey.girderIndex;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100005, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(hStress->GetMaximumConcreteTensileStress() , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100006, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(hStress->GetMaximumConcreteCompressiveStress() , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100005, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(pStress->GetMaximumConcreteTensileStress() , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100006, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(pStress->GetMaximumConcreteCompressiveStress() , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
 
-   const pgsWsdotHaulingCrackingAnalysisArtifact* hCrack =  this->GetHaulingCrackingAnalysisArtifact(poi.GetDistFromStart());
+   const pgsWsdotHaulingCrackingAnalysisArtifact* pCrack = GetHaulingCrackingAnalysisArtifact(poi);
 
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100007, ")<<loc<<_T(", ")<< hCrack->GetFsCracking()<<_T(", 50, ")<<gdr<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100008, ")<<loc<<_T(", ")<< this->GetFsRollover()<<_T(", 50, ")<<gdr<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100010, ")<<loc<<_T(", ")<<(int)(this->Passed()?1:0)<<_T(", 50, ")<<gdr<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100007, ")<<loc<<_T(", ")<< pCrack->GetFsCracking()<<_T(", 50, ")<<gdr<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100008, ")<<loc<<_T(", ")<< GetFsRollover()<<_T(", 50, ")<<gdr<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100010, ")<<loc<<_T(", ")<<(int)(Passed()?1:0)<<_T(", 50, ")<<gdr<<std::endl;
 }
 
 
@@ -1380,11 +1410,13 @@ Float64 pgsWsdotHaulingAnalysisArtifact::GetMinFsForCracking() const
 {
    // cycle through all fs's at all pois and return min
    Float64 min_fs=DBL_MAX;
-   PRECONDITION(m_HaulingCrackingAnalysisArtifacts.size()>0);
-   for (std::map<Float64,pgsWsdotHaulingCrackingAnalysisArtifact,Float64_less>::const_iterator i = m_HaulingCrackingAnalysisArtifacts.begin(); 
-        i!=m_HaulingCrackingAnalysisArtifacts.end(); i++)
+   ATLASSERT(0 < m_HaulingCrackingAnalysisArtifacts.size());
+   std::map<pgsPointOfInterest,pgsWsdotHaulingCrackingAnalysisArtifact>::const_iterator iter(m_HaulingCrackingAnalysisArtifacts.begin()); 
+   std::map<pgsPointOfInterest,pgsWsdotHaulingCrackingAnalysisArtifact>::const_iterator iterEnd(m_HaulingCrackingAnalysisArtifacts.end()); 
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 fs = i->second.GetFsCracking();
+      const pgsWsdotHaulingCrackingAnalysisArtifact& artifact = iter->second;
+      Float64 fs = artifact.GetFsCracking();
       min_fs = Min(min_fs,fs);
    }
    return min_fs;
@@ -1420,105 +1452,113 @@ void pgsWsdotHaulingAnalysisArtifact::SetThetaRolloverMax(Float64 t)
    m_ThetaRolloverMax = t;
 }
 
-void pgsWsdotHaulingAnalysisArtifact::AddHaulingStressAnalysisArtifact(Float64 distFromStart,
-                                   const pgsWsdotHaulingStressAnalysisArtifact& artifact)
+void pgsWsdotHaulingAnalysisArtifact::AddHaulingStressAnalysisArtifact(const pgsPointOfInterest& poi,const pgsWsdotHaulingStressAnalysisArtifact& artifact)
 {
-   m_HaulingStressAnalysisArtifacts.insert(std::make_pair(distFromStart,artifact));
+   ATLASSERT(poi.GetID() != INVALID_ID);
+   std::vector<pgsPointOfInterest>::iterator found = std::find(m_HaulingPois.begin(),m_HaulingPois.end(),poi);
+   if ( found == m_HaulingPois.end() )
+   {
+      m_HaulingPois.push_back(poi);
+      std::sort(m_HaulingPois.begin(),m_HaulingPois.end());
+   }
+   m_HaulingStressAnalysisArtifacts.insert(std::make_pair(poi,artifact));
 }
 
-const pgsWsdotHaulingStressAnalysisArtifact* pgsWsdotHaulingAnalysisArtifact::GetHaulingStressAnalysisArtifact(Float64 distFromStart) const
+const pgsWsdotHaulingStressAnalysisArtifact* pgsWsdotHaulingAnalysisArtifact::GetHaulingStressAnalysisArtifact(const pgsPointOfInterest& poi) const
 {
-   std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator found;
-   found = m_HaulingStressAnalysisArtifacts.find( distFromStart );
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator found;
+   found = m_HaulingStressAnalysisArtifacts.find( poi );
    if ( found == m_HaulingStressAnalysisArtifacts.end() )
-      return 0;
+   {
+      return NULL;
+   }
 
    return &(*found).second;
 }
 
 
-void pgsWsdotHaulingAnalysisArtifact::AddHaulingCrackingAnalysisArtifact(Float64 distFromStart,
-                                   const pgsWsdotHaulingCrackingAnalysisArtifact& artifact)
+void pgsWsdotHaulingAnalysisArtifact::AddHaulingCrackingAnalysisArtifact(const pgsPointOfInterest& poi,const pgsWsdotHaulingCrackingAnalysisArtifact& artifact)
 {
-   m_HaulingCrackingAnalysisArtifacts.insert(std::make_pair(distFromStart,artifact));
+   ATLASSERT(poi.GetID() != INVALID_ID);
+   std::vector<pgsPointOfInterest>::iterator found = std::find(m_HaulingPois.begin(),m_HaulingPois.end(),poi);
+   if ( found == m_HaulingPois.end() )
+   {
+      m_HaulingPois.push_back(poi);
+      std::sort(m_HaulingPois.begin(),m_HaulingPois.end());
+   }
+   m_HaulingCrackingAnalysisArtifacts.insert(std::make_pair(poi,artifact));
 
 }
 
-const pgsWsdotHaulingCrackingAnalysisArtifact* pgsWsdotHaulingAnalysisArtifact::GetHaulingCrackingAnalysisArtifact(Float64 distFromStart) const
+const pgsWsdotHaulingCrackingAnalysisArtifact* pgsWsdotHaulingAnalysisArtifact::GetHaulingCrackingAnalysisArtifact(const pgsPointOfInterest& poi) const
 {
-   std::map<Float64,pgsWsdotHaulingCrackingAnalysisArtifact,Float64_less>::const_iterator found;
-   found = m_HaulingCrackingAnalysisArtifacts.find( distFromStart );
+   std::map<pgsPointOfInterest,pgsWsdotHaulingCrackingAnalysisArtifact>::const_iterator found;
+   found = m_HaulingCrackingAnalysisArtifacts.find( poi );
    if ( found == m_HaulingCrackingAnalysisArtifacts.end() )
-      return 0;
+   {
+      return NULL;
+   }
 
    return &(*found).second;
 }
 
 void pgsWsdotHaulingAnalysisArtifact::GetMinMaxStresses(Float64* minStress, Float64* maxStress) const
 {
-   PRECONDITION(m_HaulingStressAnalysisArtifacts.size()>0);
+   ATLASSERT(0 < m_HaulingStressAnalysisArtifacts.size());
 
    Float64 min_stress = Float64_Max;
    Float64 max_stress = -Float64_Max;
-   for (std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin(); 
-        is!=m_HaulingStressAnalysisArtifacts.end(); is++)
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iter(m_HaulingStressAnalysisArtifacts.begin());
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iterEnd(m_HaulingStressAnalysisArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
    {
-      min_stress = Min(min_stress, is->second.GetMaximumConcreteCompressiveStress());
-      max_stress = Max(max_stress, is->second.GetMaximumConcreteTensileStress());
+      const pgsWsdotHaulingStressAnalysisArtifact& artifact = iter->second;
+      min_stress = Min(min_stress, artifact.GetMaximumConcreteCompressiveStress());
+      max_stress = Max(max_stress, artifact.GetMaximumConcreteTensileStress());
    }
 
    *minStress = min_stress;
    *maxStress = max_stress;
 }
 
-void pgsWsdotHaulingAnalysisArtifact::SetHaulingPointsOfInterest(const std::vector<pgsPointOfInterest>& rPois)
-{
-   m_HaulingPois = rPois;
-}
-
-std::vector<pgsPointOfInterest> pgsWsdotHaulingAnalysisArtifact::GetHaulingPointsOfInterest() const
+const std::vector<pgsPointOfInterest>& pgsWsdotHaulingAnalysisArtifact::GetHaulingPointsOfInterest() const
 {
    return m_HaulingPois;
 }
 
 void pgsWsdotHaulingAnalysisArtifact::GetMinMaxHaulingStresses(MaxHaulingStressCollection& rMaxStresses) const
 {
-   PRECONDITION(m_HaulingStressAnalysisArtifacts.size()>0);
-
-   IndexType size = m_HaulingStressAnalysisArtifacts.size();
-   IndexType psiz = m_HaulingPois.size();
-   PRECONDITION(m_HaulingStressAnalysisArtifacts.size()==psiz);
+   ATLASSERT(0 < m_HaulingStressAnalysisArtifacts.size());
 
    rMaxStresses.clear();
-   rMaxStresses.reserve(size);
+   rMaxStresses.reserve(m_HaulingStressAnalysisArtifacts.size());
 
-   IndexType idx=0;
-   for (std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin(); 
-        is!=m_HaulingStressAnalysisArtifacts.end(); is++)
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iter( m_HaulingStressAnalysisArtifacts.begin() );
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iterEnd( m_HaulingStressAnalysisArtifacts.end() );
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 distFromStart = is->first;
-      const pgsWsdotHaulingStressAnalysisArtifact& rart = is->second;
+      const pgsPointOfInterest& poi(iter->first);
+      const pgsWsdotHaulingStressAnalysisArtifact& artifact(iter->second);
 
       // top fiber
       // subtract out stress due to prestressing
       Float64 stps;
       Float64 top_stress, up, no, dn;
-      rart.GetTopFiberStress(&stps, &up, &no, &dn);
+      artifact.GetTopFiberStress(&stps, &up, &no, &dn);
 
       top_stress = Max(up, no, dn);
 
       // bottom fiber
       // subtract out stress due to prestressing
       Float64 sbps;
-      rart.GetBottomFiberStress(&sbps, &up, &no, &dn);
+      artifact.GetBottomFiberStress(&sbps, &up, &no, &dn);
 
       Float64 bot_stress = Min(up, no, dn);
 
       // prestress force
-      Float64 ps_force = rart.GetEffectiveHorizPsForce();
+      Float64 ps_force = artifact.GetEffectiveHorizPsForce();
 
-      rMaxStresses.push_back( MaxdHaulingStresses(m_HaulingPois[idx], ps_force, top_stress,bot_stress) );
-      idx++;
+      rMaxStresses.push_back( MaxdHaulingStresses(poi, ps_force, top_stress,bot_stress) );
    }
 }
 
@@ -1526,7 +1566,7 @@ void pgsWsdotHaulingAnalysisArtifact::GetMinMaxHaulingStresses(MaxHaulingStressC
 void pgsWsdotHaulingAnalysisArtifact::GetMinMaxInclinedStresses(Float64* pftuMin,Float64* pftdMin,Float64* pfbuMin,Float64* pfbdMin,
                                                            Float64* pftuMax,Float64* pftdMax,Float64* pfbuMax,Float64* pfbdMax) const
 {
-   PRECONDITION(m_HaulingStressAnalysisArtifacts.size()>0);
+   ATLASSERT(0 < m_HaulingStressAnalysisArtifacts.size());
 
    *pftuMin = Float64_Max;
    *pftdMin = Float64_Max;
@@ -1538,21 +1578,23 @@ void pgsWsdotHaulingAnalysisArtifact::GetMinMaxInclinedStresses(Float64* pftuMin
    *pfbuMax = -Float64_Max;
    *pfbdMax = -Float64_Max;
 
-   for (std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin(); 
-        is!=m_HaulingStressAnalysisArtifacts.end(); is++)
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iter(m_HaulingStressAnalysisArtifacts.begin());
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iterEnd(m_HaulingStressAnalysisArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
    {
-           Float64 ftu,ftd,fbu,fbd;
-           is->second.GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
+      const pgsWsdotHaulingStressAnalysisArtifact& artifact = iter->second;
+      Float64 ftu,ftd,fbu,fbd;
+      artifact.GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
 
-           *pftuMin = Min(*pftuMin,ftu);
-           *pftdMin = Min(*pftdMin,ftd);
-           *pfbuMin = Min(*pfbuMin,fbu);
-           *pfbdMin = Min(*pfbdMin,fbd);
+      *pftuMin = Min(*pftuMin,ftu);
+      *pftdMin = Min(*pftdMin,ftd);
+      *pfbuMin = Min(*pfbuMin,fbu);
+      *pfbdMin = Min(*pfbdMin,fbd);
 
-           *pftuMax = Max(*pftuMax,ftu);
-           *pftdMax = Max(*pftdMax,ftd);
-           *pfbuMax = Max(*pfbuMax,fbu);
-           *pfbdMax = Max(*pfbdMax,fbd);
+      *pftuMax = Max(*pftuMax,ftu);
+      *pftdMax = Max(*pftdMax,ftd);
+      *pfbuMax = Max(*pfbuMax,fbu);
+      *pfbdMax = Max(*pfbdMax,fbd);
    }
 }
 
@@ -1562,12 +1604,14 @@ void pgsWsdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfciC
    Float64 maxFciTensnobar = -Float64_Max;
    Float64 maxFciTenswithbar = -Float64_Max;
 
-   std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin();
-   std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator iend = m_HaulingStressAnalysisArtifacts.end();
-   for ( ; is!=iend; is++)
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iter( m_HaulingStressAnalysisArtifacts.begin() );
+   std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator iterEnd( m_HaulingStressAnalysisArtifacts.end() );
+   for ( ; iter != iterEnd; iter++ )
    {
+      const pgsWsdotHaulingStressAnalysisArtifact& artifact = iter->second;
+
       Float64 fciComp, fciTensNoRebar, fciTensWithRebar;
-      is->second.GetRequiredConcreteStrength(&fciComp, &fciTensNoRebar, &fciTensWithRebar);
+      artifact.GetRequiredConcreteStrength(&fciComp, &fciTensNoRebar, &fciTensWithRebar);
 
       // Use inline function for comparison
       maxFciComp        = CompareConcreteStrength(maxFciComp, fciComp);
@@ -1629,13 +1673,13 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
    scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
    scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress_u, pDisplayUnits->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
+   INIT_UV_PROTOTYPE( rptPointOfInterest,   location,      pDisplayUnits->GetSpanLengthUnit(),         false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,    force,         pDisplayUnits->GetShearUnit(),              false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,   dim,           pDisplayUnits->GetComponentDimUnit(),       false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,   stress,        pDisplayUnits->GetStressUnit(),             false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,   stress_u,      pDisplayUnits->GetStressUnit(),             true  );
+   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,     area,          pDisplayUnits->GetAreaUnit(),               true  );
 
    rptCapacityToDemand cap_demand;
 
@@ -1644,8 +1688,8 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   if (!pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
       return false;
@@ -1667,19 +1711,21 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
 
    Float64 t2 = pSpecEntry->GetHaulingTensionStressFactorWithRebar();
 
-   Float64 capCompression = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+   Float64 capCompression = pSegmentHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
 
    *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FC << _T(" = ") << 
       stress.SetValue(capCompression)<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
    *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
    if ( b_t_max )
+   {
       *p << _T(" but not more than: ") << stress.SetValue(t_max);
-   *p << _T(" = ") << stress.SetValue(pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(segmentKey))<< _T(" ") <<
+   }
+   *p << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(segmentKey))<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
    *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FC
-      << _T(" = ") << stress.SetValue(pGirderHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(segmentKey)) << _T(" ") << stress.GetUnitTag()
+      << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(segmentKey)) << _T(" ") << stress.GetUnitTag()
       << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
    *p <<_T("Allowable factor of safety against cracking = ")<<this->GetAllowableFsForCracking()<<rptNewLine; 
@@ -1689,25 +1735,37 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
 
    *p << RPT_FC << _T(" required for Compressive stress = ");
    if ( 0 < fc_reqd_comp )
+   {
       *p << stress_u.SetValue( fc_reqd_comp ) << rptNewLine;
+   }
    else
+   {
       *p << symbol(INFINITY) << rptNewLine;
+   }
 
    *p << RPT_FC << _T(" required for Tensile stress without sufficient reinforcement = ");
    if ( 0 < fc_reqd_tens )
+   {
       *p << stress_u.SetValue( fc_reqd_tens ) << rptNewLine;
+   }
    else
+   {
       *p << symbol(INFINITY) << rptNewLine;
+   }
 
    *p << RPT_FC << _T(" required for Tensile stress with sufficient reinforcement to resist the tensile force in the concrete = ");
    if ( 0 < fc_reqd_tens_wrebar )
+   {
       *p << stress_u.SetValue( fc_reqd_tens_wrebar ) << rptNewLine;
+   }
    else
+   {
       *p << symbol(INFINITY) << rptNewLine;
+   }
 
-   GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-   std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,POIFIND_OR);
+   GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi = pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
    *p << p_table;
@@ -1752,35 +1810,39 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
 
    p_table->SetNumberOfHeaderRows(2);
    for ( ColumnIndexType i = col1; i < p_table->GetNumberOfColumns(); i++ )
+   {
       p_table->SetColumnSpan(0,i,SKIP_CELL);
+   }
 
    Float64 overhang = this->GetTrailingOverhang();
 
    RowIndexType row=2;
-   for (std::vector<pgsPointOfInterest>::const_iterator i = poi_vec.begin(); i!= poi_vec.end(); i++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsWsdotHaulingStressAnalysisArtifact* stressArtifact = this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
-      const pgsWsdotHaulingCrackingAnalysisArtifact* crackArtifact =  this->GetHaulingCrackingAnalysisArtifact(poi.GetDistFromStart());
+      const pgsWsdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
+      const pgsWsdotHaulingCrackingAnalysisArtifact* pCrackArtifact = GetHaulingCrackingAnalysisArtifact(poi);
 
-      if (stressArtifact==NULL || crackArtifact==NULL)
+      if (pStressArtifact == NULL || pCrackArtifact == NULL)
       {
-         ATLASSERT(0); // this should not happen
+         ATLASSERT(false); // this should not happen
          continue;
       }
       (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
 
       // Tension
       Float64 fTensTop, fTensBottom, tensCapacityTop, tensCapacityBottom;
-      stressArtifact->GetMaxPlumbTensileStress(&fTensTop, &fTensBottom, &tensCapacityTop, &tensCapacityBottom);
+      pStressArtifact->GetMaxPlumbTensileStress(&fTensTop, &fTensBottom, &tensCapacityTop, &tensCapacityBottom);
 
       // Compression
       Float64 fPs, fTopUpward, fTopNoImpact, fTopDownward;
-      stressArtifact->GetTopFiberStress(&fPs, &fTopUpward, &fTopNoImpact, &fTopDownward);
+      pStressArtifact->GetTopFiberStress(&fPs, &fTopUpward, &fTopNoImpact, &fTopDownward);
 
       Float64 fBotUpward, fBotNoImpact, fBotDownward;
-      stressArtifact->GetBottomFiberStress(&fPs, &fBotUpward, &fBotNoImpact, &fBotDownward);
+      pStressArtifact->GetBottomFiberStress(&fPs, &fBotUpward, &fBotNoImpact, &fBotDownward);
 
       Float64 fTopMin = Min(fTopUpward, fTopNoImpact, fTopDownward);
       Float64 fBotMin = Min(fBotUpward, fBotNoImpact, fBotDownward);
@@ -1822,22 +1884,40 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
          capTens = tensCapacityBottom;
       }
 
-      if ( stressArtifact->TensionPassed() )
+      if ( pStressArtifact->TensionPassed() )
+      {
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,true)<<_T(")");
+      }
       else
+      {
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,false)<<_T(")");
+      }
 
       Float64 fComp = Min(fTopMin, fBotMin);
       
-      if ( stressArtifact->CompressionPassed() )
+      if ( pStressArtifact->CompressionPassed() )
+      {
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");
+      }
       else
+      {
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,false)<<_T(")");
+      }
 
-      (*p_table)(row,col++) << scalar.SetValue(crackArtifact->GetFsCracking());
+      Float64 FScr = pCrackArtifact->GetFsCracking();
+      if ( FScr == Float64_Inf )
+      {
+         (*p_table)(row,col++) << symbol(INFINITY);
+      }
+      else
+      {
+         (*p_table)(row,col++) << scalar.SetValue(FScr);
+      }
       
-      if (crackArtifact->Passed() )
+      if (pCrackArtifact->Passed() )
+      {
          (*p_table)(row,col++) << RPT_PASS;
+      }
       else
       {
          (*p_table)(row,col++) << RPT_FAIL;
@@ -1871,8 +1951,8 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
 
    Float64 c = pSpecEntry->GetHaulingCompressionStressFactor(); // compression coefficient
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   Float64 all_comp = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   Float64 all_comp = pSegmentHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
    Float64 mod_rupture = this->GetModRupture();
    Float64 mod_rupture_coeff = this->GetModRuptureCoefficient();
 
@@ -1899,21 +1979,29 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
 
    Float64 overhang = this->GetTrailingOverhang();
 
-   GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-   std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,POIFIND_OR);
+   GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi = pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0);
 
    RowIndexType row = 1;
-   for (std::vector<pgsPointOfInterest>::const_iterator i = poi_vec.begin(); i!= poi_vec.end(); i++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsWsdotHaulingStressAnalysisArtifact* stressArtifact =  this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
+      const pgsWsdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
+
+      if ( pStressArtifact == NULL )
+      {
+         ATLASSERT(false); // this should not happen
+         continue;
+      }
  
       (*p_table)(row,0) << location.SetValue(POI_HAUL_SEGMENT, poi, overhang);
 
       Float64 ftu, ftd, fbu, fbd;
-      stressArtifact->GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
+      pStressArtifact->GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
       (*p_table)(row,1) << stress.SetValue(ftu);
       (*p_table)(row,2) << stress.SetValue(ftd);
       (*p_table)(row,3) << stress.SetValue(fbu);
@@ -1923,14 +2011,22 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
       Float64 fComp = Min(ftu, ftd, fbu, fbd);
       
       if ( fTens <= mod_rupture )
+      {
           (*p_table)(row,5) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(mod_rupture,fTens,true)<<_T(")");
+      }
       else
+      {
           (*p_table)(row,5) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(mod_rupture,fTens,false)<<_T(")");
+      }
 
-      if ( fComp >= all_comp )
+      if ( all_comp <= fComp )
+      {
           (*p_table)(row,6) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(all_comp,fComp,true)<<_T(")");
+      }
       else
+      {
           (*p_table)(row,6) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(all_comp,fComp,false)<<_T(")");
+      }
 
       row++;
    }
@@ -1971,9 +2067,13 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    (*p_table)(0,1) << scalar.SetValue(this->GetFsRollover());
    (*p_table)(1,1) << scalar.SetValue(this->GetAllowableFsForRollover());
    if (IsLE(all_fail,fs_fail))
+   {
       (*p_table)(2,1) << RPT_PASS;
+   }
    else
+   {
       (*p_table)(2,1) << RPT_FAIL;
+   }
 
    // Truck support spacing
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -2000,9 +2100,13 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    (*p_table)(1,1) << loc.SetValue(allowable_span_length);
 
    if ( IsLE(span_length,allowable_span_length) )
+   {
       (*p_table)(2,1) << RPT_PASS;
+   }
    else
+   {
       (*p_table)(2,1) << RPT_FAIL;
+   }
 
 
 
@@ -2029,9 +2133,13 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    (*p_table)(0,1) << loc.SetValue(oh);
    (*p_table)(1,1) << loc.SetValue(all_oh);
    if ( IsLE(oh,all_oh) )
+   {
       (*p_table)(2,1) << RPT_PASS;
+   }
    else
+   {
       (*p_table)(2,1) << RPT_FAIL;
+   }
 
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -2061,9 +2169,13 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    (*p_table)(0,1) << force.SetValue(wgt);
    (*p_table)(1,1) << force.SetValue(maxwgt);
    if ( IsLE(wgt,maxwgt) )
+   {
       (*p_table)(2,1) << RPT_PASS;
+   }
    else
+   {
       (*p_table)(2,1) << RPT_FAIL;
+   }
 }
 
 void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter* pChapter, const CSegmentKey& segmentKey,
@@ -2074,11 +2186,10 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
    scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
    scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
    scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,        pDisplayUnits->GetAreaUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,     pDisplayUnits->GetAreaUnit(),         false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
 
    rptCapacityToDemand cap_demand;
@@ -2088,17 +2199,23 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
 
    Float64 overhang = this->GetTrailingOverhang();
 
-   GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-   std::vector<pgsPointOfInterest> vPoi = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,POIFIND_OR);
+   GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
+   std::vector<pgsPointOfInterest> vPoi = pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0);
    ATLASSERT(0 < vPoi.size());
 
    std::_tstring tablename;
    if (dir==idDown)
+   {
       tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Hauling, Downward Impact");
+   }
    else if (dir==idNone)
+   {
       tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Hauling, Without Impact");
+   }
    else
+   {
       tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Hauling, Upward Impact");
+   }
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,tablename);
    *p << pTable << rptNewLine;
@@ -2116,19 +2233,21 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
    (*pTable)(0,col++) <<_T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
 
    Int16 row=1;
-   for (std::vector<pgsPointOfInterest>::iterator i = vPoi.begin(); i!= vPoi.end(); i++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsWsdotHaulingStressAnalysisArtifact* stressArtifact =  this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
-      if(stressArtifact==NULL)
+      const pgsWsdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
+      if(pStressArtifact == NULL)
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
          continue;
       }
 
       Float64 Yna, At, T, AsProvd, AsReqd, fAllow;
-      stressArtifact->GetAlternativeTensileStressParameters(dir, &Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
+      pStressArtifact->GetAlternativeTensileStressParameters(dir, &Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
 
       (*pTable)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
 
@@ -2147,16 +2266,16 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
          Float64 fps;
          Float64 fTopUp, fTopNone, fTopDown;
          Float64 fBottomUp, fBottomNone, fBottomDown;
-         stressArtifact->GetTopFiberStress(&fps, &fTopUp, &fTopNone, &fTopDown);
-         stressArtifact->GetBottomFiberStress(&fps, &fBottomUp, &fBottomNone, &fBottomDown);
+         pStressArtifact->GetTopFiberStress(&fps, &fTopUp, &fTopNone, &fTopDown);
+         pStressArtifact->GetBottomFiberStress(&fps, &fBottomUp, &fBottomNone, &fBottomDown);
 
          Float64 fTop, fBot;
-         if(dir==idDown)
+         if(dir == idDown)
          {
             fTop = fTopDown;
             fBot = fBottomDown;
          }
-         else if(dir==idNone)
+         else if(dir == idNone)
          {
             fTop = fTopNone;
             fBot = fBottomNone;
@@ -2168,7 +2287,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
          }
 
          Float64 fTens;
-         if (fTop>0.0)
+         if (0.0 < fTop)
          {
             fTens = fTop;
             (*pTable)(row,1) << _T("Top");
@@ -2199,40 +2318,40 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
 //======================== OPERATIONS =======================================
 void pgsWsdotHaulingAnalysisArtifact::MakeCopy(const pgsWsdotHaulingAnalysisArtifact& rOther)
 {
-   m_GirderLength = rOther.m_GirderLength;
-   m_GirderWeightPerLength = rOther.m_GirderWeightPerLength;
-   m_ClearSpanBetweenSupportLocations = rOther.m_ClearSpanBetweenSupportLocations;
-   m_HeightOfRollCenterAboveRoadway = rOther.m_HeightOfRollCenterAboveRoadway;
-   m_HeightOfCgOfGirderAboveRollCenter = rOther.m_HeightOfCgOfGirderAboveRollCenter;
-   m_RollStiffnessOfvehicle = rOther.m_RollStiffnessOfvehicle;
-   m_AxleWidth = rOther.m_AxleWidth;
-   m_RoadwaySuperelevation = rOther.m_RoadwaySuperelevation;
-   m_UpwardImpact = rOther.m_UpwardImpact;
-   m_DownwardImpact = rOther.m_DownwardImpact;
-   m_SweepTolerance = rOther.m_SweepTolerance;
-   m_SupportPlacementTolerance = rOther.m_SupportPlacementTolerance;
-   m_Fc = rOther.m_Fc;
-   m_ModulusOfRupture = rOther.m_ModulusOfRupture;
-   m_Krupture = rOther.m_Krupture;
-   m_ElasticModulusOfGirderConcrete = rOther.m_ElasticModulusOfGirderConcrete;
-   m_EccentricityDueToSweep = rOther.m_EccentricityDueToSweep;
+   m_GirderLength                        = rOther.m_GirderLength;
+   m_GirderWeightPerLength               = rOther.m_GirderWeightPerLength;
+   m_ClearSpanBetweenSupportLocations    = rOther.m_ClearSpanBetweenSupportLocations;
+   m_HeightOfRollCenterAboveRoadway      = rOther.m_HeightOfRollCenterAboveRoadway;
+   m_HeightOfCgOfGirderAboveRollCenter   = rOther.m_HeightOfCgOfGirderAboveRollCenter;
+   m_RollStiffnessOfvehicle              = rOther.m_RollStiffnessOfvehicle;
+   m_AxleWidth                           = rOther.m_AxleWidth;
+   m_RoadwaySuperelevation               = rOther.m_RoadwaySuperelevation;
+   m_UpwardImpact                        = rOther.m_UpwardImpact;
+   m_DownwardImpact                      = rOther.m_DownwardImpact;
+   m_SweepTolerance                      = rOther.m_SweepTolerance;
+   m_SupportPlacementTolerance           = rOther.m_SupportPlacementTolerance;
+   m_Fc                                  = rOther.m_Fc;
+   m_ModulusOfRupture                    = rOther.m_ModulusOfRupture;
+   m_Krupture                            = rOther.m_Krupture;
+   m_ElasticModulusOfGirderConcrete      = rOther.m_ElasticModulusOfGirderConcrete;
+   m_EccentricityDueToSweep              = rOther.m_EccentricityDueToSweep;
    m_EccentricityDueToPlacementTolerance = rOther.m_EccentricityDueToPlacementTolerance;
-   m_OffsetFactor = rOther.m_OffsetFactor;
-   m_TotalInitialEccentricity = rOther.m_TotalInitialEccentricity;
-   m_Ix = rOther.m_Ix;
-   m_Iy = rOther.m_Iy;
-   m_Zo = rOther.m_Zo;
-   m_ZoPrime = rOther.m_ZoPrime;
-   m_EqualibriumAngle = rOther.m_EqualibriumAngle;
-   m_FsRollover = rOther.m_FsRollover;
-   m_RadiusOfStability = rOther.m_RadiusOfStability;
-   m_ThetaRolloverMax = rOther.m_ThetaRolloverMax;
+   m_OffsetFactor                        = rOther.m_OffsetFactor;
+   m_TotalInitialEccentricity            = rOther.m_TotalInitialEccentricity;
+   m_Ix                                  = rOther.m_Ix;
+   m_Iy                                  = rOther.m_Iy;
+   m_Zo                                  = rOther.m_Zo;
+   m_ZoPrime                             = rOther.m_ZoPrime;
+   m_EqualibriumAngle                    = rOther.m_EqualibriumAngle;
+   m_FsRollover                          = rOther.m_FsRollover;
+   m_RadiusOfStability                   = rOther.m_RadiusOfStability;
+   m_ThetaRolloverMax                    = rOther.m_ThetaRolloverMax;
 
    // make sure artifacts have me as a parent
-   m_HaulingStressAnalysisArtifacts = rOther.m_HaulingStressAnalysisArtifacts;
+   m_HaulingStressAnalysisArtifacts   = rOther.m_HaulingStressAnalysisArtifacts;
    m_HaulingCrackingAnalysisArtifacts = rOther.m_HaulingCrackingAnalysisArtifacts;
 
-   m_HaulingPois = rOther.m_HaulingPois;
+   m_HaulingPois  = rOther.m_HaulingPois;
 
    m_GirderWeight = rOther.m_GirderWeight;
 
@@ -2246,10 +2365,10 @@ void pgsWsdotHaulingAnalysisArtifact::MakeCopy(const pgsWsdotHaulingAnalysisArti
    m_Talt  = rOther.m_Talt;
 
    m_AllowableSpanBetweenSupportLocations = rOther.m_AllowableSpanBetweenSupportLocations;
-   m_AllowableLeadingOverhang = rOther.m_AllowableLeadingOverhang;
-   m_AllowableFsForCracking = rOther.m_AllowableFsForCracking;
-   m_AllowableFsForRollover = rOther.m_AllowableFsForRollover;
-   m_MaxGirderWgt           = rOther.m_MaxGirderWgt;
+   m_AllowableLeadingOverhang             = rOther.m_AllowableLeadingOverhang;
+   m_AllowableFsForCracking               = rOther.m_AllowableFsForCracking;
+   m_AllowableFsForRollover               = rOther.m_AllowableFsForRollover;
+   m_MaxGirderWgt                         = rOther.m_MaxGirderWgt;
 }
 
 void pgsWsdotHaulingAnalysisArtifact::MakeAssignment(const pgsWsdotHaulingAnalysisArtifact& rOther)
@@ -2286,8 +2405,8 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
       const pgsPointOfInterest& rpoi = *iter;
       Float64 loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
-      std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator found;
-      found = m_HaulingStressAnalysisArtifacts.find( loc );
+      std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator found;
+      found = m_HaulingStressAnalysisArtifacts.find( rpoi );
 
       os<<endl;
       Float64 fps, fup, fno, fdown;
@@ -2309,8 +2428,8 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
       const pgsPointOfInterest& rpoi = *iter;
       Float64 loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
-      std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator found;
-      found = m_HaulingStressAnalysisArtifacts.find( loc );
+      std::map<pgsPointOfInterest,pgsWsdotHaulingStressAnalysisArtifact>::const_iterator found;
+      found = m_HaulingStressAnalysisArtifacts.find( rpoi );
 
       os<<endl;
       Float64 min_stress = found->second.GetMaximumInclinedConcreteCompressiveStress();

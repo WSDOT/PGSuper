@@ -135,7 +135,15 @@ txnTransaction* txnEditGirder::CreateClone() const
 std::_tstring txnEditGirder::Name() const
 {
    std::_tostringstream os;
-   os << "Edit Span " << LABEL_SPAN(m_NewGirderData.m_GirderKey.groupIndex) << " Girder " << LABEL_GIRDER(m_NewGirderData.m_GirderKey.girderIndex);
+   if ( m_GirderKey.girderIndex == ALL_GIRDERS )
+   {
+      os << "Edit Span " << LABEL_SPAN(m_NewGirderData.m_Girder.GetGirderGroupIndex()) << " All Girders";
+   }
+   else
+   {
+      os << "Edit Span " << LABEL_SPAN(m_NewGirderData.m_Girder.GetGirderGroupIndex()) << " Girder " << LABEL_GIRDER(m_NewGirderData.m_Girder.GetIndex());
+   }
+
    return os.str();
 }
 

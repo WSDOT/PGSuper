@@ -123,10 +123,6 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    std::_tstring strGirderName = pParent->m_pGirder->GetGirderName();
    DDX_CBStringExactCase(pDX,IDC_GIRDER_NAME,strGirderName);
    if ( pDX->m_bSaveAndValidate )
@@ -173,23 +169,30 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    Float64 conditionFactor;
    pgsTypes::ConditionFactorType conditionFactorType;
+   pgsTypes::DuctType ductType;
    if ( pDX->m_bSaveAndValidate )
    {
       // data coming out of dialog
+
       DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
       DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
 
       pParent->m_pGirder->SetConditionFactor(conditionFactor);
       pParent->m_pGirder->SetConditionFactorType(conditionFactorType);
+
+      DDX_CBEnum(pDX, IDC_DUCT_TYPE, ductType);
+      pParent->m_pGirder->GetPostTensioning()->DuctType = ductType;
    }
    else
    {
       // data going into of dialog
       conditionFactor     = pParent->m_pGirder->GetConditionFactor();
       conditionFactorType = pParent->m_pGirder->GetConditionFactorType();
-
       DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
       DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
+
+      ductType = pParent->m_pGirder->GetPostTensioning()->DuctType;
+      DDX_CBEnum(pDX, IDC_DUCT_TYPE, ductType);
    }
 }
 
@@ -197,9 +200,7 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
    ON_BN_CLICKED(IDC_ADD, &CSplicedGirderGeneralPage::OnAddDuct)
    ON_BN_CLICKED(IDC_DELETE, &CSplicedGirderGeneralPage::OnDeleteDuct)
-   ON_CBN_SELCHANGE(IDC_GRADE, &CSplicedGirderGeneralPage::OnStrandChanged)
-   ON_CBN_SELCHANGE(IDC_TYPE, &CSplicedGirderGeneralPage::OnStrandChanged)
-   ON_CBN_SELCHANGE(IDC_STRAND_SIZE, &CSplicedGirderGeneralPage::OnStrandSizeChanged)
+   ON_CBN_SELCHANGE(IDC_STRAND, &CSplicedGirderGeneralPage::OnStrandChanged)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CSplicedGirderGeneralPage::OnConditionFactorTypeChanged)
    ON_BN_CLICKED(IDHELP, &CSplicedGirderGeneralPage::OnHelp)
    ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
@@ -228,7 +229,7 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
 
    // subclass the schematic drawing of the tendons
    m_DrawTendons.SubclassDlgItem(IDC_TENDONS,this);
-   m_DrawTendons.CustomInit(this);
+   m_DrawTendons.CustomInit(pParent->m_GirderKey,pParent->m_pGirder);
 
    const CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
 
@@ -252,6 +253,8 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    FillStrandList(IDC_STRAND);
 
    FillGirderComboBox();
+
+   FillDuctType();
 
    // Initialize the condition factor combo box
    CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
@@ -302,7 +305,9 @@ void CSplicedGirderGeneralPage::OnAddDuct()
 {
    EventIndexType eventIdx = 0;
    if ( m_TendonStressingEvent.size() != 0 )
+   {
       eventIdx = m_TendonStressingEvent.back();
+   }
 
    m_TendonStressingEvent.push_back(eventIdx);
    m_DuctGrid.AddDuct(eventIdx);
@@ -405,9 +410,13 @@ void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
 
    // Attempt to re-select the strand.
    if ( 0 <= new_cur_sel )
+   {
       pList->SetCurSel( new_cur_sel );
+   }
    else
+   {
       pList->SetCurSel( pList->GetCount()-1 );
+   }
 }
 
 void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,matPsStrand::Grade grade,matPsStrand::Type  type)
@@ -458,61 +467,17 @@ const matPsStrand* CSplicedGirderGeneralPage::GetStrand()
    return pPool->GetStrand(key);
 }
 
-const CSplicedGirderData* CSplicedGirderGeneralPage::GetGirder()
+void CSplicedGirderGeneralPage::FillDuctType()
 {
-#pragma Reminder("UPDATE: is this really needed?")
-   // this is for that callback interface for the drawing control... seems like
-   // we could just initialize the drawing control with this data and get rid
-   // of the interface
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
-   //pParent->m_pGirder->SetPostTensioning( m_DuctGrid.GetPTData() );
-   return pParent->m_pGirder;
-}
-
-const CGirderKey& CSplicedGirderGeneralPage::GetGirderKey()
-{
-#pragma Reminder("UPDATE: is this really needed?")
-   // this is for that callback interface for the drawing control... seems like
-   // we could just initialize the drawing control with this data and get rid
-   // of the interface
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
-   return pParent->m_GirderKey;
-}
-
-void CSplicedGirderGeneralPage::OnStrandSizeChanged()
-{
-   m_DuctGrid.OnStrandChanged();
+#pragma Reminder("FINISH: get the exact terminology from LRFD 5.6.4")
+   CComboBox* pcbDuctType = (CComboBox*)GetDlgItem(IDC_DUCT_TYPE);
+   pcbDuctType->AddString(_T("Galvanized ferrous metal"));
+   pcbDuctType->AddString(_T("Polyethylene"));
+   pcbDuctType->AddString(_T("Formed in concrete with removable cores"));
 }
 
 void CSplicedGirderGeneralPage::OnStrandChanged()
 {
-   CComboBox* pcbGrade = (CComboBox*)GetDlgItem(IDC_GRADE);
-   CComboBox* pcbType  = (CComboBox*)GetDlgItem(IDC_TYPE);
-   CComboBox* pList    = (CComboBox*)GetDlgItem(IDC_STRAND_SIZE);
-
-   int cursel = pcbGrade->GetCurSel();
-   matPsStrand::Grade grade = (matPsStrand::Grade)pcbGrade->GetItemData(cursel);
-
-   cursel = pcbType->GetCurSel();
-   matPsStrand::Type type = (matPsStrand::Type)pcbType->GetItemData(cursel);
-
-   cursel = pList->GetCurSel();
-   Uint32 key = (Uint32)pList->GetItemData(cursel);
-   matPsStrand::Size size = lrfdStrandPool::GetInstance()->GetStrand(key)->GetSize();
-
-   FillStrandList(pList,grade,type);
-
-   int nItems = pList->GetCount();
-   for ( int i = 0; i < nItems; i++ )
-   {
-      Uint32 key = (Uint32)pList->GetItemData(i);
-      if (size == lrfdStrandPool::GetInstance()->GetStrand(key)->GetSize() )
-      {
-         pList->SetCurSel(i);
-         break;
-      }
-   }
-
    m_DuctGrid.OnStrandChanged();
 }
 
@@ -530,7 +495,7 @@ int CSplicedGirderGeneralPage::GetDuctCount()
 
 void CSplicedGirderGeneralPage::OnHelp()
 {
-#pragma Reminder("IMPLEMENT")
+#pragma Reminder("IMPLEMENT Help topic")
    AfxMessageBox(_T("Add Help topic"));
 }
 

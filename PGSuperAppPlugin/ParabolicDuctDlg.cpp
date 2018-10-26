@@ -40,6 +40,7 @@ void CParabolicDuctDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CParabolicDuctDlg, CDialog)
+   ON_BN_CLICKED(ID_HELP,&CParabolicDuctDlg::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -62,4 +63,10 @@ BOOL CParabolicDuctDlg::OnInitDialog()
 void CParabolicDuctDlg::OnDuctChanged()
 {
    m_pGirderlineDlg->OnDuctChanged();
+}
+
+void CParabolicDuctDlg::OnHelp()
+{
+#pragma Reminder("IMPLEMENT: OnHelp")
+   AfxMessageBox(_T("Implement Help Topic"));
 }

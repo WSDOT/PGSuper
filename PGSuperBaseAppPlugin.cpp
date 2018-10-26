@@ -31,32 +31,7 @@
 
 #include <IFace\Test1250.h>
 
-// class that sets the application profile name for this plug-in and then
-// rolls it back to the original value when the object goes out of scope
-class CAutoRegistry
-{
-public:
-   CAutoRegistry(LPCTSTR lpszProfile)
-   {
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      CWinApp* pMyApp = AfxGetApp();
-
-      m_strAppProfileName = pMyApp->m_pszProfileName;
-      free((void*)pMyApp->m_pszProfileName);
-      pMyApp->m_pszProfileName = _tcsdup(lpszProfile);
-   }
-
-   ~CAutoRegistry()
-   {
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      CWinApp* pMyApp = AfxGetApp();
-      free((void*)pMyApp->m_pszProfileName);
-      pMyApp->m_pszProfileName = _tcsdup(m_strAppProfileName);
-   }
-
-private:
-   CString m_strAppProfileName;
-};
+#include <MFCTools\AutoRegistry.h>
 
 CPGSuperBaseAppPlugin::CPGSuperBaseAppPlugin()
 {
@@ -112,16 +87,41 @@ CString CPGSuperBaseAppPlugin::GetEngineerCompany()
 
 void CPGSuperBaseAppPlugin::LoadRegistryValues()
 {
+   // Do any necessary conversions from previous versions of PGSuper
+   RegistryConvert();
+   LoadSettings();
+   LoadOptions();
+   LoadReportOptions();
+}
+
+void CPGSuperBaseAppPlugin::LoadSettings()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+
    CAutoRegistry autoReg(GetAppName());
 
    // The default values are read from HKEY_LOCAL_MACHINE\Software\Washington State Deparment of Transportation\PGSuper
    // If the default values are missing, the hard coded defaults found herein are used.
    // Install writers can create MSI transforms to alter the "defaults" by changing the registry values
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
 
    int iDefaultSharedResourceType     = pApp->GetLocalMachineInt(   _T("Settings"),_T("SharedResourceType"),    1);
    int iDefaultCacheUpdateFrequency   = pApp->GetLocalMachineInt(   _T("Settings"),_T("CacheUpdateFrequency"),  2);
+
+   /////////////////////////////////
+   // Shared Resource Settings
+   /////////////////////////////////
+
+   m_SharedResourceType   = (SharedResourceType)  pApp->GetProfileInt(_T("Settings"),_T("SharedResourceType"),  iDefaultSharedResourceType);
+   m_CacheUpdateFrequency = (CacheUpdateFrequency)pApp->GetProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),iDefaultCacheUpdateFrequency);
+}
+
+void CPGSuperBaseAppPlugin::LoadOptions()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+
+   CAutoRegistry autoReg(GetAppName());
 
    CString strDefaultUserTemplateFolder     = pApp->GetLocalMachineString(_T("Options"),_T("UserTemplateLocation"), _T("C:\\"));
    CString strDefaultCatalogServer          = pApp->GetLocalMachineString(_T("Options"),_T("CatalogServer"),_T("WSDOT"));
@@ -131,11 +131,6 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
 
    CString strDefaultCompany                = pApp->GetLocalMachineString(_T("Options"),_T("CompanyName"), _T("Your Company"));
    CString strDefaultEngineer               = pApp->GetLocalMachineString(_T("Options"),_T("EngineerName"),_T("Your Name"));
-
-   // NOTE: Settings is an MFC created Registry section
-
-   // Do any necessary conversions from previous versions of PGSuper
-   RegistryConvert();
 
    /////////////////////////////////
    // User Information Settings
@@ -147,9 +142,12 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
    // engineer name
    m_EngineerName = pApp->GetProfileString(_T("Options"),_T("EngineerName"), strDefaultEngineer);
 
-   /////////////////////////////////
-   // Shared Resource Settings
-   /////////////////////////////////
+   // Internet resources
+   m_CatalogServers.LoadFromRegistry(pApp);
+   m_CurrentCatalogServer = pApp->GetProfileString(_T("Options"),_T("CatalogServer"),strDefaultCatalogServer);
+
+   m_Publisher = pApp->GetProfileString(_T("Options"),_T("Publisher"),strDefaultPublisher);
+
 
    // defaults
    CString strVersion = theApp.GetVersion(true);
@@ -159,28 +157,27 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
    CString strDefaultWorkgroupTemplateFolderURL;
    strDefaultWorkgroupTemplateFolderURL.Format(_T("%s/Version_%s/WSDOT_Templates/"),strFTPServer,strVersion);
 
-   m_SharedResourceType   = (SharedResourceType)  pApp->GetProfileInt(_T("Settings"),_T("SharedResourceType"),  iDefaultSharedResourceType);
-   m_CacheUpdateFrequency = (CacheUpdateFrequency)pApp->GetProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),iDefaultCacheUpdateFrequency);
-
-   // Internet resources
-   m_CatalogServers.LoadFromRegistry(pApp);
-   m_CurrentCatalogServer = pApp->GetProfileString(_T("Options"),_T("CatalogServer"),strDefaultCatalogServer);
-
-   m_Publisher = pApp->GetProfileString(_T("Options"),_T("Publisher"),strDefaultPublisher);
-
    m_MasterLibraryFileURL = pApp->GetProfileString(_T("Options"),_T("MasterLibraryURL"),strDefaultMasterLibraryURL);
 
    // Cache file/folder for Internet or Local Network resources
    m_MasterLibraryFileCache       = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache"),     GetCacheFolder()+GetMasterLibraryFileName());
    m_WorkgroupTemplateFolderCache = pApp->GetProfileString(_T("Options"),_T("WorkgroupTemplatesCache"),GetCacheFolder()+GetTemplateSubFolderName()+"\\");
+}
+
+void CPGSuperBaseAppPlugin::LoadReportOptions()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+
+   CAutoRegistry autoReg(GetAppName());
 
    // Favorite reports
    m_DisplayFavoriteReports = pApp->GetProfileInt(_T("Options"),_T("DoDisplayFavoriteReports"),FALSE);
 
-   // favorite report names are stored as CSV's
+   // Favorite report names are stored as Tab separated values
    CString ReportList = pApp->GetProfileString(_T("Options"),_T("FavoriteReportsList"),_T(""));
    m_FavoriteReports.clear();
-   sysTokenizer tokenizer(_T(","));
+   sysTokenizer tokenizer(_T("\t"));
    tokenizer.push_back(ReportList);
    sysTokenizer::iterator it = tokenizer.begin();
    while( it != tokenizer.end() )
@@ -196,10 +193,28 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
 
 void CPGSuperBaseAppPlugin::SaveRegistryValues()
 {
+   SaveSettings();
+   SaveOptions();
+   SaveReportOptions();
+}
+
+void CPGSuperBaseAppPlugin::SaveSettings()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+
    CAutoRegistry autoReg(GetAppName());
 
+   pApp->WriteProfileInt(_T("Settings"),_T("SharedResourceType"),m_SharedResourceType);
+   pApp->WriteProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),m_CacheUpdateFrequency);
+}
+
+void CPGSuperBaseAppPlugin::SaveOptions()
+{
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+
+   CAutoRegistry autoReg(GetAppName());
 
    // Options settings
    VERIFY(pApp->WriteProfileString(_T("Options"), _T("CompanyName"), m_CompanyName));
@@ -207,10 +222,8 @@ void CPGSuperBaseAppPlugin::SaveRegistryValues()
    // engineer name
    VERIFY(pApp->WriteProfileString(_T("Options"), _T("EngineerName"), m_EngineerName));
 
-   pApp->WriteProfileInt(_T("Settings"),_T("SharedResourceType"),m_SharedResourceType);
-   pApp->WriteProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),m_CacheUpdateFrequency);
-
    // Internet resources
+   m_CatalogServers.SaveToRegistry(pApp);
    pApp->WriteProfileString(_T("Options"),_T("CatalogServer"),m_CurrentCatalogServer);
    pApp->WriteProfileString(_T("Options"),_T("Publisher"),m_Publisher);
    pApp->WriteProfileString(_T("Options"),_T("MasterLibraryURL"),m_MasterLibraryFileURL);
@@ -218,18 +231,26 @@ void CPGSuperBaseAppPlugin::SaveRegistryValues()
    // Cache file/folder for Internet or Local Network resources
    pApp->WriteProfileString(_T("Options"),_T("MasterLibraryCache"),     m_MasterLibraryFileCache);
    pApp->WriteProfileString(_T("Options"),_T("WorkgroupTemplatesCache"),m_WorkgroupTemplateFolderCache);
+}
+
+void CPGSuperBaseAppPlugin::SaveReportOptions()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+
+   CAutoRegistry autoReg(GetAppName());
 
    // Favorite reports
    pApp->WriteProfileInt(_T("Options"),_T("DoDisplayFavoriteReports"),m_DisplayFavoriteReports);
 
-   // report names are stored as CSV's
+   // report names are stored as Tab separated values
    CString Favorites;
    std::vector<std::_tstring>::const_iterator it = m_FavoriteReports.begin();
    while (it != m_FavoriteReports.end())
    {
       if (it!= m_FavoriteReports.begin())
       {
-         Favorites += _T(",");
+         Favorites += _T("\t");
       }
 
       Favorites += it->c_str();
@@ -241,8 +262,6 @@ void CPGSuperBaseAppPlugin::SaveRegistryValues()
 
    // Custom Reports
    m_CustomReports.SaveToRegistry(pApp);
-
-   m_CatalogServers.SaveToRegistry(pApp);
 }
 
 void CPGSuperBaseAppPlugin::RegistryConvert()
@@ -369,17 +388,17 @@ void CPGSuperBaseAppPlugin::SetDoDisplayFavoriteReports(bool doDisplay)
    m_DisplayFavoriteReports = doDisplay ? TRUE : FALSE;
 }
 
-std::vector<std::_tstring> CPGSuperBaseAppPlugin::GetFavoriteReports() const
+const std::vector<std::_tstring>& CPGSuperBaseAppPlugin::GetFavoriteReports() const
 {
    return m_FavoriteReports;
 }
 
-void CPGSuperBaseAppPlugin::SetFavoriteReports( std::vector<std::_tstring> reports)
+void CPGSuperBaseAppPlugin::SetFavoriteReports(const std::vector<std::_tstring>& reports)
 {
    m_FavoriteReports = reports;
 }
 
-CEAFCustomReports CPGSuperBaseAppPlugin::GetCustomReports() const
+const CEAFCustomReports& CPGSuperBaseAppPlugin::GetCustomReports() const
 {
    return m_CustomReports;
 }
@@ -709,7 +728,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    LOG(_T("Pending updates = ") << (bUpdatesPending ? _T("Yes") : _T("No")));
@@ -790,13 +809,13 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
       }
       catch(...)
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
          bSuccessful = false;
       }
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    // if the cache was successfully updated, delete the saved copy and update the time stamp

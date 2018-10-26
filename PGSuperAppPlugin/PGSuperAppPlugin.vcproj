@@ -1684,6 +1684,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TimeStepPropertiesPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\UIHintsDlg.cpp"
 				>
 			</File>
@@ -2618,6 +2622,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TimeStepPropertiesPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\IFace\Tools.h"
 				>
 			</File>
@@ -3024,6 +3032,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\StrandSpacing.emf"
+				>
+			</File>
+			<File
 				RelativePath=".\res\TempSupportContinuousSegment.emf"
 				>
 			</File>
@@ -3032,11 +3044,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -3202,6 +3214,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\EditProjectProperties.h"
+					>
+				</File>
+				<File
 					RelativePath="..\EditRatingCriteria.h"
 					>
 				</File>
@@ -3315,6 +3331,10 @@
 				</File>
 				<File
 					RelativePath="..\EditProjectCriteria.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\EditProjectProperties.cpp"
 					>
 				</File>
 				<File

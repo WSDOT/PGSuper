@@ -320,7 +320,7 @@ public:
    virtual bool IsPGSpliceDocument();
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 
    void AdviseEventSinks();
    void UnadviseEventSinks();

@@ -342,10 +342,14 @@ bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(Float64 fTens,pgsTypes
 bool pgsFlexuralStressArtifact::BeamPassed() const
 {
    if ( !Passed(pgsTypes::TopGirder) )
+   {
       return false;
+   }
 
    if ( !Passed(pgsTypes::BottomGirder) )
+   {
       return false;
+   }
 
    return true;
 }
@@ -353,10 +357,14 @@ bool pgsFlexuralStressArtifact::BeamPassed() const
 bool pgsFlexuralStressArtifact::DeckPassed() const
 {
    if ( !Passed(pgsTypes::TopDeck) )
+   {
       return false;
+   }
 
    if ( !Passed(pgsTypes::BottomDeck) )
+   {
       return false;
+   }
 
    return true;
 }
@@ -383,14 +391,22 @@ Float64 pgsFlexuralStressArtifact::GetCDRatio(pgsTypes::StressLocation topStress
       // top and bottom are both N/A or SKIP
       // Figure out which to return
       if ( cdr_top == cdr_bot )
+      {
          return cdr_top;
+      }
 
       if ( m_bIsApplicable[topStressLocation] && !m_bIsApplicable[botStressLocation] )
+      {
          return cdr_top;
+      }
       else if ( !m_bIsApplicable[topStressLocation] && m_bIsApplicable[botStressLocation] )
+      {
          return cdr_bot;
+      }
       else
+      {
          return Min(cdr_top,cdr_bot);
+      }
    }
    else if ( 0 <= cdr_top && cdr_bot < 0 )
    {
@@ -420,16 +436,30 @@ Float64 pgsFlexuralStressArtifact::GetCDRatio(pgsTypes::StressLocation topStress
 
 Float64 pgsFlexuralStressArtifact::GetCDRatio(Float64 c,Float64 d) const
 {
-   if ( ::BinarySign(c) != ::BinarySign(d) )
+   // skip the C/D ratio if capacity or demand is non-zero
+   // cases of zero capacity and/or demand are dealt with below
+   if ( !IsZero(d) && ::BinarySign(c) != ::BinarySign(d) )
+   {
       return CDR_SKIP; // skip CD Ratio if signs aren't the same
-
-   if ( IsZero(c) && IsZero(d) )
-      return CDR_NA; // CD Ratio isn't applicable for 0/0
+   }
 
    if ( IsZero(d) )
-      return CDR_INF; // CD Ratio isn't applicable if demand is 0.
+   {
+      // c/d -> don't want to divide by zero
+      if ( IsZero(c) )
+      {
+         // 0/0, use a C/D of 1.0
+         return 1.0;
+      }
+      else
+      {
+         // c/0 -> use infinity
+         return CDR_INF;
+      }
+   }
 
    Float64 cdr = c/d;
+   cdr = IsZero(cdr) ? 0 : cdr;
 
    // if the actual CD Ratio exceeds the constant that identifies
    // infinity, tweek the value so that 10+ is reported
@@ -444,7 +474,9 @@ Float64 pgsFlexuralStressArtifact::GetCDRatio(Float64 c,Float64 d) const
 Float64 pgsFlexuralStressArtifact::GetCDRatio(pgsTypes::StressLocation stressLocation) const
 {
    if ( !m_bIsApplicable[stressLocation] )
+   {
       return CDR_NA;
+   }
 
    Float64 d = m_fDemand[stressLocation];
    Float64 c;

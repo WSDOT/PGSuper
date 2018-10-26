@@ -183,7 +183,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
    (*pTbl)(0,0) << _T("Bridge Name");
    (*pTbl)(0,1) << pProps->GetBridgeName();
    (*pTbl)(1,0) << _T("Bridge ID");
-   (*pTbl)(1,1) << pProps->GetBridgeId();
+   (*pTbl)(1,1) << pProps->GetBridgeID();
    (*pTbl)(2,0) << _T("Company");
    (*pTbl)(2,1) << pProps->GetCompany();
    (*pTbl)(3,0) << _T("Engineer");
@@ -262,8 +262,20 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
       (*pTable)(row,0) << _T("Symbol");
       (*pTable)(row++,1) << _T("Definition");
 
-      (*pTable)(row,0) << Sub2(_T("L"),_T("g"));
-      (*pTable)(row++,1) << _T("Length of Girder");
+      (*pTable)(row,0) << Sub2(_T("L"),_T("r"));
+      (*pTable)(row++,1) << _T("Span Length of Segment at Release");
+
+      (*pTable)(row,0) << Sub2(_T("L"),_T("l"));
+      (*pTable)(row++,1) << _T("Span Length of Segment during Lifting");
+
+      (*pTable)(row,0) << Sub2(_T("L"),_T("st"));
+      (*pTable)(row++,1) << _T("Span Length of Segment during Storage");
+
+      (*pTable)(row,0) << Sub2(_T("L"),_T("h"));
+      (*pTable)(row++,1) << _T("Span Length of Segment during Hauling");
+
+      (*pTable)(row,0) << Sub2(_T("L"),_T("e"));
+      (*pTable)(row++,1) << _T("Span Length of Segment after Erection");
 
       (*pTable)(row,0) << Sub2(_T("L"),_T("s"));
       (*pTable)(row++,1) << _T("Length of Span");

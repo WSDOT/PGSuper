@@ -124,11 +124,13 @@ void CGirderModelChildFrame::SelectGirder(const CGirderKey& girderKey,bool bDoUp
       UpdateBar();
 
       if ( bDoUpdate )
-   	      UpdateViews();
+      {
+   	   UpdateViews();
+      }
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 }
 
@@ -161,7 +163,9 @@ Float64 CGirderModelChildFrame::GetTopFrameFraction() const
 BOOL CGirderModelChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
 {
    if ( !__super::OnCreateClient(lpcs,pContext) )
+   {
       return FALSE;
+   }
 
    CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetActiveDocument();
    CDocTemplate* pDocTemplate = pDoc->GetDocTemplate();
@@ -181,7 +185,9 @@ BOOL CGirderModelChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext*
 int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CSplitChildFrame::OnCreate(lpCreateStruct) == -1)
+   {
 		return -1;
+   }
 	
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if ( !m_SettingsBar.Create( this, IDD_GIRDER_ELEVATION_BAR, CBRS_TOP, IDD_GIRDER_ELEVATION_BAR) )
@@ -280,7 +286,7 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
          }
       }
    }
-   else if ( lHint == HINT_BRIDGECHANGED )
+   else if ( lHint == HINT_BRIDGECHANGED || lHint == HINT_UNITSCHANGED )
    {
       UpdateBar();
    }
@@ -332,8 +338,7 @@ void CGirderModelChildFrame::UpdateBar()
    ASSERT(pwndCutLocation);
    
    CEAFDocument* pDoc = EAFGetDocument();
-   CString strLabel( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? _T("Span") : _T("Group") );
-
+   CString strGroupLabel( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? _T("Span") : _T("Group") );
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -341,33 +346,33 @@ void CGirderModelChildFrame::UpdateBar()
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   // make sure controls are in sync with actual data
-   // groups
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   ASSERT(nGroups!=0);
-   int nc_items = pcbGroup->GetCount();
-   if (nc_items != nGroups)
-   {
-      // number of groups has changed, need to refill control
-      pcbGroup->ResetContent();
-      CString csv;
-      csv.Format(_T("All %ss"), strLabel);
-      pcbGroup->AddString(csv);
+   // make sure controls are in sync with actual data groups
+   int curSel = pcbGroup->GetCurSel();
+   pcbGroup->ResetContent();
 
-      for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
-      {
-         csv.Format(_T("%s %d"), strLabel, LABEL_GROUP(grpIdx));
-         pcbGroup->AddString(csv);
-      }
-   }
-   int idx = pcbGroup->SetCurSel(int(m_GirderKey.groupIndex+1));
-   
-   if ( idx == CB_ERR )
+   // refill group control
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   CString strLabel;
+   strLabel.Format(_T("All %ss"), strGroupLabel);
+   int idx = pcbGroup->AddString(strLabel);
+   pcbGroup->SetItemData(idx,(DWORD_PTR)ALL_GROUPS);
+
+
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
-      // Default to group 0 if not safe
-      idx = pcbGroup->SetCurSel(0);
-      ATLASSERT(idx != CB_ERR);
-      m_GirderKey.groupIndex = 0;
+      strLabel.Format(_T("%s %d"), strGroupLabel, LABEL_GROUP(grpIdx));
+      idx = pcbGroup->AddString(strLabel);
+      pcbGroup->SetItemData(idx,(DWORD_PTR)grpIdx);
+   }
+
+   curSel = pcbGroup->SetCurSel(curSel);
+   
+   if ( curSel == CB_ERR )
+   {
+      // Default to group 0 if not set
+      curSel = pcbGroup->SetCurSel(0);
+      ATLASSERT(curSel != CB_ERR);
+      m_GirderKey.groupIndex = (GroupIndexType)(pcbGroup->GetItemData(curSel));
    }
 
    // girders
@@ -380,19 +385,22 @@ void CGirderModelChildFrame::UpdateBar()
       nGirders = Max(nGirders,pGroup->GetGirderCount());
    }
 
+   curSel = pcbGirder->GetCurSel();
    pcbGirder->ResetContent();
-   CString csv;
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
-      csv.Format(_T("Girder %s"), LABEL_GIRDER(gdrIdx));
-      pcbGirder->AddString(csv);
+      CString strLabel;
+      strLabel.Format(_T("Girder %s"), LABEL_GIRDER(gdrIdx));
+      pcbGirder->AddString(strLabel);
    }
-   idx = pcbGirder->SetCurSel(int(m_GirderKey.girderIndex));
+   
+   curSel = pcbGirder->SetCurSel(curSel);
 
-   if ( idx == CB_ERR )
+   if ( curSel == CB_ERR )
    {
-      // Default to girder 0 if no tsafe
-      idx = pcbGirder->SetCurSel(0);
+      // Default to girder 0 if not set
+      curSel = pcbGirder->SetCurSel(0);
+      ATLASSERT(curSel != CB_ERR);
       m_GirderKey.girderIndex = 0;
    }
 
@@ -436,7 +444,9 @@ void CGirderModelChildFrame::UpdateBar()
    if (m_CutLocation == UserInput)
    {
       if (m_MaxCutLocation < m_CurrentCutLocation)
+      {
          m_CurrentCutLocation = m_MaxCutLocation;
+      }
    }
    else if (m_CutLocation == LeftEnd)
    {
@@ -467,7 +477,9 @@ void CGirderModelChildFrame::UpdateBar()
       pgsPointOfInterest left_hp_poi = *iter++;
       pgsPointOfInterest right_hp_poi = left_hp_poi;
       if ( nPoi == 2 )
+      {
          right_hp_poi = *iter++;
+      }
 
       if (m_CutLocation == LeftHarp)
       {
@@ -478,12 +490,14 @@ void CGirderModelChildFrame::UpdateBar()
          m_CurrentCutLocation = right_hp_poi.GetDistFromStart();
       }
       else
+      {
          ASSERT(0); // unknown cut location type
+      }
    }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString msg;
-   msg.Format(_T("Section Cut Offset: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
+   msg.Format(_T("Section Cut Offset: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetSpanLengthUnit()));
 
    pwndCutLocation->SetWindowText(msg);
    pwndCutLocation->EnableWindow();
@@ -510,8 +524,7 @@ void CGirderModelChildFrame::OnGirderChanged()
 void CGirderModelChildFrame::OnGroupChanged()
 {
    CComboBox* pcbGroup = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SPAN);
-   m_GirderKey.groupIndex = pcbGroup->GetCurSel();
-   m_GirderKey.groupIndex--;
+   m_GirderKey.groupIndex = (GroupIndexType)pcbGroup->GetItemData(pcbGroup->GetCurSel());
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -540,7 +553,8 @@ void CGirderModelChildFrame::OnGroupChanged()
 void CGirderModelChildFrame::OnSelectEvent() 
 {
    CComboBox* pcbEvents = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SELEVENT);
-   m_EventIndex = (EventIndexType)pcbEvents->GetCurSel();
+   int curSel = pcbEvents->GetCurSel();
+   m_EventIndex = (EventIndexType)pcbEvents->GetItemData(curSel);
 
    UpdateBar();
    UpdateViews();
@@ -570,7 +584,9 @@ void CGirderModelChildFrame::ShowCutDlg()
    // The dialog needs to offer cut options for all segments in the view.
    // Each segment can have a different number of harp points.
    if ( segmentKey.groupIndex == ALL_GROUPS )
+   {
       segmentKey.groupIndex = 0;
+   }
 
    ATLASSERT( segmentKey.groupIndex != ALL_GROUPS && segmentKey.girderIndex != ALL_GIRDERS  );
    IndexType nHarpPoints = pStrandGeom->GetNumHarpPoints(segmentKey);
@@ -630,7 +646,9 @@ void CGirderModelChildFrame::CutAtNext()
    Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
    f = ::RoundOff(f+0.1,0.1);
    if ( 1 < f )
+   {
       f = 1;
+   }
 
    CutAt(f*m_MaxCutLocation);
 }
@@ -640,7 +658,9 @@ void CGirderModelChildFrame::CutAtPrev()
    Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
    f = ::RoundOff(f-0.1,0.1);
    if ( f < 0 )
+   {
       f = 0;
+   }
 
    CutAt(f*m_MaxCutLocation);
 }
@@ -707,9 +727,13 @@ void CGirderModelChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
       CString strLabel(pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? _T("Span") : _T("Group"));
       CString msg;
       if ( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS  )
+      {
          msg.Format(_T("Girder Model View - %s %d, Girder %s"), strLabel, LABEL_GROUP(m_GirderKey.groupIndex), LABEL_GIRDER(m_GirderKey.girderIndex));
+      }
       else
+      {
          msg.Format(_T("%s"),_T("Girder Model View"));
+      }
 
       // set our title
 		AfxSetWindowText(m_hWnd, msg);
@@ -729,14 +753,18 @@ void CGirderModelChildFrame::OnAddPointload()
 
    // set data to that of view
    CPointLoadData data;
-   data.m_SpanGirderKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
-   data.m_SpanGirderKey.girderIndex = m_GirderKey.girderIndex;
+   data.m_spanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
+   data.m_spanKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
    if ( m_EventIndex != liveLoadEventIdx)
+   {
       data.m_EventIndex = m_EventIndex;
+   }
    else
+   {
       data.m_LoadCase = UserLoads::LL_IM;
+   }
 
 	CEditPointLoadDlg dlg(data);
    if (dlg.DoModal() == IDOK)
@@ -759,14 +787,18 @@ void CGirderModelChildFrame::OnAddDistributedLoad()
 
    // set data to that of view
    CDistributedLoadData data;
-   data.m_SpanGirderKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
-   data.m_SpanGirderKey.girderIndex = m_GirderKey.girderIndex;
+   data.m_spanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
+   data.m_spanKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
    if ( m_EventIndex != liveLoadEventIdx)
+   {
       data.m_EventIndex = m_EventIndex;
+   }
    else
+   {
       data.m_LoadCase = UserLoads::LL_IM;
+   }
 
 	CEditDistributedLoadDlg dlg(data);
    if (dlg.DoModal() == IDOK)
@@ -787,14 +819,18 @@ void CGirderModelChildFrame::OnAddMoment()
 
    // set data to that of view
    CMomentLoadData data;
-   data.m_SpanGirderKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
-   data.m_SpanGirderKey.girderIndex = m_GirderKey.girderIndex;
+   data.m_spanKey.spanIndex = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan()->GetIndex();
+   data.m_spanKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
    if ( m_EventIndex != liveLoadEventIdx)
+   {
       data.m_EventIndex = m_EventIndex;
+   }
    else
+   {
       data.m_LoadCase = UserLoads::LL_IM;
+   }
 
 	CEditMomentLoadDlg dlg(data);
    if (dlg.DoModal() == IDOK)
@@ -841,7 +877,7 @@ void CGirderModelChildFrame::OnSetFocus(CWnd* pOldWnd)
 
 void CGirderModelChildFrame::FillEventComboBox()
 {
-   CComboBox* pcbEvents    = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SELEVENT);
+   CComboBox* pcbEvents = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SELEVENT);
 
    int sel = pcbEvents->GetCurSel();
    pcbEvents->ResetContent();
@@ -852,14 +888,16 @@ void CGirderModelChildFrame::FillEventComboBox()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+   EventIndexType firstEventIdx = pTimelineMgr->GetFirstSegmentErectionEventIndex();
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
-   for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   for ( EventIndexType eventIdx = firstEventIdx; eventIdx < nEvents; eventIdx++ )
    {
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       CString strLabel;
       strLabel.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
-      pcbEvents->AddString(strLabel);
+      int idx = pcbEvents->AddString(strLabel);
+      pcbEvents->SetItemData(idx,(DWORD_PTR)eventIdx);
    }
    pcbEvents->SetCurSel( sel == CB_ERR ? 0 : sel );
-   m_EventIndex = (EventIndexType)pcbEvents->GetCurSel();
+   m_EventIndex = (EventIndexType)pcbEvents->GetItemData(pcbEvents->GetCurSel());
 }

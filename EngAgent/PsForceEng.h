@@ -78,8 +78,8 @@ public:
    void SetBroker(IBroker* pBroker);
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
-   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi);
-   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx=INVALID_INDEX);
+   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx=INVALID_INDEX);
 
    //------------------------------------------------------------------------
    // Clears all prestress loss calculations
@@ -105,6 +105,14 @@ public:
    //------------------------------------------------------------------------
    // Computes the tendon elongation during jacking
    Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
+
+   //------------------------------------------------------------------------
+   // Returns the average friction loss
+   Float64 GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx);
+
+   //------------------------------------------------------------------------
+   // Returns the average anchor set loss
+   Float64 GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx);
 
    //------------------------------------------------------------------------
    // Returns the maximum jacking force
@@ -183,15 +191,6 @@ private:
 
    void CreateLossEngineer(const CGirderKey& girderKey);
    Float64 GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const LOSSDETAILS* pDetails);
-
-
-   //// Losses are cached for two different cases:
-   //// 1) This data structure caches losses for the current project data
-   //std::map<PoiIDKey,LOSSDETAILS> m_PsLosses;
-
-   //// 2) This data structure is for design cases. It caches the most recently
-   ////    computed losses
-   //CDesignLosses m_DesignLosses;
 };
 
 #endif // INCLUDED_PSFORCEENG_H_

@@ -31,6 +31,7 @@
 #include <PgsExt\StrandSlopeArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
 #include <PgsExt\ConstructabilityArtifact.h>
+#include <PgsExt\SegmentStabilityArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\LiftingAnalysisArtifact.h>
@@ -102,9 +103,9 @@ public:
    pgsPrecastIGirderDetailingArtifact* GetPrecastIGirderDetailingArtifact();
    const pgsPrecastIGirderDetailingArtifact* GetPrecastIGirderDetailingArtifact() const;
 
-   void SetConstructabilityArtifact(const pgsConstructabilityArtifact& artifact);
-   const pgsConstructabilityArtifact* GetConstructabilityArtifact() const;
-   pgsConstructabilityArtifact* GetConstructabilityArtifact();
+   void SetSegmentStabilityArtifact(const pgsSegmentStabilityArtifact& artifact);
+   const pgsSegmentStabilityArtifact* GetSegmentStabilityArtifact() const;
+   pgsSegmentStabilityArtifact* GetSegmentStabilityArtifact();
 
    void SetLiftingAnalysisArtifact(const pgsLiftingAnalysisArtifact* artifact);
    const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact() const;
@@ -172,7 +173,7 @@ private:
    pgsStrandStressArtifact     m_StrandStressArtifact;
    pgsStrandSlopeArtifact      m_StrandSlopeArtifact;
    pgsHoldDownForceArtifact    m_HoldDownForceArtifact;
-   pgsConstructabilityArtifact m_ConstructabilityArtifact;
+   pgsSegmentStabilityArtifact m_StabilityArtifact;
 
    struct StressKey
    {

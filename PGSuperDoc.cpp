@@ -177,7 +177,7 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // resequence page if no debonding
-   bool bExtraPage = pSegment->Strands.bSymmetricDebond || pSpecEntry->AllowStraightStrandExtensions();
+   bool bExtraPage = pSegment->Strands.IsSymmetricDebond() || pSpecEntry->AllowStraightStrandExtensions();
    if (EGD_DEBONDING <= nPage  && !bExtraPage)
       nPage--;
 
@@ -255,8 +255,6 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,GroupIndexTyp
    std::vector<CGirderKey> girderKeys;
    if ( bPrompt )
    {
-      GET_IFACE(ISpecification,pSpecification);
-
       // only show A design option if it's allowed in the library
       // Do not save this in registry because library selection should be default for new documents
 
@@ -283,7 +281,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,GroupIndexTyp
 
          if (girderKeys.empty())
          {
-            ATLASSERT(0); // dialog should handle this
+            ATLASSERT(false); // dialog should handle this
             return; 
          }
       }
@@ -339,7 +337,7 @@ void CPGSuperDoc::OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI
    }
    else
    {
-      GET_IFACE(IBridge,pBridge);
+      GET_IFACE_NOCHECK(IBridge,pBridge); // short circuit evaluation may cause this interface to be unused
       bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
       pCmdUI->Enable( bDesignSlabOffset );
    }
@@ -386,7 +384,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
    GET_IFACE(ISpecification,pSpecification);
    GET_IFACE(IArtifact,pIArtifact);
 
-   std::vector<const pgsDesignArtifact*> pArtifacts;
+   std::vector<const pgsGirderDesignArtifact*> pArtifacts;
 
    // Need to scope the following block, otherwise the progress window will carry the cancel
    // and progress buttons past the design outcome and into any reports that need to be generated.
@@ -419,7 +417,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
 
          des_options.doDesignForShear = this->IsDesignShearEnabled();
 
-         const pgsDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( girderKey, des_options);
+         const pgsGirderDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( girderKey, des_options);
 
          pProgress->Increment();
 

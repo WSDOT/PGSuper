@@ -62,7 +62,7 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   pgsTypes::TTSUsage tempStrandUsage = pStrands->TempStrandUsage;
+   pgsTypes::TTSUsage tempStrandUsage = pStrands->GetTemporaryStrandUsage();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);

@@ -79,31 +79,49 @@ CShearZoneData2& CShearZoneData2::operator= (const CShearZoneData2& rOther)
 bool CShearZoneData2::operator == (const CShearZoneData2& rOther) const
 {
    if ( ZoneNum != rOther.ZoneNum )
+   {
       return false;
+   }
 
    if ( !IsEqual(BarSpacing, rOther.BarSpacing) )
+   {
       return false;
+   }
 
    if ( !IsEqual(ZoneLength, rOther.ZoneLength ))
+   {
       return false;
+   }
 
    if ( VertBarSize != rOther.VertBarSize )
+   {
       return false;
+   }
 
    if ( nVertBars != rOther.nVertBars )
+   {
       return false;
+   }
 
    if ( nHorzInterfaceBars != rOther.nHorzInterfaceBars )
+   {
       return false;
+   }
 
    if ( ConfinementBarSize != rOther.ConfinementBarSize )
+   {
       return false;
+   }
 
    if ( legacy_HorzBarSize != rOther.legacy_HorzBarSize )
+   {
       return false;
+   }
 
    if ( legacy_nHorzBars != rOther.legacy_nHorzBars )
+   {
       return false;
+   }
 
    return true;
 }
@@ -124,32 +142,44 @@ HRESULT CShearZoneData2::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShear
    {
       Float64 version = pStrLoad->GetVersion();
       if ( 4.0 < version )
+      {
          return STRLOAD_E_BADVERSION;
+      }
 
       if ( version < 2 )
       {
          if ( FAILED(pStrLoad->Property(_T("ZoneNum"),&ZoneNum)) )
+         {
             return STRLOAD_E_INVALIDFORMAT;
+         }
 
          BarSizeType key;
          if ( FAILED(pStrLoad->Property(_T("BarSize"),&key)) )
+         {
             return STRLOAD_E_INVALIDFORMAT;
+         }
 
          matRebar::Grade grade;
          matRebar::Type type;
          lrfdRebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
 
          if ( FAILED(pStrLoad->Property(_T("BarSpacing"),&BarSpacing)) )
+         {
             return STRLOAD_E_INVALIDFORMAT;
+         }
 
          if ( FAILED(pStrLoad->Property(_T("ZoneLength"),&ZoneLength)) )
+         {
             return STRLOAD_E_INVALIDFORMAT;
+         }
 
          if ( 1.1 <= version )
          {
             Uint32 val;
             if ( FAILED(pStrLoad->Property(_T("NbrLegs"),&val)) )
+            {
                return STRLOAD_E_INVALIDFORMAT;
+            }
 
             nVertBars = (Float64)val;
          }
@@ -164,19 +194,27 @@ HRESULT CShearZoneData2::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShear
       else if (version < 5)
       {
          if ( FAILED(pStrLoad->Property(_T("ZoneNum"),&ZoneNum)) )
+         {
             return STRLOAD_E_INVALIDFORMAT;
+         }
 
          if ( FAILED(pStrLoad->Property(_T("ZoneLength"),&ZoneLength)) )
+         {
             return STRLOAD_E_INVALIDFORMAT;
+         }
 
          if ( FAILED(pStrLoad->Property(_T("BarSpacing"),&BarSpacing)) )
+         {
             return STRLOAD_E_INVALIDFORMAT;
+         }
 
          if ( version < 3 )
          {
             BarSizeType key;
             if ( FAILED(pStrLoad->Property(_T("VertBarSize"),&key)) )
+            {
                return STRLOAD_E_INVALIDFORMAT;
+            }
          
             matRebar::Grade grade;
             matRebar::Type type;
@@ -186,14 +224,20 @@ HRESULT CShearZoneData2::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShear
          {
             Int32 key;
             if ( FAILED(pStrLoad->Property(_T("VertBarSize"),&key)) )
+            {
                return STRLOAD_E_INVALIDFORMAT;
+            }
             else
+            {
                VertBarSize = matRebar::Size(key);
+            }
          }
 
          Uint32 val;
          if ( FAILED(pStrLoad->Property(_T("VertBars"),&val)) )
+         {
             return STRLOAD_E_INVALIDFORMAT;
+         }
 
          nVertBars = (Float64)val;
 
@@ -201,7 +245,9 @@ HRESULT CShearZoneData2::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShear
          {
             Int16 key;
             if ( FAILED(pStrLoad->Property(_T("HorzBarSize"),&key)) )
+            {
                return STRLOAD_E_INVALIDFORMAT;
+            }
          
             matRebar::Grade grade;
             matRebar::Type type;
@@ -211,49 +257,65 @@ HRESULT CShearZoneData2::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShear
          {
             Int32 key;
             if ( FAILED(pStrLoad->Property(_T("HorzBarSize"),&key)) )
+            {
                return STRLOAD_E_INVALIDFORMAT;
+            }
             else
+            {
                legacy_HorzBarSize = matRebar::Size(key);
+            }
 
             Uint32 val;
             if ( FAILED(pStrLoad->Property(_T("HorzBars"),&val)) )
+            {
                return STRLOAD_E_INVALIDFORMAT;
+            }
 
             nHorzInterfaceBars = (Float64)val;
          }
 
-         if (version > 3)
+         if (3 < version)
          {
             if (version < 9)
             {
                Uint32 val;
                if ( FAILED(pStrLoad->Property(_T("HorzInterfaceBars"),&val)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
 
                nHorzInterfaceBars = (Float64)val;
             }
             else
             {
                if ( FAILED(pStrLoad->Property(_T("HorzInterfaceBars"),&nHorzInterfaceBars)) )
+               {
                   return STRLOAD_E_INVALIDFORMAT;
+               }
             }
 
 
             Int32 key;
             if ( FAILED(pStrLoad->Property(_T("ConfinementBarSize"),&key)) )
+            {
                return STRLOAD_E_INVALIDFORMAT;
+            }
             else
+            {
                ConfinementBarSize = matRebar::Size(key);
+            }
          }
       }
 
       if ( FAILED(pStrLoad->EndUnit()) )
+      {
          return STRLOAD_E_INVALIDFORMAT;
+      }
 
       // Convert old data if need be
       if (bConvertToShearDataVersion9)
       {
-         assert(version < 4); // should only happen if
+         ATLASSERT(version < 4); // should only happen if
 
          // Confinement as part of zone was added in version 4
          if (ZoneNum <= NumConfinementZones)

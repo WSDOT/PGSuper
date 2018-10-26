@@ -20,8 +20,7 @@ CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager* pTimeline
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   m_pDisplayUnits = pDisplayUnits;
+   pBroker->GetInterface(IID_IEAFDisplayUnits,(IUnknown**)&m_pDisplayUnits);
 
    m_EventIndex = eventIdx;
 

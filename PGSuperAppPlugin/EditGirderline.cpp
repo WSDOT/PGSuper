@@ -64,7 +64,9 @@ bool txnEditGirderline::Execute()
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          if ( gdrIdx == m_GirderKey.girderIndex )
+         {
             continue;
+         }
 
          CSplicedGirderData* pOtherGirder = pGroup->GetGirder(gdrIdx);
          pOtherGirder->CopySplicedGirderData(pGirder);

@@ -274,7 +274,7 @@ m_StatusGroupID(NULL)
 }
 
 void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLongShearChecker,
-                                    StatusGroupIDType statusGroupID, pgsDesignArtifact* pArtif, 
+                                    StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif, 
                                     Float64 startConfinementZl, Float64 endConfinementZl,
                                     bool bPermit, bool bDesignFromScratch)
 {
@@ -675,8 +675,6 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::Validate()
 
 pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDemand()
 {
-   GET_IFACE(IShearCapacity,pShearCap);
-
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
 
@@ -762,7 +760,9 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
          }
 
          if (avs_val<SPACING_TOL) // weed out noise
+         {
             avs_val = 0.0;
+         }
       }
 
       m_VertShearAvsDemandAtPois.push_back(avs_val);
@@ -795,19 +795,17 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       IndexType idx=0;
       std::vector<pgsPointOfInterest>::const_iterator i( m_DesignPois.begin());
       std::vector<pgsPointOfInterest>::const_iterator end( m_DesignPois.end());
-      while (i != end)
+      for ( ; i != end; i++, idx++ )
       {
          const pgsPointOfInterest& poi = *i;
          Float64 x = poi.GetDistFromStart();
          Float64 y  = rDemandAtPois[idx];
          mirror_avs.AddPoint(gpPoint2d(x,y));
-         idx++;
-         i++;
       }
       
       // mathPwLinearFunction2dUsingPoints can throw, and it's probably not the end of the world
       // if if does. Don't let it crash program.
-      IndexType spn2_idx=0; // store index at mid-span;
+      IndexType spn2_idx = 0; // store index at mid-span;
       try
       {
          // Mirror about location of mid-span measured from girder start
@@ -846,7 +844,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       }
       catch(...)
       {
-         ATLASSERT(0); // This really should never happen. Somehow our function got out
+         ATLASSERT(false); // This really should never happen. Somehow our function got out
                        // of bounds? This is a programming error.
          spn2_idx = rDemandAtPois.size()/2; // reasonable assumption for mid-span
       }
@@ -968,15 +966,13 @@ Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart)
    {
       std::wstring msg;
       e.GetErrorMessage(&msg);
-      ATLASSERT(0); // This should never happen, but catch here to make debugging easier
+      ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
    }
 }
 
 void pgsShearDesignTool::ValidateHorizontalAvsDemand()
 {
-   GET_IFACE(IShearCapacity,pShearCap);
-
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
 
@@ -1025,7 +1021,9 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand()
       }
 
       if (avs_val<SPACING_TOL) // weed out noise
+      {
          avs_val = 0.0;
+      }
 
       m_HorizShearAvsDemandAtPois.push_back(avs_val);
    }
@@ -1050,7 +1048,7 @@ Float64 pgsShearDesignTool::GetHorizontalAvsDemand(Float64 distFromStart)
    {
       std::wstring msg;
       e.GetErrorMessage(&msg);
-      ATLASSERT(0); // This should never happen, but catch here to make debugging easier
+      ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
    }
 }
@@ -1067,7 +1065,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsMaxInRange(Float64 leftBound, Float64 
    {
       std::wstring msg;
       e.GetErrorMessage(&msg);
-      ATLASSERT(0); // This should never happen, but catch here to make debugging easier
+      ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
    }
 }
@@ -1088,7 +1086,7 @@ Float64 pgsShearDesignTool::GetHorizontalAvsMaxInRange(Float64 leftBound, Float6
    {
       std::wstring msg;
       e.GetErrorMessage(&msg);
-      ATLASSERT(0); // This should never happen, but catch here to make debugging easier
+      ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
    }
 }
@@ -1258,11 +1256,11 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
                // There is no bar/legs combination that can satisfy demand - we have failed.
                if(horiz_controlled)
                {
-                  m_pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqdForHorizontalInterfaceShear);
+                  m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooManyStirrupsReqdForHorizontalInterfaceShear);
                }
                else
                {
-                  m_pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqd);
+                  m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooManyStirrupsReqd);
                }
                return false;
             }
@@ -1409,14 +1407,14 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
 
       if (ipoi==numpois) // safety check should never happen since we are only looking at half girder
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
          done = true;
       }
    } // poi loop
 
    if (m_ShearData.ShearZones.empty())
    {
-      ATLASSERT(0); // We should always end up with at least one shear zone, 
+      ATLASSERT(false); // We should always end up with at least one shear zone, 
                     // but if not put in a default zone so we don't crash later
       m_ShearData.ShearZones.push_back( CShearZoneData2() );
    }
@@ -1546,7 +1544,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
             else
             {
                // There is no bar/legs combination that can satisfy demand - we have failed.
-               m_pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqd);
+               m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooManyStirrupsReqd);
                return false;
             }
          }
@@ -1594,7 +1592,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
          {
             if (rIter.IsDone())
             {
-               ATLASSERT(0); // should never happen
+               ATLASSERT(false); // should never happen
                break;
             }
 
@@ -1661,7 +1659,7 @@ void pgsShearDesignTool::ExpandStirrupZoneLengths(CShearData2::ShearZoneVec& she
          }
          else
          {
-            ATLASSERT(0); // should always have positive bar spacing
+            ATLASSERT(false); // should always have positive bar spacing
          }
       }
 
@@ -1731,21 +1729,21 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
       Float64 avs_demand = this->GetHorizontalAvsMaxInRange(zone_start, zone_end);
 
       Float64 avs_provided(0.0), av_onebar(0.0);
-      if (ith->BarSize!=matRebar::bsNone)
+      if (ith->BarSize != matRebar::bsNone)
       {
          const matRebar* pRebar = pool->GetRebar(barType,barGrade,ith->BarSize);
          av_onebar = pRebar->GetNominalArea();
          avs_provided = av_onebar * ith->nBars / ith->BarSpacing;
       }
 
-      if (avs_demand > avs_provided)
+      if ( avs_provided < avs_demand)
       {
          // max stirrup spacing in zone
          Float64 start_location = zone_start < m_SegmentLength/2.0 ? zone_start : zone_end;
 
          // We need to increase capacity. First try bars of the same size/nlegs
          Float64 new_spacing;
-         if ( ith->BarSize!=matRebar::bsNone && 
+         if ( ith->BarSize != matRebar::bsNone && 
               GetBarSpacingForAvs(avs_demand, max_spacing, ith->BarSize, av_onebar, &new_spacing) )
          {
             ith->BarSpacing = new_spacing; // kept bar size, changed spacing
@@ -1765,12 +1763,12 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
             else
             {
                // There is no bar/legs combination that can satisfy demand - we have failed.
-               m_pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqd);
+               m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooManyStirrupsReqd);
                return false;
             }
          }
       }
-      else if (avs_demand==0.0 && avs_provided ==0.0)
+      else if (avs_demand == 0.0 && avs_provided == 0.0)
       {
          // No demand, but we must provide minimum bars/spacing
          avs_demand = 1.0e-4; // tiny demand should give min bar size from our list of choices
@@ -1805,7 +1803,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
       while(ith != itend)
       {
          CHorizontalInterfaceZoneData zdat = *ith;
-         if (ZNum==0)
+         if (ZNum == 0)
          {
             zdat.ZoneNum = ZNum++;
             localHorizZones.push_back(zdat);
@@ -1813,7 +1811,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
          else
          {
             CHorizontalInterfaceZoneData& rback = localHorizZones.back();
-            if (rback.BarSize==zdat.BarSize && rback.BarSpacing==zdat.BarSpacing && rback.nBars==zdat.nBars)
+            if (rback.BarSize == zdat.BarSize && rback.BarSpacing == zdat.BarSpacing && rback.nBars == zdat.nBars)
             {
                rback.ZoneLength += ith->ZoneLength;
                did_coll = true; // we collapsed at least one zone
@@ -1919,7 +1917,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
             }
          }
 
-         if (avs_req > 0.0)
+         if (0.0 < avs_req)
          {
             // Additional splitting reinforcement is required
             Float64 splitting_zone_len = Max(m_StartSplittingZl, m_EndSplittingZl);
@@ -1963,8 +1961,8 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
                else
                {
                   // There is no bar/legs combination that can satisfy demand - we have failed.
-                  ATLASSERT(0); // suspicious if we ever get here
-                  m_pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqdForSplitting);
+                  ATLASSERT(false); // suspicious if we ever get here
+                  m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooManyStirrupsReqdForSplitting);
                   return false;
                }
             }
@@ -2088,15 +2086,11 @@ bool pgsShearDesignTool::DetailAdditionalConfinement()
                {
                   const matRebar* pRebar = pool->GetRebar(barType,barGrade, m_ShearData.ConfinementBarSize );
                   Float64 av = pRebar->GetNominalArea();
-                  if (av >= abar_reqd)
+                  if ( abar_reqd <= av && 
+                       zone_len <= m_ShearData.ConfinementZoneLength && 
+                       m_ShearData.ConfinementBarSpacing <= max_spac )
                   {
-                     if(m_ShearData.ConfinementZoneLength >= zone_len)
-                     {
-                        if(m_ShearData.ConfinementBarSpacing <= max_spac)
-                        {
-                           use_current = true;
-                        }
-                     }
+                     use_current = true;
                   }
                }
 
@@ -2167,7 +2161,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
          const pgsPointOfInterest& poi = *i;
          Float64 location = poi.GetDistFromStart();
 
-         if ( location>=startSl && location <=endSl )
+         if ( startSl <= location && location <= endSl )
          {
             SHEARCAPACITYDETAILS scd;
             pShearCapacity->GetShearCapacityDetails( limit_states[ils], liveLoadIntervalIdx, poi, config, &scd);
@@ -2193,7 +2187,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      if ( min_dist_from_ends <= 0.0 )
                      {
                         // Can't develop rebar
-                        m_pArtifact->SetOutcome(pgsDesignArtifact::NoDevelopmentLengthForLongReinfShear);
+                        m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::NoDevelopmentLengthForLongReinfShear);
                         return sdFail;
                      }
                      else if (min_dist_from_ends < tensile_development_length)
@@ -2202,13 +2196,13 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      }
    
                      Float64 as = (demand-capacity)/rbfy;
-                     if (dev_fac>0.0)
+                     if (0.0 < dev_fac)
                      {
                         as /= dev_fac;
                      }
                      else
                      {
-                        ATLASSERT(0);
+                        ATLASSERT(false);
                      }
    
                      As = Max(As, as);
@@ -2219,13 +2213,13 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      if ( min_dist_from_ends <= 0.0 )
                      {
                         // Can't develop strands
-                        m_pArtifact->SetOutcome(pgsDesignArtifact::NoStrandDevelopmentLengthForLongReinfShear);
+                        m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::NoStrandDevelopmentLengthForLongReinfShear);
                         return sdFail;
                      }
    
    
                      Float64 fps = l_artifact.GetFps();
-                     if (fps==0.0)
+                     if (fps == 0.0)
                      {
                         fps = ConvertToSysUnits(170.0, unitMeasure::KSI); // No strands exist - just take a shot at a reasonable final
                      }
@@ -2235,7 +2229,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                   }
                   else
                   {
-                     ATLASSERT(0);
+                     ATLASSERT(false);
                   }
                }
             }
@@ -2245,12 +2239,12 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
       }
    }
 
-   if (As > 0.0)
+   if (0.0 < As)
    {
       if (m_bIsLongShearCapacityIncreaseMethodProblem)
       {
          // Can't increase rebar because project criteria won't use it
-         m_pArtifact->SetOutcome(pgsDesignArtifact::ConflictWithLongReinforcementShearSpec);
+         m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::ConflictWithLongReinforcementShearSpec);
          return sdFail;
       }
       else
@@ -2452,7 +2446,7 @@ bool pgsShearDesignTool::GetMinAvailableBarSize(matRebar::Size minSize, matRebar
    // Have sorted list, now we can find a bar that fits our needs
    for (std::vector<SizeArea>::iterator ita=availableSizes.begin(); ita!=availableSizes.end(); ita++)
    {
-      if(ita->Area >= minArea)
+      if(minArea <= ita->Area)
       {
          *pSize = ita->Size;
          return true;
@@ -2479,7 +2473,7 @@ bool pgsShearDesignTool::GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpaci
       if (spac+SPACING_TOL>=min_spacing && spac<=maxSpacing+SPACING_TOL)
       {
          // and we satisify avs demand,
-         if (Av/spac >= avsDemand)
+         if (avsDemand <= Av/spac)
          {
             *pSpacing = spac;
             return true;
@@ -2520,7 +2514,7 @@ Float64 pgsShearDesignTool::GetDesignSpacingFromList(Float64 spacing)
          }
       }
    }
-   ATLASSERT(0); // wtf?
+   ATLASSERT(false); // wtf?
    return 0.0;
 }
 

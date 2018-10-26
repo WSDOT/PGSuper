@@ -913,6 +913,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TxDOT2013ChangeOfConcreteStressTable.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TxDOT2013CreepAndShrinkageTable.h"
 				>
 			</File>
@@ -1143,6 +1147,10 @@
 			</File>
 			<File
 				RelativePath="Res\texas_u.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\TimeStepLossEngineer.rgs"
 				>
 			</File>
 			<File
@@ -3809,6 +3817,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\TxDOT2013ChangeOfConcreteStressTable.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\TxDOT2013CreepAndShrinkageTable.cpp"

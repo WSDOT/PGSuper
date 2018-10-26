@@ -116,7 +116,9 @@ bool pgsKdotHaulingStressAnalysisArtifact::CompressionPassed() const
    Float64 max_comp_stress = GetCompressiveCapacity();
 
    if (comp_stress < max_comp_stress)
+   {
       return false;
+   }
 
    return true;
 }
@@ -355,14 +357,16 @@ bool pgsKdotHaulingAnalysisArtifact::Passed() const
 
 bool pgsKdotHaulingAnalysisArtifact::PassedStressCheck() const
 {
-   for (std::map<Float64,pgsKdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin(); 
-        is!=m_HaulingStressAnalysisArtifacts.end(); is++)
+   std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator iter(m_HaulingStressAnalysisArtifacts.begin());
+   std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator iterEnd(m_HaulingStressAnalysisArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
    {
-      Float64 distFromStart = is->first;
-      const pgsKdotHaulingStressAnalysisArtifact& rart = is->second;
+      const pgsKdotHaulingStressAnalysisArtifact& artifact( iter->second );
 
-      if (!rart.Passed())
+      if (!artifact.Passed())
+      {
          return false;
+      }
    }
 
    return true;
@@ -374,12 +378,14 @@ void pgsKdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(Float64* pfciCo
    Float64 maxFciTensnobar = -Float64_Max;
    Float64 maxFciTenswithbar = -Float64_Max;
 
-   std::map<Float64,pgsKdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin();
-   std::map<Float64,pgsKdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator iend = m_HaulingStressAnalysisArtifacts.end();
-   for ( ; is!=iend; is++)
+   std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator iter(m_HaulingStressAnalysisArtifacts.begin());
+   std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator iterEnd(m_HaulingStressAnalysisArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
    {
+      const pgsKdotHaulingStressAnalysisArtifact& artifact(iter->second);
+
       Float64 fciComp, fciTensNoRebar, fciTensWithRebar;
-      is->second.GetRequiredConcreteStrength(&fciComp, &fciTensNoRebar, &fciTensWithRebar);
+      artifact.GetRequiredConcreteStrength(&fciComp, &fciTensNoRebar, &fciTensWithRebar);
 
       // Use inline function for comparison
       maxFciComp        = CompareConcreteStrength(maxFciComp, fciComp);
@@ -402,28 +408,32 @@ Float64 pgsKdotHaulingAnalysisArtifact::GetTrailingOverhang() const
    return m_TrailingOverhang;
 }
 
-void pgsKdotHaulingAnalysisArtifact::SetHaulingPointsOfInterest(const std::vector<pgsPointOfInterest>& rPois)
-{
-   m_HaulingPois = rPois;
-}
-
 std::vector<pgsPointOfInterest> pgsKdotHaulingAnalysisArtifact::GetHaulingPointsOfInterest() const
 {
    return m_HaulingPois;
 }
 
-void pgsKdotHaulingAnalysisArtifact::AddHaulingStressAnalysisArtifact(Float64 distFromStart,
+void pgsKdotHaulingAnalysisArtifact::AddHaulingStressAnalysisArtifact(const pgsPointOfInterest& poi,
                                    const pgsKdotHaulingStressAnalysisArtifact& artifact)
 {
-   m_HaulingStressAnalysisArtifacts.insert(std::make_pair(distFromStart,artifact));
+   ATLASSERT(poi.GetID() != INVALID_ID);
+   std::vector<pgsPointOfInterest>::iterator found = std::find(m_HaulingPois.begin(),m_HaulingPois.end(),poi);
+   if ( found == m_HaulingPois.end() )
+   {
+      m_HaulingPois.push_back(poi);
+      std::sort(m_HaulingPois.begin(),m_HaulingPois.end());
+   }
+   m_HaulingStressAnalysisArtifacts.insert(std::make_pair(poi,artifact));
 }
 
-const pgsKdotHaulingStressAnalysisArtifact* pgsKdotHaulingAnalysisArtifact::GetHaulingStressAnalysisArtifact(Float64 distFromStart) const
+const pgsKdotHaulingStressAnalysisArtifact* pgsKdotHaulingAnalysisArtifact::GetHaulingStressAnalysisArtifact(const pgsPointOfInterest& poi) const
 {
-   std::map<Float64,pgsKdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator found;
-   found = m_HaulingStressAnalysisArtifacts.find( distFromStart );
+   std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator found;
+   found = m_HaulingStressAnalysisArtifacts.find( poi );
    if ( found == m_HaulingStressAnalysisArtifacts.end() )
-      return 0;
+   {
+      return NULL;
+   }
 
    return &(*found).second;
 }
@@ -477,8 +487,8 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   if (!pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
       return;
@@ -514,7 +524,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    DesignOutcome outcome = this->GetDesignOutcome();
    if(outcome==doNoDesignDone)
    {
-      ATLASSERT(0); // the check should always attempt a design
+      ATLASSERT(false); // the check should always attempt a design
       *p<<rptNewLine;
    }
    else if(outcome==doFailed)
@@ -529,7 +539,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    }
    else
    {
-      ATLASSERT(0); // new outcome type?
+      ATLASSERT(false); // new outcome type?
    }
 
    GET_IFACE2(pBroker, ISpecification, pSpec );
@@ -548,19 +558,21 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 
    Float64 t2 = pSpecEntry->GetHaulingTensionStressFactorWithRebar();
 
-   Float64 capCompression = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+   Float64 capCompression = pSegmentHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
 
    *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FC << _T(" = ") << 
       stress.SetValue(capCompression)<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
    *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
    if ( b_t_max )
+   {
       *p << _T(" but not more than: ") << stress.SetValue(t_max);
-   *p << _T(" = ") << stress.SetValue(pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(segmentKey))<< _T(" ") <<
+   }
+   *p << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(segmentKey))<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
    *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FC
-      << _T(" = ") << stress.SetValue(pGirderHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(segmentKey)) << _T(" ") << stress.GetUnitTag()
+      << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(segmentKey)) << _T(" ") << stress.GetUnitTag()
       << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
    Float64 fc_reqd_comp,fc_reqd_tens, fc_reqd_tens_wrebar;
@@ -568,25 +580,33 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 
    *p << RPT_FC << _T(" required for Compressive stress = ");
    if ( 0 < fc_reqd_comp )
+   {
       *p << stress_u.SetValue( fc_reqd_comp ) << rptNewLine;
+   }
    else
+   {
       *p << symbol(INFINITY) << rptNewLine;
+   }
 
    *p << RPT_FC << _T(" required for Tensile stress without sufficient reinforcement = ");
    if ( 0 < fc_reqd_tens )
+   {
       *p << stress_u.SetValue( fc_reqd_tens ) << rptNewLine;
+   }
    else
+   {
       *p << symbol(INFINITY) << rptNewLine;
+   }
 
    *p << RPT_FC << _T(" required for Tensile stress with sufficient reinforcement to resist the tensile force in the concrete = ");
    if ( 0 < fc_reqd_tens_wrebar )
+   {
       *p << stress_u.SetValue( fc_reqd_tens_wrebar ) << rptNewLine;
+   }
    else
+   {
       *p << symbol(INFINITY) << rptNewLine;
-
-   GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-   std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,POIFIND_OR);
+   }
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
    *p << p_table;
@@ -618,41 +638,45 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 
    p_table->SetNumberOfHeaderRows(2);
    for ( ColumnIndexType i = col1; i < p_table->GetNumberOfColumns(); i++ )
+   {
       p_table->SetColumnSpan(0,i,SKIP_CELL);
+   }
 
    Float64 overhang = this->GetTrailingOverhang();
 
    RowIndexType row=2;
-   for (std::vector<pgsPointOfInterest>::const_iterator i = poi_vec.begin(); i!= poi_vec.end(); i++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(m_HaulingPois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_HaulingPois.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsKdotHaulingStressAnalysisArtifact* stressArtifact = this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
+      const pgsKdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
 
-      if (stressArtifact==NULL)
+      if (pStressArtifact == NULL)
       {
-         ATLASSERT(0); // this should not happen
+         ATLASSERT(false); // this should not happen
          continue;
       }
       (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT,poi,overhang );
 
       // Tension
       Float64 fTensTop, fTensBottom, tensCapacity;
-      stressArtifact->GetConcreteTensileStress(&fTensTop, &fTensBottom, &tensCapacity);
+      pStressArtifact->GetConcreteTensileStress(&fTensTop, &fTensBottom, &tensCapacity);
 
       // Compression
       Float64 fPsTop, fTop;
-      stressArtifact->GetTopFiberStress(&fPsTop, &fTop);
+      pStressArtifact->GetTopFiberStress(&fPsTop, &fTop);
 
       Float64 fPsBot, fBot;
-      stressArtifact->GetBottomFiberStress(&fPsBot, &fBot);
+      pStressArtifact->GetBottomFiberStress(&fPsBot, &fBot);
 
       ColumnIndexType col = 1;
       (*p_table)(row,col++) << stress.SetValue(fTop);
       (*p_table)(row,col++) << stress.SetValue(fBot);
 
       Float64 fTens(0.0); // controlling tension
-      if (fTop>0)
+      if (0.0 < fTop)
       {
          fTens = fTop;
          (*p_table)(row,col++) << stress.SetValue(tensCapacity);
@@ -662,7 +686,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
          (*p_table)(row,col++) << _T("-");
       }
 
-      if (fBot>0)
+      if (0.0 < fBot)
       {
          fTens = fBot;
          (*p_table)(row,col++) << stress.SetValue(tensCapacity);
@@ -673,23 +697,31 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
       }
 
       // C/D's
-      if ( stressArtifact->TensionPassed() )
+      if ( pStressArtifact->TensionPassed() )
+      {
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(tensCapacity,fTens,true)<<_T(")");
+      }
       else
+      {
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(tensCapacity,fTens,false)<<_T(")");
+      }
 
       Float64 fComp = Min(fTop, fBot);
       
-      if ( stressArtifact->CompressionPassed() )
+      if ( pStressArtifact->CompressionPassed() )
+      {
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");
+      }
       else
+      {
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,false)<<_T(")");
+      }
 
       row++;
    }
 }
 
-void  pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
    rptRcScalar scalar;
    scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
@@ -718,8 +750,8 @@ void  pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKe
    *pChapter << p;
 
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   if (!pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
    }
@@ -759,23 +791,20 @@ void  pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKe
 
    Float64 overhang = this->GetTrailingOverhang();
 
-   GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-   std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,POIFIND_OR);
-
    RowIndexType row = 1;
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for (i = poi_vec.begin(); i!= poi_vec.end(); i++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(m_HaulingPois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_HaulingPois.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsKdotHaulingStressAnalysisArtifact* stressArtifact =  this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
+      const pgsKdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
  
       (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
-      (*p_table)(row,1) << force.SetValue( stressArtifact->GetEffectiveHorizPsForce());
-      (*p_table)(row,2) << dim.SetValue( stressArtifact->GetEccentricityPsForce());
+      (*p_table)(row,1) << force.SetValue( pStressArtifact->GetEffectiveHorizPsForce());
+      (*p_table)(row,2) << dim.SetValue( pStressArtifact->GetEccentricityPsForce());
 
-      Float64 M = stressArtifact->GetMoment();
+      Float64 M = pStressArtifact->GetMoment();
       (*p_table)(row,3) << moment.SetValue(M);
 
       row++;
@@ -808,22 +837,23 @@ void  pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKe
    (*p_table)(1,6) << COLHDR(_T("Total"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    RowIndexType row1 = 2;
-   for (i = poi_vec.begin(); i!= poi_vec.end(); i++)
+   poiIter = m_HaulingPois.begin();
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsKdotHaulingStressAnalysisArtifact* stressArtifact =  this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
+      const pgsKdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
  
       (*p_table)(row1,0) << location.SetValue( POI_HAUL_SEGMENT, poi,overhang );
       
       Float64 ps, tot, dmo;
-      stressArtifact->GetTopFiberStress(&ps, &tot);
+      pStressArtifact->GetTopFiberStress(&ps, &tot);
       dmo = tot - ps;
       (*p_table)(row1,1) << stress.SetValue( ps );
       (*p_table)(row1,2) << stress.SetValue( dmo );
       (*p_table)(row1,3) << stress.SetValue( tot );
       
-      stressArtifact->GetBottomFiberStress(&ps,&tot);
+      pStressArtifact->GetBottomFiberStress(&ps,&tot);
       dmo = tot - ps;
       (*p_table)(row1,4) << stress.SetValue( ps );
       (*p_table)(row1,5) << stress.SetValue( dmo );
@@ -846,10 +876,10 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,        pDisplayUnits->GetAreaUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),        false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),         false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,    pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       false );
 
    rptCapacityToDemand cap_demand;
 
@@ -857,10 +887,6 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    *pChapter << p;
 
    Float64 overhang = this->GetTrailingOverhang();
-
-   GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-   std::vector<pgsPointOfInterest> vPoi = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,POIFIND_OR);
-   CHECK(vPoi.size()>0);
 
    std::_tstring tablename(_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Hauling"));
 
@@ -880,19 +906,22 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    (*pTable)(0,col++) <<_T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
 
    Int16 row=1;
-   for (std::vector<pgsPointOfInterest>::iterator i = vPoi.begin(); i!= vPoi.end(); i++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(m_HaulingPois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_HaulingPois.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi(*poiIter);
 
-      const pgsKdotHaulingStressAnalysisArtifact* stressArtifact =  this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
-      if(stressArtifact==NULL)
+      const pgsKdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
+
+      if(pStressArtifact == NULL)
       {
-         ATLASSERT(0);
+         ATLASSERT(false);
          continue;
       }
 
       Float64 Yna, At, T, AsProvd, AsReqd, fAllow;
-      stressArtifact->GetAlternativeTensileStressParameters(&Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
+      pStressArtifact->GetAlternativeTensileStressParameters(&Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
 
       (*pTable)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
 
@@ -910,11 +939,11 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
          // Stress demand
          Float64 fpsTop, fTop;
          Float64 fpsBottom, fBottom;
-         stressArtifact->GetTopFiberStress(&fpsTop, &fTop);
-         stressArtifact->GetBottomFiberStress(&fpsBottom, &fBottom);
+         pStressArtifact->GetTopFiberStress(&fpsTop, &fTop);
+         pStressArtifact->GetBottomFiberStress(&fpsBottom, &fBottom);
 
          Float64 fTens;
-         if (fTop>0.0)
+         if (0.0 < fTop)
          {
             fTens = fTop;
             (*pTable)(row,1) << _T("Top");
@@ -944,22 +973,26 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
 void pgsKdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, IBroker* pBroker,
                                                     const std::_tstring& pid, const std::_tstring& bridgeId) const
 {
-   GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
+   GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
 
-   std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_BUNKPOINT|POI_HARPINGPOINT|POI_MIDSPAN,POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPoi(pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_HAUL_SEGMENT | POI_BUNKPOINT | POI_5L));
+   std::vector<pgsPointOfInterest> vPoi2(pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_HARPINGPOINT));
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   std::sort(vPoi.begin(),vPoi.end());
 
-   for (std::vector<pgsPointOfInterest>::iterator it=poi_vec.begin(); it!=poi_vec.end(); it++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      pgsPointOfInterest& poi = *it;
+      const pgsPointOfInterest& poi(*poiIter);
       Float64 loc = poi.GetDistFromStart();
 
-      const pgsKdotHaulingStressAnalysisArtifact* hStress = this->GetHaulingStressAnalysisArtifact(poi.GetDistFromStart());
+      const pgsKdotHaulingStressAnalysisArtifact* pStress = GetHaulingStressAnalysisArtifact(poi);
 
       GirderIndexType gdr = segmentKey.girderIndex;
 
       Float64 fTop, fBottom, Capacity;
-      hStress->GetConcreteTensileStress(&fTop, &fBottom, &Capacity);
+      pStress->GetConcreteTensileStress(&fTop, &fBottom, &Capacity);
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100005, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(fTop , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100006, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(fBottom , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100007, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(Capacity , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
@@ -1064,8 +1097,6 @@ void pgsKdotHaulingAnalysisArtifact::MakeCopy(const pgsKdotHaulingAnalysisArtifa
 
    m_ElasticModulusOfGirderConcrete = rOther.m_ElasticModulusOfGirderConcrete;
 
-   m_HaulingPois = rOther.m_HaulingPois;
-   m_HaulingStressAnalysisArtifacts = rOther.m_HaulingStressAnalysisArtifacts;
 
    m_DesignOutcome = rOther.m_DesignOutcome;
    m_DesignOverhang = rOther.m_DesignOverhang;
@@ -1100,8 +1131,8 @@ void pgsKdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
       const pgsPointOfInterest& rpoi = *iter;
       Float64 loc = rpoi.GetDistFromStart();
       os <<_T("--- At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
-      std::map<Float64,pgsKdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator found;
-      found = m_HaulingStressAnalysisArtifacts.find( loc );
+      std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator found;
+      found = m_HaulingStressAnalysisArtifacts.find( rpoi );
 
       os<<endl;
       Float64 fps, ftot, ftcap, fccap;

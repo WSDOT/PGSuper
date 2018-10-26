@@ -27,6 +27,7 @@
 #include "UBeamFactory.h"
 #include "UBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
+#include "TimeStepLossEngineer.h"
 #include "StrandMoverImpl.h"
 #include <sstream>
 #include <algorithm>
@@ -158,9 +159,6 @@ void CUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    segment.CoCreateInstance(CLSID_PrismaticSegment);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -219,12 +217,24 @@ void CUBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType 
 
 void CUBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
 {
-   CComObject<CPsBeamLossEngineer>* pEngineer;
-   CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-   pEngineer->Init(UBeam);
-   pEngineer->SetBroker(pBroker,statusGroupID);
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      CComObject<CTimeStepLossEngineer>* pEngineer;
+      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
+   else
+   {
+      CComObject<CPsBeamLossEngineer>* pEngineer;
+      CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
+      pEngineer->Init(UBeam);
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
 }
 
 void CUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
@@ -538,7 +548,7 @@ Float64 CUBeamFactory::GetVolume(IBroker* pBroker,const CSegmentKey& segmentKey)
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
@@ -577,7 +587,7 @@ Float64 CUBeamFactory::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segmen
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 S = 0;
    std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );

@@ -94,7 +94,7 @@ void CTxDOT2013TimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pB
    boost::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return;
    }
 

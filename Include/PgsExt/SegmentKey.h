@@ -69,18 +69,18 @@ public:
 
 typedef CSegmentKey CClosureKey;
 
-class PGSEXTCLASS CSpanGirderKey
+class PGSEXTCLASS CSpanKey
 {
 public:
-   CSpanGirderKey(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   CSpanGirderKey();
-   CSpanGirderKey(const CSpanGirderKey& other);
+   CSpanKey(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   CSpanKey();
+   CSpanKey(const CSpanKey& other);
    
-   CSpanGirderKey& operator=(const CSpanGirderKey& other);
-   bool IsEqual(const CSpanGirderKey& other) const;
-   bool operator==(const CSpanGirderKey& other) const;
-   bool operator!=(const CSpanGirderKey& other) const;
-   bool operator<(const CSpanGirderKey& other) const;
+   CSpanKey& operator=(const CSpanKey& other);
+   bool IsEqual(const CSpanKey& other) const;
+   bool operator==(const CSpanKey& other) const;
+   bool operator!=(const CSpanKey& other) const;
+   bool operator<(const CSpanKey& other) const;
 
    SpanIndexType    spanIndex;    // identifies a span
    GirderIndexType  girderIndex;  // identifies a girder in the span

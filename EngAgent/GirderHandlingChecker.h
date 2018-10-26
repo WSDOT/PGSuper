@@ -49,8 +49,8 @@ public:
    virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE)=0;
    virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey)=0;
    virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang)=0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,IGirderHaulingDesignPointsOfInterest* pPOId)=0;
-   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,const GDRCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,IGirderHaulingDesignPointsOfInterest* pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE)=0;
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId)=0;
+   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,const GDRCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE)=0;
 };
 
 
@@ -159,73 +159,5 @@ public:
 
 // EXTERNAL REFERENCES
 //
-
-/*****************************************************************************
-CLASS 
-   pgsAlternativeTensileStressCalculator
-
-
-DESCRIPTION
-   Utility class for dealing with alternative tensile stress in casting yard and at lifting
-
-
-COPYRIGHT
-   Copyright © 1997-1998
-   Washington State Department Of Transportation
-   All Rights Reserved
-
-LOG
-   rdp : 03.25.2013 : Created file
-*****************************************************************************/
-
-class pgsAlternativeTensileStressCalculator
-{
-public:
-   // GROUP: LIFECYCLE
-   //------------------------------------------------------------------------
-   // Constructor
-   pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,IBridge* pBridge,IGirder* pGirder,
-                                         IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
-                                         IMaterials* pMaterials,bool bLimitBarStress,
-                                         bool bSISpec,
-                                         bool bGirderStresses);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsAlternativeTensileStressCalculator()
-   {;}
-
-   // if true, the stress in the mild reinforcement is limited to 30 ksi, otherwise it is not.
-   void LimitBarStress(bool bLimit);
-   bool LimitBarStress() const;
-
-   Float64 ComputeAlternativeStressRequirements(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
-                                                Float64 fTop, Float64 fBot, 
-                                                Float64 fAllowableWithoutRebar, Float64 fAllowableWithRebar,
-                                                Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
-                                                Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar);
-
-   static void ComputeReqdFcTens(Float64 ft, // stress demand
-                          Float64 rcsT, bool rcsBfmax, Float64 rcsFmax, Float64 rcsTalt, // allowable stress coeff's
-                          Float64* pFcNo,Float64* pFcWithRebar);
-
-private:
-   pgsAlternativeTensileStressCalculator(); // no default constructor
-
-   // GROUP: DATA MEMBERS
-
-   // these are weak references
-   IBridge* m_pBridge;
-   IGirder* m_pGirder;
-   IShapes* m_pShapes;
-   ISectionProperties* m_pSectProps;
-   ILongRebarGeometry* m_pRebarGeom;
-   IMaterials* m_pMaterials;
-   bool m_bLimitBarStress;
-   bool m_bSISpec;
-   bool m_bGirderStresses;
-   IntervalIndexType m_IntervalIdx;
-};
-
 
 #endif // INCLUDED_PGSEXT_GIRDERHANDLINGCHECKER_H_

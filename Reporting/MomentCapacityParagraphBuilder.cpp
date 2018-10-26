@@ -64,11 +64,11 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 
    // Interfaces
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   //GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
+   //GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   //GET_IFACE2(pBroker,IBridge,pBridge);
 
 
    // Setup up some unit value prototypes
@@ -106,7 +106,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 
 
       // Get Midspan points of interest
-      std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,segIdx),POI_ERECTED_SEGMENT | POI_MIDSPAN, POIFIND_AND) );
+      std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,segIdx),POI_ERECTED_SEGMENT | POI_5L, POIFIND_AND) );
       ATLASSERT(vPoi.size() == 1);
       pgsPointOfInterest& poi(vPoi.front());
 

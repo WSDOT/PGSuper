@@ -293,10 +293,8 @@ BOOL CPermitRatingPage::OnSetActive()
       GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(TRUE);
    }
 
-   GET_IFACE2(broker,ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   if ( pSpecEntry->GetLossMethod() != pgsTypes::TIME_STEP )
+   GET_IFACE2(broker, ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
       GetDlgItem(IDC_STRENGTH_II_PLUS)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_STRENGTH_II_CR)->ShowWindow(SW_HIDE);

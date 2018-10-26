@@ -115,13 +115,13 @@ public:
 
 // ILosses
 public:
+   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
 	virtual Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
-   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi);
    virtual void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
 
    virtual Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
-   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx);
    virtual void ClearDesignLosses();
 
    virtual Float64 GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime);
@@ -133,6 +133,8 @@ public:
    virtual Float64 GetAnchorSetZoneLength(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
    virtual Float64 GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx);
    virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
+   virtual Float64 GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual Float64 GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx);
 
 // IPretensionForce
 public:
@@ -174,6 +176,8 @@ public:
 public:
    virtual Float64 GetPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands);
    virtual Float64 GetPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands);
+   virtual Float64 GetInitialTendonForce(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet);
+   virtual Float64 GetInitialTendonStress(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet);
    virtual Float64 GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad);
    virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad);
    virtual Float64 GetVerticalTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,DuctIndexType ductIdx);
@@ -182,24 +186,24 @@ public:
 // ILiveLoadDistributionFactors
 public:
    virtual void VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi);
-   virtual Float64 GetMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls);
-   virtual Float64 GetNegMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls);
-   virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace);
-   virtual Float64 GetShearDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls);
-   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls);
-   virtual Float64 GetMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr);
-   virtual Float64 GetNegMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr);
+   virtual Float64 GetMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState);
+   virtual Float64 GetNegMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState);
+   virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,pgsTypes::PierFaceType pierFace);
+   virtual Float64 GetShearDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState);
+   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState);
+   virtual Float64 GetMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr);
+   virtual Float64 GetNegMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr);
    virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState lsr,pgsTypes::PierFaceType pierFace,Float64 fcgdr);
-   virtual Float64 GetShearDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr);
-   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr);
-   virtual void GetNegMomentDistFactorPoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* dfPoints,Uint32* nPoints);
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V);
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V);
+   virtual Float64 GetShearDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr);
+   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr);
+   virtual void GetNegMomentDistFactorPoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* dfPoints,IndexType* nPoints);
+   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,Float64* pM,Float64* nM,Float64* V);
+   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V);
    virtual void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual bool Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
+   virtual bool Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
    virtual Uint32 GetNumberOfDesignLanes(SpanIndexType spanIdx);
    virtual Uint32 GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDistToSection,Float64* pCurbToCurb);
-   virtual bool GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,
+   virtual bool GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,
                        Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                        Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
                        Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
@@ -227,24 +231,24 @@ public:
 // IShearCapacity
 public:
    virtual pgsTypes::FaceType GetFlexuralTensionSide(pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual std::vector<Float64> GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi);
-   virtual void GetShearCapacityDetails(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd);
-   virtual void GetRawShearCapacityDetails(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd);
+   virtual Float64 GetShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
+   virtual std::vector<Float64> GetShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi);
+   virtual void GetShearCapacityDetails(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd);
+   virtual void GetRawShearCapacityDetails(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd);
    virtual Float64 GetFpc(const pgsPointOfInterest& poi);
    virtual void GetFpcDetails(const pgsPointOfInterest& poi, FPCDETAILS* pmcd);
-   virtual Float64 GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config);
-   virtual void GetShearCapacityDetails(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,SHEARCAPACITYDETAILS* pmcd);
-   virtual void GetRawShearCapacityDetails(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,SHEARCAPACITYDETAILS* pmcd);
+   virtual Float64 GetShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   virtual void GetShearCapacityDetails(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,SHEARCAPACITYDETAILS* pmcd);
+   virtual void GetRawShearCapacityDetails(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,SHEARCAPACITYDETAILS* pmcd);
    virtual Float64 GetFpc(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void GetFpcDetails(const pgsPointOfInterest& poi, const GDRCONFIG& config,FPCDETAILS* pmcd);
    virtual ZoneIndexType GetCriticalSectionZoneIndex(pgsTypes::LimitState limitState,const pgsPointOfInterest& poi);
-   virtual void GetCriticalSectionZoneBoundary(pgsTypes::LimitState ls,const CGirderKey& girderKeyegmentKey,ZoneIndexType csZoneIdx,Float64* pStart,Float64* pEnd);
+   virtual void GetCriticalSectionZoneBoundary(pgsTypes::LimitState limitState,const CGirderKey& girderKeyegmentKey,ZoneIndexType csZoneIdx,Float64* pStart,Float64* pEnd);
    virtual std::vector<Float64> GetCriticalSections(pgsTypes::LimitState limitState,const CGirderKey& girderKey);
    virtual std::vector<Float64> GetCriticalSections(pgsTypes::LimitState limitState,const CGirderKey& girderKey,const GDRCONFIG& config);
    virtual const std::vector<CRITSECTDETAILS>& GetCriticalSectionDetails(pgsTypes::LimitState limitState,const CGirderKey& girderKey);
    virtual std::vector<CRITSECTDETAILS> GetCriticalSectionDetails(pgsTypes::LimitState limitState,const CGirderKey& girderKey,const GDRCONFIG& config);
-   virtual std::vector<SHEARCAPACITYDETAILS> GetShearCapacityDetails(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi);
+   virtual std::vector<SHEARCAPACITYDETAILS> GetShearCapacityDetails(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi);
 
 // IGirderHaunch
 public:
@@ -261,8 +265,8 @@ public:
    virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey);
    virtual const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact(const CSegmentKey& segmentKey);
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey);
-   virtual const pgsDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,arDesignOptions design);
-   virtual const pgsDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey);
+   virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,arDesignOptions design);
+   virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey);
    virtual void CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);
    virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc);
    virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
@@ -301,9 +305,9 @@ public:
    virtual HRESULT OnRelHumidityChanged();
 
 private:
-   DECLARE_AGENT_DATA;
+   DECLARE_EAF_AGENT_DATA;
 
-   std::map<CGirderKey,pgsDesignArtifact> m_DesignArtifacts;
+   std::map<CGirderKey,pgsGirderDesignArtifact> m_DesignArtifacts;
 
    struct RatingArtifactKey
    {
@@ -330,8 +334,7 @@ private:
    };
    std::map<RatingArtifactKey,pgsRatingArtifact> m_RatingArtifacts[6]; // pgsTypes::LoadRatingType enum as key
 
-#pragma Reminder("UPDATE: need to cache prestress force") // I broke this when converting to interval based loss model
-   //std::map<PoiPrestressKey,Float64> m_PsForce;
+   // NOTE: Caching of prestress losses has been moved to CPsBeamLossEngineer
 
    pgsPsForceEng             m_PsForceEngineer;
    pgsDesigner2              m_Designer;
@@ -383,7 +386,7 @@ private:
 
    // Shear Capacity
    std::map<PoiIDKey,SHEARCAPACITYDETAILS> m_ShearCapacity[8]; // use the LimitStateToShearIndex method to map limit state to array index
-   const SHEARCAPACITYDETAILS* ValidateShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
+   const SHEARCAPACITYDETAILS* ValidateShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    void InvalidateShearCapacity();
    std::map<PoiIDKey,FPCDETAILS> m_Fpc;
    const FPCDETAILS* ValidateFpc(const pgsPointOfInterest& poi);
@@ -423,7 +426,7 @@ private:
    void InvalidateArtifacts();
    void InvalidateRatingArtifacts();
 
-   const LOSSDETAILS* FindLosses(const pgsPointOfInterest& poi);
+   const LOSSDETAILS* FindLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
    pgsRatingArtifact* FindRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
 
    DECLARE_LOGFILE;

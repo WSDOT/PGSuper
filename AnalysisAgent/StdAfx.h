@@ -42,6 +42,8 @@ extern CComModule _Module;
 
 #include <IFace\Tools.h>
 
+#include <WBFLSTL.h>
+
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
 #include <WBFLCogo.h>

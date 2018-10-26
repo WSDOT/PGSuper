@@ -59,7 +59,7 @@ std::_tstring ConnectionLibraryEntry::StringForEndDistanceMeasurementType(Connec
    case ConnectionLibraryEntry::FromPierNormalToPier:
       return std::_tstring(_T("FromPierNormalToPier"));
    default:
-      ATLASSERT(0);
+      ATLASSERT(false);
       return std::_tstring(_T("FromPierNormalToPier"));
    };
 }
@@ -91,7 +91,7 @@ std::_tstring ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(Conn
    case ConnectionLibraryEntry::NormalToPier:
       return std::_tstring(_T("NormalToPier"));
    default:
-      ATLASSERT(0);
+      ATLASSERT(false);
       return std::_tstring(_T("NormalToPier"));
    };
 }

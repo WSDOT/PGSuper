@@ -43,5 +43,14 @@ private:
    CTimeStepCamberChapterBuilder(const CTimeStepCamberChapterBuilder&);
    CTimeStepCamberChapterBuilder& operator=(const CTimeStepCamberChapterBuilder&);
 
+   rptRcTable* CreateStorageDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateAfterErectionDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
+
    rptRcTable* CreateTable(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
+
+
+   rptRcTable* CreateBeforeSlabCastingDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateScreedCamberDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateExcessCamberTable(IBroker* pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateFinalDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
 };

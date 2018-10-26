@@ -84,7 +84,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    ATLASSERT( intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx );
 
-   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
+   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS ? true : false);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,strTableTitle);
 
@@ -100,13 +100,13 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
    (*p_table)(0,2) << COLHDR(RPT_FBOT << rptNewLine << _T("Girder"),    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    // Get the interface pointers we need
+   PoiAttributeType poiAttribute = (intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_STORAGE_SEGMENT);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiAttribute) );
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
-   GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
@@ -117,17 +117,10 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
-      if ( intervalIdx == releaseIntervalIdx )
-      {
-         (*p_table)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
-      }
-      else
-      {
-         (*p_table)(row,0) << location.SetValue( POI_STORAGE_SEGMENT, poi );
-      }
+      (*p_table)(row,0) << location.SetValue( poiAttribute, poi );
 
       Float64 fTop, fBot;
-      pProductForces->GetStress(intervalIdx, pftGirder, poi, bat, ctIncremental, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);
+      pProductForces->GetStress(intervalIdx, pftGirder, poi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);
       (*p_table)(row,1) << stress.SetValue( fTop );
       (*p_table)(row,2) << stress.SetValue( fBot );
 

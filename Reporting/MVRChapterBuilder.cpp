@@ -90,23 +90,29 @@ LPCTSTR CMVRChapterBuilder::GetName() const
 rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+
    CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   CGirderKey girderKey;
+
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
-   IntervalIndexType lastIntervalIdx = nIntervals-1;
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
-   rptParagraph* p = 0;
+   rptParagraph* p = NULL;
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -165,18 +171,44 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
          GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
+         rptRcTable* pReleaseLayoutTable = NULL;
+         rptRcTable* pStorageLayoutTable = NULL;
+         rptRcTable* pLayoutTable        = NULL;
          SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+         if ( 1 < nSegments )
+         {
+            pReleaseLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nSegments,_T("Moment/Shear at Prestress Release"));
+            *p << pReleaseLayoutTable << rptNewLine;
+
+            pStorageLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nSegments,_T("Moment/Shear during Storage"));
+            *p << pStorageLayoutTable << rptNewLine;
+         }
+         else
+         {
+            pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+            *p << pLayoutTable << rptNewLine;
+         }
+
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-            p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-            *pChapter << p;
-            *p << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+            IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
 
-            p = new rptParagraph;
-            *pChapter << p;
-            *p << CCastingYardMomentsTable().Build(pBroker,segmentKey,pDisplayUnits) << rptNewLine;
+            if ( pLayoutTable )
+            {
+               (*pLayoutTable)(0,0) << CCastingYardMomentsTable().Build(pBroker,segmentKey,releaseIntervalIdx,_T("At Release"),pDisplayUnits) << rptNewLine;
+               (*pLayoutTable)(0,1) << CCastingYardMomentsTable().Build(pBroker,segmentKey,storageIntervalIdx,_T("During Storage"),pDisplayUnits) << rptNewLine;
+            }
+            else
+            {
+               CString strTableTitle;
+               strTableTitle.Format(_T("Segment %d"),LABEL_SEGMENT(segIdx));
+
+               (*pReleaseLayoutTable)(0,segIdx) << CCastingYardMomentsTable().Build(pBroker,segmentKey,releaseIntervalIdx,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
+               (*pStorageLayoutTable)(0,segIdx) << CCastingYardMomentsTable().Build(pBroker,segmentKey,storageIntervalIdx,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
+            }
          }
       }
    }
@@ -187,6 +219,11 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisGirderKey);
+      IntervalIndexType lastIntervalIdx = nIntervals-1;
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(thisGirderKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
 
       std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
 
@@ -199,7 +236,9 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       *p << CProductMomentsTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
       if ( bPedestrian )
+      {
          *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+      }
 
       *p << LIVELOAD_PER_LANE << rptNewLine;
       LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
@@ -219,7 +258,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          }
       }
 
-      CTSRemovalMomentsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
+      //CTSRemovalMomentsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
 
       // Product Shears
       p = new rptParagraph;
@@ -227,7 +266,9 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       *p << CProductShearTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
       if ( bPedestrian )
+      {
          *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+      }
 
       *p << LIVELOAD_PER_LANE << rptNewLine;
       *p << rptNewLine;
@@ -249,7 +290,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          }
       }
 
-      CTSRemovalShearTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
+      //CTSRemovalShearTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
 
       // Product Reactions
       p = new rptParagraph;
@@ -257,14 +298,16 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,PierReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
       if ( bPedestrian )
+      {
          *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+      }
 
       *p << LIVELOAD_PER_LANE << rptNewLine;
       *p << rptNewLine;
       LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
       *p << rptNewLine;
 
-      CTSRemovalReactionTable().Build(pChapter,pBroker,thisGirderKey,analysisType,PierReactionsTable,pDisplayUnits);
+      //CTSRemovalReactionTable().Build(pChapter,pBroker,thisGirderKey,analysisType,PierReactionsTable,pDisplayUnits);
 
       // For girder bearing reactions
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
@@ -275,7 +318,9 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
          if ( bPedestrian )
+         {
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+         }
 
          *p << LIVELOAD_PER_LANE << rptNewLine;
          *p << rptNewLine;
@@ -308,7 +353,9 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          *p << CProductDeflectionsTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
          if ( bPedestrian )
+         {
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+         }
 
          *p << LIVELOAD_PER_LANE << rptNewLine;
          *p << rptNewLine;
@@ -329,7 +376,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             }
          }
 
-         CTSRemovalDeflectionsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
+         //CTSRemovalDeflectionsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
 
          // Product Rotations
          p = new rptParagraph;
@@ -337,7 +384,9 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          *p << CProductRotationTable().Build(pBroker,thisGirderKey,analysisType,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
          if ( bPedestrian )
+         {
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+         }
 
          *p << LIVELOAD_PER_LANE << rptNewLine;
          *p << rptNewLine;
@@ -358,7 +407,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             }
          }
 
-         CTSRemovalRotationTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
+         //CTSRemovalRotationTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
 
          if (pSpecEntry->GetDoEvaluateLLDeflection())
          {

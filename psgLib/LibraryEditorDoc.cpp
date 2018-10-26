@@ -132,13 +132,19 @@ void CLibraryEditorDoc::Dump(CDumpContext& dc) const
 BOOL CLibraryEditorDoc::Init()
 {
    if ( !__super::Init() )
+   {
       return FALSE;
+   }
 
    if ( FAILED(CBeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
+   {
       return FALSE;
+   }
 
    if ( FAILED(CBeamFamilyManager::Init(CATID_PGSpliceBeamFamily)) )
+   {
       return FALSE;
+   }
 
    return TRUE;
 }
@@ -178,9 +184,13 @@ HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
       CEAFApp* pApp = EAFGetApp();
       mysave.BeginUnit(_T("LIBRARY_EDITOR"), 1.0);
       if (pApp->GetUnitsMode() == eafTypes::umUS)
+      {
          mysave.Property(_T("EDIT_UNITS"), _T("US"));
+      }
       else
+      {
          mysave.Property(_T("EDIT_UNITS"), _T("SI"));
+      }
 
       // save library manager and all the library data
       m_LibraryManager.SaveMe(&mysave);
@@ -205,7 +215,9 @@ HRESULT CLibraryEditorDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
    eafTypes::UnitMode unitMode;
    HRESULT hr = pgslibLoadLibrary(pStrLoad,&m_LibraryManager,&unitMode);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
 
    CEAFApp* pApp = EAFGetApp();
@@ -237,7 +249,9 @@ HRESULT CLibraryEditorDoc::CloseDocumentRootNode(IStructuredLoad* pStrLoad)
    
    // only call the base-class to EndUnit of the unit was opened
    if ( m_hrOpenRootNode == S_OK )
+   {
       CEAFDocument::CloseDocumentRootNode(pStrLoad);
+   }
 
    return S_OK;  // always return S_OK
 }
@@ -276,19 +290,7 @@ void CLibraryEditorDoc::OnImport()
 
       CString real_file_name = rPath;
 
-      // NOTE: This code was taken from PGSuper... At this time, the file conversion from the VB Convert
-      // project does not effect the library entries. Therefore we can (a) skip this step, and (b) don't 
-      // need to generalize the PGSuper file conversion routines
-//      CString real_file_name; // name of actual file to be read may be different than lpszPathName
-//      long convert_status = ConvertTheDocument(rPath, &real_file_name);
-//      // convert document. if file was converted, then we need to delete the converted file at the end
-//      if ( -1== convert_status)
-//      {
-//         HandleOpenDocumentError( STRLOAD_E_INVALIDFORMAT, rPath );
-//         ASSERT(FALSE);
-//      }
-//      else
-//      {
+      {
          // NOTE: Although it looks innocent, this control block is very important!! 
          // This is because the IStructuredLoad must be destroyed before the temp 
          // file can be deleted
@@ -324,7 +326,9 @@ void CLibraryEditorDoc::OnImport()
          Float64 ver;
          pStrLoad->get_Version(&ver);
          if(ver < FILE_VERSION)
+         {
             return;
+         }
 
          if ( 1.0 < ver )
          {
@@ -368,15 +372,8 @@ void CLibraryEditorDoc::OnImport()
             HandleOpenDocumentError( hr, rPath );
             ASSERT(FALSE);
          }
-//      }
-//
-//      if (convert_status==1)
-//      {
-//         // file was converted and written to a temporary file. delete the temp file
-//         CFile::Remove(real_file_name);
-//      }
-//
-//
+      }
+
       SetModifiedFlag();
       UpdateAllViews(0,0);
    }

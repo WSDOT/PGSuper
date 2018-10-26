@@ -49,8 +49,8 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CGirderDropSite::CGirderDropSite(CPGSuperDocBase* pDoc, const CSpanGirderKey& spanGirderKey, CGirderModelChildFrame* pFrame) :
-m_SpanGirderKey(spanGirderKey)
+CGirderDropSite::CGirderDropSite(CPGSuperDocBase* pDoc, const CSpanKey& spanKey, CGirderModelChildFrame* pFrame) :
+m_spanKey(spanKey)
 {
    m_pDoc   = pDoc;
    m_pFrame = pFrame;
@@ -127,7 +127,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       {
          // set data to that of view
          CPointLoadData data;
-         data.m_SpanGirderKey = pThis->m_SpanGirderKey;
+         data.m_spanKey = pThis->m_spanKey;
 
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
@@ -184,7 +184,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       {
          // set data to that of view
          CDistributedLoadData data;
-         data.m_SpanGirderKey = pThis->m_SpanGirderKey;
+         data.m_spanKey = pThis->m_spanKey;
 
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
@@ -197,7 +197,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
 
          // estimate where we are at
          GET_IFACE2(pBroker,IBridge,pBridge);
-         Float64 span_length = pBridge->GetSpanLength(data.m_SpanGirderKey.spanIndex,data.m_SpanGirderKey.girderIndex);
+         Float64 span_length = pBridge->GetSpanLength(data.m_spanKey.spanIndex,data.m_spanKey.girderIndex);
          //Float64 start_lgth = pBridge->GetSegmentStartEndDistance(data.m_SegmentKey);
          //Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(data.m_SegmentKey);
          //Float64 span_lgth  = gdr_length - start_lgth - end_lgth;
@@ -234,7 +234,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       {
          // set data to that of view
          CMomentLoadData data;
-         data.m_SpanGirderKey = pThis->m_SpanGirderKey;
+         data.m_spanKey = pThis->m_spanKey;
 
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
@@ -247,7 +247,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
 
          // estimate where we are at
          GET_IFACE2(pBroker,IBridge,pBridge);
-         Float64 span_length = pBridge->GetSpanLength(data.m_SpanGirderKey.spanIndex,data.m_SpanGirderKey.girderIndex);
+         Float64 span_length = pBridge->GetSpanLength(data.m_spanKey.spanIndex,data.m_spanKey.girderIndex);
          //Float64 start_lgth = pBridge->GetSegmentStartEndDistance(data.m_SegmentKey);
          //Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(data.m_SegmentKey);
          //Float64 span_lgth  = gdr_length - start_lgth - end_lgth;

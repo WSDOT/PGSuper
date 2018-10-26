@@ -41,6 +41,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma Reminder("UPDATE: merge common Title Page Builder code into a base class")
+// PGSuperTitlePageBuilder and PGSpliceTitlePageBuilder are nearly identicial
+
 // inline functions to determine whether to print status center items
 static bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey,SegmentIndexType nSegments)
 {
@@ -126,7 +129,6 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    boost::shared_ptr<CGirderLineReportSpecification> pGirderLineRptSpec = boost::dynamic_pointer_cast<CGirderLineReportSpecification,CReportSpecification>(pRptSpec);
 
    CGirderKey girderKey;
-   GET_IFACE(IBridge,pBridge);
 
    bool bGirderReport = true;
    if ( pGirderRptSpec != NULL )
@@ -153,6 +155,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
    else if ( pSpanRptSpec != NULL )
    {
+      GET_IFACE(IBridge,pBridge);
       SpanIndexType spanIdx = pSpanRptSpec->GetSpan();
       girderKey.girderIndex = pBridge->GetGirderGroupIndex(spanIdx);
 
@@ -236,7 +239,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    (*pTbl)(0,0) << _T("Bridge Name");
    (*pTbl)(0,1) << pProps->GetBridgeName();
    (*pTbl)(1,0) << _T("Bridge ID");
-   (*pTbl)(1,1) << pProps->GetBridgeId();
+   (*pTbl)(1,1) << pProps->GetBridgeID();
    (*pTbl)(2,0) << _T("Company");
    (*pTbl)(2,1) << pProps->GetCompany();
    (*pTbl)(3,0) << _T("Engineer");
@@ -305,17 +308,23 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       (*pTable)(row,0) << _T("Symbol");
       (*pTable)(row++,1) << _T("Definition");
 
-      (*pTable)(row,0) << Sub2(_T("L"),_T("g"));
-      (*pTable)(row++,1) << _T("Length of Girder");
+      (*pTable)(row,0) << Sub2(_T("L"),_T("r"));
+      (*pTable)(row++,1) << _T("Span Length of Girder at Release");
+
+      (*pTable)(row,0) << Sub2(_T("L"),_T("l"));
+      (*pTable)(row++,1) << _T("Span Length of Girder during Lifting");
+
+      (*pTable)(row,0) << Sub2(_T("L"),_T("st"));
+      (*pTable)(row++,1) << _T("Span Length of Girder during Storage");
+
+      (*pTable)(row,0) << Sub2(_T("L"),_T("h"));
+      (*pTable)(row++,1) << _T("Span Length of Girder during Hauling");
+
+      (*pTable)(row,0) << Sub2(_T("L"),_T("e"));
+      (*pTable)(row++,1) << _T("Span Length of Girder after Erection");
 
       (*pTable)(row,0) << Sub2(_T("L"),_T("s"));
       (*pTable)(row++,1) << _T("Length of Span");
-
-      (*pTable)(row,0) << _T("FoS");
-      (*pTable)(row++,1) << _T("Face of Support");
-
-      //(*pTable)(row,0) << _T("XS");
-      //(*pTable)(row++,1) << _T("Cross section change");
 
       (*pTable)(row,0) << _T("Debond");
       (*pTable)(row++,1) << _T("Point where bond begins for a debonded strand");
@@ -359,6 +368,8 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    // Status Center Items
    if ( bGirderReport )
    {
+      GET_IFACE(IBridge,pBridge);
+      
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       CollectionIndexType nItems = pStatusCenter->Count();
 

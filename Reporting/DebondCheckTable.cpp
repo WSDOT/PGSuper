@@ -62,7 +62,6 @@ CDebondCheckTable::~CDebondCheckTable()
 void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IDebondLimits,debond_limits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -82,6 +81,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
    if ( !bDebondedStrands )
       return; // no debonded strands... nothing to report
 
+
    // report debonding checks
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    loc, pDisplayUnits->GetSpanLengthUnit(),   true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    loc2, pDisplayUnits->GetSpanLengthUnit(),   true );
@@ -90,6 +90,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
    *pChapter << p;
    *p <<_T("Debonding Limits")<<rptNewLine;
 
+   GET_IFACE2(pBroker,IDebondLimits,pDebondLimits);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
@@ -160,7 +161,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
       *p << Super(_T("*")) << _T("Exterior strands shall not be debonded") << rptNewLine << rptNewLine;
 
       *p << CDebondCheckTable().Build2(pDebondArtifact,Ls, pDisplayUnits);
-      *p << Super(_T("*")) << _T("Not more than ") << debond_limits->GetMaxDebondedStrandsPerSection(segmentKey)*100.0 << _T("% of the debonded strands, or ") << debond_limits->GetMaxNumDebondedStrandsPerSection(segmentKey) << _T(" strands, whichever is greatest, shall have debonding terminated at any section") << rptNewLine;
+      *p << Super(_T("*")) << _T("Not more than ") << pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey)*100.0 << _T("% of the debonded strands, or ") << pDebondLimits->GetMaxNumDebondedStrandsPerSection(segmentKey) << _T(" strands, whichever is greatest, shall have debonding terminated at any section") << rptNewLine;
    } // next Segment
 }
 

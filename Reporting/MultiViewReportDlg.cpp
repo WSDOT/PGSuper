@@ -266,7 +266,7 @@ void CMultiViewReportDlg::InitFromRptSpec()
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return;
    }
 

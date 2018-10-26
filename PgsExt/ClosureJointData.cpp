@@ -106,13 +106,19 @@ void CClosureJointData::CopyClosureJointData(const CClosureJointData* pClosure)
 bool CClosureJointData::operator==(const CClosureJointData& rOther) const
 {
    if ( m_Concrete != rOther.m_Concrete )
+   {
       return false;
+   }
 
    if ( m_Stirrups != rOther.m_Stirrups)
+   {
       return false;
+   }
 
    if ( m_Rebar != rOther.m_Rebar)
+   {
       return false;
+   }
 
    return true;
 }
@@ -126,14 +132,22 @@ bool CClosureJointData::operator<(const CClosureJointData& rOther) const
 {
    Float64 station1, station2;
    if ( m_pTempSupport != NULL )
+   {
       station1 = m_pTempSupport->GetStation();
+   }
    else
+   {
       station1 = m_pPier->GetStation();
+   }
 
    if ( rOther.GetTemporarySupport() != NULL )
+   {
       station2 = rOther.GetTemporarySupport()->GetStation();
+   }
    else
+   {
       station2 = rOther.GetPier()->GetStation();
+   }
 
    return station1 < station2;
 }
@@ -198,7 +212,9 @@ CTemporarySupportData* CClosureJointData::GetTemporarySupport()
 SupportIndexType CClosureJointData::GetTemporarySupportIndex() const
 {
    if ( m_pTempSupport )
+   {
       return m_pTempSupport->GetIndex();
+   }
 
    return INVALID_INDEX;
 }
@@ -206,7 +222,9 @@ SupportIndexType CClosureJointData::GetTemporarySupportIndex() const
 SupportIDType CClosureJointData::GetTemporarySupportID() const
 {
    if ( m_pTempSupport )
+   {
       return m_pTempSupport->GetID();
+   }
 
    return INVALID_ID;
 }
@@ -233,7 +251,9 @@ CPierData2* CClosureJointData::GetPier()
 PierIndexType CClosureJointData::GetPierIndex() const
 {
    if ( m_pPier )
+   {
       return m_pPier->GetIndex();
+   }
 
    return INVALID_INDEX;
 }
@@ -241,7 +261,9 @@ PierIndexType CClosureJointData::GetPierIndex() const
 PierIDType CClosureJointData::GetPierID() const
 {
    if ( m_pPier )
+   {
       return m_pPier->GetID();
+   }
 
    return INVALID_ID;
 }
@@ -489,11 +511,15 @@ void CClosureJointData::ResolveReferences()
 
    CGirderGroupData* pGirderGroup = m_pGirder->GetGirderGroup();
    if ( pGirderGroup == NULL )
+   {
       return; // can't resolve it
+   }
 
    CBridgeDescription2* pBridge = pGirderGroup->GetBridgeDescription();
    if ( pBridge == NULL )
+   {
       return; // can't resolve it
+   }
 
    if ( m_TempSupportID != INVALID_ID )
    {

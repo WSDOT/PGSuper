@@ -25,6 +25,8 @@
 class CSegmentKey;
 class CGirderKey;
 
+#include <IFace\AnalysisResults.h> // for ProductForceType
+
 /*****************************************************************************
 INTERFACE
    IIntervals
@@ -103,9 +105,11 @@ interface IIntervals : IUnknown
    virtual bool IsSegmentErectionInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
 
    // returns the index of the interval when temporary strands are installed in a specific segment
+   // returns INVALID_INDEX the segment does not have temporary strands
    virtual IntervalIndexType GetTemporaryStrandInstallationInterval(const CSegmentKey& segmentKey) = 0;
 
    // returns the index of the interval when temporary strands are removed from a specific segment
+   // returns INVALID_INDEX the segment does not have temporary strands
    virtual IntervalIndexType GetTemporaryStrandRemovalInterval(const CSegmentKey& segmentKey) = 0;
 
    // returns the index of the interval when a closure joint is cast
@@ -145,16 +149,13 @@ interface IIntervals : IUnknown
    // this is the same as pgsTypes::BridgeSite2 for pre version 3.0 PGSuper projects
    virtual IntervalIndexType GetInstallRailingSystemInterval(const CGirderKey& girderKey) = 0;
 
-   // returns the index of the first interval when tendon stressin occors
-   // note that this tendon in all girders in the group are assumed to be stressed at the same time
+   // returns the index of the first interval when tendon stressing occurs
    virtual IntervalIndexType GetFirstTendonStressingInterval(const CGirderKey& girderKey) = 0;
 
-   // returns the index of the last interval when tendon stressin occors
-   // note that this tendon in all girders in the group are assumed to be stressed at the same time
+   // returns the index of the last interval when tendon stressing occurs
    virtual IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when the specified tendon is stressed
-   // note that this tendon in all girders in the group are assumed to be stressed at the same time
    virtual IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
 
    // returns true if a tendon is stressed during the specified interval
@@ -168,6 +169,9 @@ interface IIntervals : IUnknown
 
    // returns a vector of intervals when user defined loads are applied to this girder
    virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CGirderKey& girderKey) = 0;
+
+   // returns a vector of intervals when user defined loads are applied to this girder
+   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CGirderKey& girderKey,ProductForceType pfType) = 0;
 
    // returns a vector of intervals that should be spec checked
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey) = 0;

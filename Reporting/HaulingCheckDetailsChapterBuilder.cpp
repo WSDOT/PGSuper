@@ -68,15 +68,13 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   if (!pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       rptParagraph* p = new rptParagraph;
       *pChapter << p;
@@ -85,6 +83,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    else
    {
       GET_IFACE2(pBroker,IArtifact,pArtifacts);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {

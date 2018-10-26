@@ -112,7 +112,9 @@ BOOL CPGSuperImportPluginDocTemplate::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
 
 	// avoid creating temporary compound file when starting up invisible
 	if (!bMakeVisible)
+   {
 		pDocument->m_bEmbedded = TRUE;
+   }
 
 	if (!pDocument->OnNewDocument())
 	{

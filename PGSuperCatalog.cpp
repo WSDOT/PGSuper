@@ -137,7 +137,7 @@ const CPGSuperCatalog::Publisher* CPGSuperCatalog::GetPublisher(LPCTSTR publishe
       }
    }
 
-   ATLASSERT(0);
+   ATLASSERT(false);
    return NULL;
 }
 

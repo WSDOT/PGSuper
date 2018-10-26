@@ -1090,64 +1090,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="DesignArtifact.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\DesignConfigUtil.cpp"
 				>
 			</File>
@@ -1452,6 +1394,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GirderDesignArtifact.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\GirderGroupData.cpp"
@@ -2694,11 +2640,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SegmentDesignArtifact.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SegmentKey.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\SegmentRelatedStatusItem.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentStabilityArtifact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Selection.cpp"
 				>
 			</File>
 			<File
@@ -3156,6 +3114,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ThreadManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TimelineEvent.cpp"
 				>
 			</File>
@@ -3249,10 +3211,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\DesignArtifact.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Include\PgsExt\DesignConfigUtil.h"
 				>
 			</File>
@@ -3286,6 +3244,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\GirderData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\GirderDesignArtifact.h"
 				>
 			</File>
 			<File
@@ -3465,11 +3427,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\SegmentDesignArtifact.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\SegmentKey.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\SegmentRelatedStatusItem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\SegmentStabilityArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\Selection.h"
 				>
 			</File>
 			<File
@@ -3550,6 +3524,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\TendonStressArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ThreadManager.h"
 				>
 			</File>
 			<File

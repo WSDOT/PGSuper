@@ -34,6 +34,22 @@ static char THIS_FILE[] = __FILE__;
 
 PoiIDType pgsGirderModelFactory::ms_FemModelPoiID = 0;
 
+// predicate compare method
+bool ComparePoiLocation(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2)
+{
+   if ( !poi1.GetSegmentKey().IsEqual(poi2.GetSegmentKey()) )
+   {
+      return false;
+   }
+
+   if ( !IsEqual(poi1.GetDistFromStart(),poi2.GetDistFromStart()) )
+   {
+      return false;
+   }
+
+   return true;
+}
+
 pgsGirderModelFactory::pgsGirderModelFactory(void)
 {
 }
@@ -86,7 +102,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
 
    // get all the cross section changes
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR);
+   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE);
    pPOI->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT);
 
 
@@ -99,20 +115,29 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
    {
       pgsPointOfInterest& poi(*xsIter);
       if ( IsEqual(leftSupportLoc,poi.GetDistFromStart()) )
+      {
          bLeftSupportLoc = false;
+      }
 
       if ( IsEqual(rightSupportLoc,poi.GetDistFromStart()) )
+      {
          bRightSupportLoc = false;
+      }
    }
 
    if ( bLeftSupportLoc )
+   {
       xsPOI.push_back(pgsPointOfInterest(segmentKey,leftSupportLoc));
+   }
 
    if ( bRightSupportLoc )
+   {
       xsPOI.push_back(pgsPointOfInterest(segmentKey,rightSupportLoc));
+   }
 
    // sort the POI
    std::sort(xsPOI.begin(),xsPOI.end());
+   xsPOI.erase(std::unique(xsPOI.begin(),xsPOI.end(),ComparePoiLocation),xsPOI.end()); // eliminate any duplicates
 
    // layout the joints
    JointIDType jntID = 0;
@@ -153,7 +178,9 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
          jointIter++;
 
          if ( jointIter == jointIterEnd )
+         {
             break;
+         }
 
          if ( IsEqual(jointIter->GetDistFromStart(),rightSupportLoc) )
          {
@@ -210,7 +237,9 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
          jointIter++;
 
          if ( jointIter == jointIterEnd )
+         {
             break;
+         }
       }
    }
 }

@@ -197,7 +197,9 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
       // the alignment doesn't have its own context menu, so if there aren't callbacks to add anything
       // then just return
       if ( callbacks.size() == 0 )
+      {
          return false;
+      }
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
@@ -277,7 +279,9 @@ STDMETHODIMP_(DROPEFFECT) CAlignmentDisplayObjectEvents::XDropSite::CanDrop(COle
       source->Read(CBridgeSectionCutDisplayImpl::ms_Format,&threadl,sizeof(DWORD));
 
       if (threadl == threadid)
+      {
         return DROPEFFECT_MOVE;
+      }
    }
 
    return DROPEFFECT_NONE;

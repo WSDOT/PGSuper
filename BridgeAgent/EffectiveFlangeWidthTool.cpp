@@ -83,7 +83,9 @@ HRESULT CEffectiveFlangeWidthTool::FinalConstruct()
 {
    HRESULT hr = m_Tool.CoCreateInstance(CLSID_EffectiveFlangeWidthTool);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    m_bUseTribWidth = VARIANT_FALSE;
 
@@ -111,7 +113,9 @@ STDMETHODIMP CEffectiveFlangeWidthTool::InterfaceSupportsErrorInfo(REFIID riid)
 	for (int i=0; i < sizeof(arr) / sizeof(arr[0]); i++)
 	{
 		if (InlineIsEqualGUID(*arr[i],riid))
+      {
 			return S_OK;
+      }
 	}
 	return S_FALSE;
 }
@@ -128,31 +132,31 @@ STDMETHODIMP CEffectiveFlangeWidthTool::get_UseTributaryWidth(VARIANT_BOOL* bUse
    return S_OK;
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySSMbr(IGenericBridge* bridge,GirderIDType gdrID,Float64 distFromStartOfSSMbr, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64 *tribFlangeWidth)
+STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySSMbr(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64 *tribFlangeWidth)
 {
    Float64 twLeft, twRight;
-   return TributaryFlangeWidthBySSMbrEx(bridge,gdrID,distFromStartOfSSMbr,leftGdrID,rightGdrID,&twLeft,&twRight,tribFlangeWidth);
+   return TributaryFlangeWidthBySSMbrEx(bridge,gdrID,Xg,leftGdrID,rightGdrID,&twLeft,&twRight,tribFlangeWidth);
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySSMbrEx(IGenericBridge* bridge,GirderIDType gdrID,Float64 distFromStartOfSSMbr, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64* twLeft,Float64* twRight,Float64 *tribFlangeWidth)
+STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySSMbrEx(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64* twLeft,Float64* twRight,Float64 *tribFlangeWidth)
 {
    CComPtr<ISuperstructureMember> ssMbr;
    bridge->get_SuperstructureMember(gdrID,&ssMbr);
 
-   Float64 distFromStartOfSegment;
+   Float64 Xs;
    SegmentIndexType segIdx;
    CComPtr<ISegment> segment;
-   ssMbr->GetDistanceFromStartOfSegment(distFromStartOfSSMbr,&distFromStartOfSegment,&segIdx,&segment);
-   return TributaryFlangeWidthBySegmentEx(bridge,gdrID,segIdx,distFromStartOfSegment,leftGdrID,rightGdrID,twLeft,twRight,tribFlangeWidth);
+   ssMbr->GetDistanceFromStartOfSegment(Xg,&Xs,&segIdx,&segment);
+   return TributaryFlangeWidthBySegmentEx(bridge,gdrID,segIdx,Xs,leftGdrID,rightGdrID,twLeft,twRight,tribFlangeWidth);
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegment(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 distFromStartOfSegment, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64 *tribFlangeWidth)
+STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegment(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64 *tribFlangeWidth)
 {
    Float64 twLeft, twRight;
-   return TributaryFlangeWidthBySegmentEx(bridge,gdrID,segIdx,distFromStartOfSegment,leftGdrID,rightGdrID,&twLeft,&twRight,tribFlangeWidth);
+   return TributaryFlangeWidthBySegmentEx(bridge,gdrID,segIdx,Xs,leftGdrID,rightGdrID,&twLeft,&twRight,tribFlangeWidth);
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 distFromStartOfSegment, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64* twLeft, Float64* twRight, Float64 *tribFlangeWidth)
+STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64* twLeft, Float64* twRight, Float64 *tribFlangeWidth)
 {
    CSegmentKey segmentKey = GetSegmentKey(gdrID);
    segmentKey.segmentIndex = segIdx;
@@ -160,7 +164,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
-   SSMbrIntervalKey key(compositeDeckIntervalIdx,gdrID,segIdx,distFromStartOfSegment);
+   SSMbrIntervalKey key(compositeDeckIntervalIdx,gdrID,segIdx,Xs);
    TWContainer::iterator found = m_TFW.find(key);
    if ( found != m_TFW.end() )
    {
@@ -177,9 +181,11 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
       if ( IsSpreadSpacing(beamSpacing) )
       {
          // the bridge uses spread girders... the WBFL::GenericBridgeTools knows how to deal with this
-         HRESULT hr = m_Tool->TributaryFlangeWidthBySegmentEx(bridge,gdrID,segIdx,distFromStartOfSegment,leftGdrID,rightGdrID,twLeft,twRight,tribFlangeWidth);
+         HRESULT hr = m_Tool->TributaryFlangeWidthBySegmentEx(bridge,gdrID,segIdx,Xs,leftGdrID,rightGdrID,twLeft,twRight,tribFlangeWidth);
          if ( FAILED(hr) )
+         {
             return hr;
+         }
 
          TribWidth tw;
          tw.twLeft    = *twLeft;
@@ -192,7 +198,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
       {
          // the bridge uses adjacent girders... tributary width is simply the width of the girder + half
          // the joint spacing on either side.
-         pgsPointOfInterest poi(segmentKey,distFromStartOfSegment);
+         pgsPointOfInterest poi(segmentKey,Xs);
          GET_IFACE(IGirder,pGirder);
 
          Float64 topWidth = pGirder->GetTopWidth(poi);
@@ -267,14 +273,14 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
             else
             {
                rightJointStart = pGroup->GetPier(pgsTypes::metStart)->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing(rightSpaceIdx);
-               rightJointEnd   = pGroup->GetPier(pgsTypes::metEnd)->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing(rightSpaceIdx);
+               rightJointEnd   = pGroup->GetPier(pgsTypes::metEnd  )->GetGirderSpacing(pgsTypes::Back )->GetGirderSpacing(rightSpaceIdx);
             }
 
             GET_IFACE(IBridge,pBridge);
             Float64 gdr_length = pBridge->GetSegmentLength(segmentKey);
 
-            leftJoint  = LinInterp(distFromStartOfSegment, leftJointStart,  leftJointEnd,  gdr_length);
-            rightJoint = LinInterp(distFromStartOfSegment, rightJointStart, rightJointEnd, gdr_length);
+            leftJoint  = LinInterp(Xs, leftJointStart,  leftJointEnd,  gdr_length);
+            rightJoint = LinInterp(Xs, rightJointStart, rightJointEnd, gdr_length);
          }
 
          ATLASSERT( !IsZero(width) );
@@ -296,7 +302,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
    return S_OK;
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbr(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xgp, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64 *effFlangeWidth)
+STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbr(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, GirderIDType leftGdrID, GirderIDType rightGdrID, Float64 *effFlangeWidth)
 {
    CComPtr<ISuperstructureMember> ssMbr;
    bridge->get_SuperstructureMember(gdrID,&ssMbr);
@@ -304,19 +310,21 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbr(IGenericBrid
    Float64 Xs;
    SegmentIndexType segIdx;
    CComPtr<ISegment> segment;
-   ssMbr->GetDistanceFromStartOfSegment(Xgp,&Xs,&segIdx,&segment);
+   ssMbr->GetDistanceFromStartOfSegment(Xg,&Xs,&segIdx,&segment);
 
    EffFlangeWidth efw;
    HRESULT hr = EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segIdx,Xs,leftGdrID,rightGdrID,&efw);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    *effFlangeWidth = efw.effFlangeWidth;
 
    return S_OK;
 }
 
-STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbrEx(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xgp, GirderIDType leftGdrID, GirderIDType rightGdrID, IEffectiveFlangeWidthDetails** details)
+STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbrEx(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, GirderIDType leftGdrID, GirderIDType rightGdrID, IEffectiveFlangeWidthDetails** details)
 {
    CComPtr<ISuperstructureMember> ssMbr;
    bridge->get_SuperstructureMember(gdrID,&ssMbr);
@@ -324,12 +332,14 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbrEx(IGenericBr
    Float64 Xs;
    SegmentIndexType segIdx;
    CComPtr<ISegment> segment;
-   ssMbr->GetDistanceFromStartOfSegment(Xgp,&Xs,&segIdx,&segment);
+   ssMbr->GetDistanceFromStartOfSegment(Xg,&Xs,&segIdx,&segment);
 
    EffFlangeWidth efw;
    HRESULT hr = EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segIdx,Xs,leftGdrID,rightGdrID,&efw);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    efw.m_Details.CopyTo(details);
 
@@ -342,7 +352,9 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegment(IGenericBr
    CComPtr<IEffectiveFlangeWidthDetails> details;
    HRESULT hr = EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segIdx,Xs,leftGdrID,rightGdrID,&efw);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    *effFlangeWidth = efw.effFlangeWidth;
 
@@ -372,7 +384,9 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentEx(IGeneric
    {
       HRESULT hr = m_Tool->EffectiveFlangeWidthBySegmentEx(bridge,gdrID,segIdx,Xs, leftGdrID, rightGdrID, details);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
       EffFlangeWidth efw;
       efw.m_Details = *details;
@@ -395,15 +409,16 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
    bool bIsExteriorGirder = locationType != ltInteriorGirder ? true : false;
 
    GET_IFACE(IPointOfInterest,pPoi);
-   SpanIndexType spanIdx = pPoi->GetSpan(pgsPointOfInterest(segmentKey,Xs));
+   SpanIndexType spanIdx;
+   Float64 Xspan;
+   pPoi->ConvertPoiToSpanPoint(pgsPointOfInterest(segmentKey,Xs),&spanIdx,&Xspan);
 
    // Computes effective flange width, retaining details of calculation per LRFD 4.6.2.6.1
    if ( m_bUseTribWidth == VARIANT_TRUE || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
    {
       GET_IFACE(IBridge,pBridge);
-      GET_IFACE(IGirder,pGirder);
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       GET_IFACE(IEffectiveFlangeWidth, pIEffFW);
+      GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
       if ( pIEffFW->IgnoreEffectiveFlangeWidthLimits() )
       {
@@ -464,8 +479,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
 	      }
 	
-
-	      // check overhang spacing if it is a CIP or SIP deck
+         // check overhang spacing if it is a CIP or SIP deck
 	      // overlay decks don't have overhangs
 	      if ( pBridge->GetDeckType() != pgsTypes::sdtCompositeOverlay )
 	      {
@@ -474,8 +488,10 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             leftSegmentKey.girderIndex = 0;
             rightSegmentKey.girderIndex = nGirders-1;
 
-            pgsPointOfInterest leftPoi  = pPoi->ConvertSegmentCoordinateToPoi(leftSegmentKey,Xs);
-            pgsPointOfInterest rightPoi = pPoi->ConvertSegmentCoordinateToPoi(rightSegmentKey,Xs);
+            pgsPointOfInterest leftPoi(leftSegmentKey,Xs);
+            pgsPointOfInterest rightPoi(rightSegmentKey,Xs);
+
+            GET_IFACE(IGirder,pGirder);
 
 	         Float64 left_trib_width_adjustment  = pGirder->GetCL2ExteriorWebDistance(leftPoi);
 	         Float64 right_trib_width_adjustment = pGirder->GetCL2ExteriorWebDistance(rightPoi);
@@ -483,15 +499,19 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	         Float64 right_overhang = twRight - right_trib_width_adjustment;
 	         if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() && 
                   (locationType == ltLeftExteriorGirder  && S/2 < left_overhang  && !IsEqual(S/2,left_overhang)) || 
-	              (locationType == ltRightExteriorGirder && S/2 < right_overhang && !IsEqual(S/2,right_overhang)) )
+	               (locationType == ltRightExteriorGirder && S/2 < right_overhang && !IsEqual(S/2,right_overhang)) )
 	         {
 	            bOverhangCheckFailed = true;
 	            // force tributary area to be S/2
 	            if ( locationType == ltLeftExteriorGirder && IsGE(S/2,left_overhang) )
+               {
 	               twLeft = twRight;
+               }
 	
 	            if ( locationType == ltRightExteriorGirder && IsGE(S/2,right_overhang) )
+               {
 	               twRight = twLeft;
+               }
 	
 	            // overhang is too big
 	            std::_tostringstream os;
@@ -524,7 +544,9 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
       	
 	               SpanIndexType spanIndex = pierIdx;
 	               if ( nPiers-1 == pierIdx ) // at the last pier... use the previous span index
+                  {
 	                  spanIndex -= 1;
+                  }
       	
                   GroupIndexType groupIdx = pBridge->GetGirderGroupIndex(spanIndex);
 	               GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
@@ -545,7 +567,9 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	                  angle->get_Value(&angle_value);
       	
 	                  if ( M_PI < angle_value )
+                     {
 	                     angle_value = TWO_PI - angle_value;
+                     }
       	
 	                  maxSkew = Max(maxSkew,angle_value);
 	               }
@@ -627,7 +651,9 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 
 
                // otherwise, use the thickness of the top flange of the girder (this is a decked girder)
-               pgsPointOfInterest poi = pPoi->ConvertSegmentCoordinateToPoi(segmentKey,Xs);
+               pgsPointOfInterest poi(segmentKey,Xs);
+
+               GET_IFACE(IGirder,pGirder);
                ts = pGirder->GetMinTopFlangeThickness(poi);
             }
 
@@ -663,7 +689,9 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
          CComPtr<IEffectiveFlangeWidthDetails> details;
          HRESULT hr = EffectiveFlangeWidthBySegmentEx(bridge,gdrID,segIdx,Xs,leftGdrID,rightGdrID,&details);
          if ( FAILED(hr) )
+         {
             return hr;
+         }
 
          effFlangeWidth->m_Details = details;
          details->EffectiveFlangeWidth(&(effFlangeWidth->effFlangeWidth));
@@ -682,7 +710,9 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             CComPtr<IEffectiveFlangeWidthDetails> intdetails;
             HRESULT hr = EffectiveFlangeWidthBySegmentEx(bridge,adjGdrID,segIdx,Xs,adjLeftGdrID,adjRightGdrID,&intdetails);
             if ( FAILED(hr) )
+            {
                return hr;
+            }
 
             Float64 eff_wid;
             intdetails->EffectiveFlangeWidth(&eff_wid);
@@ -733,9 +763,13 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth(IBroker* pBroker,IGen
       ::GetAdjacentSuperstructureMemberIDs(segmentKey,&leftGdrID,&gdrID,&rightGdrID);
 
       if ( bInterior )
+      {
          ReportEffectiveFlangeWidth_InteriorGirder(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+      }
       else
+      {
          ReportEffectiveFlangeWidth_ExteriorGirder(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+      }
    }
 }
 
@@ -771,7 +805,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey, POI_MIDSPAN) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L) );
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poi( vPoi[0] );
 
@@ -816,7 +850,9 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
           efw.m_Details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
 
           if ( 1 < count )
+          {
              (*pPara) << rptNewLine << _T("Web ") << long(flangeIdx+1) << rptNewLine;
+          }
 
           (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << xdim2.SetValue(tSlab) << _T(") + greater of [ ");
           (*pPara) << xdim2.SetValue(tWeb) << _T(" : (0.5)(");
@@ -929,7 +965,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
    INIT_UV_PROTOTYPE( rptLengthUnitValue, xdim,   pDisplayUnits->GetComponentDimUnit(),   false );
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
@@ -976,7 +1012,9 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
    for ( FlangeIndexType flangeIdx = 0; flangeIdx < count; flangeIdx++ )
    {
       if ( 1 < count )
+      {
          (*table)(row,1) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
+      }
 
       Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
       details->get_SlabThickness(&tSlab);
@@ -1003,9 +1041,13 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder(IBroke
    MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(segmentKey);
 
    if ( nWebs == 1 )
+   {
       ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+   }
    else
+   {
       ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+   }
 }
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftGdrID,GirderIDType gdrID,GirderIDType rightGdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -1015,9 +1057,13 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
    GET_IFACE2(pBroker,IGirder,pGirder);
     if ( pGirder->IsPrismatic(liveLoadIntervalIdx,segmentKey) )
+    {
        ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+    }
     else
+    {
        ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+    }
 }
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftGdrID,GirderIDType gdrID,GirderIDType rightGdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -1044,7 +1090,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,       area,    pDisplayUnits->GetAreaUnit(),            true );
 
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey, POI_MIDSPAN) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT) );
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poi( vPoi[0] );
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -1114,19 +1160,24 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          {
 	         *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width") << rptNewLine;
 	         if ( bLeftGirder )
+            {
 	           *pPara << _T("Left Overhang from CL girder = ") << xdim.SetValue(efw.twLeft) << rptNewLine;
+            }
 	         else
+            {
 	           *pPara << _T("Left Spacing = ") << xdim.SetValue(efw.twLeft*2) << rptNewLine;
+            }
 	
 	
 	
 	         if ( bLeftGirder )
+            {
 	           *pPara << _T("Right Spacing = ") << xdim.SetValue(efw.twRight*2) << rptNewLine;
-	
-	
-	
+            }
 	         else
+            {
 	           *pPara << _T("Right Overhang from CL girder = ") << xdim.SetValue(efw.twRight) << rptNewLine;
+            }
          }
          else
          {
@@ -1194,13 +1245,17 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+
    rptRcTable* table;
    if ( use_tributary_width )
    {
       EffFlangeWidth efw;
-      EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segmentKey.segmentIndex,0.00,leftGdrID,rightGdrID,&efw);
+      pgsPointOfInterest poi(vPoi.front());
+      Float64 Xs = poi.GetDistFromStart();
+      EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,&efw);
 
-      int nCol = 4;
+      ColumnIndexType nCol = 4;
 
       if ( efw.bContinuousBarrier )
       {
@@ -1212,7 +1267,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
       table = pgsReportStyleHolder::CreateDefaultTable(nCol,_T(""));
 
-      int col = 0;
+      ColumnIndexType col = 0;
       (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*table)(0,col++) << COLHDR((bLeftGirder ? _T("Left Overhang") : _T("Left Spacing")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       (*table)(0,col++) << COLHDR((bLeftGirder ? _T("Right Spacing") : _T("Right Overhang")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -1246,7 +1301,6 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    INIT_UV_PROTOTYPE( rptLengthUnitValue, xdim2,     pDisplayUnits->GetComponentDimUnit(), true  );
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area,     pDisplayUnits->GetAreaUnit(), true  );
 
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
@@ -1259,7 +1313,8 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
       EffFlangeWidth efw;
       // using dummy segment index of 0
-      EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segmentKey.segmentIndex,poi.GetDistFromStart(),leftGdrID,rightGdrID,&efw);
+      Float64 Xs = poi.GetDistFromStart();
+      EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,&efw);
 
       ColumnIndexType col = 0;
       (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
@@ -1289,7 +1344,9 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          for ( FlangeIndexType flangeIdx = 0; flangeIdx < count; flangeIdx++ )
          {
             if ( 1 < count )
+            {
                (*table)(row,col) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
+            }
 
             Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
             efw.m_Details->get_SlabThickness(&tSlab);
@@ -1312,14 +1369,22 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          area.ShowUnitTag(false);
 
          if ( bLeftGirder )
+         {
            (*table)(row,col++) << xdim2.SetValue(efw.twLeft) << rptNewLine;
+         }
          else
+         {
            (*table)(row,col++) << xdim2.SetValue(efw.twLeft*2) << rptNewLine;
+         }
 
          if ( bLeftGirder )
+         {
            (*table)(row,col++) << xdim2.SetValue(efw.twRight*2) << rptNewLine;
+         }
          else
+         {
            (*table)(row,col++) << xdim2.SetValue(efw.twRight) << rptNewLine;
+         }
 
          if ( efw.bContinuousBarrier )
          {
@@ -1341,9 +1406,13 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
 
    GET_IFACE2(pBroker,IGirder,pGirder);
     if ( pGirder->IsPrismatic(liveLoadIntervalIdx,segmentKey) ) // ??? is this the right gdrID and segIdx to check?
+    {
        ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Prismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+    }
     else
+    {
        ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Nonprismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+    }
 }
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftGdrID,GirderIDType gdrID,GirderIDType rightGdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -1391,7 +1460,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    INIT_UV_PROTOTYPE( rptLengthUnitValue, spanLength, pDisplayUnits->GetSpanLengthUnit(),   true  );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,     pDisplayUnits->GetComponentDimUnit(), true  );
 
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey, POI_MIDSPAN) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT) );
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poi( vPoi[0] );
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -1414,7 +1483,9 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
 
       if ( 1 < count )
+      {
          (*pPara) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
+      }
 
       (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
       (*pPara) << length.SetValue(tWeb) << _T(" : (0.5)(");
@@ -1505,7 +1576,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    INIT_UV_PROTOTYPE( rptLengthUnitValue, spanLength, pDisplayUnits->GetSpanLengthUnit(),   true  );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,     pDisplayUnits->GetComponentDimUnit(), true  );
 
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    bool bLeftGirder = pBridge->IsLeftExteriorGirder(segmentKey);
@@ -1521,7 +1592,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       CComPtr<IEffectiveFlangeWidthDetails> details;
       EffectiveFlangeWidthBySegmentEx(bridge,gdrID,segmentKey.segmentIndex,poi.GetDistFromStart(),leftGdrID,rightGdrID,&details);
 
-      (*table)(row,0) << location.SetValue( POI_GIRDER, poi, end_size );
+      (*table)(row,0) << location.SetValue( POI_SPAN, poi, end_size );
 
       Float64 effSpanLength;
       details->get_EffectiveSpanLength(&effSpanLength);
@@ -1534,7 +1605,9 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       for ( FlangeIndexType flangeIdx = 0; flangeIdx < count; flangeIdx++ )
       {
          if ( 1 < count )
+         {
             (*table)(row,1) << rptNewLine << _T("Web ") << long(flangeIdx + 1) << rptNewLine;
+         }
 
          Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
          details->get_SlabThickness(&tSlab);

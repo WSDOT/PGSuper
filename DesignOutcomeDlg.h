@@ -30,7 +30,7 @@
 //
 
 #include "PGSuperAppPlugin\resource.h"
-#include <PgsExt\DesignArtifact.h>
+#include <PgsExt\GirderDesignArtifact.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <boost\shared_ptr.hpp>
 

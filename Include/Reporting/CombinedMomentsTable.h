@@ -1035,7 +1035,7 @@ inline std::_tstring PedestrianFootnote(ILiveLoads::PedestrianLoadApplicationTyp
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return _T(" - Unknown pedestrian live load application");
    }
  }

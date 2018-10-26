@@ -38,35 +38,35 @@ HRESULT PSGLIBFUNC ConfigureUnitServer(IUnitServer* server)
    unitMass mass = unitSysUnitsMgr::GetMassUnit();
    if (mass.UnitTag() != _T("kg"))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return E_FAIL;
    }
 
    unitLength length = unitSysUnitsMgr::GetLengthUnit();
    if (length.UnitTag() != _T("m"))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return E_FAIL;
    }
 
    unitTime time = unitSysUnitsMgr::GetTimeUnit();
    if (time.UnitTag() != _T("sec"))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return E_FAIL;
    }
 
    unitTemperature temp = unitSysUnitsMgr::GetTemperatureUnit();
    if (temp.UnitTag() != _T("C"))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return E_FAIL;
    }
 
    unitAngle angle = unitSysUnitsMgr::GetAngleUnit();
    if (angle.UnitTag() != _T("rad"))
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return E_FAIL;
    }
 

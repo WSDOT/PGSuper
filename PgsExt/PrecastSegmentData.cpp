@@ -63,7 +63,7 @@ CPrecastSegmentData::CPrecastSegmentData(CSplicedGirderData* pGirder)
 CPrecastSegmentData::CPrecastSegmentData(const CPrecastSegmentData& rOther)
 {
    Init();
-   MakeCopy(rOther,true /* only copy data, not ID or Index*/);
+   MakeCopy(rOther,false,true,true);
 }
 
 CPrecastSegmentData::~CPrecastSegmentData()
@@ -191,90 +191,113 @@ const CPrecastSegmentData* CPrecastSegmentData::GetNextSegment() const
    return m_pRightClosure == NULL ? NULL : m_pRightClosure->GetRightSegment();
 }
 
-void CPrecastSegmentData::GetStartSupport(const CPierData2** ppPier,const CTemporarySupportData** ppTS) const
+void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,const CPierData2** ppPier,const CTemporarySupportData** ppTS) const
 {
    *ppPier = NULL;
    *ppTS = NULL;
-   if ( m_pLeftClosure )
+   if ( endType == pgsTypes::metStart )
    {
-      if ( m_pLeftClosure->GetPier() )
-         *ppPier = m_pLeftClosure->GetPier();
+      if ( m_pLeftClosure )
+      {
+         if ( m_pLeftClosure->GetPier() )
+         {
+            *ppPier = m_pLeftClosure->GetPier();
+         }
+         else
+         {
+            *ppTS = m_pLeftClosure->GetTemporarySupport();
+         }
+      }
       else
-         *ppTS = m_pLeftClosure->GetTemporarySupport();
+      {
+         *ppPier = m_pGirder->GetPier(pgsTypes::metStart);
+      }
    }
    else
    {
-      *ppPier = m_pGirder->GetPier(pgsTypes::metStart);
+      if ( m_pRightClosure )
+      {
+         if ( m_pRightClosure->GetPier() )
+         {
+            *ppPier = m_pRightClosure->GetPier();
+         }
+         else
+         {
+            *ppTS = m_pRightClosure->GetTemporarySupport();
+         }
+      }
+      else
+      {
+         *ppPier = m_pGirder->GetPier(pgsTypes::metEnd);
+      }
    }
 }
 
-void CPrecastSegmentData::GetStartSupport(CPierData2** ppPier,CTemporarySupportData** ppTS)
+void CPrecastSegmentData::GetSupport(pgsTypes::MemberEndType endType,CPierData2** ppPier,CTemporarySupportData** ppTS)
 {
    *ppPier = NULL;
    *ppTS = NULL;
-   if ( m_pLeftClosure )
+   if ( endType == pgsTypes::metStart )
    {
-      if ( m_pLeftClosure->GetPier() )
-         *ppPier = m_pLeftClosure->GetPier();
+      if ( m_pLeftClosure )
+      {
+         if ( m_pLeftClosure->GetPier() )
+         {
+            *ppPier = m_pLeftClosure->GetPier();
+         }
+         else
+         {
+            *ppTS = m_pLeftClosure->GetTemporarySupport();
+         }
+      }
       else
-         *ppTS = m_pLeftClosure->GetTemporarySupport();
+      {
+         *ppPier = m_pGirder->GetPier(pgsTypes::metStart);
+      }
    }
    else
    {
-      *ppPier = m_pGirder->GetPier(pgsTypes::metStart);
-   }
-}
-
-void CPrecastSegmentData::GetEndSupport(const CPierData2** ppPier,const CTemporarySupportData** ppTS) const
-{
-   *ppPier = NULL;
-   *ppTS = NULL;
-   if ( m_pRightClosure )
-   {
-      if ( m_pRightClosure->GetPier() )
-         *ppPier = m_pRightClosure->GetPier();
+      if ( m_pRightClosure )
+      {
+         if ( m_pRightClosure->GetPier() )
+         {
+            *ppPier = m_pRightClosure->GetPier();
+         }
+         else
+         {
+            *ppTS = m_pRightClosure->GetTemporarySupport();
+         }
+      }
       else
-         *ppTS = m_pRightClosure->GetTemporarySupport();
-   }
-   else
-   {
-      *ppPier = m_pGirder->GetPier(pgsTypes::metEnd);
+      {
+         *ppPier = m_pGirder->GetPier(pgsTypes::metEnd);
+      }
    }
 }
-
-void CPrecastSegmentData::GetEndSupport(CPierData2** ppPier,CTemporarySupportData** ppTS)
-{
-   *ppPier = NULL;
-   *ppTS = NULL;
-   if ( m_pRightClosure )
-   {
-      if ( m_pRightClosure->GetPier() )
-         *ppPier = m_pRightClosure->GetPier();
-      else
-         *ppTS = m_pRightClosure->GetTemporarySupport();
-   }
-   else
-   {
-      *ppPier = m_pGirder->GetPier(pgsTypes::metEnd);
-   }
-}
-
 
 void CPrecastSegmentData::GetStations(Float64* pStartStation,Float64* pEndStation) const
 {
    const CPierData2* pPier = NULL;
    const CTemporarySupportData* pTS = NULL;
-   GetStartSupport(&pPier,&pTS);
+   GetSupport(pgsTypes::metStart,&pPier,&pTS);
    if ( pPier )
+   {
       *pStartStation = pPier->GetStation();
+   }
    else
+   {
       *pStartStation = pTS->GetStation();
+   }
 
-   GetEndSupport(&pPier,&pTS);
+   GetSupport(pgsTypes::metEnd,&pPier,&pTS);
    if ( pPier )
+   {
       *pEndStation = pPier->GetStation();
+   }
    else
+   {
       *pEndStation = pTS->GetStation();
+   }
 }
 
 void CPrecastSegmentData::GetSpacing(const CGirderSpacing2** ppStartSpacing,const CGirderSpacing2** ppEndSpacing) const
@@ -282,9 +305,13 @@ void CPrecastSegmentData::GetSpacing(const CGirderSpacing2** ppStartSpacing,cons
    if ( m_pLeftClosure )
    {
       if ( m_pLeftClosure->GetPier() )
+      {
          *ppStartSpacing = m_pLeftClosure->GetPier()->GetGirderSpacing(pgsTypes::Ahead);
+      }
       else
+      {
          *ppStartSpacing = m_pLeftClosure->GetTemporarySupport()->GetSegmentSpacing();
+      }
    }
    else
    {
@@ -294,9 +321,13 @@ void CPrecastSegmentData::GetSpacing(const CGirderSpacing2** ppStartSpacing,cons
    if ( m_pRightClosure )
    {
       if ( m_pRightClosure->GetPier() )
+      {
          *ppEndSpacing = m_pRightClosure->GetPier()->GetGirderSpacing(pgsTypes::Back);
+      }
       else
+      {
          *ppEndSpacing = m_pRightClosure->GetTemporarySupport()->GetSegmentSpacing();
+      }
    }
    else
    {
@@ -346,9 +377,13 @@ Float64 CPrecastSegmentData::GetVariationLength(pgsTypes::SegmentZoneType zone) 
    if ( m_VariationType == pgsTypes::svtNone )
    {
       if ( zone == pgsTypes::sztLeftPrismatic || zone == pgsTypes::sztRightPrismatic )
+      {
          return -0.5; // 50% of segment length
+      }
       else
+      {
          return 0.0;
+      }
    }
    else
    {
@@ -359,17 +394,25 @@ Float64 CPrecastSegmentData::GetVariationLength(pgsTypes::SegmentZoneType zone) 
 Float64 CPrecastSegmentData::GetVariationHeight(pgsTypes::SegmentZoneType zone) const
 {
    if ( m_VariationType == pgsTypes::svtNone )
+   {
       return GetSegmentHeight(true);
+   }
    else
+   {
       return m_VariationHeight[zone];
+   }
 }
 
 Float64 CPrecastSegmentData::GetVariationBottomFlangeDepth(pgsTypes::SegmentZoneType zone) const
 {
    if ( m_VariationType == pgsTypes::svtNone || !m_bVariableBottomFlangeDepthEnabled )
+   {
       return GetSegmentHeight(false);
+   }
    else
+   {
       return m_VariationBottomFlangeDepth[zone];
+   }
 }
 
 Float64 CPrecastSegmentData::GetBasicSegmentHeight() const
@@ -449,7 +492,9 @@ std::vector<const CTemporarySupportData*> CPrecastSegmentData::GetTemporarySuppo
 
    // get temporary support at start of segment (if there is one)
    if ( m_pLeftClosure && m_pLeftClosure->GetTemporarySupport() )
+   {
       tempSupports.push_back( m_pLeftClosure->GetTemporarySupport() );
+   }
 
    // get intermediate temporary supports
    Float64 startStation,endStation;
@@ -479,7 +524,9 @@ std::vector<const CTemporarySupportData*> CPrecastSegmentData::GetTemporarySuppo
 
    // get temporary support at end of segment (if there is one)
    if ( m_pRightClosure && m_pRightClosure->GetTemporarySupport() )
+   {
       tempSupports.push_back( m_pRightClosure->GetTemporarySupport() );
+   }
 
    return tempSupports;
 }
@@ -530,9 +577,9 @@ CPrecastSegmentData& CPrecastSegmentData::operator = (const CPrecastSegmentData&
    return *this;
 }
 
-void CPrecastSegmentData::CopySegmentData(const CPrecastSegmentData* pSegment)
+void CPrecastSegmentData::CopySegmentData(const CPrecastSegmentData* pSegment,bool bCopyLocation)
 {
-   MakeCopy(*pSegment,true /*copy only data, don't change ID or Index*/);
+   MakeCopy(*pSegment,false,bCopyLocation,true);
    AdjustAdjacentSegment();
 }
 
@@ -584,52 +631,78 @@ void CPrecastSegmentData::CopyVariationFrom(const CPrecastSegmentData& rOther)
 bool CPrecastSegmentData::operator==(const CPrecastSegmentData& rOther) const
 {
    if ( m_VariationType != rOther.m_VariationType )
+   {
       return false;
+   }
 
    for ( int i = 0; i < 4; i++ )
    {
       if ( m_VariationLength[i] != rOther.m_VariationLength[i] )
+      {
          return false;
+      }
 
       if ( m_VariationHeight[i] != rOther.m_VariationHeight[i] )
+      {
          return false;
+      }
 
       if ( m_bVariableBottomFlangeDepthEnabled )
       {
          if ( m_VariationBottomFlangeDepth[i] != rOther.m_VariationBottomFlangeDepth[i] )
+         {
             return false;
+         }
       }
    }
 
    if ( m_bVariableBottomFlangeDepthEnabled != rOther.m_bVariableBottomFlangeDepthEnabled )
+   {
       return false;
+   }
 
    for ( int j = 0; j < 2; j++ )
    {
       if ( !IsEqual(EndBlockLength[j],rOther.EndBlockLength[j]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(EndBlockTransitionLength[j],rOther.EndBlockTransitionLength[j]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(EndBlockWidth[j],rOther.EndBlockWidth[j]) )
+      {
          return false;
+      }
    }
 
    if ( Strands != rOther.Strands )
+   {
       return false;
+   }
    
    if ( Material != rOther.Material )
+   {
       return false;
+   }
    
    if ( ShearData != rOther.ShearData )
+   {
       return false;
+   }
    
    if ( LongitudinalRebarData != rOther.LongitudinalRebarData )
+   {
       return false;
+   }
    
    if ( HandlingData != rOther.HandlingData )
+   {
       return false;
+   }
    
    return true;
 }
@@ -921,35 +994,41 @@ HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave,IProgress* pProgress
    return S_OK;
 }
 
-void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyDataOnly)
+void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyIdentity,bool bCopyLocation,bool bCopyProperties)
 {
-   if ( !bCopyDataOnly )
+   if ( bCopyIdentity )
    {
       m_SegmentIndex = rOther.m_SegmentIndex;
       m_SegmentID    = rOther.m_SegmentID;
    }
 
-   for ( int i = 0; i < 2; i++ )
+   if ( bCopyLocation )
    {
-      pgsTypes::MemberEndType endType = pgsTypes::MemberEndType(i);
-      if ( rOther.m_pSpanData[endType] )
+      for ( int i = 0; i < 2; i++ )
       {
-         m_pSpanData[endType] = NULL;
-         m_SpanIdx[endType] = rOther.m_pSpanData[endType]->GetIndex();
-      }
-      else
-      {
-         m_pSpanData[endType] = NULL;
-         m_SpanIdx[endType] = rOther.m_SpanIdx[endType];
+         pgsTypes::MemberEndType endType = pgsTypes::MemberEndType(i);
+         if ( rOther.m_pSpanData[endType] )
+         {
+            m_pSpanData[endType] = NULL;
+            m_SpanIdx[endType] = rOther.m_pSpanData[endType]->GetIndex();
+         }
+         else
+         {
+            m_pSpanData[endType] = NULL;
+            m_SpanIdx[endType] = rOther.m_SpanIdx[endType];
+         }
       }
    }
 
-   CopyMaterialFrom(rOther);
-   CopyPrestressingFrom(rOther);
-   CopyLongitudinalReinforcementFrom(rOther);
-   CopyTransverseReinforcementFrom(rOther);
-   CopyHandlingFrom(rOther);
-   CopyVariationFrom(rOther);
+   if ( bCopyProperties )
+   {
+      CopyMaterialFrom(rOther);
+      CopyPrestressingFrom(rOther);
+      CopyLongitudinalReinforcementFrom(rOther);
+      CopyTransverseReinforcementFrom(rOther);
+      CopyHandlingFrom(rOther);
+      CopyVariationFrom(rOther);
+   }
 
    ResolveReferences();
 
@@ -958,7 +1037,7 @@ void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyD
 
 void CPrecastSegmentData::MakeAssignment(const CPrecastSegmentData& rOther)
 {
-   MakeCopy( rOther, false /*copy everything*/ );
+   MakeCopy( rOther,true,true,true);
 }
 
 Float64 CPrecastSegmentData::GetSegmentHeight(bool bSegmentHeight) const
@@ -977,9 +1056,13 @@ Float64 CPrecastSegmentData::GetSegmentHeight(bool bSegmentHeight) const
    factory->CreateGirderSection(pBroker,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
    Float64 height;
    if ( bSegmentHeight )
+   {
       gdrSection->get_GirderHeight(&height);
+   }
    else
+   {
       gdrSection->get_MinBottomFlangeThickness(&height);
+   }
 
    return height;
 }
@@ -1019,20 +1102,29 @@ void CPrecastSegmentData::AdjustAdjacentSegment()
 void CPrecastSegmentData::ResolveReferences()
 {
    if ( m_pGirder == NULL )
+   {
       return;
+   }
 
    if ( m_pGirder->GetGirderGroup() == NULL )
+   {
       return;
+   }
 
    const CBridgeDescription2* pBridge = m_pGirder->GetGirderGroup()->GetBridgeDescription();
    if ( pBridge == NULL )
+   {
       return;
+   }
 
    for ( int i = 0; i < 2; i++ )
    {
       pgsTypes::MemberEndType endType = pgsTypes::MemberEndType(i);
-      m_pSpanData[endType] = pBridge->GetSpan(m_SpanIdx[endType]);
-      m_SpanIdx[endType] = INVALID_INDEX;
+      if ( m_SpanIdx[endType] != INVALID_INDEX )
+      {
+         m_pSpanData[endType] = pBridge->GetSpan(m_SpanIdx[endType]);
+         m_SpanIdx[endType] = INVALID_INDEX;
+      }
    }
 }
 
@@ -1084,13 +1176,19 @@ void CPrecastSegmentData::AssertValid()
 {
    // if any of these first 3 checks are NULL, then this segment isn't an a structure so it can't be validated
    if ( m_pGirder == NULL )
+   {
       return;
+   }
 
    if ( m_pGirder->GetGirderGroup() == NULL )
+   {
       return;
+   }
 
    if ( m_pGirder->GetGirderGroup()->GetBridgeDescription() == NULL )
+   {
       return;
+   }
 
    ATLASSERT(m_SegmentID != INVALID_ID);
 

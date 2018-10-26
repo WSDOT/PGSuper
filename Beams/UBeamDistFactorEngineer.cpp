@@ -410,9 +410,9 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,UBEAM_LLDFDETAILS* plldf)
 {
    GET_IFACE(IGirder, pGdr);
-   GET_IFACE(IBridge,pBridge);
    GET_IFACE(IBarriers,pBarriers);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IPointOfInterest,pPoi);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -432,19 +432,17 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
 
    if ( nGirders <= gdrIdx )
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       gdrIdx = nGirders-1;
    }
-
-#pragma Reminder("BUG: need to figure out which segment the LLDF cut line intersects")
-   CSegmentKey segmentKey(pGroup->GetIndex(),gdrIdx,0);
 
    ///////////////////////////////////////////////////////////////////////////
    // Determine overhang and spacing information
    GetGirderSpacingAndOverhang(span,gdrIdx,dfType, plldf);
 
-   // put a poi at controlling location from spacing comp
-   pgsPointOfInterest poi(segmentKey,plldf->ControllingLocation);
+   // get poi at controlling location
+   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(span,gdrIdx,plldf->ControllingLocation);
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
@@ -525,7 +523,7 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
    }
    else
    {
-      ATLASSERT(0); // big problemo
+      ATLASSERT(false); // big problemo
    }
 
    GET_IFACE(ILiveLoads,pLiveLoads);
@@ -1049,7 +1047,7 @@ std::_tstring CUBeamDistFactorEngineer::GetComputationDescription(const CGirderK
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    // Special text if ROA is ignored

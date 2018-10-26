@@ -59,6 +59,8 @@ public:
    virtual CString GetAppName() const { return "PGSuper"; }
    virtual CString GetTemplateFileExtension();
 
+   virtual void SaveReportOptions();
+
 BEGIN_COM_MAP(CPGSuperProjectImporterAppPlugin)
    COM_INTERFACE_ENTRY(IEAFAppPlugin)
    COM_INTERFACE_ENTRY(IEAFCommandCallback)

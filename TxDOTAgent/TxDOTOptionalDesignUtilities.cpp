@@ -227,7 +227,7 @@ void MakeHarpedCloneStraight(const GirderLibraryEntry* pGdrEntry, GirderLibraryE
       }
       else
       {
-         ATLASSERT(0); // TxDOT girders should not have temp strands
+         ATLASSERT(false); // TxDOT girders should not have temp strands
          break;
       }
 

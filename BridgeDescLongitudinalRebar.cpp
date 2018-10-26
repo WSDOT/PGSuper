@@ -70,7 +70,6 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
    // longitudinal steel information from grid and store it
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -84,6 +83,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          if (m_Grid.GetRowData(i,&row))
          {
             // values are in display units - must convert to system
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             row.BarLength    = ::ConvertToSysUnits(row.BarLength, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
             row.DistFromEnd  = ::ConvertToSysUnits(row.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
             row.Cover        = ::ConvertToSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -142,9 +142,13 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          gpPoint2d testpnt;
          testpnt.X() = row.BarSpacing * (row.NumberOfBars-1)/2.;
          if (row.Face == pgsTypes::TopFace)
+         {
             testpnt.Y() = -row.Cover;
+         }
          else
+         {
             testpnt.Y() = -(height-row.Cover);
+         }
 
          point->Move(testpnt.X(),testpnt.Y());
          VARIANT_BOOL bPointInShape;
@@ -178,6 +182,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
 
 #pragma Reminder("UPDATE: rebar grid should be doing the unit conversions")
+      GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
       CLongitudinalRebarData rebardata;
       std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(pParent->m_Segment.LongitudinalRebarData.RebarRows.begin());
       std::vector<CLongitudinalRebarData::RebarRow>::iterator iterEnd(pParent->m_Segment.LongitudinalRebarData.RebarRows.end());

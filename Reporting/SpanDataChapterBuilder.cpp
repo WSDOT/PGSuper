@@ -114,7 +114,6 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             {
                for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
                {
-                  *p << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,intervalIdx) << rptNewLine;
                   CStrandEccTable ecc_table;
                   *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
                }

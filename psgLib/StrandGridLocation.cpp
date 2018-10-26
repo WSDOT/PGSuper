@@ -84,7 +84,7 @@ CGirderGlobalStrandGrid::GlobalStrandGridEntry CStrandGridLocation::GetEntry()
    else if (m_StrandType==1)
       entry.m_Type = GirderLibraryEntry::stHarped;
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 
    entry.m_X = m_HpX;
    entry.m_Y = m_HpY;
@@ -260,7 +260,7 @@ void CStrandGridLocation::OnSelchangeStrandType()
       }
    }
    else
-      ATLASSERT(0);
+      ATLASSERT(false);
 	
 }
 

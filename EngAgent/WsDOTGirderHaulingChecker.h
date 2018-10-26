@@ -80,8 +80,8 @@ public:
    virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE);
    virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey);
    virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang);
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,IGirderHaulingDesignPointsOfInterest* pPOId);
-   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,const GDRCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,IGirderHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE);
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId);
+   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,const GDRCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -111,26 +111,26 @@ private:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,IGirderHaulingDesignPointsOfInterest* pPOId,pgsWsdotHaulingAnalysisArtifact* pArtifact);
-   void PrepareHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 Loh,Float64 Roh,Float64 Fc,Float64 Ec,pgsTypes::ConcreteType concType,pgsWsdotHaulingAnalysisArtifact* pArtifact);
+   void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,pgsWsdotHaulingAnalysisArtifact* pArtifact);
+   void PrepareHaulingAnalysisArtifact(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& haulConfig,ISegmentHaulingDesignPointsOfInterest* pPOId,pgsWsdotHaulingAnalysisArtifact* pArtifact);
 
    void ComputeHaulingMoments(const CSegmentKey& segmentKey,
                               const pgsWsdotHaulingAnalysisArtifact& rArtifact, 
-                              const std::vector<pgsPointOfInterest>& rpoiVec,
+                              const std::vector<pgsPointOfInterest>& vPoi,
                               std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
 
    void ComputeHaulingRollAngle(const CSegmentKey& segmentKey,
                                 pgsWsdotHaulingAnalysisArtifact* pArtifact, 
-                                const std::vector<pgsPointOfInterest> rpoiVec,
-                                std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
+                                const std::vector<pgsPointOfInterest> vPoi,
+                                std::vector<Float64>* pvMoment, Float64* pMidSpanDeflection);
    void ComputeHaulingStresses(const CSegmentKey& segmentKey,bool bUseConfig,
                                const HANDLINGCONFIG& haulConfig,
-                               const std::vector<pgsPointOfInterest>& rpoiVec,
-                               const std::vector<Float64>& momVec,
+                               const std::vector<pgsPointOfInterest>& vPoi,
+                               const std::vector<Float64>& vMoment,
                                pgsWsdotHaulingAnalysisArtifact* pArtifact);
    void ComputeHaulingFsForCracking(const CSegmentKey& segmentKey,
-                                    const std::vector<pgsPointOfInterest>& rpoiVec,
-                                    const std::vector<Float64>& momVec,
+                                    const std::vector<pgsPointOfInterest>& vPoi,
+                                    const std::vector<Float64>& vMoment,
                                     pgsWsdotHaulingAnalysisArtifact* pArtifact);
    void ComputeHaulingFsForRollover(const CSegmentKey& segmentKey,pgsWsdotHaulingAnalysisArtifact* pArtifact);
 

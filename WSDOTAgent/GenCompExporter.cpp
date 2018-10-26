@@ -64,7 +64,9 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
    }
 
    if ( dlg.DoModal() != IDOK )
+   {
       return S_OK;
+   }
 
    // write some bridge data to a text file
 	CFileDialog fileDlg(FALSE,_T("GenComp"),_T("PGSuperExport.GenComp"),OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("GenComp File (*.GenComp)|*.GenComp||"));
@@ -109,9 +111,13 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
       GET_IFACE2(pBroker,IMaterials,pMaterials);
       Float64 EcGdr;
       if ( dlg.GetPOI().HasAttribute(POI_CLOSURE) )
+      {
          EcGdr = pMaterials->GetClosureJointEc(dlg.GetPOI().GetSegmentKey(),intervalIdx);
+      }
       else
+      {
          EcGdr = pMaterials->GetSegmentEc(dlg.GetPOI().GetSegmentKey(),intervalIdx);
+      }
 
       Float64 EcDeck = pMaterials->GetDeckEc(dlg.GetPOI().GetSegmentKey(),intervalIdx);
 

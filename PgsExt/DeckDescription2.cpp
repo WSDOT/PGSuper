@@ -123,52 +123,84 @@ void CDeckDescription2::CopyDeckData(const CDeckDescription2* pDeck)
 bool CDeckDescription2::operator == (const CDeckDescription2& rOther) const
 {
    if ( DeckType != rOther.DeckType )
+   {
       return false;
+   }
 
    if ( TransverseConnectivity != rOther.TransverseConnectivity )
+   {
       return false;
+   }
 
    if ( !IsEqual( GrossDepth, rOther.GrossDepth ) )
+   {
       return false;
+   }
 
    if ( OverhangTaper != rOther.OverhangTaper )
+   {
       return false;
+   }
 
    if ( !IsEqual( OverhangEdgeDepth, rOther.OverhangEdgeDepth ) )
+   {
       return false;
+   }
 
    if ( !IsEqual( Fillet, rOther.Fillet ) )
+   {
       return false;
+   }
 
    if ( Concrete != rOther.Concrete )
+   {
       return false;
+   }
 
    if ( !IsEqual( OverlayWeight, rOther.OverlayWeight ) )
+   {
       return false;
+   }
 
 	if ( !IsEqual( SacrificialDepth, rOther.SacrificialDepth ) )
+   {
       return false;
+   }
 
    if ( PanelDepth != rOther.PanelDepth )
+   {
       return false;
+   }
 
    if ( PanelSupport != rOther.PanelSupport )
+   {
       return false;
+   }
 
    if ( DeckRebarData != rOther.DeckRebarData )
+   {
       return false;
+   }
 
    if ( WearingSurface != rOther.WearingSurface )
+   {
       return false;
+   }
 
    if ( DeckEdgePoints != rOther.DeckEdgePoints )
+   {
       return false;
+   }
 
    if ( Condition != rOther.Condition )
+   {
       return false;
+   }
 
    if ( !IsEqual(ConditionFactor,rOther.ConditionFactor) )
+   {
       return false;
+   }
 
    return true;
 }
@@ -297,7 +329,9 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       // be greater than the gross/cast depth of the slab. Obviously this is incorrect.
       // If this is encountered in the input, fix it.
       if ( DeckType != pgsTypes::sdtNone && GrossDepth <= SacrificialDepth )
+      {
          SacrificialDepth = GrossDepth/2;
+      }
 
       Concrete.Load(pStrLoad,pProgress);
 
@@ -317,13 +351,15 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       // in some 2.1 Beta versions we stored deck edge points for NoDeck and CompositeOverlay decks
       // these decks should have any points so clear them out right now.
       if ( IsConstantWidthDeck(DeckType) )
+      {
          DeckEdgePoints.clear();
+      }
 
       hr = pStrLoad->EndUnit();
    }
    catch (HRESULT)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 

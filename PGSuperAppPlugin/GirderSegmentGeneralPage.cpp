@@ -141,8 +141,25 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    if ( !pDX->m_bSaveAndValidate )
    {
+      CString strMeasure;
+      if ( pSegment->GetPrevSegment() == NULL && pSegment->GetNextSegment() == NULL )
+      {
+         strMeasure = _T("Measured between end faces of segment");
+      }
+      else if ( pSegment->GetPrevSegment() == NULL )
+      {
+         strMeasure = _T("Measured from start face of segment to CL Closure Joint");
+      }
+      else if ( pSegment->GetNextSegment() == NULL )
+      {
+         strMeasure = _T("Measured from CL Closure Joint to end face of segment");
+      }
+      else
+      {
+         strMeasure = _T("Measured between CL Closure Joints");
+      }
       CString strSegmentLength;
-      strSegmentLength.Format(_T("Segment Length: %s"),FormatDimension(GetSegmentLength(),pDisplayUnits->GetSpanLengthUnit(),true) );
+      strSegmentLength.Format(_T("Segment Layout Length: %s\n%s"),FormatDimension(GetSegmentLength(),pDisplayUnits->GetSpanLengthUnit(),true),strMeasure );
       DDX_Text(pDX,IDC_SEGMENT_LENGTH,strSegmentLength);
    }
 }

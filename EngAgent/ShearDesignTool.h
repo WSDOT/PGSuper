@@ -98,7 +98,7 @@ public:
    pgsShearDesignTool(SHARED_LOGFILE lf);
    
    void Initialize(IBroker* pBroker, LongReinfShearChecker* pLongShearChecker, 
-                   StatusGroupIDType statusGroupID, pgsDesignArtifact* pArtifact, 
+                   StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact, 
                    Float64 startConfinementZl, Float64 endConfinementZl,
                    bool bPermit, bool bDesignFromScratch);
 
@@ -198,7 +198,7 @@ private:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
 
-   pgsDesignArtifact* m_pArtifact;
+   pgsSegmentDesignArtifact* m_pArtifact;
    CShearData2 m_ShearData; // in-progress shear design data'
 
    LongReinfShearChecker* m_pLongReinfShearChecker;

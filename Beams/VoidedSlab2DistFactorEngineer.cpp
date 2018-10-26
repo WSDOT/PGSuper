@@ -55,7 +55,6 @@ void CVoidedSlab2DistFactorEngineer::BuildReport(const CGirderKey& girderKey,rpt
 {
    // Grab the interfaces that are needed
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(ILiveLoads,pLiveLoads);
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -242,9 +241,13 @@ void CVoidedSlab2DistFactorEngineer::BuildReport(const CGirderKey& girderKey,rpt
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
       if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
+      {
          (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      }
       else
+      {
          (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      }
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
@@ -369,9 +372,13 @@ void CVoidedSlab2DistFactorEngineer::BuildReport(const CGirderKey& girderKey,rpt
          pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
          (*pChapter) << pPara;
          if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
+         {
             (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+         }
          else
+         {
             (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+         }
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 
@@ -430,16 +437,10 @@ void CVoidedSlab2DistFactorEngineer::BuildReport(const CGirderKey& girderKey,rpt
 
 lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,VOIDEDSLAB_LLDFDETAILS* plldf)
 {
-   GET_IFACE(IMaterials,   pMaterial);
-   GET_IFACE(ISectionProperties,        pSectProp);
-   GET_IFACE(IGirder,           pGirder);
-   GET_IFACE(ILibrary,          pLib);
-   GET_IFACE(ISpecification,    pSpec);
-   GET_IFACE(IRoadwayData,      pRoadway);
-   GET_IFACE(IBridge,           pBridge);
-   GET_IFACE(IPointOfInterest,  pPOI);
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   GET_IFACE(IBarriers,pBarriers);
+   GET_IFACE(ISectionProperties, pSectProp);
+   GET_IFACE(IGirder,            pGirder);
+   GET_IFACE(IBridge,            pBridge);
+   GET_IFACE(IBarriers,          pBarriers);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -462,7 +463,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
 
    if ( nGirders <= gdrIdx )
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       gdrIdx = nGirders-1;
    }
 
@@ -538,7 +539,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
       // solid slab
 
       Float64 Ix, Iy, A, Ip;
-      if (fcgdr>0)
+      if (0 < fcgdr)
       {
          Ix = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
          Iy = pSectProp->GetIy(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
@@ -567,23 +568,35 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
       // thickness of exterior "web" (edge of beam to first void)
       Float64 t_ext;
       if ( nIntVoids == 0 )
+      {
          t_ext = (Width - (nExtVoids-1)*ExtVoidSpacing - ExtVoidDiameter)/2;
+      }
       else
+      {
          t_ext = (Width - (nIntVoids-1)*IntVoidSpacing - 2*ExtVoidSpacing - ExtVoidDiameter)/2;
+      }
 
       // thickness of interior "web" (between interior voids)
       Float64 t_int;
       if ( nIntVoids == 0 )
+      {
          t_int = 0;
+      }
       else
+      {
          t_int = IntVoidSpacing - IntVoidDiameter;
+      }
 
       // thickness of "web" between interior and exterior voids)
       Float64 t_ext_int;
       if ( nIntVoids == 0 )
+      {
          t_ext_int = ExtVoidSpacing - ExtVoidDiameter;
+      }
       else
+      {
          t_ext_int = ExtVoidSpacing - ExtVoidDiameter/2 - IntVoidDiameter/2;
+      }
 
       // Deterine J
 
@@ -745,8 +758,6 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-   GET_IFACE(IBridge,pBridge);
-
    if ( lldf.bExteriorGirder )
    {
       if (gM1.LeverRuleData.bWasUsed )
@@ -865,7 +876,9 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
       {
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+         {
             (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
+         }
       }
 
       (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
@@ -988,13 +1001,15 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
       {
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+         {
             (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
+         }
       }
 
       (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
       (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-      if ( lldf.Nl >= 2 )
+      if ( 2 <= lldf.Nl )
       {
          (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
          (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
@@ -1124,7 +1139,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
          (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
          (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
          (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
+         if ( 2 <= lldf.Nl )
          {
             (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
             (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
@@ -1230,7 +1245,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
       (*pPara) << rptNewLine;
       (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
       (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-      if ( lldf.Nl >= 2 )
+      if ( 2 <= lldf.Nl )
       {
          (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
          (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
@@ -1264,7 +1279,7 @@ std::_tstring CVoidedSlab2DistFactorEngineer::GetComputationDescription(const CG
    }
    else
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
    }
 
    // Special text if ROA is ignored

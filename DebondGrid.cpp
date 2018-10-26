@@ -101,7 +101,9 @@ END_MESSAGE_MAP()
 int CGirderDescDebondGrid::GetColWidth(ROWCOL nCol)
 {
    if ( (nCol == DEBOND_CHECK_COL || FIRST_EXTEND_COL <= nCol && nCol <= LAST_EXTEND_COL) && !IsColHidden(nCol))
+   {
       return 15;
+   }
 
    return CGXGridWnd::GetColWidth(nCol);
 }
@@ -303,7 +305,7 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -318,7 +320,9 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
    // remove all but top row
    ROWCOL rows = GetRowCount();
    if (1 <= rows)
+   {
       RemoveRows(1, rows);
+   }
 
    ROWCOL row = 0;
    std::vector<StrandIndexType>::iterator iter(straightStrandFill.begin());
@@ -338,7 +342,7 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
    CComPtr<IIndexArray> strandids;
    pStrandGeom->ComputePermanentStrandIndices(pParent->GetGirderName(),config,pgsTypes::Straight,&strandids);
 
-   StrandIndexType nStrands = segment.Strands.GetNstrands(pgsTypes::Straight);
+   StrandIndexType nStrands = segment.Strands.GetStrandCount(pgsTypes::Straight);
 
    ConfigStrandFillTool fillTool(straightStrandFill);
 
@@ -424,8 +428,10 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
       gridIdx++;
    }
 
-   std::vector<CDebondData>::const_iterator debond_iter;
-   for ( debond_iter = segment.Strands.Debond[pgsTypes::Straight].begin(); debond_iter != segment.Strands.Debond[pgsTypes::Straight].end(); debond_iter++ )
+   const std::vector<CDebondData>& vDebond(segment.Strands.GetDebonding(pgsTypes::Straight));
+   std::vector<CDebondData>::const_iterator debond_iter(vDebond.begin());
+   std::vector<CDebondData>::const_iterator debond_iter_end(vDebond.end());
+   for ( ; debond_iter != debond_iter_end; debond_iter++ )
    {
       const CDebondData& debond_info = *debond_iter;
       ROWCOL row = GetRow(debond_info.strandTypeGridIdx);
@@ -476,7 +482,9 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
    {
       ROWCOL row = GetRow(*extend_iter);
       if ( row != -1 )
+      {
          SetStyleRange(CGXRange(row,FIRST_EXTEND_COL),CGXStyle().SetValue(_T("1")));
+      }
    }
 
    const std::vector<GridIndexType>& extStrandsEnd = segment.Strands.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
@@ -487,7 +495,9 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
       ROWCOL row = GetRow(*extend_iter);
 
       if ( row != -1 )
+      {
          SetStyleRange(CGXRange(row,LAST_EXTEND_COL),CGXStyle().SetValue(_T("1")));
+      }
    }
 
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
@@ -500,7 +510,7 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
 
 void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
 {
-   segment.Strands.Debond[pgsTypes::Straight].clear();
+   segment.Strands.GetDebonding(pgsTypes::Straight).clear();
    segment.Strands.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
    segment.Strands.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
    
@@ -512,7 +522,7 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
-   StrandIndexType nStrands = segment.Strands.GetNstrands(pgsTypes::Straight);
+   StrandIndexType nStrands = segment.Strands.GetStrandCount(pgsTypes::Straight);
 
    ConfigStrandFillVector straightStrandFill = pStrandGeom->ComputeStrandFill(pParent->GetGirderName(),pgsTypes::Straight,nStrands);
    
@@ -548,7 +558,7 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
             debond_info.Length[pgsTypes::metEnd] = length;
          }
 
-         segment.Strands.Debond[pgsTypes::Straight].push_back(debond_info);
+         segment.Strands.GetDebonding(pgsTypes::Straight).push_back(debond_info);
       }
       else
       {
@@ -602,7 +612,9 @@ ROWCOL CGirderDescDebondGrid::GetRow(GridIndexType gridIdx)
       const CDebondGridData& userData = dynamic_cast<const CDebondGridData&>(style.GetUserAttribute(0));
 
       if ( userData.m_GridIdx == gridIdx )
+      {
          return row+1;
+      }
    }
 
    return -1;
@@ -696,10 +708,14 @@ StrandIndexType CGirderDescDebondGrid::GetNumDebondedStrands()
 
       CString strDebondCheck = GetCellValue(row+1, DEBOND_CHECK_COL);
       if ( userData.m_StrandIdx1 != INVALID_INDEX && strDebondCheck == _T("1") )
+      {
          nStrands++;
+      }
 
       if ( userData.m_StrandIdx2 != INVALID_INDEX && strDebondCheck == _T("1") )
+      {
          nStrands++;
+      }
    }
 
    return nStrands;
@@ -722,10 +738,14 @@ StrandIndexType CGirderDescDebondGrid::GetNumExtendedStrands(pgsTypes::MemberEnd
          if ( strExtendLeft == _T("1") )
          {
             if(userData.m_StrandIdx1!=INVALID_INDEX)
+            {
                nStrands++;
+            }
 
             if(userData.m_StrandIdx2!=INVALID_INDEX)
+            {
                nStrands++;
+            }
          }
       }
       else
@@ -734,10 +754,14 @@ StrandIndexType CGirderDescDebondGrid::GetNumExtendedStrands(pgsTypes::MemberEnd
          if ( strExtendRight == _T("1") )
          {
             if(userData.m_StrandIdx1!=INVALID_INDEX)
+            {
                nStrands++;
+            }
 
             if(userData.m_StrandIdx2!=INVALID_INDEX)
+            {
                nStrands++;
+            }
          }
       }
    }
@@ -755,10 +779,14 @@ void CGirderDescDebondGrid::CanDebond(bool bCanDebond,bool bSymmetricDebond)
 
    VERIFY(HideCols(DEBOND_CHECK_COL,LAST_DEBOND_COL,bCanDebond ? FALSE : TRUE));
    if ( bCanDebond && m_bSymmetricDebond )
+   {
       HideCols(LAST_DEBOND_COL,LAST_DEBOND_COL);
+   }
 
    if (!bCanDebond)
+   {
       return;
+   }
 
    CString strColHeading = CString(_T("Debond\nLength\n(")) + 
                            CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());

@@ -61,7 +61,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
 
    GET_IFACE2(pBroker, ISegmentData, pSegmentData );
    const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-   CHECK(pstrand);
+   ATLASSERT(pstrand);
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -106,7 +106,7 @@ void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker
    boost::shared_ptr<const lrfdRefinedLosses> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses>(pDetails->pLosses);
    if (!ptl)
    {
-      ATLASSERT(0); // made a bad cast? Bail...
+      ATLASSERT(false); // made a bad cast? Bail...
       return;
    }
 

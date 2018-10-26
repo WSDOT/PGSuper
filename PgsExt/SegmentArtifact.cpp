@@ -24,6 +24,7 @@
 #include <PgsExt\SegmentArtifact.h>
 #include <EAF\EAFUtilities.h>
 #include <IFace\Intervals.h>
+#include <IFace\PointOfInterest.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -34,6 +35,8 @@ static char THIS_FILE[] = __FILE__;
 pgsSegmentArtifact::pgsSegmentArtifact(const CSegmentKey& segmentKey) :
 m_SegmentKey(segmentKey)
 {
+   m_pLiftingAnalysisArtifact = NULL;
+   m_pHaulingAnalysisArtifact = NULL;
 }
 
 pgsSegmentArtifact::pgsSegmentArtifact(const pgsSegmentArtifact& rOther)
@@ -126,18 +129,26 @@ const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(I
 {
    const std::vector<pgsFlexuralStressArtifact>& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
    if ( idx < artifacts.size() )
+   {
       return &artifacts[idx];
+   }
    else
+   {
       return NULL;
+   }
 }
 
 pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx)
 {
    std::vector<pgsFlexuralStressArtifact>& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
    if ( idx < artifacts.size() )
+   {
       return &artifacts[idx];
+   }
    else
+   {
       return NULL;
+   }
 }
 
 const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifactAtPoi(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,PoiIDType poiID) const
@@ -149,7 +160,9 @@ const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifactAt
    {
       const pgsFlexuralStressArtifact& artifact(*iter);
       if ( artifact.GetPointOfInterest().GetID() == poiID )
+      {
          return &artifact;
+      }
    }
 
    return NULL;
@@ -175,19 +188,19 @@ pgsPrecastIGirderDetailingArtifact* pgsSegmentArtifact::GetPrecastIGirderDetaili
    return &m_PrecastIGirderDetailingArtifact;
 }
 
-void pgsSegmentArtifact::SetConstructabilityArtifact(const pgsConstructabilityArtifact& artifact)
+void pgsSegmentArtifact::SetSegmentStabilityArtifact(const pgsSegmentStabilityArtifact& artifact)
 {
-   m_ConstructabilityArtifact = artifact;
+   m_StabilityArtifact = artifact;
 }
 
-const pgsConstructabilityArtifact* pgsSegmentArtifact::GetConstructabilityArtifact() const
+const pgsSegmentStabilityArtifact* pgsSegmentArtifact::GetSegmentStabilityArtifact() const
 {
-   return &m_ConstructabilityArtifact;
+   return &m_StabilityArtifact;
 }
 
-pgsConstructabilityArtifact* pgsSegmentArtifact::GetConstructabilityArtifact()
+pgsSegmentStabilityArtifact* pgsSegmentArtifact::GetSegmentStabilityArtifact()
 {
-   return &m_ConstructabilityArtifact;
+   return &m_StabilityArtifact;
 }
 
 void pgsSegmentArtifact::SetLiftingAnalysisArtifact(const pgsLiftingAnalysisArtifact* artifact)
@@ -219,7 +232,9 @@ bool pgsSegmentArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType inter
    {
       pgsFlexuralStressArtifact& artifact(*iter);
       if ( artifact.IsApplicable(stressLocation) )
+      {
          return true;
+      }
    }
 
    return false;
@@ -227,6 +242,10 @@ bool pgsSegmentArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType inter
 
 bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute) const
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
+
    std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
    std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
    std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
@@ -234,13 +253,15 @@ bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType inter
    {
       pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-      bool bIsClosure = poi.HasAttribute(POI_CLOSURE);
+      bool bIsClosure = pPoi->IsInClosureJoint(poi);
       if ( (attribute == POI_CLOSURE &&  bIsClosure) || // test if attribute is POI_CLOSURE and artifact is for a closure -OR-
            (attribute == 0           && !bIsClosure)    // test if attribute is 0 and artifact is not for a closure
           )
       {
          if ( artifact.WasWithRebarAllowableStressUsed(stressLocation) )
+         {
             return true;
+         }
       }
    }
 
@@ -249,6 +270,10 @@ bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType inter
 
 bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
    std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
    std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
    std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
@@ -256,7 +281,7 @@ bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(IntervalIndexTyp
    {
       pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-      bool bIsClosure = poi.HasAttribute(POI_CLOSURE);
+      bool bIsClosure = pPoi->IsInClosureJoint(poi);
       if ( !bIsClosure )
       {
          if ( artifact.WasWithRebarAllowableStressUsed(pgsTypes::TopGirder) ||
@@ -272,6 +297,10 @@ bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(IntervalIndexTyp
 
 bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
    std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
    std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
    std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
@@ -279,7 +308,7 @@ bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(IntervalInd
    {
       pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-      bool bIsClosure = poi.HasAttribute(POI_CLOSURE);
+      bool bIsClosure = pPoi->IsInClosureJoint(poi);
       if ( bIsClosure )
       {
          if ( (artifact.IsInPrecompressedTensileZone(pgsTypes::TopGirder) == bIsInPTZ && // PTZ status of top matches bIsInPTZ
@@ -340,7 +369,7 @@ bool pgsSegmentArtifact::Passed() const
 {
    bool bPassed = true;
 
-   bPassed &= m_ConstructabilityArtifact.Pass();
+   bPassed &= m_StabilityArtifact.Passed();
    bPassed &= m_HoldDownForceArtifact.Passed();
    bPassed &= m_StrandSlopeArtifact.Passed();
    bPassed &= m_StrandStressArtifact.Passed();
@@ -352,13 +381,19 @@ bool pgsSegmentArtifact::Passed() const
    bPassed &= m_PrecastIGirderDetailingArtifact.Passed();
 
    if (m_pLiftingAnalysisArtifact != NULL)
+   {
       bPassed &= m_pLiftingAnalysisArtifact->Passed();
+   }
 
    if (m_pHaulingAnalysisArtifact != NULL)
+   {
       bPassed &= m_pHaulingAnalysisArtifact->Passed();
+   }
 
    for ( Uint16 i = 0; i < 3; i++ )
+   {
       bPassed &= m_DebondArtifact[i].Passed();
+   }
 
    return bPassed;
 }
@@ -405,6 +440,10 @@ bool pgsSegmentArtifact::DidDeckFlexuralStressesPass() const
 
 Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
    Float64 fc_reqd = 0;
 
    std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
@@ -422,7 +461,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
          {
             const pgsFlexuralStressArtifact& artifact(*artifactIter);
             const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-            if ( poi.HasAttribute(POI_CLOSURE) )
+            if ( pPoi->IsInClosureJoint(poi) )
             {
                continue;
             }
@@ -454,6 +493,10 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
 
 Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
    Float64 fc_reqd = 0;
 
    std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
@@ -471,7 +514,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalInde
          {
             const pgsFlexuralStressArtifact& artifact(*artifactIter);
             const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-            if ( !poi.HasAttribute(POI_CLOSURE) )
+            if ( !pPoi->IsInClosureJoint(poi) )
             {
                continue;
             }
@@ -546,11 +589,13 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType in
 
 Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
 {
-   Float64 fc_reqd = 0;
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+
+   Float64 fc_reqd = 0;
+
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(m_SegmentKey);
 
    std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
@@ -561,7 +606,9 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
       const StressKey& key = item.first;
 
       if ( key.intervalIdx < haulingIntervalIdx )
+      {
          continue; // don't check if this is before hauling (basically we want final concrete strength cases)
+      }
 
       std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
       std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
@@ -569,7 +616,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
       {
          const pgsFlexuralStressArtifact& artifact(*artifactIter);
          const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-         if ( poi.HasAttribute(POI_CLOSURE) )
+         if ( pPoi->IsInClosureJoint(poi) )
          {
             continue;
          }
@@ -619,7 +666,9 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(m_SegmentKey);
 
    std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
@@ -630,7 +679,9 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
       const StressKey& key = item.first;
 
       if ( key.intervalIdx < haulingIntervalIdx )
+      {
          continue; // don't check if this is before hauling (basically we want final concrete strength cases)
+      }
 
       std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
       std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
@@ -638,7 +689,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
       {
          const pgsFlexuralStressArtifact& artifact(*artifactIter);
          const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-         if ( poi.HasAttribute(POI_CLOSURE) )
+         if ( pPoi->IsInClosureJoint(poi) )
          {
             for ( int i = 0; i < 2; i++ )
             {
@@ -682,7 +733,9 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
       const StressKey& key = item.first;
 
       if ( key.intervalIdx < compositeDeckIntervalIdx )
+      {
          continue; // don't check if this is before the deck is composite.
+      }
 
       std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
       std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
@@ -731,7 +784,9 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
       const StressKey& key = item.first;
 
       if ( haulingIntervalIdx <= key.intervalIdx )
+      {
          continue; // don't check if this is after hauling (basically we want release concrete strength cases)
+      }
 
       std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
       std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
@@ -741,10 +796,14 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
          Float64 fc = artifact.GetRequiredBeamConcreteStrength();
 
          if ( fc < 0 ) 
+         {
             return fc;
+         }
 
          if ( 0 < fc )
+         {
             fc_reqd = Max(fc,fc_reqd);
+         }
       }
    }
  
@@ -776,7 +835,7 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
    m_PrecastIGirderDetailingArtifact = rOther.m_PrecastIGirderDetailingArtifact;
    m_StrandSlopeArtifact             = rOther.m_StrandSlopeArtifact;
    m_HoldDownForceArtifact           = rOther.m_HoldDownForceArtifact;
-   m_ConstructabilityArtifact        = rOther.m_ConstructabilityArtifact;
+   m_StabilityArtifact               = rOther.m_StabilityArtifact;
 
    m_pLiftingAnalysisArtifact = rOther.m_pLiftingAnalysisArtifact;
    m_pHaulingAnalysisArtifact = rOther.m_pHaulingAnalysisArtifact;

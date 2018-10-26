@@ -952,7 +952,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GirderModelData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderModelManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PGSuperLoadCombinationResponse.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PrestressTool.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ProductLoadMap.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentModelData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentModelManager.cpp"
 				>
 			</File>
 			<File
@@ -1037,11 +1061,35 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GirderModelData.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderModelManager.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PGSuperLoadCombinationResponse.h"
 				>
 			</File>
 			<File
+				RelativePath=".\PrestressTool.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ProductLoadMap.h"
+				>
+			</File>
+			<File
 				RelativePath="Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentModelData.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentModelManager.h"
 				>
 			</File>
 			<File

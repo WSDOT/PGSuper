@@ -42,7 +42,7 @@ static char THIS_FILE[] = __FILE__;
 CGirderStrandGrid::CGirderStrandGrid(CGirderStrandGridClient* pClient):
 m_pClient(pClient)
 {
-   CHECK(m_pClient!=0);
+   ATLASSERT(m_pClient!=0);
 }
 
 CGirderStrandGrid::~CGirderStrandGrid()

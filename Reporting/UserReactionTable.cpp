@@ -79,13 +79,18 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
    if ( tableType == PierReactionsTable )
+   {
       strTitle.Format(_T("Total Girderline Reactions at Abutments and Piers due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+   }
    else
+   {
       strTitle.Format(_T("Girder Bearing Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+   }
 
    rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>( strTitle.GetBuffer(),
                                                                                   true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
+   GET_IFACE2(pBroker,IReactions,pReactions);
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -106,7 +111,7 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    std::auto_ptr<IProductReactionAdapter> pForces;
    if( tableType == PierReactionsTable )
    {
-      pForces = std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pProductForces,girderKey));
+      pForces = std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pReactions,girderKey));
    }
    else
    {

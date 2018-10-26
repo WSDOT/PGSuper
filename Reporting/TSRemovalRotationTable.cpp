@@ -86,16 +86,15 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
 
-   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
 
-
    // Get the results
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec); // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoads, pUDL);           // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi);             // only used if there are temporary supports to be removed
+   GET_IFACE2_NOCHECK(pBroker,IProductForces2,pForces2);           // only used if there are temporary supports to be removed
+
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
@@ -113,7 +112,9 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
       if ( tsrIntervals.size() == 0 )
+      {
          continue; // next group
+      }
 
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(thisGirderKey);
@@ -164,7 +165,7 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bIsFutureOverlay,false,bPedLoading,
                                                                                                bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
                                                                                                pRatingSpec,pDisplayUnits,pDisplayUnits->GetAngleUnit());
 
@@ -204,29 +205,29 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          }
 
          // Get the results for this span (it is faster to get them as a vector rather than individually)
-         std::vector<Float64> girder    = pForces2->GetRotation(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, ctIncremental);
-         std::vector<Float64> diaphragm = pForces2->GetRotation(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, ctIncremental);
+         std::vector<Float64> girder    = pForces2->GetRotation(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, rtIncremental, false);
+         std::vector<Float64> diaphragm = pForces2->GetRotation(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, rtIncremental, false);
 
          std::vector<Float64> minSlab, maxSlab;
          std::vector<Float64> minSlabPad, maxSlabPad;
-         maxSlab = pForces2->GetRotation( tsrIntervalIdx, pftSlab, vPoi, maxBAT, ctIncremental );
-         minSlab = pForces2->GetRotation( tsrIntervalIdx, pftSlab, vPoi, minBAT, ctIncremental );
+         maxSlab = pForces2->GetRotation( tsrIntervalIdx, pftSlab, vPoi, maxBAT, rtIncremental, false );
+         minSlab = pForces2->GetRotation( tsrIntervalIdx, pftSlab, vPoi, minBAT, rtIncremental, false );
 
-         maxSlabPad = pForces2->GetRotation( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, ctIncremental );
-         minSlabPad = pForces2->GetRotation( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, ctIncremental );
+         maxSlabPad = pForces2->GetRotation( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, rtIncremental, false );
+         minSlabPad = pForces2->GetRotation( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, rtIncremental, false );
 
          std::vector<Float64> minDeckPanel, maxDeckPanel;
          if ( bDeckPanels )
          {
-            maxDeckPanel = pForces2->GetRotation( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, ctIncremental );
-            minDeckPanel = pForces2->GetRotation( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, ctIncremental );
+            maxDeckPanel = pForces2->GetRotation( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, rtIncremental, false );
+            minDeckPanel = pForces2->GetRotation( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, rtIncremental, false );
          }
 
          std::vector<Float64> minConstruction, maxConstruction;
          if ( bConstruction )
          {
-            maxConstruction = pForces2->GetRotation( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, ctIncremental );
-            minConstruction = pForces2->GetRotation( tsrIntervalIdx, pftConstruction, vPoi, minBAT, ctIncremental );
+            maxConstruction = pForces2->GetRotation( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, rtIncremental, false );
+            minConstruction = pForces2->GetRotation( tsrIntervalIdx, pftConstruction, vPoi, minBAT, rtIncremental, false );
          }
 
          std::vector<Float64> minOverlay, maxOverlay;
@@ -236,30 +237,30 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
          if ( bSidewalk )
          {
-            maxSidewalk = pForces2->GetRotation( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, ctIncremental );
-            minSidewalk = pForces2->GetRotation( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, ctIncremental );
+            maxSidewalk = pForces2->GetRotation( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, rtIncremental, false );
+            minSidewalk = pForces2->GetRotation( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, rtIncremental, false );
          }
 
          if ( bShearKey )
          {
-            maxShearKey = pForces2->GetRotation( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, ctIncremental );
-            minShearKey = pForces2->GetRotation( tsrIntervalIdx, pftShearKey, vPoi, minBAT, ctIncremental );
+            maxShearKey = pForces2->GetRotation( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, rtIncremental, false );
+            minShearKey = pForces2->GetRotation( tsrIntervalIdx, pftShearKey, vPoi, minBAT, rtIncremental, false );
          }
 
-         maxTrafficBarrier = pForces2->GetRotation( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, ctIncremental );
-         minTrafficBarrier = pForces2->GetRotation( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, ctIncremental );
+         maxTrafficBarrier = pForces2->GetRotation( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtIncremental, false );
+         minTrafficBarrier = pForces2->GetRotation( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtIncremental, false );
          if ( overlayIntervalIdx != INVALID_INDEX )
          {
-            maxOverlay = pForces2->GetRotation( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, ctIncremental );
-            minOverlay = pForces2->GetRotation( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, ctIncremental );
+            maxOverlay = pForces2->GetRotation( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, rtIncremental, false );
+            minOverlay = pForces2->GetRotation( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, rtIncremental, false );
          }
 
          std::vector<Float64> userDC, userDW, userLLIM;
          if ( bAreThereUserLoads )
          {
-            userDC   = pForces2->GetRotation(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT, ctIncremental);
-            userDW   = pForces2->GetRotation(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT, ctIncremental);
-            userLLIM = pForces2->GetRotation(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental);
+            userDC   = pForces2->GetRotation(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT, rtIncremental, false);
+            userDW   = pForces2->GetRotation(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT, rtIncremental, false);
+            userLLIM = pForces2->GetRotation(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, rtIncremental, false);
          }
 
          // write out the results
@@ -269,9 +270,13 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
             ColumnIndexType col = 0;
 
             if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
+            {
                (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
+            }
             else
+            {
                (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
+            }
          
             
             const pgsPointOfInterest& poi = vPoi[index];
@@ -348,8 +353,11 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
                (*p_table)(row,col++) << rotation.SetValue( maxTrafficBarrier[index] );
                (*p_table)(row,col++) << rotation.SetValue( minTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << rotation.SetValue( maxOverlay[index] );
-               (*p_table)(row,col++) << rotation.SetValue( minOverlay[index] );
+               if ( overlayIntervalIdx != INVALID_INDEX )
+               {
+                  (*p_table)(row,col++) << rotation.SetValue( maxOverlay[index] );
+                  (*p_table)(row,col++) << rotation.SetValue( minOverlay[index] );
+               }
             }
             else
             {
@@ -360,7 +368,10 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
                (*p_table)(row,col++) << rotation.SetValue( maxTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << rotation.SetValue( maxOverlay[index] );
+               if ( overlayIntervalIdx != INVALID_INDEX )
+               {
+                  (*p_table)(row,col++) << rotation.SetValue( maxOverlay[index] );
+               }
             }
 
             if ( bAreThereUserLoads )

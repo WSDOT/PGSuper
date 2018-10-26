@@ -25,6 +25,8 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
+interface IPointOfInterest;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -49,5 +51,8 @@ private:
    // Prevent accidental copying and assignment
    CPointOfInterestChapterBuilder(const CPointOfInterestChapterBuilder&);
    CPointOfInterestChapterBuilder& operator=(const CPointOfInterestChapterBuilder&);
+
+
+   void ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,IBroker* pBroker,IPointOfInterest* pPoi,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
 };
 

@@ -136,7 +136,9 @@ int CLibraryEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    lpCreateStruct->style |= TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS;
 
 	if (CTreeView::OnCreate(lpCreateStruct) == -1)
+   {
 		return -1;
+   }
 
    return 0;
 }
@@ -154,7 +156,9 @@ void CLibraryEditorView::OnInitialUpdate()
    CollectionIndexType num_managers = pLibMgrDoc->GetNumberOfLibraryManagers();
    ASSERT(num_managers);
    if (num_managers==0)
+   {
       return;
+   }
 
    // create and load up image list for tree control and list view
    // load two icons for each library. a normal and a selected
@@ -170,21 +174,30 @@ void CLibraryEditorView::OnInitialUpdate()
    VERIFY(icon);  // special icon for root nodes
    int st = m_LibraryImages.Add(icon);
    ASSERT(st!=-1);
-   if (st==-1) return;
+   if (st==-1)
+   {
+      return;
+   }
 
    // closed folder icon
    icon = the_app->LoadIcon(IDI_FOLDER);
    VERIFY(icon);  
    st = m_LibraryImages.Add(icon);
    ASSERT(st!=-1);
-   if (st==-1) return;
+   if (st==-1) 
+   {
+      return;
+   }
 
    // open/selected folder icon
    icon = the_app->LoadIcon(IDI_OPEN_FOLDER);
    VERIFY(icon);  
    st = m_LibraryImages.Add(icon);
    ASSERT(st!=-1);
-   if (st==-1) return;
+   if (st==-1)
+   {
+      return;
+   }
 
    int last_icon=2; // running count of icons
 
@@ -277,7 +290,9 @@ void CLibraryEditorView::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 void CLibraryEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
    if (m_pListView)
+   {
       m_pListView->OnUpdate(pSender, lHint, pHint);
+   }
 
    // Make the tree expanded
    CTreeCtrl& ctrl = GetTreeCtrl();

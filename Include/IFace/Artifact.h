@@ -46,7 +46,7 @@ COPYRIGHT
 //
 class pgsGirderArtifact;
 class pgsSegmentArtifact;
-class pgsDesignArtifact;
+class pgsGirderDesignArtifact;
 class pgsLiftingAnalysisArtifact;
 class pgsHaulingAnalysisArtifact;
 
@@ -82,10 +82,10 @@ interface IArtifact : IUnknown
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) = 0;
 
    // Creates a DesignArtifact for the specified girder
-   virtual const pgsDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,arDesignOptions options) = 0;
+   virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,arDesignOptions options) = 0;
 
    // If the specified girder was previously designed, its DesignArtifact is returned, otherwise NULL
-   virtual const pgsDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) = 0;
+   virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) = 0;
 
    // Creates a LiftingAnalysisArtifact for the specified segment based on the specified lifting configuration
    virtual void CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact) = 0;

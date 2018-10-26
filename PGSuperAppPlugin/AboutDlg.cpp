@@ -58,9 +58,13 @@ BOOL CAboutDlg::OnInitDialog()
       CWnd* pWnd = EAFGetMainFrame();
       hIcon = pWnd->GetIcon(TRUE);
       if ( hIcon )
+      {
          pIcon->SetIcon( hIcon );
+      }
       else
+      {
          pIcon->ShowWindow(SW_HIDE);
+      }
    }
 
    // Get the version information and update the version # and copyright
@@ -91,6 +95,10 @@ BOOL CAboutDlg::OnInitDialog()
    GetDlgItem(IDC_VERSION)->SetWindowText(str);
    GetDlgItem(IDC_COPYRIGHT)->SetWindowText(strCopyright);
 
+
+   CString strExtensions;
+   strExtensions.Format(_T("%s Extensions"),strAppName);
+   GetDlgItem(IDC_EXTENSIONS)->SetWindowText(strExtensions);
 	
 
    m_WSDOT.SetURL(_T("http://www.wsdot.wa.gov"));
@@ -166,9 +174,13 @@ void CAboutDlg::OnAppListSelChanged()
          pComponentInfoMgr->GetPlugin(pluginIdx,&component);
          m_Description.SetWindowText(component->GetDescription());
          if ( component->HasMoreInfo() )
+         {
             GetDlgItem(IDC_MOREINFO)->EnableWindow(TRUE);
+         }
          else
+         {
             GetDlgItem(IDC_MOREINFO)->EnableWindow(FALSE);
+         }
       }
       else
       {
@@ -179,9 +191,13 @@ void CAboutDlg::OnAppListSelChanged()
          pComponentInfoMgr->GetPlugin(pluginIdx,&component);
          m_Description.SetWindowText(component->GetDescription());
          if ( component->HasMoreInfo() )
+         {
             GetDlgItem(IDC_MOREINFO)->EnableWindow(TRUE);
+         }
          else
+         {
             GetDlgItem(IDC_MOREINFO)->EnableWindow(FALSE);
+         }
       }
    }
    else
@@ -226,7 +242,9 @@ void CAboutDlg::OnMoreInfo()
 HBRUSH CAboutDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	if (pWnd->GetDlgCtrlID() == IDC_DESCRIPTION)
+   {
 		return GetSysColorBrush(COLOR_WINDOW);
+   }
 
 	return CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 }

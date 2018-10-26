@@ -191,7 +191,9 @@ void CConcretePropertyGraphController::FillGroupControl()
    }
 
    if ( curSel == CB_ERR )
+   {
       curSel = 0;
+   }
 
    pcbGroup->SetCurSel(curSel);
 }
@@ -215,7 +217,9 @@ void CConcretePropertyGraphController::FillGirderControl()
    }
 
    if ( curSel == CB_ERR )
+   {
       curSel = 0;
+   }
 
    pcbGirder->SetCurSel(curSel);
 }
@@ -241,7 +245,9 @@ void CConcretePropertyGraphController::FillSegmentControl()
    }
 
    if ( curSel == CB_ERR )
+   {
       curSel = 0;
+   }
 
    pcbSegment->SetCurSel(curSel);
 }
@@ -250,8 +256,6 @@ void CConcretePropertyGraphController::FillClosureControl()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CLOSURE);
    
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(GroupIndexType(0))->GetGirder(0);
@@ -266,6 +270,8 @@ void CConcretePropertyGraphController::FillClosureControl()
    }
    else
    {
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+
       while ( pClosure )
       {
          if ( pClosure->GetPier() )
@@ -285,9 +291,13 @@ void CConcretePropertyGraphController::FillClosureControl()
          }
 
          if ( pClosure->GetRightSegment() )
+         {
             pClosure = pClosure->GetRightSegment()->GetRightClosure();
+         }
          else
+         {
             pClosure = NULL;
+         }
       }
 
       pCB->SetCurSel(0);

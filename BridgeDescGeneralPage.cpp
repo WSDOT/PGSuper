@@ -122,17 +122,23 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       // joint spacing
       DDX_Tag(pDX,IDC_SPACING_UNIT,pDisplayUnits->GetComponentDimUnit());
       if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_GirderSpacingType == pgsTypes::sbsUniformAdjacent) )
+      {
          DDX_UnitValueAndTag(pDX,IDC_SPACING,IDC_SPACING_UNIT,m_GirderSpacing,pDisplayUnits->GetComponentDimUnit());
+      }
    }
 
    if ( m_GirderSpacingType == pgsTypes::sbsUniform || m_GirderSpacingType == pgsTypes::sbsConstantAdjacent )
    {
       // check girder spacing
       if ( IsEqual(m_GirderSpacing,m_MinGirderSpacing) )
+      {
          m_GirderSpacing = m_MinGirderSpacing;
+      }
 
       if ( IsEqual(m_GirderSpacing,m_MaxGirderSpacing) )
+      {
          m_GirderSpacing = m_MaxGirderSpacing;
+      }
 
       DDV_UnitValueLimitOrMore(pDX, IDC_SPACING, m_GirderSpacing, m_MinGirderSpacing, pDisplayUnits->GetXSectionDimUnit() );
       DDV_UnitValueLimitOrLess(pDX, IDC_SPACING, m_GirderSpacing, m_MaxGirderSpacing, pDisplayUnits->GetXSectionDimUnit() );
@@ -232,7 +238,9 @@ BOOL CBridgeDescGeneralPage::OnInitDialog()
    UpdateGirderSpacingLimits();
 
    if ( IsGirderSpacing(m_GirderSpacingType) )
+   {
       EnableGirderSpacing(FALSE,FALSE);
+   }
 
 	CPropertyPage::OnInitDialog();
    
@@ -381,7 +389,9 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
    *pParent->m_BridgeDesc.GetDeckDescription() = m_Deck;
 
    if ( bNewGirderFamily )
+   {
       pParent->m_BridgeDesc.CopyDown(false,true,false,false);
+   }
 }
 
 void CBridgeDescGeneralPage::OnSameNumGirders() 
@@ -400,9 +410,13 @@ void CBridgeDescGeneralPage::OnSameNumGirders()
       // box was just checked so restore the number of girders from the cache
       CEAFDocument* pDoc = EAFGetDocument();
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+      {
          strText = CString(_T("By checking this box, all girder groups will have the same number of girders."));
+      }
       else
+      {
          strText = CString(_T("By checking this box, all spans will have the same number of girders."));
+      }
    }
    else
    {
@@ -410,9 +424,13 @@ void CBridgeDescGeneralPage::OnSameNumGirders()
       CEAFDocument* pDoc = EAFGetDocument();
 #pragma Reminder("UPDATE: confirm this instructional message is accurate")
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+      {
          strText = CString(_T("By unchecking this box, each girder group can have a different number of girders. To define the number of girders in a girder group, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Framing tab and then pressing the edit button for a group."));
+      }
       else
+      {
          strText = CString(_T("By unchecking this box, each span can have a different number of girders. To define the number of girders in a span, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span."));
+      }
    }
    // enable/disable the associated controls
    EnableNumGirderLines(m_bSameNumberOfGirders);
@@ -436,8 +454,7 @@ void CBridgeDescGeneralPage::EnableNumGirderLines(BOOL bEnable)
    }
    else
    {
-      pEdit->SetSel(0,-1);
-      pEdit->Clear();
+      pEdit->SetWindowText(_T(""));
    }
    
    GetDlgItem(IDC_NUMGDR_SPIN)->EnableWindow(bEnable);
@@ -464,9 +481,13 @@ void CBridgeDescGeneralPage::OnSameGirderName()
       CEAFDocument* pDoc = EAFGetDocument();
 #pragma Reminder("UPDATE: confirm this instructional message is accurate")
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+      {
          strText = CString(_T("By unchecking this box, a different girder type can be assigned to each girder. To do this, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Framing tab and then pressing the edit button for a group."));
+      }
       else
+      {
          strText = CString(_T("By unchecking this box, a different girder type can be assigned to each girder. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span."));
+      }
    }
 
    EnableGirderName(m_bSameGirderName);
@@ -522,18 +543,24 @@ void CBridgeDescGeneralPage::OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult
 
    // if it goes over the top
    if ( MAX_GIRDERS_PER_SPAN < new_count )
+   {
       new_count = (int)m_MinGirderCount; // make it the min value
+   }
 
    // if it goes under the bottom
    if ( new_count < int(m_MinGirderCount) )
+   {
       new_count = MAX_GIRDERS_PER_SPAN; // make it the max value
+   }
 
    m_nGirders = new_count;
 
    // disable girder spacing if girder count is 1
    // this could happen for U-beams, Voided Slabs, Triple-Tees, or other multi-web beams
    if ( IsBridgeSpacing(m_GirderSpacingType) )
+   {
       EnableGirderSpacing(new_count != 1,FALSE);
+   }
 
    *pResult = 0;
 
@@ -592,7 +619,9 @@ void CBridgeDescGeneralPage::FillGirderNameComboBox()
 
       int idx = pcbGirders->AddString( name.c_str() );
       if ( CString(name.c_str()) == m_GirderName )
+      {
          curSel = idx;
+      }
    }
 
    m_CacheGirderNameIdx = (curSel == CB_ERR ? 0 : curSel);
@@ -667,25 +696,37 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
 
       case pgsTypes::sbsGeneral:
          if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+         {
             idx = pSpacingType->AddString(_T("Unique spacing for each precast segment"));
+         }
          else
+         {
             idx = pSpacingType->AddString(_T("Unique spacing for each girder"));
+         }
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsUniformAdjacent:
          if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+         {
             idx = pSpacingType->AddString(_T("Adjacent girders with same joint spacing in all groups"));
+         }
          else
+         {
             idx = pSpacingType->AddString(_T("Adjacent girders with same joint spacing in all spans"));
+         }
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsGeneralAdjacent:
          if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+         {
             idx = pSpacingType->AddString(_T("Adjacent girders with unique joint spacing for each group"));
+         }
          else
+         {
             idx = pSpacingType->AddString(_T("Adjacent girders with unique joint spacing for each span"));
+         }
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
@@ -699,7 +740,9 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
       }
 
       if ( m_GirderSpacingType == spacingType )
+      {
          curSel = idx;
+      }
    }
 
    if ( curSel == CB_ERR )
@@ -765,10 +808,6 @@ void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
 
 bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   
    bool test=false;
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
@@ -813,7 +852,9 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
       pcbDeck->SetItemData(selidx,(DWORD)*iter);
 
       if ( *iter == m_Deck.DeckType )
+      {
          cursel = selidx;
+      }
    }
 
    if ( cursel != CB_ERR )
@@ -910,7 +951,7 @@ CString CBridgeDescGeneralPage::GetDeckString(pgsTypes::SupportedDeckType deckTy
          return CString(_T("No deck"));
    }
 
-   ATLASSERT(0);
+   ATLASSERT(false);
    return CString(_T("Unknown Deck Type"));
 }
 
@@ -931,16 +972,20 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
    UpdateGirderFactory();     // gets the new factory for this girder family
    FillGirderNameComboBox();  // fills the girder name combo box with girders from this family
    FillGirderSpacingTypeComboBox(); // get new spacing options for this girder family
-   OnGirderSpacingTypeChanged();
    FillDeckTypeComboBox();          // set deck type options to match this girder family
    UpdateGirderConnectivity();      // fills the combo box and enables/disables
 
    UpdateBridgeDescription();
+   OnGirderSpacingTypeChanged();
 
    if ( !UpdateGirderSpacingLimits() || m_NumGdrSpinner.GetPos() == 1)
+   {
       EnableGirderSpacing(FALSE,FALSE);
+   }
    else
+   {
       EnableGirderSpacing(TRUE,FALSE);
+   }
 
 
 
@@ -952,7 +997,9 @@ void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
    m_MinGirderCount = m_Factory->GetMinimumBeamCount();
 
    if ( m_NumGdrSpinner.GetSafeHwnd() != NULL )
+   {
       m_NumGdrSpinner.SetRange(short(m_MinGirderCount),MAX_GIRDERS_PER_SPAN);
+   }
 }
 
 void CBridgeDescGeneralPage::OnBeforeChangeGirderName()
@@ -983,9 +1030,13 @@ void CBridgeDescGeneralPage::OnGirderNameChanged()
    UpdateBridgeDescription();
 
    if ( !UpdateGirderSpacingLimits() || m_NumGdrSpinner.GetPos() == 1)
+   {
       EnableGirderSpacing(FALSE,FALSE);
+   }
    else
+   {
       EnableGirderSpacing(TRUE,FALSE);
+   }
 
 
    UpdateSuperstructureDescription();
@@ -1068,7 +1119,9 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             GetDlgItem(IDC_SPACING)->SetWindowText(_T(""));
 
             if ( strWndTxt != _T("") )
+            {
                m_strCacheGirderSpacing = strWndTxt;
+            }
 
          }
          else
@@ -1077,19 +1130,25 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             GetDlgItem(IDC_SPACING)->SetWindowText(_T(""));
 
             if ( strWndTxt != _T("") )
+            {
                m_strCacheJointSpacing = strWndTxt;
+            }
          }
 
          GetDlgItem(IDC_REF_GIRDER_OFFSET)->GetWindowText(strWndTxt);
          GetDlgItem(IDC_REF_GIRDER_OFFSET)->SetWindowText(_T(""));
          if ( strWndTxt != _T("") )
+         {
             m_strCacheRefGirderOffset = strWndTxt;
+         }
 
          curSel = pcbMeasure->GetCurSel();
          pcbMeasure->SetCurSel(-1);
 
          if ( curSel != CB_ERR )
+         {
             m_CacheGirderSpacingMeasureIdx = curSel;
+         }
 
          
          pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
@@ -1107,9 +1166,13 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
 
 
    if ( ::IsBridgeSpacing(m_GirderSpacingType) )
+   {
       bEnable = TRUE;
+   }
    else
+   {
       bEnable = FALSE;
+   }
 
    GetDlgItem(IDC_REF_GIRDER_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_REF_GIRDER)->EnableWindow(bEnable);
@@ -1139,9 +1202,13 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
       CString strText;
       CEAFDocument* pDoc = EAFGetDocument();
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+      {
          strText = _T("By selecting this option, a different spacing can be used between each girder. To do this, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Framing tab and then pressing the edit button for a group.");
+      }
       else
+      {
          strText = _T("By selecting this option, a different spacing can be used between each girder. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span.");
+      }
       UIHint(strText,UIHINT_SAME_GIRDER_SPACING);
    }
 
@@ -1209,13 +1276,17 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
    {
       Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
       if ( maxSlabOffset < m_Deck.GrossDepth )
+      {
          m_Deck.GrossDepth = maxSlabOffset;
+      }
    }
    else if ( m_Deck.DeckType == pgsTypes::sdtCompositeSIP )
    {
       Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
       if ( maxSlabOffset < m_Deck.GrossDepth + m_Deck.PanelDepth )
+      {
          m_Deck.GrossDepth = maxSlabOffset - m_Deck.PanelDepth; // decrease the cast depth
+      }
    }
 
    UpdateBridgeDescription();
@@ -1236,7 +1307,6 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IBridge,       pBridge);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    // need a spacing range that works for every girder in every span
    m_MinGirderSpacing = -MAX_GIRDER_SPACING;
@@ -1326,6 +1396,8 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    CString label;
    if (specify_spacing)
    {
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
       if (m_MaxGirderSpacing < MAX_GIRDER_SPACING)
       {
          if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -1353,6 +1425,8 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    // if spacing is out of range fix it
    if (m_GirderSpacing < m_MinGirderSpacing || m_MaxGirderSpacing < m_GirderSpacing )
    {
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
       m_GirderSpacing = m_MinGirderSpacing;
 
       CDataExchange dx(this,FALSE);
@@ -1487,16 +1561,24 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
          if ( IsDlgButtonChecked(IDC_SAME_NUM_GIRDERLINES) )
          {
             if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+            {
                m_strToolTipText = _T("Uncheck this option to define a different number of girders in each group.");
+            }
             else
+            {
                m_strToolTipText = _T("Uncheck this option to define a different number of girders in each span.");
+            }
          }
          else
          {
             if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+            {
                m_strToolTipText = _T("Check this option to define the number of girders in all groups. Otherwise, open the Framing tab and click on the Edit Group Details button to define the number of girders in a particular group.");
+            }
             else
+            {
                m_strToolTipText = _T("Check this option to define the number of girders in all spans. Otherwise, open the Framing tab and click on the Edit Span Details button to define the number of girders in a particular span.");
+            }
          }
 
          bShowTip = TRUE;
@@ -1510,9 +1592,13 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
          else
          {
             if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+            {
                m_strToolTipText = _T("Check this option to use the same girder in all groups. Otherwise, open the Framing tab and click on the Edit Group Details button to assign a different girder type to each girder in a particular group.");
+            }
             else
+            {
                m_strToolTipText = _T("Check this option to use the same girder in all spans. Otherwise, open the Framing tab and click on the Edit Span Details button to assign a different girder type to each girder in a particular span.");
+            }
          }
 
          bShowTip = TRUE;
@@ -1570,7 +1656,9 @@ BOOL CBridgeDescGeneralPage::OnSetActive()
    m_bSetActive = true;
 
    if ( !m_bFirstSetActive )
+   {
       Init();
+   }
 
 	BOOL bResult = CPropertyPage::OnSetActive(); // calls DoDataExchange if not the first time page is active
 

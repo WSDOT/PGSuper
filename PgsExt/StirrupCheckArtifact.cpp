@@ -85,7 +85,9 @@ const pgsStirrupCheckAtPoisArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtP
    {
       const pgsStirrupCheckAtPoisArtifact& artifact = *iter;
       if ( artifact.GetPointOfInterest().GetID() == poiID )
+      {
          return &artifact;
+      }
    }
 
    return NULL;
@@ -129,7 +131,9 @@ bool pgsStirrupCheckArtifact::Passed() const
       {
          const pgsStirrupCheckAtPoisArtifact& artifact(*iter);
          if ( !artifact.Passed() )
+         {
             return false;
+         }
       }
    }
 

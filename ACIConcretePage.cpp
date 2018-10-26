@@ -129,14 +129,18 @@ void CACIConcretePage::OnCureMethod()
 {
    BOOL bUseACI = IsDlgButtonChecked(IDC_USER);
    if ( bUseACI )
+   {
       UpdateParameters();
+   }
 }
 
 void CACIConcretePage::OnCementType()
 {
    BOOL bUseACI = IsDlgButtonChecked(IDC_USER);
    if ( bUseACI )
+   {
       UpdateParameters();
+   }
 }
 
 void CACIConcretePage::OnCompute()

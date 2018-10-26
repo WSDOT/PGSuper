@@ -111,9 +111,9 @@ LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std
 
 bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr);
 
-// Use this function when reading library information from a PGSuper project file. This function advances
+// Use this function when reading library information from a project file. This function advances
 // the structured load pointer to the beginning of the library information
-HRESULT PSGLIBFUNC pgslibPGSuperDocHeader(IStructuredLoad* pLoad);
+HRESULT PSGLIBFUNC pgslibReadProjectDocHeader(LPCTSTR lpszRootNodeName,IStructuredLoad* pLoad);
 
 HRESULT PSGLIBFUNC pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode* pUnitsMode);
 

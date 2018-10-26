@@ -42,12 +42,15 @@ DEFINE_GUID(IID_IPsLossEngineer,
 interface IPsLossEngineer : IUnknown
 {
    //---------------------------------------------------------------------
-   // Returns the prestress losses at a point of interest
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi) = 0;
+   // Returns the details of the prestress loss calculation for losses computed upto and including
+   // intervalIdx. Loses may be computed beyond this interval as well, however they are only
+   // guarenteed to be computed upto and including the specified interval. An intervalIdx of
+   // INVALID_INDEX means that losses are computed through all intervals
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx = INVALID_INDEX) = 0;
    
    //---------------------------------------------------------------------
    // Returns prestress losses at a point of interest, but uses the input slab offset (the current design value)
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx = INVALID_INDEX) = 0;
 
    //---------------------------------------------------------------------
    // Clears all losses that were computed as a result of calling GetLosses(poi,config)
@@ -69,5 +72,11 @@ interface IPsLossEngineer : IUnknown
    // Returns the tendon elongation duration jacking at the specified end of the
    // girder.
    virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) = 0;
+
+   //---------------------------------------------------------------------
+   // Returns the average friction and anchor set losses. The average values are
+   // typically used to adjust Pjack so that a constant uniform post-tension force
+   // is used for equivalent post-tensioning force analysis
+   virtual void GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) = 0;
 };
 

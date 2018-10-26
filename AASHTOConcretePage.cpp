@@ -132,7 +132,9 @@ BOOL CAASHTOConcretePage::OnSetActive()
    GetDlgItem(IDC_AGG_STRENGTH_T)->EnableWindow(bEnable);
 
    if ( bEnable )
+   {
       OnAggSplittingStrengthClicked();
+   }
 
    return TRUE;
 }

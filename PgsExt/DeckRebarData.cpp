@@ -310,44 +310,70 @@ bool CDeckRebarData::operator!=(const CDeckRebarData& rOther) const
 bool CDeckRebarData::operator==(const CDeckRebarData& rOther) const
 {
    if ( TopCover != rOther.TopCover )
+   {
       return false;
+   }
 
    if ( BottomCover != rOther.BottomCover )
+   {
       return false;
+   }
 
    if ( TopRebarType != rOther.TopRebarType )
+   {
       return false;
+   }
 
    if ( TopRebarGrade != rOther.TopRebarGrade )
+   {
       return false;
+   }
 
    if ( TopRebarSize != rOther.TopRebarSize )
+   {
       return false;
+   }
 
 
    if ( BottomRebarType != rOther.BottomRebarType )
+   {
       return false;
+   }
 
    if ( BottomRebarGrade != rOther.BottomRebarGrade )
+   {
       return false;
+   }
 
    if ( BottomRebarSize != rOther.BottomRebarSize )
+   {
       return false;
+   }
  
    if ( TopSpacing != rOther.TopSpacing )
+   {
       return false;
+   }
 
    if ( BottomSpacing != rOther.BottomSpacing )
+   {
       return false;
+   }
 
    if ( TopLumpSum != rOther.TopLumpSum )
+   {
       return false;
+   }
 
    if ( BottomLumpSum != rOther.BottomLumpSum )
+   {
       return false;
+   }
 
    if ( NegMomentRebar != rOther.NegMomentRebar )
+   {
       return false;
+   }
 
    return true;
 }
@@ -369,31 +395,49 @@ bool CDeckRebarData::NegMomentRebarData::operator!=(const CDeckRebarData::NegMom
 bool CDeckRebarData::NegMomentRebarData::operator==(const CDeckRebarData::NegMomentRebarData& rOther) const
 {
    if ( PierIdx != rOther.PierIdx )
+   {
       return false;
+   }
 
    if ( Mat != rOther.Mat )
+   {
       return false;
+   }
 
    if ( LumpSum != rOther.LumpSum )
+   {
       return false;
+   }
 
    if ( RebarType != rOther.RebarType )
+   {
       return false;
+   }
 
    if ( RebarGrade != rOther.RebarGrade )
+   {
       return false;
+   }
 
    if ( RebarSize != rOther.RebarSize )
+   {
       return false;
+   }
 
    if ( Spacing != rOther.Spacing )
+   {
       return false;
+   }
 
    if ( LeftCutoff != rOther.LeftCutoff )
+   {
       return false;
+   }
 
    if ( RightCutoff != rOther.RightCutoff )
+   {
       return false;
+   }
 
    return true;
 }

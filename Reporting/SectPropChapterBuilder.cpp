@@ -96,9 +96,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    GET_IFACE2(pBroker, IGirder,            pGirder);
    GET_IFACE2(pBroker, IBarriers,          pBarriers);
    GET_IFACE2(pBroker, IBridge,            pBridge);
-   GET_IFACE2(pBroker, IMaterials,         pMaterial);
-   GET_IFACE2(pBroker, IIntervals,         pIntervals);
    GET_IFACE2(pBroker, IDocumentType,      pDocType);
+   GET_IFACE2_NOCHECK(pBroker, IIntervals,         pIntervals); // not always used... depends on if the segment is prismatic
 
    INIT_UV_PROTOTYPE( rptAreaUnitValue,           l2,   pDisplayUnits->GetAreaUnit(),            false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue,        ui,   pDisplayUnits->GetMomentOfInertiaUnit(), true );
@@ -128,18 +127,26 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       const CRailingSystem* pLeftRailing = pBridgeDesc->GetLeftRailingSystem();
 
       if ( pLeftRailing->GetExteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
+      {
          (*pPara) << _T("Left Exterior Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
+      }
       else
+      {
          (*pPara) << _T("Left Exterior Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
+      }
 
       (*pPara) << _T("Distance from CG of Left Exterior Traffic Barrier to Left Edge of Deck = ")<<dim.SetValue( pBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboLeft) ) << rptNewLine;
 
       if ( pLeftRailing->bUseInteriorRailing)
       {
          if ( pLeftRailing->GetInteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
+         {
             (*pPara) << _T("Left Interior Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
+         }
          else
+         {
             (*pPara) << _T("Left Interior Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
+         }
 
          (*pPara) << _T("Distance from CG of Left Interior Traffic Barrier to Left Edge of Deck = ")<<dim.SetValue( pBarriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboLeft) ) << rptNewLine;
       }
@@ -170,18 +177,26 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       const CRailingSystem* pRightRailing = pBridgeDesc->GetRightRailingSystem();
 
       if ( pRightRailing->GetExteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
+      {
          (*pPara) << _T("Right Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+      }
       else
+      {
          (*pPara) << _T("Right Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+      }
 
       (*pPara) << _T("Distance from CG of Right Exterior Traffic Barrier to Right Edge of Deck = ")<<dim.SetValue( pBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboRight) ) << rptNewLine;
 
       if ( pRightRailing->bUseInteriorRailing)
       {
          if ( pRightRailing->GetInteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
+         {
             (*pPara) << _T("Right Interior Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+         }
          else
+         {
             (*pPara) << _T("Right Interior Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+         }
 
          (*pPara) << _T("Distance from CG of Right Interior Traffic Barrier to Right Edge of Deck = ")<<dim.SetValue( pBarriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboRight) ) << rptNewLine;
       }
@@ -203,7 +218,10 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       *pPara << rptNewLine;
 
       if ( bComposite )
+      {
+         GET_IFACE2(pBroker, IMaterials,         pMaterial);
         (*pPara) << _T("Slab   ") << RPT_EC << _T(" = ") << modE.SetValue( pMaterial->GetDeckEc28() ) << rptNewLine;
+      }
    }
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -243,9 +261,13 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
                *pChapter << pPara;
                if ( pDocType->IsPGSuperDocument() )
+               {
                   (*pPara) << _T("Span ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
+               }
                else
+               {
                   (*pPara) << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+               }
             }
 
             pPara = new rptParagraph();
@@ -311,12 +333,12 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                   *pPara << pTable << rptNewLine;
                }
 
-#pragma Reminder("UPDATE: is the the correct place for this table")
-               // this table was dumped here during development just so there was a place to
-               // output the information
-               *pPara << rptNewLine;
-
+               pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+               *pChapter << pPara;
                (*pPara) << _T("Net Section Properties") << rptNewLine;
+
+               pPara = new rptParagraph;
+               *pChapter << pPara;
 
                for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
                {

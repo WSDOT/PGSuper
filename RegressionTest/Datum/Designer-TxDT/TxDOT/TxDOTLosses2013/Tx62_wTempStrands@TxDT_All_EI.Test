@@ -1,0 +1,24 @@
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     1    Tx62-       60   1/2  270 22.38 15.38  10 52.5  5.200  5.900    3.800   -3.931   9567  0.630  0.814  0.30 -0.18  0.00 -0.01 -0.19 155.57 427.83   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     2    Tx62-       62   1/2  270 22.23 14.81  10 56.5  5.300  6.000    3.926   -4.076   9844  0.630  0.814  0.31 -0.20  0.00 -0.01 -0.22 165.46 444.55   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     4    Tx62-       62   1/2  270 22.23 14.81  10 56.5  5.300  6.000    3.926   -4.076   9844  0.630  0.814  0.31 -0.20  0.00 -0.01 -0.22 165.46 444.55   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+

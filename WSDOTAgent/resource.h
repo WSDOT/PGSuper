@@ -5,10 +5,11 @@
 #define IDS_PROJNAME                    100
 #define IDR_WSDOTAGENT                  101
 #define IDR_WSDOTAGENTIMP               103
-#define IDR_WSDOTCOMPONENTINFO          104
-#define IDR_CURVELEXPORTER              105
-#define IDR_CURVELIMPORTER              106
-#define IDR_GENCOMPEXPORTER             107
+#define IDR_PGSUPERCOMPONENTINFO        104
+#define IDR_PGSPLICECOMPONENTINFO       105
+#define IDR_CURVELEXPORTER              106
+#define IDR_CURVELIMPORTER              107
+#define IDR_GENCOMPEXPORTER             108
 #define IDI_ICON1                       201
 #define IDI_WSDOT                       201
 #define IDD_SELECT_POI                  202
@@ -29,6 +30,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        203
 #define _APS_NEXT_COMMAND_VALUE         32768
 #define _APS_NEXT_CONTROL_VALUE         201
-#define _APS_NEXT_SYMED_VALUE           108
+#define _APS_NEXT_SYMED_VALUE           109
 #endif
 #endif

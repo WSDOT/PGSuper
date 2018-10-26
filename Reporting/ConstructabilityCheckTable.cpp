@@ -77,21 +77,20 @@ CConstructabilityCheckTable& CConstructabilityCheckTable::operator= (const CCons
 rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
 #pragma Reminder("UPDATE: assuming precast girder bridge") // this needs to be updated for spliced girders
 
    // Create table - delete it later if we don't need it
    bool IsSingleGirder = girderList.size()==1;
 
-   ColumnIndexType ncols = IsSingleGirder ? 4 : 6; // put span/girder in table if multi girder
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(ncols,_T("Slab Offset (\"A\" Dimension)"));
+   ColumnIndexType nCols = IsSingleGirder ? 4 : 6; // put span/girder in table if multi girder
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Slab Offset (\"A\" Dimension)"));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
 
-   pTable->SetColumnStyle(ncols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(ncols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(nCols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
    if (!IsSingleGirder)
@@ -107,83 +106,72 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
 
    // First thing - check if we can generate the girder schedule table at all.
    bool areAnyRows(false);
-   std::vector<CGirderKey>::const_iterator itsg_end(girderList.end());
-   std::vector<CGirderKey>::const_iterator itsg(girderList.begin());
+   std::vector<CGirderKey>::const_iterator girderIter(girderList.begin());
+   std::vector<CGirderKey>::const_iterator girderIterEnd(girderList.end());
    RowIndexType row=0;
-   while(itsg != itsg_end)
+   for ( ; girderIter != girderIterEnd; girderIter++ )
    {
-      const CGirderKey& girderKey(*itsg);
+      const CGirderKey& girderKey(*girderIter);
 
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
+      
+      if (pArtifact->SlabOffsetStatus() != pgsConstructabilityArtifact::NA)
       {
-         CSegmentKey segmentKey(girderKey,segIdx);
+         row++;
+         col = 0;
 
-         const pgsSegmentArtifact* pSegmentArtifact = pGdrArtifact->GetSegmentArtifact(segIdx);
-         const pgsConstructabilityArtifact* pArtifact = pSegmentArtifact->GetConstructabilityArtifact();
-         
-         if (pArtifact->SlabOffsetStatus() != pgsConstructabilityArtifact::NA)
+         if (!IsSingleGirder)
          {
-            row++;
-            col = 0;
-
-            if (!IsSingleGirder)
-            {
-               SpanIndexType span = segmentKey.groupIndex;
-               GirderIndexType girder = segmentKey.girderIndex;
-               (*pTable)(row, col++) << LABEL_SPAN(span);
-               (*pTable)(row, col++) << LABEL_GIRDER(girder);
-            }
-
-            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedSlabOffset());
-            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredSlabOffset());
-
-            switch( pArtifact->SlabOffsetStatus() )
-            {
-               case pgsConstructabilityArtifact::Passed:
-                  (*pTable)(row, col++) << RPT_PASS;
-                  break;
-
-               case pgsConstructabilityArtifact::Failed:
-                  (*pTable)(row, col++) << RPT_FAIL;
-                  break;
-
-               case pgsConstructabilityArtifact::Excessive:
-                  (*pTable)(row, col++) << color(Blue) << _T("Excessive") << color(Black);
-                  break;
-
-               default:
-                  ATLASSERT(0);
-                  break;
-            }
-
-            if ( pArtifact->CheckStirrupLength() )
-            {
-#pragma Reminder("REVIEW: A DIMENSIONS STIRRUP LENGTH CHECK")
-               // this may be ok for PGSuper, but not sure about PGSplice
-               GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
-               HAUNCHDETAILS haunch_details;
-               pGdrHaunch->GetHaunchDetails(segmentKey,&haunch_details);
-
-               if ( 0 < haunch_details.HaunchDiff )
-                  (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
-               else
-                  (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the ends of the girder exceeds the depth at the middle by ") << dim2.SetValue(-haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
-            }
-            else
-            {
-               (*pTable)(row, col++) << _T("");
-            }
+            SpanIndexType span = girderKey.groupIndex;
+            GirderIndexType girder = girderKey.girderIndex;
+            (*pTable)(row, col++) << LABEL_SPAN(span);
+            (*pTable)(row, col++) << LABEL_GIRDER(girder);
          }
-      } // next segment
 
-      itsg++;
-   }
+         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedSlabOffset());
+         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredSlabOffset());
+
+         switch( pArtifact->SlabOffsetStatus() )
+         {
+            case pgsConstructabilityArtifact::Pass:
+               (*pTable)(row, col++) << RPT_PASS;
+               break;
+
+            case pgsConstructabilityArtifact::Fail:
+               (*pTable)(row, col++) << RPT_FAIL;
+               break;
+
+            case pgsConstructabilityArtifact::Excessive:
+               (*pTable)(row, col++) << color(Blue) << _T("Excessive") << color(Black);
+               break;
+
+            default:
+               ATLASSERT(false);
+               break;
+         }
+
+         if ( pArtifact->CheckStirrupLength() )
+         {
+            GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+            HAUNCHDETAILS haunch_details;
+            pGdrHaunch->GetHaunchDetails(girderKey,&haunch_details);
+
+            if ( 0 < haunch_details.HaunchDiff )
+               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            else
+               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the ends of the girder exceeds the depth at the middle by ") << dim2.SetValue(-haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+         }
+         else
+         {
+            (*pTable)(row, col++) << _T("");
+         }
+      }
+   } // next girder
 
    // Only return a table if it has content
-   if (row>0)
+   if (0 < row)
    {
       return pTable;
    }
@@ -294,7 +282,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
-      const pgsConstructabilityArtifact* pArtifact = pSegmentArtifact->GetConstructabilityArtifact();
+      const pgsSegmentStabilityArtifact* pArtifact = pSegmentArtifact->GetSegmentStabilityArtifact();
       
       if ( pArtifact->IsGlobalGirderStabilityApplicable() )
       {
@@ -325,7 +313,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
-      const pgsConstructabilityArtifact* pArtifact = pSegmentArtifact->GetConstructabilityArtifact();
+      const pgsSegmentStabilityArtifact* pArtifact = pSegmentArtifact->GetSegmentStabilityArtifact();
 
       CString strTitle;
       if ( 1 < nSegments )
@@ -351,7 +339,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
       (*pTable)(1,2) << slope.SetValue(Orientation);
       (*pTable)(1,3) << slope.SetValue(maxIncline);
 
-      if ( pArtifact->GlobalGirderStabilityPassed() )
+      if ( pArtifact->Passed() )
          (*pTable)(1,4) << RPT_PASS;
       else
          (*pTable)(1,4) << RPT_FAIL << rptNewLine << _T("Reaction falls outside of middle third of bottom width of girder");

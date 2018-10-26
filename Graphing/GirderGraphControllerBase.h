@@ -27,7 +27,7 @@
 class CGirderGraphControllerBase : public CEAFGraphControlWindow
 {
 public:
-   CGirderGraphControllerBase(bool bAllGroups=true);
+   CGirderGraphControllerBase(bool bAllGroups);
    DECLARE_DYNCREATE(CGirderGraphControllerBase);
 
    GroupIndexType GetGirderGroup();

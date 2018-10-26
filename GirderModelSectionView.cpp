@@ -240,7 +240,9 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    pgsPointOfInterest poi(m_pFrame->GetCutLocation());
 
    if ( poi.GetSegmentKey().girderIndex == INVALID_INDEX )
+   {
       return;
+   }
 
    CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
@@ -259,13 +261,19 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    }
 
    if ( settings & IDG_SV_SHOW_LONG_REINF )
+   {
       BuildLongReinfDisplayObjects(pDoc, pBroker, poi, dispMgr);
+   }
 
    if (settings & IDG_SV_SHOW_PS_CG)
+   {
       BuildCGDisplayObjects(pDoc, pBroker, poi, dispMgr);
+   }
 
    if ( settings & IDG_SV_SHOW_DIMENSIONS )
+   {
       BuildDimensionDisplayObjects(pDoc, pBroker, poi, dispMgr);
+   }
 
    SetMappingMode(DManip::Isotropic);
 }
@@ -279,9 +287,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,I
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -314,7 +320,17 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,I
    CComPtr<IRect2d> box;
    shape->get_BoundingBox(&box);
    CComPtr<IPoint2d> pntTC, pntBC; // top and bottom center
-   Float64 top_width    = (eventIdx <= castDeckEventIdx ? pGirder->GetTopWidth(poi) : pSectProp->GetTributaryFlangeWidth(poi));
+   Float64 top_width = 0;
+   if (eventIdx <= castDeckEventIdx)
+   {
+      top_width = pGirder->GetTopWidth(poi);
+   }
+   else
+   {
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      top_width = pSectProp->GetTributaryFlangeWidth(poi);
+   }
+
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
 
    CComPtr<iSocket> socketHT, socketHB, socketTFL, socketTFR, socketBFL, socketBFR, socketBC;
@@ -395,9 +411,13 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,IB
       doPnt->SetID(strandPointIdx);
 
       if ( pStrandGeom->IsStrandDebonded(poi,strandPointIdx,pgsTypes::Straight) )
+      {
          doPnt->SetDrawingStrategy(debond_strategy);
+      }
       else
+      {
          doPnt->SetDrawingStrategy(strategy);
+      }
 
       doPnt->SetSelectionType(stAll);
 
@@ -431,29 +451,37 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,IB
    }
 
    // Temporary Strands
-   CComPtr<iDisplayList> pTempDL;
-   pDispMgr->FindDisplayList(TEMP_STRAND_LIST,&pTempDL);
-   ATLASSERT(pTempDL);
-   pTempDL->Clear();
-
-   pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
-   diameter = pStrand->GetNominalDiameter();
-
-   points.Release();
-   pStrandGeom->GetStrandPositions(poi, pgsTypes::Temporary,&points);
-   points->get_Count(&nStrandPoints);
-   for ( strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++ )
+   EventIndexType eventIdx = m_pFrame->GetEvent();
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
+   IntervalIndexType tsrIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   if ( tsrIntervalIdx != INVALID_INDEX && intervalIdx < tsrIntervalIdx )
    {
-      CComPtr<IPoint2d> p;
-      points->get_Item(strandPointIdx,&p);
+      // only show temporary strands if they haven't been removed yet
+      CComPtr<iDisplayList> pTempDL;
+      pDispMgr->FindDisplayList(TEMP_STRAND_LIST,&pTempDL);
+      ATLASSERT(pTempDL);
+      pTempDL->Clear();
 
-      CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-      doPnt->SetPosition(p,FALSE,FALSE);
-      doPnt->SetID(strandPointIdx);
-      doPnt->SetDrawingStrategy(strategy);
+      pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+      diameter = pStrand->GetNominalDiameter();
 
-      pTempDL->AddDisplayObject(doPnt);
+      points.Release();
+      pStrandGeom->GetStrandPositions(poi, pgsTypes::Temporary,&points);
+      points->get_Count(&nStrandPoints);
+      for ( strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++ )
+      {
+         CComPtr<IPoint2d> p;
+         points->get_Item(strandPointIdx,&p);
+
+         CComPtr<iPointDisplayObject> doPnt;
+         ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+         doPnt->SetPosition(p,FALSE,FALSE);
+         doPnt->SetID(strandPointIdx);
+         doPnt->SetDrawingStrategy(strategy);
+
+         pTempDL->AddDisplayObject(doPnt);
+      }
    }
 }
 
@@ -476,7 +504,9 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSuperDocBase* pDoc,IBro
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 Lg = pBridge->GetGirderLength(girderKey);
    if ( Xg < 0 || Lg < Xg )
+   {
       return; // poi is not within the extent of the tendon
+   }
 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
@@ -560,14 +590,18 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSuperDocBase* pDoc,IBroke
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    if ( segment_length < poi.GetDistFromStart() )
+   {
       return;
+   }
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    EventIndexType eventIdx = m_pFrame->GetEvent();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    if ( intervalIdx < releaseIntervalIdx )
+   {
       intervalIdx = releaseIntervalIdx;
+   }
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 nEff;
@@ -714,7 +748,6 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    // set the text labels on the dimension lines
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -748,10 +781,13 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    textBlock.CoCreateInstance(CLSID_TextBlock);
    strDim = FormatDimension(height,length_unit);
    textBlock->SetText(strDim);
+   textBlock->SetBkMode(TRANSPARENT);
    doDimLineHeight->SetTextBlock(textBlock);
 
    if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS )
    {
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+
       Float64 nEff;
       Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi,true, &nEff);
       Float64 yps = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder) - ecc;
@@ -827,7 +863,9 @@ void CGirderModelSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pH
 int CGirderModelSectionView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CDisplayView::OnCreate(lpCreateStruct) == -1)
+   {
 		return -1;
+   }
 
    m_pFrame = (CGirderModelChildFrame*)GetParent()->GetParent();
    ASSERT( m_pFrame != 0 );
@@ -930,7 +968,9 @@ void CGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
       pgsPointOfInterest poi(m_pFrame->GetCutLocation());
 
       if ( poi.GetSegmentKey().girderIndex == INVALID_INDEX )
+      {
          return;
+      }
 
       // Get the doc and the view settings
       CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
@@ -942,7 +982,9 @@ void CGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
 
       // build the dimension lines
       if ( settings & IDG_SV_SHOW_DIMENSIONS )
+      {
          BuildDimensionDisplayObjects(pDoc, pBroker, poi, dispMgr);
+      }
    }
 }
 
@@ -958,12 +1000,16 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
       CFont font;
       CFont* pOldFont = NULL;
       if ( font.CreatePointFont(100,_T("Arial"),pDC) )
+      {
          pOldFont = pDC->SelectObject(&font);
+      }
 
       MultiLineTextOut(pDC,0,0,msg);
 
       if ( pOldFont )
+      {
          pDC->SelectObject(pOldFont);
+      }
 
       return;
    }
@@ -979,12 +1025,16 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
       CFont font;
       CFont* pOldFont = NULL;
       if ( font.CreatePointFont(100,_T("Arial"),pDC) )
+      {
          pOldFont = pDC->SelectObject(&font);
+      }
 
       MultiLineTextOut(pDC,0,0,msg);
 
       if ( pOldFont )
+      {
          pDC->SelectObject(pOldFont);
+      }
    }
 }
 

@@ -42,8 +42,8 @@ IMPLEMENT_DYNAMIC(CGirderGraphControllerBase,CEAFGraphControlWindow)
 
 CGirderGraphControllerBase::CGirderGraphControllerBase(bool bAllGroups):
 m_bAllGroups(bAllGroups),
-m_GroupIdx(0),
-m_GirderIdx(0)
+m_GroupIdx(m_bAllGroups ? ALL_GROUPS : 0),
+m_GirderIdx(ALL_GIRDERS)
 {
 }
 
@@ -74,11 +74,9 @@ BOOL CGirderGraphControllerBase::OnInitDialog()
    if ( pcbGroup )
    {
       pcbGroup->SetCurSel( selection.GroupIdx == ALL_GROUPS ? 0 : (int)selection.GroupIdx+1);
-      m_GroupIdx  = (GroupIndexType)(pcbGroup->GetItemData(pcbGroup->GetCurSel()));
-   }
-   else
-   {
-      m_GroupIdx = INVALID_INDEX;
+      int curSel = pcbGroup->GetCurSel();
+      DWORD_PTR itemData = pcbGroup->GetItemData(curSel);
+      m_GroupIdx  = (GroupIndexType)(itemData);
    }
 
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
@@ -86,10 +84,6 @@ BOOL CGirderGraphControllerBase::OnInitDialog()
    {
       pcbGirder->SetCurSel(selection.GirderIdx == ALL_GIRDERS ? 0 : (int)selection.GirderIdx);
       m_GirderIdx = (GirderIndexType)(pcbGirder->GetItemData(pcbGirder->GetCurSel()));
-   }
-   else
-   {
-      m_GirderIdx = INVALID_INDEX;
    }
 
    return TRUE;
@@ -134,7 +128,9 @@ void CGirderGraphControllerBase::CbnOnGroupChanged()
    GroupIndexType grpIdx = (GroupIndexType)pcbGroup->GetItemData(curSel);
    
    if ( m_GroupIdx == grpIdx )
+   {
       return;
+   }
 
    m_GroupIdx = grpIdx;
 
@@ -195,7 +191,9 @@ void CGirderGraphControllerBase::FillGroupCtrl()
 {
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);
    if ( pcbGroup == NULL )
+   {
       return; // not using a group list
+   }
 
    pcbGroup->ResetContent();
 
@@ -206,7 +204,8 @@ void CGirderGraphControllerBase::FillGroupCtrl()
 
    if ( m_bAllGroups )
    {
-      idx = pcbGroup->AddString(pDocType->IsPGSuperDocument() ? _T("All Spans") : _T("All Groups"));
+      CString string(pDocType->IsPGSuperDocument() ? _T("All Spans") : _T("All Groups"));
+      idx = pcbGroup->AddString(string);
       pcbGroup->SetItemData(idx,ALL_GROUPS);
    }
 
@@ -230,7 +229,9 @@ void CGirderGraphControllerBase::FillGirderCtrl()
 
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
    if ( pcbGirder == NULL )
+   {
       return; // not using a girder list
+   }
 
    int curSel = pcbGirder->GetCurSel();
 
@@ -380,7 +381,9 @@ void CIntervalGirderGraphControllerBase::FillIntervalCtrl()
 {
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
    if ( pcbIntervals == NULL )
+   {
       return; // not using an intervals list
+   }
 
    int curSel = pcbIntervals->GetCurSel();
 
@@ -526,7 +529,9 @@ void CMultiIntervalGirderGraphControllerBase::FillIntervalCtrl()
       CString strItem = selItems[i];
       int idx = plbIntervals->FindStringExact(-1,strItem);
       if ( idx != LB_ERR )
+      {
          plbIntervals->SetSel(idx);
+      }
    }
 }
 

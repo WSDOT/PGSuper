@@ -164,7 +164,7 @@ void CDistributedLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,CO
 {
    if (m_LoadLength<=0.0)
    {
-      ATLASSERT(0);
+      ATLASSERT(false);
       return;
    }
 
@@ -535,14 +535,14 @@ void CDistributedLoadDrawStrategyImpl::EditLoad()
 
    ATLASSERT(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetDistributedLoadCount());
 
-   const CDistributedLoadData& load = pUdl->GetDistributedLoad(m_LoadIndex);
+   const CDistributedLoadData* pLoad = pUdl->GetDistributedLoad(m_LoadIndex);
 
-	CEditDistributedLoadDlg dlg(load);
+	CEditDistributedLoadDlg dlg(*pLoad);
    if (dlg.DoModal() == IDOK)
    {
-      if (load != dlg.m_Load)
+      if (*pLoad != dlg.m_Load)
       {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(m_LoadIndex,load,dlg.m_Load);
+         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(m_LoadIndex,*pLoad,dlg.m_Load);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
    }

@@ -33,6 +33,7 @@
 #define UIHINT_SAME_GIRDER_SPACING        0x0002
 #define UIHINT_SAME_GIRDER_NAME           0x0004
 #define UIHINT_SINGLE_SLAB_OFFSET         0x0008
+#define UIHINT_FAVORITES_MENU             0x0010
 
 // This file contains all the hints sets to the views
 // in the OnUpdate method.
