@@ -111,7 +111,7 @@ void CSpecShearPage::FillShearMethodList()
 
    int idxGeneral, idxVciVcw, idxAppendixB, idxWSDOT2001, idxWSDOT2007;
 
-   idxGeneral = pCB->AddString("Compute in accordance with LRFD 5.8.3.4.2 (General method)");
+   idxGeneral = pCB->AddString(_T("Compute in accordance with LRFD 5.8.3.4.2 (General method)"));
    if ( version <= lrfdVersionMgr::FourthEdition2007 )
       pCB->SetItemData(idxGeneral,(DWORD)scmBTTables); // 4th Edition and earlier, general method is Beta-Theta tables
    else
@@ -119,25 +119,25 @@ void CSpecShearPage::FillShearMethodList()
 
    if ( lrfdVersionMgr::FourthEdition2007 <= version )
    {
-      idxVciVcw = pCB->AddString("Compute in accordance with LRFD 5.8.3.4.3 (Vci and Vcw method)");
+      idxVciVcw = pCB->AddString(_T("Compute in accordance with LRFD 5.8.3.4.3 (Vci and Vcw method)"));
       pCB->SetItemData(idxVciVcw,(DWORD)scmVciVcw);
    }
 
    if ( lrfdVersionMgr::FourthEditionWith2008Interims <= version )
    {
-      idxAppendixB = pCB->AddString("Compute in accordance with LRFD B5.1 (Beta-Theta Tables)");
+      idxAppendixB = pCB->AddString(_T("Compute in accordance with LRFD B5.1 (Beta-Theta Tables)"));
       pCB->SetItemData(idxAppendixB,(DWORD)scmBTTables);
    }
 
    if ( lrfdVersionMgr::SecondEditionWith2000Interims <= version )
    {
-      idxWSDOT2001 = pCB->AddString("Compute in accordance with WSDOT Bridge Design Manual (June 2001)");
+      idxWSDOT2001 = pCB->AddString(_T("Compute in accordance with WSDOT Bridge Design Manual (June 2001)"));
       pCB->SetItemData(idxWSDOT2001,(DWORD)scmWSDOT2001);
    }
 
    if ( lrfdVersionMgr::FourthEdition2007 <= version && version < lrfdVersionMgr::FourthEditionWith2008Interims )
    {
-      idxWSDOT2007 = pCB->AddString("Compute in accordance with WSDOT Bridge Design Manual (August 2007)");
+      idxWSDOT2007 = pCB->AddString(_T("Compute in accordance with WSDOT Bridge Design Manual (August 2007)"));
       pCB->SetItemData(idxWSDOT2007,(DWORD)scmWSDOT2007);
    }
 

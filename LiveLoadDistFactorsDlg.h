@@ -28,7 +28,7 @@
 #endif // _MSC_VER > 1000
 // LiveLoadDistFactorsDlg.h : header file
 //
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "LLDFGrid.h"
 #include <PgsExt\BridgeDescription.h>
 #include <LRFD\LRFD.h>

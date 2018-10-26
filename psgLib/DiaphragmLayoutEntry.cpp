@@ -75,16 +75,16 @@ DiaphragmLayoutEntry& DiaphragmLayoutEntry::operator= (const DiaphragmLayoutEntr
 //======================== OPERATIONS =======================================
 bool DiaphragmLayoutEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit("DiaphragmLayoutEntry", 1.0);
+   pSave->BeginUnit(_T("DiaphragmLayoutEntry"), 1.0);
 
-   pSave->Property("Name",this->GetName().c_str());
+   pSave->Property(_T("Name"),this->GetName().c_str());
 
    // layout
    for (DiaphragmLayoutVec::const_iterator it = m_DiaphragmLayoutVec.begin(); it!=m_DiaphragmLayoutVec.end(); it++)
    {
-      pSave->BeginUnit("DiaphragmLayout", 1.0);
-      pSave->Property("EndOfRange", (*it).EndOfRange);
-      pSave->Property("NumberOfDiaphragms", (*it).NumberOfDiaphragms);
+      pSave->BeginUnit(_T("DiaphragmLayout"), 1.0);
+      pSave->Property(_T("EndOfRange"), (*it).EndOfRange);
+      pSave->Property(_T("NumberOfDiaphragms"), (*it).NumberOfDiaphragms);
       pSave->EndUnit();
    }
 
@@ -95,28 +95,28 @@ bool DiaphragmLayoutEntry::SaveMe(sysIStructuredSave* pSave)
 
 bool DiaphragmLayoutEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
-   if(pLoad->BeginUnit("DiaphragmLayoutEntry"))
+   if(pLoad->BeginUnit(_T("DiaphragmLayoutEntry")))
    {
       if (pLoad->GetVersion()!=1.0)
          THROW_LOAD(BadVersion,pLoad);
 
-      std::string name;
-      if(pLoad->Property("Name",&name))
+      std::_tstring name;
+      if(pLoad->Property(_T("Name"),&name))
          this->SetName(name.c_str());
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       DiaphragmLayout dl;
       m_DiaphragmLayoutVec.clear();
-      while(pLoad->BeginUnit("DiaphragmLayout"))
+      while(pLoad->BeginUnit(_T("DiaphragmLayout")))
       {
          if(pLoad->GetVersion()!=1.0)
             THROW_LOAD(BadVersion,pLoad);
 
-         if(!pLoad->Property("EndOfRange", &dl.EndOfRange))
+         if(!pLoad->Property(_T("EndOfRange"), &dl.EndOfRange))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("NumberOfDiaphragms", &dl.NumberOfDiaphragms))
+         if(!pLoad->Property(_T("NumberOfDiaphragms"), &dl.NumberOfDiaphragms))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if(!pLoad->EndUnit())
@@ -222,12 +222,12 @@ bool DiaphragmLayoutEntry::AssertValid() const
 
 void DiaphragmLayoutEntry::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for DiaphragmLayoutEntry"<<endl;
+   os << _T("Dump for DiaphragmLayoutEntry")<<endl;
    libLibraryEntry::Dump( os );
    for (DiaphragmLayoutVec::const_iterator it = m_DiaphragmLayoutVec.begin(); it!=m_DiaphragmLayoutVec.end(); it++)
    {
-      os<<" EndOfRange = "<< (*it).EndOfRange<<endl;
-      os<<" NumberOfDiaphragms = "<< (*it).NumberOfDiaphragms<<endl;
+      os<<_T(" EndOfRange = ")<< (*it).EndOfRange<<endl;
+      os<<_T(" NumberOfDiaphragms = ")<< (*it).NumberOfDiaphragms<<endl;
    }
 }
 #endif // _DEBUG

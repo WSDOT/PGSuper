@@ -94,7 +94,7 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
-   *pPara << "Specification = " << pSpec->GetSpecification() << rptNewLine;
+   *pPara << _T("Specification = ") << pSpec->GetSpecification() << rptNewLine;
 
 
    GET_IFACE2(pBroker,IArtifact,pArtifacts);

@@ -60,7 +60,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::string strSpecName = pSpec->GetSpecification();
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -75,30 +75,30 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
 
    pgsReportStyleHolder::ConfigureTable(table);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "[5.9.5.4.2c] Relaxation of Prestressing Strands : " << symbol(DELTA) << RPT_STRESS("pR1H") << rptNewLine;
+   *pParagraph << _T("[5.9.5.4.2c] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   *pParagraph << rptRcImage(strImagePath + "Delta_FpR1H.png") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1H.png")) << rptNewLine;
 
    table->stress.ShowUnitTag(true);
    table->time.ShowUnitTag(true);
 
-   *pParagraph << RPT_FY << " = " << table->stress.SetValue(details.RefinedLosses2005.GetFpy())        << rptNewLine;
-   *pParagraph << Sub2("K'","L") << " = " << details.RefinedLosses2005.GetKL()                          << rptNewLine;
-   *pParagraph << Sub2("t","i")  << " = " << table->time.SetValue(details.RefinedLosses2005.GetInitialAge())   << rptNewLine;
-   *pParagraph << Sub2("t","h")  << " = " << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling()) << rptNewLine;
+   *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(details.RefinedLosses2005.GetFpy())        << rptNewLine;
+   *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << details.RefinedLosses2005.GetKL()                          << rptNewLine;
+   *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetInitialAge())   << rptNewLine;
+   *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling()) << rptNewLine;
 
    table->stress.ShowUnitTag(false);
    table->time.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
    if ( bTemporaryStrands )
    {
@@ -111,10 +111,10 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
       table->SetRowSpan(1,1,-1);
 
       table->SetColumnSpan(0,2,5);
-      (*table)(0,2) << "Permanent Strands";
+      (*table)(0,2) << _T("Permanent Strands");
 
       table->SetColumnSpan(0,3,5);
-      (*table)(0,3) << "Temporary Strands";
+      (*table)(0,3) << _T("Temporary Strands");
 
       table->SetColumnSpan(0,4,-1);
       table->SetColumnSpan(0,5,-1);
@@ -125,26 +125,26 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
       table->SetColumnSpan(0,10,-1);
       table->SetColumnSpan(0,11,-1);
 
-      (*table)(1,2) << COLHDR(RPT_STRESS("pt"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pSRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,4) << COLHDR(symbol(DELTA) << RPT_STRESS("pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,5) << Sub2("K","ih");
-      (*table)(1,6) << COLHDR(symbol(DELTA) << RPT_STRESS("pR1H"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,2) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,5) << Sub2(_T("K"),_T("ih"));
+      (*table)(1,6) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*table)(1,7) << COLHDR(RPT_STRESS("pt"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,8) << COLHDR(symbol(DELTA) << RPT_STRESS("pSRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,9) << COLHDR(symbol(DELTA) <<RPT_STRESS("pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,10) << Sub2("K","ih");
-      (*table)(1,11) << COLHDR(symbol(DELTA) << RPT_STRESS("pR1H"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,7) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,9) << COLHDR(symbol(DELTA) <<RPT_STRESS(_T("pCRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,10) << Sub2(_T("K"),_T("ih"));
+      (*table)(1,11) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
       table->m_RowOffset = 0;
-      (*table)(0,2) << COLHDR(RPT_STRESS("pt"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pSRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS("pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,5) << Sub2("K","ih");
-      (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS("pR1H"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,2) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,5) << Sub2(_T("K"),_T("ih"));
+      (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    return table;

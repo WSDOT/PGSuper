@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "pgsuperDoc.h"
 #include "FactorOfSafetyChildFrame.h"
@@ -141,8 +141,8 @@ int CFactorOfSafetyChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    // fill stage bar since it won't change
    CComboBox* pstg_ctrl = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_STAGE);
    ASSERT(pstg_ctrl!=0);
-   pstg_ctrl->AddString("Lifting");
-   pstg_ctrl->AddString("Transportation");
+   pstg_ctrl->AddString(_T("Lifting"));
+   pstg_ctrl->AddString(_T("Transportation"));
    pstg_ctrl->SetCurSel(0);
    m_Stage = Lifting;
 
@@ -213,7 +213,7 @@ void CFactorOfSafetyChildFrame::UpdateBar()
       CString csv;
       for (SpanIndexType i=0; i<num_spans; i++)
       {
-         csv.Format("Span %i", i+1);
+         csv.Format(_T("Span %i"), i+1);
          pspan_ctrl->AddString(csv);
       }
       if (SpanIndexType(sel) < num_spans)
@@ -244,7 +244,7 @@ void CFactorOfSafetyChildFrame::UpdateBar()
    CString csv;
    for (GirderIndexType i=0; i<num_girders; i++)
    {
-      csv.Format("Girder %s", LABEL_GIRDER(i));
+      csv.Format(_T("Girder %s"), LABEL_GIRDER(i));
       pgirder_ctrl->AddString(csv);
    }
    if (GirderIndexType(sel) < num_girders)

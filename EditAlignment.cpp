@@ -84,9 +84,9 @@ txnTransaction* txnEditAlignment::CreateClone() const
                                m_SectionData[0],   m_SectionData[1]);
 }
 
-std::string txnEditAlignment::Name() const
+std::_tstring txnEditAlignment::Name() const
 {
-   return "Edit Alignment";
+   return _T("Edit Alignment");
 }
 
 bool txnEditAlignment::IsUndoable()

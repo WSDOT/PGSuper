@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "GirderModelChildFrame.h"
 #include "SectionCutDlgEx.h"
 #include <ostream>
@@ -101,12 +101,12 @@ void CSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
       ASSERT(pprompt); 
 
       CString str;
-      std::string tag;
+      std::_tstring tag;
       Float64 lower, upper;
       lower = ::ConvertFromSysUnits(m_LowerBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       upper = ::ConvertFromSysUnits(m_UpperBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       tag = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag();
-      str.Format("Enter a Value Between %g and %g %s",lower, upper, tag.c_str());
+      str.Format(_T("Enter a Value Between %g and %g %s"),lower, upper, tag.c_str());
       pprompt->SetWindowText(str);
    }
 }

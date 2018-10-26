@@ -130,7 +130,7 @@ void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,
 
    GET_IFACE(IProductLoads,pProductLoads);
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
-   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
+   std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
 
    GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(ISpecification,pSpec);
@@ -233,7 +233,7 @@ void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,
          K = 1.0;
 
 
-      std::string strVehicleName = strLLNames[truck_index];
+      std::_tstring strVehicleName = strLLNames[truck_index];
       Float64 W = pProductLoads->GetVehicleWeight(llType,truck_index);
 
       pgsMomentRatingArtifact momentArtifact;
@@ -327,7 +327,7 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
    Float64 gDW = pRatingSpec->GetWearingSurfaceFactor(ls);
 
    GET_IFACE(IProductLoads,pProductLoads);
-   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
+   std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
 
    GET_IFACE(IProductForces,pProductForce);
 
@@ -448,7 +448,7 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
       Float64 phi_shear = vVn[i].Phi; 
       Float64 Vn = vVn[i].Vn;
 
-      std::string strVehicleName = strLLNames[truck_index];
+      std::_tstring strVehicleName = strLLNames[truck_index];
       Float64 W = pProductLoads->GetVehicleWeight(llType,truck_index);
 
       pgsShearRatingArtifact shearArtifact;
@@ -564,7 +564,7 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
    Float64 gDW = pRatingSpec->GetWearingSurfaceFactor(ls);
 
    GET_IFACE(IProductLoads,pProductLoads);
-   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
+   std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
 
    GET_IFACE(IProductForces,pProductForce);
 
@@ -643,7 +643,7 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
       }
 
 
-      std::string strVehicleName = strLLNames[truck_index];
+      std::_tstring strVehicleName = strLLNames[truck_index];
       Float64 W = pProductLoads->GetVehicleWeight(llType,truck_index);
 
       pgsStressRatingArtifact stressArtifact;
@@ -710,7 +710,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
    Float64 top_slab_cover = pLongRebar->GetCoverTopMat();
 
    GET_IFACE(IProductLoads,pProductLoads);
-   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
+   std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
 
    GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(ISpecification,pSpec);
@@ -860,7 +860,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
          fpe = -(Es/Eg)*Mcr*y/I; // - sign is to make the stress come out positive (tension) because Mcr is < 0
       }
 
-      std::string strVehicleName = strLLNames[truck_index];
+      std::_tstring strVehicleName = strLLNames[truck_index];
       Float64 W = pProductLoads->GetVehicleWeight(llType,truck_index);
 
       pgsYieldStressRatioArtifact stressRatioArtifact;

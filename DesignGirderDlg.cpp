@@ -113,7 +113,7 @@ BOOL CDesignGirderDlg::OnInitDialog()
    for ( SpanIndexType i = 0; i < cSpan; i++ )
    {
       CString strSpan;
-      strSpan.Format("Span %d",LABEL_SPAN(i));
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(i));
       pSpanBox->AddString(strSpan);
    }
 
@@ -157,7 +157,7 @@ void CDesignGirderDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
    for ( GirderIndexType j = 0; j < cGirder; j++ )
    {
       CString strGdr;
-      strGdr.Format( "Girder %s", LABEL_GIRDER(j));
+      strGdr.Format( _T("Girder %s"), LABEL_GIRDER(j));
       pGdrBox->AddString( strGdr );
    }
 

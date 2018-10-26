@@ -210,7 +210,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       CComVariant var;
 
-      hr = pStrLoad->BeginUnit("SpanDataDetails");
+      hr = pStrLoad->BeginUnit(_T("SpanDataDetails"));
 
       double version;
       pStrLoad->get_Version(&version);
@@ -218,7 +218,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       if ( !m_pBridgeDesc->UseSameNumberOfGirdersInAllSpans() )
       {
          var.vt = VT_I2;
-         hr = pStrLoad->get_Property("GirderCount",&var);
+         hr = pStrLoad->get_Property(_T("GirderCount"),&var);
          m_nGirders = var.iVal;
 
          m_GirderTypes.SetGirderCount(m_nGirders);
@@ -231,7 +231,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          m_GirderTypes.SetGirderName(0, m_pBridgeDesc->GetGirderName() );
       }
 
-      hr = pStrLoad->BeginUnit("Girders");
+      hr = pStrLoad->BeginUnit(_T("Girders"));
       hr = m_GirderTypes.Load(pStrLoad,pProgress);
       hr = pStrLoad->EndUnit();
 
@@ -241,29 +241,29 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotSpan )
          {
             var.vt = VT_R8;
-            pStrLoad->get_Property("SlabOffsetAtStart",&var);
+            pStrLoad->get_Property(_T("SlabOffsetAtStart"),&var);
             m_SlabOffset[pgsTypes::metStart] = var.dblVal;
 
-            pStrLoad->get_Property("SlabOffsetAtEnd",&var);
+            pStrLoad->get_Property(_T("SlabOffsetAtEnd"),&var);
             m_SlabOffset[pgsTypes::metEnd] = var.dblVal;
          }
       }
 
       if ( m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneral || m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneralAdjacent )
       {
-         hr = pStrLoad->BeginUnit("GirderSpacing");
+         hr = pStrLoad->BeginUnit(_T("GirderSpacing"));
          
          var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property("UseSameSpacingAtBothEnds",&var);
+         hr = pStrLoad->get_Property(_T("UseSameSpacingAtBothEnds"),&var);
          m_bUseSameSpacing = (var.boolVal == VARIANT_TRUE ? true : false);
 
-         hr = pStrLoad->BeginUnit("StartSpacing");
+         hr = pStrLoad->BeginUnit(_T("StartSpacing"));
          hr = m_GirderSpacing[pgsTypes::metStart].Load(pStrLoad,pProgress);
          hr = pStrLoad->EndUnit(); // start spacing
 
          if ( !m_bUseSameSpacing )
          {
-            hr = pStrLoad->BeginUnit("EndSpacing");
+            hr = pStrLoad->BeginUnit(_T("EndSpacing"));
             hr = m_GirderSpacing[pgsTypes::metEnd].Load(pStrLoad,pProgress);
             hr = pStrLoad->EndUnit(); // end spacing
          }
@@ -312,7 +312,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
       {
-         pStrLoad->BeginUnit("LLDF");
+         pStrLoad->BeginUnit(_T("LLDF"));
          double lldf_version;
          pStrLoad->get_Version(&lldf_version);
 
@@ -320,27 +320,27 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             var.vt = VT_R8;
 
-            hr = pStrLoad->get_Property("gPM_Interior",&var);
+            hr = pStrLoad->get_Property(_T("gPM_Interior"),&var);
             m_gPM[0][pgsTypes::Interior] = var.dblVal;
             m_gPM[1][pgsTypes::Interior] = var.dblVal;
 
-            hr = pStrLoad->get_Property("gPM_Exterior",&var);
+            hr = pStrLoad->get_Property(_T("gPM_Exterior"),&var);
             m_gPM[0][pgsTypes::Exterior] = var.dblVal;
             m_gPM[1][pgsTypes::Exterior] = var.dblVal;
 
-            pStrLoad->get_Property("gNM_Interior",&var);
+            pStrLoad->get_Property(_T("gNM_Interior"),&var);
             m_gNM[0][pgsTypes::Interior] = var.dblVal;
             m_gNM[1][pgsTypes::Interior] = var.dblVal;
 
-            pStrLoad->get_Property("gNM_Exterior",&var);
+            pStrLoad->get_Property(_T("gNM_Exterior"),&var);
             m_gNM[0][pgsTypes::Exterior] = var.dblVal;
             m_gNM[1][pgsTypes::Exterior] = var.dblVal;
 
-            pStrLoad->get_Property("gV_Interior", &var);
+            pStrLoad->get_Property(_T("gV_Interior"), &var);
             m_gV[0][pgsTypes::Interior] = var.dblVal;
             m_gV[1][pgsTypes::Interior] = var.dblVal;
 
-            pStrLoad->get_Property("gV_Exterior", &var);
+            pStrLoad->get_Property(_T("gV_Exterior"), &var);
             m_gV[0][pgsTypes::Exterior] = var.dblVal;
             m_gV[1][pgsTypes::Exterior] = var.dblVal;
          }
@@ -348,42 +348,42 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             var.vt = VT_R8;
 
-            hr = pStrLoad->get_Property("gPM_Interior_Strength",&var);
+            hr = pStrLoad->get_Property(_T("gPM_Interior_Strength"),&var);
             m_gPM[0][pgsTypes::Interior] = var.dblVal;
 
-            hr = pStrLoad->get_Property("gPM_Exterior_Strength",&var);
+            hr = pStrLoad->get_Property(_T("gPM_Exterior_Strength"),&var);
             m_gPM[0][pgsTypes::Exterior] = var.dblVal;
 
-            pStrLoad->get_Property("gNM_Interior_Strength",&var);
+            pStrLoad->get_Property(_T("gNM_Interior_Strength"),&var);
             m_gNM[0][pgsTypes::Interior] = var.dblVal;
 
-            pStrLoad->get_Property("gNM_Exterior_Strength",&var);
+            pStrLoad->get_Property(_T("gNM_Exterior_Strength"),&var);
             m_gNM[0][pgsTypes::Exterior] = var.dblVal;
 
-            pStrLoad->get_Property("gV_Interior_Strength", &var);
+            pStrLoad->get_Property(_T("gV_Interior_Strength"), &var);
             m_gV[0][pgsTypes::Interior] = var.dblVal;
 
-            pStrLoad->get_Property("gV_Exterior_Strength", &var);
+            pStrLoad->get_Property(_T("gV_Exterior_Strength"), &var);
             m_gV[0][pgsTypes::Exterior] = var.dblVal;
 
 
 
-            hr = pStrLoad->get_Property("gPM_Interior_Fatigue",&var);
+            hr = pStrLoad->get_Property(_T("gPM_Interior_Fatigue"),&var);
             m_gPM[1][pgsTypes::Interior] = var.dblVal;
 
-            hr = pStrLoad->get_Property("gPM_Exterior_Fatigue",&var);
+            hr = pStrLoad->get_Property(_T("gPM_Exterior_Fatigue"),&var);
             m_gPM[1][pgsTypes::Exterior] = var.dblVal;
 
-            pStrLoad->get_Property("gNM_Interior_Fatigue",&var);
+            pStrLoad->get_Property(_T("gNM_Interior_Fatigue"),&var);
             m_gNM[1][pgsTypes::Interior] = var.dblVal;
 
-            pStrLoad->get_Property("gNM_Exterior_Fatigue",&var);
+            pStrLoad->get_Property(_T("gNM_Exterior_Fatigue"),&var);
             m_gNM[1][pgsTypes::Exterior] = var.dblVal;
 
-            pStrLoad->get_Property("gV_Interior_Fatigue", &var);
+            pStrLoad->get_Property(_T("gV_Interior_Fatigue"), &var);
             m_gV[1][pgsTypes::Interior] = var.dblVal;
 
-            pStrLoad->get_Property("gV_Exterior_Fatigue", &var);
+            pStrLoad->get_Property(_T("gV_Exterior_Fatigue"), &var);
             m_gV[1][pgsTypes::Exterior] = var.dblVal;
          }
 
@@ -404,14 +404,14 @@ HRESULT CSpanData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("SpanDataDetails",2.0);
+   pStrSave->BeginUnit(_T("SpanDataDetails"),2.0);
 
    if ( !m_pBridgeDesc->UseSameNumberOfGirdersInAllSpans() )
    {
-      pStrSave->put_Property("GirderCount",CComVariant(m_nGirders));
+      pStrSave->put_Property(_T("GirderCount"),CComVariant(m_nGirders));
    }
 
-   pStrSave->BeginUnit("Girders",1.0);
+   pStrSave->BeginUnit(_T("Girders"),1.0);
    m_GirderTypes.Save(pStrSave,pProgress);
    pStrSave->EndUnit();
 
@@ -419,22 +419,22 @@ HRESULT CSpanData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // added in version 2 of SpanDataDetails data block
    if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotSpan )
    {
-      pStrSave->put_Property("SlabOffsetAtStart",CComVariant(m_SlabOffset[pgsTypes::metStart]));
-      pStrSave->put_Property("SlabOffsetAtEnd",  CComVariant(m_SlabOffset[pgsTypes::metEnd]));
+      pStrSave->put_Property(_T("SlabOffsetAtStart"),CComVariant(m_SlabOffset[pgsTypes::metStart]));
+      pStrSave->put_Property(_T("SlabOffsetAtEnd"),  CComVariant(m_SlabOffset[pgsTypes::metEnd]));
    }
 
    if ( m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneral || m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneralAdjacent)
    {
-      pStrSave->BeginUnit("GirderSpacing",1.0);
-      pStrSave->put_Property("UseSameSpacingAtBothEnds",CComVariant(m_bUseSameSpacing));
+      pStrSave->BeginUnit(_T("GirderSpacing"),1.0);
+      pStrSave->put_Property(_T("UseSameSpacingAtBothEnds"),CComVariant(m_bUseSameSpacing));
 
-      pStrSave->BeginUnit("StartSpacing",1.0);
+      pStrSave->BeginUnit(_T("StartSpacing"),1.0);
       m_GirderSpacing[pgsTypes::metStart].Save(pStrSave,pProgress);
       pStrSave->EndUnit(); // start spacing
 
       if (!m_bUseSameSpacing)
       {
-         pStrSave->BeginUnit("EndSpacing",1.0);
+         pStrSave->BeginUnit(_T("EndSpacing"),1.0);
          m_GirderSpacing[pgsTypes::metEnd].Save(pStrSave,pProgress);
          pStrSave->EndUnit(); // end spacing
       }
@@ -444,20 +444,20 @@ HRESULT CSpanData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pStrSave->BeginUnit("LLDF",2.0);
-      pStrSave->put_Property("gPM_Interior_Strength",CComVariant(m_gPM[0][pgsTypes::Interior]));
-      pStrSave->put_Property("gPM_Exterior_Strength",CComVariant(m_gPM[0][pgsTypes::Exterior]));
-      pStrSave->put_Property("gNM_Interior_Strength",CComVariant(m_gNM[0][pgsTypes::Interior]));
-      pStrSave->put_Property("gNM_Exterior_Strength",CComVariant(m_gNM[0][pgsTypes::Exterior]));
-      pStrSave->put_Property("gV_Interior_Strength", CComVariant(m_gV[0][pgsTypes::Interior]));
-      pStrSave->put_Property("gV_Exterior_Strength", CComVariant(m_gV[0][pgsTypes::Exterior]));
+      pStrSave->BeginUnit(_T("LLDF"),2.0);
+      pStrSave->put_Property(_T("gPM_Interior_Strength"),CComVariant(m_gPM[0][pgsTypes::Interior]));
+      pStrSave->put_Property(_T("gPM_Exterior_Strength"),CComVariant(m_gPM[0][pgsTypes::Exterior]));
+      pStrSave->put_Property(_T("gNM_Interior_Strength"),CComVariant(m_gNM[0][pgsTypes::Interior]));
+      pStrSave->put_Property(_T("gNM_Exterior_Strength"),CComVariant(m_gNM[0][pgsTypes::Exterior]));
+      pStrSave->put_Property(_T("gV_Interior_Strength"), CComVariant(m_gV[0][pgsTypes::Interior]));
+      pStrSave->put_Property(_T("gV_Exterior_Strength"), CComVariant(m_gV[0][pgsTypes::Exterior]));
 
-      pStrSave->put_Property("gPM_Interior_Fatigue",CComVariant(m_gPM[1][pgsTypes::Interior]));
-      pStrSave->put_Property("gPM_Exterior_Fatigue",CComVariant(m_gPM[1][pgsTypes::Exterior]));
-      pStrSave->put_Property("gNM_Interior_Fatigue",CComVariant(m_gNM[1][pgsTypes::Interior]));
-      pStrSave->put_Property("gNM_Exterior_Fatigue",CComVariant(m_gNM[1][pgsTypes::Exterior]));
-      pStrSave->put_Property("gV_Interior_Fatigue", CComVariant(m_gV[1][pgsTypes::Interior]));
-      pStrSave->put_Property("gV_Exterior_Fatigue", CComVariant(m_gV[1][pgsTypes::Exterior]));
+      pStrSave->put_Property(_T("gPM_Interior_Fatigue"),CComVariant(m_gPM[1][pgsTypes::Interior]));
+      pStrSave->put_Property(_T("gPM_Exterior_Fatigue"),CComVariant(m_gPM[1][pgsTypes::Exterior]));
+      pStrSave->put_Property(_T("gNM_Interior_Fatigue"),CComVariant(m_gNM[1][pgsTypes::Interior]));
+      pStrSave->put_Property(_T("gNM_Exterior_Fatigue"),CComVariant(m_gNM[1][pgsTypes::Exterior]));
+      pStrSave->put_Property(_T("gV_Interior_Fatigue"), CComVariant(m_gV[1][pgsTypes::Interior]));
+      pStrSave->put_Property(_T("gV_Exterior_Fatigue"), CComVariant(m_gV[1][pgsTypes::Exterior]));
       pStrSave->EndUnit(); // LLDF
    }
 

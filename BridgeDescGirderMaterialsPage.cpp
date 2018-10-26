@@ -130,7 +130,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
          {
             pDX->PrepareEditCtrl(IDC_ADIM_START);
             CString msg;
-            msg.Format("The slab offset at the start of the girder must be at equal to the slab + fillet depth of %s",FormatDimension(grossDeckThicknessStart,pDisplayUnits->GetComponentDimUnit()));
+            msg.Format(_T("The slab offset at the start of the girder must be at equal to the slab + fillet depth of %s"),FormatDimension(grossDeckThicknessStart,pDisplayUnits->GetComponentDimUnit()));
             AfxMessageBox(msg,MB_ICONEXCLAMATION);
             pDX->Fail();
          }
@@ -139,7 +139,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
          {
             pDX->PrepareEditCtrl(IDC_ADIM_END);
             CString msg;
-            msg.Format("The slab offset at the end of the girder must be at equal to the slab + fillet depth of %s",FormatDimension(grossDeckThicknessEnd,pDisplayUnits->GetComponentDimUnit()));
+            msg.Format(_T("The slab offset at the end of the girder must be at equal to the slab + fillet depth of %s"),FormatDimension(grossDeckThicknessEnd,pDisplayUnits->GetComponentDimUnit()));
             AfxMessageBox(msg,MB_ICONEXCLAMATION);
             pDX->Fail();
          }
@@ -193,7 +193,7 @@ void CGirderDescGeneralPage::OnCopyMaterial()
 
    if ( result < 0 )
    {
-      ::AfxMessageBox("There are no Concrete Material Entries in the library",MB_OK);
+      ::AfxMessageBox(_T("There are no Concrete Material Entries in the library"),MB_OK);
    }
    else if (result == IDOK)
    {
@@ -274,8 +274,8 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    m_SlabOffset[pgsTypes::metEnd]   = pGirderTypes->GetSlabOffset(pParent->m_CurrentGirderIdx,pgsTypes::metEnd);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   m_strSlabOffsetCache[pgsTypes::metStart].Format("%s",FormatDimension(m_SlabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
-   m_strSlabOffsetCache[pgsTypes::metEnd].Format(  "%s",FormatDimension(m_SlabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit(),false));
+   m_strSlabOffsetCache[pgsTypes::metStart].Format(_T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
+   m_strSlabOffsetCache[pgsTypes::metEnd].Format(  _T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit(),false));
 
    CPropertyPage::OnInitDialog();
 
@@ -285,10 +285,10 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    UpdateSlabOffsetHyperLink();
    UpdateSlabOffsetControls();
 
-   if ( m_strUserEc == "" )
+   if ( m_strUserEc == _T("") )
       m_ctrlEc.GetWindowText(m_strUserEc);
 	
-   if ( m_strUserEci == "" )
+   if ( m_strUserEci == _T("") )
       m_ctrlEci.GetWindowText(m_strUserEci);
 
    OnUserEci();
@@ -309,8 +309,8 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
       GetDlgItem(IDC_ADIM_END)->EnableWindow(FALSE);
       GetDlgItem(IDC_ADIM_END_UNIT)->EnableWindow(FALSE);
 
-      GetDlgItem(IDC_ADIM_START)->SetWindowText("");
-      GetDlgItem(IDC_ADIM_END)->SetWindowText("");
+      GetDlgItem(IDC_ADIM_START)->SetWindowText(_T(""));
+      GetDlgItem(IDC_ADIM_END)->SetWindowText(_T(""));
    }
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -382,9 +382,9 @@ void CGirderDescGeneralPage::UpdateEci()
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      strDensity.Format("%s",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format("%f",pParent->m_GirderData.Material.EcK1);
-      strK2.Format("%f",pParent->m_GirderData.Material.EcK2);
+      strDensity.Format(_T("%s"),FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
+      strK1.Format(_T("%f"),pParent->m_GirderData.Material.EcK1);
+      strK2.Format(_T("%f"),pParent->m_GirderData.Material.EcK2);
 
       CString strEci = CConcreteDetailsDlg::UpdateEc(strFci,strDensity,strK1,strK2);
       m_ctrlEci.SetWindowText(strEci);
@@ -406,9 +406,9 @@ void CGirderDescGeneralPage::UpdateEc()
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      strDensity.Format("%s",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format("%f",pParent->m_GirderData.Material.EcK1);
-      strK2.Format("%f",pParent->m_GirderData.Material.EcK2);
+      strDensity.Format(_T("%s"),FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
+      strK1.Format(_T("%f"),pParent->m_GirderData.Material.EcK1);
+      strK2.Format(_T("%f"),pParent->m_GirderData.Material.EcK2);
 
       CString strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
@@ -529,19 +529,19 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 
 
    CString strTip;
-   strTip.Format("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s",
-      "Type", matConcrete::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str(),
-      "Unit Weight",FormatDimension(pParent->m_GirderData.Material.StrengthDensity,density),
-      "Unit Weight (w/ reinforcement)",  FormatDimension(pParent->m_GirderData.Material.WeightDensity,density),
-      "Max Aggregate Size",  FormatDimension(pParent->m_GirderData.Material.MaxAggregateSize,aggsize)
+   strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
+      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str(),
+      _T("Unit Weight"),FormatDimension(pParent->m_GirderData.Material.StrengthDensity,density),
+      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_GirderData.Material.WeightDensity,density),
+      _T("Max Aggregate Size"),  FormatDimension(pParent->m_GirderData.Material.MaxAggregateSize,aggsize)
       );
 
    //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    //{
    //   // add K1 parameter
    //   CString strK1;
-   //   strK1.Format("\r\n%-20s %s",
-   //      "K1",FormatScalar(pParent->m_GirderData.Material.K1,scalar));
+   //   strK1.Format(_T("\r\n%-20s %s"),
+   //      _T("K1"),FormatScalar(pParent->m_GirderData.Material.K1,scalar));
 
    //   strTip += strK1;
    //}
@@ -549,13 +549,13 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
    if ( pParent->m_GirderData.Material.Type != pgsTypes::Normal && pParent->m_GirderData.Material.bHasFct )
    {
       CString strLWC;
-      strLWC.Format("\r\n%-20s %s",
-         "fct",FormatDimension(pParent->m_GirderData.Material.Fct,stress));
+      strLWC.Format(_T("\r\n%-20s %s"),
+         _T("fct"),FormatDimension(pParent->m_GirderData.Material.Fct,stress));
 
       strTip += strLWC;
    }
 
-   CString strPress("\r\n\r\nPress button to edit");
+   CString strPress(_T("\r\n\r\nPress button to edit"));
    strTip += strPress;
 
    m_strTip = strTip;
@@ -573,18 +573,18 @@ void CGirderDescGeneralPage::FillGirderComboBox()
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   std::string strGirderFamilyName = pBridgeDesc->GetGirderFamilyName();
+   std::_tstring strGirderFamilyName = pBridgeDesc->GetGirderFamilyName();
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
-   std::vector<std::string> names;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring> names;
+   std::vector<std::_tstring>::iterator iter;
    
    pLibNames->EnumGirderNames(strGirderFamilyName.c_str(), &names );
    for ( iter = names.begin(); iter < names.end(); iter++ )
    {
-      std::string& name = *iter;
+      std::_tstring& name = *iter;
 
       pCB->AddString( name.c_str() );
    }
@@ -670,11 +670,11 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
          // make the user choose one
          CSelectItemDlg dlg;
          dlg.m_ItemIdx = 0;
-         dlg.m_strTitle = "Select Slab Offset";
-         dlg.m_strLabel = "A single slab offset will be used for the entire bridge. Select a value.";
+         dlg.m_strTitle = _T("Select Slab Offset");
+         dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
          
          CString strItems;
-         strItems.Format("Start of Span (%s)\nEnd of Span (%s)",
+         strItems.Format(_T("Start of Span (%s)\nEnd of Span (%s)"),
                          ::FormatDimension(slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit()),
                          ::FormatDimension(slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit()));
 
@@ -721,13 +721,13 @@ void CGirderDescGeneralPage::UpdateGirderTypeHyperLink()
    if ( m_bUseSameGirderType )
    {
       // girder name is shared with the entire bridge
-      m_GirderTypeHyperLink.SetWindowText("This girder is used for the entire bridge");
-      m_GirderTypeHyperLink.SetURL("Click to change the type of this girder");
+      m_GirderTypeHyperLink.SetWindowText(_T("This girder is used for the entire bridge"));
+      m_GirderTypeHyperLink.SetURL(_T("Click to change the type of this girder"));
    }
    else
    {
-      m_GirderTypeHyperLink.SetWindowText("This girder type is assigned to this girder line");
-      m_GirderTypeHyperLink.SetURL("Click to use this girder type for the entire bridge");
+      m_GirderTypeHyperLink.SetWindowText(_T("This girder type is assigned to this girder line"));
+      m_GirderTypeHyperLink.SetURL(_T("Click to use this girder type for the entire bridge"));
    }
 }
 
@@ -736,21 +736,21 @@ void CGirderDescGeneralPage::UpdateSlabOffsetHyperLink()
    if ( m_SlabOffsetType == pgsTypes::sotGirder )
    {
       // slab offset is by girder
-      m_SlabOffsetHyperLink.SetWindowText("Slab Offsets are defined girder by girder");
+      m_SlabOffsetHyperLink.SetWindowText(_T("Slab Offsets are defined girder by girder"));
       if ( m_SlabOffsetTypeCache == pgsTypes::sotBridge )
-         m_SlabOffsetHyperLink.SetURL("Click to use this Slab Offset for the entire bridge");
+         m_SlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for the entire bridge"));
       else
-         m_SlabOffsetHyperLink.SetURL("Click to use this Slab Offset for this span");
+         m_SlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for this span"));
    }
    else if ( m_SlabOffsetType == pgsTypes::sotBridge )
    {
-      m_SlabOffsetHyperLink.SetWindowText("A single Slab Offset is used for the entire bridge");
-      m_SlabOffsetHyperLink.SetURL("Click to define Slab Offsets by girder");
+      m_SlabOffsetHyperLink.SetWindowText(_T("A single Slab Offset is used for the entire bridge"));
+      m_SlabOffsetHyperLink.SetURL(_T("Click to define Slab Offsets by girder"));
    }
    else
    {
-      m_SlabOffsetHyperLink.SetWindowText("A unique Slab Offset is used in each span");
-      m_SlabOffsetHyperLink.SetURL("Click to define Slab Offsets by girder");
+      m_SlabOffsetHyperLink.SetWindowText(_T("A unique Slab Offset is used in each span"));
+      m_SlabOffsetHyperLink.SetURL(_T("Click to define Slab Offsets by girder"));
    }
 }
 
@@ -758,7 +758,7 @@ void CGirderDescGeneralPage::OnChangeGirderName()
 {
    CString newName;
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
-   pCB->GetWindowTextA(newName);
+   pCB->GetWindowText(newName);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    pParent->m_GirderData.ResetPrestressData();

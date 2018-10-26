@@ -95,11 +95,11 @@ interface IDistFactorEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Creates a string that defines how the distribution factors are to be computed
-   virtual std::string GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::string& libraryEntryName,pgsTypes::SupportedDeckType decktype,pgsTypes::AdjacentTransverseConnectivity connect) = 0;
+   virtual std::_tstring GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype,pgsTypes::AdjacentTransverseConnectivity connect) = 0;
 
    //---------------------------------------------------------------------
    // Runs NCHRP 12-50 Tests for live load distrubtion factors
-   virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile) = 0;
+   virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) = 0;
 
    //---------------------------------------------------------------------
    // Get all types of factors

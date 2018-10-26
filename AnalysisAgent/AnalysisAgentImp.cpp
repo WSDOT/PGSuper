@@ -230,7 +230,8 @@ CAnalysisAgentImp::ModelData::ModelData(CAnalysisAgentImp *pParent)
    m_pParent = pParent;
    HRESULT hr;
    hr = m_Model.CoCreateInstance(CLSID_LBAMModel);
-   if ( FAILED(hr) ) THROW_SHUTDOWN("Can't create LBAM",XREASON_COMCREATE_ERROR,true);
+   if ( FAILED(hr) ) 
+      THROW_SHUTDOWN(_T("Can't create LBAM"),XREASON_COMCREATE_ERROR,true);
 
    // create minimum model enveloper and initialize it (no models just yet)
    m_MinModelEnveloper.CoCreateInstance(CLSID_LBAMModelEnveloper);
@@ -252,6 +253,13 @@ CAnalysisAgentImp::ModelData::ModelData(CAnalysisAgentImp *pParent)
    // Response engine for the deflection-only analysis
    pDeflLoadGroupResponse.CoCreateInstance(CLSID_LoadGroupDeflectionResponse);
    pDeflLiveLoadResponse.CoCreateInstance(CLSID_LiveLoadModelResponse);
+
+   // Use a live load factory so we don't get the default brute force (slow) live loader
+   CComPtr<IEnvelopedVehicularResponseFactory> pVrFactory;
+   pVrFactory.CoCreateInstance(CLSID_EnvelopedVehicularResponseFactory);
+
+   CComQIPtr<ISupportEnvelopedVehicularResponseFactory> pSupportFactory(pDeflLiveLoadResponse);
+   pSupportFactory->putref_EnvelopedVehicularRepsonseFactory(pVrFactory);
 
    CComQIPtr<IDependOnLBAM> pDeflDepend(pDeflLoadGroupResponse);
    pDeflDepend->putref_Model(m_Model);
@@ -822,7 +830,7 @@ void CAnalysisAgentImp::ValidateAnalysisModels(SpanIndexType span,GirderIndexTyp
       pModelData = GetModelData(m_CastingYardModels,span,gdr);
       if ( pModelData != 0 )
       {
-         pProgress->UpdateMessage("Working");
+         pProgress->UpdateMessage(_T("Working"));
       }
       else
       {
@@ -858,7 +866,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr)
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
    
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Building Bridge Site Analysis model for Girderline " << LABEL_GIRDER(gdr) << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
@@ -984,7 +992,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
          if (s_end_size<0.0 || e_end_size<0.0)
          {
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            std::ostringstream os;
+            std::_tostringstream os;
             os<<"Error - The end of the girder is located off of the bearing at the ";
             if (s_end_size<0.0 && e_end_size<0.0)
             {
@@ -1191,7 +1199,7 @@ CAnalysisAgentImp::cyModelData CAnalysisAgentImp::BuildCastingYardModels(SpanInd
    GET_IFACE(ISectProp2,      pSectProp2);
 
    // Build the model
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Building casting yard model for Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -1201,8 +1209,6 @@ CAnalysisAgentImp::cyModelData CAnalysisAgentImp::BuildCastingYardModels(SpanInd
 
    // Get the material properties
    Float64 Eci = pMat->GetEciGdr(spanIdx,gdrIdx);
-   //Float64 Density = pMat->GetWgtDensityGdr(span,gdr);
-   //Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
 
    // Get points of interest
    GET_IFACE(IPointOfInterest,pIPoi);
@@ -1280,7 +1286,7 @@ void CAnalysisAgentImp::GetSectionResults(cyGirderModels& model,const pgsPointOf
 {
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
-   pProgress->UpdateMessage("Computing section results");
+   pProgress->UpdateMessage(_T("Computing section results"));
 
    cyModelData* pModelData = GetModelData( model, poi.GetSpan(), poi.GetGirder() );
    ATLASSERT( pModelData != 0 );
@@ -1300,7 +1306,7 @@ void CAnalysisAgentImp::GetSectionResults(cyGirderModels& model,const pgsPointOf
    Fem2dMbrFaceType face = IsZero( poi.GetDistFromStart() ) ? mftRight : mftLeft;
 
    Float64 FxLeft, FyLeft, MzLeft;
-   HRESULT hr = results->ComputePOIForces(g_lcidGirder,poi_id,mftLeft,lotGlobal,&FxLeft,&FyLeft,&MzLeft);
+   HRESULT hr = results->ComputePOIForces(g_lcidGirder,poi_id,face,lotGlobal,&FxLeft,&FyLeft,&MzLeft);
    ATLASSERT(SUCCEEDED(hr));
 
    FyLeft *= -1;
@@ -2724,13 +2730,13 @@ void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gd
    permit_special_liveload_model->get_VehicularLoads(&permit_special_vehicles);
 
    // get the design and permit live load names
-   std::vector<std::string> design_loads        = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
-   std::vector<std::string> permit_loads        = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermit);
-   std::vector<std::string> fatigue_loads       = pLiveLoads->GetLiveLoadNames(pgsTypes::lltFatigue);
-   std::vector<std::string> routine_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
-   std::vector<std::string> special_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
-   std::vector<std::string> routine_permit_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Routine);
-   std::vector<std::string> special_permit_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Special);
+   std::vector<std::_tstring> design_loads        = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
+   std::vector<std::_tstring> permit_loads        = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermit);
+   std::vector<std::_tstring> fatigue_loads       = pLiveLoads->GetLiveLoadNames(pgsTypes::lltFatigue);
+   std::vector<std::_tstring> routine_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
+   std::vector<std::_tstring> special_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
+   std::vector<std::_tstring> routine_permit_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Routine);
+   std::vector<std::_tstring> special_permit_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Special);
 
    // add the design and permit live loads to the models
    AddUserLiveLoads(pModel, gdr, pgsTypes::lltDesign,              design_loads,          pLibrary, pLiveLoads, design_vehicles,  pedestrian_vehicles);
@@ -2755,7 +2761,7 @@ void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gd
    permit_special_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltPermitRating_Special));
 }
 
-void CAnalysisAgentImp::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,pgsTypes::LiveLoadType llType,std::vector<std::string>& strLLNames,
+void CAnalysisAgentImp::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& strLLNames,
                                          ILibrary* pLibrary, ILiveLoads* pLiveLoads, IVehicularLoads* pVehicles,IVehicularLoads* pPedVehicles)
 {
    HRESULT hr = S_OK;
@@ -2771,30 +2777,30 @@ void CAnalysisAgentImp::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,
    double truck_impact = 1.0 + pLiveLoads->GetTruckImpact(llType);
    double lane_impact  = 1.0 + pLiveLoads->GetLaneImpact(llType);
 
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++)
    {
-      const std::string& strLLName = *iter;
+      const std::_tstring& strLLName = *iter;
 
-      if ( strLLName == std::string("HL-93") || strLLName == std::string("Fatigue") )
+      if ( strLLName == std::_tstring(_T("HL-93")) || strLLName == std::_tstring(_T("Fatigue")) )
       {
          AddHL93LiveLoad(pModel,pLibrary,llType,truck_impact,lane_impact);
       }
-      else if ( strLLName == std::string("Pedestrian on Sidewalk") )
+      else if ( strLLName == std::_tstring(_T("Pedestrian on Sidewalk")) )
       {
          SpanIndexType span = 0; // LBAM doesn't support a stepped ped loading so we have to get the loading for one span and use it everywhere
          double wPedLL = GetPedestrianLiveLoad(span,gdr);
          AddPedestrianLoad(strLLName,wPedLL,pPedVehicles);
       }
-      else if ( strLLName == std::string("AASHTO Legal Loads") )
+      else if ( strLLName == std::_tstring(_T("AASHTO Legal Loads")) )
       {
          AddLegalLiveLoad(pModel,pLibrary,llType,truck_impact,lane_impact);
       }
-      else if ( strLLName == std::string("Notional Rating Load (NRL)") )
+      else if ( strLLName == std::_tstring(_T("Notional Rating Load (NRL)")) )
       {
          AddNotionalRatingLoad(pModel,pLibrary,llType,truck_impact,lane_impact);
       }
-      else if ( strLLName == std::string("Single-Unit SHVs") )
+      else if ( strLLName == std::_tstring(_T("Single-Unit SHVs")) )
       {
          AddSHVLoad(pModel,pLibrary,llType,truck_impact,lane_impact);
       }
@@ -2899,7 +2905,7 @@ void CAnalysisAgentImp::AddSHVLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsType
    m_LBAMUtility->ConfigureSpecializedHaulingUnits(pModel,llmt,IMtruck,IMlane,m_UnitServer);
 }
 
-void CAnalysisAgentImp::AddUserTruck(const std::string& strLLName,ILibrary* pLibrary,double IMtruck,double IMlane,IVehicularLoads* pVehicles)
+void CAnalysisAgentImp::AddUserTruck(const std::_tstring& strLLName,ILibrary* pLibrary,double IMtruck,double IMlane,IVehicularLoads* pVehicles)
 {
    // this is a user defined vehicular live load defined in the library
    const LiveLoadLibraryEntry* ll_entry = pLibrary->GetLiveLoadEntry( strLLName.c_str());
@@ -3010,7 +3016,7 @@ void CAnalysisAgentImp::AddUserTruck(const std::string& strLLName,ILibrary* pLib
    pVehicles->Add(vehicular_load);
 }
 
-void CAnalysisAgentImp::AddPedestrianLoad(const std::string& strLLName,double wPedLL,IVehicularLoads* pVehicles)
+void CAnalysisAgentImp::AddPedestrianLoad(const std::_tstring& strLLName,double wPedLL,IVehicularLoads* pVehicles)
 {
    CComPtr<IVehicularLoad> vehicular_load; 
    vehicular_load.CoCreateInstance(CLSID_VehicularLoad);
@@ -4148,13 +4154,13 @@ Float64 CAnalysisAgentImp::GetReaction(pgsTypes::Stage stage,ProductForceType ty
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress  ap(pProgress);
    
-   std::ostringstream os;
+   std::_tostringstream os;
 
    GET_IFACE(IStageMap,pStageMap);
 
    os << "Retrieving " 
-      << OLE2A(pStageMap->GetStageName(stage)) << " " 
-      << OLE2A(GetLoadGroupName(type)) << " reactions" << std::ends;
+      << OLE2T(pStageMap->GetStageName(stage)) << " " 
+      << OLE2T(GetLoadGroupName(type)) << " reactions" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
 
@@ -5727,7 +5733,7 @@ void CAnalysisAgentImp::GetLiveLoadModel(pgsTypes::LiveLoadType llType,GirderInd
    }
 }
 
-std::vector<std::string> CAnalysisAgentImp::GetVehicleNames(pgsTypes::LiveLoadType llType,GirderIndexType gdr)
+std::vector<std::_tstring> CAnalysisAgentImp::GetVehicleNames(pgsTypes::LiveLoadType llType,GirderIndexType gdr)
 {
    USES_CONVERSION;
 
@@ -5740,7 +5746,7 @@ std::vector<std::string> CAnalysisAgentImp::GetVehicleNames(pgsTypes::LiveLoadTy
    CComPtr<IEnumVehicularLoad> enum_vehicles;
    vehicles->get__EnumElements(&enum_vehicles);
 
-   std::vector<std::string> names;
+   std::vector<std::_tstring> names;
 
    CComPtr<IVehicularLoad> vehicle;
    while ( enum_vehicles->Next(1,&vehicle,NULL) != S_FALSE )
@@ -5748,7 +5754,7 @@ std::vector<std::string> CAnalysisAgentImp::GetVehicleNames(pgsTypes::LiveLoadTy
       CComBSTR bstrName;
       vehicle->get_Name(&bstrName);
 
-      std::string strName(OLE2A(bstrName));
+      std::_tstring strName(OLE2T(bstrName));
 
       names.push_back(strName);
 
@@ -6129,7 +6135,7 @@ void CAnalysisAgentImp::DumpAnalysisModels(GirderIndexType girderLineIdx)
    }
 }
 
-std::string CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
+std::_tstring CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
 {
    USES_CONVERSION;
 
@@ -6137,7 +6143,7 @@ std::string CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,Veh
 
    if ( vehicleIndex == INVALID_INDEX )
    {
-      return OLE2A(GetLiveLoadName(llType));
+      return OLE2T(GetLiveLoadName(llType));
    }
 
    ModelData* pModelData = 0;
@@ -6152,7 +6158,7 @@ std::string CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,Veh
    CComBSTR bstrName;
    vehicle->get_Name(&bstrName);
 
-   return OLE2A(bstrName);
+   return OLE2T(bstrName);
 }
 
 VehicleIndexType CAnalysisAgentImp::GetVehicleCount(pgsTypes::LiveLoadType llType)
@@ -6210,10 +6216,10 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(pgsTypes::Stage stage,P
    CEAFAutoProgress  ap(pProgress);
  
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Retrieving " 
-      << OLE2A(pStageMap->GetStageName(stage)) << " " 
-      << OLE2A(GetLoadGroupName(type)) << " shear" << std::ends;
+      << OLE2T(pStageMap->GetStageName(stage)) << " " 
+      << OLE2T(GetLoadGroupName(type)) << " shear" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
 
@@ -6282,10 +6288,10 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(pgsTypes::Stage stage,ProductF
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Retrieving " 
-      << OLE2A(pStageMap->GetStageName(stage)) << " " 
-      << OLE2A(GetLoadGroupName(type)) << " moment" << std::ends;
+      << OLE2T(pStageMap->GetStageName(stage)) << " " 
+      << OLE2T(GetLoadGroupName(type)) << " moment" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    std::vector<Float64> results;
@@ -6392,10 +6398,10 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(pgsTypes::Stage stage,Pr
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Retrieving " 
-      << OLE2A(pStageMap->GetStageName(stage)) << " " 
-      << OLE2A(GetLoadGroupName(type)) << " displacement" << std::ends;
+      << OLE2T(pStageMap->GetStageName(stage)) << " " 
+      << OLE2T(GetLoadGroupName(type)) << " displacement" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    std::vector<Float64> results;
@@ -6489,10 +6495,10 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(pgsTypes::Stage stage,Produc
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Retrieving " 
-      << OLE2A(pStageMap->GetStageName(stage)) << " " 
-      << OLE2A(GetLoadGroupName(type)) << " rotation" << std::ends;
+      << OLE2T(pStageMap->GetStageName(stage)) << " " 
+      << OLE2T(GetLoadGroupName(type)) << " rotation" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    std::vector<Float64> results;
@@ -6586,10 +6592,10 @@ void CAnalysisAgentImp::GetStress(pgsTypes::Stage stage,ProductForceType type,co
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Retrieving " 
-      << OLE2A(pStageMap->GetStageName(stage)) << " " 
-      << OLE2A(GetLoadGroupName(type)) << " stresses" << std::ends;
+      << OLE2T(pStageMap->GetStageName(stage)) << " " 
+      << OLE2T(GetLoadGroupName(type)) << " stresses" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    GET_IFACE(IBridge,pBridge);
@@ -6734,8 +6740,8 @@ void CAnalysisAgentImp::GetLiveLoadMoment(pgsTypes::LiveLoadType llType,pgsTypes
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Moments" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Moments" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMmin->clear();
@@ -6837,8 +6843,8 @@ void CAnalysisAgentImp::GetLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes:
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Shears" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Shears" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pVmin->clear();
@@ -6929,8 +6935,8 @@ void CAnalysisAgentImp::GetLiveLoadDisplacement(pgsTypes::LiveLoadType llType,pg
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Displacements" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Displacements" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pDmin->clear();
@@ -6997,8 +7003,8 @@ void CAnalysisAgentImp::GetLiveLoadRotation(pgsTypes::LiveLoadType llType,pgsTyp
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Rotations" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Rotations" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pRmin->clear();
@@ -7065,8 +7071,8 @@ void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Stresses" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Stresses" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pfTopMin->clear();
@@ -7206,8 +7212,8 @@ void CAnalysisAgentImp::GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Moments for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Moments for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMmin->clear();
@@ -7308,8 +7314,8 @@ void CAnalysisAgentImp::GetVehicularLiveLoadShear(pgsTypes::LiveLoadType llType,
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Shear for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Shear for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pVmin->clear();
@@ -7403,8 +7409,8 @@ void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Stresses for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Stresses for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pfTopMin->clear();
@@ -7546,8 +7552,8 @@ void CAnalysisAgentImp::GetVehicularLiveLoadDisplacement(pgsTypes::LiveLoadType 
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Displacements for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Displacements for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pDmin->clear();
@@ -7619,8 +7625,8 @@ void CAnalysisAgentImp::GetVehicularLiveLoadRotation(pgsTypes::LiveLoadType llTy
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Rotation for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load Rotation for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pDmin->clear();
@@ -7723,9 +7729,9 @@ Float64 CAnalysisAgentImp::GetReaction(LoadingCombination combo,pgsTypes::Stage 
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving reaction for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(GetLoadCaseName(combo)) << " for Pier " << LABEL_PIER(pier)
+   std::_tostringstream os;
+   os << "Retrieving reaction for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(GetLoadCaseName(combo)) << " for Pier " << LABEL_PIER(pier)
       << " Girder " << LABEL_GIRDER(gdr) << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -7837,9 +7843,9 @@ void CAnalysisAgentImp::GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llTyp
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving reaction for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load for Pier " << LABEL_PIER(pier)
+   std::_tostringstream os;
+   os << "Retrieving reaction for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load for Pier " << LABEL_PIER(pier)
       << " Girder " << LABEL_GIRDER(gdr) << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -7898,8 +7904,8 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(LoadingCombination comb
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving shear for the " << OLE2A(pStageMap->GetStageName(stage)) << " load combination" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving shear for the " << OLE2T(pStageMap->GetStageName(stage)) << " load combination" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    try
@@ -7974,8 +7980,8 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(LoadingCombination combo,pgsTy
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving moment for the " << OLE2A(pStageMap->GetStageName(stage)) << " load combination" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving moment for the " << OLE2T(pStageMap->GetStageName(stage)) << " load combination" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    try
@@ -8057,8 +8063,8 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(LoadingCombination combo
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving displacement for the " << OLE2A(pStageMap->GetStageName(stage)) << " load combination" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving displacement for the " << OLE2T(pStageMap->GetStageName(stage)) << " load combination" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    try
@@ -8128,8 +8134,8 @@ void CAnalysisAgentImp::GetStress(LoadingCombination combo,pgsTypes::Stage stage
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving stresses for the " << OLE2A(pStageMap->GetStageName(stage)) << " load combination" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving stresses for the " << OLE2T(pStageMap->GetStageName(stage)) << " load combination" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pfTop->clear();
@@ -8273,9 +8279,9 @@ void CAnalysisAgentImp::GetCombinedLiveLoadMoment(pgsTypes::LiveLoadType llType,
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving moments for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving moments for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMmax->clear();
@@ -8331,9 +8337,9 @@ void CAnalysisAgentImp::GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,p
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving shears for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving shears for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pVmax->clear();
@@ -8373,9 +8379,9 @@ void CAnalysisAgentImp::GetCombinedLiveLoadDisplacement(pgsTypes::LiveLoadType l
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving displacement for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving displacement for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pDmax->clear();
@@ -8415,9 +8421,9 @@ void CAnalysisAgentImp::GetCombinedLiveLoadStress(pgsTypes::LiveLoadType llType,
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving stresses for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving stresses for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pfTopMin->clear();
@@ -8560,9 +8566,9 @@ void CAnalysisAgentImp::GetMoment(pgsTypes::LimitState ls,pgsTypes::Stage stage,
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving moment for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving moment for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMin->clear();
@@ -8652,9 +8658,9 @@ void CAnalysisAgentImp::GetShear(pgsTypes::LimitState ls,pgsTypes::Stage stage,c
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving shear for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving shear for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMin->clear();
@@ -8721,8 +8727,8 @@ std::vector<Float64> CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving slab design moment for " << OLE2A(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving slab design moment for " << OLE2T(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    std::vector<Float64> vMoment;
@@ -8861,9 +8867,9 @@ void CAnalysisAgentImp::GetDisplacement(pgsTypes::LimitState ls,pgsTypes::Stage 
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving displacement for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving displacement for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMin->clear();
@@ -8933,9 +8939,9 @@ void CAnalysisAgentImp::GetStress(pgsTypes::LimitState ls,pgsTypes::Stage stage,
    CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving stresses for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
+   std::_tostringstream os;
+   os << "Retrieving stresses for " << OLE2T(pStageMap->GetStageName(stage))
+      << " " << OLE2T(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMin->clear();
@@ -9593,7 +9599,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
 
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-         std::string strMsg("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep");
+         std::_tstring strMsg(_T("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep"));
       
          pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(span,gdr,m_StatusGroupID,m_scidVSRatio,strMsg.c_str());
          pStatusCenter->Add(pStatusItem);
@@ -9686,7 +9692,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
 
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-         std::string strMsg("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep");
+         std::_tstring strMsg(_T("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep"));
       
          pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(span,gdr,m_StatusGroupID,m_scidVSRatio,strMsg.c_str());
          pStatusCenter->Add(pStatusItem);
@@ -10441,11 +10447,15 @@ Float64 CAnalysisAgentImp::GetStress(pgsTypes::Stage stage,const pgsPointOfInter
       break;
 
    case pgsTypes::BridgeSite1:
-      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::DeckPlacement);
+      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterDeckPlacement);
       bIncTempStrands = false;
       break;
 
    case pgsTypes::BridgeSite2:
+      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterSIDL);
+      bIncTempStrands = false;
+      break;
+
    case pgsTypes::BridgeSite3:
       P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
       bIncTempStrands = false;
@@ -10510,10 +10520,13 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(pgsTypes::Stage stage,const pgsPoi
       break;
 
    case pgsTypes::BridgeSite1:
-      lossStage = pgsTypes::DeckPlacement;
+      lossStage = pgsTypes::AfterDeckPlacement;
       break;
 
    case pgsTypes::BridgeSite2:
+      lossStage = pgsTypes::AfterSIDL;
+      break;
+
    case pgsTypes::BridgeSite3:
       lossStage = pgsTypes::AfterLosses;
       break;
@@ -10555,10 +10568,13 @@ Float64 CAnalysisAgentImp::GetDesignStress(pgsTypes::Stage stage,const pgsPointO
       break;
 
    case pgsTypes::BridgeSite1:
-      lossStage = pgsTypes::DeckPlacement;
+      lossStage = pgsTypes::AfterDeckPlacement;
       break;
 
    case pgsTypes::BridgeSite2:
+      lossStage = pgsTypes::AfterSIDL;
+      break;
+
    case pgsTypes::BridgeSite3:
       lossStage = pgsTypes::AfterLosses;
       break;
@@ -10611,7 +10627,7 @@ HRESULT CAnalysisAgentImp::OnLiveLoadChanged()
    return S_OK;
 }
 
-HRESULT CAnalysisAgentImp::OnLiveLoadNameChanged(const char* strOldName,const char* strNewName)
+HRESULT CAnalysisAgentImp::OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName)
 {
    LOG("OnLiveLoadNameChanged Event Received");
 
@@ -10644,7 +10660,7 @@ HRESULT CAnalysisAgentImp::OnConstructionLoadChanged()
    return S_OK;
 }
 
-void CAnalysisAgentImp::RenameLiveLoad(ILBAMModel* pModel,pgsTypes::LiveLoadType llType,const char* strOldName,const char* strNewName)
+void CAnalysisAgentImp::RenameLiveLoad(ILBAMModel* pModel,pgsTypes::LiveLoadType llType,LPCTSTR strOldName,LPCTSTR strNewName)
 {
    USES_CONVERSION;
 
@@ -10670,7 +10686,7 @@ void CAnalysisAgentImp::RenameLiveLoad(ILBAMModel* pModel,pgsTypes::LiveLoadType
    {
       CComBSTR bstrName;
       vehicle->get_Name(&bstrName);
-      if ( std::string(strOldName) == std::string(OLE2A(bstrName)) )
+      if ( std::_tstring(strOldName) == std::_tstring(OLE2T(bstrName)) )
       {
          vehicle->put_Name(CComBSTR(strNewName));
          break;

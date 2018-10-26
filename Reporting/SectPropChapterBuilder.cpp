@@ -116,36 +116,36 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       pPara = new rptParagraph();
       *pChapter << pPara;
       l2.ShowUnitTag( true );
-      (*pPara) << "Left Traffic Barrier Area = " << l2.SetValue( pBarriers->GetAtb(pgsTypes::tboLeft) ) << rptNewLine;
-      (*pPara) << "Left Traffic Barrier " << Sub2("I","yy") << " = " << ui.SetValue( pBarriers->GetItb(pgsTypes::tboLeft) ) << rptNewLine;
-      (*pPara) << "Left Traffic Barrier " << Sub2("Y","b") << " = " << dim.SetValue( pBarriers->GetYbtb(pgsTypes::tboLeft) ) << rptNewLine;
+      (*pPara) << _T("Left Traffic Barrier Area = ") << l2.SetValue( pBarriers->GetAtb(pgsTypes::tboLeft) ) << rptNewLine;
+      (*pPara) << _T("Left Traffic Barrier ") << Sub2(_T("I"),_T("yy")) << _T(" = ") << ui.SetValue( pBarriers->GetItb(pgsTypes::tboLeft) ) << rptNewLine;
+      (*pPara) << _T("Left Traffic Barrier ") << Sub2(_T("Y"),_T("b")) << _T(" = ") << dim.SetValue( pBarriers->GetYbtb(pgsTypes::tboLeft) ) << rptNewLine;
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       if ( pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
-         (*pPara) << "Left Traffic Barrier Weight (computed from area) = "<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
+         (*pPara) << _T("Left Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
       else
-         (*pPara) << "Left Traffic Barrier Weight = "<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
+         (*pPara) << _T("Left Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
 
       *pPara << rptNewLine;
 
       pPara = new rptParagraph();
       *pChapter << pPara;
       l2.ShowUnitTag( true );
-      (*pPara) << "Right Traffic Barrier Area = " << l2.SetValue( pBarriers->GetAtb(pgsTypes::tboRight) ) << rptNewLine;
-      (*pPara) << "Right Traffic Barrier " << Sub2("I","yy") << " = " << ui.SetValue( pBarriers->GetItb(pgsTypes::tboRight) ) << rptNewLine;
-      (*pPara) << "Right Traffic Barrier " << Sub2("Y","b") << " = " << dim.SetValue( pBarriers->GetYbtb(pgsTypes::tboRight) ) << rptNewLine;
+      (*pPara) << _T("Right Traffic Barrier Area = ") << l2.SetValue( pBarriers->GetAtb(pgsTypes::tboRight) ) << rptNewLine;
+      (*pPara) << _T("Right Traffic Barrier ") << Sub2(_T("I"),_T("yy")) << _T(" = ") << ui.SetValue( pBarriers->GetItb(pgsTypes::tboRight) ) << rptNewLine;
+      (*pPara) << _T("Right Traffic Barrier ") << Sub2(_T("Y"),_T("b")) << _T(" = ") << dim.SetValue( pBarriers->GetYbtb(pgsTypes::tboRight) ) << rptNewLine;
 
       if ( pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
-         (*pPara) << "Right Traffic Barrier Weight (computed from area) = "<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+         (*pPara) << _T("Right Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
       else
-         (*pPara) << "Right Traffic Barrier Weight = "<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+         (*pPara) << _T("Right Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
 
       *pPara << rptNewLine;
 
       if ( bComposite )
-        (*pPara) << "Slab   " << RPT_EC << " = " << modE.SetValue( pMaterial->GetEcSlab() ) << rptNewLine;
+        (*pPara) << _T("Slab   ") << RPT_EC << _T(" = ") << modE.SetValue( pMaterial->GetEcSlab() ) << rptNewLine;
    }
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -164,7 +164,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            (*pPara) << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << rptNewLine;
+            (*pPara) << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
          }
 
          pPara = new rptParagraph();
@@ -172,14 +172,14 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
          if (!m_SimplifiedVersion)
          {
-            (*pPara) << "Girder " << RPT_EC << " = " << modE.SetValue( pMaterial->GetEcGdr(spanIdx,gdrIdx) ) << rptNewLine;
-            (*pPara) << "Girder " << RPT_ECI << " = " << modE.SetValue( pMaterial->GetEciGdr(spanIdx,gdrIdx) ) << rptNewLine;
+            (*pPara) << _T("Girder ") << RPT_EC << _T(" = ") << modE.SetValue( pMaterial->GetEcGdr(spanIdx,gdrIdx) ) << rptNewLine;
+            (*pPara) << _T("Girder ") << RPT_ECI << _T(" = ") << modE.SetValue( pMaterial->GetEciGdr(spanIdx,gdrIdx) ) << rptNewLine;
 
 
             Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
-            (*pPara) << "Bending Stiffness of Entire Bridge Section at mid-span" << rptNewLine;
-            (*pPara) << Sub2("EI","xx") << " = " << uei.SetValue( pSectProp2->GetBridgeEIxx(span_length/2) ) << " (used to compute Live Load Deflections per LRFD 3.6.1.3.2)" << rptNewLine;
-            (*pPara) << Sub2("EI","yy") << " = " << uei.SetValue( pSectProp2->GetBridgeEIyy(span_length/2) ) << rptNewLine;
+            (*pPara) << _T("Bending Stiffness of Entire Bridge Section at mid-span") << rptNewLine;
+            (*pPara) << Sub2(_T("EI"),_T("xx")) << _T(" = ") << uei.SetValue( pSectProp2->GetBridgeEIxx(span_length/2) ) << _T(" (used to compute Live Load Deflections per LRFD 3.6.1.3.2)") << rptNewLine;
+            (*pPara) << Sub2(_T("EI"),_T("yy")) << _T(" = ") << uei.SetValue( pSectProp2->GetBridgeEIyy(span_length/2) ) << rptNewLine;
             *pPara << rptNewLine;
          }
 

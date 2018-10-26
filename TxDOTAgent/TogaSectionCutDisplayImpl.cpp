@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 static const Uint32 SSIZE = 1440 * 3/8; // (twips)
 
 
-UINT CTogaSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat("TogaSectionCutData");
+UINT CTogaSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat(_T("TogaSectionCutData"));
 
 CTogaSectionCutDisplayImpl::CTogaSectionCutDisplayImpl():
 m_pCutLocation(NULL),

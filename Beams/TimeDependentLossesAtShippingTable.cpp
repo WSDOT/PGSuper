@@ -55,7 +55,7 @@ rptRcTable(NumColumns,0)
 CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::string strSpecName = pSpec->GetSpecification();
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -63,7 +63,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    int method = pSpecEntry->GetLossMethod();
    bool bIgnoreInitialRelaxation = ( method == LOSSES_WSDOT_REFINED || method == LOSSES_WSDOT_LUMPSUM ) ? false : true;
@@ -98,11 +98,11 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Losses at Shipping" << rptNewLine;
+   *pParagraph << _T("Losses at Shipping") << rptNewLine;
 
    if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
-      *pParagraph << "Prestressed Permanent Strands" << rptNewLine;
+      *pParagraph << _T("Prestressed Permanent Strands") << rptNewLine;
    }
 
    pParagraph = new rptParagraph;
@@ -111,8 +111,8 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    *pParagraph << table << rptNewLine;
 
    int col = 0;
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
    if ( bTemporaryStrands )
    {
@@ -128,10 +128,10 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
          colspan--;
 
       table->SetColumnSpan(0,2,colspan + (girderData.TempStrandUsage != pgsTypes::ttsPretensioned ? 1 : 0));
-      (*table)(0,2) << "Permanent Strands";
+      (*table)(0,2) << _T("Permanent Strands");
 
       table->SetColumnSpan(0,3,colspan);
-      (*table)(0,3) << "Temporary Strands";
+      (*table)(0,3) << _T("Temporary Strands");
 
       for ( ColumnIndexType i = 4; i < numColumns; i++ )
          table->SetColumnSpan(0,i,-1);
@@ -139,50 +139,50 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       // permanent
       col = 2;
       if ( !bIgnoreInitialRelaxation )
-         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
       {
-         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
 
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
       // temporary
       if ( !bIgnoreInitialRelaxation )
-         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( method == LOSSES_WSDOT_REFINED || method == LOSSES_AASHTO_REFINED || method == LOSSES_TXDOT_REFINED_2004 )
       {
-         *pParagraph << symbol(DELTA) << RPT_STRESS("pLTH") << " = " << symbol(DELTA) << RPT_STRESS("pSRH") << " + " << symbol(DELTA) << RPT_STRESS("pCRH") << " + " << symbol(DELTA) << RPT_STRESS("pR1H") << rptNewLine;
+         *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
       }
    }
    else
    {
       if ( !bIgnoreInitialRelaxation )
-         (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
       {
-         (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
 
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( method == LOSSES_WSDOT_REFINED || method == LOSSES_AASHTO_REFINED || method == LOSSES_TXDOT_REFINED_2004 )
       {
-         *pParagraph << symbol(DELTA) << RPT_STRESS("pLTH") << " = " << symbol(DELTA) << RPT_STRESS("pSRH") << " + " << symbol(DELTA) << RPT_STRESS("pCRH") << " + " << symbol(DELTA) << RPT_STRESS("pR1H") << rptNewLine;
+         *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
       }
    }
 
@@ -190,16 +190,16 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
       if ( bIgnoreInitialRelaxation )
-         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHaulingWithPT_LRFD.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("PrestressLossAtHaulingWithPT_LRFD.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHaulingWithPT_WSDOT.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("PrestressLossAtHaulingWithPT_WSDOT.png")) << rptNewLine;
    }
    else
    {
       if ( bIgnoreInitialRelaxation )
-         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHauling_LRFD.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("PrestressLossAtHauling_LRFD.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + "PrestressLossAtHauling_WSDOT.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("PrestressLossAtHauling_WSDOT.png")) << rptNewLine;
    }
 
 

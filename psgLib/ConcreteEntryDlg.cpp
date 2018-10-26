@@ -73,7 +73,7 @@ void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
       {
          if (m_EntryName.IsEmpty())
          {
-            AfxMessageBox("Concrete Name cannot be blank");
+            AfxMessageBox(_T("Concrete Name cannot be blank"));
             pDX->Fail();
          }
       }
@@ -168,13 +168,13 @@ LRESULT CConcreteEntryDlg::OnCommandHelp(WPARAM, LPARAM lParam)
 BOOL CConcreteEntryDlg::OnInitDialog() 
 {
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
-   int idx = pcbConcreteType->AddString("Normal weight");
+   int idx = pcbConcreteType->AddString(_T("Normal weight"));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
 
-   idx = pcbConcreteType->AddString("All lightweight");
+   idx = pcbConcreteType->AddString(_T("All lightweight"));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::AllLightweight);
 
-   idx = pcbConcreteType->AddString("Sand lightweight");
+   idx = pcbConcreteType->AddString(_T("Sand lightweight"));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
 
 	CDialog::OnInitDialog();
@@ -182,14 +182,14 @@ BOOL CConcreteEntryDlg::OnInitDialog()
    // disable OK button if editing not allowed
    CString head;
    GetWindowText(head);
-   head += " - ";
+   head += _T(" - ");
    head += m_EntryName;
 	if (!m_AllowEditing)
    {
       CWnd* pbut = GetDlgItem(IDOK);
       ASSERT(pbut);
       pbut->EnableWindow(m_AllowEditing);
-      head += " (Read Only)";
+      head += _T(" (Read Only)");
    }
    SetWindowText(head);
 	
@@ -215,7 +215,7 @@ void CConcreteEntryDlg::OnModE()
    if (!ischk)
    {
       pwnd->GetWindowText(m_InitialEc);
-      pwnd->SetWindowText("Computed");
+      pwnd->SetWindowText(_T("Computed"));
    }
    else
    {

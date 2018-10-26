@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 static const long SSIZE = 1440 * 3/4; // (twips)
 
 
-UINT CPointLoadDrawStrategyImpl::ms_Format = ::RegisterClipboardFormat("PointLoadDrawStrategyImpl");
+UINT CPointLoadDrawStrategyImpl::ms_Format = ::RegisterClipboardFormat(_T("PointLoadDrawStrategyImpl"));
 
 CPointLoadDrawStrategyImpl::CPointLoadDrawStrategyImpl()
 {

@@ -48,20 +48,20 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CUBeam2Factory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back("C1");
-   m_DimNames.push_back("D1");
-   m_DimNames.push_back("D2");
-   m_DimNames.push_back("D3");
-   m_DimNames.push_back("D4");
-   m_DimNames.push_back("D5");
-   m_DimNames.push_back("D6");
-   m_DimNames.push_back("W1");
-   m_DimNames.push_back("W2");
-   m_DimNames.push_back("W3");
-   m_DimNames.push_back("W4");
-   m_DimNames.push_back("W5");
-   m_DimNames.push_back("W6");
-   m_DimNames.push_back("W7");
+   m_DimNames.push_back(_T("C1"));
+   m_DimNames.push_back(_T("D1"));
+   m_DimNames.push_back(_T("D2"));
+   m_DimNames.push_back(_T("D3"));
+   m_DimNames.push_back(_T("D4"));
+   m_DimNames.push_back(_T("D5"));
+   m_DimNames.push_back(_T("D6"));
+   m_DimNames.push_back(_T("W1"));
+   m_DimNames.push_back(_T("W2"));
+   m_DimNames.push_back(_T("W3"));
+   m_DimNames.push_back(_T("W4"));
+   m_DimNames.push_back(_T("W5"));
+   m_DimNames.push_back(_T("W6"));
+   m_DimNames.push_back(_T("W7"));
 
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
@@ -363,7 +363,7 @@ void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
 }
 
 
-std::vector<std::string> CUBeam2Factory::GetDimensionNames()
+std::vector<std::_tstring> CUBeam2Factory::GetDimensionNames()
 {
    return m_DimNames;
 }
@@ -378,7 +378,7 @@ std::vector<const unitLength*> CUBeam2Factory::GetDimensionUnits(bool bSIUnits)
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::string* strErrMsg)
+bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
    double w1, w2, w3, w4, w5, w6, w7;
    double d1, d2, d3, d4, d5, d6;
@@ -402,8 +402,8 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( d1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][1];
-      std::ostringstream os;
-      os << "D1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -411,8 +411,8 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( d2 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
-      std::ostringstream os;
-      os << "D2 must be greater than 0.0" << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D2 must be greater than 0.0") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -420,8 +420,8 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( d3 < 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
-      std::ostringstream os;
-      os << "D3 must be greater than or equal to 0.0" << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D3 must be greater than or equal to 0.0") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -429,8 +429,8 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( d1 < d2+d3 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][1];
-      std::ostringstream os;
-      os << "D1 must be greater than or equal to D2 + D3 (" << ::ConvertFromSysUnits(d2+d3,*pUnit) << " " << pUnit->UnitTag() << ")" << std::ends;
+      std::_tostringstream os;
+      os << _T("D1 must be greater than or equal to D2 + D3 (") << ::ConvertFromSysUnits(d2+d3,*pUnit) << _T(" ") << pUnit->UnitTag() << _T(")") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -438,16 +438,16 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( w1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][7];
-      std::ostringstream os;
-      os << "W1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("W1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( w2 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "W2 must be greater than 0.0" << std::ends;
+      std::_tostringstream os;
+      os << _T("W2 must be greater than 0.0") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -455,8 +455,8 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( w3 < 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
-      std::ostringstream os;
-      os << "W3 must be greater than or equal to 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("W3 must be greater than or equal to 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -464,32 +464,32 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( c1 < 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
-      std::ostringstream os;
-      os << "C1 must be greater than or equal to 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be greater than or equal to 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( c1 > w5 )
    {
-      std::ostringstream os;
-      os << "C1 must be less than or equal to W5" << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be less than or equal to W5") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( c1 > d5 )
    {
-      std::ostringstream os;
-      os << "C1 must be less than or equal to D5" << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be less than or equal to D5") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( w1 > w2-2*(w4+w5) )
    {
-      std::ostringstream os;
-      os << "W1 must be less than w2 - 2 * (w4+w5)" << std::ends;
+      std::_tostringstream os;
+      os << _T("W1 must be less than w2 - 2 * (w4+w5)") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -506,8 +506,8 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    beam->get_T(&t);
    if ( t<=0.0 )
    {
-      std::ostringstream os;
-      os << "Dimensions are such that the web thickness is zero." << std::ends;
+      std::_tostringstream os;
+      os << _T("Dimensions are such that the web thickness is zero.") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -518,11 +518,11 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
 void CUBeam2Factory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
-   std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("UBeam2Dimensions",1.0);
+   std::vector<std::_tstring>::iterator iter;
+   pSave->BeginUnit(_T("UBeam2Dimensions"),1.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
@@ -534,12 +534,12 @@ IBeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(sysIStructuredLoa
    Float64 parent_version = pLoad->GetVersion();
 
    IBeamFactory::Dimensions dimensions;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
    {
-      if ( pLoad->BeginUnit("UBeam2Dimensions") )
+      if ( pLoad->BeginUnit(_T("UBeam2Dimensions")) )
          dimVersion = pLoad->GetVersion();
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -547,13 +547,13 @@ IBeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(sysIStructuredLoa
 
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value;
       if ( !pLoad->Property(name.c_str(),&value) )
       {
          // failed to read dimension value...
          
-         if ( dimVersion < 2 && parent_version < 3.0 && name == "C1" )
+         if ( dimVersion < 2 && parent_version < 3.0 && name == _T("C1") )
          {
             value = 0.0; // set the default value
          }
@@ -602,23 +602,23 @@ Float64 CUBeam2Factory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,Gi
    return surface_area;
 }
 
-std::string CUBeam2Factory::GetImage()
+std::_tstring CUBeam2Factory::GetImage()
 {
-   return std::string("UBeam2.jpg");
+   return std::_tstring(_T("UBeam2.jpg"));
 }
 
-std::string CUBeam2Factory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CUBeam2Factory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
-      strImage =  "UBeam_Slab_CIP.gif";
+      strImage =  _T("UBeam_Slab_CIP.gif");
       break;
 
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "UBeam_Slab_SIP.gif";
+      strImage =  _T("UBeam_Slab_SIP.gif");
       break;
 
    default:
@@ -629,15 +629,15 @@ std::string CUBeam2Factory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType d
    return strImage;
 }
 
-std::string CUBeam2Factory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CUBeam2Factory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "+Mn_UBeam_Composite.gif";
+      strImage =  _T("+Mn_UBeam_Composite.gif");
       break;
 
    default:
@@ -648,15 +648,15 @@ std::string CUBeam2Factory::GetPositiveMomentCapacitySchematicImage(pgsTypes::Su
    return strImage;
 }
 
-std::string CUBeam2Factory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CUBeam2Factory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "-Mn_UBeam_Composite.gif";
+      strImage =  _T("-Mn_UBeam_Composite.gif");
       break;
 
    default:
@@ -667,15 +667,15 @@ std::string CUBeam2Factory::GetNegativeMomentCapacitySchematicImage(pgsTypes::Su
    return strImage;
 }
 
-std::string CUBeam2Factory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CUBeam2Factory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "Vn_UBeam.gif";
+      strImage =  _T("Vn_UBeam.gif");
       break;
 
    default:
@@ -686,33 +686,33 @@ std::string CUBeam2Factory::GetShearDimensionsSchematicImage(pgsTypes::Supported
    return strImage;
 }
 
-std::string CUBeam2Factory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CUBeam2Factory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "UBeam_Effective_Flange_Width_Interior_Girder_2008.gif";
+      return _T("UBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
    else
    {
-      return "UBeam_Effective_Flange_Width_Interior_Girder.gif";
+      return _T("UBeam_Effective_Flange_Width_Interior_Girder.gif");
    }
 }
 
-std::string CUBeam2Factory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CUBeam2Factory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "UBeam_Effective_Flange_Width_Exterior_Girder_2008.gif";
+      return _T("UBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
    else
    {
-      return "UBeam_Effective_Flange_Width_Exterior_Girder.gif";
+      return _T("UBeam_Effective_Flange_Width_Exterior_Girder.gif");
    }
 }
 
@@ -726,17 +726,17 @@ CLSID CUBeam2Factory::GetFamilyCLSID()
    return CLSID_UBeamFamily;
 }
 
-std::string CUBeam2Factory::GetGirderFamilyName()
+std::_tstring CUBeam2Factory::GetGirderFamilyName()
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
    OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::string CUBeam2Factory::GetPublisher()
+std::_tstring CUBeam2Factory::GetPublisher()
 {
-   return std::string("WSDOT");
+   return std::_tstring(_T("WSDOT"));
 }
 
 HINSTANCE CUBeam2Factory::GetResourceInstance()
@@ -761,23 +761,23 @@ void CUBeam2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                   double& w1,double& w2,double& w3,double& w4,double& w5,double& w6,double& w7,
                                   double& c1)
 {
-   d1 = GetDimension(dimensions,"D1");
-   d2 = GetDimension(dimensions,"D2");
-   d3 = GetDimension(dimensions,"D3");
-   d4 = GetDimension(dimensions,"D4");
-   d5 = GetDimension(dimensions,"D5");
-   d6 = GetDimension(dimensions,"D6");
-   w1 = GetDimension(dimensions,"W1");
-   w2 = GetDimension(dimensions,"W2");
-   w3 = GetDimension(dimensions,"W3");
-   w4 = GetDimension(dimensions,"W4");
-   w5 = GetDimension(dimensions,"W5");
-   w6 = GetDimension(dimensions,"W6");
-   w7 = GetDimension(dimensions,"W7");
-   c1 = GetDimension(dimensions,"C1");
+   d1 = GetDimension(dimensions,_T("D1"));
+   d2 = GetDimension(dimensions,_T("D2"));
+   d3 = GetDimension(dimensions,_T("D3"));
+   d4 = GetDimension(dimensions,_T("D4"));
+   d5 = GetDimension(dimensions,_T("D5"));
+   d6 = GetDimension(dimensions,_T("D6"));
+   w1 = GetDimension(dimensions,_T("W1"));
+   w2 = GetDimension(dimensions,_T("W2"));
+   w3 = GetDimension(dimensions,_T("W3"));
+   w4 = GetDimension(dimensions,_T("W4"));
+   w5 = GetDimension(dimensions,_T("W5"));
+   w6 = GetDimension(dimensions,_T("W6"));
+   w7 = GetDimension(dimensions,_T("W7"));
+   c1 = GetDimension(dimensions,_T("C1"));
 }
 
-double CUBeam2Factory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name)
+double CUBeam2Factory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -822,8 +822,8 @@ void CUBeam2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& di
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double W1 = GetDimension(dimensions,"W1");
-   double W2 = GetDimension(dimensions,"W2");
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
 
    double gw = max(W1, W2);
 
@@ -853,12 +853,12 @@ long CUBeam2Factory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 
 Float64 CUBeam2Factory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   return GetDimension(dimensions,"D1");
+   return GetDimension(dimensions,_T("D1"));
 }
 
 Float64 CUBeam2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   return GetDimension(dimensions,"W2");
+   return GetDimension(dimensions,_T("W2"));
 }
 
 bool CUBeam2Factory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)

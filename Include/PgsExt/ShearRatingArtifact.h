@@ -68,8 +68,8 @@ public:
    void SetVehicleWeight(Float64 W);
    Float64 GetVehicleWeight() const;
 
-   void SetVehicleName(const char* str);
-   std::string GetVehicleName() const;
+   void SetVehicleName(LPCTSTR str);
+   std::_tstring GetVehicleName() const;
 
    void SetSystemFactor(Float64 systemFactor);
    Float64 GetSystemFactor() const;
@@ -119,7 +119,7 @@ protected:
 
    VehicleIndexType m_VehicleIndex;
    Float64 m_VehicleWeight;
-   std::string m_strVehicleName;
+   std::_tstring m_strVehicleName;
 
    Float64 m_SystemFactor;
    Float64 m_ConditionFactor;

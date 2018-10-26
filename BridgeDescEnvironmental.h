@@ -29,7 +29,7 @@
 // BridgeDescEnvironmental.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 
 class CBridgeDescDlg;

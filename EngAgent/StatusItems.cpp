@@ -26,7 +26,7 @@
 
 ////////////////
 
-pgsLiveLoadStatusItem::pgsLiveLoadStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsLiveLoadStatusItem::pgsLiveLoadStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
@@ -59,7 +59,7 @@ void pgsLiveLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
 {
 }
@@ -96,7 +96,7 @@ void pgsLiftingSupportLocationStatusCallback::Execute(CEAFStatusItem* pStatusIte
 
 ////////////////
 
-pgsTruckStiffnessStatusItem::pgsTruckStiffnessStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsTruckStiffnessStatusItem::pgsTruckStiffnessStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
@@ -129,13 +129,13 @@ void pgsTruckStiffnessStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CString msg;
-   msg.Format("%s\n\nThe truck roll stiffness is specified in the Hauling Parameters of the Design Criteria\nDesign Criteria may be viewed in the Library Editor",pStatusItem->GetDescription().c_str());
+   msg.Format(_T("%s\n\nThe truck roll stiffness is specified in the Hauling Parameters of the Design Criteria\nDesign Criteria may be viewed in the Library Editor"),pStatusItem->GetDescription().c_str());
    AfxMessageBox(msg);
 }
 
 ////////////////
 
-pgsBunkPointLocationStatusItem::pgsBunkPointLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsBunkPointLocationStatusItem::pgsBunkPointLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
 {
 }

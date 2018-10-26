@@ -236,7 +236,7 @@ void CTxDOTOptionalDesignBridgeInputPage::LoadGirderNames()
    if (!bMoreTemplates)
    {
       CString msg;
-      msg.Format("Fatal Error - could not find any Toga template files using the file spec:\n %s \n This is an installation problem.",strFileSpec);
+      msg.Format(_T("Fatal Error - could not find any Toga template files using the file spec:\n %s \n This is an installation problem."),strFileSpec);
       ::AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
       return;
    }
@@ -271,7 +271,7 @@ void CTxDOTOptionalDesignBridgeInputPage::LoadGirderNames()
    if (!beam_type_found)
    {
       CString msg;
-      msg.Format("ERROR!! - The beam type: \"%s\" saved in this file was not found. \n This is most likely an installation problem.\nYou may select another beam type, but proceed at your own risk.",m_BeamType);
+      msg.Format(_T("ERROR!! - The beam type: \"%s\" saved in this file was not found. \n This is most likely an installation problem.\nYou may select another beam type, but proceed at your own risk."),m_BeamType);
       ::AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
    }
 }
@@ -283,7 +283,7 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
    CString suffix;
    suffix.LoadString(IDS_TEMPLATE_SUFFIX);
 
-   CString template_name = GetTOGAFolder() + CString("\\") + m_BeamType + "." + suffix;
+   CString template_name = GetTOGAFolder() + CString(_T("\\")) + m_BeamType + _T(".") + suffix;
 
    CString girderEntry, leftConnEntry, rightConnEntry;
    if(!::ParseTemplateFile(template_name, girderEntry, leftConnEntry, rightConnEntry))
@@ -298,7 +298,7 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
    {
       ASSERT(0);
       CString msg, stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
+      stmp.LoadString(IDS_GDR_ERROR);
       msg.Format(stmp,girderEntry);
       ::AfxMessageBox(msg);
       return false;
@@ -310,7 +310,7 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
    if (pConnEntry==NULL)
    {
       CString msg, stmp;
-      stmp.LoadStringA(IDS_CONN_ERROR);
+      stmp.LoadString(IDS_CONN_ERROR);
       msg.Format(stmp,leftConnEntry);
       ::AfxMessageBox(msg);
        return false;
@@ -320,7 +320,7 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
    if (pConnEntry==NULL)
    {
       CString msg, stmp;
-      stmp.LoadStringA(IDS_CONN_ERROR);
+      stmp.LoadString(IDS_CONN_ERROR);
       msg.Format(stmp,rightConnEntry);
       ::AfxMessageBox(msg);
       return false;

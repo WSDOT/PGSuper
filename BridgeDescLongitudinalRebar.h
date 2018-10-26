@@ -28,7 +28,7 @@
 #endif // _MSC_VER > 1000
 // BridgeDescLongitudinalRebar.h : header file
 //
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "BridgeDescLongRebarGrid.h"
 
 class CGirderDescDlg;
@@ -82,7 +82,7 @@ public:
 public:
    CGirderDescLongRebarGrid m_Grid;
    CLongitudinalRebarData m_RebarData;
-   std::string m_CurGrdName;
+   std::_tstring m_CurGrdName;
 
 };
 

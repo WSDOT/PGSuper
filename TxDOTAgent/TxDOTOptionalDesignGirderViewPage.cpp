@@ -342,7 +342,7 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
 
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       CString msg;
-      msg.Format("Section Cut Offset: %s",FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
+      msg.Format(_T("Section Cut Offset: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
 
       m_SectionBtn.SetWindowText(msg);
 
@@ -361,7 +361,7 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
    {
       ASSERT(0);
       TxDOTBrokerRetrieverException exc;
-      exc.Message = "An Unknown Error has Occurred";
+      exc.Message = _T("An Unknown Error has Occurred");
       DisplayErrorMode(exc);
    }
 
@@ -438,9 +438,9 @@ void CTxDOTOptionalDesignGirderViewPage::DisplayErrorMode(TxDOTBrokerRetrieverEx
    m_SectionBtn.EnableWindow(FALSE);
 
    CString msg;
-   msg.Format("Error - Analysis run Failed because: \n %s \n More Information May be in Status Center",exc.Message);
+   msg.Format(_T("Error - Analysis run Failed because: \n %s \n More Information May be in Status Center"),exc.Message);
 
-   m_ErrorMsgStatic.SetWindowTextA(msg);
+   m_ErrorMsgStatic.SetWindowText(msg);
    m_ErrorMsgStatic.ShowWindow(SW_SHOW);
 }
 

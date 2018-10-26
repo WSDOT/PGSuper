@@ -79,22 +79,22 @@ BOOL CSpecBridgeSite2Page::OnInitDialog()
    lrfdVersionMgr::Version version = pDad->GetSpecVersion();
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EFF_FLANGE_WIDTH);
-   pCB->AddString("in accordance with LRFD 4.6.2.6");
+   pCB->AddString(_T("in accordance with LRFD 4.6.2.6"));
 
    if ( version < lrfdVersionMgr::FourthEditionWith2008Interims )
-      pCB->AddString("using the tributary width");
+      pCB->AddString(_T("using the tributary width"));
 
    pCB = (CComboBox*)GetDlgItem(IDC_DIST_TRAFFIC_BARRIER_BASIS);
-   int index = pCB->AddString("girders");
+   int index = pCB->AddString(_T("girders"));
    pCB->SetItemData(index,pgsTypes::tbdGirder);
-   index = pCB->AddString("mating surfaces");
+   index = pCB->AddString(_T("mating surfaces"));
    pCB->SetItemData(index,pgsTypes::tbdMatingSurface);
-   index = pCB->AddString("webs");
+   index = pCB->AddString(_T("webs"));
    pCB->SetItemData(index,pgsTypes::tbdWebs);
 
    pCB = (CComboBox*)GetDlgItem(IDC_OVERLAY_DISTR);
-   pCB->AddString("Uniformly Among All Girders [LRFD 4.6.2.2.1]");
-   pCB->AddString("Using Tributary Width");
+   pCB->AddString(_T("Uniformly Among All Girders [LRFD 4.6.2.2.1]"));
+   pCB->AddString(_T("Using Tributary Width"));
 
    CPropertyPage::OnInitDialog();
 

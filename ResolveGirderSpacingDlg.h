@@ -28,7 +28,7 @@
 #endif // _MSC_VER > 1000
 // ResolveGirderSpacingDlg.h : header file
 //
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CResolveGirderSpacingDlg dialog
@@ -48,7 +48,7 @@ public:
 
    int m_ItemIdx;
 
-   std::string m_strSpacings; // \n delimited list of spacings
+   std::_tstring m_strSpacings; // \n delimited list of spacings
    DWORD m_MeasurementDatum;
    bool m_RestrictSpacing; // connection type restricts spacing locations
 

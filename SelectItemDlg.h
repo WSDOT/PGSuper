@@ -29,7 +29,7 @@
 // SelectItemDlg.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectItemDlg dialog

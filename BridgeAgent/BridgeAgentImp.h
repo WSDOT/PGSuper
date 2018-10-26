@@ -246,13 +246,13 @@ public:
    virtual Float64 GetBackBearingStation(PierIndexType pier,GirderIndexType gdr);
    virtual void GetPierDirection(PierIndexType pier,IDirection** ppDirection);
    virtual void GetPierSkew(PierIndexType pier,IAngle** ppAngle);
-   virtual std::string GetLeftSidePierConnection(PierIndexType pier);
-   virtual std::string GetRightSidePierConnection(PierIndexType pier);
+   virtual std::_tstring GetLeftSidePierConnection(PierIndexType pier);
+   virtual std::_tstring GetRightSidePierConnection(PierIndexType pier);
    virtual void GetPierPoints(PierIndexType pier,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right);
    virtual void IsContinuousAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight);
    virtual void IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight);
    virtual void GetContinuityStage(PierIndexType pierIdx,pgsTypes::Stage* pLeft,pgsTypes::Stage* pRight);
-   virtual bool GetSkewAngle(Float64 station,const char* strOrientation,Float64* pSkew);
+   virtual bool GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float64* pSkew);
    virtual bool ProcessNegativeMoments(SpanIndexType spanIdx);
 
 // IBridgeMaterial
@@ -274,11 +274,11 @@ public:
    virtual Float64 GetEcRailing(pgsTypes::TrafficBarrierOrientation orientation);
    virtual const matPsStrand* GetStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
    virtual void GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy);
-   virtual std::string GetLongitudinalRebarName(SpanIndexType span,GirderIndexType gdr);
+   virtual std::_tstring GetLongitudinalRebarName(SpanIndexType span,GirderIndexType gdr);
    virtual void GetTransverseRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy);
-   virtual std::string GetTransverseRebarName(SpanIndexType span,GirderIndexType gdr);
+   virtual std::_tstring GetTransverseRebarName(SpanIndexType span,GirderIndexType gdr);
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy);
-   virtual std::string GetDeckRebarName();
+   virtual std::_tstring GetDeckRebarName();
    virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1);
    virtual Float64 GetFlexureModRupture(Float64 fc);
    virtual Float64 GetShearModRupture(Float64 fc);
@@ -420,7 +420,7 @@ public:
 
    virtual StrandIndexType GetNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type);
    virtual StrandIndexType GetMaxStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type);
-   virtual StrandIndexType GetMaxStrands(const char* strGirderName,pgsTypes::StrandType type);
+   virtual StrandIndexType GetMaxStrands(LPCTSTR strGirderName,pgsTypes::StrandType type);
    virtual Float64 GetStrandArea(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type);
    virtual Float64 GetAreaPrestressStrands(SpanIndexType span,GirderIndexType gdr,bool bIncTemp);
 
@@ -624,7 +624,7 @@ public:
    virtual HRESULT OnGirderFamilyChanged();
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
-   virtual HRESULT OnLiveLoadNameChanged(const char* strOldName,const char* strNewName);
+   virtual HRESULT OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName);
    virtual HRESULT OnConstructionLoadChanged();
 
 // ISpecificationEventSink

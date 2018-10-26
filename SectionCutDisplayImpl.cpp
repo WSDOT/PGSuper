@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 static const Uint32 SSIZE = 1440 * 3/8; // (twips)
 
 
-UINT CSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat("SectionCutData");
+UINT CSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat(_T("SectionCutData"));
 
 CSectionCutDisplayImpl::CSectionCutDisplayImpl():
 m_pCutLocation(NULL),

@@ -99,7 +99,7 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    }
 
    int nColumns = (bDesign ? (bTempStrands ? 7 : 6) : 2);
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,"Prestress Stresses");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Prestress Stresses"));
 
    if ( span == ALL_SPANS )
    {
@@ -119,19 +119,19 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    {
       (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR("Casting Yard",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(_T("Casting Yard"),       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       
       if ( bTempStrands )
-         (*p_table)(0,col++) << COLHDR("Temporary" << rptNewLine << "Strand" << rptNewLine << "Removal",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(0,col++) << COLHDR(_T("Temporary") << rptNewLine << _T("Strand") << rptNewLine << _T("Removal"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*p_table)(0,col++) << COLHDR("Bridge Site 1",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR("Bridge Site 2",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR("Bridge Site 3",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(_T("Bridge Site 1"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(_T("Bridge Site 2"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(_T("Bridge Site 3"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR("Bridge Site 3",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(_T("Bridge Site 3"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    // Get the interface pointers we need
@@ -185,12 +185,12 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          (*p_table)(row,col++) << gdrpoi.SetValue( stage, poi );
 
          if ( bDesign )
-            (*p_table)(row,col++) << "";
+            (*p_table)(row,col++) << _T("");
       }
       else
       {
          if ( bDesign )
-            (*p_table)(row,col++) << "";
+            (*p_table)(row,col++) << _T("");
 
          (*p_table)(row,col++) << spanpoi.SetValue( stage, poi, end_size  );
       }
@@ -202,36 +202,36 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          {
             fTop = pPrestress->GetStress(pgsTypes::CastingYard,poi,pgsTypes::TopGirder);
             fBot = pPrestress->GetStress(pgsTypes::CastingYard,poi,pgsTypes::BottomGirder);
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
             col++;
 
             if ( bTempStrands )
             {
                fTop = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::TopGirder);
                fBot = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::BottomGirder);
-               (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
-               (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
                col++;
             }
 
             fTop = pPrestress->GetStress(pgsTypes::BridgeSite1,poi,pgsTypes::TopGirder);
             fBot = pPrestress->GetStress(pgsTypes::BridgeSite1,poi,pgsTypes::BottomGirder);
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
             col++;
 
             fTop = pPrestress->GetStress(pgsTypes::BridgeSite2,poi,pgsTypes::TopGirder);
             fBot = pPrestress->GetStress(pgsTypes::BridgeSite2,poi,pgsTypes::BottomGirder);
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
             col++;
          }
 
          fTop = pPrestress->GetStress(pgsTypes::BridgeSite3,poi,pgsTypes::TopGirder);
          fBot = pPrestress->GetStress(pgsTypes::BridgeSite3,poi,pgsTypes::BottomGirder);
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
          col++;
       }
 

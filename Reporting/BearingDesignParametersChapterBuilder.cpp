@@ -89,17 +89,17 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    // Product Reactions
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,true,true,pDisplayUnits) << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,false,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
    *p << rptNewLine;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
+   std::vector<std::_tstring>::iterator iter;
    long j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
    {
-      *p << "(D" << j << ") " << *iter << rptNewLine;
+      *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
    }
 
    if ( bPermit )
@@ -108,7 +108,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
-         *p << "(P" << j << ") " << *iter << rptNewLine;
+         *p << _T("(P") << j << _T(") ") << *iter << rptNewLine;
       }
    }
 
@@ -118,7 +118,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
-         *p << "(F" << j << ") " << *iter << rptNewLine;
+         *p << _T("(F") << j << _T(") ") << *iter << rptNewLine;
       }
    }
 
@@ -138,7 +138,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
    {
-      *p << "(D" << j << ") " << *iter << rptNewLine;
+      *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
    }
 
    if ( bPermit )
@@ -147,7 +147,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
-         *p << "(P" << j << ") " << *iter << rptNewLine;
+         *p << _T("(P") << j << _T(") ") << *iter << rptNewLine;
       }
    }
 
@@ -157,7 +157,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
-         *p << "(F" << j << ") " << *iter << rptNewLine;
+         *p << _T("(F") << j << _T(") ") << *iter << rptNewLine;
       }
    }
 
@@ -170,7 +170,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,"Rotation due to Camber");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Rotation due to Camber"));
    *p << pTable << rptNewLine;
 
 
@@ -180,8 +180,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    scalar.SetPrecision(4);
    scalar.SetTolerance(1.0e-6);
 
-   (*pTable)(0,0) << "";
-   (*pTable)(0,1) << "Camber" << rptNewLine << "Rotation" << rptNewLine << "(rad)";
+   (*pTable)(0,0) << _T("");
+   (*pTable)(0,1) << _T("Camber") << rptNewLine << _T("Rotation") << rptNewLine << _T("(rad)");
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -203,9 +203,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );
 
       if ( pier == 0 || pier == nPiers-1 )
-         (*pTable)(row,col++) << "Abutment " << LABEL_PIER(pier);
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*pTable)(row,col++) << "Pier " << LABEL_PIER(pier);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
       pgsPointOfInterest poi;
       if ( pier == startPier )
@@ -236,7 +236,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    p = new rptParagraph;
    *pChapter << p;
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(9,"Corresponding Live Load Reactions and Rotations");
+   pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Corresponding Live Load Reactions and Rotations"));
    *p << pTable << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
@@ -244,13 +244,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    pTable->SetRowSpan(0,0,2);
    pTable->SetRowSpan(1,0,-1);
-   (*pTable)(0,0) << "";
+   (*pTable)(0,0) << _T("");
 
    pTable->SetColumnSpan(0,1,4);
-   (*pTable)(0,1) << "* Reactions";
+   (*pTable)(0,1) << _T("* Reactions");
 
    pTable->SetColumnSpan(0,2,4);
-   (*pTable)(0,2) << "* Rotations";
+   (*pTable)(0,2) << _T("* Rotations");
 
    pTable->SetColumnSpan(0,3,-1);
    pTable->SetColumnSpan(0,4,-1);
@@ -259,15 +259,15 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    pTable->SetColumnSpan(0,7,-1);
    pTable->SetColumnSpan(0,8,-1);
 
-   (*pTable)(1,1) << COLHDR(Sub2("R","Max"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1,1) << COLHDR(Sub2(_T("R"),_T("Max")),rptForceUnitTag, pDisplayUnits->GetShearUnit());
    (*pTable)(1,2) << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-   (*pTable)(1,3) << COLHDR(Sub2("R","Min"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1,3) << COLHDR(Sub2(_T("R"),_T("Min")),rptForceUnitTag, pDisplayUnits->GetShearUnit());
    (*pTable)(1,4) << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
 
-   (*pTable)(1,5) << COLHDR(Sub2(symbol(theta),"Max"),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-   (*pTable)(1,6) << COLHDR("R",rptForceUnitTag, pDisplayUnits->GetShearUnit());
-   (*pTable)(1,7) << COLHDR(Sub2(symbol(theta),"Min"),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-   (*pTable)(1,8) << COLHDR("R",rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1,5) << COLHDR(Sub2(symbol(theta),_T("Max")),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+   (*pTable)(1,6) << COLHDR(_T("R"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1,7) << COLHDR(Sub2(symbol(theta),_T("Min")),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+   (*pTable)(1,8) << COLHDR(_T("R"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
 
    row = pTable->GetNumberOfHeaderRows();
 
@@ -278,9 +278,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );
 
       if ( pier == 0 || pier == nPiers-1 )
-         (*pTable)(row,col++) << "Abutment " << LABEL_PIER(pier);
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*pTable)(row,col++) << "Pier " << LABEL_PIER(pier);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
       pgsPointOfInterest poi(startPier,girder,pBridge->GetGirderStartConnectionLength(span,girder));
       if ( pier != startPier )
@@ -335,23 +335,23 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    p = new rptParagraph;
    *pChapter << p;
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(8,"Bearing Geometry (based on assumed values)");
+   pTable = pgsReportStyleHolder::CreateDefaultTable(8,_T("Bearing Geometry (based on assumed values)"));
    *p << pTable << rptNewLine;
-   *p << "W and D are assumed typical values" << rptNewLine;
-   *p << rptRcImage( pgsReportStyleHolder::GetImagePath() + "BearingRecessSlope.gif") << rptNewLine;
+   *p << _T("W and D are assumed typical values") << rptNewLine;
+   *p << rptRcImage( pgsReportStyleHolder::GetImagePath() + _T("BearingRecessSlope.gif")) << rptNewLine;
 
-   std::string strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
    INIT_FRACTIONAL_LENGTH_PROTOTYPE( recess_dimension, IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), false, true );
 
-   (*pTable)(0,0) << "";
-   (*pTable)(0,1) << "Girder" << rptNewLine << "Slope" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable)(0,2) << "Excess" << rptNewLine << "Camber" << rptNewLine << "Slope" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable)(0,3) << "Bearing" << rptNewLine << "Recess" << rptNewLine << "Slope" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable)(0,4) << "W";
-   (*pTable)(0,5) << "D";
-   (*pTable)(0,6) << Sub2("D","1");
-   (*pTable)(0,7) << Sub2("D","2");
+   (*pTable)(0,0) << _T("");
+   (*pTable)(0,1) << _T("Girder") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,2) << _T("Excess") << rptNewLine << _T("Camber") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,3) << _T("Bearing") << rptNewLine << _T("Recess") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,4) << _T("W");
+   (*pTable)(0,5) << _T("D");
+   (*pTable)(0,6) << Sub2(_T("D"),_T("1"));
+   (*pTable)(0,7) << Sub2(_T("D"),_T("2"));
 
    row = pTable->GetNumberOfHeaderRows();
 
@@ -362,9 +362,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );
 
       if ( pier == 0 || pier == nPiers-1 )
-         (*pTable)(row,col++) << "Abutment " << LABEL_PIER(pier);
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*pTable)(row,col++) << "Pier " << LABEL_PIER(pier);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
 
       double slope1 = pBridge->GetGirderSlope(span,girder);

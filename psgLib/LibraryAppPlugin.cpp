@@ -71,15 +71,15 @@ void CLibraryAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
 
-   UINT filePos = pMainMenu->FindMenuItem("&File");
+   UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
    CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
 
-   UINT managePos = pFileMenu->FindMenuItem("Manage");
+   UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
 
    if ( bIntegrate )
    {
-      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,"Manage Library Editor Plugins...",this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("Manage Library Editor Plugins..."),this);
    }
    else
    {
@@ -117,7 +117,7 @@ UINT CLibraryAppPlugin::GetDocumentResourceID()
 
 CString CLibraryAppPlugin::GetName()
 {
-   return CString("PGSuper Library Editor");
+   return CString(_T("PGSuper Library Editor"));
 }
 
 //////////////////////////
@@ -135,7 +135,7 @@ BOOL CLibraryAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) c
 	if ( rMessage.LoadString(nID) )
 	{
 		// first newline terminates actual string
-      rMessage.Replace('\n','\0');
+      rMessage.Replace(_T('\n'),_T('\0'));
 	}
 	else
 	{

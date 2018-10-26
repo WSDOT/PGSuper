@@ -58,7 +58,7 @@ public:
    Float64  m_Location;   // cannot be negative
    bool     m_Fractional;
    Float64  m_Magnitude;
-   std::string m_Description;
+   std::_tstring m_Description;
 };
 
 #endif // !defined(AFX_MOMENTLOADDATA_H__83982300_F548_44FC_B84A_A7C9731FE381__INCLUDED_)

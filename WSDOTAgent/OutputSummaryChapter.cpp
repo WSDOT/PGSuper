@@ -91,26 +91,26 @@ rptChapter* COutputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 l
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
-   *pPara << "Specification = " << pSpec->GetSpecification() << rptNewLine;
+   *pPara << _T("Specification = ") << pSpec->GetSpecification() << rptNewLine;
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(spanIdx,gdrIdx);
    
    rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << p;
-   *p << "Status" << rptNewLine;
+   *p << _T("Status") << rptNewLine;
 
    p = new rptParagraph;
    *pChapter << p;
 
    if ( pArtifact->Passed() )
    {
-      *p << color(Green) << "This girder has passed a comprehensive check" << color(Black) << rptNewLine;
+      *p << color(Green) << _T("This girder has passed a comprehensive check") << color(Black) << rptNewLine;
    }
    else
    {
-      *p << color(Red) << "This girder has failed a comprehensive check" << color(Black) << rptNewLine;
-      *p << "NOTE: This report does not contain a detailed listing of all analysis checks" << rptNewLine;
+      *p << color(Red) << _T("This girder has failed a comprehensive check") << color(Black) << rptNewLine;
+      *p << _T("NOTE: This report does not contain a detailed listing of all analysis checks") << rptNewLine;
    }
 
 
@@ -186,14 +186,14 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,G
 
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << color(Red) << bold(ON) << "Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored." << bold(OFF) << color(Black) << rptNewLine;
+      *pPara << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
    }
 #endif
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,"Creep Coefficients");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Creep Coefficients"));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -219,7 +219,7 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,G
 
    for ( Uint16 col = CREEP_MINTIME; col <= CREEP_MAXTIME; col++ )
    {
-      (*pTable)(0,col) << (col == CREEP_MINTIME ? "Minimum Time" : "Maximum Time");
+      (*pTable)(0,col) << (col == CREEP_MINTIME ? _T("Minimum Time") : _T("Maximum Time"));
 
       CREEPCOEFFICIENTDETAILS details;
 
@@ -231,70 +231,70 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,G
             if ( bTempStrands )
             {
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpReleaseToDiaphragm,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
 
                (*pTable)(row,col) << rptNewLine;
 
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpReleaseToDeck,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
 
                (*pTable)(row,col) << rptNewLine;
 
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpDiaphragmToDeck,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
             }
             else
             {
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpReleaseToDeck,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
             }
             break;
 
          case pgsTypes::sdtNone:
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpReleaseToDiaphragm,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
 
                (*pTable)(row,col) << rptNewLine;
 
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpReleaseToDeck,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
 
                (*pTable)(row,col) << rptNewLine;
 
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpDiaphragmToDeck,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
 
                (*pTable)(row,col) << rptNewLine;
 
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpDiaphragmToFinal,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
 
                (*pTable)(row,col) << rptNewLine;
 
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpReleaseToFinal,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
 
                (*pTable)(row,col) << rptNewLine;
 
                details = pCamber->GetCreepCoefficientDetails(span,girder,ICamber::cpDeckToFinal,col);
-               (*pTable)(row,col) << symbol(psi) << "(" << time2.SetValue(details.t);
-               (*pTable)(row,col) << "," << time2.SetValue(details.ti) << ") = " << details.Ct;
+               (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
+               (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
             break;
       }
    }
 
    GET_IFACE2(pBroker,ILosses,pLosses);
 
-   pTable = pgsReportStyleHolder::CreateTableNoHeading(2,"Prestress Losses at Mid Span");
+   pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Prestress Losses at Mid Span"));
    *p << pTable << rptNewLine;
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -302,13 +302,13 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,G
    CHECK(vPoi.size()==1);
    pgsPointOfInterest poi = *vPoi.begin();
 
-   (*pTable)(0,0) << "Prestress Loss at Lifting";
+   (*pTable)(0,0) << _T("Prestress Loss at Lifting");
    (*pTable)(0,1) << stress.SetValue( pLosses->GetLiftingLosses(poi,pgsTypes::Permanent) );
 
-   (*pTable)(1,0) << "Prestress Loss at Shipping";
+   (*pTable)(1,0) << _T("Prestress Loss at Shipping");
    (*pTable)(1,1) << stress.SetValue( pLosses->GetShippingLosses(poi,pgsTypes::Permanent) );
 
-   (*pTable)(2,0) << "Prestress Loss at Final";
+   (*pTable)(2,0) << _T("Prestress Loss at Final");
    (*pTable)(2,1) << stress.SetValue( pLosses->GetFinal(poi,pgsTypes::Permanent) );
 }
 
@@ -317,7 +317,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,"Camber and Deflection");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Camber and Deflection"));
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
@@ -335,7 +335,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,girder);
 
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    bool do_defl = pSpecEntry->GetDoEvaluateLLDeflection();
@@ -389,9 +389,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    // Populate the table
    Uint16 row = 0;
    if ( deckType == pgsTypes::sdtNone )
-      (*pTable)(row,0) << "Estimated camber immediately before superimposed dead loads at "<< min_days<<" days, D";
+      (*pTable)(row,0) << _T("Estimated camber immediately before superimposed dead loads at ")<< min_days<<_T(" days, D");
    else
-      (*pTable)(row,0) << "Estimated camber immediately before slab casting at "<< min_days<<" days, D";
+      (*pTable)(row,0) << _T("Estimated camber immediately before slab casting at ")<< min_days<<_T(" days, D");
 
    double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
    if ( D < 0 )
@@ -401,9 +401,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    row++;
 
    if ( deckType == pgsTypes::sdtNone )
-      (*pTable)(row,0) << "Estimated camber immediately before superimposed dead loads at "<< max_days<<" days, D";
+      (*pTable)(row,0) << _T("Estimated camber immediately before superimposed dead loads at ")<< max_days<<_T(" days, D");
    else
-      (*pTable)(row,0) << "Estimated camber immediately before slab casting  at "<< max_days<<" days, D";
+      (*pTable)(row,0) << _T("Estimated camber immediately before slab casting  at ")<< max_days<<_T(" days, D");
 
    D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
    if ( D < 0 )
@@ -414,64 +414,64 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
 
    if ( 0 < girderData.Nstrands[pgsTypes::Temporary] && girderData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
    {
-      (*pTable)(row,0) << "Deflection (Prestressing including temp strands)";
+      (*pTable)(row,0) << _T("Deflection (Prestressing including temp strands)");
       (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,true) );
    }
    else
    {
-      (*pTable)(row,0) << "Deflection (Prestressing)";
+      (*pTable)(row,0) << _T("Deflection (Prestressing)");
       (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,false) );
    }
    row++;
 
    if ( 0 < girderData.Nstrands[pgsTypes::Temporary] && girderData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
    {
-      (*pTable)(row,0) << "Deflection (Temporary Strand Removal)";
+      (*pTable)(row,0) << _T("Deflection (Temporary Strand Removal)");
       (*pTable)(row,1) << disp.SetValue( pCamber->GetReleaseTempPrestressDeflection(poi) );
       row++;
    }
 
-   (*pTable)(row,0) << "Deflection (Girder)";
+   (*pTable)(row,0) << _T("Deflection (Girder)");
    (*pTable)(row,1) << disp.SetValue( delta_gdr );
    row++;
 
-   (*pTable)(row,0) << "Deflection (Slab and Diaphragms)";
+   (*pTable)(row,0) << _T("Deflection (Slab and Diaphragms)");
    (*pTable)(row,1) << disp.SetValue( delta_dl );
    row++;
 
    if ( bSidewalk )
    {
-      (*pTable)(row,0) << "Deflection (Sidewalk)";
+      (*pTable)(row,0) << _T("Deflection (Sidewalk)");
       (*pTable)(row,1) << disp.SetValue( delta_sidewalk );
       row++;
    }
 
-   (*pTable)(row,0) << "Deflection (Traffic Barrier)";
+   (*pTable)(row,0) << _T("Deflection (Traffic Barrier)");
    (*pTable)(row,1) << disp.SetValue( delta_sidl );
    row++;
 
-   (*pTable)(row,0) << "Deflection (Overlay)";
+   (*pTable)(row,0) << _T("Deflection (Overlay)");
    (*pTable)(row,1) << disp.SetValue( delta_overlay );
    row++;
 
    if ( deckType == pgsTypes::sdtNone )
    {
-      (*pTable)(row,0) << "Initial Camber, " << Sub2("C","i");
+      (*pTable)(row,0) << _T("Initial Camber, ") << Sub2(_T("C"),_T("i"));
       (*pTable)(row,1) << camber.SetValue( pCamber->GetCreepDeflection(poi,ICamber::cpReleaseToDiaphragm,CREEP_MAXTIME) );
       row++;
 
-      (*pTable)(row,0) << "Concrete Topping, Barrier, and Overlay " << Sub2("C","topping");
+      (*pTable)(row,0) << _T("Concrete Topping, Barrier, and Overlay ") << Sub2(_T("C"),_T("topping"));
       (*pTable)(row,1) << camber.SetValue( pCamber->GetSlabBarrierOverlayDeflection(poi) );
       row++;
    }
    else
    {
-      (*pTable)(row,0) << "Screed Camber, C";
+      (*pTable)(row,0) << _T("Screed Camber, C");
       (*pTable)(row,1) << camber.SetValue( pCamber->GetScreedCamber(poi) );
       row++;
    }
 
-   (*pTable)(row,0) << "Excess Camber" << rptNewLine << "(based on D at " << max_days << " days)";
+   (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
    double excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
    if ( excess_camber < 0 )
       (*pTable)(row,1) << color(Red) << camber.SetValue( excess_camber ) << color(Black);
@@ -479,13 +479,13 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
       (*pTable)(row,1) << camber.SetValue( excess_camber );
    row++;
 
-   (*pTable)(row,0) << "Live Load Deflection (HL93 - Per Lane)";
+   (*pTable)(row,0) << _T("Live Load Deflection (HL93 - Per Lane)");
    (*pTable)(row,1) << camber.SetValue( delta_ll );
    row++;
 
    if (do_defl)
    {
-      (*pTable)(row,0) << "Optional Live Load Deflection (LRFD 3.6.1.3.2)";
+      (*pTable)(row,0) << _T("Optional Live Load Deflection (LRFD 3.6.1.3.2)");
       (*pTable)(row,1) << camber.SetValue( delta_oll );
       row++;
    }
@@ -497,7 +497,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"Casting Yard Stresses (At Release)");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Casting Yard Stresses (At Release)"));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -509,11 +509,11 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(4, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
-   (*pTable)(0,0) << "Location";
-   (*pTable)(0,1) << "Limit State";
-   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,4) << "Status";
+   (*pTable)(0,0) << _T("Location");
+   (*pTable)(0,1) << _T("Limit State");
+   (*pTable)(0,2) << COLHDR(_T("Demand"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR(_T("Allowable"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,4) << _T("Status");
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
@@ -577,8 +577,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
 
-   (*pTable)(row,0) << "Top of girder at prestress transfer length from left end (w/o mild rebar)";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Top of girder at prestress transfer length from left end (w/o mild rebar)");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -590,14 +590,14 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
    if ( !IsZero(AsMin) )
    {
-      (*pTable)(row,0) << "Top of girder at prestress transfer length from left end (if at least " << area.SetValue(AsMin) << " of mild reinforcement is provided)";
+      (*pTable)(row,0) << _T("Top of girder at prestress transfer length from left end (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
    }
    else
    {
-      (*pTable)(row,0) << "Top of girder at prestress transfer length from left end (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)";
+      (*pTable)(row,0) << _T("Top of girder at prestress transfer length from left end (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
    }
 
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( fTop <= fAllow )
@@ -609,8 +609,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,psxfer_left.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at prestress transfer length from left end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at prestress transfer length from left end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
@@ -623,8 +623,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
 
-   (*pTable)(row,0) << "Top of girder at h from left end (w/o mild rebar)";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Top of girder at h from left end (w/o mild rebar)");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -636,13 +636,13 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
    if ( !IsZero(AsMin) )
    {
-      (*pTable)(row,0) << "Top of girder at h from left end (if at least " << area.SetValue(AsMin) << " of mild reinforcement is provided)";
+      (*pTable)(row,0) << _T("Top of girder at h from left end (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
    }
    else
    {
-      (*pTable)(row,0) << "Top of girder at h from left end (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)";
+      (*pTable)(row,0) << _T("Top of girder at h from left end (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
    }
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( fTop <= fAllow )
@@ -654,8 +654,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at h from left end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at h from left end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
@@ -671,8 +671,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,hp_left.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << "Top of girder at harping point (w/o mild rebar)";
-         (*pTable)(row,1) << "Service I";
+         (*pTable)(row,0) << _T("Top of girder at harping point (w/o mild rebar)");
+         (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
          if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -684,13 +684,13 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
          if ( !IsZero(AsMin) )
          {
-            (*pTable)(row,0) << "Top of girder at harping point (if at least " << area.SetValue(AsMin) << " of mild reinforcement is provided)";
+            (*pTable)(row,0) << _T("Top of girder at harping point (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
          }
          else
          {
-            (*pTable)(row,0) << "Top of girder at harping point (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)";
+            (*pTable)(row,0) << _T("Top of girder at harping point (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
          }
-         (*pTable)(row,1) << "Service I";
+         (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
          if ( fTop <= fAllow )
@@ -702,8 +702,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,hp_left.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << "Bottom of girder at harping point";
-         (*pTable)(row,1) << "Service I";
+         (*pTable)(row,0) << _T("Bottom of girder at harping point");
+         (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllow );
          if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
@@ -717,8 +717,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,hp_left.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << "Top of girder at left harping point (w/o mild rebar)";
-         (*pTable)(row,1) << "Service I";
+         (*pTable)(row,0) << _T("Top of girder at left harping point (w/o mild rebar)");
+         (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
          if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -730,13 +730,13 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
          if ( !IsZero(AsMin) )
          {
-            (*pTable)(row,0) << "Top of girder at left harping point (if at least " << area.SetValue(AsMin) << " of mild reinforcement is provided)";
+            (*pTable)(row,0) << _T("Top of girder at left harping point (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
          }
          else
          {
-            (*pTable)(row,0) << "Top of girder at left harping point (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)";
+            (*pTable)(row,0) << _T("Top of girder at left harping point (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
          }
-         (*pTable)(row,1) << "Service I";
+         (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
          if ( fTop <= fAllow )
@@ -748,8 +748,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,hp_left.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << "Bottom of girder at left harping point";
-         (*pTable)(row,1) << "Service I";
+         (*pTable)(row,0) << _T("Bottom of girder at left harping point");
+         (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllow );
          if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
@@ -761,8 +761,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,hp_right.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << "Top of girder at right harping point (w/o mild rebar)";
-         (*pTable)(row,1) << "Service I";
+         (*pTable)(row,0) << _T("Top of girder at right harping point (w/o mild rebar)");
+         (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
          if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -774,13 +774,13 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
          if ( !IsZero(AsMin) )
          {
-            (*pTable)(row,0) << "Top of girder at right harping point (if at least " << area.SetValue(AsMin) << " of mild reinforcement is provided)";
+            (*pTable)(row,0) << _T("Top of girder at right harping point (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
          }
          else
          {
-            (*pTable)(row,0) << "Top of girder at right harping point (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided0";
+            (*pTable)(row,0) << _T("Top of girder at right harping point (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided0");
          }
-         (*pTable)(row,1) << "Service I";
+         (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
          if ( fTop <= fAllow )
@@ -792,8 +792,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,hp_right.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << "Bottom of girder at right harping point";
-         (*pTable)(row,1) << "Service I";
+         (*pTable)(row,0) << _T("Bottom of girder at right harping point");
+         (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllow );
          if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
@@ -808,8 +808,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
 
-   (*pTable)(row,0) << "Top of girder at h from right end (w/o mild rebar)";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Top of girder at h from right end (w/o mild rebar)");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -821,13 +821,13 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
    if ( !IsZero(AsMin) )
    {
-      (*pTable)(row,0) << "Top of girder at h from right end (if at least " << area.SetValue(AsMin) << " of mild reinforcement is provided)";
+      (*pTable)(row,0) << _T("Top of girder at h from right end (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
    }
    else
    {
-      (*pTable)(row,0) << "Top of girder at h from right end (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)";
+      (*pTable)(row,0) << _T("Top of girder at h from right end (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
    }
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( fTop <= fAllow )
@@ -839,8 +839,8 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at h from right end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at h from right end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
@@ -858,7 +858,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"Deck and Diaphragm Placement Stage Stresses (Bridge Site 1)");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Deck and Diaphragm Placement Stage Stresses (Bridge Site 1)"));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -870,11 +870,11 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(4, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
-   (*pTable)(0,0) << "Location";
-   (*pTable)(0,1) << "Limit State";
-   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,4) << "Status";
+   (*pTable)(0,0) << _T("Location");
+   (*pTable)(0,1) << _T("Limit State");
+   (*pTable)(0,2) << COLHDR(_T("Demand"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR(_T("Allowable"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,4) << _T("Status");
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
@@ -913,8 +913,8 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
 
-   (*pTable)(row,0) << "Top of girder at h from left end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Top of girder at h from left end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -926,8 +926,8 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at h from left end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at h from left end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -939,8 +939,8 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Tension,cl.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Top of girder at mid-span";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Top of girder at mid-span");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -952,8 +952,8 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Compression,cl.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at mid-span";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at mid-span");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -966,8 +966,8 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
 
-   (*pTable)(row,0) << "Top of girder at h from right end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Top of girder at h from right end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -979,8 +979,8 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at h from right end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at h from right end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -996,7 +996,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"Superimposed Dead Load Stage Stresses (Bridge Site 2)");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Superimposed Dead Load Stage Stresses (Bridge Site 2)"));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -1008,11 +1008,11 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(4, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
-   (*pTable)(0,0) << "Location";
-   (*pTable)(0,1) << "Limit State";
-   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,4) << "Status";
+   (*pTable)(0,0) << _T("Location");
+   (*pTable)(0,1) << _T("Limit State");
+   (*pTable)(0,2) << COLHDR(_T("Demand"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR(_T("Allowable"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,4) << _T("Status");
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
@@ -1050,8 +1050,8 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at h from left end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at h from left end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1063,8 +1063,8 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Compression,cl.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Top of girder at mid-span";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Top of girder at mid-span");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1076,8 +1076,8 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at h from right end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at h from right end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1093,7 +1093,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"Final with Live Load Stage Stresses (Bridge Site 3)");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Final with Live Load Stage Stresses (Bridge Site 3)"));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -1105,11 +1105,11 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(4, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
-   (*pTable)(0,0) << "Location";
-   (*pTable)(0,1) << "Limit State";
-   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,4) << "Status";
+   (*pTable)(0,0) << _T("Location");
+   (*pTable)(0,1) << _T("Limit State");
+   (*pTable)(0,2) << COLHDR(_T("Demand"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR(_T("Allowable"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,4) << _T("Status");
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
@@ -1148,8 +1148,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at h from left end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at h from left end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1163,8 +1163,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceIA,pgsTypes::Compression,h_left.GetDistFromStart()));
       pStresses->GetDemand( &fTop, &fBot );
       fAllow = pStresses->GetCapacity();
-      (*pTable)(row,0) << "Bottom of girder at h from left end";
-      (*pTable)(row,1) << "Service IA";
+      (*pTable)(row,0) << _T("Bottom of girder at h from left end");
+      (*pTable)(row,1) << _T("Service IA");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
       if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1178,8 +1178,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::FatigueI,pgsTypes::Compression,h_left.GetDistFromStart()));
       pStresses->GetDemand( &fTop, &fBot );
       fAllow = pStresses->GetCapacity();
-      (*pTable)(row,0) << "Bottom of girder at h from left end";
-      (*pTable)(row,1) << "Fatigue I";
+      (*pTable)(row,0) << _T("Bottom of girder at h from left end");
+      (*pTable)(row,1) << _T("Fatigue I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
       if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1192,8 +1192,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Compression,cl.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Top of girder at mid-span";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Top of girder at mid-span");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1207,8 +1207,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceIA,pgsTypes::Compression,cl.GetDistFromStart()));
       pStresses->GetDemand( &fTop, &fBot );
       fAllow = pStresses->GetCapacity();
-      (*pTable)(row,0) << "Top of girder at mid-span";
-      (*pTable)(row,1) << "Service IA";
+      (*pTable)(row,0) << _T("Top of girder at mid-span");
+      (*pTable)(row,1) << _T("Service IA");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllow );
       if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1222,8 +1222,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::FatigueI,pgsTypes::Compression,cl.GetDistFromStart()));
       pStresses->GetDemand( &fTop, &fBot );
       fAllow = pStresses->GetCapacity();
-      (*pTable)(row,0) << "Top of girder at mid-span";
-      (*pTable)(row,1) << "Fatigue I";
+      (*pTable)(row,0) << _T("Top of girder at mid-span");
+      (*pTable)(row,1) << _T("Fatigue I");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllow );
       if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1236,8 +1236,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceIII,pgsTypes::Tension,cl.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << "Bottom of girder at mid-span";
-   (*pTable)(row,1) << "Service III";
+   (*pTable)(row,0) << _T("Bottom of girder at mid-span");
+   (*pTable)(row,1) << _T("Service III");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1250,8 +1250,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
 
-   (*pTable)(row,0) << "Bottom of girder at h from right end";
-   (*pTable)(row,1) << "Service I";
+   (*pTable)(row,0) << _T("Bottom of girder at h from right end");
+   (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
    if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1266,8 +1266,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       pStresses->GetDemand( &fTop, &fBot );
       fAllow = pStresses->GetCapacity();
 
-      (*pTable)(row,0) << "Bottom of girder at h from right end";
-      (*pTable)(row,1) << "Service IA";
+      (*pTable)(row,0) << _T("Bottom of girder at h from right end");
+      (*pTable)(row,1) << _T("Service IA");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
       if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1282,8 +1282,8 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       pStresses->GetDemand( &fTop, &fBot );
       fAllow = pStresses->GetCapacity();
 
-      (*pTable)(row,0) << "Bottom of girder at h from right end";
-      (*pTable)(row,1) << "Fatigue I";
+      (*pTable)(row,0) << _T("Bottom of girder at h from right end");
+      (*pTable)(row,1) << _T("Fatigue I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
       if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
@@ -1294,7 +1294,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    }
 }
 
-void write_shear_capacity(rptRcTable* pTable,int row,const std::string& lbl, const pgsVerticalShearArtifact* pArtifact,IEAFDisplayUnits* pDisplayUnits)
+void write_shear_capacity(rptRcTable* pTable,int row,const std::_tstring& lbl, const pgsVerticalShearArtifact* pArtifact,IEAFDisplayUnits* pDisplayUnits)
 {
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetGeneralForceUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
@@ -1313,16 +1313,16 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Gir
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,"Shear Capacity");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Shear Capacity"));
    *p << pTable << rptNewLine;
 
    // Setup the table
    pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   (*pTable)(0,0) << "Location";
-   (*pTable)(0,1) << COLHDR(Sub2("V","u"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*pTable)(0,2) << COLHDR(symbol(phi) << Sub2("V","n"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*pTable)(0,3) << "Status";
+   (*pTable)(0,0) << _T("Location");
+   (*pTable)(0,1) << COLHDR(Sub2(_T("V"),_T("u")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*pTable)(0,2) << COLHDR(symbol(phi) << Sub2(_T("V"),_T("n")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*pTable)(0,3) << _T("Status");
 
    // Setup up some unit value prototypes
 
@@ -1370,17 +1370,17 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Gir
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,left_cs.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"Left Critical Section", pArtifact, pDisplayUnits );
+   write_shear_capacity(pTable,row++,_T("Left Critical Section"), pArtifact, pDisplayUnits );
 
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,left_h.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"H from left end", pArtifact, pDisplayUnits );
+   write_shear_capacity(pTable,row++,_T("H from left end"), pArtifact, pDisplayUnits );
    
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,left_15h.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"1.5H from left end", pArtifact, pDisplayUnits );
+   write_shear_capacity(pTable,row++,_T("1.5H from left end"), pArtifact, pDisplayUnits );
 
    if ( 0 < NhMax )
    {
@@ -1389,36 +1389,36 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Gir
          pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,hp_left.GetDistFromStart()));
          pArtifact = pPoiArtifact->GetVerticalShearArtifact();
          CHECK(pArtifact!=0);
-         write_shear_capacity(pTable,row++,"Left Harping Point", pArtifact, pDisplayUnits );
+         write_shear_capacity(pTable,row++,_T("Left Harping Point"), pArtifact, pDisplayUnits );
 
          pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,hp_right.GetDistFromStart()));
          pArtifact = pPoiArtifact->GetVerticalShearArtifact();
          CHECK(pArtifact!=0);
-         write_shear_capacity(pTable,row++,"Right Harping Point", pArtifact, pDisplayUnits );
+         write_shear_capacity(pTable,row++,_T("Right Harping Point"), pArtifact, pDisplayUnits );
       }
       else
       {
          pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,hp_left.GetDistFromStart()));
          pArtifact = pPoiArtifact->GetVerticalShearArtifact();
          CHECK(pArtifact!=0);
-         write_shear_capacity(pTable,row++,"Harping Point", pArtifact, pDisplayUnits );
+         write_shear_capacity(pTable,row++,_T("Harping Point"), pArtifact, pDisplayUnits );
       }
    }
 
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,right_15h.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"1.5H from right end", pArtifact, pDisplayUnits );
+   write_shear_capacity(pTable,row++,_T("1.5H from right end"), pArtifact, pDisplayUnits );
 
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,right_h.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"H from right end", pArtifact, pDisplayUnits );
+   write_shear_capacity(pTable,row++,_T("H from right end"), pArtifact, pDisplayUnits );
 
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,right_cs.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"Right Critical Section", pArtifact, pDisplayUnits );
+   write_shear_capacity(pTable,row++,_T("Right Critical Section"), pArtifact, pDisplayUnits );
 }
 
 void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits)
@@ -1432,7 +1432,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    if (pLiftArtifact==NULL)
    {
-      *p<<"Lifting check not performed because it is not enabled in the library"<<rptNewLine;
+      *p<<_T("Lifting check not performed because it is not enabled in the library")<<rptNewLine;
       return;
    }
 
@@ -1441,11 +1441,11 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
    {
       rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
       *pChapter << pTitle;
-      *pTitle<<color(Red)<<"Lifting Check Failed - Girder is unstable - CG is higher than pick points"<< color(Black)<<rptNewLine;
+      *pTitle<<color(Red)<<_T("Lifting Check Failed - Girder is unstable - CG is higher than pick points")<< color(Black)<<rptNewLine;
    }
    else
    {
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,"Lifting in the Casting Yard");
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Lifting in the Casting Yard"));
       *p << pTable << rptNewLine;
 
       // Setup the table
@@ -1467,10 +1467,10 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
       INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
       INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),   true );
 
-      (*pTable)(0,0) << "";
-      (*pTable)(0,1) << "Demand";
-      (*pTable)(0,2) << "Allowable";
-      (*pTable)(0,3) << "Status";
+      (*pTable)(0,0) << _T("");
+      (*pTable)(0,1) << _T("Demand");
+      (*pTable)(0,2) << _T("Allowable");
+      (*pTable)(0,3) << _T("Status");
 
       Float64 min_stress, max_stress;
       Float64 minDistFromStart, maxDistFromStart;
@@ -1482,7 +1482,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-      (*pTable)(row,0) << "Tensile Stress (w/o mild rebar)";
+      (*pTable)(row,0) << _T("Tensile Stress (w/o mild rebar)");
       (*pTable)(row,1) <<  stress.SetValue(max_stress);
       (*pTable)(row,2) <<  stress.SetValue(max_all_stress);
       if (max_all_stress>=max_stress)
@@ -1493,11 +1493,11 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
       if ( !IsZero(AsMin) )
       {
-         (*pTable)(row,0) << "Tensile Stress (if at least " << area.SetValue(AsMin) << " of mild reinforcement is provided)";
+         (*pTable)(row,0) << _T("Tensile Stress (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
       }
       else
       {
-         (*pTable)(row,0) << "Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)";
+         (*pTable)(row,0) << _T("Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
       }
       (*pTable)(row,1) <<  stress.SetValue(max_stress);
       (*pTable)(row,2) <<  stress.SetValue(allow_with_rebar);
@@ -1507,7 +1507,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
          (*pTable)(row,3) << RPT_FAIL;
       row++;
 
-      (*pTable)(row,0) << "Compressive Stress";
+      (*pTable)(row,0) << _T("Compressive Stress");
       (*pTable)(row,1) <<  stress.SetValue(min_stress);
       (*pTable)(row,2) <<  stress.SetValue(min_all_stress);
       if (min_all_stress<=min_stress)
@@ -1519,7 +1519,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
       Float64 fs_crack = pLiftArtifact->GetMinFsForCracking();
       Float64 all_fs_crack = pLiftArtifact->GetAllowableFsForCracking();
-      (*pTable)(row,0) << "F.S. - Cracking";
+      (*pTable)(row,0) << _T("F.S. - Cracking");
       (*pTable)(row,1) <<  scalar.SetValue(fs_crack);
       (*pTable)(row,2) <<  scalar.SetValue(all_fs_crack);
       if (all_fs_crack<=fs_crack)
@@ -1530,7 +1530,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
       Float64 fs_fail = pLiftArtifact->GetFsFailure();
       Float64 all_fs_fail = pLiftArtifact->GetAllowableFsForFailure();
-      (*pTable)(row,0) << "F.S. - Failure";
+      (*pTable)(row,0) << _T("F.S. - Failure");
       (*pTable)(row,1) <<  scalar.SetValue(fs_fail);
       (*pTable)(row,2) <<  scalar.SetValue(all_fs_fail);
       if (pLiftArtifact->PassedFailureCheck())
@@ -1552,11 +1552,11 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    if (pHaulArtifact==NULL)
    {
-      *p<<"Hauling check not performed because it is not enabled in the library"<<rptNewLine;
+      *p<<_T("Hauling check not performed because it is not enabled in the library")<<rptNewLine;
       return;
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,"Hauling to the Bridge Site");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Hauling to the Bridge Site"));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -1579,10 +1579,10 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),  true );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),   true );
 
-   (*pTable)(0,0) << "";
-   (*pTable)(0,1) << "Demand";
-   (*pTable)(0,2) << "Allowable";
-   (*pTable)(0,3) << "Status";
+   (*pTable)(0,0) << _T("");
+   (*pTable)(0,1) << _T("Demand");
+   (*pTable)(0,2) << _T("Allowable");
+   (*pTable)(0,3) << _T("Status");
 
    Float64 min_stress, max_stress;
    pHaulArtifact->GetMinMaxStresses(&min_stress, &max_stress);
@@ -1592,7 +1592,7 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
    Float64 AsMin = pHaulArtifact->GetAlterantiveTensileStressAsMax();
 
    Uint16 row = 1;
-   (*pTable)(row,0) << "Tensile Stress (w/o mild rebar)";
+   (*pTable)(row,0) << _T("Tensile Stress (w/o mild rebar)");
    (*pTable)(row,1) <<  stress.SetValue(max_stress);
    (*pTable)(row,2) <<  stress.SetValue(max_all_stress);
    if (max_all_stress>=max_stress)
@@ -1603,11 +1603,11 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    if ( !IsZero(AsMin) )
    {
-      (*pTable)(row,0) << "Tensile Stress (if at least " << area.SetValue(AsMin) << " of mild reinforcement is provided)";
+      (*pTable)(row,0) << _T("Tensile Stress (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
    }
    else
    {
-      (*pTable)(row,0) << "Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)";
+      (*pTable)(row,0) << _T("Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
    }
 
    (*pTable)(row,1) <<  stress.SetValue(max_stress);
@@ -1618,7 +1618,7 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
       (*pTable)(row,3) << RPT_FAIL;
    row++;
 
-   (*pTable)(row,0) << "Compressive Stress";
+   (*pTable)(row,0) << _T("Compressive Stress");
    (*pTable)(row,1) <<  stress.SetValue(min_stress);
    (*pTable)(row,2) <<  stress.SetValue(min_all_stress);
    if (min_all_stress<=min_stress)
@@ -1629,7 +1629,7 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    Float64 fs_crack = pHaulArtifact->GetMinFsForCracking();
    Float64 all_fs_crack = pHaulArtifact->GetAllowableFsForCracking();
-   (*pTable)(row,0) << "F.S. - Cracking";
+   (*pTable)(row,0) << _T("F.S. - Cracking");
    (*pTable)(row,1) <<  scalar.SetValue(fs_crack);
    (*pTable)(row,2) <<  scalar.SetValue(all_fs_crack);
    if (all_fs_crack<=fs_crack)
@@ -1640,7 +1640,7 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    Float64 fs_fail = pHaulArtifact->GetFsRollover();
    Float64 all_fs_fail = pHaulArtifact->GetAllowableFsForRollover();
-   (*pTable)(row,0) << "F.S. - Rollover";
+   (*pTable)(row,0) << _T("F.S. - Rollover");
    (*pTable)(row,1) <<  scalar.SetValue(fs_fail);
    (*pTable)(row,2) <<  scalar.SetValue(all_fs_fail);
    if (all_fs_fail<=fs_fail)
@@ -1651,7 +1651,7 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    Float64 wgt = pHaulArtifact->GetGirderWeight();
    Float64 maxwgt = pHaulArtifact->GetMaxGirderWgt();
-   (*pTable)(row,0) << "Girder Weight";
+   (*pTable)(row,0) << _T("Girder Weight");
    (*pTable)(row,1) <<  force.SetValue(wgt);
    (*pTable)(row,2) <<  force.SetValue(maxwgt);
    if (wgt<=maxwgt)

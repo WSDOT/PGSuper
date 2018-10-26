@@ -29,7 +29,7 @@
 // DebondDlg.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "DebondGrid.h"
 
 #include <GraphicsLib\GraphicsLib.h>

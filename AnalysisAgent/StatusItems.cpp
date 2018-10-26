@@ -25,7 +25,7 @@
 
 #include <PgsExt\GirderLabel.h>
 
-pgsVSRatioStatusItem::pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsVSRatioStatusItem::pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
 {
 }
@@ -58,6 +58,6 @@ void pgsVSRatioStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CString msg;
-   msg.Format("Span %d Girder %s: %s",LABEL_SPAN(pItem->m_Span),LABEL_GIRDER(pItem->m_Girder),pItem->GetDescription().c_str());
+   msg.Format(_T("Span %d Girder %s: %s"),LABEL_SPAN(pItem->m_Span),LABEL_GIRDER(pItem->m_Girder),pItem->GetDescription().c_str());
    AfxMessageBox(msg);
 }

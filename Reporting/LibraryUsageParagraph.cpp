@@ -53,22 +53,22 @@ rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker, bool doPrintTable)
    sysTime time;
    bool bPrintDate = sysTime::PrintDate(true);
    
-   std::string strPublisher;
-   std::string strMasterLibFile;
+   std::_tstring strPublisher;
+   std::_tstring strMasterLibFile;
    pLibrary->GetMasterLibraryInfo(strPublisher,strMasterLibFile,time);
 
-   *pParagraph << "Master Library Publisher: " << strPublisher << rptNewLine;
+   *pParagraph << _T("Master Library Publisher: ") << strPublisher << rptNewLine;
 
-   if (std::string::npos != strMasterLibFile.find(".pgz"))
+   if (std::_tstring::npos != strMasterLibFile.find(_T(".pgz")))
    {
-      *pParagraph << "Library and Template Package URL: " << strMasterLibFile << rptNewLine;
+      *pParagraph << _T("Library and Template Package URL: ") << strMasterLibFile << rptNewLine;
    }
    else
    {
-      *pParagraph << "Master Library File: " << strMasterLibFile << rptNewLine;
+      *pParagraph << _T("Master Library File: ") << strMasterLibFile << rptNewLine;
    }
 
-    *pParagraph << "Master Library Date Stamp: " << time.AsString() << rptNewLine;
+    *pParagraph << _T("Master Library Date Stamp: ") << time.AsString() << rptNewLine;
 
    if (doPrintTable)
    {

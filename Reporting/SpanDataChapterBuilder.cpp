@@ -106,8 +106,8 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
          p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
          *pChapter << p;
-         *p << "Eccentricities measured from neutral axis of non-composite section" << rptNewLine;
-         *p << "Positive values indicate strands are below the neutral axis" << rptNewLine;
+         *p << _T("Eccentricities measured from neutral axis of non-composite section") << rptNewLine;
+         *p << _T("Positive values indicate strands are below the neutral axis") << rptNewLine;
          *p << rptNewLine;
       }
    }
@@ -125,11 +125,11 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          p = new rptParagraph;
          *pChapter << p;
 
-         *p << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << rptNewLine;
-         *p << "Girder Length = " << length.SetValue( pBridge->GetGirderLength(spanIdx,gdrIdx) ) << rptNewLine;
-         *p << "Span Length = " << length.SetValue( pBridge->GetSpanLength(spanIdx,gdrIdx) )<<" (CL Bearing to CL Bearing)" << rptNewLine;
-         *p << "Left End Distance = " << length.SetValue( pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx) )<<" (Overhang, CL Bearing to End of Girder, Measured Along Girder)" << rptNewLine;
-         *p << "Right End Distance = " << length.SetValue( pBridge->GetGirderEndConnectionLength(spanIdx,gdrIdx) )<<" (Overhang, CL Bearing to End of Girder, Measured Along Girder)" << rptNewLine;
+         *p << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
+         *p << _T("Girder Length = ") << length.SetValue( pBridge->GetGirderLength(spanIdx,gdrIdx) ) << rptNewLine;
+         *p << _T("Span Length = ") << length.SetValue( pBridge->GetSpanLength(spanIdx,gdrIdx) )<<_T(" (CL Bearing to CL Bearing)") << rptNewLine;
+         *p << _T("Left End Distance = ") << length.SetValue( pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
+         *p << _T("Right End Distance = ") << length.SetValue( pBridge->GetGirderEndConnectionLength(spanIdx,gdrIdx) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
       }
    }
 

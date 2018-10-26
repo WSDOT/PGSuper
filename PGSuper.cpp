@@ -137,12 +137,12 @@ CDocManager* CPGSuperApp::CreateDocumentManager()
 
 LPCTSTR CPGSuperApp::GetRegistryKey()
 {
-   return "Washington State Department of Transportation";
+   return _T("Washington State Department of Transportation");
 }
 
 OLECHAR* CPGSuperApp::GetAppPluginCategoryName()
 {
-   return L"BridgeLink Application Plugin";
+   return _T("BridgeLink Application Plugin");
 }
 
 CATID CPGSuperApp::GetAppPluginCategoryID()
@@ -179,23 +179,23 @@ BOOL CPGSuperApp::InitInstance()
    // Initialize OLE libraries
 	if (!SUCCEEDED(OleInitialize(NULL)))
 	{
-		AfxMessageBox("OLE initialization failed. Make sure that the OLE libraries are the correct version.");
+		AfxMessageBox(_T("OLE initialization failed. Make sure that the OLE libraries are the correct version."));
 		return FALSE;
 	}
 
-   sysComCatMgr::CreateCategory(L"PGSuper Components",CATID_BridgeLinkComponents);
-   sysComCatMgr::CreateCategory(L"PGSuper Application Plugin",CATID_BridgeLinkAppPlugin);
+   sysComCatMgr::CreateCategory(_T("PGSuper Components"),CATID_BridgeLinkComponents);
+   sysComCatMgr::CreateCategory(_T("PGSuper Application Plugin"),CATID_BridgeLinkAppPlugin);
 
 //   CREATE_LOGFILE("PGSuperApp"); 
 
    // Tip of the Day
-   CString strTipFile = GetAppLocation() + CString("PGSuper.tip");
+   CString strTipFile = GetAppLocation() + CString(_T("PGSuper.tip"));
 #if defined _DEBUG
-   strTipFile.Replace("RegFreeCOM\\Debug\\","");
+   strTipFile.Replace(_T("RegFreeCOM\\Debug\\"),_T(""));
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
    // ok... the replace will fail and the string wont be altered.
-   strTipFile.Replace("RegFreeCOM\\Release\\","");
+   strTipFile.Replace(_T("RegFreeCOM\\Release\\"),_T(""));
 #endif
    EnableTipOfTheDay(strTipFile); // must be enabled before InitInstance
 
@@ -212,17 +212,16 @@ BOOL CPGSuperApp::InitInstance()
    // Change help file name
    CString strHelpFile(m_pszHelpFilePath);
 #if defined _DEBUG
-   strHelpFile.Replace("RegFreeCOM\\Debug\\","");
+   strHelpFile.Replace(_T("RegFreeCOM\\Debug\\"),_T(""));
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
    // ok... the replace will fail and the string wont be altered.
-   strHelpFile.Replace("RegFreeCOM\\Release\\","");
+   strHelpFile.Replace(_T("RegFreeCOM\\Release\\"),_T(""));
 #endif
    free((void*)m_pszHelpFilePath);
-   m_pszHelpFilePath = _tcsdup(_T(strHelpFile));
+   m_pszHelpFilePath = _tcsdup(strHelpFile);
 
-
-  if ( !CEAFApp::InitInstance() )
+   if ( !CEAFApp::InitInstance() )
       return FALSE;
 
 	return TRUE;
@@ -243,7 +242,7 @@ int CPGSuperApp::ExitInstance()
 CString CPGSuperApp::GetVersion(bool bIncludeBuildNumber) const
 {
    CString strExe( m_pszExeName );
-   strExe += ".exe";
+   strExe += _T(".exe");
 
    CVersionInfo verInfo;
    verInfo.Load(strExe);
@@ -258,7 +257,7 @@ CString CPGSuperApp::GetVersion(bool bIncludeBuildNumber) const
    if (!bIncludeBuildNumber)
    {
       // remove the build number
-      int pos = strVersion.ReverseFind('.'); // find the last '.'
+      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
       strVersion = strVersion.Left(pos);
    }
 
@@ -267,13 +266,13 @@ CString CPGSuperApp::GetVersion(bool bIncludeBuildNumber) const
 
 CString CPGSuperApp::GetVersionString(bool bIncludeBuildNumber) const
 {
-   CString str("Version ");
+   CString str(_T("Version "));
    str += GetVersion(bIncludeBuildNumber);
 #if defined _BETA_VERSION
-   str += CString(" BETA");
+   str += CString(_T(" BETA"));
 #endif
 
-   str += CString(" - Built on ");
+   str += CString(_T(" - Built on "));
    str += CString(__DATE__);
    return str;
 }
@@ -310,17 +309,17 @@ CString CPGSuperApp::GetWsdotUrl()
 {
 //   CString url = GetProfileString(_T("Settings"), _T("WsdotUrl"), _T("http://www.wsdot.wa.gov"));
 
-   CString strDefault("http://www.wsdot.wa.gov");
+   CString strDefault(_T("http://www.wsdot.wa.gov"));
 
    HKEY key;
-   LONG result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,"SOFTWARE\\Washington State Department of Transportation\\PGSuper\\Settings",0,KEY_QUERY_VALUE,&key);
+   LONG result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,_T("SOFTWARE\\Washington State Department of Transportation\\PGSuper\\Settings"),0,KEY_QUERY_VALUE,&key);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
-   unsigned char url[MAX_PATH];
+   TCHAR url[MAX_PATH];
    DWORD size = MAX_PATH;
    DWORD type;
-   result = ::RegQueryValueEx(key,_T("WsdotUrl"),0,&type,&url[0],&size);
+   result = ::RegQueryValueEx(key,_T("WsdotUrl"),0,&type,(LPBYTE)&url[0],&size);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
@@ -333,17 +332,17 @@ CString CPGSuperApp::GetWsdotBridgeUrl()
 {
 //   CString url = GetProfileString(_T("Settings"), _T("WsdotBridgeUrl"), _T("http://www.wsdot.wa.gov/eesc/bridge"));
 
-   CString strDefault("http://www.wsdot.wa.gov/eesc/bridge");
+   CString strDefault(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 
    HKEY key;
-   LONG result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,"SOFTWARE\\Washington State Department of Transportation\\PGSuper\\Settings",0,KEY_QUERY_VALUE,&key);
+   LONG result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,_T("SOFTWARE\\Washington State Department of Transportation\\PGSuper\\Settings"),0,KEY_QUERY_VALUE,&key);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
-   unsigned char url[MAX_PATH];
+   TCHAR url[MAX_PATH];
    DWORD size = MAX_PATH;
    DWORD type;
-   result = ::RegQueryValueEx(key,_T("WsdotBridgeUrl"),0,&type,&url[0],&size);
+   result = ::RegQueryValueEx(key,_T("WsdotBridgeUrl"),0,&type,(LPBYTE)&url[0],&size);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
@@ -356,17 +355,17 @@ CString CPGSuperApp::GetPGSuperUrl()
 {
    // NOTE: If URL isn't found in the registry, just go to the main software page.
 //   CString url = GetProfileString(_T("Settings"), _T("PGSuperUrl"), _T("http://www.wsdot.wa.gov/eesc/bridge"));
-   CString strDefault("http://www.wsdot.wa.gov/eesc/bridge/software/index.cfm?fuseaction=software_detail&software_id=47");
+   CString strDefault(_T("http://www.wsdot.wa.gov/eesc/bridge/software/index.cfm?fuseaction=software_detail&software_id=47"));
 
    HKEY key;
-   LONG result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,"SOFTWARE\\Washington State Department of Transportation\\PGSuper\\Settings",0,KEY_QUERY_VALUE,&key);
+   LONG result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,_T("SOFTWARE\\Washington State Department of Transportation\\PGSuper\\Settings"),0,KEY_QUERY_VALUE,&key);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
-   unsigned char url[MAX_PATH];
+   TCHAR url[MAX_PATH];
    DWORD size = MAX_PATH;
    DWORD type;
-   result = ::RegQueryValueEx(key,_T("PGSuperUrl"),0,&type,&url[0],&size);
+   result = ::RegQueryValueEx(key,_T("PGSuperUrl"),0,&type,(LPBYTE)&url[0],&size);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
@@ -378,7 +377,7 @@ CString CPGSuperApp::GetPGSuperUrl()
 void CPGSuperApp::OnHelpInetWsdot() 
 {
    HINSTANCE hInstance = ::ShellExecute(m_pMainWnd->GetSafeHwnd(),
-                                        "open",
+                                        _T("open"),
                                         GetWsdotUrl(),
                                          0,0,SW_SHOWDEFAULT);
 
@@ -391,8 +390,8 @@ void CPGSuperApp::OnHelpInetWsdot()
 void CPGSuperApp::OnHelpJoinArpList()
 {
    HINSTANCE hInstance = ::ShellExecute(m_pMainWnd->GetSafeHwnd(),
-                                        "open",
-										"http://www.pgsuper.com/drupal/content/arplist",
+                                        _T("open"),
+										_T("http://www.pgsuper.com/drupal/content/arplist"),
                                          0,0,SW_SHOWDEFAULT);
 
    if ( (INT)hInstance < 32 )
@@ -404,8 +403,8 @@ void CPGSuperApp::OnHelpJoinArpList()
 void CPGSuperApp::OnHelpInetARP()
 {
    HINSTANCE hInstance = ::ShellExecute(m_pMainWnd->GetSafeHwnd(),
-                                        "open",
-                                        "http://wsdot.wa.gov/eesc/bridge/alternateroute",
+                                        _T("open"),
+                                        _T("http://wsdot.wa.gov/eesc/bridge/alternateroute"),
                                          0,0,SW_SHOWDEFAULT);
 
    if ( (INT)hInstance < 32 )
@@ -417,7 +416,7 @@ void CPGSuperApp::OnHelpInetARP()
 void CPGSuperApp::OnHelpInetPgsuper() 
 {
    HINSTANCE hInstance = ::ShellExecute(m_pMainWnd->GetSafeHwnd(),
-                                        "open",
+                                        _T("open"),
                                         GetPGSuperUrl(),
                                         0,0,SW_SHOWDEFAULT);
 
@@ -457,7 +456,7 @@ protected:
    CHyperLink m_BridgeSight;
 };
 
-CAboutDlg::CAboutDlg() : CEAFAboutDlg(AfxGetApp()->LoadIconA(IDR_MAINFRAME),IDD_ABOUTBOX)
+CAboutDlg::CAboutDlg() : CEAFAboutDlg(AfxGetApp()->LoadIcon(IDR_MAINFRAME),IDD_ABOUTBOX)
 {
 	//{{AFX_DATA_INIT(CAboutDlg)
 	//}}AFX_DATA_INIT
@@ -484,9 +483,9 @@ BOOL CAboutDlg::OnInitDialog()
 	CEAFAboutDlg::OnInitDialog();
 	
 
-   m_WSDOT.SetURL("http://www.wsdot.wa.gov/");
-   m_TxDOT.SetURL("http://www.dot.state.tx.us/");
-   m_BridgeSight.SetURL("http://www.bridgesight.com/");
+   m_WSDOT.SetURL(_T("http://www.wsdot.wa.gov/"));
+   m_TxDOT.SetURL(_T("http://www.dot.state.tx.us/"));
+   m_BridgeSight.SetURL(_T("http://www.bridgesight.com/"));
 
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

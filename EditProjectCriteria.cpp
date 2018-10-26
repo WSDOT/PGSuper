@@ -31,7 +31,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnEditProjectCriteria::txnEditProjectCriteria(const char* strOldCriteria,const char* strNewCriteria)
+txnEditProjectCriteria::txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria)
 {
    m_strProjectCriteria[0] = strOldCriteria;
    m_strProjectCriteria[1] = strNewCriteria;
@@ -70,9 +70,9 @@ txnTransaction* txnEditProjectCriteria::CreateClone() const
    return new txnEditProjectCriteria(m_strProjectCriteria[0].c_str(),m_strProjectCriteria[1].c_str());
 }
 
-std::string txnEditProjectCriteria::Name() const
+std::_tstring txnEditProjectCriteria::Name() const
 {
-   return "Edit Design Criteria";
+   return _T("Edit Design Criteria");
 }
 
 bool txnEditProjectCriteria::IsUndoable()

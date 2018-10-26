@@ -122,7 +122,7 @@ HRESULT CShearZoneData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   if ( SUCCEEDED(pStrLoad->BeginUnit("ShearZoneData")) )
+   if ( SUCCEEDED(pStrLoad->BeginUnit(_T("ShearZoneData"))) )
    {
       Float64 version;
       pStrLoad->get_Version(&version);
@@ -133,25 +133,25 @@ HRESULT CShearZoneData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       if ( version < 2 )
       {
          var.vt = VT_I4;
-         if ( FAILED(pStrLoad->get_Property("ZoneNum",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("ZoneNum"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             ZoneNum = var.lVal;
 
          var.vt = VT_I2;
-         if ( FAILED(pStrLoad->get_Property("BarSize",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("BarSize"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             VertBarSize = var.iVal;
 
          var.vt = VT_R8;
-         if ( FAILED(pStrLoad->get_Property("BarSpacing",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("BarSpacing"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             BarSpacing = var.dblVal;
 
          var.vt = VT_R8;
-         if ( FAILED(pStrLoad->get_Property("ZoneLength",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("ZoneLength"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             ZoneLength = var.dblVal;
@@ -159,7 +159,7 @@ HRESULT CShearZoneData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          if ( 1.1 <= version )
          {
             var.vt = VT_I4;
-            if ( FAILED(pStrLoad->get_Property("NbrLegs",&var)) )
+            if ( FAILED(pStrLoad->get_Property(_T("NbrLegs"),&var)) )
                return STRLOAD_E_INVALIDFORMAT;
             else
                nVertBars = var.lVal;
@@ -175,43 +175,43 @@ HRESULT CShearZoneData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       else
       {
          var.vt = VT_I4;
-         if ( FAILED(pStrLoad->get_Property("ZoneNum",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("ZoneNum"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             ZoneNum = var.lVal;
 
          var.vt = VT_R8;
-         if ( FAILED(pStrLoad->get_Property("ZoneLength",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("ZoneLength"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             ZoneLength = var.dblVal;
 
          var.vt = VT_R8;
-         if ( FAILED(pStrLoad->get_Property("BarSpacing",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("BarSpacing"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             BarSpacing = var.dblVal;
 
          var.vt = VT_I2;
-         if ( FAILED(pStrLoad->get_Property("VertBarSize",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("VertBarSize"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             VertBarSize = var.iVal;
 
          var.vt = VT_I4;
-         if ( FAILED(pStrLoad->get_Property("VertBars",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("VertBars"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             nVertBars = var.lVal;
 
          var.vt = VT_I2;
-         if ( FAILED(pStrLoad->get_Property("HorzBarSize",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("HorzBarSize"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             HorzBarSize = var.iVal;
 
          var.vt = VT_I4;
-         if ( FAILED(pStrLoad->get_Property("HorzBars",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("HorzBars"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             nHorzBars = var.lVal;
@@ -233,14 +233,14 @@ HRESULT CShearZoneData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("ShearZoneData",2.0);
-   pStrSave->put_Property("ZoneNum",    _variant_t(ZoneNum) );
-   pStrSave->put_Property("ZoneLength", _variant_t(ZoneLength) );
-   pStrSave->put_Property("BarSpacing", _variant_t(BarSpacing) );
-   pStrSave->put_Property("VertBarSize",_variant_t(VertBarSize) );
-   pStrSave->put_Property("VertBars",   _variant_t(nVertBars) );
-   pStrSave->put_Property("HorzBarSize",_variant_t(HorzBarSize) );
-   pStrSave->put_Property("HorzBars",   _variant_t(nHorzBars) );
+   pStrSave->BeginUnit(_T("ShearZoneData"),2.0);
+   pStrSave->put_Property(_T("ZoneNum"),    _variant_t(ZoneNum) );
+   pStrSave->put_Property(_T("ZoneLength"), _variant_t(ZoneLength) );
+   pStrSave->put_Property(_T("BarSpacing"), _variant_t(BarSpacing) );
+   pStrSave->put_Property(_T("VertBarSize"),_variant_t(VertBarSize) );
+   pStrSave->put_Property(_T("VertBars"),   _variant_t(nVertBars) );
+   pStrSave->put_Property(_T("HorzBarSize"),_variant_t(HorzBarSize) );
+   pStrSave->put_Property(_T("HorzBars"),   _variant_t(nHorzBars) );
    pStrSave->EndUnit();
 
    return hr;

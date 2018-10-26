@@ -68,8 +68,8 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 {
    *pWriteNote = false; // 
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8," ");
-   table->TableLabel() << "Stirrup Detailing Check [5.8.2.5, 5.8.2.7, 5.10.3.1.2]";
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(" "));
+   table->TableLabel() << _T("Stirrup Detailing Check [5.8.2.5, 5.8.2.7, 5.10.3.1.2]");
   
    if ( span == ALL_SPANS )
    {
@@ -82,13 +82,13 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << "Bar Size";
-   (*table)(0,2)  << COLHDR("S",            rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,3)  << COLHDR("S"<<Sub("max"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4)  << COLHDR("S"<<Sub("min"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,5)  << COLHDR("A" << Sub("v")<<"/S" , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(0,6)  << COLHDR("A" << Sub("v")<<"/S"<<Sub("min") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(0,7)  << "Status";
+   (*table)(0,1)  << _T("Bar Size");
+   (*table)(0,2)  << COLHDR(_T("S"),            rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,3)  << COLHDR(_T("S")<<Sub(_T("max")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4)  << COLHDR(_T("S")<<Sub(_T("min")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,5)  << COLHDR(_T("A") << Sub(_T("v"))<<_T("/S") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,6)  << COLHDR(_T("A") << Sub(_T("v"))<<_T("/S")<<Sub(_T("min")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,7)  << _T("Status");
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptAreaPerLengthValue,      AvS,      pDisplayUnits->GetAvOverSUnit(),  false );
@@ -132,13 +132,13 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
       if (bs!=0)
          (*table)(row,1) << pool->GetRebar(bs)->GetName();
       else
-         (*table)(row,1) << "none";
+         (*table)(row,1) << _T("none");
 
       Float64 s = pArtifact->GetS();
       if (s>0)
          (*table)(row,2) << dim.SetValue(s);
       else
-         (*table)(row,2) << "-";
+         (*table)(row,2) << _T("-");
 
       (*table)(row,3) << dim.SetValue( pArtifact->GetSMax() );
       (*table)(row,4) << dim.SetValue( pArtifact->GetSMin() );
@@ -161,7 +161,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 
    if (*pWriteNote)
    {
-      (*table)(0,6)  << superscript(ON)<<"*"<<superscript(OFF);
+      (*table)(0,6)  << superscript(ON)<<_T("*")<<superscript(OFF);
    }
 
    return table;
@@ -195,7 +195,7 @@ bool CStirrupDetailingCheckTable::AssertValid() const
 
 void CStirrupDetailingCheckTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CStirrupDetailingCheckTable" << endl;
+   os << _T("Dump for CStirrupDetailingCheckTable") << endl;
 }
 #endif // _DEBUG
 

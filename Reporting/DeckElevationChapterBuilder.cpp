@@ -72,14 +72,14 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pPara << "Deck Elevations over Girder Webs" << rptNewLine;
+   *pPara << _T("Deck Elevations over Girder Webs") << rptNewLine;
    (*pChapter) << pPara;
 
    pPara = new rptParagraph();
    (*pChapter) << pPara;
-   *pPara << Bold("Notes") << rptNewLine;
-   *pPara << "Web Offsets are measured from and normal to the centerline girder" << rptNewLine;
-   *pPara << "Station, normal offset, and deck elevations are given for 10th points between bearings" << rptNewLine;
+   *pPara << Bold(_T("Notes")) << rptNewLine;
+   *pPara << _T("Web Offsets are measured from and normal to the centerline girder") << rptNewLine;
+   *pPara << _T("Station, normal offset, and deck elevations are given for 10th points between bearings") << rptNewLine;
 
    //
    // Bridge Elevation Table
@@ -98,8 +98,8 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    SpanIndexType nSpans = pBridge->GetSpanCount();
    for ( SpanIndexType span = 0; span < nSpans; span++ )
    {
-      std::ostringstream os;
-      os << "Span " << LABEL_SPAN(span) << std::endl;
+      std::_tostringstream os;
+      os << _T("Span ") << LABEL_SPAN(span) << std::endl;
       rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(14,os.str().c_str());
       (*pPara) << pTable << rptNewLine;
 
@@ -114,20 +114,20 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
       }
 
       col = 0;
-      (*pTable)(0,col++) << "Girder";
-      (*pTable)(0,col++) << "Web";
-      (*pTable)(0,col++) << "";
-      (*pTable)(0,col++) << "CL Brg";
-      (*pTable)(0,col++) << Sub2("0.1L","s");
-      (*pTable)(0,col++) << Sub2("0.2L","s");
-      (*pTable)(0,col++) << Sub2("0.3L","s");
-      (*pTable)(0,col++) << Sub2("0.4L","s");
-      (*pTable)(0,col++) << Sub2("0.5L","s");
-      (*pTable)(0,col++) << Sub2("0.6L","s");
-      (*pTable)(0,col++) << Sub2("0.7L","s");
-      (*pTable)(0,col++) << Sub2("0.8L","s");
-      (*pTable)(0,col++) << Sub2("0.9L","s");
-      (*pTable)(0,col++) << "CL Brg";
+      (*pTable)(0,col++) << _T("Girder");
+      (*pTable)(0,col++) << _T("Web");
+      (*pTable)(0,col++) << _T("");
+      (*pTable)(0,col++) << _T("CL Brg");
+      (*pTable)(0,col++) << Sub2(_T("0.1L"),_T("s"));
+      (*pTable)(0,col++) << Sub2(_T("0.2L"),_T("s"));
+      (*pTable)(0,col++) << Sub2(_T("0.3L"),_T("s"));
+      (*pTable)(0,col++) << Sub2(_T("0.4L"),_T("s"));
+      (*pTable)(0,col++) << Sub2(_T("0.5L"),_T("s"));
+      (*pTable)(0,col++) << Sub2(_T("0.6L"),_T("s"));
+      (*pTable)(0,col++) << Sub2(_T("0.7L"),_T("s"));
+      (*pTable)(0,col++) << Sub2(_T("0.8L"),_T("s"));
+      (*pTable)(0,col++) << Sub2(_T("0.9L"),_T("s"));
+      (*pTable)(0,col++) << _T("CL Brg");
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
       col = 0;
@@ -165,10 +165,10 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
             (*pTable)(row,col++) << (web+1) << rptNewLine;
 
-            (*pTable)(row,col)   << Bold("Web Offset (") << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(")");
-            (*pTable)(row+1,col) << Bold("Station");
-            (*pTable)(row+2,col) << Bold("Offset (") << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(")");
-            (*pTable)(row+3,col) << Bold("Elev (") << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(")");
+            (*pTable)(row,col)   << Bold(_T("Web Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(_T(")"));
+            (*pTable)(row+1,col) << Bold(_T("Station"));
+            (*pTable)(row+2,col) << Bold(_T("Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(_T(")"));
+            (*pTable)(row+3,col) << Bold(_T("Elev (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(_T(")"));
             
             col++;
 

@@ -174,7 +174,7 @@ int CBridgeModelViewChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CSplitChildFrame::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
-	this->SetWindowText("Bridge Model View");
+	this->SetWindowText(_T("Bridge Model View"));
 
 	return 0;
 }
@@ -184,24 +184,24 @@ void CBridgeModelViewChildFrame::CutAt(Float64 cut)
    UpdateCutLocation(cut);
 }
 
-const char* CBridgeModelViewChildFrame::GetDeckTypeName(pgsTypes::SupportedDeckType deckType) const
+LPCTSTR CBridgeModelViewChildFrame::GetDeckTypeName(pgsTypes::SupportedDeckType deckType) const
 {
    switch ( deckType )
    {
    case pgsTypes::sdtCompositeCIP:
-      return "Composite cast-in-place deck";
+      return _T("Composite cast-in-place deck");
 
    case pgsTypes::sdtCompositeSIP: 
-      return "Composite stay-in-place deck panels";
+      return _T("Composite stay-in-place deck panels");
 
    case pgsTypes::sdtCompositeOverlay:
-      return "Composite structural overlay";
+      return _T("Composite structural overlay");
 
    case pgsTypes::sdtNone:
-      return "None";
+      return _T("None");
    }
 
-   return "";
+   return _T("");
 }
 
 void CBridgeModelViewChildFrame::ShowCutDlg()
@@ -426,12 +426,12 @@ void CBridgeModelViewChildFrame::OnInsertSpan()
 	if ( pView->GetSelectedSpan(&spanIdx) )
    {
       CString strItems;
-      strItems.Format("Before Span %d\nAfter Span %d\n",LABEL_SPAN(spanIdx),LABEL_SPAN(spanIdx));
+      strItems.Format(_T("Before Span %d\nAfter Span %d\n"),LABEL_SPAN(spanIdx),LABEL_SPAN(spanIdx));
 
       CSelectItemDlg dlg;
       dlg.m_strItems = strItems;
-      dlg.m_strTitle = "Insert Span";
-      dlg.m_strLabel = "Select location to insert span";
+      dlg.m_strTitle = _T("Insert Span");
+      dlg.m_strLabel = _T("Select location to insert span");
       dlg.m_ItemIdx = 0;
 
       if ( dlg.DoModal() == IDOK )
@@ -476,15 +476,15 @@ void CBridgeModelViewChildFrame::OnInsertPier()
       const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
-      CString strPierType = (pierIdx == 0 || pierIdx == nPiers-1 ? "Abutment" : "Pier");
+      CString strPierType = (pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abutment") : _T("Pier"));
 
       CString strItems;
-      strItems.Format("After %s %d\nBefore %s %d\n",strPierType,(pierIdx+1),strPierType,(pierIdx+1));
+      strItems.Format(_T("After %s %d\nBefore %s %d\n"),strPierType,(pierIdx+1),strPierType,(pierIdx+1));
 
       CSelectItemDlg dlg;
       dlg.m_strItems = strItems;
-      dlg.m_strTitle = "Insert Span";
-      dlg.m_strLabel = "Select location to insert span";
+      dlg.m_strTitle = _T("Insert Span");
+      dlg.m_strLabel = _T("Select location to insert span");
       dlg.m_ItemIdx = 0;
 
       if ( dlg.DoModal() == IDOK )

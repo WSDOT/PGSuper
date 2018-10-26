@@ -47,7 +47,7 @@ CLASS
 ****************************************************************************/
 
 
-#define YCR(_details_) symbol(PSI) << "(" << time1.SetValue(_details_.t) << "," << time2.SetValue(_details_.ti) << ")"
+#define YCR(_details_) symbol(PSI) << _T("(") << time1.SetValue(_details_.t) << _T(",") << time2.SetValue(_details_.ti) << _T(")")
 #define DEFL(_f_) Sub2(symbol(DELTA),_f_)
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -146,16 +146,16 @@ rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* p
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
    if ( pBridge->IsFutureOverlay() )
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_CIP_TempStrands_FutureOverlay.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_CIP_TempStrands_FutureOverlay.gif")) << rptNewLine;
    else
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_CIP_TempStrands.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_CIP_TempStrands.gif")) << rptNewLine;
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? "Minimum Timing" : "Maximum Timing") << rptNewLine;
+      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -172,33 +172,33 @@ rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* p
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g") << " is based the girder length and measured relative to the end of the girder" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s") << " is based the final span length and measured relative to the final bearing location" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"girder") << " is based on final span length and " << RPT_ECI << rptNewLine;
-      *pPara << DEFL("creep1") << " = " << YCR(details[0]) << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << " + " << DEFL("tpsi") << ")" << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")) << _T(" is based the girder length and measured relative to the end of the girder") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" is based the final span length and measured relative to the final bearing location") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("girder")) << _T(" is based on final span length and ") << RPT_ECI << rptNewLine;
+      *pPara << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" + ") << DEFL(_T("tpsi")) << _T(")") << rptNewLine;
 
       *pPara << pTable2 << rptNewLine;
-      *pPara << DEFL("creep2") << " = " << "[" << YCR(details[1]);
-      *pPara << " - " << YCR(details[0]) << "]" << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << " + " << DEFL("tpsi") << ")";
-      *pPara << " + " << YCR(details[2]) << "(" << DEFL("diaphragm") << " + " << DEFL("tpsr") << ")" << rptNewLine;
+      *pPara << DEFL(_T("creep2")) << _T(" = ") << _T("[") << YCR(details[1]);
+      *pPara << _T(" - ") << YCR(details[0]) << _T("]") << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" + ") << DEFL(_T("tpsi")) << _T(")");
+      *pPara << _T(" + ") << YCR(details[2]) << _T("(") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("tpsr")) << _T(")") << rptNewLine;
 
       *pPara << pTable3 << rptNewLine;
-      *pPara << DEFL("1") << " = " << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << " + " << DEFL("tpsi") << rptNewLine;
-      *pPara << DEFL("2") << " = " << DEFL("1") << " + " << DEFL("creep1") << rptNewLine;
-      *pPara << DEFL("3") << " = " << DEFL("2") << " + " << DEFL("diaphragm") << " + " << DEFL("tpsr") << rptNewLine;
-      *pPara << DEFL("4") << " = " << DEFL("3") << " + " << DEFL("creep2") << rptNewLine;
-      *pPara << DEFL("5") << " = " << DEFL("4") << " + " << DEFL("deck") << " + " << DEFL("user1") << rptNewLine;
+      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" + ") << DEFL(_T("tpsi")) << rptNewLine;
+      *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << DEFL(_T("creep1")) << rptNewLine;
+      *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("tpsr")) << rptNewLine;
+      *pPara << DEFL(_T("4")) << _T(" = ") << DEFL(_T("3")) << _T(" + ") << DEFL(_T("creep2")) << rptNewLine;
+      *pPara << DEFL(_T("5")) << _T(" = ") << DEFL(_T("4")) << _T(" + ") << DEFL(_T("deck")) << _T(" + ") << DEFL(_T("user1")) << rptNewLine;
 
-      *pPara << DEFL("6") << " = " << DEFL("5");
+      *pPara << DEFL(_T("6")) << _T(" = ") << DEFL(_T("5"));
       if ( bSidewalk )
-         *pPara << " + " << DEFL("sidewalk");
+         *pPara << _T(" + ") << DEFL(_T("sidewalk"));
 
-      *pPara << " + " << DEFL("barrier");
+      *pPara << _T(" + ") << DEFL(_T("barrier"));
 
       if ( !pBridge->IsFutureOverlay() )
-         *pPara << " + " << DEFL("overlay");
+         *pPara << _T(" + ") << DEFL(_T("overlay"));
 
-      *pPara << " + " << DEFL("user2") << rptNewLine;
+      *pPara << _T(" + ") << DEFL(_T("user2")) << rptNewLine;
 
       *pPara << rptNewLine;
    }
@@ -225,16 +225,16 @@ rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBro
    *pChapter << pPara;
 
    if ( pBridge->IsFutureOverlay() )
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_CIP_FutureOverlay.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_CIP_FutureOverlay.gif")) << rptNewLine;
    else
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_CIP.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_CIP.gif")) << rptNewLine;
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? "Minimum Timing" : "Maximum Timing") << rptNewLine;
+      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -250,28 +250,28 @@ rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBro
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g") << " is based the girder length and measured relative to the end of the girder" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s") << " is based the final span length and measured relative to the final bearing location" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"girder") << " is based on final span length and " << RPT_ECI << rptNewLine;
-      *pPara << DEFL("creep") << " = " << YCR(details[0]) << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << ")" << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")) << _T(" is based the girder length and measured relative to the end of the girder") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" is based the final span length and measured relative to the final bearing location") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("girder")) << _T(" is based on final span length and ") << RPT_ECI << rptNewLine;
+      *pPara << DEFL(_T("creep")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(")") << rptNewLine;
 
       *pPara << pTable2 << rptNewLine;
 
       *pPara << pTable3 << rptNewLine;
-      *pPara << DEFL("1") << " = " << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << rptNewLine;
-      *pPara << DEFL("2") << " = " << DEFL("1") << " + " << DEFL("creep") << rptNewLine;
-      *pPara << DEFL("3") << " = " << DEFL("2") << " + " << DEFL("diaphragm")<< " + " << DEFL("deck") << " + " << DEFL("user1") << rptNewLine;
-      *pPara << DEFL("4") << " = " << DEFL("3");
+      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << rptNewLine;
+      *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << DEFL(_T("creep")) << rptNewLine;
+      *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << DEFL(_T("diaphragm"))<< _T(" + ") << DEFL(_T("deck")) << _T(" + ") << DEFL(_T("user1")) << rptNewLine;
+      *pPara << DEFL(_T("4")) << _T(" = ") << DEFL(_T("3"));
 
       if ( bSidewalk )
-         *pPara << " + " << DEFL("sidewalk");
+         *pPara << _T(" + ") << DEFL(_T("sidewalk"));
 
-      *pPara << " + " << DEFL("barrier");
+      *pPara << _T(" + ") << DEFL(_T("barrier"));
 
       if ( !pBridge->IsFutureOverlay() )
-         *pPara << " + " << DEFL("overlay");
+         *pPara << _T(" + ") << DEFL(_T("overlay"));
       
-      *pPara << " + " << DEFL("user2") << rptNewLine;
+      *pPara << _T(" + ") << DEFL(_T("user2")) << rptNewLine;
 
 
       *pPara << rptNewLine;
@@ -299,16 +299,16 @@ rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* p
    *pChapter << pPara;
 
    if ( pBridge->IsFutureOverlay() )
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_SIP_TempStrands_FutureOverlay.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_SIP_TempStrands_FutureOverlay.gif")) << rptNewLine;
    else
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_SIP_TempStrands.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_SIP_TempStrands.gif")) << rptNewLine;
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? "Minimum Timing" : "Maximum Timing") << rptNewLine;
+      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -325,33 +325,33 @@ rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* p
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g") << " is based the girder length and measured relative to the end of the girder" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s") << " is based the final span length and measured relative to the final bearing location" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"girder") << " is based on final span length and " << RPT_ECI << rptNewLine;
-      *pPara << DEFL("creep1") << " = " << YCR(details[0]) << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << " + " << DEFL("tpsi") << ")" << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")) << _T(" is based the girder length and measured relative to the end of the girder") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" is based the final span length and measured relative to the final bearing location") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("girder")) << _T(" is based on final span length and ") << RPT_ECI << rptNewLine;
+      *pPara << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" + ") << DEFL(_T("tpsi")) << _T(")") << rptNewLine;
 
       *pPara << pTable2 << rptNewLine;
-      *pPara << DEFL("creep2") << " = " << "[" << YCR(details[1]);
-      *pPara << " - " << YCR(details[0]) << "]" << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << " + " << DEFL("tpsi") << ")";
-      *pPara << " + " << YCR(details[2]) << "(" << DEFL("diaphragm") << " + " << DEFL("tpsr") << ")" << rptNewLine;
+      *pPara << DEFL(_T("creep2")) << _T(" = ") << _T("[") << YCR(details[1]);
+      *pPara << _T(" - ") << YCR(details[0]) << _T("]") << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" + ") << DEFL(_T("tpsi")) << _T(")");
+      *pPara << _T(" + ") << YCR(details[2]) << _T("(") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("tpsr")) << _T(")") << rptNewLine;
 
       *pPara << pTable3 << rptNewLine;
-      *pPara << DEFL("1") << " = " << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << " + " << DEFL("tpsi") << rptNewLine;
-      *pPara << DEFL("2") << " = " << DEFL("1") << " + " << DEFL("creep1") << rptNewLine;
-      *pPara << DEFL("3") << " = " << DEFL("2") << " + " << DEFL("diaphragm") << " + " << DEFL("tpsr") << " + " << DEFL("panels")  << rptNewLine;
-      *pPara << DEFL("4") << " = " << DEFL("3") << " + " << DEFL("creep2") << rptNewLine;
-      *pPara << DEFL("5") << " = " << DEFL("4")<< " + " << DEFL("deck") << " + " << DEFL("user1") << rptNewLine;
-      *pPara << DEFL("6") << " = " << DEFL("5");
+      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" + ") << DEFL(_T("tpsi")) << rptNewLine;
+      *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << DEFL(_T("creep1")) << rptNewLine;
+      *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("tpsr")) << _T(" + ") << DEFL(_T("panels"))  << rptNewLine;
+      *pPara << DEFL(_T("4")) << _T(" = ") << DEFL(_T("3")) << _T(" + ") << DEFL(_T("creep2")) << rptNewLine;
+      *pPara << DEFL(_T("5")) << _T(" = ") << DEFL(_T("4"))<< _T(" + ") << DEFL(_T("deck")) << _T(" + ") << DEFL(_T("user1")) << rptNewLine;
+      *pPara << DEFL(_T("6")) << _T(" = ") << DEFL(_T("5"));
 
       if ( bSidewalk )
-         *pPara << " + " << DEFL("sidewalk");
+         *pPara << _T(" + ") << DEFL(_T("sidewalk"));
       
-      *pPara << " + " << DEFL("barrier");
+      *pPara << _T(" + ") << DEFL(_T("barrier"));
    
       if ( !pBridge->IsFutureOverlay() )
-         *pPara << " + " << DEFL("overlay") << rptNewLine;
+         *pPara << _T(" + ") << DEFL(_T("overlay")) << rptNewLine;
 
-      *pPara << " + " << DEFL("user2") << rptNewLine;
+      *pPara << _T(" + ") << DEFL(_T("user2")) << rptNewLine;
 
       *pPara << rptNewLine;
    }
@@ -377,16 +377,16 @@ rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBro
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
    if (pBridge->IsFutureOverlay() )
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_SIP.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_SIP.gif")) << rptNewLine;
    else
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_SIP_FutureOverlay.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_SIP_FutureOverlay.gif")) << rptNewLine;
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? "Minimum Timing" : "Maximum Timing") << rptNewLine;
+      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -402,28 +402,28 @@ rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBro
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g") << " is based the girder length and measured relative to the end of the girder" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s") << " is based the final span length and measured relative to the final bearing location" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"girder") << " is based on final span length and " << RPT_ECI << rptNewLine;
-      *pPara << DEFL("creep") << " = " << YCR(details[0]) << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << ")" << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")) << _T(" is based the girder length and measured relative to the end of the girder") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" is based the final span length and measured relative to the final bearing location") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("girder")) << _T(" is based on final span length and ") << RPT_ECI << rptNewLine;
+      *pPara << DEFL(_T("creep")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(")") << rptNewLine;
 
       *pPara << pTable2 << rptNewLine;
 
       *pPara << pTable3 << rptNewLine;
-      *pPara << DEFL("1") << " = " << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << rptNewLine;
-      *pPara << DEFL("2") << " = " << DEFL("1") << " + " << DEFL("creep") << rptNewLine;
-      *pPara << DEFL("3") << " = " << DEFL("2") << " + " << DEFL("diaphragm") << " + " << DEFL("panel") << rptNewLine;
-      *pPara << DEFL("4") << " = " << DEFL("3") << " + " << DEFL("deck") << " + " << DEFL("user1");
+      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << rptNewLine;
+      *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << DEFL(_T("creep")) << rptNewLine;
+      *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("panel")) << rptNewLine;
+      *pPara << DEFL(_T("4")) << _T(" = ") << DEFL(_T("3")) << _T(" + ") << DEFL(_T("deck")) << _T(" + ") << DEFL(_T("user1"));
       
       if ( bSidewalk )
-         *pPara << " + " << DEFL("sidewalk");
+         *pPara << _T(" + ") << DEFL(_T("sidewalk"));
 
-      *pPara << " + " << DEFL("barrier");
+      *pPara << _T(" + ") << DEFL(_T("barrier"));
 
       if ( !pBridge->IsFutureOverlay() )
-         *pPara << " + " << DEFL("overlay") << rptNewLine;
+         *pPara << _T(" + ") << DEFL(_T("overlay")) << rptNewLine;
 
-      *pPara << " + " << DEFL("user2") << rptNewLine;
+      *pPara << _T(" + ") << DEFL(_T("user2")) << rptNewLine;
 
       *pPara << rptNewLine;
    }
@@ -449,16 +449,16 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
    if ( pBridge->IsFutureOverlay() )
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_NoDeck_TempStrands_FutureOverlay.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_NoDeck_TempStrands_FutureOverlay.gif")) << rptNewLine;
    else
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_NoDeck_TempStrands.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_NoDeck_TempStrands.gif")) << rptNewLine;
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? "Minimum Timing" : "Maximum Timing") << rptNewLine;
+      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -478,42 +478,42 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g") << " is based the girder length and measured relative to the end of the girder" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s") << " is based the final span length and measured relative to the final bearing location" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"girder") << " is based on final span length and " << RPT_ECI << rptNewLine;
-      *pPara << DEFL("creep1") << " = " << YCR(details[0]) << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << " + " << DEFL("tpsi") << ")" << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")) << _T(" is based the girder length and measured relative to the end of the girder") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" is based the final span length and measured relative to the final bearing location") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("girder")) << _T(" is based on final span length and ") << RPT_ECI << rptNewLine;
+      *pPara << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" + ") << DEFL(_T("tpsi")) << _T(")") << rptNewLine;
 
       *pPara << pTable2 << rptNewLine;
-      *pPara << DEFL("creep2") << " = " << "[" << YCR(details[1]);
-      *pPara << " - " << YCR(details[0]) << "]" << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << ")";
-      *pPara << " + " << YCR(details[3]) << "(" << DEFL("diaphragm") << " + " << DEFL("tpsr") << ")" << rptNewLine;
+      *pPara << DEFL(_T("creep2")) << _T(" = ") << _T("[") << YCR(details[1]);
+      *pPara << _T(" - ") << YCR(details[0]) << _T("]") << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(")");
+      *pPara << _T(" + ") << YCR(details[3]) << _T("(") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("tpsr")) << _T(")") << rptNewLine;
       
       *pPara << rptNewLine;
 
-      *pPara << DEFL("creep3") << " = " << "[" << YCR(details[2]);
-      *pPara << " - " << YCR(details[1]) << "]" << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << ")";
-      *pPara << " + [" << YCR(details[4]);
-      *pPara << " - " << YCR(details[3]) << "](" << DEFL("diaphragm") << " + " << DEFL("tpsr") << ")";
-      *pPara << " + " << YCR(details[5]) << "(" << DEFL("barrier") << " + " << DEFL("overlay") << " + " << DEFL("user2") << ")" << rptNewLine;
+      *pPara << DEFL(_T("creep3")) << _T(" = ") << _T("[") << YCR(details[2]);
+      *pPara << _T(" - ") << YCR(details[1]) << _T("]") << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(")");
+      *pPara << _T(" + [") << YCR(details[4]);
+      *pPara << _T(" - ") << YCR(details[3]) << _T("](") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("tpsr")) << _T(")");
+      *pPara << _T(" + ") << YCR(details[5]) << _T("(") << DEFL(_T("barrier")) << _T(" + ") << DEFL(_T("overlay")) << _T(" + ") << DEFL(_T("user2")) << _T(")") << rptNewLine;
 
       *pPara << pTable3 << rptNewLine;
-      *pPara << DEFL("1") << " = " << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << " + " << DEFL("tpsi") << rptNewLine;
-      *pPara << DEFL("2") << " = " << DEFL("1") << " + " << DEFL("creep1") << rptNewLine;
-      *pPara << DEFL("3") << " = " << DEFL("2") << " + " << DEFL("diaphragm") << " + " << DEFL("tpsr")  << " + " << DEFL("user1") << rptNewLine;
-      *pPara << DEFL("4") << " = " << DEFL("3") << " + " << DEFL("creep2") << rptNewLine;
-      *pPara << DEFL("5") << " = " << DEFL("4");
+      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" + ") << DEFL(_T("tpsi")) << rptNewLine;
+      *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << DEFL(_T("creep1")) << rptNewLine;
+      *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("tpsr"))  << _T(" + ") << DEFL(_T("user1")) << rptNewLine;
+      *pPara << DEFL(_T("4")) << _T(" = ") << DEFL(_T("3")) << _T(" + ") << DEFL(_T("creep2")) << rptNewLine;
+      *pPara << DEFL(_T("5")) << _T(" = ") << DEFL(_T("4"));
       
       if ( bSidewalk )
-         *pPara << " + " << DEFL("sidewalk");
+         *pPara << _T(" + ") << DEFL(_T("sidewalk"));
 
-      *pPara << " + " << DEFL("barrier");
+      *pPara << _T(" + ") << DEFL(_T("barrier"));
 
       if ( !pBridge->IsFutureOverlay() )
-         *pPara << " + " << DEFL("overlay");
+         *pPara << _T(" + ") << DEFL(_T("overlay"));
 
-      *pPara << " + " << DEFL("user2") << rptNewLine;
+      *pPara << _T(" + ") << DEFL(_T("user2")) << rptNewLine;
 
-      *pPara << DEFL("6") << " = " << DEFL("5") << " + " << DEFL("creep3") << rptNewLine;
+      *pPara << DEFL(_T("6")) << _T(" = ") << DEFL(_T("5")) << _T(" + ") << DEFL(_T("creep3")) << rptNewLine;
 
       *pPara << rptNewLine;
    }
@@ -540,16 +540,16 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,I
    *pChapter << pPara;
 
    if ( pBridge->IsFutureOverlay() )
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_NoDeck_FutureOverlay.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_NoDeck_FutureOverlay.gif")) << rptNewLine;
    else
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Camber_NoDeck.gif") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_NoDeck.gif")) << rptNewLine;
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? "Minimum Timing" : "Maximum Timing") << rptNewLine;
+      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -569,42 +569,42 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,I
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g") << " is based the girder length and measured relative to the end of the girder" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s") << " is based the final span length and measured relative to the final bearing location" << rptNewLine;
-      *pPara << Sub2(symbol(DELTA),"girder") << " is based on final span length and " << RPT_ECI << rptNewLine;
-      *pPara << DEFL("creep1") << " = " << YCR(details[0]) << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << ")" << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")) << _T(" is based the girder length and measured relative to the end of the girder") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(" is based the final span length and measured relative to the final bearing location") << rptNewLine;
+      *pPara << Sub2(symbol(DELTA),_T("girder")) << _T(" is based on final span length and ") << RPT_ECI << rptNewLine;
+      *pPara << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(")") << rptNewLine;
 
       *pPara << pTable2 << rptNewLine;
-      *pPara << DEFL("creep2") << " = " << "[" << YCR(details[1]);
-      *pPara << " - " << YCR(details[0]) << "]" << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << ")";
-      *pPara << " + " << YCR(details[3]) << "(" << DEFL("diaphragm") << " + " << DEFL("user1") << ")" << rptNewLine;
+      *pPara << DEFL(_T("creep2")) << _T(" = ") << _T("[") << YCR(details[1]);
+      *pPara << _T(" - ") << YCR(details[0]) << _T("]") << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(")");
+      *pPara << _T(" + ") << YCR(details[3]) << _T("(") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("user1")) << _T(")") << rptNewLine;
       
       *pPara << rptNewLine;
 
-      *pPara << DEFL("creep3") << " = " << "[" << YCR(details[2]);
-      *pPara << " - " << YCR(details[1]) << "]" << "(" << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << ")";
-      *pPara << " + [" << YCR(details[4]);
-      *pPara << " - " << YCR(details[3]) << "](" << DEFL("diaphragm") << " + " << DEFL("user1") << ")";
-      *pPara << " + " << YCR(details[5]) << "(" << DEFL("barrier") << " + " << DEFL("overlay") << " + " << DEFL("user2") << ")" << rptNewLine;
+      *pPara << DEFL(_T("creep3")) << _T(" = ") << _T("[") << YCR(details[2]);
+      *pPara << _T(" - ") << YCR(details[1]) << _T("]") << _T("(") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << _T(")");
+      *pPara << _T(" + [") << YCR(details[4]);
+      *pPara << _T(" - ") << YCR(details[3]) << _T("](") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("user1")) << _T(")");
+      *pPara << _T(" + ") << YCR(details[5]) << _T("(") << DEFL(_T("barrier")) << _T(" + ") << DEFL(_T("overlay")) << _T(" + ") << DEFL(_T("user2")) << _T(")") << rptNewLine;
 
       *pPara << pTable3 << rptNewLine;
-      *pPara << DEFL("1") << " = " << DEFL("girder") << " + " << DEFL("ps") << " " << Sub2("L","s") << rptNewLine;
-      *pPara << DEFL("2") << " = " << DEFL("1") << " + " << DEFL("creep1") << rptNewLine;
-      *pPara << DEFL("3") << " = " << DEFL("2") << " + " << DEFL("diaphragm") << " + " << DEFL("user1") << rptNewLine;
-      *pPara << DEFL("4") << " = " << DEFL("3") << " + " << DEFL("creep2") << rptNewLine;
-      *pPara << DEFL("5") << " = " << DEFL("4");
+      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")) << rptNewLine;
+      *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << DEFL(_T("creep1")) << rptNewLine;
+      *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("user1")) << rptNewLine;
+      *pPara << DEFL(_T("4")) << _T(" = ") << DEFL(_T("3")) << _T(" + ") << DEFL(_T("creep2")) << rptNewLine;
+      *pPara << DEFL(_T("5")) << _T(" = ") << DEFL(_T("4"));
 
       if ( bSidewalk )
-         *pPara << " + " << DEFL("sidewalk");
+         *pPara << _T(" + ") << DEFL(_T("sidewalk"));
 
-      *pPara << " + " << DEFL("barrier");
+      *pPara << _T(" + ") << DEFL(_T("barrier"));
 
       if ( !pBridge->IsFutureOverlay() )
-         *pPara << " + " << DEFL("overlay");
+         *pPara << _T(" + ") << DEFL(_T("overlay"));
 
-      *pPara << " + " << DEFL("user2") << rptNewLine;
+      *pPara << _T(" + ") << DEFL(_T("user2")) << rptNewLine;
 
-      *pPara << DEFL("6") << " = " << DEFL("5") << " + " << DEFL("creep3") << rptNewLine;
+      *pPara << DEFL(_T("6")) << _T(" = ") << DEFL(_T("5")) << _T(" + ") << DEFL(_T("creep3")) << rptNewLine;
 
       *pPara << rptNewLine;
    }

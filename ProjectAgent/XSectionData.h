@@ -88,10 +88,10 @@ public:
    GirderIndexType GdrLineCount;
    Float64 GdrSpacing;
    MeasurementType GdrSpacingMeasurement;
-   std::string Girder; // name of girder from library
+   std::_tstring Girder; // name of girder from library
    pgsTypes::GirderOrientationType GirderOrientation;
-   std::string LeftTrafficBarrier; // name of traffic barrier from library
-   std::string RightTrafficBarrier; // name of traffic barrier from library
+   std::_tstring LeftTrafficBarrier; // name of traffic barrier from library
+   std::_tstring RightTrafficBarrier; // name of traffic barrier from library
 
    pgsTypes::SupportedDeckType DeckType;
    pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity; // only used if SupportedBeamSpacing==sbsUniformAdjacent or sbsGeneralAdjacent
@@ -107,7 +107,7 @@ public:
                          // for horizontal shear capacity)
 
    // Slab Concrete Material
-   std::string m_strGirderConcreteName; // in version 3 data block, concrete was defined by name
+   std::_tstring m_strGirderConcreteName; // in version 3 data block, concrete was defined by name
                                         // capture it here and then pass it on to the CGirderData
                                         // class load function so it can deal with it
    Float64 SlabFc;

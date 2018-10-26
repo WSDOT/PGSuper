@@ -286,7 +286,7 @@ public:
 	}
 
 
-	HRESULT Fire_LiveLoadNameChanged(const char* strOldName,const char* strNewName)
+	HRESULT Fire_LiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName)
 	{
 		T* pT = (T*)this;
       

@@ -64,7 +64,7 @@ void CPGSuperCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLa
    if ( bFlag )
    {
       // Parameter is a flag (-flag or /flag)
-      if ( strParam.CompareNoCase("TestR") == 0 )
+      if ( strParam.CompareNoCase(_T("TestR")) == 0 )
       {
          // Run the full 12-50 regression tests suite
          m_SubdomainId = RUN_REGRESSION;
@@ -72,7 +72,7 @@ void CPGSuperCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLa
          m_bCommandLineMode = true;
          bMyParameter       = true;
       }
-      else if ( strParam.Left(4).CompareNoCase("Test") == 0 )
+      else if ( strParam.Left(4).CompareNoCase(_T("Test")) == 0 )
       {
          // Could be a sub-domain 12-50 test
 
@@ -88,7 +88,7 @@ void CPGSuperCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLa
             bMyParameter       = true;
          }
       }
-      else if ( strParam.Left(6).CompareNoCase("SetLib") == 0 )
+      else if ( strParam.Left(6).CompareNoCase(_T("SetLib")) == 0 )
       {
          // Set to server/library and update
          // parse server and publisher name
@@ -110,7 +110,7 @@ void CPGSuperCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLa
 
          if (m_bError==TRUE)
          {
-            AfxMessageBox("Error parsing SetLib command - correct format is /SetLib=ServerName:PublisherName");
+            AfxMessageBox(_T("Error parsing SetLib command - correct format is /SetLib=ServerName:PublisherName"));
             return;
          }
 
@@ -127,17 +127,17 @@ void CPGSuperCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLa
 CString CPGSuperCommandLineInfo::GetUsageMessage()
 {
    CString strMsg;
-   strMsg.Format("PGSuper filename.pgs\nPGSuper /TestR filename.pgs\nPGSuper /Test[n] filename.pgs\n\nPGSuper extensions may offer additional command line options. Refer to the user documentation for details.");
+   strMsg.Format(_T("PGSuper filename.pgs\nPGSuper /TestR filename.pgs\nPGSuper /Test[n] filename.pgs\n\nPGSuper extensions may offer additional command line options. Refer to the user documentation for details."));
    return strMsg;
 }
 
 CString CPGSuperCommandLineInfo::GetErrorMessage()
 {
    CString strMsg;
-   strMsg.Format("PGSuper was started with invalid command line options. Valid command line options are:\n%s\n%s\n\n%s",
-      "PGSuper filename.pgs",
-      "PGSuper /TestR filename.pgs",
-      "PGSuper /SetLib=ServerName:PublisherName",
-      "See Command Line Options in the PGSuper User Guide for more information");
+   strMsg.Format(_T("PGSuper was started with invalid command line options. Valid command line options are:\n%s\n%s\n\n%s"),
+      _T("PGSuper filename.pgs"),
+      _T("PGSuper /TestR filename.pgs"),
+      _T("PGSuper /SetLib=ServerName:PublisherName"),
+      _T("See Command Line Options in the PGSuper User Guide for more information"));
    return strMsg;
 }

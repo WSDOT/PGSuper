@@ -39,9 +39,9 @@ txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,CPGSu
    m_ConnectionType[1] = newBC;
 }
 
-std::string txnEditBoundaryConditions::Name() const
+std::_tstring txnEditBoundaryConditions::Name() const
 {
-   return "Change Boundary Conditions";
+   return _T("Change Boundary Conditions");
 }
 
 txnTransaction* txnEditBoundaryConditions::CreateClone() const

@@ -35,7 +35,7 @@
 IMPLEMENT_DYNAMIC(CRatingOptionsDlg, CPropertySheet)
 
 CRatingOptionsDlg::CRatingOptionsDlg(CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet("Load Rating Options", pParentWnd, iSelectPage)
+	:CPropertySheet(_T("Load Rating Options"), pParentWnd, iSelectPage)
 {
    Init();
 }
@@ -54,12 +54,12 @@ void CRatingOptionsDlg::GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitStat
    Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,m_GeneralPage.m_Data.ADTT,pRatingEntry,true);
    if ( gLL < 0 )
    {
-      AfxFormatString1(strTip,IDS_LIVE_LOAD_FACTOR_TOOLTIP,"The live load factor is a function of the axle weights on the bridge");
+      AfxFormatString1(strTip,IDS_LIVE_LOAD_FACTOR_TOOLTIP,_T("The live load factor is a function of the axle weights on the bridge"));
    }
    else
    {
       CString strLF;
-      strLF.Format("The computed live load factor is %0.2f",gLL);
+      strLF.Format(_T("The computed live load factor is %0.2f"),gLL);
       AfxFormatString1(strTip,IDS_LIVE_LOAD_FACTOR_TOOLTIP,strLF);
    }
 }

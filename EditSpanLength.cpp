@@ -52,9 +52,9 @@ txnTransaction* txnEditSpanLength::CreateClone() const
    return new txnEditSpanLength(m_SpanIdx,m_SpanLength[0],m_SpanLength[1]);
 }
 
-std::string txnEditSpanLength::Name() const
+std::_tstring txnEditSpanLength::Name() const
 {
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Edit Length of Span " << LABEL_SPAN(m_SpanIdx);
    return os.str();
 }

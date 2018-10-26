@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00     1     2 U54G5  *    50   5/8  270 17.01  6.21  12 50.0  4.600  6.100    5.029   -3.464   9089  0.557  0.773  0.28 -0.16 -0.01 -0.01 -0.19 184.28 420.00   1.75   5.00   5.00
+ 34.25   4  8.00     1     2 U54G5  *    50   5/8  270 17.01  6.21  12 50.0  4.600  5.900    5.019   -3.461   9081  0.557  0.773  0.28 -0.17 -0.01 -0.01 -0.19 184.28 416.48   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

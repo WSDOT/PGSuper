@@ -65,7 +65,7 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
                                                pgsTypes::Stage stage,
                                                pgsTypes::LimitState ls,bool& bStrutAndTieRequired) const
 {
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6," ");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6,_T(" "));
 
    if ( span == ALL_SPANS )
    {
@@ -74,20 +74,20 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
    }
 
    if (ls==pgsTypes::StrengthI)
-      table->TableLabel() << "Ultimate Shears for Strength I Limit State for Bridge Site Stage 3 [5.8]";
+      table->TableLabel() << _T("Ultimate Shears for Strength I Limit State for Bridge Site Stage 3 [5.8]");
    else
-      table->TableLabel() << "Ultimate Shears for Strength II Limit State for Bridge Site Stage 3 [5.8]";
+      table->TableLabel() << _T("Ultimate Shears for Strength II Limit State for Bridge Site Stage 3 [5.8]");
   
    if ( stage == pgsTypes::CastingYard )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1) << "Stirrups" << rptNewLine << "Required";
-   (*table)(0,2) << "Stirrups" << rptNewLine << "Provided";
-   (*table)(0,3)  << COLHDR("|V" << Sub("u") << "|", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,4) << COLHDR(symbol(phi) << "V" << Sub("n"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,5) << "Status" << rptNewLine << "(" << symbol(phi) << Sub2("V","n") << "/" << Sub2("V","u") << ")";
+   (*table)(0,1) << _T("Stirrups") << rptNewLine << _T("Required");
+   (*table)(0,2) << _T("Stirrups") << rptNewLine << _T("Provided");
+   (*table)(0,3)  << COLHDR(_T("|V") << Sub(_T("u")) << _T("|"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,4) << COLHDR(symbol(phi) << _T("V") << Sub(_T("n")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,5) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("V"),_T("n")) << _T("/") << Sub2(_T("V"),_T("u")) << _T(")");
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDisplayUnits->GetShearUnit(),        false );
@@ -127,8 +127,8 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
 
       const pgsVerticalShearArtifact* pArtifact = psArtifact->GetVerticalShearArtifact();
 
-      (*table)(row,1) << (pArtifact->GetAreStirrupsReqd()     ? "Yes" : "No");
-      (*table)(row,2) << (pArtifact->GetAreStirrupsProvided() ? "Yes" : "No");
+      (*table)(row,1) << (pArtifact->GetAreStirrupsReqd()     ? _T("Yes") : _T("No"));
+      (*table)(row,2) << (pArtifact->GetAreStirrupsProvided() ? _T("Yes") : _T("No"));
 
       Float64 Vu;
       Float64 Vr;
@@ -144,13 +144,13 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
       {
          if ( pArtifact->IsStrutAndTieRequired( poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd ) )
          {
-            (*table)(row,3) << "*";
-            (*table)(row,4) << "*";
+            (*table)(row,3) << _T("*");
+            (*table)(row,4) << _T("*");
          }
          else
          {
-            (*table)(row,3) << "$";
-            (*table)(row,4) << "$";
+            (*table)(row,3) << _T("$");
+            (*table)(row,4) << _T("$");
          }
       }
 
@@ -162,13 +162,13 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
          else
             (*table)(row,5) << RPT_FAIL;
 
-         (*table)(row,5) << rptNewLine << "(" << cap_demand.SetValue(Vr,Vu,bPassed) << ")";
+         (*table)(row,5) << rptNewLine << _T("(") << cap_demand.SetValue(Vr,Vu,bPassed) << _T(")");
       }
       else
       {
          if ( pArtifact->IsStrutAndTieRequired(poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd) )
          {
-            (*table)(row,5) << "*";
+            (*table)(row,5) << RPT_FAIL << _T(" (*)");
          }
          else
          {
@@ -215,7 +215,7 @@ bool CShearCheckTable::AssertValid() const
 
 void CShearCheckTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CShearCheckTable" << endl;
+   os << _T("Dump for CShearCheckTable") << endl;
 }
 #endif // _DEBUG
 

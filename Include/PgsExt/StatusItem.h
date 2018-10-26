@@ -33,7 +33,7 @@
 class PGSEXTCLASS pgsRefinedAnalysisStatusItem : public CEAFStatusItem
 {
 public:
-   pgsRefinedAnalysisStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsRefinedAnalysisStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 };
 
@@ -53,9 +53,9 @@ private:
 class PGSEXTCLASS pgsInstallationErrorStatusItem : public CEAFStatusItem
 {
 public:
-   pgsInstallationErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strComponent,const char* strDescription);
+   pgsInstallationErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strComponent,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
-   std::string m_Component;
+   std::_tstring m_Component;
 };
 
 ///////////////////////////
@@ -71,9 +71,9 @@ public:
 class PGSEXTCLASS pgsUnknownErrorStatusItem : public CEAFStatusItem
 {
 public:
-   pgsUnknownErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* file,long line,const char* strDescription);
+   pgsUnknownErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR file,long line,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
-   std::string m_File;
+   std::_tstring m_File;
    long m_Line;
 };
 
@@ -90,7 +90,7 @@ public:
 class PGSEXTCLASS pgsInformationalStatusItem : public CEAFStatusItem
 {
 public:
-   pgsInformationalStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsInformationalStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
 };
@@ -111,7 +111,7 @@ private:
 class PGSEXTCLASS pgsGirderDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    SpanIndexType m_Span;
@@ -137,7 +137,7 @@ private:
 class PGSEXTCLASS pgsStructuralAnalysisTypeStatusItem : public CEAFStatusItem
 {
 public:
-   pgsStructuralAnalysisTypeStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsStructuralAnalysisTypeStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 };
 
@@ -153,7 +153,7 @@ public:
 class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription);
+   pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    long m_DlgPage;

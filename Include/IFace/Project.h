@@ -128,18 +128,18 @@ DEFINE_GUID(IID_IProjectProperties,
 0x59D50425, 0x265C, 0x11D2, 0x8E, 0xB0, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
 interface IProjectProperties : IUnknown
 {
-   virtual std::string GetBridgeName() const = 0;
-   virtual void SetBridgeName(const std::string& name) = 0;
-   virtual std::string GetBridgeId() const = 0;
-   virtual void SetBridgeId(const std::string& bid) = 0;
-   virtual std::string GetJobNumber() const = 0;
-   virtual void SetJobNumber(const std::string& jid) = 0;
-   virtual std::string GetEngineer() const = 0;
-   virtual void SetEngineer(const std::string& eng) = 0;
-   virtual std::string GetCompany() const = 0;
-   virtual void SetCompany(const std::string& company) = 0;
-   virtual std::string GetComments() const = 0;
-   virtual void SetComments(const std::string& comments) = 0;
+   virtual std::_tstring GetBridgeName() const = 0;
+   virtual void SetBridgeName(const std::_tstring& name) = 0;
+   virtual std::_tstring GetBridgeId() const = 0;
+   virtual void SetBridgeId(const std::_tstring& bid) = 0;
+   virtual std::_tstring GetJobNumber() const = 0;
+   virtual void SetJobNumber(const std::_tstring& jid) = 0;
+   virtual std::_tstring GetEngineer() const = 0;
+   virtual void SetEngineer(const std::_tstring& eng) = 0;
+   virtual std::_tstring GetCompany() const = 0;
+   virtual void SetCompany(const std::_tstring& company) = 0;
+   virtual std::_tstring GetComments() const = 0;
+   virtual void SetComments(const std::_tstring& comments) = 0;
 
    // Enables/Disables the update mechanism.  If the update mechanism is
    // disable, change notifications aren't fired to the event sinks.
@@ -407,8 +407,8 @@ DEFINE_GUID(IID_IShear,
 0x7a716040, 0x8bd4, 0x11d2, 0x9d, 0x99, 0x0, 0x60, 0x97, 0x10, 0xe6, 0xce);
 interface IShear : IUnknown
 {
-   virtual std::string GetStirrupMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
-   virtual void SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr,const char* matName)=0;
+   virtual std::_tstring GetStirrupMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
+   virtual void SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr,LPCTSTR matName)=0;
    virtual CShearData GetShearData(SpanIndexType span,GirderIndexType gdr) const = 0;
    virtual bool SetShearData(const CShearData& data,SpanIndexType span,GirderIndexType gdr) = 0;
 };
@@ -427,8 +427,8 @@ DEFINE_GUID(IID_ILongitudinalRebar,
 0xe87ac679, 0x4753, 0x4b18, 0x81, 0xa1, 0x3c, 0x68, 0x58, 0x22, 0x6f, 0x87);
 interface ILongitudinalRebar : IUnknown
 {
-   virtual std::string GetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
-   virtual void SetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr,const char* matName)=0;
+   virtual std::_tstring GetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
+   virtual void SetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr,LPCTSTR matName)=0;
    virtual CLongitudinalRebarData GetLongitudinalRebarData(SpanIndexType span,GirderIndexType gdr) const = 0;
    virtual bool SetLongitudinalRebarData(const CLongitudinalRebarData& data,SpanIndexType span,GirderIndexType gdr) = 0;
 };
@@ -448,8 +448,8 @@ DEFINE_GUID(IID_ISpecification,
 0xb72842b0, 0x5bb1, 0x11d2, 0x8e, 0xd7, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
 interface ISpecification : IUnknown
 {
-   virtual std::string GetSpecification() const = 0;
-   virtual void SetSpecification(const std::string& spec) = 0;
+   virtual std::_tstring GetSpecification() const = 0;
+   virtual void SetSpecification(const std::_tstring& spec) = 0;
 
    virtual void GetTrafficBarrierDistribution(GirderIndexType* pNGirders,pgsTypes::TrafficBarrierDistribution* pDistType) = 0;
 
@@ -464,8 +464,8 @@ interface ISpecification : IUnknown
 
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() = 0;
 
-   virtual std::string GetRatingSpecification() const = 0;
-   virtual void SetRatingSpecification(const std::string& spec) = 0;
+   virtual std::_tstring GetRatingSpecification() const = 0;
+   virtual void SetRatingSpecification(const std::_tstring& spec) = 0;
 };
 
 /*****************************************************************************
@@ -500,19 +500,19 @@ DEFINE_GUID(IID_ILibraryNames,
 0x5A3A28C0, 0x480F, 0x11d2, 0x8E, 0xC7, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
 interface ILibraryNames : IUnknown
 {
-   virtual void EnumGdrConnectionNames( std::vector<std::string>* pNames ) const = 0;
-   virtual void EnumGirderNames( std::vector<std::string>* pNames ) const = 0;
-   virtual void EnumGirderNames( const char* strGirderFamily, std::vector<std::string>* pNames ) const = 0;
-   virtual void EnumConcreteNames( std::vector<std::string>* pNames ) const = 0;
-   virtual void EnumDiaphragmNames( std::vector<std::string>* pNames ) const = 0;
-   virtual void EnumTrafficBarrierNames( std::vector<std::string>* pNames ) const = 0;
-   virtual void EnumSpecNames( std::vector<std::string>* pNames) const = 0;
-   virtual void EnumLiveLoadNames( std::vector<std::string>* pNames) const = 0;
+   virtual void EnumGdrConnectionNames( std::vector<std::_tstring>* pNames ) const = 0;
+   virtual void EnumGirderNames( std::vector<std::_tstring>* pNames ) const = 0;
+   virtual void EnumGirderNames( LPCTSTR strGirderFamily, std::vector<std::_tstring>* pNames ) const = 0;
+   virtual void EnumConcreteNames( std::vector<std::_tstring>* pNames ) const = 0;
+   virtual void EnumDiaphragmNames( std::vector<std::_tstring>* pNames ) const = 0;
+   virtual void EnumTrafficBarrierNames( std::vector<std::_tstring>* pNames ) const = 0;
+   virtual void EnumSpecNames( std::vector<std::_tstring>* pNames) const = 0;
+   virtual void EnumLiveLoadNames( std::vector<std::_tstring>* pNames) const = 0;
 
-   virtual void EnumGirderFamilyNames( std::vector<std::string>* pNames ) = 0;
-   virtual void GetBeamFactory(const std::string& strBeamFamily,const std::string& strBeamName,IBeamFactory** ppFactory) = 0;
+   virtual void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames ) = 0;
+   virtual void GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory) = 0;
 
-   virtual void EnumRatingCriteriaNames( std::vector<std::string>* pNames) const = 0;
+   virtual void EnumRatingCriteriaNames( std::vector<std::_tstring>* pNames) const = 0;
 };
 
 /*****************************************************************************
@@ -531,13 +531,13 @@ interface ILibrary : IUnknown
 {
    virtual void SetLibraryManager(psgLibraryManager* pNewLibMgr)=0; 
    virtual psgLibraryManager* GetLibraryManager()=0; 
-   virtual const ConnectionLibraryEntry* GetConnectionEntry(const char* lpszName ) const = 0;
-   virtual const GirderLibraryEntry* GetGirderEntry( const char* lpszName ) const = 0;
-   virtual const ConcreteLibraryEntry* GetConcreteEntry( const char* lpszName ) const = 0;
-   virtual const DiaphragmLayoutEntry* GetDiaphragmEntry( const char* lpszName ) const = 0;
-   virtual const TrafficBarrierEntry* GetTrafficBarrierEntry( const char* lpszName ) const = 0;
-   virtual const SpecLibraryEntry* GetSpecEntry( const char* lpszName ) const = 0;
-   virtual const LiveLoadLibraryEntry* GetLiveLoadEntry( const char* lpszName ) const = 0;
+   virtual const ConnectionLibraryEntry* GetConnectionEntry(LPCTSTR lpszName ) const = 0;
+   virtual const GirderLibraryEntry* GetGirderEntry( LPCTSTR lpszName ) const = 0;
+   virtual const ConcreteLibraryEntry* GetConcreteEntry( LPCTSTR lpszName ) const = 0;
+   virtual const DiaphragmLayoutEntry* GetDiaphragmEntry( LPCTSTR lpszName ) const = 0;
+   virtual const TrafficBarrierEntry* GetTrafficBarrierEntry( LPCTSTR lpszName ) const = 0;
+   virtual const SpecLibraryEntry* GetSpecEntry( LPCTSTR lpszName ) const = 0;
+   virtual const LiveLoadLibraryEntry* GetLiveLoadEntry( LPCTSTR lpszName ) const = 0;
    virtual ConcreteLibrary&        GetConcreteLibrary() = 0;
    virtual ConnectionLibrary&      GetConnectionLibrary() = 0;
    virtual GirderLibrary&          GetGirderLibrary() = 0;
@@ -547,11 +547,11 @@ interface ILibrary : IUnknown
    virtual LiveLoadLibrary*        GetLiveLoadLibrary() = 0;
 
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const = 0;
-   virtual void GetMasterLibraryInfo(std::string& strPublisher,std::string& strMasterLib,sysTime& time) const = 0;
+   virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const = 0;
 
    virtual const RatingLibrary* GetRatingLibrary() const = 0;
    virtual RatingLibrary* GetRatingLibrary() = 0;
-   virtual const RatingLibraryEntry* GetRatingEntry( const char* lpszName ) const = 0;
+   virtual const RatingLibraryEntry* GetRatingEntry( LPCTSTR lpszName ) const = 0;
 };
 
 
@@ -584,7 +584,7 @@ interface IBridgeDescriptionEventSink : IUnknown
    virtual HRESULT OnGirderFamilyChanged() = 0;
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint) = 0;
    virtual HRESULT OnLiveLoadChanged() = 0;
-   virtual HRESULT OnLiveLoadNameChanged(const char* strOldName,const char* strNewName) = 0;
+   virtual HRESULT OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName) = 0;
    virtual HRESULT OnConstructionLoadChanged() = 0;
 };
 
@@ -821,15 +821,15 @@ interface ILiveLoads : IUnknown
    virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType) = 0;
    virtual bool IsPedestianLoadEnabled(pgsTypes::LiveLoadType llType) = 0;
    virtual void EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bEnable) = 0;
-   virtual std::vector<std::string> GetLiveLoadNames(pgsTypes::LiveLoadType llType) = 0;
-   virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::string>& names) = 0;
+   virtual std::vector<std::_tstring> GetLiveLoadNames(pgsTypes::LiveLoadType llType) = 0;
+   virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::_tstring>& names) = 0;
    virtual double GetTruckImpact(pgsTypes::LiveLoadType llType) = 0;
    virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,double impact) = 0;
    virtual double GetLaneImpact(pgsTypes::LiveLoadType llType) = 0;
    virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,double impact) = 0;
    virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action) = 0;
    virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction() = 0;
-   virtual std::string GetLLDFSpecialActionText()=0; // get common string for ignore roa case
+   virtual std::_tstring GetLLDFSpecialActionText()=0; // get common string for ignore roa case
    virtual bool IgnoreLLDFRangeOfApplicability()=0; // true if action is to ignore ROA
 };
 
@@ -860,7 +860,7 @@ interface IBridgeDescription : IUnknown
    virtual void SetGirderSpacingAtEndOfSpan(SpanIndexType spanIdx,const CGirderSpacing& spacing) = 0;
    virtual void UseSameGirderSpacingAtBothEndsOfSpan(SpanIndexType spanIdx,bool bUseSame) = 0;
    virtual void SetGirderTypes(SpanIndexType spanIdx,const CGirderTypes& girderTypes) = 0;
-   virtual void SetGirderName( SpanIndexType spanIdx, GirderIndexType gdrIdx, const char* strGirderName) = 0;
+   virtual void SetGirderName( SpanIndexType spanIdx, GirderIndexType gdrIdx, LPCTSTR strGirderName) = 0;
    virtual void SetGirderCount(SpanIndexType spanIdx,GirderIndexType nGirders) = 0;
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType) = 0;
 
@@ -876,7 +876,7 @@ interface IBridgeDescription : IUnknown
 
    virtual void UseSameGirderForEntireBridge(bool bSame) = 0;
    virtual bool UseSameGirderForEntireBridge() = 0;
-   virtual void SetGirderName(const char* strGirderName) = 0; // sets the name of the girder that is used for the entire bridge
+   virtual void SetGirderName(LPCTSTR strGirderName) = 0; // sets the name of the girder that is used for the entire bridge
 
    virtual void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs) = 0;
    virtual pgsTypes::SupportedBeamSpacing GetGirderSpacingType() = 0;

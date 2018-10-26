@@ -103,7 +103,7 @@ void CCrownSlopeGrid::CustomInit()
 
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
-   std::string strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
+   std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
@@ -150,7 +150,7 @@ void CCrownSlopeGrid::CustomInit()
 		);
 
    CString strLeftSlope;
-   strLeftSlope.Format("Left\nSlope\n(%s/%s)",strUnitTag.c_str(),strUnitTag.c_str());
+   strLeftSlope.Format(_T("Left\nSlope\n(%s/%s)"),strUnitTag.c_str(),strUnitTag.c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -160,7 +160,7 @@ void CCrownSlopeGrid::CustomInit()
 		);
 
    CString strRightSlope;
-   strRightSlope.Format("Right\nSlope\n(%s/%s)",strUnitTag.c_str(),strUnitTag.c_str());
+   strRightSlope.Format(_T("Right\nSlope\n(%s/%s)"),strUnitTag.c_str(),strUnitTag.c_str());
 	this->SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -170,7 +170,7 @@ void CCrownSlopeGrid::CustomInit()
 		);
 
    CString strCPO;
-   strCPO.Format("Crown Point Offset\nfrom\nProfile Grade\n(%s)",strUnitTag.c_str());
+   strCPO.Format(_T("Crown Point Offset\nfrom\nProfile Grade\n(%s)"),strUnitTag.c_str());
 	this->SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -266,10 +266,10 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,double* pStation,double* pLeft,doub
    *pStation = station_value;
 
    CString strLeft = GetCellValue(nRow,2);
-   *pLeft = atof(strLeft);
+   *pLeft = _tstof(strLeft);
 
    CString strRight = GetCellValue(nRow,3);
-   *pRight = atof(strRight);
+   *pRight = _tstof(strRight);
 
    CString strCPO = GetCellValue(nRow,4);
    *pCPO = GetCrownPointOffset(strCPO);
@@ -336,13 +336,13 @@ double CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    double sign = 1;
-   char cDir = strAlignmentOffset.GetAt(strAlignmentOffset.GetLength()-1);
-   if ( cDir == 'L' )
+   TCHAR cDir = strAlignmentOffset.GetAt(strAlignmentOffset.GetLength()-1);
+   if ( cDir == _T('L') )
       sign = -1;
-   else if ( cDir == 'R' )
+   else if ( cDir == _T('R') )
       sign = 1;
 
-   double value = atof(strAlignmentOffset);
+   double value = _tstof(strAlignmentOffset);
    value *= sign;
 
    value = ::ConvertToSysUnits(value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
@@ -360,11 +360,11 @@ CString CCrownSlopeGrid::GetCrownPointOffset(double alignmentOffset)
 
    CString strAlignmentOffset;
    if ( sign == 0 )
-      strAlignmentOffset.Format("%s",FormatDimension(alignmentOffset,pDisplayUnits->GetAlignmentLengthUnit(),false));
+      strAlignmentOffset.Format(_T("%s"),FormatDimension(alignmentOffset,pDisplayUnits->GetAlignmentLengthUnit(),false));
    else if ( sign < 0 )
-      strAlignmentOffset.Format("%s %c",FormatDimension(fabs(alignmentOffset),pDisplayUnits->GetAlignmentLengthUnit(),false),'L');
+      strAlignmentOffset.Format(_T("%s %c"),FormatDimension(fabs(alignmentOffset),pDisplayUnits->GetAlignmentLengthUnit(),false),_T('L'));
    else
-      strAlignmentOffset.Format("%s %c",FormatDimension(fabs(alignmentOffset),pDisplayUnits->GetAlignmentLengthUnit(),false),'R');
+      strAlignmentOffset.Format(_T("%s %c"),FormatDimension(fabs(alignmentOffset),pDisplayUnits->GetAlignmentLengthUnit(),false),_T('R'));
 
    return strAlignmentOffset;
 }

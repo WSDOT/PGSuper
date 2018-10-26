@@ -105,9 +105,9 @@ txnTransaction* txnEditBridge::CreateClone() const
                             m_bEnablePedLL[0],      m_bEnablePedLL[1]);
 }
 
-std::string txnEditBridge::Name() const
+std::_tstring txnEditBridge::Name() const
 {
-   return "Edit Bridge";
+   return _T("Edit Bridge");
 }
 
 bool txnEditBridge::IsUndoable()

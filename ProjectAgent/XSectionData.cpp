@@ -51,9 +51,9 @@ CXSectionData::CXSectionData()
    GdrSpacing = ::ConvertToSysUnits( 5.0, unitMeasure::Feet );
    GdrSpacingMeasurement = Normal;
    GdrLineCount = 5;
-   Girder = "";
-   LeftTrafficBarrier = "";
-   RightTrafficBarrier = "";
+   Girder = _T("");
+   LeftTrafficBarrier = _T("");
+   RightTrafficBarrier = _T("");
    GirderOrientation = pgsTypes::Plumb;
 
    DeckType               = pgsTypes::sdtCompositeCIP;
@@ -228,7 +228,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
 
    try
    {
-      hr = pStrLoad->BeginUnit("XSectionData");
+      hr = pStrLoad->BeginUnit(_T("XSectionData"));
       double version;
       hr = pStrLoad->get_Version(&version);
 
@@ -237,7 +237,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       if ( version >= 3.0 )
       {
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("SlabType", &var );
+         hr = pStrLoad->get_Property(_T("SlabType"), &var );
          DeckType = (pgsTypes::SupportedDeckType)(var.lVal);
       }
 
@@ -245,7 +245,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       {
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("TransverseConnectivity", &var );
+         hr = pStrLoad->get_Property(_T("TransverseConnectivity"), &var );
          TransverseConnectivity = (pgsTypes::AdjacentTransverseConnectivity)(int)var.dblVal;
       }
 
@@ -265,26 +265,26 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("GdrSpacing", &var );
+      hr = pStrLoad->get_Property(_T("GdrSpacing"), &var );
       GdrSpacing = var.dblVal;
 
       if ( 10 < version )
       {
          var.Clear();
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("GdrSpacingMeasurement", &var );
+         hr = pStrLoad->get_Property(_T("GdrSpacingMeasurement"), &var );
          GdrSpacingMeasurement = (MeasurementType)(var.lVal);
       }
 
       var.Clear();
       var.vt = VT_I2;
-      hr = pStrLoad->get_Property("GdrLineCount", &var );
+      hr = pStrLoad->get_Property(_T("GdrLineCount"), &var );
       GdrLineCount = var.iVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("Girder", &var );
-      Girder = OLE2A(var.bstrVal);
+      hr = pStrLoad->get_Property(_T("Girder"), &var );
+      Girder = OLE2T(var.bstrVal);
 
       if ( version < 6.1 )
       {
@@ -294,7 +294,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       {
          var.Clear();
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("GirderOrientation",&var);
+         hr = pStrLoad->get_Property(_T("GirderOrientation"),&var);
          GirderOrientation = (pgsTypes::GirderOrientationType)var.lVal;
       }
 
@@ -302,53 +302,53 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       {
          var.Clear();
          var.vt = VT_BSTR;
-         hr = pStrLoad->get_Property("TrafficBarrier", &var);
-         LeftTrafficBarrier = OLE2A(var.bstrVal);
+         hr = pStrLoad->get_Property(_T("TrafficBarrier"), &var);
+         LeftTrafficBarrier = OLE2T(var.bstrVal);
          RightTrafficBarrier = LeftTrafficBarrier;
       }
       else
       {
          var.Clear();
          var.vt = VT_BSTR;
-         hr = pStrLoad->get_Property("LeftTrafficBarrier", &var);
-         LeftTrafficBarrier = OLE2A(var.bstrVal);
+         hr = pStrLoad->get_Property(_T("LeftTrafficBarrier"), &var);
+         LeftTrafficBarrier = OLE2T(var.bstrVal);
 
          var.Clear();
          var.vt = VT_BSTR;
-         hr = pStrLoad->get_Property("RightTrafficBarrier", &var);
-         RightTrafficBarrier = OLE2A(var.bstrVal);
+         hr = pStrLoad->get_Property(_T("RightTrafficBarrier"), &var);
+         RightTrafficBarrier = OLE2T(var.bstrVal);
       }
 
       if (version < 4.0)
       {
          // Name of a library entry that specified the girder concrete used to be stored here.
          // Now concrete information is stored explicitely in the GirderData struct. 
-         // We need to put it into a "safe" location so it can be retrieved later by GirderData.
+         // We need to put it into a _T("safe") location so it can be retrieved later by GirderData.
          var.Clear();
          var.vt = VT_BSTR;
-         hr = pStrLoad->get_Property("GdrConcrete", &var );
-         m_strGirderConcreteName = OLE2A(var.bstrVal);
+         hr = pStrLoad->get_Property(_T("GdrConcrete"), &var );
+         m_strGirderConcreteName = OLE2T(var.bstrVal);
       }
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("GrossDepth", &var );
+      hr = pStrLoad->get_Property(_T("GrossDepth"), &var );
       GrossDepth = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
       if ( version < 6 )
       {
-         hr = pStrLoad->get_Property("Overhang", &var );
+         hr = pStrLoad->get_Property(_T("Overhang"), &var );
          LeftOverhang = var.dblVal;
          RightOverhang = var.dblVal;
       }
       else
       {
-         hr = pStrLoad->get_Property("LeftOverhang", &var );
+         hr = pStrLoad->get_Property(_T("LeftOverhang"), &var );
          LeftOverhang = var.dblVal;
 
-         hr = pStrLoad->get_Property("RightOverhang", &var );
+         hr = pStrLoad->get_Property(_T("RightOverhang"), &var );
          RightOverhang = var.dblVal;
       }
 
@@ -356,35 +356,35 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       {
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("OverhangEdgeDepth",&var);
+         hr = pStrLoad->get_Property(_T("OverhangEdgeDepth"),&var);
          OverhangEdgeDepth = var.dblVal;
 
          var.Clear();
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("OverhangTaperType",&var);
+         hr = pStrLoad->get_Property(_T("OverhangTaperType"),&var);
          OverhangTaper = (pgsTypes::DeckOverhangTaper)(var.lVal);
       }
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("Fillet", &var );
+      hr = pStrLoad->get_Property(_T("Fillet"), &var );
       Fillet = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SlabOffset", &var );
+      hr = pStrLoad->get_Property(_T("SlabOffset"), &var );
       SlabOffset = var.dblVal;
 
       if ( version >= 3.0 )
       {
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("PanelDepth",&var );
+         hr = pStrLoad->get_Property(_T("PanelDepth"),&var );
          PanelDepth = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("PanelSupport",&var );
+         hr = pStrLoad->get_Property(_T("PanelSupport"),&var );
          PanelSupport = var.dblVal;
       }
 
@@ -396,7 +396,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       {
          var.Clear();
          var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property("FutureOverlay",&var);
+         hr = pStrLoad->get_Property(_T("FutureOverlay"),&var);
          WearingSurface = (var.boolVal == VARIANT_TRUE ? pgsTypes::wstFutureOverlay : 
                   (DeckType == pgsTypes::sdtNone ? pgsTypes::wstOverlay : pgsTypes::wstSacrificialDepth));
       }
@@ -404,7 +404,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       {
          var.Clear();
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("WearingSurfaceType",&var);
+         hr = pStrLoad->get_Property(_T("WearingSurfaceType"),&var);
          WearingSurface = (pgsTypes::WearingSurfaceType)(var.lVal);
 
          // if deck type is none, wearing surface cannot be sacrificial depth
@@ -415,12 +415,12 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("OverlayDepth", &var );
+      hr = pStrLoad->get_Property(_T("OverlayDepth"), &var );
       OverlayDepth = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("OverlayDensity", &var );
+      hr = pStrLoad->get_Property(_T("OverlayDensity"), &var );
       OverlayDensity = var.dblVal;
       Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
       OverlayWeight = OverlayDensity*OverlayDepth*g;
@@ -435,29 +435,29 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SacrificialDepth", &var );
+      hr = pStrLoad->get_Property(_T("SacrificialDepth"), &var );
       SacrificialDepth = var.dblVal;
 
       if ( 4.0 <= version )
       {
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabFc", &var );
+         hr = pStrLoad->get_Property(_T("SlabFc"), &var );
          SlabFc = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabWeightDensity", &var );
+         hr = pStrLoad->get_Property(_T("SlabWeightDensity"), &var );
          SlabWeightDensity = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabStrengthDensity", &var );
+         hr = pStrLoad->get_Property(_T("SlabStrengthDensity"), &var );
          SlabStrengthDensity = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabMaxAggregateSize", &var );
+         hr = pStrLoad->get_Property(_T("SlabMaxAggregateSize"), &var );
          SlabMaxAggregateSize = var.dblVal;
       }
       else
@@ -466,8 +466,8 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
          // make it local
          var.Clear();
          var.vt = VT_BSTR;
-         hr = pStrLoad->get_Property("SlabConcrete", &var );
-         std::string slab_concrete = OLE2A(var.bstrVal);
+         hr = pStrLoad->get_Property(_T("SlabConcrete"), &var );
+         std::_tstring slab_concrete = OLE2T(var.bstrVal);
 
          const ConcreteLibraryEntry* entry = pLibrary->GetConcreteEntry(slab_concrete.c_str());
 
@@ -481,7 +481,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       {
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabK1", &var );
+         hr = pStrLoad->get_Property(_T("SlabK1"), &var );
          SlabEcK1 = var.dblVal;
       }
       else
@@ -493,12 +493,12 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       {
          var.Clear();
          var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property("SlabUserEc",&var);
+         hr = pStrLoad->get_Property(_T("SlabUserEc"),&var);
          SlabUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabEc", &var );
+         hr = pStrLoad->get_Property(_T("SlabEc"), &var );
          SlabEc = var.dblVal;
       }
 
@@ -508,8 +508,8 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
          // and gobble it up.
          var.Clear();
          var.vt = VT_BSTR;
-         hr = pStrLoad->get_Property("DiaphragmLayout", &var );
-         //DiaphragmLayout = OLE2A(var.bstrVal);
+         hr = pStrLoad->get_Property(_T("DiaphragmLayout"), &var );
+         //DiaphragmLayout = OLE2T(var.bstrVal);
       }
 
       if ( 10.0 <= version )
@@ -532,46 +532,46 @@ HRESULT CXSectionData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    HRESULT hr = S_OK;
    ATLASSERT(false); // should never get here
 
-//   pStrSave->BeginUnit("XSectionData",15.0);
+//   pStrSave->BeginUnit(_T("XSectionData"),15.0);
 //
-//   pStrSave->put_Property("SlabType",         CComVariant(DeckType));
-//   pStrSave->put_Property("TransverseConnectivity", CComVariant(TransverseConnectivity)); // added for version 14.0
-//   pStrSave->put_Property("GdrSpacing",       CComVariant(GdrSpacing));
-//   pStrSave->put_Property("GdrSpacingMeasurement", CComVariant(GdrSpacingMeasurement));
-//   pStrSave->put_Property("GdrLineCount",     CComVariant(GdrLineCount));
-//   pStrSave->put_Property("Girder",           CComVariant(Girder.c_str()));
-//   pStrSave->put_Property("GirderOrientation",CComVariant(GirderOrientation));
-//   pStrSave->put_Property("LeftTrafficBarrier",   CComVariant(LeftTrafficBarrier.c_str()));
-//   pStrSave->put_Property("RightTrafficBarrier",   CComVariant(RightTrafficBarrier.c_str()));
-//   pStrSave->put_Property("GrossDepth",       CComVariant(GrossDepth));
-//   pStrSave->put_Property("LeftOverhang",     CComVariant(LeftOverhang));
-//   pStrSave->put_Property("RightOverhang",    CComVariant(RightOverhang));
-//   pStrSave->put_Property("OverhangEdgeDepth",CComVariant(OverhangEdgeDepth));
-//   pStrSave->put_Property("OverhangTaperType",CComVariant(OverhangTaper));
-//   pStrSave->put_Property("Fillet",           CComVariant(Fillet));
-//   pStrSave->put_Property("SlabOffset",       CComVariant(SlabOffset));
-//   pStrSave->put_Property("PanelDepth",       CComVariant(PanelDepth));
-//   pStrSave->put_Property("PanelSupport",     CComVariant(PanelSupport));
-////   pStrSave->put_Property("FutureOverlay",    CComVariant(bFutureOverlay)); // version 7, removed version 13
-//   pStrSave->put_Property("WearingSurfaceType", CComVariant(WearingSurface));
-//   pStrSave->put_Property("OverlayDepth",     CComVariant(OverlayDepth));
-//   pStrSave->put_Property("OverlayDensity",   CComVariant(OverlayDensity));
-//   pStrSave->put_Property("SacrificialDepth", CComVariant(SacrificialDepth));
+//   pStrSave->put_Property(_T("SlabType"),         CComVariant(DeckType));
+//   pStrSave->put_Property(_T("TransverseConnectivity"), CComVariant(TransverseConnectivity)); // added for version 14.0
+//   pStrSave->put_Property(_T("GdrSpacing"),       CComVariant(GdrSpacing));
+//   pStrSave->put_Property(_T("GdrSpacingMeasurement"), CComVariant(GdrSpacingMeasurement));
+//   pStrSave->put_Property(_T("GdrLineCount"),     CComVariant(GdrLineCount));
+//   pStrSave->put_Property(_T("Girder"),           CComVariant(Girder.c_str()));
+//   pStrSave->put_Property(_T("GirderOrientation"),CComVariant(GirderOrientation));
+//   pStrSave->put_Property(_T("LeftTrafficBarrier"),   CComVariant(LeftTrafficBarrier.c_str()));
+//   pStrSave->put_Property(_T("RightTrafficBarrier"),   CComVariant(RightTrafficBarrier.c_str()));
+//   pStrSave->put_Property(_T("GrossDepth"),       CComVariant(GrossDepth));
+//   pStrSave->put_Property(_T("LeftOverhang"),     CComVariant(LeftOverhang));
+//   pStrSave->put_Property(_T("RightOverhang"),    CComVariant(RightOverhang));
+//   pStrSave->put_Property(_T("OverhangEdgeDepth"),CComVariant(OverhangEdgeDepth));
+//   pStrSave->put_Property(_T("OverhangTaperType"),CComVariant(OverhangTaper));
+//   pStrSave->put_Property(_T("Fillet"),           CComVariant(Fillet));
+//   pStrSave->put_Property(_T("SlabOffset"),       CComVariant(SlabOffset));
+//   pStrSave->put_Property(_T("PanelDepth"),       CComVariant(PanelDepth));
+//   pStrSave->put_Property(_T("PanelSupport"),     CComVariant(PanelSupport));
+////   pStrSave->put_Property(_T("FutureOverlay"),    CComVariant(bFutureOverlay)); // version 7, removed version 13
+//   pStrSave->put_Property(_T("WearingSurfaceType"), CComVariant(WearingSurface));
+//   pStrSave->put_Property(_T("OverlayDepth"),     CComVariant(OverlayDepth));
+//   pStrSave->put_Property(_T("OverlayDensity"),   CComVariant(OverlayDensity));
+//   pStrSave->put_Property(_T("SacrificialDepth"), CComVariant(SacrificialDepth));
 //
 //   // the following block changed for version 4.0
-////   pStrSave->put_Property("SlabConcrete",     CComVariant(SlabConcrete.c_str()));
-//   pStrSave->put_Property("SlabFc",               CComVariant(SlabFc));
-//   pStrSave->put_Property("SlabWeightDensity",    CComVariant(SlabWeightDensity));
-//   pStrSave->put_Property("SlabStrengthDensity",  CComVariant(SlabStrengthDensity));
-//   pStrSave->put_Property("SlabMaxAggregateSize", CComVariant(SlabMaxAggregateSize));
+////   pStrSave->put_Property(_T("SlabConcrete"),     CComVariant(SlabConcrete.c_str()));
+//   pStrSave->put_Property(_T("SlabFc"),               CComVariant(SlabFc));
+//   pStrSave->put_Property(_T("SlabWeightDensity"),    CComVariant(SlabWeightDensity));
+//   pStrSave->put_Property(_T("SlabStrengthDensity"),  CComVariant(SlabStrengthDensity));
+//   pStrSave->put_Property(_T("SlabMaxAggregateSize"), CComVariant(SlabMaxAggregateSize));
 //   // added for verseion 5 
-//   pStrSave->put_Property("SlabK1",               CComVariant(SlabK1));
+//   pStrSave->put_Property(_T("SlabK1"),               CComVariant(SlabK1));
 //   // added version 8
-//   pStrSave->put_Property("SlabUserEc", CComVariant(SlabUserEc));
-//   pStrSave->put_Property("SlabEc",     CComVariant(SlabEc));
+//   pStrSave->put_Property(_T("SlabUserEc"), CComVariant(SlabUserEc));
+//   pStrSave->put_Property(_T("SlabEc"),     CComVariant(SlabEc));
 //
 //   // Removed when unit number when to 9.0
-////   pStrSave->put_Property("DiaphragmLayout",  CComVariant(DiaphragmLayout.c_str()));
+////   pStrSave->put_Property(_T("DiaphragmLayout"),  CComVariant(DiaphragmLayout.c_str()));
 //
 //   // added when unit number when to 10
 //   DeckRebarData.Save(pStrSave,pProgress);

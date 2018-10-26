@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #pragma once
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "EditRatingCriteria.h"
 
 // CDesignRatingPage dialog

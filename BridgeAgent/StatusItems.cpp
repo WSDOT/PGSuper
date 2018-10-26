@@ -33,7 +33,7 @@
 
 ////////////////
 
-pgsAlignmentDescriptionStatusItem::pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription) :
+pgsAlignmentDescriptionStatusItem::pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_DlgPage(dlgPage)
 {
 }
@@ -81,7 +81,7 @@ void pgsAlignmentDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsConcreteStrengthStatusItem::pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::ConcreteType concType,pgsConcreteStrengthStatusItem::ElementType elemType,SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsConcreteStrengthStatusItem::pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::ConcreteType concType,pgsConcreteStrengthStatusItem::ElementType elemType,SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_ConcreteType(concType),m_ElementType(elemType),m_Span(span),m_Girder(gdr)
 {
 }
@@ -130,7 +130,7 @@ void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////
 
-pgsPointLoadStatusItem::pgsPointLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsPointLoadStatusItem::pgsPointLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_LoadIndex(value)
 {
 }
@@ -195,7 +195,7 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////////////////
 
-pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_LoadIndex(value)
 {
 }
@@ -260,7 +260,7 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////
 
-pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_LoadIndex(value)
 {
 }

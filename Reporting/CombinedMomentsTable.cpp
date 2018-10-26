@@ -118,7 +118,7 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
-   RowIndexType row = CreateCombinedLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,"Moment",false,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   RowIndexType row = CreateCombinedLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,_T("Moment"),false,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
    *p << p_table;
 
@@ -179,7 +179,7 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
 
       GET_IFACE2(pBroker,IStageMap,pStageMap);
-      p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,"Moment");
+      p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Moment"));
 
       if ( span == ALL_SPANS )
       {
@@ -925,7 +925,7 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
    {
       p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << p;
-      (*p) << "* Deck moment is from superimposed dead load and live load only." << rptNewLine;
+      (*p) << _T("* Deck moment is from superimposed dead load and live load only.") << rptNewLine;
    }
 }
 
@@ -967,7 +967,7 @@ bool CCombinedMomentsTable::AssertValid() const
 
 void CCombinedMomentsTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CCombinedMomentsTable" << endl;
+   os << _T("Dump for CCombinedMomentsTable") << endl;
 }
 #endif // _DEBUG
 

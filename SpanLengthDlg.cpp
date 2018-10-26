@@ -85,7 +85,7 @@ BOOL CSpanLengthDlg::OnInitDialog()
    for ( long i = 0; i < nPiers; i++ )
    {
       CString strValue;
-      strValue.Format("%d",i+1);
+      strValue.Format(_T("%d"),i+1);
       pCB->AddString(strValue);
    }
 

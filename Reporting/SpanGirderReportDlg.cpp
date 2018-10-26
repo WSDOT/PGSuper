@@ -91,7 +91,7 @@ void CSpanGirderReportDlg::DoDataExchange(CDataExchange* pDX)
             CString strChapter;
             m_ChList.GetText(ch,strChapter);
 
-            m_ChapterList.push_back(std::string(strChapter));
+            m_ChapterList.push_back(std::_tstring(strChapter));
          }
       }
 
@@ -142,7 +142,7 @@ void CSpanGirderReportDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
    for ( GirderIndexType j = 0; j < cGirders; j++ )
    {
       CString strGdr;
-      strGdr.Format( "Girder %s", LABEL_GIRDER(j));
+      strGdr.Format( _T("Girder %s"), LABEL_GIRDER(j));
       pGdrBox->AddString( strGdr );
    }
 
@@ -183,7 +183,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 //   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
-   pwndTitle->SetWindowTextA(m_RptDesc.GetReportName());
+   pwndTitle->SetWindowText(m_RptDesc.GetReportName());
 
    // Fill up the span and girder combo boxes
    GET_IFACE( IBridge, pBridge );
@@ -196,7 +196,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       for ( Uint32 i = 0; i < cSpan; i++ )
       {
          CString strSpan;
-         strSpan.Format("Span %d",LABEL_SPAN(i));
+         strSpan.Format(_T("Span %d"),LABEL_SPAN(i));
          pSpanBox->AddString(strSpan);
       }
       pSpanBox->SetCurSel(m_Span);
@@ -212,7 +212,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       pGirderBox->EnableWindow( FALSE );
 
       CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
-      pGroupBox->SetWindowText("Select a Span");
+      pGroupBox->SetWindowText(_T("Select a Span"));
    }
    else if ( m_Mode == GirderAndChapters )
    {
@@ -220,7 +220,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       UpdateGirderComboBox(m_Span);
 
       CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
-      pGroupBox->SetWindowText("Select a Girder Line");
+      pGroupBox->SetWindowText(_T("Select a Girder Line"));
 
       CComboBox* pSpanBox   = (CComboBox*)GetDlgItem( IDC_SPAN );
       CRect rSpan;
@@ -295,6 +295,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 
 void CSpanGirderReportDlg::OnHelp() 
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_REPORT );
 }
 

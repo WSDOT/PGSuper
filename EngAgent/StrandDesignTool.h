@@ -42,15 +42,15 @@
 
 typedef Int16 DebondLevelType; 
 
-inline static std::string DumpIntVector(const std::vector<DebondLevelType>& rvec)
+inline static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
 {
-   std::stringstream os;
+   std::_tostringstream os;
    for (std::vector<DebondLevelType>::const_iterator it=rvec.begin(); it!=rvec.end(); it++)
    {
       os<<*it<<", ";
    }
 
-   std::string str(os.str());
+   std::_tstring str(os.str());
    DebondLevelType n = str.size();
    if (0 < n)
       str.erase(n-2,2); // get rid of trailing ", "

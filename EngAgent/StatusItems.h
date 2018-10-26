@@ -28,7 +28,7 @@
 class pgsLiveLoadStatusItem : public CEAFStatusItem
 {
 public:
-   pgsLiveLoadStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsLiveLoadStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 };
 
@@ -48,7 +48,7 @@ private:
 class pgsLiftingSupportLocationStatusItem : public CEAFStatusItem
 {
 public:
-   pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    SpanIndexType m_Span;
@@ -72,7 +72,7 @@ private:
 class pgsTruckStiffnessStatusItem : public CEAFStatusItem
 {
 public:
-   pgsTruckStiffnessStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsTruckStiffnessStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 };
 
@@ -92,7 +92,7 @@ private:
 class pgsBunkPointLocationStatusItem : public CEAFStatusItem
 {
 public:
-   pgsBunkPointLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsBunkPointLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    SpanIndexType m_Span;

@@ -60,7 +60,7 @@ public:
    CGirderDescDebondPage        m_Debond;
    CGirderDescRatingPage        m_Rating;
 
-   std::string m_strGirderName;
+   std::_tstring m_strGirderName;
    CGirderData m_GirderData;
 
 // Operations

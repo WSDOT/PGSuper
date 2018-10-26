@@ -42,22 +42,22 @@ CLASS
 psgLibraryManager::psgLibraryManager() :
 libLibraryManager()
 {
-   std::auto_ptr<ConcreteLibrary>        conc_lib(new ConcreteLibrary("CONCRETE_LIBRARY", "Concrete Types"));
-   std::auto_ptr<ConnectionLibrary>      conn_lib(new ConnectionLibrary("CONNECTION_LIBRARY", "Connections"));
-   std::auto_ptr<GirderLibrary>          gird_lib(new GirderLibrary("GIRDER_LIBRARY", "Girders"));
-   std::auto_ptr<DiaphragmLayoutLibrary> diap_lib(new DiaphragmLayoutLibrary("DIAPHRAGM_LAYOUT_LIBRARY", "Diaphragm Layouts",true)); 
-   std::auto_ptr<TrafficBarrierLibrary>  barr_lib(new TrafficBarrierLibrary("TRAFFIC_BARRIER_LIBRARY", "Traffic Barriers"));
-   std::auto_ptr<SpecLibrary>            spec_lib(new SpecLibrary("SPECIFICATION_LIBRARY", "Project Criteria"));
-   std::auto_ptr<RatingLibrary>          rate_lib(new RatingLibrary("RATING_LIBRARY", "Load Rating Criteria"));
-   std::auto_ptr<LiveLoadLibrary>        live_lib(new LiveLoadLibrary("USER_LIVE_LOAD_LIBRARY", "User-Defined Live Loads"));
+   std::auto_ptr<ConcreteLibrary>        conc_lib(new ConcreteLibrary(_T("CONCRETE_LIBRARY"), _T("Concrete Types")));
+   std::auto_ptr<ConnectionLibrary>      conn_lib(new ConnectionLibrary(_T("CONNECTION_LIBRARY"), _T("Connections")));
+   std::auto_ptr<GirderLibrary>          gird_lib(new GirderLibrary(_T("GIRDER_LIBRARY"), _T("Girders")));
+   std::auto_ptr<DiaphragmLayoutLibrary> diap_lib(new DiaphragmLayoutLibrary(_T("DIAPHRAGM_LAYOUT_LIBRARY"), _T("Diaphragm Layouts"),true)); 
+   std::auto_ptr<TrafficBarrierLibrary>  barr_lib(new TrafficBarrierLibrary(_T("TRAFFIC_BARRIER_LIBRARY"), _T("Traffic Barriers")));
+   std::auto_ptr<SpecLibrary>            spec_lib(new SpecLibrary(_T("SPECIFICATION_LIBRARY"), _T("Project Criteria")));
+   std::auto_ptr<RatingLibrary>          rate_lib(new RatingLibrary(_T("RATING_LIBRARY"), _T("Load Rating Criteria")));
+   std::auto_ptr<LiveLoadLibrary>        live_lib(new LiveLoadLibrary(_T("USER_LIVE_LOAD_LIBRARY"), _T("User-Defined Live Loads")));
 
-   live_lib->AddReservedName("HL-93");
-   live_lib->AddReservedName("Fatigue");
-   live_lib->AddReservedName("Pedestrian on Sidewalk");
-   live_lib->AddReservedName("AASHTO Legal Loads");
-   live_lib->AddReservedName("Notional Rating Load (NRL)");
-   live_lib->AddReservedName("Single-Unit SHVs");
-   live_lib->AddReservedName("No Live Load Defined"); // this is for the dummy live load, when one isn't defined for analysis
+   live_lib->AddReservedName(_T("HL-93"));
+   live_lib->AddReservedName(_T("Fatigue"));
+   live_lib->AddReservedName(_T("Pedestrian on Sidewalk"));
+   live_lib->AddReservedName(_T("AASHTO Legal Loads"));
+   live_lib->AddReservedName(_T("Notional Rating Load (NRL)"));
+   live_lib->AddReservedName(_T("Single-Unit SHVs"));
+   live_lib->AddReservedName(_T("No Live Load Defined")); // this is for the dummy live load, when one isn't defined for analysis
 
    // don't change the order that the libraries are added to the library manager
    // add new libraries at the end of this list
@@ -70,8 +70,8 @@ libLibraryManager()
    m_LiveLibIdx   = this->AddLibrary(live_lib.release());
    m_RatingLibIdx = this->AddLibrary(rate_lib.release());
 
-   m_strPublisher = "Unknown";
-   m_strLibFile   = "Unknown";
+   m_strPublisher = _T("Unknown");
+   m_strLibFile   = _T("Unknown");
 
    UpdateLibraryNames();
 }
@@ -225,22 +225,22 @@ void psgLibraryManager::UpdateLibraryNames()
    // Some libraries have been renamed. So as not to mess up the file format
    // simply change the display name
    SpecLibrary* pLib = GetSpecLibrary();
-   pLib->SetDisplayName("Project Criteria");
+   pLib->SetDisplayName(_T("Project Criteria"));
 
    ConcreteLibrary& ConcreteLib = GetConcreteLibrary();
-   ConcreteLib.SetDisplayName("Concrete");
+   ConcreteLib.SetDisplayName(_T("Concrete"));
 
    LiveLoadLibrary* LiveLoadLib = GetLiveLoadLibrary();
-   LiveLoadLib->SetDisplayName("Vehicular Live Load");
+   LiveLoadLib->SetDisplayName(_T("Vehicular Live Load"));
 }
 
-void psgLibraryManager::SetMasterLibraryInfo(const char* strPublisher,const char* strLibFile)
+void psgLibraryManager::SetMasterLibraryInfo(LPCTSTR strPublisher,LPCTSTR strLibFile)
 {
    m_strPublisher = strPublisher;
    m_strLibFile   = strLibFile;
 }
 
-void psgLibraryManager::GetMasterLibraryInfo(std::string& strPublisher,std::string& strLibFile) const
+void psgLibraryManager::GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strLibFile) const
 {
    strPublisher = m_strPublisher;
    strLibFile = m_strLibFile;
@@ -273,15 +273,15 @@ bool psgLibraryManager::AssertValid() const
 
 void psgLibraryManager::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for psgLibraryManager"<<endl;
+   os << _T("Dump for psgLibraryManager")<<endl;
 
-   os << " m_ConcLibIdx = "<< m_ConcLibIdx << endl;
-   os << " m_ConnLibIdx = "<< m_ConnLibIdx << endl;
-   os << " m_GirdLibIdx = "<< m_GirdLibIdx << endl;
-   os << " m_DiapLibIdx = "<< m_DiapLibIdx << endl;
-   os << " m_BarrLibIdx = "<< m_BarrLibIdx << endl;
-   os << " m_SpecLibIdx = "<< m_SpecLibIdx << endl;
-   os << " m_RatingLibIdx = "<< m_RatingLibIdx << endl;
+   os << _T(" m_ConcLibIdx = ")<< m_ConcLibIdx << endl;
+   os << _T(" m_ConnLibIdx = ")<< m_ConnLibIdx << endl;
+   os << _T(" m_GirdLibIdx = ")<< m_GirdLibIdx << endl;
+   os << _T(" m_DiapLibIdx = ")<< m_DiapLibIdx << endl;
+   os << _T(" m_BarrLibIdx = ")<< m_BarrLibIdx << endl;
+   os << _T(" m_SpecLibIdx = ")<< m_SpecLibIdx << endl;
+   os << _T(" m_RatingLibIdx = ")<< m_RatingLibIdx << endl;
 
    libLibraryManager::Dump( os );
 }
@@ -298,27 +298,27 @@ bool psgLibraryManager::TestMe(dbgLog& rlog)
    // Test the library specific accessor methods
    ConcreteLibrary& conc_lib = libmgr.GetConcreteLibrary();
    const type_info& conc_lib_ti = typeid( conc_lib );
-   TRY_TESTME( std::string( conc_lib_ti.name() ) == std::string("libLibrary<ConcreteLibraryEntry>") );
+   TRY_TESTME( std::_tstring( conc_lib_ti.name() ) == std::_tstring(_T("libLibrary<ConcreteLibraryEntry>")) );
 
    ConnectionLibrary& conn_lib = libmgr.GetConnectionLibrary();
    const type_info& conn_lib_ti = typeid( conn_lib );
-   TRY_TESTME( std::string( conc_lib_ti.name() ) == std::string("libLibrary<ConnectionLibraryEntry>") );
+   TRY_TESTME( std::_tstring( conc_lib_ti.name() ) == std::_tstring(_T("libLibrary<ConnectionLibraryEntry>")) );
 
    GirderLibrary& gdr_lib = libmgr.GetGirderLibrary();
    const type_info& gdr_lib_ti = typeid( gdr_lib );
-   TRY_TESTME( std::string( gdr_lib_ti.name() ) == std::string("libLibrary<GirderLibraryEntry>") );
+   TRY_TESTME( std::_tstring( gdr_lib_ti.name() ) == std::_tstring(_T("libLibrary<GirderLibraryEntry>")) );
 
    DiaphragmLayoutLibrary& diaph_lib = libmgr.GetDiaphragmLayoutLibrary();
    const type_info& diaph_lib_ti = typeid( diaph_lib );
-   TRY_TESTME( std::string( diaph_lib_ti.name() ) == std::string("libLibrary<DiaphragmLayoutEntry>") );
+   TRY_TESTME( std::_tstring( diaph_lib_ti.name() ) == std::_tstring(_T("libLibrary<DiaphragmLayoutEntry>")) );
 
    SpecLibrary* spec_lib = libmgr.GetSpecLibrary();
    const type_info& spec_lib_ti = typeid( *spec_lib );
-   TRY_TESTME( std::string( spec_lib_ti.name() ) == std::string("libLibrary<SpecLibraryEntry>") );
+   TRY_TESTME( std::_tstring( spec_lib_ti.name() ) == std::_tstring(_T("libLibrary<SpecLibraryEntry>")) );
 
    RatingLibrary* rating_lib = libmgr.GetRatingLibrary();
    const type_info& rating_lib_ti = typeid( *rating_lib );
-   TRY_TESTME( std::string( rating_lib_ti.name() ) == std::string("libLibrary<RatingLibraryEntry>") );
+   TRY_TESTME( std::_tstring( rating_lib_ti.name() ) == std::_tstring(_T("libLibrary<RatingLibraryEntry>")) );
 
    TESTME_EPILOG("LibraryManager");
 }

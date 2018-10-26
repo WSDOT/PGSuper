@@ -80,9 +80,9 @@ void COptionalDeflectionCheck::Build(rptChapter* pChapter, const pgsGirderArtifa
       INIT_UV_PROTOTYPE( rptLengthUnitValue, defu,    pDisplayUnits->GetComponentDimUnit(), true );
 
       rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      pPara->SetName("Optional Live Load Deflection Check");
+      pPara->SetName(_T("Optional Live Load Deflection Check"));
       *pChapter << pPara;
-      (*pPara) << "Optional Live Load Deflection Check (LRFD 2.5.2.6.2)" << rptNewLine;
+      (*pPara) << _T("Optional Live Load Deflection Check (LRFD 2.5.2.6.2)") << rptNewLine;
 
       rptParagraph* p = new rptParagraph;
       *pChapter<<p;
@@ -90,11 +90,11 @@ void COptionalDeflectionCheck::Build(rptChapter* pChapter, const pgsGirderArtifa
       double min, max;
       pDef->GetDemand(&min,&max);
 
-      *p<< "Allowable deflection span ratio = L/"<<pDef->GetAllowableSpanRatio()<<rptNewLine;
-      *p<< "Allowable maximum deflection  = "<< symbol(PLUS_MINUS) << defu.SetValue(pDef->GetCapacity())<<rptNewLine;
-      *p<< "Minimum live load deflection along girder  = "<<defu.SetValue(min)<<rptNewLine;
-      *p<< "Maximum live load deflection along girder  = "<<defu.SetValue(max)<<rptNewLine;
-      *p<< "Status = ";
+      *p<< _T("Allowable deflection span ratio = L/")<<pDef->GetAllowableSpanRatio()<<rptNewLine;
+      *p<< _T("Allowable maximum deflection  = ")<< symbol(PLUS_MINUS) << defu.SetValue(pDef->GetCapacity())<<rptNewLine;
+      *p<< _T("Minimum live load deflection along girder  = ")<<defu.SetValue(min)<<rptNewLine;
+      *p<< _T("Maximum live load deflection along girder  = ")<<defu.SetValue(max)<<rptNewLine;
+      *p<< _T("Status = ");
       if (pDef->Passed())
          *p<< RPT_PASS<<rptNewLine;
       else
@@ -140,7 +140,7 @@ bool COptionalDeflectionCheck::AssertValid() const
 
 void COptionalDeflectionCheck::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for COptionalDeflectionCheck" << endl;
+   os << _T("Dump for COptionalDeflectionCheck") << endl;
 }
 #endif // _DEBUG
 

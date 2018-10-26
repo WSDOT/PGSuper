@@ -60,44 +60,44 @@ static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 static void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType gdr);
 void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, SpanIndexType span,GirderIndexType gdr);
 
-std::string get_connection_image_name(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+std::_tstring get_connection_image_name(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
 
 
-std::string get_bearing_measure_string(ConnectionLibraryEntry::BearingOffsetMeasurementType type)
+std::_tstring get_bearing_measure_string(ConnectionLibraryEntry::BearingOffsetMeasurementType type)
 {
    switch( type )
    {
    case ConnectionLibraryEntry::AlongGirder:
-      return "Measured From Pier Centerline and Along Girder Centerline";
+      return _T("Measured From Pier Centerline and Along Girder Centerline");
 
    case ConnectionLibraryEntry::NormalToPier:
-      return "Measured From and Normal to Pier Centerline";
+      return _T("Measured From and Normal to Pier Centerline");
 
    default:
       ATLASSERT(0);
-      return "";
+      return _T("");
    }
 }
 
-inline std::string get_end_distance_measure_string(ConnectionLibraryEntry::EndDistanceMeasurementType type)
+inline std::_tstring get_end_distance_measure_string(ConnectionLibraryEntry::EndDistanceMeasurementType type)
 {
    switch( type )
    {
    case ConnectionLibraryEntry::FromBearingAlongGirder:
-      return "Measured From Bearing along Girder Centerline";
+      return _T("Measured From Bearing along Girder Centerline");
 
    case ConnectionLibraryEntry::FromBearingNormalToPier:
-      return "Measured From Bearing and Normal to Pier Centerline";
+      return _T("Measured From Bearing and Normal to Pier Centerline");
 
    case ConnectionLibraryEntry::FromPierAlongGirder:
-      return "Measured From Pier Centerline and Along Girder Centerline";
+      return _T("Measured From Pier Centerline and Along Girder Centerline");
 
    case ConnectionLibraryEntry::FromPierNormalToPier:
-      return "Measured From and Normal to Pier Centerline";
+      return _T("Measured From and Normal to Pier Centerline");
 
    default:
       ATLASSERT(0);
-      return "";
+      return _T("");
    }
 }
 
@@ -172,7 +172,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
       {
          rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter<<pHead;
-         *pHead << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << rptNewLine;
+         *pHead << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
 
          write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
          write_girder_details( pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
@@ -189,7 +189,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
          pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter<<pHead;
-         *pHead<<"Transverse Reinforcement Stirrup Zones"<<rptNewLine;
+         *pHead<<_T("Transverse Reinforcement Stirrup Zones")<<rptNewLine;
          CStirrupTable stirrup_table;
          stirrup_table.Build(pChapter,pBroker,spanIdx, gdrIdx,pDisplayUnits);
 
@@ -198,7 +198,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
          pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter<<pHead;
-         *pHead<<"Materials"<<rptNewLine;
+         *pHead<<_T("Materials")<<rptNewLine;
          write_concrete_details( pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
 
          write_strand_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx, pgsTypes::Permanent );
@@ -254,32 +254,32 @@ void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
 
    rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<"Girder Connection Library Entries"<<rptNewLine;
+   *pHead<<_T("Girder Connection Library Entries")<<rptNewLine;
 
    rptParagraph* pPara;
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   std::set<std::string> used_connections;
+   std::set<std::_tstring> used_connections;
 
    PierIndexType cPiers = pBridge->GetPierCount();
    for ( PierIndexType pier = 0; pier < cPiers; pier++ )
    {
       for ( int side = 0; side < 2; side++ )
       {
-         std::string strConnection;
+         std::_tstring strConnection;
          if ( side == 0 )
             strConnection = pBridge->GetLeftSidePierConnection( pier );
          else
             strConnection = pBridge->GetRightSidePierConnection( pier );
 
-         std::set<std::string>::iterator found = used_connections.find( strConnection );
+         std::set<std::_tstring>::iterator found = used_connections.find( strConnection );
          if ( found == used_connections.end() )
          {
             const ConnectionLibraryEntry* pEntry = pLib->GetConnectionEntry( strConnection.c_str() );
 
             rptRcTable* pTable = 0;
-            pTable = pgsReportStyleHolder::CreateDefaultTable(3,"");
+            pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
             *pPara << rptNewLine << pTable;
 
             pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -305,32 +305,32 @@ void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
             (*pTable)(1,0) << rptRcImage( pgsReportStyleHolder::GetImagePath() + get_connection_image_name(pEntry->GetBearingOffsetMeasurementType(),pEntry->GetEndDistanceMeasurementType()) );
 
 
-            (*pTable)(1,1) << "Girder End Distance";
+            (*pTable)(1,1) << _T("Girder End Distance");
             (*pTable)(1,2) << xdim.SetValue( pEntry->GetGirderEndDistance() ) 
                              << rptNewLine << get_end_distance_measure_string(pEntry->GetEndDistanceMeasurementType());
 
-            (*pTable)(2,1) << "Girder Bearing Offset";
+            (*pTable)(2,1) << _T("Girder Bearing Offset");
             (*pTable)(2,2)   << xdim.SetValue( pEntry->GetGirderBearingOffset() )
                                << rptNewLine << get_bearing_measure_string(pEntry->GetBearingOffsetMeasurementType());
 
-            (*pTable)(3,1) << "Support Width";
+            (*pTable)(3,1) << _T("Support Width");
             (*pTable)(3,2) << xdim.SetValue( pEntry->GetSupportWidth() );
 
-            (*pTable)(4,1) << "End Diaphragm Width (W)";
+            (*pTable)(4,1) << _T("End Diaphragm Width (W)");
             (*pTable)(4,2) << cmpdim.SetValue( pEntry->GetDiaphragmWidth() );
 
-            (*pTable)(5,1) << "End Diaphragm Height (H)";
+            (*pTable)(5,1) << _T("End Diaphragm Height (H)");
             (*pTable)(5,2) << cmpdim.SetValue( pEntry->GetDiaphragmHeight() );
 
-            (*pTable)(6,1) << "End Diaphragm C.G. Distance";
+            (*pTable)(6,1) << _T("End Diaphragm C.G. Distance");
 
             ConnectionLibraryEntry::DiaphragmLoadType ltype = pEntry->GetDiaphragmLoadType();
             if (ltype==ConnectionLibraryEntry::ApplyAtBearingCenterline)
-               (*pTable)(6,2) << "Applied at CL bearing";
+               (*pTable)(6,2) << _T("Applied at CL bearing");
             else if(ltype==ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
-               (*pTable)(6,2) << xdim.SetValue( pEntry->GetDiaphragmLoadLocation())<<" from CL Pier";
+               (*pTable)(6,2) << xdim.SetValue( pEntry->GetDiaphragmLoadLocation())<<_T(" from CL Pier");
             else if(ltype==ConnectionLibraryEntry::DontApply)
-               (*pTable)(6,2) << "N/A";
+               (*pTable)(6,2) << _T("N/A");
          }
 
          used_connections.insert( strConnection );
@@ -349,7 +349,7 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
    const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
 
-   std::string title = std::string(pSpan->GetGirderTypes()->GetGirderName(gdr)) + std::string(" Dimensions");
+   std::_tstring title = std::_tstring(pSpan->GetGirderTypes()->GetGirderName(gdr)) + std::_tstring(_T(" Dimensions"));
    rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(1,title);
    pTable->EnableRowStriping(false);
    *pPara << pTable;
@@ -377,11 +377,11 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          cmpdim.SetWidth(length_unit.Width);
          cmpdim.SetPrecision(length_unit.Precision);
 
-         (*pTable)(1,0) << (*dim_iter).first.c_str() << " = " << cmpdim.SetValue( (*dim_iter).second ) << rptNewLine;
+         (*pTable)(1,0) << (*dim_iter).first.c_str() << _T(" = ") << cmpdim.SetValue( (*dim_iter).second ) << rptNewLine;
       }
       else
       {
-         (*pTable)(1,0) << (*dim_iter).first.c_str() << " = " << (*dim_iter).second << rptNewLine;
+         (*pTable)(1,0) << (*dim_iter).first.c_str() << _T(" = ") << (*dim_iter).second << rptNewLine;
       }
    }
 
@@ -410,22 +410,22 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
 
       rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
-      *pPara<<"Debonding Criteria"<<rptNewLine;
+      *pPara<<_T("Debonding Criteria")<<rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      *pPara << "Maximum number of debonded strands = " << pGdrEntry->GetMaxTotalFractionDebondedStrands()*100 << "% of total number of strands" << rptNewLine;
-      *pPara << "Maximum number of debonded strands per row = " << pGdrEntry->GetMaxFractionDebondedStrandsPerRow()*100 << "% of strands in any row" << rptNewLine;
+      *pPara << _T("Maximum number of debonded strands = ") << pGdrEntry->GetMaxTotalFractionDebondedStrands()*100 << _T("% of total number of strands") << rptNewLine;
+      *pPara << _T("Maximum number of debonded strands per row = ") << pGdrEntry->GetMaxFractionDebondedStrandsPerRow()*100 << _T("% of strands in any row") << rptNewLine;
 
       StrandIndexType nMax;
       double fMax;
 
       pGdrEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);   
-      *pPara << "Maximum number of debonded strands per section. The greater of " << nMax << " strands or " << fMax*100 << "% of strands debonded at any section" << rptNewLine;
+      *pPara << _T("Maximum number of debonded strands per section. The greater of ") << nMax << _T(" strands or ") << fMax*100 << _T("% of strands debonded at any section") << rptNewLine;
 
       fMax = pGdrEntry->GetMinDebondSectionLength();
-      *pPara << "Maximum distance between debond sections = "<<cmpdim.SetValue(fMax)<< rptNewLine;
+      *pPara << _T("Maximum distance between debond sections = ")<<cmpdim.SetValue(fMax)<< rptNewLine;
 
       bool useSpanFraction, useHardDistance;
       Float64 spanFraction, hardDistance;
@@ -433,16 +433,16 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
 
       if (useSpanFraction || useHardDistance)
       {
-         *pPara << "Maximum debonded length is the lesser of: The half-girder length minus maximum development length (5.11.4.3)";
+         *pPara << _T("Maximum debonded length is the lesser of: The half-girder length minus maximum development length (5.11.4.3)");
 
          if (useSpanFraction)
          {
-            *pPara <<"; and "<<spanFraction*100<<"% of the girder length";
+            *pPara <<_T("; and ")<<spanFraction*100<<_T("% of the girder length");
          }
 
          if (useHardDistance)
          {
-            *pPara << "; and "<< cmpdim.SetValue(hardDistance) << rptNewLine;
+            *pPara << _T("; and ")<< cmpdim.SetValue(hardDistance) << rptNewLine;
          }
       }
    }
@@ -456,7 +456,7 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Intermediate Diaphragms" << rptNewLine;
+   *pParagraph << _T("Intermediate Diaphragms") << rptNewLine;
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -469,7 +469,7 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
    {
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
-      *pParagraph << "No intermediate diaphragms defined" << rptNewLine;
+      *pParagraph << _T("No intermediate diaphragms defined") << rptNewLine;
       return;
    }
 
@@ -481,51 +481,51 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
 
-      *pParagraph << "Description: " << rule.Description << rptNewLine;
+      *pParagraph << _T("Description: ") << rule.Description << rptNewLine;
       
-      *pParagraph << "Use when span length is between " << locdim.SetValue(rule.MinSpan);
-      *pParagraph << " and " << locdim.SetValue(rule.MaxSpan) << rptNewLine;
+      *pParagraph << _T("Use when span length is between ") << locdim.SetValue(rule.MinSpan);
+      *pParagraph << _T(" and ") << locdim.SetValue(rule.MaxSpan) << rptNewLine;
 
-      *pParagraph << "Height: " << cmpdim.SetValue(rule.Height) << rptNewLine;
-      *pParagraph << "Thickness: " << cmpdim.SetValue(rule.Thickness) << rptNewLine;
+      *pParagraph << _T("Height: ") << cmpdim.SetValue(rule.Height) << rptNewLine;
+      *pParagraph << _T("Thickness: ") << cmpdim.SetValue(rule.Thickness) << rptNewLine;
 
-      *pParagraph << "Diaphragm Type: " << (rule.Type == GirderLibraryEntry::dtExternal ? "External" : "Internal") << rptNewLine;
-      *pParagraph << "Construction Stage: " << (rule.Construction == GirderLibraryEntry::ctCastingYard ? "Casting Yard" : "Bridge Site") << rptNewLine;
+      *pParagraph << _T("Diaphragm Type: ") << (rule.Type == GirderLibraryEntry::dtExternal ? _T("External") : _T("Internal")) << rptNewLine;
+      *pParagraph << _T("Construction Stage: ") << (rule.Construction == GirderLibraryEntry::ctCastingYard ? _T("Casting Yard") : _T("Bridge Site")) << rptNewLine;
 
       switch( rule.MeasureType )
       {
          case GirderLibraryEntry::mtFractionOfSpanLength:
-            *pParagraph << "Diarphagm location is measured as a fraction of the span length" << rptNewLine;
+            *pParagraph << _T("Diarphagm location is measured as a fraction of the span length") << rptNewLine;
             break;
 
          case GirderLibraryEntry::mtFractionOfGirderLength:
-            *pParagraph << "Diarphagm location is measured as a fraction of the girder length" << rptNewLine;
+            *pParagraph << _T("Diarphagm location is measured as a fraction of the girder length") << rptNewLine;
             break;
 
          case GirderLibraryEntry::mtAbsoluteDistance:
-               *pParagraph << "Diarphagm location is measured as a fixed distance" << rptNewLine;
+               *pParagraph << _T("Diarphagm location is measured as a fixed distance") << rptNewLine;
             break;
       }
 
       switch( rule.MeasureLocation )
       {
          case GirderLibraryEntry::mlEndOfGirder:
-            *pParagraph << "Diaphragm location is measured from the end of the girder" << rptNewLine;
+            *pParagraph << _T("Diaphragm location is measured from the end of the girder") << rptNewLine;
             break;
 
          case GirderLibraryEntry::mlBearing:
-            *pParagraph << "Diaphragm location is measured from the centerline of bearing" << rptNewLine;
+            *pParagraph << _T("Diaphragm location is measured from the centerline of bearing") << rptNewLine;
             break;
 
          case GirderLibraryEntry::mlCenterlineOfGirder:
-            *pParagraph << "Diaphragm location is measured from the centerline of the girder" << rptNewLine;
+            *pParagraph << _T("Diaphragm location is measured from the centerline of the girder") << rptNewLine;
             break;
       }
 
       if ( rule.MeasureType == GirderLibraryEntry::mtAbsoluteDistance )
-         *pParagraph << "Diaphragm Location: " << locdim.SetValue(rule.Location) << rptNewLine;
+         *pParagraph << _T("Diaphragm Location: ") << locdim.SetValue(rule.Location) << rptNewLine;
       else
-         *pParagraph << "Diaphragm Location: " << rule.Location << rptNewLine;
+         *pParagraph << _T("Diaphragm Location: ") << rule.Location << rptNewLine;
    }
 
 }
@@ -540,13 +540,13 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    *pChapter << pPara;
 
 
-   std::string title(pBarrierEntry->GetName() + " Dimensions");
+   std::_tstring title(pBarrierEntry->GetName() + _T(" Dimensions"));
    rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,title);
    pTable->EnableRowStriping(false);
    *pPara << pTable;
 
    // Dump barrier points
-   (*pTable)(0,0) << "Barrier Points" << rptNewLine;
+   (*pTable)(0,0) << _T("Barrier Points") << rptNewLine;
    CComPtr<IPoint2dCollection> points;
    pBarrierEntry->GetBarrierPoints(&points);
 
@@ -560,7 +560,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
       point->get_X(&x);
       point->get_Y(&y);
 
-      (*pTable)(0,0) << "Point " << i++ << "= (" << xdim.SetValue(x) << "," << ydim.SetValue(y) << ")" << rptNewLine;
+      (*pTable)(0,0) << _T("Point ") << i++ << _T("= (") << xdim.SetValue(x) << _T(",") << ydim.SetValue(y) << _T(")") << rptNewLine;
       point.Release();
    }
 
@@ -568,14 +568,14 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
    if ( pBarrierEntry->GetWeightMethod() == TrafficBarrierEntry::Compute )
    {
-      (*pTable)(0,0) << "Weight computed from area of barrier" << rptNewLine;
+      (*pTable)(0,0) << _T("Weight computed from area of barrier") << rptNewLine;
    }
    else
    {
-      (*pTable)(0,0) << "Weight = " << weight.SetValue( pBarrierEntry->GetWeight() ) << "/barrier" << rptNewLine;
+      (*pTable)(0,0) << _T("Weight = ") << weight.SetValue( pBarrierEntry->GetWeight() ) << _T("/barrier") << rptNewLine;
    }
 
-   (*pTable)(0,1) << rptRcImage( pgsReportStyleHolder::GetImagePath() + "ExteriorBarrier.jpg");
+   (*pTable)(0,1) << rptRcImage( pgsReportStyleHolder::GetImagePath() + _T("ExteriorBarrier.jpg"));
 }
 
 
@@ -599,11 +599,11 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    GET_IFACE2(pBroker, IGirderData,pGirderData);
    const CGirderMaterial* pGirderMaterial = pGirderData->GetGirderMaterial(span,gdr);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,"Girder Concrete");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Girder Concrete"));
    *pPara << pTable << rptNewLine;
 
    Int16 row = 0;
-   (*pTable)(row,0) << "Type";
+   (*pTable)(row,0) << _T("Type");
    (*pTable)(row,1) << matConcrete::GetTypeName( (matConcrete::Type)pGirderMaterial->Type, true );
    row++;
 
@@ -615,15 +615,15 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    (*pTable)(row,1) << stress.SetValue( pGirderMaterial->Fci );
    row++;
 
-   (*pTable)(row,0) << "Unit Weight " << Sub2("w","c");
+   (*pTable)(row,0) << _T("Unit Weight ") << Sub2(_T("w"),_T("c"));
    (*pTable)(row,1) << density.SetValue( pGirderMaterial->StrengthDensity );
    row++;
 
-   (*pTable)(row,0) << "Unit Weight with Reinforcement " << Sub2("w","c");
+   (*pTable)(row,0) << _T("Unit Weight with Reinforcement ") << Sub2(_T("w"),_T("c"));
    (*pTable)(row,1) << density.SetValue( pGirderMaterial->WeightDensity );
    row++;
 
-   (*pTable)(row,0) << "Max Aggregate Size";
+   (*pTable)(row,0) << _T("Max Aggregate Size");
    (*pTable)(row,1) << cmpdim.SetValue( pGirderMaterial->MaxAggregateSize );
    row++;
 
@@ -631,46 +631,46 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
 
    if ( pGirderMaterial->bUserEc )
    {
-      (*pTable)(row,0) << "User specified value";
+      (*pTable)(row,0) << _T("User specified value");
    }
    else
    {
       if ( b2005Edition )
       {
-         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI_2005.png" : "ModE_US_2005.png")) << rptNewLine;
+         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI_2005.png") : _T("ModE_US_2005.png"))) << rptNewLine;
       }
       else
       {
-         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI.png" : "ModE_US.png")) << rptNewLine;
+         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI.png") : _T("ModE_US.png"))) << rptNewLine;
       }
    }
-   (*pTable)(row,1) << Sub2("E","c") << " = " << modE.SetValue(pMaterial->GetEcGdr(span,gdr)) << rptNewLine;
-   (*pTable)(row,1) << Sub2("E","ci") << " = " << modE.SetValue(pMaterial->GetEciGdr(span,gdr));
+   (*pTable)(row,1) << Sub2(_T("E"),_T("c")) << _T(" = ") << modE.SetValue(pMaterial->GetEcGdr(span,gdr)) << rptNewLine;
+   (*pTable)(row,1) << Sub2(_T("E"),_T("ci")) << _T(" = ") << modE.SetValue(pMaterial->GetEciGdr(span,gdr));
    row++;
 
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    {
-      (*pTable)(row,0) << Sub2("E","c") << " " << Sub2("K","1");
+      (*pTable)(row,0) << Sub2(_T("E"),_T("c")) << _T(" ") << Sub2(_T("K"),_T("1"));
       (*pTable)(row,1) << pGirderMaterial->EcK1;
       row++;
 
-      (*pTable)(row,0) << Sub2("E","c") << " " << Sub2("K","2");
+      (*pTable)(row,0) << Sub2(_T("E"),_T("c")) << _T(" ") << Sub2(_T("K"),_T("2"));
       (*pTable)(row,1) << pGirderMaterial->EcK2;
       row++;
 
-      (*pTable)(row,0) << "Creep" << " " << Sub2("K","1");
+      (*pTable)(row,0) << _T("Creep") << _T(" ") << Sub2(_T("K"),_T("1"));
       (*pTable)(row,1) << pGirderMaterial->CreepK1;
       row++;
 
-      (*pTable)(row,0) << "Creep" << " " << Sub2("K","2");
+      (*pTable)(row,0) << _T("Creep") << _T(" ") << Sub2(_T("K"),_T("2"));
       (*pTable)(row,1) << pGirderMaterial->CreepK2;
       row++;
 
-      (*pTable)(row,0) << "Shrinkage" << " " << Sub2("K","1");
+      (*pTable)(row,0) << _T("Shrinkage") << _T(" ") << Sub2(_T("K"),_T("1"));
       (*pTable)(row,1) << pGirderMaterial->ShrinkageK1;
       row++;
 
-      (*pTable)(row,0) << "Shrinkage" << " " << Sub2("K","2");
+      (*pTable)(row,0) << _T("Shrinkage") << _T(" ") << Sub2(_T("K"),_T("2"));
       (*pTable)(row,1) << pGirderMaterial->ShrinkageK2;
       row++;
    }
@@ -681,10 +681,10 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
    {
       row = 0;
-      pTable = pgsReportStyleHolder::CreateTableNoHeading(2,"Deck Concrete");
+      pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Deck Concrete"));
       *pPara << pTable << rptNewLine;
 
-      (*pTable)(row,0) << "Type";
+      (*pTable)(row,0) << _T("Type");
       (*pTable)(row,1) << matConcrete::GetTypeName( (matConcrete::Type)pDeck->SlabConcreteType, true );
       row++;
 
@@ -692,59 +692,59 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       (*pTable)(row,1) << stress.SetValue( pDeck->SlabFc );
       row++;
 
-      (*pTable)(row,0) << "Unit Weight " << Sub2("w","c");
+      (*pTable)(row,0) << _T("Unit Weight ") << Sub2(_T("w"),_T("c"));
       (*pTable)(row,1) << density.SetValue( pDeck->SlabStrengthDensity );
       row++;
 
-      (*pTable)(row,0) << "Unit Weight including Reinforcement " << Sub2("w","c");
+      (*pTable)(row,0) << _T("Unit Weight including Reinforcement ") << Sub2(_T("w"),_T("c"));
       (*pTable)(row,1) << density.SetValue( pDeck->SlabWeightDensity );
       row++;
 
-      (*pTable)(row,0) << "Max Aggregate Size";
+      (*pTable)(row,0) << _T("Max Aggregate Size");
       (*pTable)(row,1) << cmpdim.SetValue( pDeck->SlabMaxAggregateSize );
       row++;
 
       if ( pDeck->SlabUserEc )
       {
-         (*pTable)(row,0) << "User specified value";
+         (*pTable)(row,0) << _T("User specified value");
       }
       else
       {
          if ( b2005Edition )
          {
-            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI_2005.png" : "ModE_US_2005.png")) << rptNewLine;
+            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI_2005.png") : _T("ModE_US_2005.png"))) << rptNewLine;
          }
          else
          {
-            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? "ModE_SI.png" : "ModE_US.png")) << rptNewLine;
+            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI.png") : _T("ModE_US.png"))) << rptNewLine;
          }
       }
-      (*pTable)(row,1) << Sub2("E","c") << " = " << modE.SetValue(pMaterial->GetEcSlab());
+      (*pTable)(row,1) << Sub2(_T("E"),_T("c")) << _T(" = ") << modE.SetValue(pMaterial->GetEcSlab());
       row++;
 
       if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
-         (*pTable)(row,0) << Sub2("E","c") << " " << Sub2("K","1");
+         (*pTable)(row,0) << Sub2(_T("E"),_T("c")) << _T(" ") << Sub2(_T("K"),_T("1"));
          (*pTable)(row,1) << pDeck->SlabEcK1;
          row++;
 
-         (*pTable)(row,0) << Sub2("E","c") << " " << Sub2("K","2");
+         (*pTable)(row,0) << Sub2(_T("E"),_T("c")) << _T(" ") << Sub2(_T("K"),_T("2"));
          (*pTable)(row,1) << pDeck->SlabEcK2;
          row++;
 
-         (*pTable)(row,0) << "Creep" << " " << Sub2("K","1");
+         (*pTable)(row,0) << _T("Creep") << _T(" ") << Sub2(_T("K"),_T("1"));
          (*pTable)(row,1) << pDeck->SlabCreepK1;
          row++;
 
-         (*pTable)(row,0) << "Creep" << " " << Sub2("K","2");
+         (*pTable)(row,0) << _T("Creep") << _T(" ") << Sub2(_T("K"),_T("2"));
          (*pTable)(row,1) << pDeck->SlabCreepK2;
          row++;
 
-         (*pTable)(row,0) << "Shrinkage" << " " << Sub2("K","1");
+         (*pTable)(row,0) << _T("Shrinkage") << _T(" ") << Sub2(_T("K"),_T("1"));
          (*pTable)(row,1) << pDeck->SlabShrinkageK1;
          row++;
 
-         (*pTable)(row,0) << "Shrinkage" << " " << Sub2("K","2");
+         (*pTable)(row,0) << _T("Shrinkage") << _T(" ") << Sub2(_T("K"),_T("2"));
          (*pTable)(row,1) << pDeck->SlabShrinkageK2;
          row++;
       }
@@ -762,9 +762,9 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    *pChapter << pPara;
 
    if ( strandType == pgsTypes::Temporary )
-      *pPara << "Temporary Strand" << rptNewLine;
+      *pPara << _T("Temporary Strand") << rptNewLine;
    else
-      *pPara << "Permanent Strand" << rptNewLine;
+      *pPara << _T("Permanent Strand") << rptNewLine;
 
    GET_IFACE2(pBroker, IGirderData, pGirderData);
    const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr,strandType);
@@ -775,8 +775,8 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
    Int16 row = 0;
 
-   (*pTable)(row,0) << "Type";
-   (*pTable)(row,1) << (pstrand->GetType() == matPsStrand::LowRelaxation ? "Low Relaxation" : "Stress Relieved");
+   (*pTable)(row,0) << _T("Type");
+   (*pTable)(row,1) << (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
    row++;
 
    (*pTable)(row,0) << RPT_FPU;
@@ -811,7 +811,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    const matRebar* pbar = prp->GetRebar(4);
    PRECONDITION(pbar!=0);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,"Mild Steel (Rebar) Material");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Mild Steel (Rebar) Material"));
    *pPara << pTable << rptNewLine;
 
    Int16 row = 0;
@@ -836,7 +836,7 @@ void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDis
    {
       rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter<<pHead;
-      *pHead<<"Lifting and Shipping Locations (From End of Girder)"<<rptNewLine;
+      *pHead<<_T("Lifting and Shipping Locations (From End of Girder)")<<rptNewLine;
 
       INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), true );
 
@@ -846,41 +846,41 @@ void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDis
       if (dolift)
       {
          GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
-         *pPara<<"Left Lifting Loop  = "<<loc.SetValue(pGirderLifting->GetLeftLiftingLoopLocation(span,girder))<<rptNewLine;
-         *pPara<<"Right Lifting Loop  = "<<loc.SetValue(pGirderLifting->GetRightLiftingLoopLocation(span,girder))<<rptNewLine;
+         *pPara<<_T("Left Lifting Loop  = ")<<loc.SetValue(pGirderLifting->GetLeftLiftingLoopLocation(span,girder))<<rptNewLine;
+         *pPara<<_T("Right Lifting Loop  = ")<<loc.SetValue(pGirderLifting->GetRightLiftingLoopLocation(span,girder))<<rptNewLine;
       }
 
       if (dohaul)
       {
          GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
-         *pPara<<"Leading Truck Support = "<<loc.SetValue(pGirderHauling->GetLeadingOverhang(span,girder))<<rptNewLine;
-         *pPara<<"Trailing Truck Support = "<<loc.SetValue(pGirderHauling->GetTrailingOverhang(span,girder))<<rptNewLine;
+         *pPara<<_T("Leading Truck Support = ")<<loc.SetValue(pGirderHauling->GetLeadingOverhang(span,girder))<<rptNewLine;
+         *pPara<<_T("Trailing Truck Support = ")<<loc.SetValue(pGirderHauling->GetTrailingOverhang(span,girder))<<rptNewLine;
       }
    }
 }
 
 
-std::string get_connection_image_name(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+std::_tstring get_connection_image_name(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
 {
-   std::string strName;
+   std::_tstring strName;
    if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
    {
       switch( endType )
       {
       case ConnectionLibraryEntry::FromBearingAlongGirder:
-         strName = "Connection_BrgAlongGdr_EndAlongGdrFromBrg.gif";
+         strName = _T("Connection_BrgAlongGdr_EndAlongGdrFromBrg.gif");
          break;
 
       case ConnectionLibraryEntry::FromBearingNormalToPier:
-         strName = "Connection_BrgAlongGdr_EndAlongNormalFromBrg.gif";
+         strName = _T("Connection_BrgAlongGdr_EndAlongNormalFromBrg.gif");
          break;
 
       case ConnectionLibraryEntry::FromPierAlongGirder:
-         strName = "Connection_BrgAlongGdr_EndAlongGdrFromPier.gif";
+         strName = _T("Connection_BrgAlongGdr_EndAlongGdrFromPier.gif");
          break;
 
       case ConnectionLibraryEntry::FromPierNormalToPier:
-         strName = "Connection_BrgAlongGdr_EndAlongNormalFromPier.gif";
+         strName = _T("Connection_BrgAlongGdr_EndAlongNormalFromPier.gif");
          break;
       }
    }
@@ -889,19 +889,19 @@ std::string get_connection_image_name(ConnectionLibraryEntry::BearingOffsetMeasu
       switch( endType )
       {
       case ConnectionLibraryEntry::FromBearingAlongGirder:
-         strName = "Connection_BrgAlongNormal_EndAlongGdrFromBrg.gif";
+         strName = _T("Connection_BrgAlongNormal_EndAlongGdrFromBrg.gif");
          break;
 
       case ConnectionLibraryEntry::FromBearingNormalToPier:
-         strName = "Connection_BrgAlongNormal_EndAlongNormalFromBrg.gif";
+         strName = _T("Connection_BrgAlongNormal_EndAlongNormalFromBrg.gif");
          break;
 
       case ConnectionLibraryEntry::FromPierAlongGirder:
-         strName = "Connection_BrgAlongNormal_EndAlongGdrFromPier.gif";
+         strName = _T("Connection_BrgAlongNormal_EndAlongGdrFromPier.gif");
          break;
 
       case ConnectionLibraryEntry::FromPierNormalToPier:
-         strName = "Connection_BrgAlongNormal_EndAlongNormalFromPier.gif";
+         strName = _T("Connection_BrgAlongNormal_EndAlongNormalFromPier.gif");
          break;
       }
    }

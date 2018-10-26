@@ -89,20 +89,20 @@ END_MESSAGE_MAP()
 BOOL CStrandGenerationDlg::OnInitDialog()
 {
    CComboBox* pcbStrandType = (CComboBox*)GetDlgItem(IDC_STRAND_TYPE);
-   int idx = pcbStrandType->AddString("Straight");
-   idx = pcbStrandType->AddString("Harped");
+   int idx = pcbStrandType->AddString(_T("Straight"));
+   idx = pcbStrandType->AddString(_T("Harped"));
    pcbStrandType->SetCurSel(0);
 
    CComboBox* pcbGenerationTypes = (CComboBox*)GetDlgItem(IDC_STRAND_GENERATION);
-   idx = pcbGenerationTypes->AddString("Sequential");
+   idx = pcbGenerationTypes->AddString(_T("Sequential"));
    pcbGenerationTypes->SetItemData(idx,(DWORD_PTR)sgSequential);
-   idx = pcbGenerationTypes->AddString("Skipped");
+   idx = pcbGenerationTypes->AddString(_T("Skipped"));
    pcbGenerationTypes->SetItemData(idx,(DWORD_PTR)sgSkipped);
 
    CComboBox* pcbLayoutTypes = (CComboBox*)GetDlgItem(IDC_LAYOUT);
-   idx = pcbLayoutTypes->AddString("Start Point and Horizontal and Vertical Spacing");
+   idx = pcbLayoutTypes->AddString(_T("Start Point and Horizontal and Vertical Spacing"));
    pcbLayoutTypes->SetItemData(idx,(DWORD_PTR)ltSpacing);
-   idx = pcbLayoutTypes->AddString("Start and End Points");
+   idx = pcbLayoutTypes->AddString(_T("Start and End Points"));
    pcbLayoutTypes->SetItemData(idx,(DWORD_PTR)ltStartEndPoint);
 
    CDialog::OnInitDialog();
@@ -184,22 +184,22 @@ CString CStrandGenerationDlg::GetImageName(LayoutType layoutType,StrandGeneratio
    {
       if ( generationType == sgSequential )
       {
-         strName = "GENERATESTRANDS_STARTSPACING_SEQUENTIAL";
+         strName = _T("GENERATESTRANDS_STARTSPACING_SEQUENTIAL");
       }
       else
       {
-         strName = "GENERATESTRANDS_STARTSPACING_SKIPPED";
+         strName = _T("GENERATESTRANDS_STARTSPACING_SKIPPED");
       }
    }
    else
    {
       if ( generationType == sgSequential )
       {
-         strName = "GENERATESTRANDS_STARTEND_SEQUENTIAL";
+         strName = _T("GENERATESTRANDS_STARTEND_SEQUENTIAL");
       }
       else
       {
-         strName = "GENERATESTRANDS_STARTEND_SKIPPED";
+         strName = _T("GENERATESTRANDS_STARTEND_SKIPPED");
       }
    }
 

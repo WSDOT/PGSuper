@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperDoc.h"
 #include "PGSuperException.h"
 #include "AnalysisResultsView.h"
@@ -159,7 +159,7 @@ void CAnalysisResultsView::OnDraw(CDC* pDC)
 
       CFont font;
       CFont* pOldFont = NULL;
-      if ( font.CreatePointFont(100,"Arial",pDC) )
+      if ( font.CreatePointFont(100,_T("Arial"),pDC) )
          pOldFont = pDC->SelectObject(&font);
 
       MultiLineTextOut(pDC,0,0,msg);
@@ -168,7 +168,7 @@ void CAnalysisResultsView::OnDraw(CDC* pDC)
          pDC->SelectObject(pOldFont);
 
       // give child frame a reasonable default
-      SetWindowText("Analysis Results");
+      SetWindowText(_T("Analysis Results"));
    }
 
    pDC->RestoreDC(save);
@@ -418,7 +418,7 @@ void CAnalysisResultsView::DumpLBAM()
    // Alt + Ctrl + L
    GET_IFACE(IProductForces,pProductForces);
    pProductForces->DumpAnalysisModels(m_pFrame->GetGirderIdx());
-   AfxMessageBox("Analysis Model Dump Complete",MB_OK);
+   AfxMessageBox(_T("Analysis Model Dump Complete"),MB_OK);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -450,7 +450,7 @@ void CAnalysisResultsView::DoUpdateNow()
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   pProgress->UpdateMessage("Building Graph");
+   pProgress->UpdateMessage(_T("Building Graph"));
 
    CWaitCursor wait;
 
@@ -510,6 +510,7 @@ void CAnalysisResultsView::DoUpdateNow()
       case graphDemand:
       case graphAllowable:
       case graphCapacity:
+      case graphMinCapacity:
          LimitStateLoadGraph(graphIdx,stage,action,vPoi);
          break;
 
@@ -547,13 +548,13 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
 
    // data series for moment, shears and deflections
    Uint32 max_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,pen_size,c);
-   Uint32 min_data_series = m_Graph.CreateDataSeries("",          PS_SOLID,pen_size,c);
+   Uint32 min_data_series = m_Graph.CreateDataSeries(_T(""),          PS_SOLID,pen_size,c);
 
    // data series for stresses
-   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+" - Top",    PS_STRESS_TOP,   1,c);
-   Uint32 stress_top_min = m_Graph.CreateDataSeries("",                       PS_STRESS_TOP,   1,c);
-   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+" -  Bottom",PS_STRESS_BOTTOM,1,c);
-   Uint32 stress_bot_min = m_Graph.CreateDataSeries("",                       PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top"),    PS_STRESS_TOP,   1,c);
+   Uint32 stress_top_min = m_Graph.CreateDataSeries(_T(""),                       PS_STRESS_TOP,   1,c);
+   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+_T(" -  Bottom"),PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_bot_min = m_Graph.CreateDataSeries(_T(""),                       PS_STRESS_BOTTOM,1,c);
 
    std::vector<Float64> xVals;
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -576,11 +577,20 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
          if ( graph_type == graphCapacity )
          {
             GET_IFACE(IMomentCapacity,pCapacity);
-            std::vector<double> pMn = pCapacity->GetMomentCapacity(stage,vPoi,true);
+            std::vector<Float64> pMn = pCapacity->GetMomentCapacity(stage,vPoi,true);
             AddGraphPoints(max_data_series, xVals, pMn);
 
-            std::vector<double> nMn = pCapacity->GetMomentCapacity(stage,vPoi,false);
+            std::vector<Float64> nMn = pCapacity->GetMomentCapacity(stage,vPoi,false);
             AddGraphPoints(min_data_series, xVals, nMn);
+         }
+         else if ( graph_type == graphMinCapacity )
+         {
+            GET_IFACE(IMomentCapacity,pCapacity);
+            std::vector<Float64> pMrMin = pCapacity->GetMinMomentCapacity(stage,vPoi,true);
+            AddGraphPoints(max_data_series, xVals, pMrMin);
+
+            std::vector<Float64> nMrMin = pCapacity->GetMinMomentCapacity(stage,vPoi,false);
+            AddGraphPoints(min_data_series, xVals, nMrMin);
          }
          else
          {
@@ -616,11 +626,11 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
          if ( graph_type == graphCapacity )
          {
             GET_IFACE(IShearCapacity,pCapacity);
-            std::vector<double> pVn = pCapacity->GetShearCapacity(limit_state, stage, vPoi);
+            std::vector<Float64> pVn = pCapacity->GetShearCapacity(limit_state, stage, vPoi);
             AddGraphPoints(max_data_series, xVals,  pVn);
 
-            std::vector<double>::iterator iter;
-            std::vector<double> nVn;
+            std::vector<Float64>::iterator iter;
+            std::vector<Float64> nVn;
             for ( iter = pVn.begin(); iter != pVn.end(); iter++ )
             {
                nVn.push_back(-1*(*iter));
@@ -747,8 +757,8 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
                   AddGraphPoints(stress_top_min, xVals, fTopMin);
                   AddGraphPoints(stress_bot_min, xVals, fBotMin);
 
-                  m_Graph.SetDataLabel(stress_top_min,strDataLabel+" - Top");
-                  m_Graph.SetDataLabel(stress_bot_min,strDataLabel+" - Bottom");
+                  m_Graph.SetDataLabel(stress_top_min,strDataLabel+_T(" - Top"));
+                  m_Graph.SetDataLabel(stress_bot_min,strDataLabel+_T(" - Bottom"));
                }
                else
                {
@@ -840,7 +850,7 @@ void CAnalysisResultsView::LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,Acti
    pgsTypes::LiveLoadType llType = m_pFrame->GetLiveLoadType(graphIdx);
 
    CString strDataLabel(m_pFrame->GetGraphDataLabel(graphIdx));
-   strDataLabel += " (per girder)";
+   strDataLabel += _T(" (per girder)");
 
    COLORREF c = m_pFrame->GetGraphColor(graphIdx);
 
@@ -851,13 +861,13 @@ void CAnalysisResultsView::LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,Acti
 
    // data series for moment, shears and deflections
    Uint32 min_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,1,c);
-   Uint32 max_data_series = m_Graph.CreateDataSeries("",PS_SOLID,1,c);
+   Uint32 max_data_series = m_Graph.CreateDataSeries(_T(""),PS_SOLID,1,c);
 
    // data series for stresses
-   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+" - Top",   PS_STRESS_TOP,   1,c);
-   Uint32 stress_top_min = m_Graph.CreateDataSeries("",                      PS_STRESS_TOP,   1,c);
-   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+" - Bottom",PS_STRESS_BOTTOM,1,c);
-   Uint32 stress_bot_min = m_Graph.CreateDataSeries("",                      PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top"),   PS_STRESS_TOP,   1,c);
+   Uint32 stress_top_min = m_Graph.CreateDataSeries(_T(""),                      PS_STRESS_TOP,   1,c);
+   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom"),PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_bot_min = m_Graph.CreateDataSeries(_T(""),                      PS_STRESS_BOTTOM,1,c);
 
    std::vector<Float64> xVals;
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -965,7 +975,7 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
    ASSERT(stage==pgsTypes::BridgeSite3);
 
    CString strDataLabel(m_pFrame->GetGraphDataLabel(graphIdx));
-   strDataLabel += " (per lane)";
+   strDataLabel += _T(" (per lane)");
 
    COLORREF c = m_pFrame->GetGraphColor(graphIdx);
 
@@ -975,14 +985,14 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
    VehicleIndexType vehicleIndex = m_pFrame->GetVehicleIndex(graphIdx);
 
    // data series for moment, shears and deflections
-   Uint32 min_data_series = m_Graph.CreateDataSeries("",          PS_SOLID,1,c);
+   Uint32 min_data_series = m_Graph.CreateDataSeries(_T(""),          PS_SOLID,1,c);
    Uint32 max_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,1,c);
 
    // data series for stresses
-   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+" - Top",   PS_STRESS_TOP,   1,c);
-   Uint32 stress_top_min = m_Graph.CreateDataSeries("",                      PS_STRESS_TOP,   1,c);
-   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+" - Bottom",PS_STRESS_BOTTOM,1,c);
-   Uint32 stress_bot_min = m_Graph.CreateDataSeries("",                      PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top"),   PS_STRESS_TOP,   1,c);
+   Uint32 stress_top_min = m_Graph.CreateDataSeries(_T(""),                      PS_STRESS_TOP,   1,c);
+   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom"),PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_bot_min = m_Graph.CreateDataSeries(_T(""),                      PS_STRESS_BOTTOM,1,c);
 
    std::vector<Float64> xVals;
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -1202,8 +1212,8 @@ void CAnalysisResultsView::PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage
    COLORREF c = m_pFrame->GetGraphColor(graphIdx);
 
    Uint32 deflection = m_Graph.CreateDataSeries(strDataLabel,   PS_SOLID,   1,c);
-   Uint32 stress_top = m_Graph.CreateDataSeries(strDataLabel+" - Top",   PS_STRESS_TOP,   1,c);
-   Uint32 stress_bot = m_Graph.CreateDataSeries(strDataLabel+" - Bottom",PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_top = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top"),   PS_STRESS_TOP,   1,c);
+   Uint32 stress_bot = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom"),PS_STRESS_BOTTOM,1,c);
 
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = vPoi.begin(); i != vPoi.end(); i++ )
@@ -1310,7 +1320,7 @@ int CAnalysisResultsView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
 
    // initial title for child frame
-   this->SetWindowText("Analysis Results");
+   this->SetWindowText(_T("Analysis Results"));
 
 	return 0;
 }
@@ -1382,7 +1392,7 @@ void CAnalysisResultsView::UpdateUnits(ActionType action)
       const unitmgtMomentData& rlen = pUnits->GetMomentUnit();
       m_pYFormat = new MomentTool(rlen);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::string ytit = "Moment (" + ((MomentTool*)m_pYFormat)->UnitTag() + ")";
+      std::_tstring ytit = _T("Moment (") + ((MomentTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(ytit);
       break;
       }
@@ -1391,7 +1401,7 @@ void CAnalysisResultsView::UpdateUnits(ActionType action)
       const unitmgtForceData& rlen = pUnits->GetShearUnit();
       m_pYFormat = new ShearTool(rlen);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::string ytit = "Shear (" + ((ShearTool*)m_pYFormat)->UnitTag() + ")";
+      std::_tstring ytit = _T("Shear (") + ((ShearTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(ytit);
       break;
       }
@@ -1400,7 +1410,7 @@ void CAnalysisResultsView::UpdateUnits(ActionType action)
       const unitmgtLengthData& rlen = pUnits->GetDisplacementUnit();
       m_pYFormat = new DisplacementTool(rlen);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::string ytit = "Displacement (" + ((DisplacementTool*)m_pYFormat)->UnitTag() + ")";
+      std::_tstring ytit = _T("Displacement (") + ((DisplacementTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(ytit);
       break;
       }
@@ -1409,7 +1419,7 @@ void CAnalysisResultsView::UpdateUnits(ActionType action)
       const unitmgtStressData& rstress = pUnits->GetStressUnit();
       m_pYFormat = new StressTool(rstress);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::string ytit = "Stress (" + ((StressTool*)m_pYFormat)->UnitTag() + ")";
+      std::_tstring ytit = _T("Stress (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(ytit);
       break;
       }
@@ -1471,7 +1481,7 @@ void CAnalysisResultsView::InitializeGraph(int graphIdx,ActionType action,Uint32
       {
          *pAnalysisTypeCount = 2;
          pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, 1, c);
-         pDataSeriesID[1] = m_Graph.CreateDataSeries("", PS_SOLID, 1, c);
+         pDataSeriesID[1] = m_Graph.CreateDataSeries(_T(""), PS_SOLID, 1, c);
 
          pBAT[0] = MinSimpleContinuousEnvelope;
          pBAT[1] = MaxSimpleContinuousEnvelope;
@@ -1492,16 +1502,16 @@ void CAnalysisResultsView::InitializeGraph(int graphIdx,ActionType action,Uint32
       if ( analysis_type == pgsTypes::Envelope )
       {
          *pAnalysisTypeCount = 1;
-         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel+" - Top",    PS_STRESS_TOP,    1, c);
-         pDataSeriesID[1] = m_Graph.CreateDataSeries(strDataLabel+" - Bottom", PS_STRESS_BOTTOM, 1, c);
+         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top"),    PS_STRESS_TOP,    1, c);
+         pDataSeriesID[1] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom"), PS_STRESS_BOTTOM, 1, c);
 
          pBAT[0] = MaxSimpleContinuousEnvelope;
       }
       else
       {
          *pAnalysisTypeCount = 2;
-         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel+" - Top",    PS_STRESS_TOP,    1, c);
-         pDataSeriesID[1] = m_Graph.CreateDataSeries(strDataLabel+" - Bottom", PS_STRESS_BOTTOM, 1, c);
+         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top"),    PS_STRESS_TOP,    1, c);
+         pDataSeriesID[1] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom"), PS_STRESS_BOTTOM, 1, c);
 
          pBAT[0] = (analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
          pBAT[1] = (analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
@@ -1541,7 +1551,7 @@ void CAnalysisResultsView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    // get paper size
    PGSuperCalculationSheet border(m_pBroker);
    CString strBottomTitle;
-   strBottomTitle.Format("PGSuper™, Copyright © %4d, WSDOT, All rights reserved",sysDate().Year());
+   strBottomTitle.Format(_T("PGSuper™, Copyright © %4d, WSDOT, All rights reserved"),sysDate().Year());
    border.SetTitle(strBottomTitle);
    CDocument* pdoc = GetDocument();
    CString path = pdoc->GetPathName();
@@ -1550,7 +1560,7 @@ void CAnalysisResultsView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    if (rcPrint.IsRectEmpty())
    {
-      CHECKX(0,"Can't print border - page too small?");
+      CHECKX(0,_T("Can't print border - page too small?"));
       rcPrint = pInfo->m_rectDraw;
    }
 
@@ -1562,11 +1572,11 @@ void CAnalysisResultsView::UpdateXAxisTitle(pgsTypes::Stage stage)
 {
    if ( stage == pgsTypes::CastingYard )
    {
-      m_Graph.SetXAxisTitle("Distance From Left End of Girder ("+m_pXFormat->UnitTag()+")");
+      m_Graph.SetXAxisTitle(_T("Distance From Left End of Girder (")+m_pXFormat->UnitTag()+_T(")"));
    }
    else
    {
-      m_Graph.SetXAxisTitle("Location ("+m_pXFormat->UnitTag()+")");
+      m_Graph.SetXAxisTitle(_T("Location (")+m_pXFormat->UnitTag()+_T(")"));
    }
 }
 
@@ -1576,16 +1586,16 @@ void CAnalysisResultsView::UpdateGraphTitle(SpanIndexType span,GirderIndexType g
    switch(action)
    {
    case actionMoment:
-      strAction = "Moments";
+      strAction = _T("Moments");
       break;
    case actionShear:
-      strAction = "Shears";
+      strAction = _T("Shears");
       break;
    case actionDisplacement:
-      strAction = "Deflections";
+      strAction = _T("Deflections");
       break;
    case actionStress:
-      strAction = "Stresses";
+      strAction = _T("Stresses");
       break;
    default:
       ASSERT(0);
@@ -1595,27 +1605,27 @@ void CAnalysisResultsView::UpdateGraphTitle(SpanIndexType span,GirderIndexType g
    switch(stage)
    {
    case pgsTypes::CastingYard:
-      strStage = "Casting Yard";
+      strStage = _T("Casting Yard");
       break;
 
    case pgsTypes::GirderPlacement:
-      strStage = "Girder Placement";
+      strStage = _T("Girder Placement");
       break;
 
    case pgsTypes::TemporaryStrandRemoval:
-      strStage = "Temporary Strand Removal";
+      strStage = _T("Temporary Strand Removal");
       break;
 
    case pgsTypes::BridgeSite1:
-      strStage = "Deck and Diaphragm Placement (Bridge Site 1)";
+      strStage = _T("Deck and Diaphragm Placement (Bridge Site 1)");
       break;
 
    case pgsTypes::BridgeSite2:
-      strStage = "Superimposed Dead Loads (Bridge Site 2)";
+      strStage = _T("Superimposed Dead Loads (Bridge Site 2)");
       break;
 
    case pgsTypes::BridgeSite3:
-      strStage = "Final with Live Load (Bridge Site 3)";
+      strStage = _T("Final with Live Load (Bridge Site 3)");
       break;
 
    default:
@@ -1626,30 +1636,30 @@ void CAnalysisResultsView::UpdateGraphTitle(SpanIndexType span,GirderIndexType g
    CString graph_title;
    if ( span == ALL_SPANS )
    {
-      graph_title.Format("Girder Line %s - %s - %s",LABEL_GIRDER(girder),strStage,strAction);
+      graph_title.Format(_T("Girder Line %s - %s - %s"),LABEL_GIRDER(girder),strStage,strAction);
    }
    else
    {
-      graph_title.Format("Span %d Girder %s - %s - %s",LABEL_SPAN(span),LABEL_GIRDER(girder),strStage,strAction);
+      graph_title.Format(_T("Span %d Girder %s - %s - %s"),LABEL_SPAN(span),LABEL_GIRDER(girder),strStage,strAction);
    }
    
-   m_Graph.SetTitle(std::string(graph_title));
+   m_Graph.SetTitle(std::_tstring(graph_title));
 
    CString strSubtitle;
    switch ( m_pFrame->GetAnalysisType() )
    {
    case pgsTypes::Simple:
-      strSubtitle = "Simple span";
+      strSubtitle = _T("Simple span");
       break;
 
    case pgsTypes::Continuous:
-      strSubtitle = "Simple made continuous";
+      strSubtitle = _T("Simple made continuous");
       break;
 
    case pgsTypes::Envelope:
-      strSubtitle = "Envelope of Simple span and simple made continuous";
+      strSubtitle = _T("Envelope of Simple span and simple made continuous");
       break;
    }
 
-   m_Graph.SetSubtitle(std::string(strSubtitle));
+   m_Graph.SetSubtitle(std::_tstring(strSubtitle));
 }

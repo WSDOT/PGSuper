@@ -176,8 +176,8 @@ private:
    UINT m_GirderModelEditorSettings;
 
    // Names of original spec entry from template and spec entry with 0.65f'ci modification
-   std::string m_OriginalSpecEntryName;
-   std::string m_065SpecEntryName;
+   std::_tstring m_OriginalSpecEntryName;
+   std::_tstring m_065SpecEntryName;
 
 private:
    // Implementation
@@ -187,7 +187,7 @@ private:
    void UpdatePgsuperModelWithData();
    void VerifyPgsuperTemplateData(CBridgeDescription& bridgeDesc);
    void SetGirderData(CTxDOTOptionalDesignGirderData* pOdGirderData, GirderIndexType gdr,
-                      const char* gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam,
+                      LPCTSTR gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam,
                       CGirderTypes* pGirderTypes);
 
    void DealWith065SpecEntry();

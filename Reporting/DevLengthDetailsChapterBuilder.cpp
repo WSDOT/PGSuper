@@ -119,7 +119,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          // Transfer Length
          GET_IFACE2(pBroker,ISpecification, pSpec );
-         std::string spec_name = pSpec->GetSpecification();
+         std::_tstring spec_name = pSpec->GetSpecification();
          GET_IFACE2(pBroker,ILibrary, pLib );
          const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -130,22 +130,22 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          if (pSpecEntry->GetPrestressTransferComputationType()!=pgsTypes::ptMinuteValue)
          {
-            *pParagraph_h << "Transfer Length [5.11.4.1]" << rptNewLine;
-            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "TransferLength.png") << rptNewLine;
-            *pParagraph << Sub2("d","b") << " = " << length.SetValue(bonded_details.db) << rptNewLine;
-            *pParagraph << Sub2("l","t") << " = " << length.SetValue(bonded_details.lt) << rptNewLine;
+            *pParagraph_h << _T("Transfer Length [5.11.4.1]") << rptNewLine;
+            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("TransferLength.png")) << rptNewLine;
+            *pParagraph << Sub2(_T("d"),_T("b")) << _T(" = ") << length.SetValue(bonded_details.db) << rptNewLine;
+            *pParagraph << Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.lt) << rptNewLine;
          }
          else
          {
-            *pParagraph_h << "Zero Transfer Length Selected in Project Criteria" << rptNewLine;
-            *pParagraph << "Actual length used "<< Sub2("l","t") << " = " << length.SetValue(bonded_details.lt) << rptNewLine;
+            *pParagraph_h << _T("Zero Transfer Length Selected in Project Criteria") << rptNewLine;
+            *pParagraph << _T("Actual length used ")<< Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.lt) << rptNewLine;
          }
 
          // Development Length
          pParagraph = new rptParagraph;
          *pChapter << pParagraph;
 
-         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(13,"Development Length [5.11.4.2]");
+         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(13,_T("Development Length [5.11.4.2]"));
          (*pParagraph) << pTable << rptNewLine;
 
 
@@ -156,12 +156,12 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          }
 
          if ( IS_US_UNITS(pDisplayUnits) )
-            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_US.png") << rptNewLine;
+            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("DevLength_US.png")) << rptNewLine;
          else
-            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_SI.png") << rptNewLine;
+            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("DevLength_SI.png")) << rptNewLine;
 
 
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLengthReduction.png") << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("DevLengthReduction.png")) << rptNewLine;
 
          pTable->SetNumberOfHeaderRows(2);
          pTable->SetRowSpan(0,0,2);
@@ -174,7 +174,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          pTable->SetColumnSpan(0,4,-1);
          pTable->SetColumnSpan(0,5,-1);
          pTable->SetColumnSpan(0,6,-1);
-         (*pTable)(0,1) << "Bonded Strands "   << symbol(kappa) << " = " << bonded_details.k;
+         (*pTable)(0,1) << _T("Bonded Strands ")   << symbol(kappa) << _T(" = ") << bonded_details.k;
 
          pTable->SetColumnSpan(0,7, 6);
          pTable->SetColumnSpan(0,8,-1);
@@ -182,21 +182,21 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          pTable->SetColumnSpan(0,10,-1);
          pTable->SetColumnSpan(0,11,-1);
          pTable->SetColumnSpan(0,12,-1);
-         (*pTable)(0,7) << "Debonded Strands " << symbol(kappa) << " = " << debonded_details.k;
+         (*pTable)(0,7) << _T("Debonded Strands ") << symbol(kappa) << _T(" = ") << debonded_details.k;
 
-         (*pTable)(1,1) << COLHDR(RPT_STRESS("ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,2) << COLHDR(RPT_STRESS("pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,3) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,4) << COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,5) << COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,6) << RPT_STRESS("px") << "/" << RPT_STRESS("ps");
+         (*pTable)(1,1) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,2) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,3) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,4) << COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,5) << COLHDR(Sub2(_T("l"),_T("px")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,6) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps"));
 
-         (*pTable)(1,7) << COLHDR(RPT_STRESS("ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,8) << COLHDR(RPT_STRESS("pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,9) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,10)<< COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,11)<< COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,12)<< RPT_STRESS("px") << "/" << RPT_STRESS("ps");
+         (*pTable)(1,7) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,8) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,9) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,10)<< COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,11)<< COLHDR(Sub2(_T("l"),_T("px")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,12)<< RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps"));
 
          GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
@@ -258,7 +258,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
          (*pChapter) << pParagraph;
-         (*pParagraph) << RPT_STRESS("px") << "/" << RPT_STRESS("ps") << " = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)" << rptNewLine;
+         (*pParagraph) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps")) << _T(" = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)") << rptNewLine;
       }
    }
 

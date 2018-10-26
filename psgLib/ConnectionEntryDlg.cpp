@@ -138,7 +138,7 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
    {
       if (m_Name.IsEmpty())
       {
-         AfxMessageBox("Connection Name cannot be blank");
+         AfxMessageBox(_T("Connection Name cannot be blank"));
          pDX->Fail();
       }
       // check end distance
@@ -159,7 +159,7 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
 
       if ( bearing_end_offset < end_distance )
       {
-         AfxMessageBox("End Distance cannot be greater than Bearing Offset");
+         AfxMessageBox(_T("End Distance cannot be greater than Bearing Offset"));
          pDX->Fail();
       }
    }
@@ -197,14 +197,14 @@ BOOL CConnectionEntryDlg::OnInitDialog()
    // disable OK button if editing not allowed
    CString head;
    GetWindowText(head);
-   head += " - ";
+   head += _T(" - ");
    head += m_Name;
 	if (!m_AllowEditing)
    {
       CWnd* pbut = GetDlgItem(IDOK);
       ASSERT(pbut);
       pbut->EnableWindow(m_AllowEditing);
-      head += " (Read Only)";
+      head += _T(" (Read Only)");
    }
    SetWindowText(head);
 
@@ -310,10 +310,10 @@ void CConnectionEntryDlg::FillBearingOffsetComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
    pCB->ResetContent();
 
-   int idx = pCB->AddString("Measured Normal to Abutment/Pier");
+   int idx = pCB->AddString(_T("Measured Normal to Abutment/Pier"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::NormalToPier));
 
-   idx = pCB->AddString("Measured Along Centerline Girder");
+   idx = pCB->AddString(_T("Measured Along Centerline Girder"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::AlongGirder));
 }
 
@@ -322,16 +322,16 @@ void CConnectionEntryDlg::FillEndDistanceComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
    pCB->ResetContent();
 
-   int idx = pCB->AddString("Measured from Bearing, Along Girder");
+   int idx = pCB->AddString(_T("Measured from Bearing, Along Girder"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingAlongGirder));
 
-   idx = pCB->AddString("Measured from Bearing, Normal to Pier");
+   idx = pCB->AddString(_T("Measured from Bearing, Normal to Pier"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingNormalToPier));
 
-   idx = pCB->AddString("Measured from Centerline Pier, Along Girder");
+   idx = pCB->AddString(_T("Measured from Centerline Pier, Along Girder"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierAlongGirder));
 
-   idx = pCB->AddString("Measured from Centerline Pier, Normal to Pier");
+   idx = pCB->AddString(_T("Measured from Centerline Pier, Normal to Pier"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
 }
 

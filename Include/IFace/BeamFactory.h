@@ -65,7 +65,7 @@ DEFINE_GUID(IID_IBeamFactory,
 0xd3810b3e, 0x91d6, 0x4aed, 0xa7, 0x48, 0x8a, 0xbe, 0xb8, 0x7f, 0xcf, 0x44);
 interface IBeamFactory : IUnknown
 {
-   typedef std::pair<std::string,double> Dimension;
+   typedef std::pair<std::_tstring,double> Dimension;
    typedef std::vector<Dimension> Dimensions;
 
    enum BeamFace {BeamTop, BeamBottom};
@@ -123,7 +123,7 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns a vector of strings representing the names of the dimensions that are used
    // to describe the cross section.
-   virtual std::vector<std::string> GetDimensionNames() = 0;
+   virtual std::vector<std::_tstring> GetDimensionNames() = 0;
 
    //---------------------------------------------------------------------------------
    // Returns a vector of length unit objects representing the units of measure of each
@@ -140,7 +140,7 @@ interface IBeamFactory : IUnknown
    // Return an error message through the strErrMsg pointer. If the error message
    // contains values, use the unit object to convert the value to display units and
    // append the appropreate unit tag
-   virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::string* strErrMsg) = 0;
+   virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) = 0;
 
    //---------------------------------------------------------------------------------
    // Saves the section dimensions to the storage unit
@@ -168,14 +168,14 @@ interface IBeamFactory : IUnknown
    // Returns the name of an image file that will be used in reports when the
    // cross section dimensions are reported. The image file must be in the same
    // directory as PGSuper.exe
-   virtual std::string GetImage() = 0;
+   virtual std::_tstring GetImage() = 0;
 
-   virtual std::string GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::string GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::string GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::string GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::string GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::string GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) = 0;
+   virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) = 0;
+   virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) = 0;
+   virtual std::_tstring GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) = 0;
+   virtual std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) = 0;
+   virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) = 0;
+   virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the class identifier for the beam factory
@@ -188,12 +188,12 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns a name string that identifies the general type of beam
    // this is not guarenteed to be unique
-   virtual std::string GetGirderFamilyName() = 0;
+   virtual std::_tstring GetGirderFamilyName() = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the name of the company, organization, and/or person that published the
    // beam factory
-   virtual std::string GetPublisher() = 0;
+   virtual std::_tstring GetPublisher() = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the instance handle for resources

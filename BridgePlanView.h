@@ -160,7 +160,7 @@ protected:
 
    void DrawFocusRect();
 
-   std::string GetConnectionString(const CPierData* pPier);
+   std::_tstring GetConnectionString(const CPierData* pPier);
 
    CBridgeModelViewChildFrame* GetFrame();
 };

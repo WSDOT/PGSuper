@@ -83,16 +83,16 @@ BOOL CMovePierDlg::OnInitDialog()
    CString strFromStation = FormatStation(m_StationFormat,m_FromStation);
    CString strToStation   = FormatStation(m_StationFormat,m_ToStation);
 
-   CString strName = (m_PierIdx == 0 || m_PierIdx == m_nSpans ? "Abutment" : "Pier");
+   CString strName = (m_PierIdx == 0 || m_PierIdx == m_nSpans ? _T("Abutment") : _T("Pier"));
 
    CStatic* pStatic = (CStatic*)GetDlgItem(IDC_DESCRIPTION);
    CString strDescription;
-   strDescription.Format("Move %s %d from %s to %s",strName,m_PierIdx+1,strFromStation,strToStation);
+   strDescription.Format(_T("Move %s %d from %s to %s"),strName,m_PierIdx+1,strFromStation,strToStation);
    pStatic->SetWindowText(strDescription);
 
    CString strOptions[4];
    pgsTypes::MovePierOption options[4];
-   strOptions[0] = "Move bridge, retain all span lengths";
+   strOptions[0] = _T("Move bridge, retain all span lengths");
    options[0] = pgsTypes::MoveBridge;
 
    int nOptions = 1;
@@ -102,7 +102,7 @@ BOOL CMovePierDlg::OnInitDialog()
         m_PrevPierStation < m_ToStation && m_ToStation < m_NextPierStation ) // can't move pier beyond adjacent piers
    {
       options[nOptions] = pgsTypes::AdjustAdjacentSpans;
-      strOptions[nOptions++].Format("Adjust length of Span %d and %d",LABEL_SPAN(m_PierIdx-1),LABEL_SPAN(m_PierIdx));
+      strOptions[nOptions++].Format(_T("Adjust length of Span %d and %d"),LABEL_SPAN(m_PierIdx-1),LABEL_SPAN(m_PierIdx));
    }
 
    if ( m_PierIdx == 0 && m_ToStation < m_NextPierStation )
@@ -110,18 +110,18 @@ BOOL CMovePierDlg::OnInitDialog()
       // adjust length of first span only
       options[nOptions] = pgsTypes::AdjustNextSpan;
       if ( m_nSpans == 1 )
-         strOptions[nOptions++].Format("Adjust length of Span %d by moving %s %d", LABEL_SPAN(m_PierIdx-1),strName,LABEL_SPAN(m_PierIdx));
+         strOptions[nOptions++].Format(_T("Adjust length of Span %d by moving %s %d"), LABEL_SPAN(m_PierIdx-1),strName,LABEL_SPAN(m_PierIdx));
       else
-         strOptions[nOptions++].Format("Adjust length of Span %d, retain length of all other spans",LABEL_SPAN(m_PierIdx));
+         strOptions[nOptions++].Format(_T("Adjust length of Span %d, retain length of all other spans"),LABEL_SPAN(m_PierIdx));
    }
    else if ( m_PierIdx == m_nSpans && m_PrevPierStation < m_ToStation )
    {
       // adjust length of last span only
       options[nOptions] = pgsTypes::AdjustPrevSpan;
       if ( m_nSpans == 1 )
-         strOptions[nOptions++].Format("Adjust length of Span %d by moving %s %d",m_PierIdx,strName,m_PierIdx+1);
+         strOptions[nOptions++].Format(_T("Adjust length of Span %d by moving %s %d"),m_PierIdx,strName,m_PierIdx+1);
       else
-         strOptions[nOptions++].Format("Adjust length of Span %d, retain length of all other spans",m_PierIdx-1);
+         strOptions[nOptions++].Format(_T("Adjust length of Span %d, retain length of all other spans"),m_PierIdx-1);
    }
    else if ( 0 < m_PierIdx && m_PierIdx < m_nSpans )
    {
@@ -129,14 +129,14 @@ BOOL CMovePierDlg::OnInitDialog()
       {
          // adjust length of previous span only
          options[nOptions] = pgsTypes::AdjustPrevSpan;
-         strOptions[nOptions++].Format("Adjust length of Span %d, retain length of all other spans",m_PierIdx);
+         strOptions[nOptions++].Format(_T("Adjust length of Span %d, retain length of all other spans"),m_PierIdx);
       }
 
       if ( m_ToStation < m_NextPierStation )
       {
          // adjust length of next span only
          options[nOptions] = pgsTypes::AdjustNextSpan;
-         strOptions[nOptions++].Format("Adjust length of Span %d, retain length of all other spans",m_PierIdx+1);
+         strOptions[nOptions++].Format(_T("Adjust length of Span %d, retain length of all other spans"),m_PierIdx+1);
       }
    }
 

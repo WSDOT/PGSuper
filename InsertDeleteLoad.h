@@ -34,7 +34,7 @@ class txnInsertPointLoad : public txnTransaction
 public:
    txnInsertPointLoad(const CPointLoadData& loadData);
    virtual txnTransaction* CreateClone() const;
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual bool Execute();
    virtual void Undo();
    virtual bool IsUndoable();
@@ -49,7 +49,7 @@ class txnDeletePointLoad : public txnTransaction
 {
 public:
    txnDeletePointLoad(Uint32 loadIdx);
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
@@ -65,7 +65,7 @@ class txnEditPointLoad : public txnTransaction
 {
 public:
    txnEditPointLoad(Uint32 loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData);
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
@@ -83,7 +83,7 @@ class txnInsertDistributedLoad : public txnTransaction
 public:
    txnInsertDistributedLoad(const CDistributedLoadData& loadData);
    virtual txnTransaction* CreateClone() const;
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual bool Execute();
    virtual void Undo();
    virtual bool IsUndoable();
@@ -98,7 +98,7 @@ class txnDeleteDistributedLoad : public txnTransaction
 {
 public:
    txnDeleteDistributedLoad(Uint32 loadIdx);
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
@@ -114,7 +114,7 @@ class txnEditDistributedLoad : public txnTransaction
 {
 public:
    txnEditDistributedLoad(Uint32 loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData);
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
@@ -132,7 +132,7 @@ class txnInsertMomentLoad : public txnTransaction
 public:
    txnInsertMomentLoad(const CMomentLoadData& loadData);
    virtual txnTransaction* CreateClone() const;
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual bool Execute();
    virtual void Undo();
    virtual bool IsUndoable();
@@ -147,7 +147,7 @@ class txnDeleteMomentLoad : public txnTransaction
 {
 public:
    txnDeleteMomentLoad(Uint32 loadIdx);
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
@@ -163,7 +163,7 @@ class txnEditMomentLoad : public txnTransaction
 {
 public:
    txnEditMomentLoad(Uint32 loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData);
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
    virtual void Undo();

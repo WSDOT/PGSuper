@@ -79,7 +79,7 @@ void CTrafficBarrierDlg::DoDataExchange(CDataExchange* pDX)
 	   DDX_Text(pDX, IDC_NAME, m_Name);
       if (m_Name.IsEmpty())
       {
-         AfxMessageBox("Specification Name cannot be blank");
+         AfxMessageBox(_T("Specification Name cannot be blank"));
          pDX->Fail();
       }
    }
@@ -103,7 +103,7 @@ void CTrafficBarrierDlg::DoDataExchange(CDataExchange* pDX)
    {
       CString strTag;
       GetDlgItem(IDC_WEIGHT_UNIT)->GetWindowText(strTag);
-      strTag += "/barrier";
+      strTag += _T("/barrier");
       GetDlgItem(IDC_WEIGHT_UNIT)->SetWindowText(strTag);
    }
 
@@ -136,10 +136,10 @@ LRESULT CTrafficBarrierDlg::OnCommandHelp(WPARAM, LPARAM lParam)
 BOOL CTrafficBarrierDlg::OnInitDialog() 
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_WEIGHT_METHOD);
-   int idx = pCB->AddString("Compute properties from barrier shape and materials");
+   int idx = pCB->AddString(_T("Compute properties from barrier shape and materials"));
    pCB->SetItemData(idx,(DWORD)TrafficBarrierEntry::Compute);
 
-   idx = pCB->AddString("Use these properties");
+   idx = pCB->AddString(_T("Use these properties"));
    pCB->SetItemData(idx,(DWORD)TrafficBarrierEntry::Input);
 
 	m_PointsGrid.SubclassDlgItem(IDC_TB_POINTS, this);
@@ -153,14 +153,14 @@ BOOL CTrafficBarrierDlg::OnInitDialog()
    // disable OK button if editing not allowed
    CString head;
    GetWindowText(head);
-   head += " - ";
+   head += _T(" - ");
    head += m_Name;
 	if (!m_AllowEditing)
    {
       CWnd* pbut = GetDlgItem(IDOK);
       ASSERT(pbut);
       pbut->EnableWindow(m_AllowEditing);
-      head += " (Read Only)";
+      head += _T(" (Read Only)");
    }
    SetWindowText(head);
 

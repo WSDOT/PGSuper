@@ -41,6 +41,8 @@
 #include <Reporting\DebondCheckTable.h>
 #include <Reporting\ContinuityCheck.h>
 
+#include <Reporting\RatingSummaryTable.h>
+
 #include <MathEx.h>
 
 #include <IFace\GirderHandlingSpecCriteria.h>
@@ -50,6 +52,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\Allowables.h>
+#include <IFace\RatingSpecification.h>
 
 #include <PgsExt\GirderArtifact.h>
 
@@ -111,7 +114,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   *pPara << "Specification = " << pSpec->GetSpecification() << rptNewLine;
+   *pPara << _T("Specification = ") << pSpec->GetSpecification() << rptNewLine;
 
 
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
@@ -119,31 +122,31 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    rptParagraph* p = new rptParagraph;
    *p << CStrandStressCheckTable().Build(pBroker,pArtifact->GetStrandStressArtifact(),pDisplayUnits) << rptNewLine;
 
-   p->SetName("Strand Stresses");
+   p->SetName(_T("Strand Stresses"));
    *pChapter << p;
 
    // report the required concrete strengths for the current bridge configuration
    p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << p;
-   *p << "Required Concrete Strengths" << rptNewLine;
+   *p << _T("Required Concrete Strengths") << rptNewLine;
 
    p = new rptParagraph;
    *pChapter << p;
-   p->SetName("Girder Stresses");
+   p->SetName(_T("Girder Stresses"));
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
    double fci_reqd = pArtifact->GetRequiredReleaseStrength();
    double fc_reqd  = pArtifact->GetRequiredConcreteStrength();
    if ( 0 <= fci_reqd )
    {
       double fci_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
-      *p << "Required " << RPT_FCI << " = " << stress_u.SetValue(fci_reqd);
-      *p << " " << symbol(RIGHT_DOUBLE_ARROW) << " " << stress_u.SetValue(fci_rounded) << rptNewLine;
+      *p << _T("Required ") << RPT_FCI << _T(" = ") << stress_u.SetValue(fci_reqd);
+      *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fci_rounded) << rptNewLine;
 
-      *p << "Actual " << RPT_FCI << " = " << stress_u.SetValue( pMaterial->GetFciGdr(span,girder)) << rptNewLine;
+      *p << _T("Actual ") << RPT_FCI << _T(" = ") << stress_u.SetValue( pMaterial->GetFciGdr(span,girder)) << rptNewLine;
    }
    else
    {
-      *p << "Regardless of the release strength, the stress requirements will not be satisfied." << rptNewLine;
+      *p << _T("Regardless of the release strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 
    *p << rptNewLine;
@@ -151,14 +154,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    if ( 0 <= fc_reqd )
    {
       double fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
-      *p << "Required " << RPT_FC  << " = " << stress_u.SetValue(fc_reqd);
-      *p << " " << symbol(RIGHT_DOUBLE_ARROW) << " " << stress_u.SetValue(fc_rounded) << rptNewLine;
+      *p << _T("Required ") << RPT_FC  << _T(" = ") << stress_u.SetValue(fc_reqd);
+      *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fc_rounded) << rptNewLine;
 
-      *p << "Actual " << RPT_FC << " = " << stress_u.SetValue( pMaterial->GetFcGdr(span,girder)) << rptNewLine;
+      *p << _T("Actual ") << RPT_FC << _T(" = ") << stress_u.SetValue( pMaterial->GetFcGdr(span,girder)) << rptNewLine;
    }
    else
    {
-      *p << "Regardless of the concrete strength, the stress requirements will not be satisfied." << rptNewLine;
+      *p << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 
    // report flexural stresses at various stages
@@ -197,13 +200,13 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    p = new rptParagraph;
    bool bOverReinforced;
-   p->SetName("Moment Capacities");
+   p->SetName(_T("Moment Capacities"));
    *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,true,&bOverReinforced) << rptNewLine;
    if ( bOverReinforced )
    {
-      *p << "* Over reinforced sections may be adequate if M" << Sub("u") << " does not exceed the minimum resistance specified in LRFD C5.7.3.3.1" << rptNewLine;
-      *p << "  Limiting capacity of over reinforced sections are shown in parentheses" << rptNewLine;
-      *p << "  See Moment Capacity Details chapter for additional information" << rptNewLine;
+      *p << _T("* Over reinforced sections may be adequate if M") << Sub(_T("u")) << _T(" does not exceed the minimum resistance specified in LRFD C5.7.3.3.1") << rptNewLine;
+      *p << _T("  Limiting capacity of over reinforced sections are shown in parentheses") << rptNewLine;
+      *p << _T("  See Moment Capacity Details chapter for additional information") << rptNewLine;
    }
    *pChapter << p;
 
@@ -214,9 +217,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,true,&bOverReinforced) << rptNewLine;
       if ( bOverReinforced )
       {
-         *p << "* Over reinforced sections may be adequate if M" << Sub("u") << " does not exceed the minimum resistance specified in LRFD C5.7.3.3.1" << rptNewLine;
-         *p << "  Limiting capacity of over reinforced sections are shown in parentheses" << rptNewLine;
-         *p << "  See Moment Capacity Details chapter for additional information" << rptNewLine;
+         *p << _T("* Over reinforced sections may be adequate if M") << Sub(_T("u")) << _T(" does not exceed the minimum resistance specified in LRFD C5.7.3.3.1") << rptNewLine;
+         *p << _T("  Limiting capacity of over reinforced sections are shown in parentheses") << rptNewLine;
+         *p << _T("  See Moment Capacity Details chapter for additional information") << rptNewLine;
       }
       *pChapter << p;
    }
@@ -229,9 +232,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,false,&bOverReinforced) << rptNewLine;
       if ( bOverReinforced )
       {
-         *p << "* Over reinforced sections may be adequate if M" << Sub("u") << " does not exceed the minimum resistance specified in LRFD C5.7.3.3.1" << rptNewLine;
-         *p << "  Limiting capacity of over reinforced sections are shown in parentheses" << rptNewLine;
-         *p << "  See Moment Capacity Details chapter for additional information" << rptNewLine;
+         *p << _T("* Over reinforced sections may be adequate if M") << Sub(_T("u")) << _T(" does not exceed the minimum resistance specified in LRFD C5.7.3.3.1") << rptNewLine;
+         *p << _T("  Limiting capacity of over reinforced sections are shown in parentheses") << rptNewLine;
+         *p << _T("  See Moment Capacity Details chapter for additional information") << rptNewLine;
       }
       *pChapter << p;
 
@@ -242,9 +245,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
          *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,false,&bOverReinforced) << rptNewLine;
          if ( bOverReinforced )
          {
-            *p << "* Over reinforced sections may be adequate if M" << Sub("u") << " does not exceed the minimum resistance specified in LRFD C5.7.3.3.1" << rptNewLine;
-            *p << "  Limiting capacity of over reinforced sections are shown in parentheses" << rptNewLine;
-            *p << "  See Moment Capacity Details chapter for additional information" << rptNewLine;
+            *p << _T("* Over reinforced sections may be adequate if M") << Sub(_T("u")) << _T(" does not exceed the minimum resistance specified in LRFD C5.7.3.3.1") << rptNewLine;
+            *p << _T("  Limiting capacity of over reinforced sections are shown in parentheses") << rptNewLine;
+            *p << _T("  See Moment Capacity Details chapter for additional information") << rptNewLine;
          }
          *pChapter << p;
       }
@@ -252,7 +255,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Vertical Shear check
    p = new rptParagraph;
-   p->SetName("Shear");
+   p->SetName(_T("Shear"));
    bool bStrutAndTieRequired;
    *pChapter << p;
    *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
@@ -324,7 +327,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    if (pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
    {
       p = new rptParagraph;
-      p->SetName("Lifting");
+      p->SetName(_T("Lifting"));
       *pChapter << p;
 
       CLiftingCheck().Build(pChapter,pBroker,span,girder,pDisplayUnits);
@@ -335,7 +338,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    if (pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
    {
       p = new rptParagraph;
-      p->SetName("Hauling");
+      p->SetName(_T("Hauling"));
       *pChapter << p;
 
       CHaulingCheck().Build(pChapter,pBroker,span,girder,pDisplayUnits);
@@ -343,7 +346,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Strand Slope
    p = new rptParagraph;
-   p->SetName("Constructability");
+   p->SetName(_T("Constructability"));
    *pChapter << p;
 
    // Girder Detailing
@@ -367,7 +370,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       *pChapter << p;
    }
 
-   // "A" Dimension check
+   // _T("A") Dimension check
    rptRcTable* atable = CConstructabilityCheckTable().BuildSlabOffsetTable(pBroker,span,girder,pDisplayUnits);
    if (atable!=NULL)
    { 
@@ -378,6 +381,81 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Global Stability Check
    CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,span,girder,pDisplayUnits);
+
+
+   // Load rating
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   if ( !pRatingSpec->AlwaysLoadRate() )
+      return pChapter;
+
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+   {
+      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      (*pChapter) << pPara;
+      pPara->SetName(_T("Design Load Rating"));
+      (*pPara) << pPara->GetName() << rptNewLine;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
+      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,girder, CRatingSummaryTable::Design ) << rptNewLine;
+   }
+
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   {
+      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      (*pChapter) << pPara;
+      pPara->SetName(_T("Legal Load Rating"));
+      (*pPara) << pPara->GetName() << rptNewLine;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+      {
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girder, pgsTypes::lrLegal_Routine);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
+
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girder, pgsTypes::lrLegal_Routine);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      {
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girder, pgsTypes::lrLegal_Special);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
+
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girder, pgsTypes::lrLegal_Special);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
+      }
+   }
+
+   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+   {
+      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      (*pChapter) << pPara;
+      pPara->SetName(_T("Permit Load Rating"));
+      (*pPara) << pPara->GetName() << rptNewLine;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
+      (*pPara) << Super(_T("*")) << _T("MBE 6A.4.5.2 Permit load rating should only be used if the bridge has a rating factor greater than 1.0 when evaluated for AASHTO legal loads.") << rptNewLine;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+      {
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girder, pgsTypes::lrPermit_Routine);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+      {
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girder, pgsTypes::lrPermit_Special);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
+      }
+   }
+
  
    return pChapter;
 }
@@ -421,22 +499,22 @@ void write_splitting_zone_check(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(), true );
    INIT_UV_PROTOTYPE( rptForceUnitValue,     force,  pDisplayUnits->GetGeneralForceUnit(), true );
 
-   std::string strName;
+   std::_tstring strName;
    if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
-      strName = "Splitting";
+      strName = _T("Splitting");
    else
-      strName = "Bursting";
+      strName = _T("Bursting");
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   (*pPara) << strName << " Zone Stirrup Check [5.10.10.1]" << rptNewLine;
+   (*pPara) << strName << _T(" Zone Stirrup Check [5.10.10.1]") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   (*pPara) << strName << " Zone Length = " << length.SetValue(pArtifact->GetSplittingZoneLength()) << rptNewLine;
-   (*pPara) << strName << " Force = " << force.SetValue(pArtifact->GetSplittingForce()) << rptNewLine;
-   (*pPara) << strName << " Resistance = " << force.SetValue(pArtifact->GetSplittingResistance()) << rptNewLine;
-   (*pPara) << "Status = ";
+   (*pPara) << strName << _T(" Zone Length = ") << length.SetValue(pArtifact->GetSplittingZoneLength()) << rptNewLine;
+   (*pPara) << strName << _T(" Force = ") << force.SetValue(pArtifact->GetSplittingForce()) << rptNewLine;
+   (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetSplittingResistance()) << rptNewLine;
+   (*pPara) << _T("Status = ");
    if ( pArtifact->Passed() )
       (*pPara) << RPT_PASS;
    else

@@ -461,6 +461,9 @@ bool pgsVerticalShearArtifact::Passed() const
    {
       if ( m_bEndSpacingApplicable[i] && m_AvSprovided[i] < m_AvSatCS[i] )
          return false;
+
+      if ( m_bIsStrutAndTieRequired[i] )
+         return false;
    }
 
    if (m_AreStirrupsReqd && ! m_AreStirrupsProvided)

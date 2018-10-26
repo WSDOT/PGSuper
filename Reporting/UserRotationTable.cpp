@@ -77,7 +77,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,SpanIndexType span,Girder
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>("Rotations - User Defined Loads",true,analysisType,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>(_T("Rotations - User Defined Loads"),true,analysisType,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -111,9 +111,9 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       pgsPointOfInterest& poi = vPoi[pier-startPier];
 
       if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
-         (*p_table)(row,col++) << "Abutment " << LABEL_PIER(pier);
+         (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*p_table)(row,col++) << "Pier " << LABEL_PIER(pier);
+         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
 
       if ( analysisType == pgsTypes::Envelope )
@@ -184,7 +184,7 @@ bool CUserRotationTable::AssertValid() const
 
 void CUserRotationTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CUserRotationTable" << endl;
+   os << _T("Dump for CUserRotationTable") << endl;
 }
 #endif // _DEBUG
 

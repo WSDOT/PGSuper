@@ -178,24 +178,24 @@ void CEditLoadsView::OnInitialUpdate()
    int rgt_wid = (int)((wid-lft_wid*5.0)/3.0);
 	
    int st;
-   st = m_LoadsListCtrl.InsertColumn(0,"Type",LVCFMT_LEFT,lft_wid);
+   st = m_LoadsListCtrl.InsertColumn(0,_T("Type"),LVCFMT_LEFT,lft_wid);
    ATLASSERT(st!=-1);
-   st = m_LoadsListCtrl.InsertColumn(1,"Stage",LVCFMT_LEFT,lft_wid);
+   st = m_LoadsListCtrl.InsertColumn(1,_T("Stage"),LVCFMT_LEFT,lft_wid);
    ATLASSERT(st!=-1);
-   st = m_LoadsListCtrl.InsertColumn(2,"Load Case",LVCFMT_LEFT,lft_wid);
+   st = m_LoadsListCtrl.InsertColumn(2,_T("Load Case"),LVCFMT_LEFT,lft_wid);
    ATLASSERT(st!=-1);
-   st = m_LoadsListCtrl.InsertColumn(3,"Span",LVCFMT_LEFT,lft_wid);
+   st = m_LoadsListCtrl.InsertColumn(3,_T("Span"),LVCFMT_LEFT,lft_wid);
    ATLASSERT(st!=-1);
-   st = m_LoadsListCtrl.InsertColumn(4,"Girder",LVCFMT_LEFT,lft_wid);
+   st = m_LoadsListCtrl.InsertColumn(4,_T("Girder"),LVCFMT_LEFT,lft_wid);
    ATLASSERT(st!=-1);
-   st = m_LoadsListCtrl.InsertColumn(5,"Location",LVCFMT_LEFT,rgt_wid);
+   st = m_LoadsListCtrl.InsertColumn(5,_T("Location"),LVCFMT_LEFT,rgt_wid);
    ATLASSERT(st!=-1);
 
-   std::string flab("Magnitude");
+   std::_tstring flab(_T("Magnitude"));
    st = m_LoadsListCtrl.InsertColumn(6,flab.c_str(),LVCFMT_LEFT,rgt_wid);
    ATLASSERT(st!=-1);
 
-   st = m_LoadsListCtrl.InsertColumn(7,"Description",LVCFMT_LEFT,rgt_wid);
+   st = m_LoadsListCtrl.InsertColumn(7,_T("Description"),LVCFMT_LEFT,rgt_wid);
    ATLASSERT(st!=-1);
 
    InsertData();
@@ -328,7 +328,7 @@ void CEditLoadsView::InsertData()
    Uint32 ipl;
    for (ipl=0; ipl<pl_cnt; ipl++)
    {
-      m_LoadsListCtrl.InsertItem(irow, "Point");
+      m_LoadsListCtrl.InsertItem(irow, _T("Point"));
 
       // use item data to save/retreive type information and location in vectors
       m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_POINT_LOAD, ipl) );
@@ -344,7 +344,7 @@ void CEditLoadsView::InsertData()
    pl_cnt = pUdl->GetMomentLoadCount();
    for (ipl=0; ipl<pl_cnt; ipl++)
    {
-      m_LoadsListCtrl.InsertItem(irow, "Moment");
+      m_LoadsListCtrl.InsertItem(irow, _T("Moment"));
 
       // use item data to save/retreive type information and location in vectors
       m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_MOMENT_LOAD, ipl) );
@@ -360,7 +360,7 @@ void CEditLoadsView::InsertData()
    Int32 dl_cnt = pUdl->GetDistributedLoadCount();
    for (Int32 idl=0; idl<dl_cnt; idl++)
    {
-      m_LoadsListCtrl.InsertItem(irow, "Distributed");
+      m_LoadsListCtrl.InsertItem(irow, _T("Distributed"));
 
       // use item data to save/retreive type information and location in vectors
       m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_DISTRIBUTED_LOAD, idl) );
@@ -384,34 +384,34 @@ void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& rld)
 
    CString str;
    if (rld.m_Span != UserLoads::AllSpans)
-      str.Format("%d", LABEL_SPAN(rld.m_Span));
+      str.Format(_T("%d"), LABEL_SPAN(rld.m_Span));
    else
-      str = "All Spans";
+      str = _T("All Spans");
 
    m_LoadsListCtrl.SetItemText(irow, 3, str);
 
    if (rld.m_Girder != UserLoads::AllGirders)
-      str.Format("%s", LABEL_GIRDER(rld.m_Girder));
+      str.Format(_T("%s"), LABEL_GIRDER(rld.m_Girder));
    else
-      str = "All Girders";
+      str = _T("All Girders");
 
    m_LoadsListCtrl.SetItemText(irow, 4, str);
 
-   std::string stdstr;
+   std::_tstring stdstr;
    if (rld.m_Fractional)
    {
-      stdstr = D2S(rld.m_Location*100.0) + std::string(" %");
+      stdstr = D2S(rld.m_Location*100.0) + std::_tstring(_T(" %"));
    }
    else
    {
       Float64 val = ::ConvertFromSysUnits(rld.m_Location, *m_pLengthUnit);
-      stdstr = D2S(val) + std::string(" ") +  m_pLengthUnit->UnitTag();
+      stdstr = D2S(val) + std::_tstring(_T(" ")) +  m_pLengthUnit->UnitTag();
    }
 
    m_LoadsListCtrl.SetItemText(irow, 5, stdstr.c_str());
 
    Float64 val = ::ConvertFromSysUnits(rld.m_Magnitude, *m_pForceUnit);
-   stdstr = D2S(val) + std::string(" ") + m_pForceUnit->UnitTag();
+   stdstr = D2S(val) + std::_tstring(_T(" ")) + m_pForceUnit->UnitTag();
 
    m_LoadsListCtrl.SetItemText(irow, 6, stdstr.c_str());
    m_LoadsListCtrl.SetItemText(irow, 7, rld.m_Description.c_str());
@@ -424,34 +424,34 @@ void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& rld)
 
    CString str;
    if (rld.m_Span != UserLoads::AllSpans)
-      str.Format("%d", LABEL_SPAN(rld.m_Span));
+      str.Format(_T("%d"), LABEL_SPAN(rld.m_Span));
    else
-      str = "All Spans";
+      str = _T("All Spans");
 
    m_LoadsListCtrl.SetItemText(irow, 3, str);
 
    if (rld.m_Girder != UserLoads::AllGirders)
-      str.Format("%s", LABEL_GIRDER(rld.m_Girder));
+      str.Format(_T("%s"), LABEL_GIRDER(rld.m_Girder));
    else
-      str = "All Girders";
+      str = _T("All Girders");
 
    m_LoadsListCtrl.SetItemText(irow, 4, str);
 
-   std::string stdstr;
+   std::_tstring stdstr;
    if (rld.m_Fractional)
    {
-      stdstr = D2S(rld.m_Location*100.0) + std::string(" %");
+      stdstr = D2S(rld.m_Location*100.0) + std::_tstring(_T(" %"));
    }
    else
    {
       Float64 val = ::ConvertFromSysUnits(rld.m_Location, *m_pLengthUnit);
-      stdstr = D2S(val) + std::string(" ") +  m_pLengthUnit->UnitTag();
+      stdstr = D2S(val) + std::_tstring(_T(" ")) +  m_pLengthUnit->UnitTag();
    }
 
    m_LoadsListCtrl.SetItemText(irow, 5, stdstr.c_str());
 
    Float64 val = ::ConvertFromSysUnits(rld.m_Magnitude, *m_pMomentUnit);
-   stdstr = D2S(val) + std::string(" ") + m_pMomentUnit->UnitTag();
+   stdstr = D2S(val) + std::_tstring(_T(" ")) + m_pMomentUnit->UnitTag();
 
    m_LoadsListCtrl.SetItemText(irow, 6, stdstr.c_str());
    m_LoadsListCtrl.SetItemText(irow, 7, rld.m_Description.c_str());
@@ -461,11 +461,11 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
 {
    if (rld.m_Type==UserLoads::Uniform)
    {
-      m_LoadsListCtrl.SetItemText(irow, 0, "Uniform");
+      m_LoadsListCtrl.SetItemText(irow, 0, _T("Uniform"));
    }
    else
    {
-      m_LoadsListCtrl.SetItemText(irow, 0, "Trapezoidal");
+      m_LoadsListCtrl.SetItemText(irow, 0, _T("Trapezoidal"));
    }
 
    m_LoadsListCtrl.SetItemText(irow, 1, UserLoads::GetStageName(rld.m_Stage).c_str());
@@ -473,36 +473,36 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
 
    CString str;
    if (rld.m_Span != UserLoads::AllSpans)
-      str.Format("%d", LABEL_SPAN(rld.m_Span));
+      str.Format(_T("%d"), LABEL_SPAN(rld.m_Span));
    else
-      str = "All Spans";
+      str = _T("All Spans");
 
    m_LoadsListCtrl.SetItemText(irow, 3, str);
 
    if (rld.m_Girder != UserLoads::AllGirders)
-      str.Format("%s", LABEL_GIRDER(rld.m_Girder));
+      str.Format(_T("%s"), LABEL_GIRDER(rld.m_Girder));
    else
-      str = "All Girders";
+      str = _T("All Girders");
 
    m_LoadsListCtrl.SetItemText(irow, 4, str);
 
-   std::string stdstr;
+   std::_tstring stdstr;
 
    if (rld.m_Type==UserLoads::Uniform)
    {
-      stdstr = "Entire Span";
+      stdstr = _T("Entire Span");
    }
    else
    {
       if (rld.m_Fractional)
       {
-         stdstr = D2S(rld.m_StartLocation*100.0) + std::string(" - ") + D2S(rld.m_EndLocation*100.0) + std::string(" %");;
+         stdstr = D2S(rld.m_StartLocation*100.0) + std::_tstring(_T(" - ")) + D2S(rld.m_EndLocation*100.0) + std::_tstring(_T(" %"));;
       }
       else
       {
          Float64 startval = ::ConvertFromSysUnits(rld.m_StartLocation, *m_pLengthUnit);
          Float64 endval = ::ConvertFromSysUnits(rld.m_EndLocation, *m_pLengthUnit);
-         stdstr = D2S(startval) + std::string(" - ") + D2S(endval) + std::string(" ") +  m_pLengthUnit->UnitTag();
+         stdstr = D2S(startval) + std::_tstring(_T(" - ")) + D2S(endval) + std::_tstring(_T(" ")) +  m_pLengthUnit->UnitTag();
       }
    }
 
@@ -511,13 +511,13 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
    if (rld.m_Type==UserLoads::Uniform)
    {
       Float64 val = ::ConvertFromSysUnits(rld.m_WStart, *m_pForcePerLengthUnit);
-      stdstr = D2S(val) + std::string(" ") + m_pForcePerLengthUnit->UnitTag();
+      stdstr = D2S(val) + std::_tstring(_T(" ")) + m_pForcePerLengthUnit->UnitTag();
    }
    else
    {
       Float64 startval = ::ConvertFromSysUnits(rld.m_WStart, *m_pForcePerLengthUnit);
       Float64 endval = ::ConvertFromSysUnits(rld.m_WEnd, *m_pForcePerLengthUnit);
-      stdstr = D2S(startval) + std::string(" - ") + D2S(endval) + std::string(" ") + m_pForcePerLengthUnit->UnitTag();
+      stdstr = D2S(startval) + std::_tstring(_T(" - ")) + D2S(endval) + std::_tstring(_T(" ")) + m_pForcePerLengthUnit->UnitTag();
    }
 
    m_LoadsListCtrl.SetItemText(irow, 6, stdstr.c_str());
@@ -701,12 +701,12 @@ void CEditLoadsView::OnHelp()
 	
 }
 
-std::string CEditLoadsView::D2S(Float64 val)
+std::_tstring CEditLoadsView::D2S(Float64 val)
 {
    // format number and strip off white space
-   std::string str = m_FormatTool.AsString(val);
+   std::_tstring str = m_FormatTool.AsString(val);
 
-   std::string::size_type  notwhite = str.find_first_not_of(" \t\n");
+   std::_tstring::size_type  notwhite = str.find_first_not_of(_T(" \t\n"));
    str.erase(0,notwhite);
 
    return str;
@@ -740,7 +740,7 @@ public:
    static CComPtr<IUserDefinedLoadData> m_pUdl;
    static bool m_bSortAscending;
    static int CALLBACK SortFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort);
-   static std::string GetStage(LPARAM lParam);
+   static std::_tstring GetStage(LPARAM lParam);
    static UserLoads::LoadCase GetLoadCase(LPARAM lParam);
    static SpanIndexType GetSpan(LPARAM lParam);
    static GirderIndexType GetGirder(LPARAM lParam);
@@ -752,7 +752,7 @@ public:
 CComPtr<IUserDefinedLoadData> SortObject::m_pUdl;
 bool SortObject::m_bSortAscending = true;
 
-std::string SortObject::GetStage(LPARAM lParam)
+std::_tstring SortObject::GetStage(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
    WORD load_idx  = HIWORD(lParam);

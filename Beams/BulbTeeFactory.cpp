@@ -52,23 +52,23 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CBulbTeeFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back("C1");
-   m_DimNames.push_back("D1");
-   m_DimNames.push_back("D2");
-   m_DimNames.push_back("D3");
-   m_DimNames.push_back("D4");
-   m_DimNames.push_back("D5");
-   m_DimNames.push_back("D6");
-   m_DimNames.push_back("D7");
-   m_DimNames.push_back("D8");
-   m_DimNames.push_back("T1");
-   m_DimNames.push_back("T2");
-   m_DimNames.push_back("W1");
-   m_DimNames.push_back("W2");
-   m_DimNames.push_back("W3");
-   m_DimNames.push_back("W4");
-   m_DimNames.push_back("Wmax");
-   m_DimNames.push_back("Wmin");
+   m_DimNames.push_back(_T("C1"));
+   m_DimNames.push_back(_T("D1"));
+   m_DimNames.push_back(_T("D2"));
+   m_DimNames.push_back(_T("D3"));
+   m_DimNames.push_back(_T("D4"));
+   m_DimNames.push_back(_T("D5"));
+   m_DimNames.push_back(_T("D6"));
+   m_DimNames.push_back(_T("D7"));
+   m_DimNames.push_back(_T("D8"));
+   m_DimNames.push_back(_T("T1"));
+   m_DimNames.push_back(_T("T2"));
+   m_DimNames.push_back(_T("W1"));
+   m_DimNames.push_back(_T("W2"));
+   m_DimNames.push_back(_T("W3"));
+   m_DimNames.push_back(_T("W4"));
+   m_DimNames.push_back(_T("Wmax"));
+   m_DimNames.push_back(_T("Wmin"));
 
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
@@ -271,7 +271,7 @@ void CBulbTeeFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexTy
       CComQIPtr<IThickenedFlangeBulbTeeSegment> bulbTeeSegment(segment);
       CComQIPtr<IBulbTeeSection> bulbTeeSection(gdrSection);
 
-      Float64 flangeThickening = GetDimension(dimensions,"D8");
+      Float64 flangeThickening = GetDimension(dimensions,_T("D8"));
 
       bulbTeeSegment->putref_BulbTeeSection(bulbTeeSection,flangeThickening);
    }
@@ -449,7 +449,7 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::vector<std::string> CBulbTeeFactory::GetDimensionNames()
+std::vector<std::_tstring> CBulbTeeFactory::GetDimensionNames()
 {
    return m_DimNames;
 }
@@ -464,7 +464,7 @@ std::vector<const unitLength*> CBulbTeeFactory::GetDimensionUnits(bool bSIUnits)
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::string* strErrMsg)
+bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
    double c1;
    double d1,d2,d3,d4,d5,d6,d7,d8;
@@ -491,8 +491,8 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( c1 < 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
-      std::ostringstream os;
-      os << "C1 must be zero or greater " << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be zero or greater ") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -500,24 +500,24 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( d1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
-      std::ostringstream os;
-      os << "D1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d3 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D3 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D3 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -525,24 +525,24 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( d4 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
-      std::ostringstream os;
-      os << "D4 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D4 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d5 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D5 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D5 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d6 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D6 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D6 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -550,8 +550,8 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( d7 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][6];
-      std::ostringstream os;
-      os << "D7 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D7 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -559,8 +559,8 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( d8 < 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][7];
-      std::ostringstream os;
-      os << "D8 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D8 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -568,16 +568,16 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( w1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][10];
-      std::ostringstream os;
-      os << "W1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("W1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( w2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "W2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("W2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -585,16 +585,16 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( w3 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][12];
-      std::ostringstream os;
-      os << "W3 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("W3 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( w4 < 0.0 )
    {
-      std::ostringstream os;
-      os << "W4 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("W4 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -602,8 +602,8 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( t1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][8];
-      std::ostringstream os;
-      os << "T1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("T1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -611,8 +611,8 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( t2 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
-      std::ostringstream os;
-      os << "T2 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("T2 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -620,16 +620,16 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( c1 > d4 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
-      std::ostringstream os;
-      os << "C1 must be less than D4 " << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be less than D4 ") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if (wmin>wmax)
    {
-      std::ostringstream os;
-      os << "Wmin must be greater than or equal to Wmax" << std::ends;
+      std::_tostringstream os;
+      os << _T("Wmin must be greater than or equal to Wmax") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -642,8 +642,8 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][15];
       double mf_u = ::ConvertFromSysUnits(min_topflange,*pUnit);
 
-      std::ostringstream os;
-      os << "Wmin must be greater than or equal to bottom flange width = "<<mf_u<< pUnit->UnitTag() <<" = T2 + 2.0*(W3+W4)" << std::ends;
+      std::_tostringstream os;
+      os << _T("Wmin must be greater than or equal to bottom flange width = ")<<mf_u<< pUnit->UnitTag() <<_T(" = T2 + 2.0*(W3+W4)") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -654,8 +654,8 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][15];
       double mf_u = ::ConvertFromSysUnits(min_topflange,*pUnit);
 
-      std::ostringstream os;
-      os << "Wmin must be greater than or equal to T1 + 2.0*(W1 + W2) = "<<mf_u<< pUnit->UnitTag() <<" = " << std::ends;
+      std::_tostringstream os;
+      os << _T("Wmin must be greater than or equal to T1 + 2.0*(W1 + W2) = ")<<mf_u<< pUnit->UnitTag() <<_T(" = ") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -666,11 +666,11 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
 
 void CBulbTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
-   std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("BulbTeeDimensions",3.0);
+   std::vector<std::_tstring>::iterator iter;
+   pSave->BeginUnit(_T("BulbTeeDimensions"),3.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
@@ -683,21 +683,21 @@ IBeamFactory::Dimensions CBulbTeeFactory::LoadSectionDimensions(sysIStructuredLo
 
    Float64 parent_version = pLoad->GetVersion();
 
-   if ( 14 <= parent_version && !pLoad->BeginUnit("BulbTeeDimensions") )
+   if ( 14 <= parent_version && !pLoad->BeginUnit(_T("BulbTeeDimensions")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    Float64 dimVersion = pLoad->GetVersion();
 
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value;
       if ( !pLoad->Property(name.c_str(),&value) )
       {
-         if ( (parent_version < 14 || (14 <= parent_version && dimVersion < 2)) && name == "D8" )
+         if ( (parent_version < 14 || (14 <= parent_version && dimVersion < 2)) && name == _T("D8") )
             value = 0;
-         else if ( (parent_version < 14 || (14 <= parent_version && dimVersion < 3))&& name == "C1" )
+         else if ( (parent_version < 14 || (14 <= parent_version && dimVersion < 3))&& name == _T("C1") )
             value = 0;
          else
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -718,7 +718,7 @@ bool CBulbTeeFactory::IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderI
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 d8 = GetDimension(dimensions,"D8");
+   Float64 d8 = GetDimension(dimensions,_T("D8"));
 
    return IsZero(d8) ? true : false;
 }
@@ -779,23 +779,23 @@ Float64 CBulbTeeFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,G
    return S;
 }
 
-std::string CBulbTeeFactory::GetImage()
+std::_tstring CBulbTeeFactory::GetImage()
 {
-   return std::string("BulbTee.png");
+   return std::_tstring(_T("BulbTee.png"));
 }
 
-std::string CBulbTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CBulbTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "BulbTee_Composite.gif";
+      strImage =  _T("BulbTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "BulbTee_Noncomposite.gif";
+      strImage =  _T("BulbTee_Noncomposite.gif");
       break;
 
    default:
@@ -806,18 +806,18 @@ std::string CBulbTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType 
    return strImage;
 }
 
-std::string CBulbTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CBulbTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "+Mn_BulbTee_Composite.gif";
+      strImage =  _T("+Mn_BulbTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "+Mn_BulbTee_Noncomposite.gif";
+      strImage =  _T("+Mn_BulbTee_Noncomposite.gif");
       break;
 
    default:
@@ -828,18 +828,18 @@ std::string CBulbTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::S
    return strImage;
 }
 
-std::string CBulbTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CBulbTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "-Mn_BulbTee_Composite.gif";
+      strImage =  _T("-Mn_BulbTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "-Mn_BulbTee_Noncomposite.gif";
+      strImage =  _T("-Mn_BulbTee_Noncomposite.gif");
       break;
 
    default:
@@ -850,18 +850,18 @@ std::string CBulbTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::S
    return strImage;
 }
 
-std::string CBulbTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CBulbTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "Vn_BulbTee_Composite.gif";
+      strImage =  _T("Vn_BulbTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "Vn_BulbTee_Noncomposite.gif";
+      strImage =  _T("Vn_BulbTee_Noncomposite.gif");
       break;
 
    default:
@@ -872,23 +872,23 @@ std::string CBulbTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::Supporte
    return strImage;
 }
 
-std::string CBulbTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CBulbTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
-   return "BulbTee_Effective_Flange_Width_Interior_Girder.gif";
+   return _T("BulbTee_Effective_Flange_Width_Interior_Girder.gif");
 }
 
-std::string CBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "BulbTee_Effective_Flange_Width_Exterior_Girder_2008.gif";
+      return _T("BulbTee_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
    else
    {
-      return "BulbTee_Effective_Flange_Width_Exterior_Girder.gif";
+      return _T("BulbTee_Effective_Flange_Width_Exterior_Girder.gif");
    }
 }
 
@@ -902,17 +902,17 @@ CLSID CBulbTeeFactory::GetFamilyCLSID()
    return CLSID_DeckBulbTeeBeamFamily;
 }
 
-std::string CBulbTeeFactory::GetGirderFamilyName()
+std::_tstring CBulbTeeFactory::GetGirderFamilyName()
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
    OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::string CBulbTeeFactory::GetPublisher()
+std::_tstring CBulbTeeFactory::GetPublisher()
 {
-   return std::string("WSDOT");
+   return std::_tstring(_T("WSDOT"));
 }
 
 HINSTANCE CBulbTeeFactory::GetResourceInstance()
@@ -937,26 +937,26 @@ void CBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions, 
                                   double& w1,double& w2,double& w3,double& w4,double& wmin,double& wmax,
                                   double& t1,double& t2)
 {
-   c1 = GetDimension(dimensions,"C1");
-   d1 = GetDimension(dimensions,"D1");
-   d2 = GetDimension(dimensions,"D2");
-   d3 = GetDimension(dimensions,"D3");
-   d4 = GetDimension(dimensions,"D4");
-   d5 = GetDimension(dimensions,"D5");
-   d6 = GetDimension(dimensions,"D6");
-   d7 = GetDimension(dimensions,"D7");
-   d8 = GetDimension(dimensions,"D8");
-   w1 = GetDimension(dimensions,"W1");
-   w2 = GetDimension(dimensions,"W2");
-   w3 = GetDimension(dimensions,"W3");
-   w4 = GetDimension(dimensions,"W4");
-   wmin = GetDimension(dimensions,"Wmin");
-   wmax = GetDimension(dimensions,"Wmax");
-   t1 = GetDimension(dimensions,"T1");
-   t2 = GetDimension(dimensions,"T2");
+   c1 = GetDimension(dimensions,_T("C1"));
+   d1 = GetDimension(dimensions,_T("D1"));
+   d2 = GetDimension(dimensions,_T("D2"));
+   d3 = GetDimension(dimensions,_T("D3"));
+   d4 = GetDimension(dimensions,_T("D4"));
+   d5 = GetDimension(dimensions,_T("D5"));
+   d6 = GetDimension(dimensions,_T("D6"));
+   d7 = GetDimension(dimensions,_T("D7"));
+   d8 = GetDimension(dimensions,_T("D8"));
+   w1 = GetDimension(dimensions,_T("W1"));
+   w2 = GetDimension(dimensions,_T("W2"));
+   w3 = GetDimension(dimensions,_T("W3"));
+   w4 = GetDimension(dimensions,_T("W4"));
+   wmin = GetDimension(dimensions,_T("Wmin"));
+   wmax = GetDimension(dimensions,_T("Wmax"));
+   t1 = GetDimension(dimensions,_T("T1"));
+   t2 = GetDimension(dimensions,_T("T2"));
 }
 
-double CBulbTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name)
+double CBulbTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -1001,8 +1001,8 @@ void CBulbTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double Wmax = GetDimension(dimensions,"Wmax");
-   double Wmin = GetDimension(dimensions,"Wmin");
+   double Wmax = GetDimension(dimensions,_T("Wmax"));
+   double Wmin = GetDimension(dimensions,_T("Wmin"));
 
    if (sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone)
    {
@@ -1029,20 +1029,20 @@ long CBulbTeeFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions
 
 Float64 CBulbTeeFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double D1 = GetDimension(dimensions,"D1");
-   double D2 = GetDimension(dimensions,"D2");
-   double D3 = GetDimension(dimensions,"D3");
-   double D4 = GetDimension(dimensions,"D4");
-   double D5 = GetDimension(dimensions,"D5");
-   double D6 = GetDimension(dimensions,"D6");
-   double D7 = GetDimension(dimensions,"D7");
+   double D1 = GetDimension(dimensions,_T("D1"));
+   double D2 = GetDimension(dimensions,_T("D2"));
+   double D3 = GetDimension(dimensions,_T("D3"));
+   double D4 = GetDimension(dimensions,_T("D4"));
+   double D5 = GetDimension(dimensions,_T("D5"));
+   double D6 = GetDimension(dimensions,_T("D6"));
+   double D7 = GetDimension(dimensions,_T("D7"));
 
    return D1 + D2 + D3 + D4 + D5 + D6 + D7;
 }
 
 Float64 CBulbTeeFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   return GetDimension(dimensions,"Wmax");
+   return GetDimension(dimensions,_T("Wmax"));
 }
 
 bool CBulbTeeFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)

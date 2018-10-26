@@ -61,7 +61,7 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
          {
             CString str;
             m_ctlRoutineLL.GetText(idx, str);
-            m_Data.RoutineNames.push_back( std::string(str));
+            m_Data.RoutineNames.push_back( std::_tstring(str));
          }
       }
 
@@ -74,7 +74,7 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
          {
             CString str;
             m_ctlSpecialLL.GetText(idx, str);
-            m_Data.SpecialNames.push_back( std::string(str));
+            m_Data.SpecialNames.push_back( std::_tstring(str));
          }
       }
    }
@@ -90,13 +90,13 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_Text(pDX,IDC_STRENGTH_I_DC,m_Data.StrengthI_DC);
    DDX_Text(pDX,IDC_STRENGTH_I_DW,m_Data.StrengthI_DW);
-   DDX_Keyword(pDX,IDC_STRENGTH_I_LL_ROUTINE,"Compute",m_Data.StrengthI_LL_Routine);
-   DDX_Keyword(pDX,IDC_STRENGTH_I_LL_SPECIAL,"Compute",m_Data.StrengthI_LL_Special);
+   DDX_Keyword(pDX,IDC_STRENGTH_I_LL_ROUTINE,_T("Compute"),m_Data.StrengthI_LL_Routine);
+   DDX_Keyword(pDX,IDC_STRENGTH_I_LL_SPECIAL,_T("Compute"),m_Data.StrengthI_LL_Special);
    
    DDX_Text(pDX,IDC_SERVICE_III_DC,m_Data.ServiceIII_DC);
    DDX_Text(pDX,IDC_SERVICE_III_DW,m_Data.ServiceIII_DW);
-   DDX_Keyword(pDX,IDC_SERVICE_III_LL_ROUTINE,"Compute",m_Data.ServiceIII_LL_Routine);
-   DDX_Keyword(pDX,IDC_SERVICE_III_LL_SPECIAL,"Compute",m_Data.ServiceIII_LL_Special);
+   DDX_Keyword(pDX,IDC_SERVICE_III_LL_ROUTINE,_T("Compute"),m_Data.ServiceIII_LL_Routine);
+   DDX_Keyword(pDX,IDC_SERVICE_III_LL_SPECIAL,_T("Compute"),m_Data.ServiceIII_LL_Special);
 
    DDX_Check_Bool(pDX,IDC_RATE_FOR_STRESS, m_Data.bRateForStress);
    DDX_Check_Bool(pDX,IDC_RATE_FOR_SHEAR,  m_Data.bRateForShear);
@@ -107,7 +107,7 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
    GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
 
-   CString tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )";
+   CString tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )");
    DDX_Text(pDX,IDC_ALLOWABLE_TENSION_UNIT,tag);
 }
 
@@ -130,17 +130,17 @@ BOOL CLegalRatingPage::OnInitDialog()
    m_ctlSpecialLL.SetCheckStyle( BS_AUTOCHECKBOX );
 
    // fill the live load list boxes here
-   for (std::vector<std::string>::iterator iter = m_AllNames.begin(); iter != m_AllNames.end(); iter++)
+   for (std::vector<std::_tstring>::iterator iter = m_AllNames.begin(); iter != m_AllNames.end(); iter++)
    {
-      const char* str = iter->c_str();
+      LPCTSTR str = iter->c_str();
       m_ctlRoutineLL.AddString(str);
       m_ctlSpecialLL.AddString(str);
    }
 
    // Set the check marks for the various loads
-   for (std::vector<std::string>::reverse_iterator iter = m_Data.RoutineNames.rbegin(); iter != m_Data.RoutineNames.rend(); iter++)
+   for (std::vector<std::_tstring>::reverse_iterator iter = m_Data.RoutineNames.rbegin(); iter != m_Data.RoutineNames.rend(); iter++)
    {
-      const char* str = iter->c_str();
+      LPCTSTR str = iter->c_str();
       int idx = m_ctlRoutineLL.FindString(-1, str);
       if (idx != LB_ERR)
       {
@@ -149,9 +149,9 @@ BOOL CLegalRatingPage::OnInitDialog()
       }
    }
 
-   for (std::vector<std::string>::reverse_iterator iter = m_Data.SpecialNames.rbegin(); iter != m_Data.SpecialNames.rend(); iter++)
+   for (std::vector<std::_tstring>::reverse_iterator iter = m_Data.SpecialNames.rbegin(); iter != m_Data.SpecialNames.rend(); iter++)
    {
-      const char* str = iter->c_str();
+      LPCTSTR str = iter->c_str();
       int idx = m_ctlSpecialLL.FindString(-1, str);
       if (idx != LB_ERR)
       {
@@ -180,15 +180,15 @@ BOOL CLegalRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       {
       case IDC_ROUTINE_TRUCK_IMPACT:
       case IDC_SPECIAL_TRUCK_IMPACT:
-         m_strTip = "MBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations ar depressions IM = 20%";
+         m_strTip = _T("MBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations ar depressions IM = 20%");
          break;
 
       case IDC_RATE_FOR_STRESS:
-         m_strTip = "This is an optional rating consideration. See MBE 6A.5.4.2.2a";
+         m_strTip = _T("This is an optional rating consideration. See MBE 6A.5.4.2.2a");
          break;
 
       case IDC_RATE_FOR_SHEAR:
-         m_strTip = "In-service concrete bridges that show no visible signs of shear distress need not be checked for shear when rating for legal loads (MBE 6A.5.9)";
+         m_strTip = _T("In-service concrete bridges that show no visible signs of shear distress need not be checked for shear when rating for legal loads (MBE 6A.5.9)");
          break;
 
       case IDC_STRENGTH_I_LL_ROUTINE:
@@ -247,8 +247,8 @@ BOOL CLegalRatingPage::OnSetActive()
    const CLiveLoadFactorModel& routine = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine);
    if ( !routine.AllowUserOverride() )
    {
-      DDX_Keyword(&dx,IDC_STRENGTH_I_LL_ROUTINE,"Compute",gLL);
-      DDX_Keyword(&dx,IDC_SERVICE_III_LL_ROUTINE,"Compute",gLL);
+      DDX_Keyword(&dx,IDC_STRENGTH_I_LL_ROUTINE,_T("Compute"),gLL);
+      DDX_Keyword(&dx,IDC_SERVICE_III_LL_ROUTINE,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_ROUTINE)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_III_LL_ROUTINE)->EnableWindow(FALSE);
    }
@@ -262,8 +262,8 @@ BOOL CLegalRatingPage::OnSetActive()
    const CLiveLoadFactorModel& special = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Special);
    if ( !special.AllowUserOverride() )
    {
-      DDX_Keyword(&dx,IDC_STRENGTH_I_LL_SPECIAL,"Compute",gLL);
-      DDX_Keyword(&dx,IDC_SERVICE_III_LL_SPECIAL,"Compute",gLL);
+      DDX_Keyword(&dx,IDC_STRENGTH_I_LL_SPECIAL,_T("Compute"),gLL);
+      DDX_Keyword(&dx,IDC_SERVICE_III_LL_SPECIAL,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_SPECIAL)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_III_LL_SPECIAL)->EnableWindow(FALSE);
    }

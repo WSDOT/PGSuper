@@ -19,6 +19,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
 
+
 CPGSuperAppPluginModule _AtlModule;
 CPGSuperAppPluginApp theApp;
 
@@ -82,7 +83,7 @@ CString CPGSuperAppPluginApp::GetVersion(bool bIncludeBuildNumber) const
    if (!bIncludeBuildNumber)
    {
       // remove the build number
-      int pos = strVersion.ReverseFind('.'); // find the last '.'
+      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
       strVersion = strVersion.Left(pos);
    }
 

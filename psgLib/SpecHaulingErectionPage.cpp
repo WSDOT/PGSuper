@@ -68,12 +68,12 @@ void CSpecHaulingErectionPage::DoDataExchange(CDataExchange* pDX)
       if (!m_IsHaulingEnabled)
       {
          HideControls(true);
-         pnote->SetWindowText("Hauling Check is Disabled on Design Tab");
+         pnote->SetWindowText(_T("Hauling Check is Disabled on Design Tab"));
       }
       else
       {
          HideControls(false);
-         pnote->SetWindowText("Hauling Check is Enabled on Design Tab");
+         pnote->SetWindowText(_T("Hauling Check is Enabled on Design Tab"));
 
 	      DoCheckMax();
 

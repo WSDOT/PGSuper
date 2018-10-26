@@ -130,7 +130,7 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
    pPara = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pPara;
-   *pPara << "Alignment Details" << rptNewLine;
+   *pPara << _T("Alignment Details") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -139,13 +139,13 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
    CComBSTR bstrBearing;
    direction_formatter->Format(alignment.Direction,CComBSTR("°,\',\""),&bstrBearing);
-   *pPara << "Direction: " << RPT_BEARING(OLE2A(bstrBearing)) << rptNewLine;
+   *pPara << _T("Direction: ") << RPT_BEARING(OLE2T(bstrBearing)) << rptNewLine;
 
-   *pPara << "Ref. Point: " << rptRcStation(alignment.RefStation, &pDisplayUnits->GetStationFormat())
-          << " "
-          << "(E (X) " << length.SetValue(alignment.xRefPoint);
-   *pPara << ", " 
-          << "N (Y) " << length.SetValue(alignment.yRefPoint) << ")" << rptNewLine;
+   *pPara << _T("Ref. Point: ") << rptRcStation(alignment.RefStation, &pDisplayUnits->GetStationFormat())
+          << _T(" ")
+          << _T("(E (X) ") << length.SetValue(alignment.xRefPoint);
+   *pPara << _T(", ") 
+          << _T("N (Y) ") << length.SetValue(alignment.yRefPoint) << _T(")") << rptNewLine;
 
    if ( alignment.HorzCurves.size() == 0 )
       return;
@@ -155,7 +155,7 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(alignment.HorzCurves.size()+1,"Horizontal Curve Data");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(alignment.HorzCurves.size()+1,_T("Horizontal Curve Data"));
    *pPara << pTable << rptNewLine;
 
    pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -163,27 +163,27 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
    RowIndexType row = 0;
 
-   (*pTable)(row++,0) << "Curve Parameters";
-   (*pTable)(row++,0) << "Back Tangent Bearing";
-   (*pTable)(row++,0) << "Forward Tangent Bearing";
-   (*pTable)(row++,0) << "TS Station";
-   (*pTable)(row++,0) << "SC Station";
-   (*pTable)(row++,0) << "PC Station";
-   (*pTable)(row++,0) << "PI Station";
-   (*pTable)(row++,0) << "PT Station";
-   (*pTable)(row++,0) << "CS Station";
-   (*pTable)(row++,0) << "ST Station";
-   (*pTable)(row++,0) << "Total Delta (" << Sub2(symbol(DELTA),"c") << ")";
-   (*pTable)(row++,0) << "Entry Spiral Length";
-   (*pTable)(row++,0) << "Exit Spiral Length";
-   (*pTable)(row++,0) << "Delta (" << Sub2(symbol(DELTA),"cc") << ")";
-   (*pTable)(row++,0) << "Degree Curvature (DC)";
-   (*pTable)(row++,0) << "Radius (R)";
-   (*pTable)(row++,0) << "Tangent (T)";
-   (*pTable)(row++,0) << "Length (L)";
-   (*pTable)(row++,0) << "Chord (C)";
-   (*pTable)(row++,0) << "External (E)";
-   (*pTable)(row++,0) << "Mid Ordinate (MO)";
+   (*pTable)(row++,0) << _T("Curve Parameters");
+   (*pTable)(row++,0) << _T("Back Tangent Bearing");
+   (*pTable)(row++,0) << _T("Forward Tangent Bearing");
+   (*pTable)(row++,0) << _T("TS Station");
+   (*pTable)(row++,0) << _T("SC Station");
+   (*pTable)(row++,0) << _T("PC Station");
+   (*pTable)(row++,0) << _T("PI Station");
+   (*pTable)(row++,0) << _T("PT Station");
+   (*pTable)(row++,0) << _T("CS Station");
+   (*pTable)(row++,0) << _T("ST Station");
+   (*pTable)(row++,0) << _T("Total Delta (") << Sub2(symbol(DELTA),_T("c")) << _T(")");
+   (*pTable)(row++,0) << _T("Entry Spiral Length");
+   (*pTable)(row++,0) << _T("Exit Spiral Length");
+   (*pTable)(row++,0) << _T("Delta (") << Sub2(symbol(DELTA),_T("cc")) << _T(")");
+   (*pTable)(row++,0) << _T("Degree Curvature (DC)");
+   (*pTable)(row++,0) << _T("Radius (R)");
+   (*pTable)(row++,0) << _T("Tangent (T)");
+   (*pTable)(row++,0) << _T("Length (L)");
+   (*pTable)(row++,0) << _T("Chord (C)");
+   (*pTable)(row++,0) << _T("External (E)");
+   (*pTable)(row++,0) << _T("Mid Ordinate (MO)");
 
    length.ShowUnitTag(true);
 
@@ -194,7 +194,7 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
       HorzCurveData& hc_data = *iter;
       row = 0;
 
-      (*pTable)(row++,col) << "Curve " << col;
+      (*pTable)(row++,col) << _T("Curve ") << col;
 
       if ( IsZero(hc_data.Radius) )
       {
@@ -215,29 +215,29 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
          CComBSTR bstrFwdTangent;
          direction_formatter->Format(fwd_tangent_value,CComBSTR("°,\',\""),&bstrFwdTangent);
-         (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrBkTangent));
-         (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrFwdTangent));
+         (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrBkTangent));
+         (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrFwdTangent));
 
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
 
          (*pTable)(row++,col) << rptRcStation(hc_data.PIStation, &pDisplayUnits->GetStationFormat());
 
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
       }
       else
       {
@@ -272,31 +272,31 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          sc = hc_data.PIStation - bk_tangent_length + hc_data.EntrySpiral;
          cs = hc_data.PIStation - bk_tangent_length + total_length - hc_data.ExitSpiral;
          st = hc_data.PIStation - bk_tangent_length + total_length;
-         (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrBkTangent));
-         (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrFwdTangent));
+         (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrBkTangent));
+         (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrFwdTangent));
          if ( IsEqual(ts,sc) )
          {
-            (*pTable)(row++,col) << "-";
-            (*pTable)(row++,col) << "-";
+            (*pTable)(row++,col) << _T("-");
+            (*pTable)(row++,col) << _T("-");
             (*pTable)(row++,col) << rptRcStation(ts, &pDisplayUnits->GetStationFormat());
          }
          else
          {
             (*pTable)(row++,col) << rptRcStation(ts, &pDisplayUnits->GetStationFormat());
             (*pTable)(row++,col) << rptRcStation(sc, &pDisplayUnits->GetStationFormat());
-            (*pTable)(row++,col) << "-";
+            (*pTable)(row++,col) << _T("-");
          }
          (*pTable)(row++,col) << rptRcStation(hc_data.PIStation, &pDisplayUnits->GetStationFormat());
 
          if ( IsEqual(cs,st) )
          {
             (*pTable)(row++,col) << rptRcStation(cs, &pDisplayUnits->GetStationFormat());
-            (*pTable)(row++,col) << "-";
-            (*pTable)(row++,col) << "-";
+            (*pTable)(row++,col) << _T("-");
+            (*pTable)(row++,col) << _T("-");
          }
          else
          {
-            (*pTable)(row++,col) << "-";
+            (*pTable)(row++,col) << _T("-");
             (*pTable)(row++,col) << rptRcStation(cs, &pDisplayUnits->GetStationFormat());
             (*pTable)(row++,col) << rptRcStation(st, &pDisplayUnits->GetStationFormat());
          }
@@ -312,7 +312,7 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          CComBSTR bstrDelta;
          angle_formatter->put_Signed(VARIANT_FALSE);
          angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDelta);
-         (*pTable)(row++,col) << RPT_ANGLE(OLE2A(bstrDelta));
+         (*pTable)(row++,col) << RPT_ANGLE(OLE2T(bstrDelta));
 
          // Entry Spiral Data
          (*pTable)(row++,col) << length.SetValue(hc_data.EntrySpiral);
@@ -350,8 +350,8 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          double mid_ordinate;
          hc->get_MidOrdinate(&mid_ordinate);
 
-         (*pTable)(row++,col) << RPT_ANGLE(OLE2A(bstrDelta));
-         (*pTable)(row++,col) << RPT_ANGLE(OLE2A(bstrDC));
+         (*pTable)(row++,col) << RPT_ANGLE(OLE2T(bstrDelta));
+         (*pTable)(row++,col) << RPT_ANGLE(OLE2T(bstrDC));
          (*pTable)(row++,col) << length.SetValue(hc_data.Radius);
          (*pTable)(row++,col) << length.SetValue(tangent);
          (*pTable)(row++,col) << length.SetValue(curve_length);
@@ -372,22 +372,22 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
    pPara = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pPara;
-   *pPara << "Profile Details" << rptNewLine;
+   *pPara << _T("Profile Details") << rptNewLine;
 
    ProfileData2 profile = pAlignment->GetProfileData2();
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << "Station: " << rptRcStation(profile.Station, &pDisplayUnits->GetStationFormat()) << rptNewLine;
-   *pPara << "Elevation: " << length.SetValue(profile.Elevation) << rptNewLine;
-   *pPara << "Grade: " << profile.Grade*100 << "%" << rptNewLine;
+   *pPara << _T("Station: ") << rptRcStation(profile.Station, &pDisplayUnits->GetStationFormat()) << rptNewLine;
+   *pPara << _T("Elevation: ") << length.SetValue(profile.Elevation) << rptNewLine;
+   *pPara << _T("Grade: ") << profile.Grade*100 << _T("%") << rptNewLine;
 
    if ( profile.VertCurves.size() == 0 )
       return;
 
 
    // Setup the table
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(profile.VertCurves.size()+1,"Vertical Curve Data");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(profile.VertCurves.size()+1,_T("Vertical Curve Data"));
 
    pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -396,22 +396,22 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
    RowIndexType row = 0;
    ColumnIndexType col = 0;
-   (*pTable)(row++,col) << "Curve Parameters";
-   (*pTable)(row++,col) << "BVC Station";
-   (*pTable)(row++,col) << "BVC Elevation";
-   (*pTable)(row++,col) << "PVI Station";
-   (*pTable)(row++,col) << "PVI Elevation";
-   (*pTable)(row++,col) << "EVC Station";
-   (*pTable)(row++,col) << "EVC Elevation";
-   (*pTable)(row++,col) << "Entry Grade";
-   (*pTable)(row++,col) << "Exit Grade";
-   (*pTable)(row++,col) << "L1";
-   (*pTable)(row++,col) << "L2";
-   (*pTable)(row++,col) << "Length";
-   (*pTable)(row++,col) << "High Pt Station";
-   (*pTable)(row++,col) << "High Pt Elevation";
-   (*pTable)(row++,col) << "Low Pt Station";
-   (*pTable)(row++,col) << "Low Pt Elevation";
+   (*pTable)(row++,col) << _T("Curve Parameters");
+   (*pTable)(row++,col) << _T("BVC Station");
+   (*pTable)(row++,col) << _T("BVC Elevation");
+   (*pTable)(row++,col) << _T("PVI Station");
+   (*pTable)(row++,col) << _T("PVI Elevation");
+   (*pTable)(row++,col) << _T("EVC Station");
+   (*pTable)(row++,col) << _T("EVC Elevation");
+   (*pTable)(row++,col) << _T("Entry Grade");
+   (*pTable)(row++,col) << _T("Exit Grade");
+   (*pTable)(row++,col) << _T("L1");
+   (*pTable)(row++,col) << _T("L2");
+   (*pTable)(row++,col) << _T("Length");
+   (*pTable)(row++,col) << _T("High Pt Station");
+   (*pTable)(row++,col) << _T("High Pt Elevation");
+   (*pTable)(row++,col) << _T("Low Pt Station");
+   (*pTable)(row++,col) << _T("Low Pt Elevation");
 
    col++;
 
@@ -422,7 +422,7 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
       VertCurveData& vcd = *iter;
 
-      (*pTable)(row++,col) << "Curve " << col;
+      (*pTable)(row++,col) << _T("Curve ") << col;
       if ( IsZero(vcd.L1) && IsZero(vcd.L2) )
       {
          Float64 pvi_elevation = pRoadway->GetElevation(vcd.PVIStation,0.0);
@@ -434,21 +434,21 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
          Float64 g2 = vcd.ExitGrade;
 
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
          (*pTable)(row++,col) << rptRcStation(vcd.PVIStation, &pDisplayUnits->GetStationFormat());
          (*pTable)(row++,col) << length.SetValue(pvi_elevation);
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << g1*100 << "%";
-         (*pTable)(row++,col) << g2*100 << "%";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
-         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << g1*100 << _T("%");
+         (*pTable)(row++,col) << g2*100 << _T("%");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T("");
       }
       else
       {
@@ -532,8 +532,8 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          (*pTable)(row++,col) << length.SetValue(pvi_elevation);
          (*pTable)(row++,col) << rptRcStation(evc_station_value, &pDisplayUnits->GetStationFormat());
          (*pTable)(row++,col) << length.SetValue(evc_elevation);
-         (*pTable)(row++,col) << g1*100 << "%";
-         (*pTable)(row++,col) << g2*100 << "%";
+         (*pTable)(row++,col) << g1*100 << _T("%");
+         (*pTable)(row++,col) << g2*100 << _T("%");
          (*pTable)(row++,col) << length.SetValue(L1);
          (*pTable)(row++,col) << length.SetValue(L2);
          (*pTable)(row++,col) << length.SetValue(Length);
@@ -555,16 +555,16 @@ void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapte
    *pChapter << pPara;
 
    // Setup the table
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"Superelevation Details");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Superelevation Details"));
    *pPara << pTable << rptNewLine;
 
-   std::string strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
-   (*pTable)(0,0) << "Section";
-   (*pTable)(0,1) << "Station";
-   (*pTable)(0,2) << "Left Slope" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable)(0,3) << "Right Slope" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable)(0,4) << COLHDR("Crown Point Offset", rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
+   (*pTable)(0,0) << _T("Section");
+   (*pTable)(0,1) << _T("Station");
+   (*pTable)(0,2) << _T("Left Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,3) << _T("Right Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,4) << COLHDR(_T("Crown Point Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false );
 

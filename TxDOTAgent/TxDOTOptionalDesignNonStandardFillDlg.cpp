@@ -70,7 +70,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    if (pGdrEntry==NULL)
    {
       CString msg, stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
+      stmp.LoadString(IDS_GDR_ERROR);
       msg.Format(stmp,girder_name);
       ::AfxMessageBox(msg);
       return pDX->Fail();
@@ -111,7 +111,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
          if (clnos != endnos)
          {
             pDX->PrepareCtrl(IDC_CL_GRID);
-            ::AfxMessageBox("No. Strands must match at girder C.L. and Ends",MB_OK|MB_ICONEXCLAMATION);
+            ::AfxMessageBox(_T("No. Strands must match at girder C.L. and Ends"),MB_OK|MB_ICONEXCLAMATION);
             pDX->Fail();
          }
       }
@@ -121,7 +121,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
       if (pGdrEntry->IsDifferentHarpedGridAtEndsUsed())
       {
          CString msg;
-         msg.Format("The girder entry with name: \"%s\" has harped strands with different locations at the ends and C.L. Cannot continue",girder_name);
+         msg.Format(_T("The girder entry with name: \"%s\" has harped strands with different locations at the ends and C.L. Cannot continue"),girder_name);
          ::AfxMessageBox(msg);
          return pDX->Fail();
       }
@@ -189,22 +189,22 @@ void CTxDOTOptionalDesignNonStandardFillDlg::UpdateNoStrandsCtrls()
    m_GridAtCL.ComputeStrands(&clnos,&clcg);
    CString msg;
    if (clnos==0)
-      msg.Format("No. Strands = %d", clnos);
+      msg.Format(_T("No. Strands = %d"), clnos);
    else
-      msg.Format("No. Strands = %d\ne = %.3f in", clnos,m_yBottom-clcg);
+      msg.Format(_T("No. Strands = %d\ne = %.3f in"), clnos,m_yBottom-clcg);
 
-   m_CLNoStrandsCtrl.SetWindowTextA(msg);
+   m_CLNoStrandsCtrl.SetWindowText(msg);
 
    // Ends
    Float64 endcg;
    StrandIndexType endnos;
    m_GridAtEnds.ComputeStrands(&endnos,&endcg);
    if (endnos==0)
-      msg.Format("No. Strands = %d", endnos);
+      msg.Format(_T("No. Strands = %d"), endnos);
    else
-      msg.Format("No. Strands = %d\ne = %.3f in", endnos,m_yBottom-endcg);
+      msg.Format(_T("No. Strands = %d\ne = %.3f in"), endnos,m_yBottom-endcg);
 
-   m_EndsNoStrandsCtrl.SetWindowTextA(msg);
+   m_EndsNoStrandsCtrl.SetWindowText(msg);
 }
 
 HBRUSH CTxDOTOptionalDesignNonStandardFillDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)

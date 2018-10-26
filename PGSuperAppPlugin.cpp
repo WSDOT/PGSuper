@@ -73,7 +73,7 @@ void CPGSuperAppPlugin::ConfigurePlugins()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPluginManagerDlg dlg("Manage PGSuper Plugins and Extensions");
+   CPluginManagerDlg dlg(_T("Manage PGSuper Plugins and Extensions"));
    dlg.DoModal(); // this DoModal is correct... the dialog takes care of its own data
 }
 
@@ -115,19 +115,19 @@ void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
 
-   UINT filePos = pMainMenu->FindMenuItem("&File");
+   UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
    CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
 
-   UINT managePos = pFileMenu->FindMenuItem("Manage");
+   UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
 
    if ( bIntegrate )
    {
       // put "Configure PGSuper" the file menu just below "Manage"
-      pFileMenu->InsertMenu(managePos+1,ID_CONFIGURE_PGSUPER,"Configure PGSuper...", this);
+      pFileMenu->InsertMenu(managePos+1,ID_CONFIGURE_PGSUPER,_T("Configure PGSuper..."), this);
 
       // Append to the end of the Manage menu
-      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,"PGSuper Plugins and Extensions...",this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSuper Plugins and Extensions..."),this);
 
       // Alt+Ctrl+U
       pFrame->GetAcceleratorTable()->AddAccelKey(FALT | FCONTROL | FVIRTKEY, VK_U, ID_UPDATE_TEMPLATE,this);
@@ -168,7 +168,7 @@ UINT CPGSuperAppPlugin::GetDocumentResourceID()
 
 CString CPGSuperAppPlugin::GetName()
 {
-   return CString("PGSuper");
+   return CString(_T("PGSuper"));
 }
 
 CString CPGSuperAppPlugin::GetUsageMessage()
@@ -237,7 +237,7 @@ BOOL CPGSuperAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) c
 	if ( rMessage.LoadString(nID) )
 	{
 		// first newline terminates actual string
-      rMessage.Replace('\n','\0');
+      rMessage.Replace(_T('\n'),_T('\0'));
 	}
 	else
 	{
@@ -273,7 +273,7 @@ void CPGSuperAppPlugin::UpdateTemplates()
 {
    USES_CONVERSION;
 
-   int result = AfxMessageBox("All of the template library entries will be updated to match the Master Library.\n\nDo you want to proceed?",MB_YESNO);
+   int result = AfxMessageBox(_T("All of the template library entries will be updated to match the Master Library.\n\nDo you want to proceed?"),MB_YESNO);
    if ( result == IDNO )
       return;
 
@@ -287,7 +287,7 @@ void CPGSuperAppPlugin::UpdateTemplates()
    }
    else
    {
-      AfxMessageBox("Unable to save and close the open document. Template Update cancelled");
+      AfxMessageBox(_T("Unable to save and close the open document. Template Update cancelled"));
       return;
    }
 
@@ -300,7 +300,7 @@ void CPGSuperAppPlugin::UpdateTemplates()
    HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
    if ( FAILED(hr) )
    {
-      AfxMessageBox("Failed to create the component category manager");
+      AfxMessageBox(_T("Failed to create the component category manager"));
       return;
    }
 
@@ -317,7 +317,7 @@ void CPGSuperAppPlugin::UpdateTemplates()
    CLSID clsid[nPlugins]; 
    ULONG nFetched = 0;
 
-   CString strSection("Extensions");
+   CString strSection(_T("Extensions"));
 
    while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
    {
@@ -326,12 +326,12 @@ void CPGSuperAppPlugin::UpdateTemplates()
          LPOLESTR pszCLSID;
          ::StringFromCLSID(clsid[i],&pszCLSID);
          
-         CString strState = pApp->GetProfileString(strSection,OLE2A(pszCLSID),_T("Enabled"));
-         extension_states.push_back(std::make_pair(OLE2A(pszCLSID),strState));
+         CString strState = pApp->GetProfileString(strSection,OLE2T(pszCLSID),_T("Enabled"));
+         extension_states.push_back(std::make_pair(OLE2T(pszCLSID),strState));
          ::CoTaskMemFree((void*)pszCLSID);
 
          // Disable the extension
-         pApp->WriteProfileString(strSection,OLE2A(pszCLSID),_T("Disabled"));
+         pApp->WriteProfileString(strSection,OLE2T(pszCLSID),_T("Disabled"));
       }
    }
 
@@ -353,7 +353,7 @@ void CPGSuperAppPlugin::UpdateTemplates()
 
       pTemplate = pApp->GetNextDocTemplate(pos);
    }
-   AfxMessageBox("Update complete",MB_OK);
+   AfxMessageBox(_T("Update complete"),MB_OK);
    m_bUpdatingTemplate = false;
 
    // re-set extension agents state
@@ -404,13 +404,15 @@ void CPGSuperAppPlugin::ProcessLibrarySetUp(const CPGSuperCommandLineInfo& rCmdI
    else
    {
       CString msg;
-      msg.Format("Error - The catalog server \"%s\" was not found. Could not update catalog", rCmdInfo.m_CatalogServerName);
+      msg.Format(_T("Error - The catalog server \"%s\" was not found. Could not update catalog"), rCmdInfo.m_CatalogServerName);
       AfxMessageBox(msg);
    }
 }
 
 void CPGSuperAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo)
 {
+   USES_CONVERSION;
+
    ASSERT(rCmdInfo.m_bDo1250Test);
 
    // The document is opened when CEAFApp::InitInstance calls ProcessShellCommand
@@ -427,9 +429,9 @@ void CPGSuperAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rCmdIn
    {
       try
       {
-         if (!ptst->RunTest(rCmdInfo.m_SubdomainId, std::string(resultsfile), std::string(poifile)))
+         if (!ptst->RunTest(rCmdInfo.m_SubdomainId, std::_tstring(resultsfile), std::_tstring(poifile)))
          {
-            CString msg = CString("Error - Running test on file")+rCmdInfo.m_strFileName;
+            CString msg = CString(_T("Error - Running test on file"))+rCmdInfo.m_strFileName;
             ::AfxMessageBox(msg);
          }
 
@@ -438,20 +440,20 @@ void CPGSuperAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rCmdIn
       }
       catch(const sysXBase& e)
       {
-         std::string msg;
+         std::_tstring msg;
          e.GetErrorMessage(&msg);
-         std::ofstream os;
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<< msg;
+         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< msg;
       }
       catch(CException* pex)
       {
          TCHAR   szCause[255];
          CString strFormatted;
          pex->GetErrorMessage(szCause, 255);
-         std::ofstream os;
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
          delete pex;
       }
       catch(CException& ex)
@@ -459,30 +461,30 @@ void CPGSuperAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rCmdIn
          TCHAR   szCause[255];
          CString strFormatted;
          ex.GetErrorMessage(szCause, 255);
-         std::ofstream os;
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
       }
       catch(const std::exception* pex)
       {
-         std::string strMsg(pex->what());
-         std::ofstream os;
+         std::_tstring strMsg(CA2T(pex->what()));
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
          delete pex;
       }
       catch(const std::exception& ex)
       {
-         std::string strMsg(ex.what());
-         std::ofstream os;
+         std::_tstring strMsg(CA2T(ex.what()));
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
       }
       catch(...)
       {
-         std::ofstream os;
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Unknown Error running test for input file: "<<rCmdInfo.m_strFileName;
+         os <<_T("Unknown Error running test for input file: ")<<rCmdInfo.m_strFileName;
       }
    }
 }

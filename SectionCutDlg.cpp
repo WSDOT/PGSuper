@@ -98,7 +98,7 @@ BOOL CSectionCutDlg::OnInitDialog()
    ASSERT(pprompt); 
 
    CString str;
-   str.Format("Enter a Value Between %g and %g %s",m_LowerBound, m_UpperBound, m_UnitTag);
+   str.Format(_T("Enter a Value Between %g and %g %s"),m_LowerBound, m_UpperBound, m_UnitTag);
    pprompt->SetWindowText(str);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

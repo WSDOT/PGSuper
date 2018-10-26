@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #pragma once
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "EditRatingCriteria.h"
 
 
@@ -40,7 +40,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_LEGAL_RATING };
 
-   std::vector<std::string> m_AllNames;
+   std::vector<std::_tstring> m_AllNames;
    txnLegalRatingData m_Data;
 
 protected:

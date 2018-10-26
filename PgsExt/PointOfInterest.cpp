@@ -463,38 +463,38 @@ rptReportContent& rptPointOfInterest::SetValue(pgsTypes::Stage stage,const pgsPo
    return rptLengthUnitValue::SetValue( poi.GetDistFromStart() - endOffset );
 }
 
-std::string rptPointOfInterest::AsString() const
+std::_tstring rptPointOfInterest::AsString() const
 {
-   std::string strAttrib;
+   std::_tstring strAttrib;
    Uint16 nAttributes = 0;
    PoiAttributeType attributes = m_POI.GetAttributes(m_Stage);
 
-   strAttrib = "(";
+   strAttrib = _T("(");
 
    if ( m_POI.IsHarpingPoint(m_Stage) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "HP";
+      strAttrib += _T("HP");
       nAttributes++;
    }
 
    if ( m_POI.IsAtH(m_Stage) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "H";
+      strAttrib += _T("H");
       nAttributes++;
    }
 
    if ( m_POI.IsAt15H(m_Stage) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "1.5H";
+      strAttrib += _T("1.5H");
       nAttributes++;
    }
    
@@ -503,9 +503,9 @@ std::string rptPointOfInterest::AsString() const
       if ( m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR1) || m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR2) )
       {
          if ( 0 < nAttributes )
-            strAttrib += ", ";
+            strAttrib += _T(", ");
 
-         strAttrib += "CS";
+         strAttrib += _T("CS");
          nAttributes++;
       }
    }
@@ -514,18 +514,18 @@ std::string rptPointOfInterest::AsString() const
       if ( m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR1) )
       {
          if ( 0 < nAttributes )
-            strAttrib += ", ";
+            strAttrib += _T(", ");
 
-         strAttrib += "DCS";
+         strAttrib += _T("DCS");
          nAttributes++;
       }
       
       if ( m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR2) )
       {
          if ( 0 < nAttributes )
-            strAttrib += ", ";
+            strAttrib += _T(", ");
 
-         strAttrib += "PCS";
+         strAttrib += _T("PCS");
          nAttributes++;
       }
    }
@@ -533,63 +533,63 @@ std::string rptPointOfInterest::AsString() const
    if ( m_POI.HasAttribute(m_Stage,POI_PSXFER) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "PSXFR";
+      strAttrib += _T("PSXFR");
       nAttributes++;
    }
 
    if ( m_POI.HasAttribute(m_Stage,POI_PSDEV) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "Ld";
+      strAttrib += _T("Ld");
       nAttributes++;
    }
 
    if ( m_POI.HasAttribute(m_Stage,POI_DEBOND) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "Debond";
+      strAttrib += _T("Debond");
       nAttributes++;
    }
 
    if ( m_POI.HasAttribute(m_Stage,POI_BARCUTOFF) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "Bar Cutoff";
+      strAttrib += _T("Bar Cutoff");
       nAttributes++;
    }
 
    if ( m_POI.HasAttribute(m_Stage,POI_PICKPOINT) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "Pick Point";
+      strAttrib += _T("Pick Point");
       nAttributes++;
    }
 
    if ( m_POI.HasAttribute(m_Stage,POI_BUNKPOINT) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "Bunk Point";
+      strAttrib += _T("Bunk Point");
       nAttributes++;
    }
 
    if ( m_POI.HasAttribute(m_Stage,POI_FACEOFSUPPORT) )
    {
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
-      strAttrib += "FoS";
+      strAttrib += _T("FoS");
       nAttributes++;
    }
 
@@ -598,33 +598,33 @@ std::string rptPointOfInterest::AsString() const
    {
       CHECK(tenpt<12);
       // for the sake of efficiency, dont use a stringstream
-      const char* span_label[]={"err","0.0L<sub>s</sub>","0.1L<sub>s</sub>","0.2L<sub>s</sub>","0.3L<sub>s</sub>","0.4L<sub>s</sub>",
-         "0.5L<sub>s</sub>","0.6L<sub>s</sub>","0.7L<sub>s</sub>","0.8L<sub>s</sub>","0.9L<sub>s</sub>","1.0L<sub>s</sub>"};
+      LPCTSTR span_label[]={_T("err"),_T("0.0L<sub>s</sub>"),_T("0.1L<sub>s</sub>"),_T("0.2L<sub>s</sub>"),_T("0.3L<sub>s</sub>"),_T("0.4L<sub>s</sub>"),
+         _T("0.5L<sub>s</sub>"),_T("0.6L<sub>s</sub>"),_T("0.7L<sub>s</sub>"),_T("0.8L<sub>s</sub>"),_T("0.9L<sub>s</sub>"),_T("1.0L<sub>s</sub>")};
 
-      const char* girder_label[]={"err","0.0L<sub>g</sub>","0.1L<sub>g</sub>","0.2L<sub>g</sub>","0.3L<sub>g</sub>","0.4L<sub>g</sub>",
-         "0.5L<sub>g</sub>","0.6L<sub>g</sub>","0.7L<sub>g</sub>","0.8L<sub>g</sub>","0.9L<sub>g</sub>","1.0L<sub>g</sub>"};
+      LPCTSTR girder_label[]={_T("err"),_T("0.0L<sub>g</sub>"),_T("0.1L<sub>g</sub>"),_T("0.2L<sub>g</sub>"),_T("0.3L<sub>g</sub>"),_T("0.4L<sub>g</sub>"),
+         _T("0.5L<sub>g</sub>"),_T("0.6L<sub>g</sub>"),_T("0.7L<sub>g</sub>"),_T("0.8L<sub>g</sub>"),_T("0.9L<sub>g</sub>"),_T("1.0L<sub>g</sub>")};
 
 
       if ( 0 < nAttributes )
-         strAttrib += ", ";
+         strAttrib += _T(", ");
 
       if ( m_Stage == pgsTypes::CastingYard )
-         strAttrib += std::string(girder_label[tenpt]);
+         strAttrib += std::_tstring(girder_label[tenpt]);
       else
-         strAttrib += std::string(span_label[tenpt]);
+         strAttrib += std::_tstring(span_label[tenpt]);
 
       nAttributes++;
    }
-   strAttrib += ")";
+   strAttrib += _T(")");
 
-   std::string strValue = rptLengthUnitValue::AsString();
+   std::_tstring strValue = rptLengthUnitValue::AsString();
 
-   std::string str;
+   std::_tstring str;
 
    if ( m_bIncludeSpanAndGirder )
    {
       CString str1;
-      str1.Format("Span %d Girder %s, ",LABEL_SPAN(m_POI.GetSpan()),LABEL_GIRDER(m_POI.GetGirder()));
+      str1.Format(_T("Span %d Girder %s, "),LABEL_SPAN(m_POI.GetSpan()),LABEL_GIRDER(m_POI.GetGirder()));
       str = str1;
    }
 
@@ -635,9 +635,9 @@ std::string rptPointOfInterest::AsString() const
    else
    {
       if ( m_bPrefixAttributes )
-         str += strAttrib + " " + strValue;
+         str += strAttrib + _T(" ") + strValue;
       else
-         str += strValue + " " + strAttrib;
+         str += strValue + _T(" ") + strAttrib;
    }
 
    return str;

@@ -95,27 +95,27 @@ LiveLoadLibraryEntry& LiveLoadLibraryEntry::operator= (const LiveLoadLibraryEntr
 //======================== OPERATIONS =======================================
 bool LiveLoadLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit("LiveLoadLibraryEntry", 2.0);
+   pSave->BeginUnit(_T("LiveLoadLibraryEntry"), 2.0);
 
-   pSave->Property("Name",this->GetName().c_str());
-   pSave->Property("IsNotional", m_IsNotional);
-   pSave->Property("LiveLoadApplicabilityType", (Int16)m_LiveLoadApplicabilityType); // added version 2.0
-   pSave->Property("LiveLoadConfigurationType", (Int16)m_LiveLoadConfigurationType);
-   pSave->Property("LaneLoad", m_LaneLoad);
-   pSave->Property("LaneLoadSpanLength",m_LaneLoadSpanLength); // added version 2.0
-   pSave->Property("MaxVariableAxleSpacing", m_MaxVariableAxleSpacing);
-   pSave->Property("VariableAxleIndex", m_VariableAxleIndex);
+   pSave->Property(_T("Name"),this->GetName().c_str());
+   pSave->Property(_T("IsNotional"), m_IsNotional);
+   pSave->Property(_T("LiveLoadApplicabilityType"), (Int16)m_LiveLoadApplicabilityType); // added version 2.0
+   pSave->Property(_T("LiveLoadConfigurationType"), (Int16)m_LiveLoadConfigurationType);
+   pSave->Property(_T("LaneLoad"), m_LaneLoad);
+   pSave->Property(_T("LaneLoadSpanLength"),m_LaneLoadSpanLength); // added version 2.0
+   pSave->Property(_T("MaxVariableAxleSpacing"), m_MaxVariableAxleSpacing);
+   pSave->Property(_T("VariableAxleIndex"), m_VariableAxleIndex);
 
-   pSave->BeginUnit("Axles", 1.0);
-   pSave->Property("AxleCount", (long)m_Axles.size());
+   pSave->BeginUnit(_T("Axles"), 1.0);
+   pSave->Property(_T("AxleCount"), (long)m_Axles.size());
 
    for (AxleIterator it=m_Axles.begin(); it!=m_Axles.end(); it++)
    {
       const Axle& axle = *it;
-      pSave->BeginUnit("Axle", 1.0);
+      pSave->BeginUnit(_T("Axle"), 1.0);
 
-      pSave->Property("Weight", axle.Weight);
-      pSave->Property("Spacing", axle.Spacing);
+      pSave->Property(_T("Weight"), axle.Weight);
+      pSave->Property(_T("Spacing"), axle.Spacing);
 
       pSave->EndUnit();
    }
@@ -129,65 +129,65 @@ bool LiveLoadLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
 bool LiveLoadLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
-   if(pLoad->BeginUnit("LiveLoadLibraryEntry"))
+   if(pLoad->BeginUnit(_T("LiveLoadLibraryEntry")))
    {
       Float64 version = pLoad->GetVersion();
       if (2.0 < version)
          THROW_LOAD(BadVersion,pLoad);
 
-      std::string name;
-      if(pLoad->Property("Name",&name))
+      std::_tstring name;
+      if(pLoad->Property(_T("Name"),&name))
          this->SetName(name.c_str());
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("IsNotional", &m_IsNotional))
+      if(!pLoad->Property(_T("IsNotional"), &m_IsNotional))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if ( 1.0 < version ) // added version 2.0
       {
-         if(!pLoad->Property("LiveLoadApplicabilityType", (Int16*)&m_LiveLoadApplicabilityType))
+         if(!pLoad->Property(_T("LiveLoadApplicabilityType"), (Int16*)&m_LiveLoadApplicabilityType))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property("LiveLoadConfigurationType", (Int16*)&m_LiveLoadConfigurationType))
+      if(!pLoad->Property(_T("LiveLoadConfigurationType"), (Int16*)&m_LiveLoadConfigurationType))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("LaneLoad", &m_LaneLoad))
+      if(!pLoad->Property(_T("LaneLoad"), &m_LaneLoad))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if ( 1.0 < version ) // added version 2.0
       {
-         if(!pLoad->Property("LaneLoadSpanLength", &m_LaneLoadSpanLength))
+         if(!pLoad->Property(_T("LaneLoadSpanLength"), &m_LaneLoadSpanLength))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property("MaxVariableAxleSpacing", &m_MaxVariableAxleSpacing))
+      if(!pLoad->Property(_T("MaxVariableAxleSpacing"), &m_MaxVariableAxleSpacing))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("VariableAxleIndex", &m_VariableAxleIndex))
+      if(!pLoad->Property(_T("VariableAxleIndex"), &m_VariableAxleIndex))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->BeginUnit("Axles"))
+      if(!pLoad->BeginUnit(_T("Axles")))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       long size;
-      if(!pLoad->Property("AxleCount", &size))
+      if(!pLoad->Property(_T("AxleCount"), &size))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       m_Axles.clear();
 
       for (int iaxl=0; iaxl<size; iaxl++)
       {
-         if(!pLoad->BeginUnit("Axle"))
+         if(!pLoad->BeginUnit(_T("Axle")))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          Axle axle;
 
-         if(!pLoad->Property("Weight", &(axle.Weight)))
+         if(!pLoad->Property(_T("Weight"), &(axle.Weight)))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Spacing", &(axle.Spacing)))
+         if(!pLoad->Property(_T("Spacing"), &(axle.Spacing)))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if(!pLoad->EndUnit())
@@ -449,20 +449,20 @@ bool LiveLoadLibraryEntry::AssertValid() const
 
 void LiveLoadLibraryEntry::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for LiveLoadLibraryEntry "<< GetName() <<endl;
+   os << _T("Dump for LiveLoadLibraryEntry ")<< GetName() <<endl;
 
-   os << "   m_IsNotional                = "<< m_IsNotional <<endl;
-   os << "   m_LiveLoadConfigurationType = "<< m_LiveLoadConfigurationType<<endl;
-   os << "   m_LaneLoad                  = "<< m_LaneLoad<<endl;
-   os << "   m_MaxVariableAxleSpacing    = "<< m_MaxVariableAxleSpacing<<endl;
-   os << "   m_VariableAxleIndex         = "<< m_VariableAxleIndex<<endl;
+   os << _T("   m_IsNotional                = ")<< m_IsNotional <<endl;
+   os << _T("   m_LiveLoadConfigurationType = ")<< m_LiveLoadConfigurationType<<endl;
+   os << _T("   m_LaneLoad                  = ")<< m_LaneLoad<<endl;
+   os << _T("   m_MaxVariableAxleSpacing    = ")<< m_MaxVariableAxleSpacing<<endl;
+   os << _T("   m_VariableAxleIndex         = ")<< m_VariableAxleIndex<<endl;
 
    int size = m_Axles.size();
-   os << "   Number of Axles = "<<size<<endl;
+   os << _T("   Number of Axles = ")<<size<<endl;
    for (int iaxl=0; iaxl<size; iaxl++)
    {
-      os<<"    Axle "<<iaxl<<" Weight  = "<<m_Axles[iaxl].Weight<<endl;
-      os<<"    Axle "<<iaxl<<" Spacing = "<<m_Axles[iaxl].Spacing<<endl;
+      os<<_T("    Axle ")<<iaxl<<_T(" Weight  = ")<<m_Axles[iaxl].Weight<<endl;
+      os<<_T("    Axle ")<<iaxl<<_T(" Spacing = ")<<m_Axles[iaxl].Spacing<<endl;
    }
 
    libLibraryEntry::Dump( os );

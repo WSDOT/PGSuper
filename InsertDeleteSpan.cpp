@@ -36,9 +36,9 @@ txnInsertSpan::txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pie
    m_PierFace   = pierFace;
 }
 
-std::string txnInsertSpan::Name() const
+std::_tstring txnInsertSpan::Name() const
 {
-   return "Insert Span";
+   return _T("Insert Span");
 }
 
 txnTransaction* txnInsertSpan::CreateClone() const
@@ -108,9 +108,9 @@ txnDeleteSpan::~txnDeleteSpan()
    delete m_pDeletedPier;
 }
 
-std::string txnDeleteSpan::Name() const
+std::_tstring txnDeleteSpan::Name() const
 {
-   return "Delete Span";
+   return _T("Delete Span");
 }
 
 txnTransaction* txnDeleteSpan::CreateClone() const

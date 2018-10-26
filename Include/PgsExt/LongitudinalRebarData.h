@@ -92,7 +92,7 @@ public:
    };
 
    std::vector<RebarRow> RebarRows;
-   std::string strRebarMaterial;
+   std::_tstring strRebarMaterial;
 
 
    // GROUP: LIFECYCLE

@@ -106,7 +106,7 @@ public:
 	DECLARE_MESSAGE_MAP()
 
    public:
-      bool SetHelpFilePath(const std::string& path);
+      bool SetHelpFilePath(const std::_tstring& path);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ BOOL CPsgLibApp::InitInstance()
 	return TRUE;
 }
 
-bool CPsgLibApp::SetHelpFilePath(const std::string& rpath)
+bool CPsgLibApp::SetHelpFilePath(const std::_tstring& rpath)
 {
    if (m_pszHelpFilePath!=NULL) 	free((void*)m_pszHelpFilePath);
    m_pszHelpFilePath = _tcsdup(rpath.c_str());
@@ -186,14 +186,14 @@ int CPsgLibApp::ExitInstance()
 	return CWinApp::ExitInstance();
 }
 
-bool PSGLIBFUNC WINAPI psglibSetHelpFileLocation(const std::string& rpath)
+bool PSGLIBFUNC WINAPI psglibSetHelpFileLocation(const std::_tstring& rpath)
 {
    return theApp.SetHelpFilePath(rpath);
 }
 
 
 
-std::string PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib)
+std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib)
 {
    libKeyListType key_list;
    rlib.KeyList(key_list);
@@ -202,7 +202,7 @@ std::string PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib)
 }
 
 template <class EntryType, class LibType>
-bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, const LibType& projectLib, const std::string& libName, const EntryType& dummy, bool isImported,bool bForceUpdate)
+bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, const LibType& projectLib, const std::_tstring& libName, const EntryType& dummy, bool isImported,bool bForceUpdate)
 {
    // loop over entries in project library and check to see if names are the same
    libKeyListType project_keys;
@@ -215,7 +215,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
 
    for (libKeyListIterator ik=project_keys.begin(); ik!=project_keys.end(); ik++)
    {
-      const std::string& name= *ik;
+      const std::_tstring& name= *ik;
       const EntryType* pproject = 0;
       const EntryType* pmaster = pMasterLib->LookupEntry(name.c_str());
       if (pmaster!=0)
@@ -228,7 +228,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
          {
             // we have a conflict - ask user what he wants to do about it.
             LibConflictOutcome res;
-            std::string new_name;
+            std::_tstring new_name;
 
             if ( bForceUpdate )
                res = OverWrite;
@@ -279,35 +279,35 @@ bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLi
    // different, we have a conflict
 
      if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConcreteLibrary()), 
-                                    projectMgr.GetConcreteLibrary(), "Concrete Library", ConcreteLibraryEntry(),isImported,bForceUpdate))
+                                    projectMgr.GetConcreteLibrary(), _T("Concrete Library"), ConcreteLibraryEntry(),isImported,bForceUpdate))
         return false;
 
      if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConnectionLibrary()), 
-                                    projectMgr.GetConnectionLibrary(), "Connection Library", ConnectionLibraryEntry(),isImported,bForceUpdate))
+                                    projectMgr.GetConnectionLibrary(), _T("Connection Library"), ConnectionLibraryEntry(),isImported,bForceUpdate))
         return false;
 
      if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetGirderLibrary()), 
-                                    projectMgr.GetGirderLibrary(), "Girder Library", GirderLibraryEntry(),isImported,bForceUpdate))
+                                    projectMgr.GetGirderLibrary(), _T("Girder Library"), GirderLibraryEntry(),isImported,bForceUpdate))
         return false;
 
      if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetDiaphragmLayoutLibrary()), 
-                                    projectMgr.GetDiaphragmLayoutLibrary(), "Diaphragm Library", DiaphragmLayoutEntry(),isImported,bForceUpdate))
+                                    projectMgr.GetDiaphragmLayoutLibrary(), _T("Diaphragm Library"), DiaphragmLayoutEntry(),isImported,bForceUpdate))
         return false;
 
      if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetTrafficBarrierLibrary()), 
-                                    projectMgr.GetTrafficBarrierLibrary(), "Traffic Barrier Library", TrafficBarrierEntry(),isImported,bForceUpdate))
+                                    projectMgr.GetTrafficBarrierLibrary(), _T("Traffic Barrier Library"), TrafficBarrierEntry(),isImported,bForceUpdate))
         return false;
 
      if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetSpecLibrary(), 
-                                    *(projectMgr.GetSpecLibrary()), "Project Criteria Library", SpecLibraryEntry(),isImported,bForceUpdate))
+                                    *(projectMgr.GetSpecLibrary()), _T("Project Criteria Library"), SpecLibraryEntry(),isImported,bForceUpdate))
         return false;
 
      if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetLiveLoadLibrary(), 
-                                    *(projectMgr.GetLiveLoadLibrary()), "User Defined Live Load Library", LiveLoadLibraryEntry(),isImported,bForceUpdate))
+                                    *(projectMgr.GetLiveLoadLibrary()), _T("User Defined Live Load Library"), LiveLoadLibraryEntry(),isImported,bForceUpdate))
         return false;
 
      if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetRatingLibrary(), 
-                                    *(projectMgr.GetRatingLibrary()), "Rating Criteria Library", RatingLibraryEntry(),isImported,bForceUpdate))
+                                    *(projectMgr.GetRatingLibrary()), _T("Rating Criteria Library"), RatingLibraryEntry(),isImported,bForceUpdate))
         return false;
 
    return true;
@@ -319,7 +319,7 @@ bool do_make_saveable_copy(const libILibrary& lib, libILibrary* ptempLib)
    lib.KeyList(key_list);
    for (libKeyListIterator i = key_list.begin(); i!=key_list.end(); i++)
    {
-      const char* key = i->c_str();
+      LPCTSTR key = i->c_str();
       // only copy entries to temp library if they are not read only, or if 
       // they are referenced
       if (lib.IsEditingEnabled(key) || lib.GetEntryRefCount(key)>0)
@@ -370,7 +370,7 @@ bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, p
    return true;
 }
 
-void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::string>* pNames, const libILibrary& prjLib)
+void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const libILibrary& prjLib)
 {
    pNames->clear();
 
@@ -378,7 +378,7 @@ void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::string>* pNames
    prjLib.KeyList( *pNames );
 }
 
-LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::string& entryName, const std::string& libName, const std::vector<std::string>& keylists, bool isImported,std::string* pNewName)
+LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,std::_tstring* pNewName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -390,7 +390,7 @@ LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std
 
    if (outcom==CLibraryEntryConflict::Rename)
    {
-      *pNewName = std::string(dlg.m_NewName);
+      *pNewName = std::_tstring(dlg.m_NewName);
       result = Rename;
    }
    else if (outcom==CLibraryEntryConflict::OverWrite)
@@ -426,7 +426,7 @@ bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryM
 
 HRESULT pgslibPGSuperDocHeader(IStructuredLoad* pStrLoad)
 {
-   HRESULT hr = pStrLoad->BeginUnit("PGSuper");
+   HRESULT hr = pStrLoad->BeginUnit(_T("PGSuper"));
    if ( FAILED(hr) )
       return hr;
 
@@ -437,19 +437,19 @@ HRESULT pgslibPGSuperDocHeader(IStructuredLoad* pStrLoad)
    {
       CComVariant var;
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("Version",&var);
+      hr = pStrLoad->get_Property(_T("Version"),&var);
       if ( FAILED(hr) )
          return hr;
 
-      hr = pStrLoad->BeginUnit("Broker");
+      hr = pStrLoad->BeginUnit(_T("Broker"));
       if ( FAILED(hr) )
          return hr;
 
-      hr = pStrLoad->BeginUnit("Agent");
+      hr = pStrLoad->BeginUnit(_T("Agent"));
       if ( FAILED(hr) )
          return hr;
 
-      hr = pStrLoad->get_Property("CLSID",&var);
+      hr = pStrLoad->get_Property(_T("CLSID"),&var);
       if ( FAILED(hr) )
          return hr;
    }
@@ -464,10 +464,10 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString strAppUnit = AfxGetApp()->m_pszAppName;
    strAppUnit.Trim();
-   strAppUnit.Replace(" ","");
+   strAppUnit.Replace(_T(" "),_T(""));
    pStrLoad->BeginUnit(strAppUnit); // it is ok if this fails as not all documents have this unit
 
-   HRESULT hr = pStrLoad->BeginUnit("LIBRARY_EDITOR");
+   HRESULT hr = pStrLoad->BeginUnit(_T("LIBRARY_EDITOR"));
    if ( FAILED(hr) )
       return hr;
 
@@ -479,13 +479,13 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
    // editor units
    CComVariant var;
    var.vt = VT_BSTR;
-   hr = pStrLoad->get_Property("EDIT_UNITS",&var);
+   hr = pStrLoad->get_Property(_T("EDIT_UNITS"),&var);
    if ( FAILED(hr) )
       return hr;
 
-   std::string str(OLE2A(var.bstrVal));
+   std::_tstring str(OLE2T(var.bstrVal));
 
-   if (str=="US")
+   if (str==_T("US"))
       *pUnitsMode = eafTypes::umUS;
    else
       *pUnitsMode = eafTypes::umSI;
@@ -532,17 +532,17 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
    catch (const sysXStructuredLoad& rLoad)
    {
       sysXStructuredLoad::Reason reason = rLoad.GetExplicitReason();
-      std::string msg;
+      std::_tstring msg;
       CString cmsg;
       rLoad.GetErrorMessage(&msg);
       if (reason==sysXStructuredLoad::InvalidFileFormat)
-         cmsg = "Invalid file data format. The file may have been corrupted. Extended error information is as follows: ";
+         cmsg = _T("Invalid file data format. The file may have been corrupted. Extended error information is as follows: ");
       else if (reason==sysXStructuredLoad::BadVersion)
-         cmsg = "Data file was written by a newer program version. Please upgrade this software. Extended error information is as follows: ";
+         cmsg = _T("Data file was written by a newer program version. Please upgrade this software. Extended error information is as follows: ");
       else if ( reason == sysXStructuredLoad::UserDefined )
-         cmsg = "Error reading file. Extended error information is as follows:";
+         cmsg = _T("Error reading file. Extended error information is as follows:");
       else
-         cmsg = "Undetermined error reading data file.  Extended error information is as follows: ";
+         cmsg = _T("Undetermined error reading data file.  Extended error information is as follows: ");
 
       cmsg += msg.c_str();
       AfxMessageBox(cmsg,MB_OK | MB_ICONEXCLAMATION);

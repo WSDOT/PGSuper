@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperPluginMgr.h"
 #include <EAF\EAFApp.h>
 
@@ -45,7 +45,7 @@ bool CPGSuperPluginMgr::LoadPlugins()
    HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
    if ( FAILED(hr) )
    {
-      AfxMessageBox("Failed to create the component category manager");
+      AfxMessageBox(_T("Failed to create the component category manager"));
       return false;
    }
 
@@ -72,9 +72,9 @@ bool CPGSuperPluginMgr::LoadPlugins()
       {
          LPOLESTR pszCLSID;
          ::StringFromCLSID(clsid[i],&pszCLSID);
-         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Enabled"));
+         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Enabled"));
 
-         if ( strState.CompareNoCase("Enabled") == 0 )
+         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
          {
             CComPtr<IPGSuperDataImporter> importer;
             importer.CoCreateInstance(clsid[i]);
@@ -84,10 +84,10 @@ bool CPGSuperPluginMgr::LoadPlugins()
                LPOLESTR pszUserType;
                OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
                CString strMsg;
-               strMsg.Format("Failed to load %s PGSuper Data Importer plug in.\n\nWould you like to disable this plug-in?",OLE2A(pszUserType));
+               strMsg.Format(_T("Failed to load %s PGSuper Data Importer plug in.\n\nWould you like to disable this plug-in?"),OLE2T(pszUserType));
                if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
                {
-                  pApp->WriteProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Disabled"));
+                  pApp->WriteProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Disabled"));
                }
             }
             else
@@ -118,9 +118,9 @@ bool CPGSuperPluginMgr::LoadPlugins()
       {
          LPOLESTR pszCLSID;
          ::StringFromCLSID(clsid[i],&pszCLSID);
-         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Enabled"));
+         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Enabled"));
 
-         if ( strState.CompareNoCase("Enabled") == 0 )
+         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
          {
             CComPtr<IPGSuperDataExporter> exporter;
             exporter.CoCreateInstance(clsid[i]);
@@ -130,10 +130,10 @@ bool CPGSuperPluginMgr::LoadPlugins()
                LPOLESTR pszUserType;
                OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
                CString strMsg;
-               strMsg.Format("Failed to load %s PGSuper Data Export plug in.\n\nWould you like to disable this plug-in?",OLE2A(pszUserType));
+               strMsg.Format(_T("Failed to load %s PGSuper Data Export plug in.\n\nWould you like to disable this plug-in?"),OLE2T(pszUserType));
                if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
                {
-                  pApp->WriteProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Disabled"));
+                  pApp->WriteProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Disabled"));
                }
             }
             else

@@ -38,7 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-pgsRefinedAnalysisStatusItem::pgsRefinedAnalysisStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsRefinedAnalysisStatusItem::pgsRefinedAnalysisStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
@@ -71,7 +71,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    CRefinedAnalysisOptionsDlg dlg;
    dlg.m_strDescription = pStatusItem->GetDescription().c_str();
-   dlg.m_strDescription.Replace("\n","\r\n"); // this makes the text wrap correctly in the dialog
+   dlg.m_strDescription.Replace(_T("\n"),_T("\r\n")); // this makes the text wrap correctly in the dialog
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -119,7 +119,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsInstallationErrorStatusItem::pgsInstallationErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strComponent,const char* strDescription) :
+pgsInstallationErrorStatusItem::pgsInstallationErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strComponent,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Component(strComponent)
 {
 }
@@ -153,14 +153,14 @@ void pgsInstallationErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CString msg;
-   msg.Format("PGSuper was not successfully installed or has become damanged.\n\n%s could not be created.\n\nPlease re-install the software.",pItem->m_Component.c_str());
+   msg.Format(_T("PGSuper was not successfully installed or has become damanged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
    AfxMessageBox(msg,MB_OK | MB_ICONEXCLAMATION);
 }
 
 
 ////////////////
 
-pgsUnknownErrorStatusItem::pgsUnknownErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strFile,long line,const char* strDescription) :
+pgsUnknownErrorStatusItem::pgsUnknownErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strFile,long line,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_File(strFile), m_Line(line)
 {
 }
@@ -198,13 +198,13 @@ void pgsUnknownErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CString msg;
-   msg.Format("An unspecified error occured at %s, Line %d",pItem->m_File.c_str(),pItem->m_Line);
+   msg.Format(_T("An unspecified error occured at %s, Line %d"),pItem->m_File.c_str(),pItem->m_Line);
    AfxMessageBox(msg,MB_OK | MB_ICONEXCLAMATION);
 }
 
 ////////////////
 
-pgsInformationalStatusItem::pgsInformationalStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsInformationalStatusItem::pgsInformationalStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
@@ -236,17 +236,17 @@ void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   std::string msg = pStatusItem->GetDescription();
+   std::_tstring msg = pStatusItem->GetDescription();
 
    if (m_HelpID!=0)
    {
-      msg += std::string("\r\n\r\nClick on Help button for more details.");
+      msg += std::_tstring(_T("\r\n\r\nClick on Help button for more details."));
    }
 
    bool is_severe = m_Severity==eafTypes::statusError;
    if (!is_severe)
    {
-      msg += std::string("\r\n\r\nClick OK to remove this message.");
+      msg += std::_tstring(_T("\r\n\r\nClick OK to remove this message."));
    }
 
    pgsInformationalStatusItem* pItem = dynamic_cast<pgsInformationalStatusItem*>(pStatusItem);
@@ -267,7 +267,7 @@ void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span), m_Girder(gdr), m_Page(page)
 {
 }
@@ -312,7 +312,7 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CString strMessage;
-   strMessage.Format("%s\n\r%s",pItem->GetDescription().c_str(),"Would you like to edit the girder?");
+   strMessage.Format(_T("%s\n\r%s"),pItem->GetDescription().c_str(),_T("Would you like to edit the girder?"));
    int result = AfxMessageBox(strMessage,MB_YESNO);
 
    if ( result == IDYES )
@@ -331,7 +331,7 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsStructuralAnalysisTypeStatusItem::pgsStructuralAnalysisTypeStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+pgsStructuralAnalysisTypeStatusItem::pgsStructuralAnalysisTypeStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
@@ -362,7 +362,7 @@ void pgsStructuralAnalysisTypeStatusCallback::Execute(CEAFStatusItem* pStatusIte
    AfxMessageBox(pStatusItem->GetDescription().c_str(),MB_OK);
 }
 
-pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription) :
+pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_DlgPage(dlgPage)
 {
 }

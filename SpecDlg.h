@@ -29,7 +29,7 @@
 // SpecDlg.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include <vector>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -39,13 +39,13 @@ class CSpecDlg : public CDialog
 {
 // Construction
 public:
-   CSpecDlg(const std::vector<std::string>& specs,CWnd* pParent = NULL);   // standard constructor
+   CSpecDlg(const std::vector<std::_tstring>& specs,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSpecDlg)
 	enum { IDD = IDD_SPECIFICATION };
 	//}}AFX_DATA
-	std::string	m_Spec;
+	std::_tstring	m_Spec;
 
 
 // Overrides
@@ -57,7 +57,7 @@ public:
 
 // Implementation
 protected:
-   std::vector<std::string> m_Specs;
+   std::vector<std::_tstring> m_Specs;
 
 	// Generated message map functions
 	//{{AFX_MSG(CSpecDlg)

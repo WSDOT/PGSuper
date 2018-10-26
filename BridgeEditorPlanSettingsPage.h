@@ -29,7 +29,7 @@
 // BridgeEditorPlanSettingsPage.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeEditorPlanSettingsPage dialog

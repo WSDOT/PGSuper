@@ -65,7 +65,7 @@ public:
    virtual rptReportContent& SetValue(Float64 capacity, Float64 demand, bool passed);
 
    //------------------------------------------------------------------------
-   virtual std::string AsString() const;
+   virtual std::_tstring AsString() const;
 
 
 protected:

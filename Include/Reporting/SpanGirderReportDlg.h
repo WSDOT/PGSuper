@@ -48,7 +48,7 @@ public:
 
    int m_Span;
    int m_Girder;
-   std::vector<std::string> m_ChapterList;
+   std::vector<std::_tstring> m_ChapterList;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

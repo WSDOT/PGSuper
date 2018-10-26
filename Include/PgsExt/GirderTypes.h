@@ -63,7 +63,7 @@ public:
    void AddGirders(GirderIndexType nGirders);
    void RemoveGirders(GirderIndexType nGirders);
 
-   void GetGirderGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,std::string& strName) const;
+   void GetGirderGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,std::_tstring& strName) const;
 
    // returns the group index that the girder belongs to
    GroupIndexType FindGroup(GirderIndexType gdrIdx) const;
@@ -87,9 +87,9 @@ public:
    GroupIndexType GetGirderGroupCount() const;
 
    // returns the girder type name for a given girder index
-   void SetGirderName(GroupIndexType grpIdx,const char* strName);
-   void RenameGirder(GroupIndexType grpIdx,const char* strName);
-   const char* GetGirderName(GirderIndexType gdrIdx) const;
+   void SetGirderName(GroupIndexType grpIdx,LPCTSTR strName);
+   void RenameGirder(GroupIndexType grpIdx,LPCTSTR strName);
+   LPCTSTR GetGirderName(GirderIndexType gdrIdx) const;
 
    void SetGirderLibraryEntry(GroupIndexType grpIdx,const GirderLibraryEntry* pEntry);
    const GirderLibraryEntry* GetGirderLibraryEntry(GirderIndexType gdrIdx) const;
@@ -110,7 +110,7 @@ private:
    std::vector<Float64> m_SlabOffset[2]; // slab offset at each end of the girder for each girder line
                                          // index is pgsTypes::metStart and pgsTypes::metEnd
 
-   std::vector<std::string> m_GirderNames; // girder names for each girder line 
+   std::vector<std::_tstring> m_GirderNames; // girder names for each girder line 
    std::vector<const GirderLibraryEntry*> m_GirderLibraryEntries;
 
    typedef std::pair<GirderIndexType,GirderIndexType> GirderGroup; // index of first and last girder in the group

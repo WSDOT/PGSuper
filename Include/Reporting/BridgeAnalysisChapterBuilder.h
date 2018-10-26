@@ -51,7 +51,7 @@ class REPORTINGCLASS CBridgeAnalysisChapterBuilder : public CPGSuperChapterBuild
 {
 public:
    // GROUP: LIFECYCLE
-   CBridgeAnalysisChapterBuilder(const char* strTitle,pgsTypes::AnalysisType analysisType,bool bSelect = true);
+   CBridgeAnalysisChapterBuilder(LPCTSTR strTitle,pgsTypes::AnalysisType analysisType,bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -79,7 +79,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   std::string m_strTitle;
+   std::_tstring m_strTitle;
    pgsTypes::AnalysisType m_AnalysisType;
 
    // GROUP: LIFECYCLE

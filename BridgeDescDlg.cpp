@@ -40,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CBridgeDescDlg, CPropertySheet)
 
 CBridgeDescDlg::CBridgeDescDlg(CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet("Bridge Description", pParentWnd, iSelectPage)
+	:CPropertySheet(_T("Bridge Description"), pParentWnd, iSelectPage)
 {
    Init();
 }

@@ -83,8 +83,8 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Check for Lifting In Casting Yard [5.5.4.3]"<<rptNewLine;
-   *pTitle << "Lifting Stresses and Factor of Safety Against Cracking"<<rptNewLine;
+   *pTitle << _T("Check for Lifting In Casting Yard [5.5.4.3]")<<rptNewLine;
+   *pTitle << _T("Lifting Stresses and Factor of Safety Against Cracking")<<rptNewLine;
 
    rptRcScalar scalar;
    scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
@@ -108,7 +108,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    if (!pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
    {
-      *p <<color(Red)<<"Lifting analysis disabled in Project Criteria library entry. No analysis performed."<<color(Black)<<rptNewLine;
+      *p <<color(Red)<<_T("Lifting analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
       return;
    }
 
@@ -119,12 +119,12 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    // unstable girders are a problem
    if (!pLiftArtifact->IsGirderStable())
    {
-      *pTitle<<"Warning! - Girder is unstable - CG is higher than pick points"<<rptNewLine;
+      *pTitle<<_T("Warning! - Girder is unstable - CG is higher than pick points")<<rptNewLine;
    }
 
    GET_IFACE2(pBroker, ISpecification, pSpec );
    GET_IFACE2(pBroker, ILibrary,       pLib );
-   std::string specName = pSpec->GetSpecification();
+   std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
 
    double c; // compression coefficient
@@ -138,24 +138,24 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    Float64 t2 = pSpecEntry->GetMaxConcreteTensWithRebarLifting();
 
-   *p <<"Maximum allowable concrete compressive stress = -" << c << RPT_FCI << " = " << 
-      stress.SetValue(pLiftArtifact->GetAllowableCompressionStress())<< " " <<
+   *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FCI << _T(" = ") << 
+      stress.SetValue(pLiftArtifact->GetAllowableCompressionStress())<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
-   *p <<"Maximum allowable concrete tensile stress = " << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FCI;
+   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FCI;
    if ( b_t_max )
-      *p << " but not more than: " << stress.SetValue(t_max);
-   *p << " = " << stress.SetValue(pLiftArtifact->GetAllowableTensileStress())<< " " <<
+      *p << _T(" but not more than: ") << stress.SetValue(t_max);
+   *p << _T(" = ") << stress.SetValue(pLiftArtifact->GetAllowableTensileStress())<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
    double As_reqd = pLiftArtifact->GetAlterantiveTensileStressAsMax();
-   *p <<"Maximum allowable concrete tensile stress = " << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FCI
-       << " = " << stress.SetValue(pLiftArtifact->GetAlternativeTensionAllowableStress()) << " " << stress.GetUnitTag();
+   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FCI
+       << _T(" = ") << stress.SetValue(pLiftArtifact->GetAlternativeTensionAllowableStress()) << _T(" ") << stress.GetUnitTag();
    if ( !IsZero(As_reqd) )
-       *p << " if at least " << area.SetValue(As_reqd) << " of mild reinforcement is provided" << rptNewLine;
+       *p << _T(" if at least ") << area.SetValue(As_reqd) << _T(" of mild reinforcement is provided") << rptNewLine;
    else
-       *p << " if bonded reinforcement sufficient to resist the tensile force in the concrete is provided." << rptNewLine;
+       *p << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
-   *p <<"Allowable factor of safety against cracking = "<<pLiftArtifact->GetAllowableFsForCracking()<<rptNewLine;
+   *p <<_T("Allowable factor of safety against cracking = ")<<pLiftArtifact->GetAllowableFsForCracking()<<rptNewLine;
 
    double fc_reqd_comp,fc_reqd_tens;
    bool min_rebar_reqd;
@@ -164,22 +164,22 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    double fci_reqd = max(fc_reqd_comp,fc_reqd_tens);
 
    if ( 0 < fci_reqd )
-      *p << RPT_FCI << " required to satisfy this stress check = " << stress_u.SetValue( fci_reqd ) << rptNewLine;
+      *p << RPT_FCI << _T(" required to satisfy this stress check = ") << stress_u.SetValue( fci_reqd ) << rptNewLine;
 
    GET_IFACE2(pBroker,IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
    poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,"");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    *p << p_table;
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Pick Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR("Min" << rptNewLine << "Stress",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,2) << COLHDR("Max" << rptNewLine << "Stress",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,3) << "Tension" << rptNewLine << "Status" << rptNewLine << "w/o Rebar";
-   (*p_table)(0,4) << "Tension" << rptNewLine << "Status" << rptNewLine << "w/  Rebar";
-   (*p_table)(0,5) << "Compression" << rptNewLine << "Status";
-   (*p_table)(0,6) << Sub2("FS","cr");
-   (*p_table)(0,7) << "FS" << rptNewLine << "Status";
+   (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Pick Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR(_T("Min") << rptNewLine << _T("Stress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,2) << COLHDR(_T("Max") << rptNewLine << _T("Stress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,3) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/o Rebar");
+   (*p_table)(0,4) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/  Rebar");
+   (*p_table)(0,5) << _T("Compression") << rptNewLine << _T("Status");
+   (*p_table)(0,6) << Sub2(_T("FS"),_T("cr"));
+   (*p_table)(0,7) << _T("FS") << rptNewLine << _T("Status");
 
    Float64 overhang = (pLiftArtifact->GetGirderLength() - pLiftArtifact->GetClearSpanBetweenPickPoints())/2.0;
 
@@ -226,16 +226,16 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    // FS for failure
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Factor of Safety Against Failure";
+   *pTitle << _T("Factor of Safety Against Failure");
 
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,"");
+   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
    *p << p_table;
-   (*p_table)(0,0) << "Factor of Safety Against Failure (FS" << Sub("f") << ")";
-   (*p_table)(1,0) << "Allowable Factor of Safety Against Failure";
-   (*p_table)(2,0) << "Status";
+   (*p_table)(0,0) << _T("Factor of Safety Against Failure (FS") << Sub(_T("f")) << _T(")");
+   (*p_table)(1,0) << _T("Allowable Factor of Safety Against Failure");
+   (*p_table)(2,0) << _T("Status");
 
    (*p_table)(0,1) << scalar.SetValue(pLiftArtifact->GetFsFailure());
    (*p_table)(1,1) << scalar.SetValue(pLiftArtifact->GetAllowableFsForFailure());
@@ -291,7 +291,7 @@ bool CLiftingCheck::AssertValid() const
 
 void CLiftingCheck::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CLiftingCheck" << endl;
+   os << _T("Dump for CLiftingCheck") << endl;
 }
 #endif // _DEBUG
 

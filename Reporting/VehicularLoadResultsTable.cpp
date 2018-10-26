@@ -70,7 +70,7 @@ CVehicularLoadResultsTable& CVehicularLoadResultsTable::operator= (const CVehicu
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::LiveLoadType llType,const std::string& strLLName,VehicleIndexType vehicleIndex, pgsTypes::AnalysisType analysisType,
+rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::LiveLoadType llType,const std::_tstring& strLLName,VehicleIndexType vehicleIndex, pgsTypes::AnalysisType analysisType,
                                               bool bReportTruckConfig,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -106,7 +106,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
    if ( bReportTruckConfig )
       nCols += 7;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Live Load Results for " + strLLName);
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Live Load Results for ") + strLLName);
 
    if ( span == ALL_SPANS )
    {
@@ -116,53 +116,53 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
 
    // Set up table headings
    ColumnIndexType col = 0;
-   (*p_table)(0,col++) << "";
+   (*p_table)(0,col++) << _T("");
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << COLHDR("X",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    }
 
-   (*p_table)(0,col++) << COLHDR("Moment" << rptNewLine << "Max",   rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Moment") << rptNewLine << _T("Max"),   rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Moment" << rptNewLine << "Max" << rptNewLine << "Config"; // for max moment
+      (*p_table)(0,col++) << _T("Moment") << rptNewLine << _T("Max") << rptNewLine << _T("Config"); // for max moment
    }
 
-   (*p_table)(0,col++) << COLHDR("Moment" << rptNewLine << "Min",   rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Moment") << rptNewLine << _T("Min"),   rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Moment" << rptNewLine << "Min" << rptNewLine << "Config"; // for max moment
+      (*p_table)(0,col++) << _T("Moment") << rptNewLine << _T("Min") << rptNewLine << _T("Config"); // for max moment
    }
 
-   (*p_table)(0,col++) << COLHDR("Shear" << rptNewLine << "Max",   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Shear") << rptNewLine << _T("Max"),   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Shear" << rptNewLine << "Max" << rptNewLine << "Config"; // for max moment
+      (*p_table)(0,col++) << _T("Shear") << rptNewLine << _T("Max") << rptNewLine << _T("Config"); // for max moment
    }
 
-   (*p_table)(0,col++) << COLHDR("Shear" << rptNewLine << "Min",   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Shear") << rptNewLine << _T("Min"),   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Shear" << rptNewLine << "Min" << rptNewLine << "Config"; // for max moment
+      (*p_table)(0,col++) << _T("Shear") << rptNewLine << _T("Min") << rptNewLine << _T("Config"); // for max moment
    }
    
-   (*p_table)(0,col++) << COLHDR("Displacement" << rptNewLine << "Max", rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Displacement") << rptNewLine << _T("Max"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Displacement" << rptNewLine << "Max" << rptNewLine << "Config"; // for max moment
+      (*p_table)(0,col++) << _T("Displacement") << rptNewLine << _T("Max") << rptNewLine << _T("Config"); // for max moment
    }
 
-   (*p_table)(0,col++) << COLHDR("Displacement" << rptNewLine << "Min", rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Displacement") << rptNewLine << _T("Min"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Displacement" << rptNewLine << "Min" << rptNewLine << "Config"; // for max moment
+      (*p_table)(0,col++) << _T("Displacement") << rptNewLine << _T("Min") << rptNewLine << _T("Config"); // for max moment
    }
 
    // Get the interface pointers we need
@@ -258,7 +258,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
             ReportTruckConfiguration(VmaxLeftConfig[index],p_table,row,col,pDisplayUnits);
             if ( !IsEqual(Vmax[index].Left(),Vmax[index].Right()) )
             {
-               (*p_table)(row,col) << "-----------" << rptNewLine;
+               (*p_table)(row,col) << _T("-----------") << rptNewLine;
                ReportTruckConfiguration(VmaxRightConfig[index],p_table,row,col,pDisplayUnits);
             }
 
@@ -272,7 +272,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
             ReportTruckConfiguration(VminLeftConfig[index],p_table,row,col,pDisplayUnits);
             if ( !IsEqual(Vmin[index].Left(),Vmin[index].Right()) )
             {
-               (*p_table)(row,col) << "-----------" << rptNewLine;
+               (*p_table)(row,col) << _T("-----------") << rptNewLine;
                ReportTruckConfiguration(VminRightConfig[index],p_table,row,col,pDisplayUnits);
             }
 
@@ -323,7 +323,7 @@ void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguratio
 {
    if ( config.size() == 0 )
    {
-      (*pTable)(row,col) << "" ;
+      (*pTable)(row,col) << _T("") ;
       return;
    }
 
@@ -337,14 +337,14 @@ void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguratio
       const AxlePlacement& axlePlacement = *axleIter;
       if ( 0 < axlePlacement.Weight )
       {
-         (*pTable)(row,col) << weight.SetValue(axlePlacement.Weight) << " @ " << position.SetValue(axlePlacement.Location) << rptNewLine;
+         (*pTable)(row,col) << weight.SetValue(axlePlacement.Weight) << _T(" @ ") << position.SetValue(axlePlacement.Location) << rptNewLine;
          nRowsWritten++;
       }
    }
 
    if ( nRowsWritten == 0 )
    {
-      (*pTable)(row,col) << "" ;
+      (*pTable)(row,col) << _T("") ;
       return;
    }
 }

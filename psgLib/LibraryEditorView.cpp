@@ -195,7 +195,7 @@ void CLibraryEditorView::OnInitialUpdate()
    int ui=0;
    libLibraryManager* pMan = pLibMgrDoc->GetLibraryManager(ui);
    ASSERT(pMan);
-   std::string name = "Libraries"; // pMan->GetName();
+   std::_tstring name = _T("Libraries"); // pMan->GetName();
 
    HTREEITEM hitm = tree.InsertItem(name.c_str(),0,0);
    ASSERT(hitm);
@@ -241,7 +241,7 @@ void CLibraryEditorView::InsertLibraryManager(Uint32 ilib_man, Uint32 ilib_man_s
    Uint32 nlibs = pMan->GetLibraryCount();
    if (nlibs==0) return;
 
-   std::string disp_name;
+   std::_tstring disp_name;
    for (Uint32 ui=0; ui<nlibs; ui++)
    {
       // use same folder icon for all libraries

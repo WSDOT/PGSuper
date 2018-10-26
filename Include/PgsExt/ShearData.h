@@ -83,7 +83,7 @@ public:
    typedef ShearZoneVec::iterator ShearZoneIterator;
    typedef ShearZoneVec::const_iterator ShearZoneConstIterator;
    ShearZoneVec ShearZones;
-   std::string strRebarMaterial;
+   std::_tstring strRebarMaterial;
 
    // GROUP: LIFECYCLE
 

@@ -45,7 +45,7 @@ static const long ARROW_SIZE = 100;
 void DrawArrowLine(CDC* pDC, long x, long ydatum, long yend, CSize& arrowSize);
 CSize GetLArrowSize(iCoordinateMap* pMap);
 
-UINT CDistributedLoadDrawStrategyImpl::ms_Format = ::RegisterClipboardFormat("DistributedLoadDrawStrategyImpl");
+UINT CDistributedLoadDrawStrategyImpl::ms_Format = ::RegisterClipboardFormat(_T("DistributedLoadDrawStrategyImpl"));
 
 CDistributedLoadDrawStrategyImpl::CDistributedLoadDrawStrategyImpl()
 {

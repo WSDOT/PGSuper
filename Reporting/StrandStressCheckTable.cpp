@@ -107,7 +107,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 
    int nColumns = 2 + 2*strandTypes.size();
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,"Strand Stresses [5.9.3]");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Strand Stresses [5.9.3]"));
    p_table->SetNumberOfHeaderRows(2);
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -116,11 +116,11 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
    int col1 = 0;
    int col2 = 0;
    p_table->SetRowSpan(0,col1,2);
-   (*p_table)(0,col1++) << "Loss Stage";
+   (*p_table)(0,col1++) << _T("Loss Stage");
    p_table->SetRowSpan(1,col2++,-1);
 
    p_table->SetRowSpan(0,col1,2);
-   (*p_table)(0,col1++) << COLHDR("Allowable" << rptNewLine << "Stress", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,col1++) << COLHDR(_T("Allowable") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    p_table->SetRowSpan(1,col2++,-1);
 
    std::vector<pgsTypes::StrandType>::iterator iter;
@@ -131,24 +131,24 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
       switch(strandType)
       {
       case pgsTypes::Straight:
-         (*p_table)(0,col1++) << "Straight";
+         (*p_table)(0,col1++) << _T("Straight");
          break;
 
       case pgsTypes::Harped:
-         (*p_table)(0,col1++) << "Harped";
+         (*p_table)(0,col1++) << _T("Harped");
          break;
 
       case pgsTypes::Permanent:
-         (*p_table)(0,col1++) << "Permanent";
+         (*p_table)(0,col1++) << _T("Permanent");
          break;
 
       case pgsTypes::Temporary:
-         (*p_table)(0,col1++) << "Temporary";
+         (*p_table)(0,col1++) << _T("Temporary");
          break;
       }
 
-      (*p_table)(1,col2++) << COLHDR("Strand" << rptNewLine << "Stress", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*p_table)(1,col2++) << "Status" << rptNewLine << "(C/D)";
+      (*p_table)(1,col2++) << COLHDR(_T("Strand") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << _T("Status") << rptNewLine << _T("(C/D)");
    }
 
    for ( int i = col1; i < nColumns; i++ )
@@ -173,7 +173,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 
          if ( strandType == strandTypes.front() )
          {
-	         (*p_table)(row,col++) << "At Jacking";
+	         (*p_table)(row,col++) << _T("At Jacking");
 	         (*p_table)(row,col++) << stress.SetValue( capacity );
          }
 	      (*p_table)(row,col++) << stress.SetValue( demand );
@@ -183,7 +183,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      else
 		      (*p_table)(row,col) << RPT_FAIL;
 
-         (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(capacity,demand,bPassed) << ")";
+         (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
          row++;
       }
@@ -194,7 +194,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      pArtifact->GetCheckBeforeXfer( strandType, &demand, &capacity, &bPassed );
          if ( strandType == strandTypes.front() )
          {
-   	      (*p_table)(row,col++) << "Before Prestress Transfer";
+   	      (*p_table)(row,col++) << _T("Before Prestress Transfer");
 	         (*p_table)(row,col++) << stress.SetValue( capacity );
          }
 	      (*p_table)(row,col++) << stress.SetValue( demand );
@@ -204,7 +204,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      else
 		      (*p_table)(row,col) << RPT_FAIL;
 
-         (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(capacity,demand,bPassed) << ")";
+         (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
          row++;
       }
@@ -215,7 +215,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      pArtifact->GetCheckAfterXfer( strandType, &demand, &capacity, &bPassed );
          if ( strandType == strandTypes.front() )
          {
-   	      (*p_table)(row,col++) << "After Prestress Transfer";
+   	      (*p_table)(row,col++) << _T("After Prestress Transfer");
 	         (*p_table)(row,col++) << stress.SetValue( capacity );
          }
 	      (*p_table)(row,col++) << stress.SetValue( demand );
@@ -225,7 +225,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      else
 		      (*p_table)(row,col) << RPT_FAIL;
 
-         (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(capacity,demand,bPassed) << ")";
+         (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
          row++;
       }
@@ -236,7 +236,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      pArtifact->GetCheckAfterLosses( strandType, &demand, &capacity, &bPassed );
          if ( strandType == strandTypes.front() )
          {
-   	      (*p_table)(row,col++) << "After All Losses";
+   	      (*p_table)(row,col++) << _T("After All Losses");
 	         (*p_table)(row,col++) << stress.SetValue( capacity );
          }
 	      (*p_table)(row,col++) << stress.SetValue( demand );
@@ -246,14 +246,14 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      else
 		      (*p_table)(row,col) << RPT_FAIL;
 
-         (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(capacity,demand,bPassed) << ")";
+         (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
 
          row++;
       }
       else
       {
-         (*p_table)(row,col++) << "";
-         (*p_table)(row,col++) << "";
+         (*p_table)(row,col++) << _T("");
+         (*p_table)(row,col++) << _T("");
       }
    }
 
@@ -298,7 +298,7 @@ bool CStrandStressCheckTable::AssertValid() const
 
 void CStrandStressCheckTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CStrandStressCheckTable" << endl;
+   os << _T("Dump for CStrandStressCheckTable") << endl;
 }
 #endif // _DEBUG
 

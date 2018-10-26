@@ -85,29 +85,29 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    BarSizeType size = pStirrupGeometry->GetTopFlangeBarSize(poi);
    Float64 tfs = pStirrupGeometry->GetTopFlangeS(poi);
    if (size!=0)
-      *pPara <<"Top flange stirrups are #"<<size<<" at "<<dim_u.SetValue(tfs)<<" spacing."<<rptNewLine;
+      *pPara <<_T("Top flange stirrups are #")<<size<<_T(" at ")<<dim_u.SetValue(tfs)<<_T(" spacing.")<<rptNewLine;
    else
-      *pPara <<"Top flange stirrups not present"<<rptNewLine;
+      *pPara <<_T("Top flange stirrups not present")<<rptNewLine;
 
    // bottom flange confinement steel
    size = pStirrupGeometry->GetConfinementBarSize(span,girder);
    Uint32 lz = pStirrupGeometry->GetNumConfinementZones(span,girder);
    if (lz!=0 && size!=0)
-      *pPara <<"Bottom flange confinement stirrups are #"<<size<<" ending in Zone "<<lz<<rptNewLine;
+      *pPara <<_T("Bottom flange confinement stirrups are #")<<size<<_T(" ending in Zone ")<<lz<<rptNewLine;
    else
-      *pPara<<"Bottom flange confinement steel not present"<<rptNewLine;
+      *pPara<<_T("Bottom flange confinement steel not present")<<rptNewLine;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,"");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    *pPara << p_table;
 
-   (*p_table)(0,0) << "Zone";
-   (*p_table)(0,1) << COLHDR("Zone Start",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,2) << COLHDR("Zone End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,3) << COLHDR("Bar Spacing",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(0,4) << "Vert Bar" << rptNewLine << "Size";
-   (*p_table)(0,5) << "# Vert" << rptNewLine << "Bars";
-   (*p_table)(0,6) << "Horz Bar" << rptNewLine << "Size";
-   (*p_table)(0,7) << "# Horz" << rptNewLine << "Bars";
+   (*p_table)(0,0) << _T("Zone");
+   (*p_table)(0,1) << COLHDR(_T("Zone Start"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,2) << COLHDR(_T("Zone End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,3) << COLHDR(_T("Bar Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,4) << _T("Vert Bar") << rptNewLine << _T("Size");
+   (*p_table)(0,5) << _T("# Vert") << rptNewLine << _T("Bars");
+   (*p_table)(0,6) << _T("Horz Bar") << rptNewLine << _T("Size");
+   (*p_table)(0,7) << _T("# Horz") << rptNewLine << _T("Bars");
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    Uint32 nz = pStirrupGeometry->GetNumZones(span,girder);
@@ -121,26 +121,26 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       BarSizeType barSize = pStirrupGeometry->GetVertStirrupBarSize(span,girder,iz);
       if (barSize != 0)
       {
-         (*p_table)(row,4) << "#" << barSize;
+         (*p_table)(row,4) << _T("#") << barSize;
          (*p_table)(row,5) << pStirrupGeometry->GetVertStirrupBarCount(span,girder,iz);
       }
       else
       {
-         (*p_table)(row,4) << "(None)";
-         (*p_table)(row,5) << "(None)";
+         (*p_table)(row,4) << _T("(None)");
+         (*p_table)(row,5) << _T("(None)");
       }
 
 
       barSize = pStirrupGeometry->GetHorzStirrupBarSize(span,girder,iz);
       if (barSize != 0)
       {
-         (*p_table)(row,6) << "#" << barSize;
+         (*p_table)(row,6) << _T("#") << barSize;
          (*p_table)(row,7) << pStirrupGeometry->GetHorzStirrupBarCount(span,girder,iz);
       }
       else
       {
-         (*p_table)(row,6) << "(None)";
-         (*p_table)(row,7) << "(None)";
+         (*p_table)(row,6) << _T("(None)");
+         (*p_table)(row,7) << _T("(None)");
       }
 
       row++;
@@ -185,7 +185,7 @@ bool CStirrupTable::AssertValid() const
 
 void CStirrupTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CStirrupTable" << endl;
+   os << _T("Dump for CStirrupTable") << endl;
 }
 #endif // _DEBUG
 

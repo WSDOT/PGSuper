@@ -70,9 +70,9 @@ txnTransaction* txnEditAnalysisType::CreateClone() const
    return new txnEditAnalysisType(m_AnalysisType[0],m_AnalysisType[1]);
 }
 
-std::string txnEditAnalysisType::Name() const
+std::_tstring txnEditAnalysisType::Name() const
 {
-   return "Edit Structural Analysis Method";
+   return _T("Edit Structural Analysis Method");
 }
 
 bool txnEditAnalysisType::IsUndoable()

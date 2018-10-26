@@ -82,7 +82,7 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
    {
       rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
       *pChapter << pTitle;
-      *pTitle << "Strand Slope";
+      *pTitle << _T("Strand Slope");
 
    
       rptRcScalar slope;
@@ -93,18 +93,18 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
 
-      *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Strand Slope.jpg" ) << rptNewLine;
+      *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Strand Slope.jpg") ) << rptNewLine;
    
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,"");
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
       *pBody << pTable;
 
       pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
       pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-      (*pTable)(1,0) << "Allowable Slope";
-      (*pTable)(2,0) << "Strand Slope";
-      (*pTable)(3,0) << "Status";
-      (*pTable)(0,1) << "1 : n";
+      (*pTable)(1,0) << _T("Allowable Slope");
+      (*pTable)(2,0) << _T("Strand Slope");
+      (*pTable)(3,0) << _T("Status");
+      (*pTable)(0,1) << _T("1 : n");
 
       (*pTable)(1,1) << slope.SetValue(pArtifact->GetCapacity());
       (*pTable)(2,1) << slope.SetValue(pArtifact->GetDemand());
@@ -154,7 +154,7 @@ bool CStrandSlopeCheck::AssertValid() const
 
 void CStrandSlopeCheck::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CStrandSlopeCheck" << endl;
+   os << _T("Dump for CStrandSlopeCheck") << endl;
 }
 #endif // _DEBUG
 

@@ -73,31 +73,31 @@ void CSpecCastingYardPage::DoDataExchange(CDataExchange* pDX)
       CEdit* pnote = (CEdit*)GetDlgItem(IDC_SS_NOTE);
       if (!m_DoCheckStrandSlope)
       {
-         pnote->SetWindowText("Strand Slope Check is Disabled on Design Tab");
+         pnote->SetWindowText(_T("Strand Slope Check is Disabled on Design Tab"));
       }
       else
       {
-         pnote->SetWindowText("Strand Slope Check is Enabled on Design Tab");
+         pnote->SetWindowText(_T("Strand Slope Check is Enabled on Design Tab"));
       }
 
       pnote = (CEdit*)GetDlgItem(IDC_HD_NOTE);
       if (!m_DoCheckHoldDown)
       {
-         pnote->SetWindowText("Strand Hold Down Check is Disabled on Design Tab");
+         pnote->SetWindowText(_T("Strand Hold Down Check is Disabled on Design Tab"));
       }
       else
       {
-         pnote->SetWindowText("Strand Hold Down Check is Enabled on Design Tab");
+         pnote->SetWindowText(_T("Strand Hold Down Check is Enabled on Design Tab"));
       }
 
       pnote = (CEdit*)GetDlgItem(IDC_ANCHORAGE_NOTE);
       if (!m_DoCheckAnchorage)
       {
-         pnote->SetWindowText("Anchorage Check (5.10.10) is Disabled on Design Tab");
+         pnote->SetWindowText(_T("Anchorage Check (5.10.10) is Disabled on Design Tab"));
       }
       else
       {
-         pnote->SetWindowText("Anchorage Check (5.10.10) is Enabled on Design Tab");
+         pnote->SetWindowText(_T("Anchorage Check (5.10.10) is Enabled on Design Tab"));
       }
    }
 }

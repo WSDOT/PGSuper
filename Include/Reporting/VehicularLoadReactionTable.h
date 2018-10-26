@@ -78,7 +78,7 @@ public:
                              SpanIndexType span,
                              GirderIndexType girder,
                              pgsTypes::LiveLoadType llType,
-                             const std::string& strLLName,
+                             const std::_tstring& strLLName,
                              VehicleIndexType vehicleIndex, 
                              pgsTypes::AnalysisType analysisType,
                              bool bReportTruckConfig,

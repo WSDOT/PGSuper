@@ -80,21 +80,21 @@ END_MESSAGE_MAP()
 BOOL CLiveLoadFactorsPage::OnInitDialog()
 {
    CComboBox* pcbLLMethod = (CComboBox*)GetDlgItem(IDC_LL_METHOD);
-   int idx = pcbLLMethod->AddString("Single Value");
+   int idx = pcbLLMethod->AddString(_T("Single Value"));
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllSingleValue);
-   idx = pcbLLMethod->AddString("Stepped");
+   idx = pcbLLMethod->AddString(_T("Stepped"));
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllStepped);
-   idx = pcbLLMethod->AddString("Linear");
+   idx = pcbLLMethod->AddString(_T("Linear"));
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllLinear);
-   idx = pcbLLMethod->AddString("Bilinear");
+   idx = pcbLLMethod->AddString(_T("Bilinear"));
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllBilinear);
-   idx = pcbLLMethod->AddString("Bilinear with vehicle weight");
+   idx = pcbLLMethod->AddString(_T("Bilinear with vehicle weight"));
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllBilinearWithWeight);
 
    CComboBox* pcbOptions = (CComboBox*)GetDlgItem(IDC_INTERPOLATE);
-   idx = pcbOptions->AddString("Interpolate between ADTT");
+   idx = pcbOptions->AddString(_T("Interpolate between ADTT"));
    pcbOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::gllmInterpolate);
-   idx = pcbOptions->AddString("Round up ADTT");
+   idx = pcbOptions->AddString(_T("Round up ADTT"));
    pcbOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::gllmRoundUp);
 
    CPropertyPage::OnInitDialog();

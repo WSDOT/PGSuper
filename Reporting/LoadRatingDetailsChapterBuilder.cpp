@@ -92,8 +92,8 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
       return;
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
-   std::string strName = pProductLoads->GetLiveLoadName(llType,0);
-   if ( strName == "No Live Load Defined" )
+   std::_tstring strName = pProductLoads->GetLiveLoadName(llType,0);
+   if ( strName == _T("No Live Load Defined") )
       return;
 
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
@@ -101,7 +101,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    CComBSTR bstrLiveLoadType = ::GetLiveLoadTypeName(ratingType);
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   pPara->SetName(OLE2A(bstrLiveLoadType));
+   pPara->SetName(OLE2T(bstrLiveLoadType));
    *pPara << pPara->GetName() << rptNewLine;
 
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
@@ -112,7 +112,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
       const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,vehIdx);
       if ( pRatingArtifact )
       {
-         std::string strVehicleName = pProductLoads->GetLiveLoadName(llType,vehIdx);
+         std::_tstring strVehicleName = pProductLoads->GetLiveLoadName(llType,vehIdx);
 
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
@@ -154,13 +154,13 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    if ( bPositiveMoment )
-      *pPara << "Rating for Positive Moment" << rptNewLine;
+      *pPara << _T("Rating for Positive Moment") << rptNewLine;
    else
-      *pPara << "Rating for Negative Moment" << rptNewLine;
+      *pPara << _T("Rating for Negative Moment") << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "MomentRatingEquation.png" ) << rptNewLine;
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("MomentRatingEquation.png") ) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(14,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(14,_T(""));
 
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -190,19 +190,19 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,col++) << Sub2(symbol(phi),"c");
-   (*table)(0,col++) << Sub2(symbol(phi),"s");
-   (*table)(0,col++) << Sub2(symbol(phi),"n");
-   (*table)(0,col++) << "K";
-   (*table)(0,col++) << COLHDR(Sub2("M","n"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << Sub2(symbol(gamma),"DC");
-   (*table)(0,col++) << COLHDR(Sub2("M","DC"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << Sub2(symbol(gamma),"DW");
-   (*table)(0,col++) << COLHDR(Sub2("M","DW"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << Sub2(symbol(gamma),"LL");
-   (*table)(0,col++) << "gM";
-   (*table)(0,col++) << COLHDR(Sub2("M","LL+IM"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << "RF";
+   (*table)(0,col++) << Sub2(symbol(phi),_T("c"));
+   (*table)(0,col++) << Sub2(symbol(phi),_T("s"));
+   (*table)(0,col++) << Sub2(symbol(phi),_T("n"));
+   (*table)(0,col++) << _T("K");
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("n")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << Sub2(symbol(gamma),_T("DC"));
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DC")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << Sub2(symbol(gamma),_T("DW"));
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DW")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
+   (*table)(0,col++) << _T("gM");
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << _T("RF");
 
    pgsRatingArtifact::MomentRatings artifacts = pRatingArtifact->GetMomentRatings(bPositiveMoment);
 
@@ -251,11 +251,11 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara << "Rating for Shear" << rptNewLine;
+   *pPara << _T("Rating for Shear") << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ShearRatingEquation.png" ) << rptNewLine;
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ShearRatingEquation.png") ) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(13,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(13,_T(""));
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -285,18 +285,18 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,col++) << Sub2(symbol(phi),"c");
-   (*table)(0,col++) << Sub2(symbol(phi),"s");
-   (*table)(0,col++) << Sub2(symbol(phi),"n");
-   (*table)(0,col++) << COLHDR(Sub2("V","n"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,col++) << Sub2(symbol(gamma),"DC");
-   (*table)(0,col++) << COLHDR(Sub2("V","DC"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,col++) << Sub2(symbol(gamma),"DW");
-   (*table)(0,col++) << COLHDR(Sub2("V","DW"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,col++) << Sub2(symbol(gamma),"LL");
-   (*table)(0,col++) << "gV";
-   (*table)(0,col++) << COLHDR(Sub2("V","LL+IM"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,col++) << "RF";
+   (*table)(0,col++) << Sub2(symbol(phi),_T("c"));
+   (*table)(0,col++) << Sub2(symbol(phi),_T("s"));
+   (*table)(0,col++) << Sub2(symbol(phi),_T("n"));
+   (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("n")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++) << Sub2(symbol(gamma),_T("DC"));
+   (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("DC")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++) << Sub2(symbol(gamma),_T("DW"));
+   (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("DW")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
+   (*table)(0,col++) << _T("gV");
+   (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("LL+IM")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++) << _T("RF");
 
    pgsRatingArtifact::ShearRatings artifacts = pRatingArtifact->GetShearRatings();
 
@@ -344,11 +344,11 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara << "Rating for Stress" << rptNewLine;
+   *pPara << _T("Rating for Stress") << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "StressRatingEquation.png" ) << rptNewLine;
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StressRatingEquation.png") ) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(11,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -378,16 +378,16 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,col++) << RPT_STRESS("r");
-   (*table)(0,col++) << Sub2(symbol(gamma),"DC");
-   (*table)(0,col++) << COLHDR(RPT_STRESS("DC"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(RPT_STRESS("PS"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << Sub2(symbol(gamma),"DW");
-   (*table)(0,col++) << COLHDR(RPT_STRESS("DW"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << Sub2(symbol(gamma),"LL");
-   (*table)(0,col++) << "gM";
-   (*table)(0,col++) << COLHDR(RPT_STRESS("LL+IM"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << "RF";
+   (*table)(0,col++) << RPT_STRESS(_T("r"));
+   (*table)(0,col++) << Sub2(symbol(gamma),_T("DC"));
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("DC")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("PS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << Sub2(symbol(gamma),_T("DW"));
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("DW")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
+   (*table)(0,col++) << _T("gM");
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("LL+IM")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << _T("RF");
 
    pgsRatingArtifact::StressRatings artifacts = pRatingArtifact->GetStressRatings();
 
@@ -434,13 +434,13 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    if ( bPositiveMoment )
-      *pPara << "Check Reinforcement Yielding for Positive Moment" << rptNewLine;
+      *pPara << _T("Check Reinforcement Yielding for Positive Moment") << rptNewLine;
    else
-      *pPara << "Check Reinforcement Yielding for Negative Moment" << rptNewLine;
+      *pPara << _T("Check Reinforcement Yielding for Negative Moment") << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ReinforcementYieldingEquation.png" ) << rptNewLine;
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ReinforcementYieldingEquation.png") ) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(17,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(17,_T(""));
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -471,31 +471,31 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,col++) << COLHDR(Sub2("M","DC"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("M","DW"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << "gM";
-   (*table)(0,col++) << COLHDR(Sub2("M","LL+IM"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("M","cr"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("M","bcr"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("d","ps"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR("c", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("I","cr"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,col++) << COLHDR(RPT_STRESS("pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(RPT_STRESS("bcr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("E","s"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("E","g"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(RPT_STRESS("s"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(RPT_STRESS("r"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << "Stress" << rptNewLine << "Ratio" << rptNewLine << RPT_STRESS("r") << "/" << RPT_STRESS("s");
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DC")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DW")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << _T("gM");
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("bcr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("d"),_T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++) << COLHDR(_T("c"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("cr")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("bcr")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("E"),_T("s")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("E"),_T("g")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("s")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("r")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << _T("Stress") << rptNewLine << _T("Ratio") << rptNewLine << RPT_STRESS(_T("r")) << _T("/") << RPT_STRESS(_T("s"));
 
    pgsRatingArtifact::YieldStressRatios artifacts = pRatingArtifact->GetYieldStressRatios(bPositiveMoment);
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   *pPara << Sub2(symbol(gamma),"DC") << " = " << scalar.SetValue(artifacts[0].second.GetDeadLoadFactor()) << rptNewLine;
-   *pPara << Sub2(symbol(gamma),"DW") << " = " << scalar.SetValue(artifacts[0].second.GetWearingSurfaceFactor()) << rptNewLine;
-   *pPara << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(artifacts[0].second.GetLiveLoadFactor()) << rptNewLine;
+   *pPara << Sub2(symbol(gamma),_T("DC")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetDeadLoadFactor()) << rptNewLine;
+   *pPara << Sub2(symbol(gamma),_T("DW")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetWearingSurfaceFactor()) << rptNewLine;
+   *pPara << Sub2(symbol(gamma),_T("LL")) << _T(" = ") << scalar.SetValue(artifacts[0].second.GetLiveLoadFactor()) << rptNewLine;
 
    // Add table here
    *pPara << table << rptNewLine;
@@ -553,14 +553,14 @@ void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,I
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara << "Load Posting Analysis Details [MBE 6A.8]" << rptNewLine;
+   *pPara << _T("Load Posting Analysis Details [MBE 6A.8]") << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "SafePostingLoad.png" ) << rptNewLine;
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SafePostingLoad.png") ) << rptNewLine;
 
    INIT_UV_PROTOTYPE( rptForceUnitValue, tonnage, pDisplayUnits->GetTonnageUnit(), false );
    rptCapacityToDemand rating_factor;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -570,17 +570,17 @@ void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,I
    ColumnIndexType col = 0;
    RowIndexType row = 0;
 
-   (*table)(row,col++) << "Truck";
-   (*table)(row,col++) << COLHDR("Weight", rptForceUnitTag, pDisplayUnits->GetTonnageUnit() );
-   (*table)(row,col++) << "RF";
-   (*table)(row,col++) << COLHDR("Safe" << rptNewLine << "Load" << rptNewLine << "Capacity", rptForceUnitTag, pDisplayUnits->GetTonnageUnit() );
-   (*table)(row,col++) << COLHDR("Safe" << rptNewLine << "Posting" << rptNewLine << "Load", rptForceUnitTag, pDisplayUnits->GetTonnageUnit() );
+   (*table)(row,col++) << _T("Truck");
+   (*table)(row,col++) << COLHDR(_T("Weight"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit() );
+   (*table)(row,col++) << _T("RF");
+   (*table)(row,col++) << COLHDR(_T("Safe") << rptNewLine << _T("Load") << rptNewLine << _T("Capacity"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit() );
+   (*table)(row,col++) << COLHDR(_T("Safe") << rptNewLine << _T("Posting") << rptNewLine << _T("Load"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit() );
 
    row++;
    col = 0;
 
    Float64 posting_load, W, RF;
-   std::string strName;
+   std::_tstring strName;
    pRatingArtifact->GetSafePostingLoad(&posting_load,&W,&RF,&strName);
    (*table)(row,col++) << strName;
    (*table)(row,col++) << tonnage.SetValue(W);
@@ -594,5 +594,5 @@ void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,I
    if ( RF < 1 )
       (*table)(row,col++) << tonnage.SetValue(posting_load);
    else
-      (*table)(row,col++) << "-";
+      (*table)(row,col++) << _T("-");
 }

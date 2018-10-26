@@ -25,7 +25,7 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperDoc.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "GirderNameGrid.h"
 
 #include <PgsExt\BridgeDescription.h>
@@ -136,7 +136,7 @@ void CGirderNameGrid::FillGrid()
 
    for ( GroupIndexType grpIdx = 0; grpIdx < nGirderGroups; grpIdx++ )
    {
-      std::string strName;
+      std::_tstring strName;
       GirderIndexType firstGdrIdx, lastGdrIdx;
 
       m_GirderTypes.GetGirderGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,strName);
@@ -149,11 +149,11 @@ void CGirderNameGrid::FillGrid()
       CString strHeading;
       if ( firstGdrIdx == lastGdrIdx )
       {
-         strHeading.Format("%s",LABEL_GIRDER(firstGdrIdx));
+         strHeading.Format(_T("%s"),LABEL_GIRDER(firstGdrIdx));
       }
       else
       {
-         strHeading.Format("%s-%s",LABEL_GIRDER(firstGdrIdx),LABEL_GIRDER(lastGdrIdx));
+         strHeading.Format(_T("%s-%s"),LABEL_GIRDER(firstGdrIdx),LABEL_GIRDER(lastGdrIdx));
       }
 
       UserData* pUserData = new UserData(firstGdrIdx,lastGdrIdx); // the grid will delete this
@@ -186,7 +186,7 @@ void CGirderNameGrid::FillGrid()
       else
       {
          SetStyleRange(CGXRange(1,grpIdx+1), CGXStyle()
-            .SetValue(m_GirderList.Left(m_GirderList.FindOneOf("\n")))
+            .SetValue(m_GirderList.Left(m_GirderList.FindOneOf(_T("\n"))))
             );
       }
 
@@ -196,14 +196,14 @@ void CGirderNameGrid::FillGrid()
       .SetHorizontalAlignment(DT_CENTER)
       .SetEnabled(FALSE)
       .SetReadOnly(TRUE)
-      .SetValue("Girder")
+      .SetValue(_T("Girder"))
       );
 
    SetStyleRange(CGXRange(1,0), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetEnabled(FALSE)
       .SetReadOnly(TRUE)
-      .SetValue("Name")
+      .SetValue(_T("Name"))
       );
 
    // make it so that text fits correctly in header row
@@ -333,7 +333,7 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    ASSERT( !m_bSameGirderName );
 
    GirderIndexType firstGdrIdx,lastGdrIdx;
-   std::string strName;
+   std::_tstring strName;
    m_GirderTypes.GetGirderGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,strName);
 
    if ( strNewName != CString(strName.c_str()) )
@@ -351,15 +351,15 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    return CGXGridWnd::OnEndEditing(nRow,nCol);
 }
 
-void CGirderNameGrid::UpdateGirderFamilyList(const char* strGirderFamily)
+void CGirderNameGrid::UpdateGirderFamilyList(LPCTSTR strGirderFamily)
 {
    // fill the girder list
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
-   std::vector<std::string> names;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring> names;
+   std::vector<std::_tstring>::iterator iter;
 
    m_strGirderFamilyName = strGirderFamily;
 
@@ -368,13 +368,13 @@ void CGirderNameGrid::UpdateGirderFamilyList(const char* strGirderFamily)
    pLibNames->EnumGirderNames(m_strGirderFamilyName, &names );
    for ( iter = names.begin(); iter < names.end(); iter++ )
    {
-      std::string& name = *iter;
+      std::_tstring& name = *iter;
       m_GirderList += CString(name.c_str());
-      m_GirderList += CString("\n");
+      m_GirderList += CString(_T("\n"));
    }
 }
 
-void CGirderNameGrid::OnGirderFamilyChanged(const char* strGirderFamily)
+void CGirderNameGrid::OnGirderFamilyChanged(LPCTSTR strGirderFamily)
 {
    UpdateGirderFamilyList(strGirderFamily);
    FillGrid();

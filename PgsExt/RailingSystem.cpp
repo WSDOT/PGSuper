@@ -40,8 +40,8 @@ CLASS
 
 CRailingSystem::CRailingSystem()
 {
-   strExteriorRailing = "";
-   strInteriorRailing = "";
+   strExteriorRailing = _T("");
+   strInteriorRailing = _T("");
 
    pExteriorRailing = NULL;
    pInteriorRailing = NULL;
@@ -181,32 +181,32 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    try
    {
-      hr = pStrLoad->BeginUnit("RailingSystem");
+      hr = pStrLoad->BeginUnit(_T("RailingSystem"));
       double version;
       hr = pStrLoad->get_Version(&version);
 
       CComVariant var;
 
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("ExteriorRailingName", &var );
-      strExteriorRailing = OLE2A(var.bstrVal);
+      hr = pStrLoad->get_Property(_T("ExteriorRailingName"), &var );
+      strExteriorRailing = OLE2T(var.bstrVal);
 
       var.Clear();
       var.vt = VT_BOOL;
-      hr = pStrLoad->get_Property("Sidewalk", &var );
+      hr = pStrLoad->get_Property(_T("Sidewalk"), &var );
       bUseSidewalk = var.boolVal == VARIANT_TRUE ? true : false;
 
       if ( bUseSidewalk )
       {
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("Width", &var );
+         hr = pStrLoad->get_Property(_T("Width"), &var );
          Width = var.dblVal;
 
-         hr = pStrLoad->get_Property("LeftDepth", &var );
+         hr = pStrLoad->get_Property(_T("LeftDepth"), &var );
          LeftDepth = var.dblVal;
 
-         hr = pStrLoad->get_Property("RightDepth", &var );
+         hr = pStrLoad->get_Property(_T("RightDepth"), &var );
          RightDepth = var.dblVal;
 
          // added in version 2
@@ -215,24 +215,24 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             var.Clear();
             var.vt = VT_BOOL;
 
-            hr = pStrLoad->get_Property("BarriersOnTopOfSidewalk",&var);
+            hr = pStrLoad->get_Property(_T("BarriersOnTopOfSidewalk"),&var);
             bBarriersOnTopOfSidewalk = (var.boolVal == VARIANT_TRUE ? true : false);
 
-            hr = pStrLoad->get_Property("SidewalkStrucallyContinuous",&var);
+            hr = pStrLoad->get_Property(_T("SidewalkStrucallyContinuous"),&var);
             bSidewalkStructurallyContinuous = (var.boolVal == VARIANT_TRUE ? true : false);
          }
 
          var.Clear();
          var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property("InteriorRailing",&var);
+         hr = pStrLoad->get_Property(_T("InteriorRailing"),&var);
          bUseInteriorRailing = (var.boolVal == VARIANT_TRUE ? true : false);
 
          if ( bUseInteriorRailing )
          {
             var.Clear();
             var.vt = VT_BSTR;
-            hr = pStrLoad->get_Property("InteriorRailingName",&var);
-            strInteriorRailing = OLE2A(var.bstrVal);
+            hr = pStrLoad->get_Property(_T("InteriorRailingName"),&var);
+            strInteriorRailing = OLE2T(var.bstrVal);
          }
       }
 
@@ -242,92 +242,92 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          if ( version == 3 )
          {
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("fc",&var);
+            hr = pStrLoad->get_Property(_T("fc"),&var);
             fc = var.dblVal;
 
             var.vt = VT_BOOL;
-            hr = pStrLoad->get_Property("UserEc",&var);
+            hr = pStrLoad->get_Property(_T("UserEc"),&var);
             bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
 
             var.vt = VT_R8;
             if ( bUserEc )
             {
-               hr = pStrLoad->get_Property("Ec",&var);
+               hr = pStrLoad->get_Property(_T("Ec"),&var);
                Ec = var.dblVal;
             }
 
-            hr = pStrLoad->get_Property("StrengthDensity",&var);
+            hr = pStrLoad->get_Property(_T("StrengthDensity"),&var);
             StrengthDensity = var.dblVal;
 
-            hr = pStrLoad->get_Property("WeightDensity",&var);
+            hr = pStrLoad->get_Property(_T("WeightDensity"),&var);
             WeightDensity = var.dblVal;
 
-            hr = pStrLoad->get_Property("MaxAggSize",&var);
+            hr = pStrLoad->get_Property(_T("MaxAggSize"),&var);
             MaxAggSize = var.dblVal;
 
-            hr = pStrLoad->get_Property("K1",&var);
+            hr = pStrLoad->get_Property(_T("K1"),&var);
             EcK1 = var.dblVal;
          }
          else
          {
-            pStrLoad->BeginUnit("Concrete");
+            pStrLoad->BeginUnit(_T("Concrete"));
 
             var.vt = VT_BSTR;
-            hr = pStrLoad->get_Property("Type",&var);
-            ConcreteType = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2A(var.bstrVal));
+            hr = pStrLoad->get_Property(_T("Type"),&var);
+            ConcreteType = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2T(var.bstrVal));
 
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("fc",&var);
+            hr = pStrLoad->get_Property(_T("fc"),&var);
             fc = var.dblVal;
 
             var.vt = VT_BOOL;
-            hr = pStrLoad->get_Property("UserEc",&var);
+            hr = pStrLoad->get_Property(_T("UserEc"),&var);
             bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
 
             var.vt = VT_R8;
             if ( bUserEc )
             {
-               hr = pStrLoad->get_Property("Ec",&var);
+               hr = pStrLoad->get_Property(_T("Ec"),&var);
                Ec = var.dblVal;
             }
 
-            hr = pStrLoad->get_Property("StrengthDensity",&var);
+            hr = pStrLoad->get_Property(_T("StrengthDensity"),&var);
             StrengthDensity = var.dblVal;
 
-            hr = pStrLoad->get_Property("WeightDensity",&var);
+            hr = pStrLoad->get_Property(_T("WeightDensity"),&var);
             WeightDensity = var.dblVal;
 
-            hr = pStrLoad->get_Property("MaxAggSize",&var);
+            hr = pStrLoad->get_Property(_T("MaxAggSize"),&var);
             MaxAggSize = var.dblVal;
 
-            hr = pStrLoad->get_Property("EcK1",&var);
+            hr = pStrLoad->get_Property(_T("EcK1"),&var);
             EcK1 = var.dblVal;
 
-            hr = pStrLoad->get_Property("EcK2",&var);
+            hr = pStrLoad->get_Property(_T("EcK2"),&var);
             EcK2 = var.dblVal;
 
-            hr = pStrLoad->get_Property("CreepK1",&var);
+            hr = pStrLoad->get_Property(_T("CreepK1"),&var);
             CreepK1 = var.dblVal;
 
-            hr = pStrLoad->get_Property("CreepK2",&var);
+            hr = pStrLoad->get_Property(_T("CreepK2"),&var);
             CreepK2 = var.dblVal;
 
-            hr = pStrLoad->get_Property("ShrinkageK1",&var);
+            hr = pStrLoad->get_Property(_T("ShrinkageK1"),&var);
             ShrinkageK1 = var.dblVal;
 
-            hr = pStrLoad->get_Property("ShrinkageK2",&var);
+            hr = pStrLoad->get_Property(_T("ShrinkageK2"),&var);
             ShrinkageK2 = var.dblVal;
 
             if ( ConcreteType != pgsTypes::Normal )
             {
                var.vt = VT_BOOL;
-               hr = pStrLoad->get_Property("HasFct",&var);
+               hr = pStrLoad->get_Property(_T("HasFct"),&var);
                bHasFct = (var.boolVal == VARIANT_TRUE ? true : false);
 
                if ( bHasFct )
                {
                   var.vt = VT_R8;
-                  hr = pStrLoad->get_Property("Fct",&var);
+                  hr = pStrLoad->get_Property(_T("Fct"),&var);
                   Fct = var.dblVal;
                }
             }
@@ -350,49 +350,49 @@ HRESULT CRailingSystem::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("RailingSystem",4.0);
+   pStrSave->BeginUnit(_T("RailingSystem"),4.0);
 
-   pStrSave->put_Property("ExteriorRailingName",     CComVariant(strExteriorRailing.c_str()));
-   pStrSave->put_Property("Sidewalk",                CComVariant(bUseSidewalk));
+   pStrSave->put_Property(_T("ExteriorRailingName"),     CComVariant(strExteriorRailing.c_str()));
+   pStrSave->put_Property(_T("Sidewalk"),                CComVariant(bUseSidewalk));
    if ( bUseSidewalk )
    {
-      pStrSave->put_Property("Width",     CComVariant(Width));
-      pStrSave->put_Property("LeftDepth", CComVariant(LeftDepth));
-      pStrSave->put_Property("RightDepth",CComVariant(RightDepth));
+      pStrSave->put_Property(_T("Width"),     CComVariant(Width));
+      pStrSave->put_Property(_T("LeftDepth"), CComVariant(LeftDepth));
+      pStrSave->put_Property(_T("RightDepth"),CComVariant(RightDepth));
 
       // added in version 2
-      pStrSave->put_Property("BarriersOnTopOfSidewalk",CComVariant(bBarriersOnTopOfSidewalk));
-      pStrSave->put_Property("SidewalkStrucallyContinuous",CComVariant(bSidewalkStructurallyContinuous));
+      pStrSave->put_Property(_T("BarriersOnTopOfSidewalk"),CComVariant(bBarriersOnTopOfSidewalk));
+      pStrSave->put_Property(_T("SidewalkStrucallyContinuous"),CComVariant(bSidewalkStructurallyContinuous));
 
 
-      pStrSave->put_Property("InteriorRailing", CComVariant(bUseInteriorRailing));
+      pStrSave->put_Property(_T("InteriorRailing"), CComVariant(bUseInteriorRailing));
       if ( bUseInteriorRailing )
-         pStrSave->put_Property("InteriorRailingName", CComVariant(strInteriorRailing.c_str()));
+         pStrSave->put_Property(_T("InteriorRailingName"), CComVariant(strInteriorRailing.c_str()));
    }
 
    // added in version 3, updated version 4
-   pStrSave->BeginUnit("Concrete",1.0);
-      pStrSave->put_Property("Type",CComVariant( matConcrete::GetTypeName((matConcrete::Type)ConcreteType,false).c_str() ));
-      pStrSave->put_Property("fc",CComVariant(fc));
-      pStrSave->put_Property("UserEc",CComVariant(bUserEc));
+   pStrSave->BeginUnit(_T("Concrete"),1.0);
+      pStrSave->put_Property(_T("Type"),CComVariant( matConcrete::GetTypeName((matConcrete::Type)ConcreteType,false).c_str() ));
+      pStrSave->put_Property(_T("fc"),CComVariant(fc));
+      pStrSave->put_Property(_T("UserEc"),CComVariant(bUserEc));
       if ( bUserEc )
-         pStrSave->put_Property("Ec",CComVariant(Ec));
+         pStrSave->put_Property(_T("Ec"),CComVariant(Ec));
 
-      pStrSave->put_Property("StrengthDensity",CComVariant(StrengthDensity));
-      pStrSave->put_Property("WeightDensity",CComVariant(WeightDensity));
-      pStrSave->put_Property("MaxAggSize",CComVariant(MaxAggSize));
-      pStrSave->put_Property("EcK1",CComVariant(EcK1));
-      pStrSave->put_Property("EcK2",CComVariant(EcK2));
-      pStrSave->put_Property("CreepK1",CComVariant(CreepK1));
-      pStrSave->put_Property("CreepK2",CComVariant(CreepK2));
-      pStrSave->put_Property("ShrinkageK1",CComVariant(ShrinkageK1));
-      pStrSave->put_Property("ShrinkageK2",CComVariant(ShrinkageK2));
+      pStrSave->put_Property(_T("StrengthDensity"),CComVariant(StrengthDensity));
+      pStrSave->put_Property(_T("WeightDensity"),CComVariant(WeightDensity));
+      pStrSave->put_Property(_T("MaxAggSize"),CComVariant(MaxAggSize));
+      pStrSave->put_Property(_T("EcK1"),CComVariant(EcK1));
+      pStrSave->put_Property(_T("EcK2"),CComVariant(EcK2));
+      pStrSave->put_Property(_T("CreepK1"),CComVariant(CreepK1));
+      pStrSave->put_Property(_T("CreepK2"),CComVariant(CreepK2));
+      pStrSave->put_Property(_T("ShrinkageK1"),CComVariant(ShrinkageK1));
+      pStrSave->put_Property(_T("ShrinkageK2"),CComVariant(ShrinkageK2));
 
       if ( ConcreteType != pgsTypes::Normal )
       {
-         pStrSave->put_Property("HasFct",CComVariant(bHasFct));
+         pStrSave->put_Property(_T("HasFct"),CComVariant(bHasFct));
          if ( bHasFct )
-            pStrSave->put_Property("Fct",CComVariant(Fct));
+            pStrSave->put_Property(_T("Fct"),CComVariant(Fct));
       }
    pStrSave->EndUnit();
 

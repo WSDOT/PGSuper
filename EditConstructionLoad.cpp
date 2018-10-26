@@ -71,9 +71,9 @@ txnTransaction* txnEditConstructionLoad::CreateClone() const
    return new txnEditConstructionLoad(m_Load[0],m_Load[1]);
 }
 
-std::string txnEditConstructionLoad::Name() const
+std::_tstring txnEditConstructionLoad::Name() const
 {
-   return "Edit Construction Load";
+   return _T("Edit Construction Load");
 }
 
 bool txnEditConstructionLoad::IsUndoable()

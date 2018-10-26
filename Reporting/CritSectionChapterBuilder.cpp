@@ -110,6 +110,17 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    {
       // include load rating results if we are always load rating
       bRating = pRatingSpec->AlwaysLoadRate();
+
+
+      // if none of the rating types are enabled, skip the rating
+      if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) 
+         )
+         bRating = false;
    }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -136,8 +147,8 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            std::ostringstream os;
-            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+            std::_tostringstream os;
+            os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
             pPara->SetName( os.str().c_str() );
             (*pPara) << pPara->GetName() << rptNewLine;
          }
@@ -196,7 +207,7 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    if ( !bAfterThirdEdition )
    {
-      *pPara << OLE2A(pStageMap->GetLimitStateName(limitState));
+      *pPara << OLE2T(pStageMap->GetLimitStateName(limitState));
    }
 
    *pChapter << pPara;
@@ -207,24 +218,24 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    ColumnIndexType nColumns;
    if ( bAfterThirdEdition )
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Critical Section Picture 2004.jpg") << rptNewLine;
-      *pPara << "LRFD 5.8.3.2"<<rptNewLine;
-      *pPara << "Critical Section = d" << Sub("v") << " measured at d" << Sub("v") << " from the face of support" << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Critical Section Picture 2004.jpg")) << rptNewLine;
+      *pPara << _T("LRFD 5.8.3.2")<<rptNewLine;
+      *pPara << _T("Critical Section = d") << Sub(_T("v")) << _T(" measured at d") << Sub(_T("v")) << _T(" from the face of support") << rptNewLine;
       nColumns = 4;
    }
    else
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Critical Section Picture.jpg") << rptNewLine;
-      *pPara << "LRFD 5.8.3.2"<<rptNewLine;
-      *pPara << "Critical Section = max(CS1, CS2)" << rptNewLine;
-      *pPara << "CS1 = d"<<Sub("v") << rptNewLine;
-      *pPara << "CS2 = 0.5 cot("<<symbol(theta)<<") d"<<Sub("v") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Critical Section Picture.jpg")) << rptNewLine;
+      *pPara << _T("LRFD 5.8.3.2")<<rptNewLine;
+      *pPara << _T("Critical Section = max(CS1, CS2)") << rptNewLine;
+      *pPara << _T("CS1 = d")<<Sub(_T("v")) << rptNewLine;
+      *pPara << _T("CS2 = 0.5 cot(")<<symbol(theta)<<_T(") d")<<Sub(_T("v")) << rptNewLine;
       nColumns = 7;
    }
 
-   rptRcTable* ptable = pgsReportStyleHolder::CreateDefaultTable(nColumns," ");
+   rptRcTable* ptable = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T(" "));
    *pPara << ptable;
-   ptable->TableLabel() << "Critical Section Calculation";
+   ptable->TableLabel() << _T("Critical Section Calculation");
   
    if ( span == ALL_SPANS )
    {
@@ -233,18 +244,18 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    }
 
    (*ptable)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*ptable)(0,1)  << COLHDR("Assumed C.S."<<rptNewLine<<"Location", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*ptable)(0,2)  << COLHDR("d"<<Sub("v") , rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*ptable)(0,1)  << COLHDR(_T("Assumed C.S.")<<rptNewLine<<_T("Location"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*ptable)(0,2)  << COLHDR(_T("d")<<Sub(_T("v")) , rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    if ( bAfterThirdEdition )
    {
-      (*ptable)(0,3)  << "CS"<<rptNewLine<<"Intersects?";
+      (*ptable)(0,3)  << _T("CS")<<rptNewLine<<_T("Intersects?");
    }
    else
    {
-      (*ptable)(0,3)  << "CS1"<<rptNewLine<<"Intersects?";
+      (*ptable)(0,3)  << _T("CS1")<<rptNewLine<<_T("Intersects?");
       (*ptable)(0,4)  << COLHDR(symbol(theta),  rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
-      (*ptable)(0,5)  << COLHDR("0.5 cot("<<symbol(theta)<<") d"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*ptable)(0,6)  << "CS2"<<rptNewLine<<"Intersects?";
+      (*ptable)(0,5)  << COLHDR(_T("0.5 cot(")<<symbol(theta)<<_T(") d")<<Sub(_T("v")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*ptable)(0,6)  << _T("CS2")<<rptNewLine<<_T("Intersects?");
    }
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,         locationp, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -343,9 +354,9 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
       (*ptable)(row,2) << dim.SetValue(pdetp->Dv);
 
       if (lp.Wart==LocPair::DvIntersection)
-         (*ptable)(row,3) << "*Yes";
+         (*ptable)(row,3) << _T("*Yes");
       else
-         (*ptable)(row,3) << "No";
+         (*ptable)(row,3) << _T("No");
 
       if ( !bAfterThirdEdition )
       {
@@ -355,30 +366,30 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
             (*ptable)(row,5) << dim.SetValue(pdetp->CotanThetaDv05);
 
             if (lp.Wart==LocPair::ThetaIntersection)
-               (*ptable)(row,6) << "*Yes";
+               (*ptable)(row,6) << _T("*Yes");
             else
-               (*ptable)(row,6) << "No";
+               (*ptable)(row,6) << _T("No");
          }
          else
          {
             all_in_range=false;
-            (*ptable)(row,4) <<"**";
-            (*ptable)(row,5) <<"**";
-            (*ptable)(row,6) <<"**";
+            (*ptable)(row,4) <<_T("**");
+            (*ptable)(row,5) <<_T("**");
+            (*ptable)(row,6) <<_T("**");
          }
       }
 
       row++;
    }
 
-   *pPara << "* - Intersection values are linearly interpolated" <<rptNewLine;
+   *pPara << _T("* - Intersection values are linearly interpolated") <<rptNewLine;
    if (!all_in_range)
-      *pPara << "** - Theta could not be calculated because shear stress exceeded max."<<rptNewLine<<rptNewLine;
+      *pPara << _T("** - Theta could not be calculated because shear stress exceeded max.")<<rptNewLine<<rptNewLine;
 
    Float64 left_cs, right_cs;
    pShearCapacity->GetCriticalSection(limitState,span,gdr,&left_cs,&right_cs);
-   *pPara << "Location of Left  C.S. is "<<location.SetValue(left_cs-end_size)<<" "<<location.GetUnitTag()<<" from left support"<<rptNewLine;
-   *pPara << "Location of Right C.S. is "<<location.SetValue(right_cs-end_size)<<" "<<location.GetUnitTag()<<" from left support"<<rptNewLine;
+   *pPara << _T("Location of Left  C.S. is ")<<location.SetValue(left_cs-end_size)<<_T(" ")<<location.GetUnitTag()<<_T(" from left support")<<rptNewLine;
+   *pPara << _T("Location of Right C.S. is ")<<location.SetValue(right_cs-end_size)<<_T(" ")<<location.GetUnitTag()<<_T(" from left support")<<rptNewLine;
 }
 
 CChapterBuilder* CCritSectionChapterBuilder::Clone() const

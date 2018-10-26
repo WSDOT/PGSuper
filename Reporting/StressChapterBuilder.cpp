@@ -127,12 +127,22 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       // include load rating results if we are always load rating
       GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
       bRating = pRatingSpec->AlwaysLoadRate();
+
+      // if none of the rating types are enabled, skip the rating
+      if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) 
+         )
+         bRating = false;
    }
 
    // Product Stresses
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *p << "Product Load Stresses" << rptNewLine;
-   p->SetName("Product Load Stresses");
+   *p << _T("Product Load Stresses") << rptNewLine;
+   p->SetName(_T("Product Load Stresses"));
    *pChapter << p;
 
    if ( bDesign )
@@ -161,12 +171,12 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    {
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
-      p->SetName("Combined Stresses - Casting Yard Stage");
+      p->SetName(_T("Combined Stresses - Casting Yard Stage"));
       CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard, analysisType);
 
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
-      p->SetName("Combined Stresses - Girder Placement");
+      p->SetName(_T("Combined Stresses - Girder Placement"));
       CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, analysisType);
 
       GET_IFACE2(pBroker,IProductLoads,pLoads);
@@ -175,24 +185,24 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       {
          p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << p;
-         p->SetName("Combined Stresses - Temporary Strand Removal Stage");
+         p->SetName(_T("Combined Stresses - Temporary Strand Removal Stage"));
          CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType);
       }
 
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
-      p->SetName("Combined Stresses - Deck and Diaphragm Placement (Bridge Site 1)");
+      p->SetName(_T("Combined Stresses - Deck and Diaphragm Placement (Bridge Site 1)"));
       CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType);
       
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
-      p->SetName("Combined Stresses - Superimposed Dead Loads (Bridge Site 2)");
+      p->SetName(_T("Combined Stresses - Superimposed Dead Loads (Bridge Site 2)"));
       CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType);
    }
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
-   p->SetName("Combined Stresses - Final with Live Load (Bridge Site 3)");
+   p->SetName(_T("Combined Stresses - Final with Live Load (Bridge Site 3)"));
    CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, analysisType, bDesign, bRating);
 
    p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -201,8 +211,8 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
-   *p << "Stresses due to Prestress" << rptNewLine;
-   p->SetName("Prestress");
+   *p << _T("Stresses due to Prestress") << rptNewLine;
+   p->SetName(_T("Prestress"));
    *p << CPrestressStressTable().Build(pBroker,span,girder,bDesign,pDisplayUnits) << rptNewLine;
 
    return pChapter;

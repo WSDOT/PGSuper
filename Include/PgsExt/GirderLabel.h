@@ -32,7 +32,7 @@
 class PGSEXTCLASS pgsGirderLabel
 {
 public:
-   static std::string GetGirderLabel(GirderIndexType gdrIdx);
+   static std::_tstring GetGirderLabel(GirderIndexType gdrIdx);
    static bool UseAlphaLabel();
    static bool UseAlphaLabel(bool bUseAlpha);
 

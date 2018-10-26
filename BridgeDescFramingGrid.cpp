@@ -334,7 +334,7 @@ void CBridgeDescFramingGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
 		);
 
-   CString cv = "Station";
+   CString cv = _T("Station");
 	SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -343,7 +343,7 @@ void CBridgeDescFramingGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = "Orientation";
+   cv = _T("Orientation");
 	SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -357,7 +357,7 @@ void CBridgeDescFramingGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Connection, Boundary Condition, and Girder Spacing Details")
+			.SetValue(_T("Connection, Boundary Condition, and Girder Spacing Details"))
 		);
 
    // make it so that text fits correctly in header row
@@ -403,9 +403,9 @@ void CBridgeDescFramingGrid::SetPierRowStyle(ROWCOL nRow,const CPierData& pierDa
    PierIndexType pierIdx = GetPierIndex(nRow);
    CString strButton;
    if ( pierData.GetPrevSpan() == NULL || pierData.GetNextSpan() == NULL )
-      strButton.Format("Edit Abutment %d Details...",pierIdx+1);
+      strButton.Format(_T("Edit Abutment %d Details..."),LABEL_PIER(pierIdx));
    else
-      strButton.Format("Edit Pier %d Details...",pierIdx+1);
+      strButton.Format(_T("Edit Pier %d Details..."),LABEL_PIER(pierIdx));
 
    ASSERT( nRow % 2 != 0 );
    SetStyleRange(CGXRange(nRow,3), CGXStyle()
@@ -434,7 +434,7 @@ void CBridgeDescFramingGrid::SetSpanRowStyle(ROWCOL nRow,const CSpanData& spanDa
    ASSERT( nRow % 2 == 0 );
    SpanIndexType spanIdx = GetSpanIndex(nRow);
    CString strButton;
-   strButton.Format("Edit Span %d Details...",LABEL_SPAN(spanIdx));
+   strButton.Format(_T("Edit Span %d Details..."),LABEL_SPAN(spanIdx));
    SetStyleRange(CGXRange(nRow,3), CGXStyle()
 			.SetControl(GX_IDS_CTRL_PUSHBTN)
 			.SetChoiceList(strButton)
@@ -493,10 +493,10 @@ CPierData* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
    strOrientation.MakeUpper();
    strOrientation.TrimLeft();
    strOrientation.TrimRight();
-   if ( strOrientation.GetLength() == 1 && strOrientation.GetAt(0) == 'N')
+   if ( strOrientation.GetLength() == 1 && strOrientation.GetAt(0) == _T('N'))
    {
       // if user input N for normal, fill out the whole word
-      strOrientation = "NORMAL";
+      strOrientation = _T("NORMAL");
    }
    pPier->SetOrientation( strOrientation );
 
@@ -568,11 +568,11 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData& pierData)
    CString strPierLabel;
    if ( pierData.GetPrevSpan() == NULL || pierData.GetNextSpan() == NULL )
    {
-      strPierLabel.Format("Abut %d",pierData.GetPierIndex()+1);
+      strPierLabel.Format(_T("Abut %d"),pierData.GetPierIndex()+1);
    }
    else
    {
-      strPierLabel.Format("Pier %d",pierData.GetPierIndex()+1);
+      strPierLabel.Format(_T("Pier %d"),pierData.GetPierIndex()+1);
    }
 
    SetValueRange(CGXRange(row,0),strPierLabel);
@@ -592,7 +592,7 @@ void CBridgeDescFramingGrid::FillSpanRow(ROWCOL row,const CSpanData& spanData)
    GetParam()->SetLockReadOnly(FALSE);
 
    CString strSpanLabel;
-   strSpanLabel.Format("Span %d",LABEL_SPAN(spanData.GetSpanIndex()));
+   strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(spanData.GetSpanIndex()));
    SetValueRange(CGXRange(row,0),strSpanLabel);
 
    CComPtr<IBroker> pBroker;
@@ -601,7 +601,7 @@ void CBridgeDescFramingGrid::FillSpanRow(ROWCOL row,const CSpanData& spanData)
 
    CString strSpanLength;
    double spanLength = spanData.GetSpanLength();
-   strSpanLength.Format("%s",FormatDimension(spanLength,pDisplayUnits->GetSpanLengthUnit()));
+   strSpanLength.Format(_T("%s"),FormatDimension(spanLength,pDisplayUnits->GetSpanLengthUnit()));
 
    SetStyleRange(CGXRange(row,1,row,2), CGXStyle()
       .SetMergeCell(GX_MERGE_HORIZONTAL)
@@ -699,7 +699,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          return FALSE;
       }
 
-      if ( strOrientation == "NORMAL" || (strOrientation.GetLength() == 1 && strOrientation[0] == 'N') )
+      if ( strOrientation == _T("NORMAL") || (strOrientation.GetLength() == 1 && strOrientation[0] == _T('N')) )
          return TRUE;
 
       CComPtr<IAngle> angle;

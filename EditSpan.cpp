@@ -106,9 +106,9 @@ txnTransaction* txnEditSpan::CreateClone() const
    return new txnEditSpan(m_SpanIdx,m_SpanData[0],m_SpanData[1]);
 }
 
-std::string txnEditSpan::Name() const
+std::_tstring txnEditSpan::Name() const
 {
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Edit Span " << LABEL_SPAN(m_SpanIdx);
    return os.str();
 }

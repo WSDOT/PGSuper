@@ -29,7 +29,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CBrokerReportSpecification::CBrokerReportSpecification(const char* strReportName,IBroker* pBroker) :
+CBrokerReportSpecification::CBrokerReportSpecification(LPCTSTR strReportName,IBroker* pBroker) :
 CReportSpecification(strReportName)
 {
    SetBroker(pBroker);

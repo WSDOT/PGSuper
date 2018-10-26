@@ -95,8 +95,8 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
 
    if (write_note)
    {
-      *p << "* - Transverse reinforcement not required if " << Sub2("V","u") << " < 0.5" << symbol(phi) << "(" << Sub2("V","c");
-      *p  << " + " << Sub2("V","p") << ") [Eqn 5.8.2.4-1]"<< rptNewLine;
+      *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
+      *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
    }
 }
 
@@ -137,29 +137,29 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,"Girder Dimensions Detailing Check [5.14.1.2.2]");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Girder Dimensions Detailing Check [5.14.1.2.2]"));
    *pBody << pTable;
 
    pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   (*pTable)(0,0)  << "Dimension";
-   (*pTable)(0,1)  << COLHDR("Minimum",  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,2)  << COLHDR("Actual",       rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,3)  << "Status";
+   (*pTable)(0,0)  << _T("Dimension");
+   (*pTable)(0,1)  << COLHDR(_T("Minimum"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,2)  << COLHDR(_T("Actual"),       rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,3)  << _T("Status");
 
-   (*pTable)(1,0) << "Top Flange Thickness";
-   (*pTable)(2,0) << "Web Thickness";
-   (*pTable)(3,0) << "Bottom Flange Thickness";
+   (*pTable)(1,0) << _T("Top Flange Thickness");
+   (*pTable)(2,0) << _T("Web Thickness");
+   (*pTable)(3,0) << _T("Bottom Flange Thickness");
 
    INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,      pDisplayUnits->GetComponentDimUnit(),  false );
 
    if ( IsZero(pArtifact->GetProvidedTopFlangeThickness()) )
    {
       // There is no top flange... Assume this is not a bulb-T or I type section
-      (*pTable)(1,1) << "-";
-      (*pTable)(1,2) << "-";
-      (*pTable)(1,3) << RPT_NA << rptNewLine << "See LRFD C5.14.1.2.2";
+      (*pTable)(1,1) << _T("-");
+      (*pTable)(1,2) << _T("-");
+      (*pTable)(1,3) << RPT_NA << rptNewLine << _T("See LRFD C5.14.1.2.2");
    }
    else
    {
@@ -174,8 +174,8 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
    if ( IsZero(pArtifact->GetProvidedWebThickness()) )
    {
       // There is no web... voided slab type girder
-      (*pTable)(2,1) << "-";
-      (*pTable)(2,2) << "-";
+      (*pTable)(2,1) << _T("-");
+      (*pTable)(2,2) << _T("-");
       (*pTable)(2,3) << RPT_NA;
    }
    else
@@ -191,8 +191,8 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
    if ( IsZero(pArtifact->GetProvidedBottomFlangeThickness()) )
    {
       // There is no bottom flange... Assume this is stemmed girder
-      (*pTable)(3,1) << "-";
-      (*pTable)(3,2) << "-";
+      (*pTable)(3,1) << _T("-");
+      (*pTable)(3,2) << _T("-");
       (*pTable)(3,3) << RPT_NA;
    }
    else
@@ -220,7 +220,7 @@ bool CGirderDetailingCheck::AssertValid() const
 
 void CGirderDetailingCheck::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CGirderDetailingCheck" << endl;
+   os << _T("Dump for CGirderDetailingCheck") << endl;
 }
 #endif // _DEBUG
 

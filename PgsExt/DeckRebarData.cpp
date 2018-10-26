@@ -39,7 +39,7 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 CDeckRebarData::CDeckRebarData() :
-strRebarMaterial("AASHTO M31 (615) - Grade 60")
+strRebarMaterial(_T("AASHTO M31 (615) - Grade 60"))
 {
    TopCover    = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
    BottomCover = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
@@ -80,34 +80,34 @@ HRESULT CDeckRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("DeckRebar",2.0);
+   pStrSave->BeginUnit(_T("DeckRebar"),2.0);
 
-   pStrSave->put_Property("RebarType",CComVariant(strRebarMaterial.c_str()));
+   pStrSave->put_Property(_T("RebarType"),CComVariant(strRebarMaterial.c_str()));
 
-   pStrSave->put_Property("TopCover",CComVariant(TopCover));
-   pStrSave->put_Property("TopLumpSumArea",CComVariant(TopLumpSum));
-   pStrSave->put_Property("TopRebarKey",CComVariant(TopRebarKey));
-   pStrSave->put_Property("TopSpacing",CComVariant(TopSpacing));
+   pStrSave->put_Property(_T("TopCover"),CComVariant(TopCover));
+   pStrSave->put_Property(_T("TopLumpSumArea"),CComVariant(TopLumpSum));
+   pStrSave->put_Property(_T("TopRebarKey"),CComVariant(TopRebarKey));
+   pStrSave->put_Property(_T("TopSpacing"),CComVariant(TopSpacing));
 
-   pStrSave->put_Property("BottomCover",CComVariant(BottomCover));
-   pStrSave->put_Property("BottomLumpSumArea",CComVariant(BottomLumpSum));
-   pStrSave->put_Property("BottomRebarKey",CComVariant(BottomRebarKey));
-   pStrSave->put_Property("BottomSpacing",CComVariant(BottomSpacing));
+   pStrSave->put_Property(_T("BottomCover"),CComVariant(BottomCover));
+   pStrSave->put_Property(_T("BottomLumpSumArea"),CComVariant(BottomLumpSum));
+   pStrSave->put_Property(_T("BottomRebarKey"),CComVariant(BottomRebarKey));
+   pStrSave->put_Property(_T("BottomSpacing"),CComVariant(BottomSpacing));
 
-   pStrSave->put_Property("NegMomentCount",CComVariant((long)NegMomentRebar.size()));
+   pStrSave->put_Property(_T("NegMomentCount"),CComVariant((long)NegMomentRebar.size()));
    std::vector<NegMomentRebarData>::iterator iter;
    for ( iter = NegMomentRebar.begin(); iter != NegMomentRebar.end(); iter++ )
    {
       NegMomentRebarData& rebar = *iter;
-      pStrSave->BeginUnit("NegMomentRebar",1.0);
+      pStrSave->BeginUnit(_T("NegMomentRebar"),1.0);
 
-      pStrSave->put_Property("Pier",CComVariant(rebar.PierIdx));
-      pStrSave->put_Property("Mat",CComVariant(rebar.Mat));
-      pStrSave->put_Property("LumpSumArea",CComVariant(rebar.LumpSum));
-      pStrSave->put_Property("RebarKey",CComVariant(rebar.RebarKey));
-      pStrSave->put_Property("Spacing",CComVariant(rebar.Spacing));
-      pStrSave->put_Property("LeftCutoff",CComVariant(rebar.LeftCutoff));
-      pStrSave->put_Property("RightCutoff",CComVariant(rebar.RightCutoff));
+      pStrSave->put_Property(_T("Pier"),CComVariant(rebar.PierIdx));
+      pStrSave->put_Property(_T("Mat"),CComVariant(rebar.Mat));
+      pStrSave->put_Property(_T("LumpSumArea"),CComVariant(rebar.LumpSum));
+      pStrSave->put_Property(_T("RebarKey"),CComVariant(rebar.RebarKey));
+      pStrSave->put_Property(_T("Spacing"),CComVariant(rebar.Spacing));
+      pStrSave->put_Property(_T("LeftCutoff"),CComVariant(rebar.LeftCutoff));
+      pStrSave->put_Property(_T("RightCutoff"),CComVariant(rebar.RightCutoff));
 
       pStrSave->EndUnit();
    }
@@ -122,7 +122,7 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    USES_CONVERSION;
    HRESULT hr = S_OK;
 
-   pStrLoad->BeginUnit("DeckRebar");
+   pStrLoad->BeginUnit(_T("DeckRebar"));
 
    CComVariant var;
 
@@ -132,72 +132,72 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    if ( 2.0 <= version )
    {
       var.vt = VT_BSTR;
-      pStrLoad->get_Property("RebarType",&var);
-      strRebarMaterial = OLE2A(var.bstrVal);
+      pStrLoad->get_Property(_T("RebarType"),&var);
+      strRebarMaterial = OLE2T(var.bstrVal);
    }
 
    var.vt = VT_R8;
-   pStrLoad->get_Property("TopCover",&var);
+   pStrLoad->get_Property(_T("TopCover"),&var);
    TopCover = var.dblVal;
 
-   pStrLoad->get_Property("TopLumpSumArea",&var);
+   pStrLoad->get_Property(_T("TopLumpSumArea"),&var);
    TopLumpSum = var.dblVal;
 
    var.vt = VT_I4;
-   pStrLoad->get_Property("TopRebarKey",&var);
+   pStrLoad->get_Property(_T("TopRebarKey"),&var);
    TopRebarKey = BarSizeType(var.lVal);
 
    var.vt = VT_R8;
-   pStrLoad->get_Property("TopSpacing",&var);
+   pStrLoad->get_Property(_T("TopSpacing"),&var);
    TopSpacing = var.dblVal;
 
-   pStrLoad->get_Property("BottomCover",&var);
+   pStrLoad->get_Property(_T("BottomCover"),&var);
    BottomCover = var.dblVal;
 
-   pStrLoad->get_Property("BottomLumpSumArea",&var);
+   pStrLoad->get_Property(_T("BottomLumpSumArea"),&var);
    BottomLumpSum = var.dblVal;
 
    var.vt = VT_I4;
-   pStrLoad->get_Property("BottomRebarKey",&var);
+   pStrLoad->get_Property(_T("BottomRebarKey"),&var);
    BottomRebarKey = BarSizeType(var.lVal);
 
    var.vt = VT_R8;
-   pStrLoad->get_Property("BottomSpacing",&var);
+   pStrLoad->get_Property(_T("BottomSpacing"),&var);
    BottomSpacing = var.dblVal;
 
    var.vt = VT_I4;
-   pStrLoad->get_Property("NegMomentCount",&var);
+   pStrLoad->get_Property(_T("NegMomentCount"),&var);
    long count = var.lVal;
    NegMomentRebar.clear();
 
    for ( long i = 0; i < count; i++ )
    {
       NegMomentRebarData rebar;
-      pStrLoad->BeginUnit("NegMomentRebar");
+      pStrLoad->BeginUnit(_T("NegMomentRebar"));
 
       var.vt = VT_I2;
-      pStrLoad->get_Property("Pier",&var);
+      pStrLoad->get_Property(_T("Pier"),&var);
       rebar.PierIdx = var.iVal;
 
-      pStrLoad->get_Property("Mat",&var);
+      pStrLoad->get_Property(_T("Mat"),&var);
       rebar.Mat = (RebarMat)var.iVal;
 
       var.vt = VT_R8;
-      pStrLoad->get_Property("LumpSumArea",&var);
+      pStrLoad->get_Property(_T("LumpSumArea"),&var);
       rebar.LumpSum = var.dblVal;
 
       var.vt = VT_I4;
-      pStrLoad->get_Property("RebarKey",&var);
+      pStrLoad->get_Property(_T("RebarKey"),&var);
       rebar.RebarKey = BarSizeType(var.lVal);
 
       var.vt = VT_R8;
-      pStrLoad->get_Property("Spacing",&var);
+      pStrLoad->get_Property(_T("Spacing"),&var);
       rebar.Spacing = var.dblVal;
 
-      pStrLoad->get_Property("LeftCutoff",&var);
+      pStrLoad->get_Property(_T("LeftCutoff"),&var);
       rebar.LeftCutoff = var.dblVal;
 
-      pStrLoad->get_Property("RightCutoff",&var);
+      pStrLoad->get_Property(_T("RightCutoff"),&var);
       rebar.RightCutoff = var.dblVal;
 
       pStrLoad->EndUnit();

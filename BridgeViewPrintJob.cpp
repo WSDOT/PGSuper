@@ -87,7 +87,7 @@ void CBridgeViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    // print calc sheet border
    PGSuperCalculationSheet border(m_pBroker);
    CString strBottomTitle;
-   strBottomTitle.Format("PGSuper™, Copyright © %4d, WSDOT, All rights reserved",sysDate().Year());
+   strBottomTitle.Format(_T("PGSuper™, Copyright © %4d, WSDOT, All rights reserved"),sysDate().Year());
    border.SetTitle(strBottomTitle);
    CDocument* pdoc = m_pPv->GetDocument();
    CString path = pdoc->GetPathName();
@@ -96,7 +96,7 @@ void CBridgeViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    if (rcPrint.IsRectEmpty())
    {
-      CHECKX(0,"Can't print border - page too small?");
+      CHECKX(0,_T("Can't print border - page too small?"));
       rcPrint = pInfo->m_rectDraw;
    }
 

@@ -46,13 +46,13 @@ void CWSDOTComponentInfo::Terminate()
 
 CString CWSDOTComponentInfo::GetName()
 {
-   return "WSDOT PGSuper Extensions";
+   return _T("WSDOT PGSuper Extensions");
 }
 
 CString CWSDOTComponentInfo::GetDescription()
 {
    CString strDesc;
-   strDesc.Format("WSDOT-specific features for PGSuper");
+   strDesc.Format(_T("WSDOT-specific features for PGSuper"));
    return strDesc;
 }
 

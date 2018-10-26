@@ -68,12 +68,12 @@ void CSpecLiftingPage::DoDataExchange(CDataExchange* pDX)
       if (!m_IsLiftingEnabled)
       {
          HideLiftingControls(true);
-         pnote->SetWindowText("Lifting Check is Disabled on Design Tab");
+         pnote->SetWindowText(_T("Lifting Check is Disabled on Design Tab"));
       }
       else
       {
          HideLiftingControls(false);
-         pnote->SetWindowText("Lifting Check is Enabled on Design Tab");
+         pnote->SetWindowText(_T("Lifting Check is Enabled on Design Tab"));
 
 	      DoCheckMax();
       }

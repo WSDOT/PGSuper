@@ -87,21 +87,21 @@ void CContinuityCheck::Build(rptChapter* pChapter,
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   pTitle->SetName("Continuity");
-   *pTitle << "Continuity [5.14.1.4.5]";
+   pTitle->SetName(_T("Continuity"));
+   *pTitle << _T("Continuity [5.14.1.4.5]");
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,"");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
    pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    *pPara << pTable;
 
-   (*pTable)(0,0) << "";
+   (*pTable)(0,0) << _T("");
    (*pTable)(0,1) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,2) << "Boundary Condition";
-   (*pTable)(0,3) << "Is Compressive?";
+   (*pTable)(0,2) << _T("Boundary Condition");
+   (*pTable)(0,3) << _T("Is Compressive?");
 
    PierIndexType nPiers = pBridge->GetPierCount();
    RowIndexType row = 1;
@@ -110,9 +110,9 @@ void CContinuityCheck::Build(rptChapter* pChapter,
       double fBottom = pContinuity->GetContinuityStressLevel(pierIdx,girder);
 
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
-         (*pTable)(row,0) << "Abutment " << (long)(pierIdx+1);
+         (*pTable)(row,0) << _T("Abutment ") << (long)(pierIdx+1);
       else
-         (*pTable)(row,0) << "Pier " << (long)(pierIdx+1);
+         (*pTable)(row,0) << _T("Pier ") << (long)(pierIdx+1);
 
       (*pTable)(row,1) << stress.SetValue(fBottom);
 
@@ -123,32 +123,32 @@ void CContinuityCheck::Build(rptChapter* pChapter,
       pBridge->IsIntegralAtPier(pierIdx,&bIntegralLeft,&bIntegralRight);
 
       if ( bContinuousLeft || bContinuousRight )
-         (*pTable)(row,2) << "Continuous";
+         (*pTable)(row,2) << _T("Continuous");
       else if ( bIntegralLeft || bIntegralRight )
-         (*pTable)(row,2) << "Integral";
+         (*pTable)(row,2) << _T("Integral");
       else
-         (*pTable)(row,2) << "Hinged";
+         (*pTable)(row,2) << _T("Hinged");
 
       fBottom = IsZero(fBottom) ? 0 : fBottom;
-      (*pTable)(row,3) << (fBottom < 0 ? "Yes" : "No");
+      (*pTable)(row,3) << (fBottom < 0 ? _T("Yes") : _T("No"));
 
       row++;
    }
 
    pPara = new rptParagraph;
-   *pPara << RPT_FBOT << " is the calcuated stress at the bottom of the continuity diaphragm for the combination of superimposed permanent loads and 50% live load" << rptNewLine;
+   *pPara << RPT_FBOT << _T(" is the calcuated stress at the bottom of the continuity diaphragm for the combination of superimposed permanent loads and 50% live load") << rptNewLine;
    *pChapter << pPara;
 
    bool bEffective = pContinuity->IsContinuityFullyEffective(girder);
    if ( bEffective )
    {
-      *pPara << "Continuous connections are fully effective." << rptNewLine;
-      *pPara << "Continuity is accounted for in Service and Strength Limit States." << rptNewLine;
+      *pPara << _T("Continuous connections are fully effective.") << rptNewLine;
+      *pPara << _T("Continuity is accounted for in Service and Strength Limit States.") << rptNewLine;
    }
    else
    {
-      *pPara << "Continuous connections are not fully effective." << rptNewLine;
-      *pPara << "Continuity is accounted for only in Strength Limit States." << rptNewLine;
+      *pPara << _T("Continuous connections are not fully effective.") << rptNewLine;
+      *pPara << _T("Continuity is accounted for only in Strength Limit States.") << rptNewLine;
    }
 }
 
@@ -190,7 +190,7 @@ bool CContinuityCheck::AssertValid() const
 
 void CContinuityCheck::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CContinuityCheck" << endl;
+   os << _T("Dump for CContinuityCheck") << endl;
 }
 #endif // _DEBUG
 

@@ -41,8 +41,8 @@ public:
    // IBeamFactory
    virtual CString GetName();
    virtual std::vector<CString> GetFactoryNames();
-   virtual CLSID GetFactoryCLSID(const char* strName);
-   virtual HRESULT CreateFactory(const char* strName,IBeamFactory** ppFactory);
+   virtual CLSID GetFactoryCLSID(LPCTSTR strName);
+   virtual HRESULT CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory);
 
 protected:
    HRESULT Init();

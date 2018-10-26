@@ -162,11 +162,13 @@ public:
 
    const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key) const;
    pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key);
+   std::vector<pgsFlexuralStressArtifactKey> GetFlexuralStressArtifactKeys() const;
 
    void AddFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key,
                                     const pgsFlexuralCapacityArtifact& pmartifact,
                                     const pgsFlexuralCapacityArtifact& nmartifact);
 
+   std::vector<pgsFlexuralCapacityArtifactKey> GetFlexuralCapacityArtifactKeys() const;
    const pgsFlexuralCapacityArtifact* GetPositiveMomentFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key) const;
    const pgsFlexuralCapacityArtifact* GetNegativeMomentFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key) const;
 

@@ -30,7 +30,7 @@ class CTOGATitlePageBuilder :
    public CTitlePageBuilder
 {
 public:
-   CTOGATitlePageBuilder(IBroker* pBroker,const char* strTitle,bool bFullVersion=true);
+   CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion=true);
    ~CTOGATitlePageBuilder(void);
 
    virtual rptChapter* Build(boost::shared_ptr<CReportSpecification>& pRptSpec);
@@ -38,6 +38,6 @@ public:
 
 protected:
    CComPtr<IBroker> m_pBroker;
-   std::string m_Title;
+   std::_tstring m_Title;
    bool m_bFullVersion;
 };

@@ -105,7 +105,7 @@ BOOL exportCADData::OnInitDialog()
 	{
 		/* Add current span string to span list */
 		CString strSpan;
-		strSpan.Format("Span %d",LABEL_SPAN(i));
+		strSpan.Format(_T("Span %d"),LABEL_SPAN(i));
 		pSpanBox->AddString(strSpan);
 	}
 
@@ -147,7 +147,7 @@ void exportCADData::OnSelchangeSpan()
 	{
 		/* Add current girder string to girder list */
 		CString strGdr;
-		strGdr.Format( "Girder %s", LABEL_GIRDER(j));
+		strGdr.Format( _T("Girder %s"), LABEL_GIRDER(j));
 		pGdrBox->AddString( strGdr );
 	}
 

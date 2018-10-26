@@ -476,111 +476,111 @@ pgsTypes::StressLocation pgsDesignArtifact::ConcreteStrengthDesignState::StressL
    return m_StressLocation;
 }
 
-inline const char* StageString(pgsTypes::Stage stage)
+inline LPCTSTR StageString(pgsTypes::Stage stage)
 {
    switch(stage)
    {
    case pgsTypes::CastingYard:
-      return "Casting Yard";
+      return _T("Casting Yard");
       break;
    case pgsTypes::Lifting:
-      return "Lifting";
+      return _T("Lifting");
       break;
    case pgsTypes::Hauling:
-      return "Hauling";
+      return _T("Hauling");
       break;
    case pgsTypes::GirderPlacement:
-      return "Girder Placement";
+      return _T("Girder Placement");
       break;
    case pgsTypes::TemporaryStrandRemoval:
-      return "Temporary Strand Removal";
+      return _T("Temporary Strand Removal");
       break;
    case pgsTypes::BridgeSite1:
-      return "Bridge Site 1";
+      return _T("Bridge Site 1");
       break;
    case pgsTypes::BridgeSite2:
-      return "Bridge Site 2";
+      return _T("Bridge Site 2");
       break;
    case pgsTypes::BridgeSite3:
-      return "Bridge Site 3";
+      return _T("Bridge Site 3");
       break;
    default:
       ATLASSERT(0);
-      return "Error in stage name";
+      return _T("Error in stage name");
    }
 }
 
-inline const char* LimitStateString(pgsTypes::LimitState limitState)
+inline LPCTSTR LimitStateString(pgsTypes::LimitState limitState)
 {
    switch(limitState)
    {
    case pgsTypes::ServiceI:
-      return "Service I";
+      return _T("Service I");
       break;
    case pgsTypes::ServiceIA:
-      return "Service IA";
+      return _T("Service IA");
       break;
    case pgsTypes::ServiceIII:
-      return "Service III";
+      return _T("Service III");
       break;
    case pgsTypes::StrengthI:
-      return "Strength I";
+      return _T("Strength I");
       break;
    case pgsTypes::FatigueI:
-      return "Fatigue I";
+      return _T("Fatigue I");
       break;
    default:
       ATLASSERT(0);
-      return "Error in limit state name";
+      return _T("Error in limit state name");
    }
 }
 
-inline const char* StressLocationString(pgsTypes::StressLocation loc)
+inline LPCTSTR StressLocationString(pgsTypes::StressLocation loc)
 {
    switch(loc)
    {
    case pgsTypes::BottomGirder:
-      return "Bottom of Girder";
+      return _T("Bottom of Girder");
       break;
    case pgsTypes::TopGirder:
-      return "Top of Girder";
+      return _T("Top of Girder");
       break;
    case pgsTypes::TopSlab:
-      return "Top of Slab";
+      return _T("Top of Slab");
       break;
    default:
       ATLASSERT(0);
-      return "Error in StressLocation";
+      return _T("Error in StressLocation");
    }
 }
 
-inline const char* StressTypeString(pgsTypes::StressType type)
+inline LPCTSTR StressTypeString(pgsTypes::StressType type)
 {
    switch(type)
    {
    case pgsTypes::Tension:
-      return "Tension";
+      return _T("Tension");
       break;
    case pgsTypes::Compression:
-      return "Compression";
+      return _T("Compression");
       break;
    default:
       ATLASSERT(0);
-      return "Error in StressType";
+      return _T("Error in StressType");
    }
 }
 
 
-std::string pgsDesignArtifact::ConcreteStrengthDesignState::AsString() const
+std::_tstring pgsDesignArtifact::ConcreteStrengthDesignState::AsString() const
 {
    if (m_MinimumControls)
    {
-      return std::string("Minimum");
+      return std::_tstring(_T("Minimum"));
    }
    else
    {
-      std::ostringstream sstr;
-      sstr<< StageString(m_Stage)<<", "<<LimitStateString(m_LimitState)<<", "<<StressTypeString(m_StressType)<<", at "<<StressLocationString(m_StressLocation);
+      std::_tostringstream sstr;
+      sstr<< StageString(m_Stage)<<_T(", ")<<LimitStateString(m_LimitState)<<_T(", ")<<StressTypeString(m_StressType)<<_T(", at ")<<StressLocationString(m_StressLocation);
       return sstr.str();
    }
 }

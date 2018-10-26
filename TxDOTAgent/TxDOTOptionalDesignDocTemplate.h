@@ -42,6 +42,6 @@ public:
 
 protected:
    void LoadTemplateInformation();
-   void FindInFolder(LPCSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon);
-   void FindTemplateFiles(LPCSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon);
+   void FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon);
+   void FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon);
 };

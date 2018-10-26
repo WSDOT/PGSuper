@@ -81,7 +81,7 @@ protected:
 
 public:
    CDeckRebarData m_RebarData;
-   std::string m_strRebarMaterial;
+   std::_tstring m_strRebarMaterial;
    CBridgeDescDeckRebarGrid m_Grid;
 };
 

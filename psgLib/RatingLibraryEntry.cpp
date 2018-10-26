@@ -586,73 +586,73 @@ Float64 CLiveLoadFactorModel::GetServiceLiveLoadFactor(Int16 adtt) const
 
 bool CLiveLoadFactorModel::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit("LoadFactors",1.0);
-   pSave->Property("LiveLoadFactorType",(long)m_LiveLoadFactorType);
+   pSave->BeginUnit(_T("LoadFactors"),1.0);
+   pSave->Property(_T("LiveLoadFactorType"),(long)m_LiveLoadFactorType);
    if ( m_LiveLoadFactorType == pgsTypes::gllSingleValue )
    {
-      pSave->Property("LiveLoadFactor",m_gLL_Lower[0]);
-      pSave->Property("LiveLoadFactor_Service",m_gLL_Service[0]);
+      pSave->Property(_T("LiveLoadFactor"),m_gLL_Lower[0]);
+      pSave->Property(_T("LiveLoadFactor_Service"),m_gLL_Service[0]);
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllStepped || m_LiveLoadFactorType == pgsTypes::gllLinear )
    {
-      pSave->Property("ADTT1",m_ADTT[0]);
-      pSave->Property("LiveLoadFactor1",m_gLL_Lower[0]);
-      pSave->Property("LiveLoadFactor2",m_gLL_Lower[1]);
-      pSave->Property("LiveLoadFactorUnknownADTT",m_gLL_Lower[3]);
+      pSave->Property(_T("ADTT1"),m_ADTT[0]);
+      pSave->Property(_T("LiveLoadFactor1"),m_gLL_Lower[0]);
+      pSave->Property(_T("LiveLoadFactor2"),m_gLL_Lower[1]);
+      pSave->Property(_T("LiveLoadFactorUnknownADTT"),m_gLL_Lower[3]);
 
-      pSave->Property("LiveLoadFactor1_Service",m_gLL_Service[0]);
-      pSave->Property("LiveLoadFactor2_Service",m_gLL_Service[1]);
-      pSave->Property("LiveLoadFactorUnknownADTT_Service",m_gLL_Service[3]);
+      pSave->Property(_T("LiveLoadFactor1_Service"),m_gLL_Service[0]);
+      pSave->Property(_T("LiveLoadFactor2_Service"),m_gLL_Service[1]);
+      pSave->Property(_T("LiveLoadFactorUnknownADTT_Service"),m_gLL_Service[3]);
 
-      pSave->Property("LiveLoadFactorModifier",(long)m_LiveLoadFactorModifier);
+      pSave->Property(_T("LiveLoadFactorModifier"),(long)m_LiveLoadFactorModifier);
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinear )
    {
-      pSave->Property("ADTT1",m_ADTT[0]);
-      pSave->Property("LiveLoadFactor1",m_gLL_Lower[0]);
-      pSave->Property("ADTT2",m_ADTT[1]);
-      pSave->Property("LiveLoadFactor2",m_gLL_Lower[1]);
-      pSave->Property("ADTT3",m_ADTT[2]);
-      pSave->Property("LiveLoadFactor3",m_gLL_Lower[2]);
-      pSave->Property("LiveLoadFactorUnknownADTT",m_gLL_Lower[3]);
+      pSave->Property(_T("ADTT1"),m_ADTT[0]);
+      pSave->Property(_T("LiveLoadFactor1"),m_gLL_Lower[0]);
+      pSave->Property(_T("ADTT2"),m_ADTT[1]);
+      pSave->Property(_T("LiveLoadFactor2"),m_gLL_Lower[1]);
+      pSave->Property(_T("ADTT3"),m_ADTT[2]);
+      pSave->Property(_T("LiveLoadFactor3"),m_gLL_Lower[2]);
+      pSave->Property(_T("LiveLoadFactorUnknownADTT"),m_gLL_Lower[3]);
 
-      pSave->Property("LiveLoadFactor1_Service",m_gLL_Service[0]);
-      pSave->Property("LiveLoadFactor2_Service",m_gLL_Service[1]);
-      pSave->Property("LiveLoadFactor3_Service",m_gLL_Service[2]);
-      pSave->Property("LiveLoadFactorUnknownADTT_Service",m_gLL_Service[3]);
+      pSave->Property(_T("LiveLoadFactor1_Service"),m_gLL_Service[0]);
+      pSave->Property(_T("LiveLoadFactor2_Service"),m_gLL_Service[1]);
+      pSave->Property(_T("LiveLoadFactor3_Service"),m_gLL_Service[2]);
+      pSave->Property(_T("LiveLoadFactorUnknownADTT_Service"),m_gLL_Service[3]);
 
-      pSave->Property("LiveLoadFactorModifier",(long)m_LiveLoadFactorModifier);
+      pSave->Property(_T("LiveLoadFactorModifier"),(long)m_LiveLoadFactorModifier);
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinearWithWeight )
    {
-      pSave->Property("VehicleWeight1",m_Wlower);
-      pSave->Property("VehicleWeight2",m_Wupper);
+      pSave->Property(_T("VehicleWeight1"),m_Wlower);
+      pSave->Property(_T("VehicleWeight2"),m_Wupper);
 
-      pSave->Property("ADTT1",m_ADTT[0]);
-      pSave->Property("LiveLoadFactor1_Lower",m_gLL_Lower[0]);
-      pSave->Property("LiveLoadFactor1_Upper",m_gLL_Upper[0]);
-      pSave->Property("ADTT2",m_ADTT[1]);
-      pSave->Property("LiveLoadFactor2_Lower",m_gLL_Lower[1]);
-      pSave->Property("LiveLoadFactor2_Upper",m_gLL_Upper[1]);
-      pSave->Property("ADTT3",m_ADTT[2]);
-      pSave->Property("LiveLoadFactor3_Lower",m_gLL_Lower[2]);
-      pSave->Property("LiveLoadFactor3_Upper",m_gLL_Upper[2]);
-      pSave->Property("LiveLoadFactorUnknownADTT_Lower",m_gLL_Lower[3]);
-      pSave->Property("LiveLoadFactorUnknownADTT_Upper",m_gLL_Upper[3]);
+      pSave->Property(_T("ADTT1"),m_ADTT[0]);
+      pSave->Property(_T("LiveLoadFactor1_Lower"),m_gLL_Lower[0]);
+      pSave->Property(_T("LiveLoadFactor1_Upper"),m_gLL_Upper[0]);
+      pSave->Property(_T("ADTT2"),m_ADTT[1]);
+      pSave->Property(_T("LiveLoadFactor2_Lower"),m_gLL_Lower[1]);
+      pSave->Property(_T("LiveLoadFactor2_Upper"),m_gLL_Upper[1]);
+      pSave->Property(_T("ADTT3"),m_ADTT[2]);
+      pSave->Property(_T("LiveLoadFactor3_Lower"),m_gLL_Lower[2]);
+      pSave->Property(_T("LiveLoadFactor3_Upper"),m_gLL_Upper[2]);
+      pSave->Property(_T("LiveLoadFactorUnknownADTT_Lower"),m_gLL_Lower[3]);
+      pSave->Property(_T("LiveLoadFactorUnknownADTT_Upper"),m_gLL_Upper[3]);
 
-      pSave->Property("LiveLoadFactor1_Service",m_gLL_Service[0]);
-      pSave->Property("LiveLoadFactor2_Service",m_gLL_Service[1]);
-      pSave->Property("LiveLoadFactor3_Service",m_gLL_Service[2]);
-      pSave->Property("LiveLoadFactorUnknownADTT_Service",m_gLL_Service[3]);
+      pSave->Property(_T("LiveLoadFactor1_Service"),m_gLL_Service[0]);
+      pSave->Property(_T("LiveLoadFactor2_Service"),m_gLL_Service[1]);
+      pSave->Property(_T("LiveLoadFactor3_Service"),m_gLL_Service[2]);
+      pSave->Property(_T("LiveLoadFactorUnknownADTT_Service"),m_gLL_Service[3]);
 
-      pSave->Property("LiveLoadFactorModifier",(long)m_LiveLoadFactorModifier);
+      pSave->Property(_T("LiveLoadFactorModifier"),(long)m_LiveLoadFactorModifier);
    }
    else
    {
       ATLASSERT(false); // should never get here
    }
 
-   pSave->Property("AllowUserOverride",m_bAllowUserOverride);
+   pSave->Property(_T("AllowUserOverride"),m_bAllowUserOverride);
 
    pSave->EndUnit();
 
@@ -661,147 +661,147 @@ bool CLiveLoadFactorModel::SaveMe(sysIStructuredSave* pSave)
 
 bool CLiveLoadFactorModel::LoadMe(sysIStructuredLoad* pLoad)
 {
-   if ( !pLoad->BeginUnit("LoadFactors") )
+   if ( !pLoad->BeginUnit(_T("LoadFactors")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    long value;
-   if ( !pLoad->Property("LiveLoadFactorType",&value) )
+   if ( !pLoad->Property(_T("LiveLoadFactorType"),&value) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    m_LiveLoadFactorType = (pgsTypes::LiveLoadFactorType)value;
 
    if ( m_LiveLoadFactorType == pgsTypes::gllSingleValue )
    {
-      if ( !pLoad->Property("LiveLoadFactor",&m_gLL_Lower[0]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor"),&m_gLL_Lower[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor_Service",&m_gLL_Service[0]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor_Service"),&m_gLL_Service[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllStepped || m_LiveLoadFactorType == pgsTypes::gllLinear )
    {
-      if ( !pLoad->Property("ADTT1",&m_ADTT[0]) )
+      if ( !pLoad->Property(_T("ADTT1"),&m_ADTT[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor1",&m_gLL_Lower[0]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor1"),&m_gLL_Lower[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor2",&m_gLL_Lower[1]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor2"),&m_gLL_Lower[1]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorUnknownADTT",&m_gLL_Lower[3]) )
+      if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT"),&m_gLL_Lower[3]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor1_Service",&m_gLL_Service[0]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor1_Service"),&m_gLL_Service[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor2_Service",&m_gLL_Service[1]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor2_Service"),&m_gLL_Service[1]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorUnknownADTT_Service",&m_gLL_Service[3]) )
+      if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Service"),&m_gLL_Service[3]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorModifier",&value) )
+      if ( !pLoad->Property(_T("LiveLoadFactorModifier"),&value) )
          THROW_LOAD(InvalidFileFormat,pLoad);
       
       m_LiveLoadFactorModifier = (pgsTypes::LiveLoadFactorModifier)value;
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinear )
    {
-      if ( !pLoad->Property("ADTT1",&m_ADTT[0]) )
+      if ( !pLoad->Property(_T("ADTT1"),&m_ADTT[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor1",&m_gLL_Lower[0]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor1"),&m_gLL_Lower[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("ADTT2",&m_ADTT[1]) )
+      if ( !pLoad->Property(_T("ADTT2"),&m_ADTT[1]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor2",&m_gLL_Lower[1]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor2"),&m_gLL_Lower[1]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("ADTT3",&m_ADTT[2]) )
+      if ( !pLoad->Property(_T("ADTT3"),&m_ADTT[2]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor3",&m_gLL_Lower[2]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor3"),&m_gLL_Lower[2]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorUnknownADTT",&m_gLL_Lower[3]) )
+      if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT"),&m_gLL_Lower[3]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-      if ( !pLoad->Property("LiveLoadFactor1_Service",&m_gLL_Service[0]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor1_Service"),&m_gLL_Service[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor2_Service",&m_gLL_Service[1]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor2_Service"),&m_gLL_Service[1]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor3_Service",&m_gLL_Service[2]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor3_Service"),&m_gLL_Service[2]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorUnknownADTT_Service",&m_gLL_Service[3]) )
+      if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Service"),&m_gLL_Service[3]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorModifier",&value) )
+      if ( !pLoad->Property(_T("LiveLoadFactorModifier"),&value) )
          THROW_LOAD(InvalidFileFormat,pLoad);
       
       m_LiveLoadFactorModifier = (pgsTypes::LiveLoadFactorModifier)value;
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinearWithWeight )
    {
-      if ( !pLoad->Property("VehicleWeight1",&m_Wlower) )
+      if ( !pLoad->Property(_T("VehicleWeight1"),&m_Wlower) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("VehicleWeight2",&m_Wupper) )
+      if ( !pLoad->Property(_T("VehicleWeight2"),&m_Wupper) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("ADTT1",&m_ADTT[0]) )
+      if ( !pLoad->Property(_T("ADTT1"),&m_ADTT[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor1_Lower",&m_gLL_Lower[0]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor1_Lower"),&m_gLL_Lower[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor1_Upper",&m_gLL_Upper[0]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor1_Upper"),&m_gLL_Upper[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("ADTT2",&m_ADTT[1]) )
+      if ( !pLoad->Property(_T("ADTT2"),&m_ADTT[1]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor2_Lower",&m_gLL_Lower[1]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor2_Lower"),&m_gLL_Lower[1]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor2_Upper",&m_gLL_Upper[1]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor2_Upper"),&m_gLL_Upper[1]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("ADTT3",&m_ADTT[2]) )
+      if ( !pLoad->Property(_T("ADTT3"),&m_ADTT[2]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor3_Lower",&m_gLL_Lower[2]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor3_Lower"),&m_gLL_Lower[2]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor3_Upper",&m_gLL_Upper[2]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor3_Upper"),&m_gLL_Upper[2]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorUnknownADTT_Lower",&m_gLL_Lower[3]) )
+      if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Lower"),&m_gLL_Lower[3]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorUnknownADTT_Upper",&m_gLL_Upper[3]) )
+      if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Upper"),&m_gLL_Upper[3]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-      if ( !pLoad->Property("LiveLoadFactor1_Service",&m_gLL_Service[0]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor1_Service"),&m_gLL_Service[0]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor2_Service",&m_gLL_Service[1]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor2_Service"),&m_gLL_Service[1]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactor3_Service",&m_gLL_Service[2]) )
+      if ( !pLoad->Property(_T("LiveLoadFactor3_Service"),&m_gLL_Service[2]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorUnknownADTT_Service",&m_gLL_Service[3]) )
+      if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Service"),&m_gLL_Service[3]) )
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("LiveLoadFactorModifier",&value) )
+      if ( !pLoad->Property(_T("LiveLoadFactorModifier"),&value) )
          THROW_LOAD(InvalidFileFormat,pLoad);
       
       m_LiveLoadFactorModifier = (pgsTypes::LiveLoadFactorModifier)value;
@@ -811,7 +811,7 @@ bool CLiveLoadFactorModel::LoadMe(sysIStructuredLoad* pLoad)
       ATLASSERT(false); // should never get here
    }
 
-   if ( !pLoad->Property("AllowUserOverride",&m_bAllowUserOverride) )
+   if ( !pLoad->Property(_T("AllowUserOverride"),&m_bAllowUserOverride) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    if ( !pLoad->EndUnit() )
@@ -829,7 +829,7 @@ RatingLibraryEntry::RatingLibraryEntry() :
 m_SpecificationVersion(lrfrVersionMgr::FirstEditionWith2010Interims),
 m_bAlwaysRate(false)
 {
-   SetDescription("Default Rating Specification based on AASHTO MBE 1st Edition, 2008 with 2010 interim provisions");
+   SetDescription(_T("Default Rating Specification based on AASHTO MBE 1st Edition, 2008 with 2010 interim provisions"));
 
    m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SetLiveLoadFactorType(pgsTypes::gllSingleValue);
    m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SetLowerLiveLoadFactor(1.75,-1,-1,-1);
@@ -913,57 +913,57 @@ HICON  RatingLibraryEntry::GetIcon() const
 
 bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit("RatingLibraryEntry", CURRENT_VERSION);
+   pSave->BeginUnit(_T("RatingLibraryEntry"), CURRENT_VERSION);
 
-   pSave->Property("Name", GetName().c_str());
-   pSave->Property("Description", GetDescription().c_str());
+   pSave->Property(_T("Name"), GetName().c_str());
+   pSave->Property(_T("Description"), GetDescription().c_str());
 
    switch (m_SpecificationVersion)
    {
    case lrfrVersionMgr::FirstEdition2008:
-      pSave->Property("SpecificationVersion", "LRFR2008");
+      pSave->Property(_T("SpecificationVersion"), _T("LRFR2008"));
       break;
 
    case lrfrVersionMgr::FirstEditionWith2010Interims:
-      pSave->Property("SpecificationVersion", "LRFR2010");
+      pSave->Property(_T("SpecificationVersion"), _T("LRFR2010"));
       break;
 
    default:
       ASSERT(0);
-      pSave->Property("SpecificationVersion", "LRFR2008");
+      pSave->Property(_T("SpecificationVersion"), _T("LRFR2008"));
    }
 
-   pSave->Property("AlwaysRate",m_bAlwaysRate);
+   pSave->Property(_T("AlwaysRate"),m_bAlwaysRate);
 
-   pSave->BeginUnit("LiveLoadFactors_Design_Inventory",1.0);
+   pSave->BeginUnit(_T("LiveLoadFactors_Design_Inventory"),1.0);
    m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SaveMe(pSave);
    pSave->EndUnit();
 
-   pSave->BeginUnit("LiveLoadFactors_Design_Operating",1.0);
+   pSave->BeginUnit(_T("LiveLoadFactors_Design_Operating"),1.0);
    m_LiveLoadFactorModels[pgsTypes::lrDesign_Operating].SaveMe(pSave);
    pSave->EndUnit();
 
-   pSave->BeginUnit("LiveLoadFactors_Legal_Routine",1.0);
+   pSave->BeginUnit(_T("LiveLoadFactors_Legal_Routine"),1.0);
    m_LiveLoadFactorModels[pgsTypes::lrLegal_Routine].SaveMe(pSave);
    pSave->EndUnit();
 
-   pSave->BeginUnit("LiveLoadFactors_Legal_Special",1.0);
+   pSave->BeginUnit(_T("LiveLoadFactors_Legal_Special"),1.0);
    m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].SaveMe(pSave);
    pSave->EndUnit();
 
-   pSave->BeginUnit("LiveLoadFactors_Permit_Routine",1.0);
+   pSave->BeginUnit(_T("LiveLoadFactors_Permit_Routine"),1.0);
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SaveMe(pSave);
    pSave->EndUnit();
 
-   pSave->BeginUnit("LiveLoadFactors_Permit_SingleTripWithEscort",1.0);
+   pSave->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithEscort"),1.0);
    m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithEscort].SaveMe(pSave);
    pSave->EndUnit();
 
-   pSave->BeginUnit("LiveLoadFactors_Permit_SingleTripWithTraffic",1.0);
+   pSave->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithTraffic"),1.0);
    m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithTraffic].SaveMe(pSave);
    pSave->EndUnit();
 
-   pSave->BeginUnit("LiveLoadFactors_Permit_MultipleTripWithTraffic",1.0);
+   pSave->BeginUnit(_T("LiveLoadFactors_Permit_MultipleTripWithTraffic"),1.0);
    m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptMultipleTripWithTraffic].SaveMe(pSave);
    pSave->EndUnit();
 
@@ -974,40 +974,40 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
 bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
-   if ( !pLoad->BeginUnit("RatingLibraryEntry") )
+   if ( !pLoad->BeginUnit(_T("RatingLibraryEntry")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    Float64 version = pLoad->GetVersion();
    if (version < 1.0 || CURRENT_VERSION < version)
       THROW_LOAD(BadVersion,pLoad);
 
-   std::string name;
-   if(!pLoad->Property("Name",&name))
+   std::_tstring name;
+   if(!pLoad->Property(_T("Name"),&name))
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    SetName(name.c_str());
 
-   if(!pLoad->Property("Description",&name))
+   if(!pLoad->Property(_T("Description"),&name))
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    SetDescription(name.c_str());
 
-   std::string strSpecVersion;
-   if( !pLoad->Property("SpecificationVersion",&strSpecVersion) )
+   std::_tstring strSpecVersion;
+   if( !pLoad->Property(_T("SpecificationVersion"),&strSpecVersion) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   if(strSpecVersion == "LRFR2008")
+   if(strSpecVersion == _T("LRFR2008"))
       m_SpecificationVersion = lrfrVersionMgr::FirstEdition2008;
-   else if(strSpecVersion == "LRFR2010")
+   else if(strSpecVersion == _T("LRFR2010"))
       m_SpecificationVersion = lrfrVersionMgr::FirstEditionWith2010Interims;
    else
       THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-   if ( !pLoad->Property("AlwaysRate",&m_bAlwaysRate) )
+   if ( !pLoad->Property(_T("AlwaysRate"),&m_bAlwaysRate) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   if ( !pLoad->BeginUnit("LiveLoadFactors_Design_Inventory") )
+   if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Design_Inventory")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    if ( !m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].LoadMe(pLoad) )
@@ -1017,7 +1017,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-   if ( !pLoad->BeginUnit("LiveLoadFactors_Design_Operating") )
+   if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Design_Operating")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    if ( !m_LiveLoadFactorModels[pgsTypes::lrDesign_Operating].LoadMe(pLoad) )
@@ -1026,7 +1026,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if ( !pLoad->EndUnit() )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   if ( !pLoad->BeginUnit("LiveLoadFactors_Legal_Routine") )
+   if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Legal_Routine")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    if ( !m_LiveLoadFactorModels[pgsTypes::lrLegal_Routine].LoadMe(pLoad) )
@@ -1035,7 +1035,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if ( !pLoad->EndUnit() )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   if ( !pLoad->BeginUnit("LiveLoadFactors_Legal_Special") )
+   if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Legal_Special")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    if ( !m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].LoadMe(pLoad) )
@@ -1044,7 +1044,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if ( !pLoad->EndUnit() )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   if ( !pLoad->BeginUnit("LiveLoadFactors_Permit_Routine") )
+   if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Permit_Routine")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    if ( !m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].LoadMe(pLoad) )
@@ -1053,7 +1053,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if ( !pLoad->EndUnit() )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   if ( !pLoad->BeginUnit("LiveLoadFactors_Permit_SingleTripWithEscort") )
+   if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithEscort")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithEscort].LoadMe(pLoad) )
@@ -1062,7 +1062,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if ( !pLoad->EndUnit() )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   if ( !pLoad->BeginUnit("LiveLoadFactors_Permit_SingleTripWithTraffic") )
+   if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithTraffic")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithTraffic].LoadMe(pLoad) )
@@ -1071,7 +1071,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if ( !pLoad->EndUnit() )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   if ( !pLoad->BeginUnit("LiveLoadFactors_Permit_MultipleTripWithTraffic") )
+   if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Permit_MultipleTripWithTraffic")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptMultipleTripWithTraffic].LoadMe(pLoad) )
@@ -1140,13 +1140,13 @@ void RatingLibraryEntry::MakeAssignment(const RatingLibraryEntry& rOther)
    MakeCopy( rOther );
 }
 
-void RatingLibraryEntry::SetDescription(const char* name)
+void RatingLibraryEntry::SetDescription(LPCTSTR name)
 {
    m_Description.erase();
    m_Description = name;
 }
 
-std::string RatingLibraryEntry::GetDescription() const
+std::_tstring RatingLibraryEntry::GetDescription() const
 {
    return m_Description;
 }

@@ -75,7 +75,7 @@ public:
    virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr);
    virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
    virtual double GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
-   virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile);
+   virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
    virtual bool GetDFResultsEx(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                                Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
@@ -592,17 +592,17 @@ void CDistFactorEngineerImpl<T>::HandleRangeOfApplicabilityError(const lrfdXRang
 {
    GET_IFACE(IEAFStatusCenter,     pStatusCenter);
 
-   const char* msg = "Live Load Distribution Factors could not be calculated";
+   LPCTSTR msg = _T("Live Load Distribution Factors could not be calculated");
    pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,msg);
    pStatusCenter->Add(pStatusItem);
 
-   std::ostringstream os;
-   std::string errmsg;
+   std::_tostringstream os;
+   std::_tstring errmsg;
    e.GetErrorMessage( &errmsg );
-   os << "Live Load Distribution Factors could not be calculated for the following reason" << std::endl;
+   os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
    os << errmsg << std::endl;
-   os << "A refined method of analysis is required for this bridge" << std::endl;
-   os << "See Status Center for Details";
+   os << _T("A refined method of analysis is required for this bridge") << std::endl;
+   os << _T("See Status Center for Details");
    THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
 }
 
@@ -911,7 +911,7 @@ double CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(Int32 spanOrPier,Girde
 }
 
 template <class T>
-bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile)
+bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -923,24 +923,24 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType
          double M,V;
          M = pSpan->GetLLDFPosMoment(ls,pgsTypes::Interior);
          V = pSpan->GetLLDFShear(ls,pgsTypes::Interior);
-         resultsFile<<bridgeId<<", "<<pid<<", 12054, 0.0, "<<M<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12055, 0.0, "<<M<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12056, 0.0, "<<V<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12057, 0.0, "<<V<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12058, 0.0, "<<M<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12059, 0.0, "<<M<<", 2, "<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12054, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12055, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12056, 0.0, ")<<V<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12057, 0.0, ")<<V<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12058, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12059, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
       }
       else
       {
          double M,V;
          M = pSpan->GetLLDFPosMoment(ls,pgsTypes::Exterior);
          V = pSpan->GetLLDFShear(ls,pgsTypes::Exterior);
-         resultsFile<<bridgeId<<", "<<pid<<", 12024, 0.0, "<<M<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12025, 0.0, "<<M<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12026, 0.0, "<<V<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12027, 0.0, "<<V<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12028, 0.0, "<<M<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12029, 0.0, "<<M<<", 2, "<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12024, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12025, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12026, 0.0, ")<<V<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12027, 0.0, ")<<V<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12028, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12029, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
       }
    }
    else
@@ -958,12 +958,12 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType
          lrfdILiveLoadDistributionFactor::DFResult dde1 = mde1;  // deflection same as moment
          lrfdILiveLoadDistributionFactor::DFResult dde2 = mde2;
 
-         resultsFile<<bridgeId<<", "<<pid<<", 12024, 0.0, "<<mde1.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12025, 0.0, "<<mde2.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12026, 0.0, "<<sde1.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12027, 0.0, "<<sde2.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12028, 0.0, "<<dde1.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12029, 0.0, "<<dde2.mg<<", 2, "<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12024, 0.0, ")<<mde1.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12025, 0.0, ")<<mde2.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12026, 0.0, ")<<sde1.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12027, 0.0, ")<<sde2.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12028, 0.0, ")<<dde1.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12029, 0.0, ")<<dde2.mg<<_T(", 2, ")<<gdr<<std::endl;
       }
       else
       {
@@ -975,12 +975,12 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType
          lrfdILiveLoadDistributionFactor::DFResult ddi1 = mdi1;
          lrfdILiveLoadDistributionFactor::DFResult ddi2 = mdi2;
 
-         resultsFile<<bridgeId<<", "<<pid<<", 12054, 0.0, "<<mdi1.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12055, 0.0, "<<mdi2.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12056, 0.0, "<<sdi1.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12057, 0.0, "<<sdi2.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12058, 0.0, "<<ddi1.mg<<", 2, "<<gdr<<std::endl;
-         resultsFile<<bridgeId<<", "<<pid<<", 12059, 0.0, "<<ddi2.mg<<", 2, "<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12054, 0.0, ")<<mdi1.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12055, 0.0, ")<<mdi2.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12056, 0.0, ")<<sdi1.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12057, 0.0, ")<<sdi2.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12058, 0.0, ")<<ddi1.mg<<_T(", 2, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12059, 0.0, ")<<ddi2.mg<<_T(", 2, ")<<gdr<<std::endl;
       }
    }
 

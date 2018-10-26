@@ -121,12 +121,12 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
 
    rptParagraph* pPara = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pPara;
-   *pPara << "Pier Layout" << rptNewLine;
+   *pPara << _T("Pier Layout") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7,"");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
@@ -136,27 +136,27 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
 
    pTable->SetRowSpan(0,0,2);
    pTable->SetRowSpan(1,0,-1);
-   (*pTable)(0,0) << "";
+   (*pTable)(0,0) << _T("");
 
    pTable->SetRowSpan(0,1,2);
    pTable->SetRowSpan(1,1,-1);
-   (*pTable)(0,1) << "Station";
+   (*pTable)(0,1) << _T("Station");
 
    pTable->SetRowSpan(0,2,2);
    pTable->SetRowSpan(1,2,-1);
-   (*pTable)(0,2) << "Bearing";
+   (*pTable)(0,2) << _T("Bearing");
 
    pTable->SetRowSpan(0,3,2);
    pTable->SetRowSpan(1,3,-1);
-   (*pTable)(0,3) << "Skew Angle";
+   (*pTable)(0,3) << _T("Skew Angle");
 
    pTable->SetColumnSpan(0,4,3);
    pTable->SetColumnSpan(0,5,-1);
    pTable->SetColumnSpan(0,6,-1);
-   (*pTable)(0,4) << "Alignment Intersection";
-   (*pTable)(1,4) << "East" << rptNewLine << "(X)";
-   (*pTable)(1,5) << "North" << rptNewLine << "(Y)";
-   (*pTable)(1,6) << COLHDR("Elev",rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
+   (*pTable)(0,4) << _T("Alignment Intersection");
+   (*pTable)(1,4) << _T("East") << rptNewLine << _T("(X)");
+   (*pTable)(1,5) << _T("North") << rptNewLine << _T("(Y)");
+   (*pTable)(1,6) << COLHDR(_T("Elev"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
 
    const CPierData* pPier = pBridgeDesc->GetPier(0);
    RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -183,13 +183,13 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
       direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
       if ( pPier->GetPrevSpan() == NULL || pPier->GetNextSpan() == NULL )
-         (*pTable)(row,0) << "Abutment " << (Int32)(pierIdx+1);
+         (*pTable)(row,0) << _T("Abutment ") << (Int32)(pierIdx+1);
       else
-         (*pTable)(row,0) << "Pier " << (Int32)(pierIdx+1);
+         (*pTable)(row,0) << _T("Pier ") << (Int32)(pierIdx+1);
 
       (*pTable)(row,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
-      (*pTable)(row,2) << RPT_BEARING(OLE2A(bstrBearing));
-      (*pTable)(row,3) << RPT_ANGLE(OLE2A(bstrAngle));
+      (*pTable)(row,2) << RPT_BEARING(OLE2T(bstrBearing));
+      (*pTable)(row,3) << RPT_ANGLE(OLE2T(bstrAngle));
 
       CComPtr<IPoint2d> pntLeft,pntAlignment,pntBridge,pntRight;
       pBridge->GetPierPoints(pierIdx,&pntLeft,&pntAlignment,&pntBridge,&pntRight);

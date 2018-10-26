@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
@@ -82,27 +82,27 @@ static char THIS_FILE[] = __FILE__;
 #define SECTION_CUT_ID   100
 
 
-static std::string GetLoadGroupNameForUserLoad(UserLoads::LoadCase lc)
+static std::_tstring GetLoadGroupNameForUserLoad(UserLoads::LoadCase lc)
 {
    switch(lc)
    {
       case UserLoads::DC:
-         return std::string("DC");
+         return std::_tstring(_T("DC"));
       break;
 
       case UserLoads::DW:
-         return std::string("DW");
+         return std::_tstring(_T("DW"));
       break;
 
       case UserLoads::LL_IM:
-         return std::string("LL_IM");
+         return std::_tstring(_T("LL_IM"));
       break;
 
          default:
          ATLASSERT(false); // SHOULD NEVER GET HERE
    }
 
-   return std::string("Error");
+   return std::_tstring(_T("Error"));
 }
 
 static COLORREF GetLoadGroupColor(UserLoads::LoadCase lc)
@@ -131,7 +131,7 @@ static COLORREF GetLoadGroupColor(UserLoads::LoadCase lc)
 static void CreateLegendEntry(UserLoads::LoadCase lc, iLegendDisplayObject* legend)
 {
    COLORREF color = GetLoadGroupColor(lc);
-   std::string name =  GetLoadGroupNameForUserLoad(lc);
+   std::_tstring name =  GetLoadGroupNameForUserLoad(lc);
 
    CComPtr<iSymbolLegendEntry> legend_entry;
    legend_entry.CoCreateInstance(CLSID_LegendEntry);
@@ -671,7 +671,7 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
    gdr_length  = pBridge->GetGirderLength(span,girder);
    span_length = pBridge->GetSpanLength(span,girder);
    CString strMsg1;
-   strMsg1.Format("Girder: %s\r\nGirder Length: %s\r\nSpan Length: %s",
+   strMsg1.Format(_T("Girder: %s\r\nGirder Length: %s\r\nSpan Length: %s"),
                   pBridgeDesc->GetSpan(span)->GetGirderTypes()->GetGirderName(girder),
                   FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
                   FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit())
@@ -683,7 +683,7 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
    fci = pBridgeMaterial->GetFciGdr(span,girder);
 
    CString strMsg2;
-   strMsg2.Format("\r\n\r\nf'ci: %s\r\nf'c: %s",
+   strMsg2.Format(_T("\r\n\r\nf'ci: %s\r\nf'c: %s"),
                   FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                   FormatDimension(fc, pDisplayUnits->GetStressUnit())
                   );
@@ -703,12 +703,12 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
    {
       if ( Nsd == 0 )
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
                          pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
       }
       else
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
                          pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
       }
    }
@@ -716,12 +716,12 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
    {
       if ( Nsd == 0 )
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d",
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d"),
                          pStrand->GetName().c_str(),Ns,Nh);
       }
       else
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d",
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d"),
                          pStrand->GetName().c_str(),Ns,Nsd,Nh);
       }
    }
@@ -1267,17 +1267,17 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, 
          CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
          CString strLocation  = FormatDimension(location_from_left_end,pDisplayUnits->GetSpanLengthUnit(),true);
 
-         std::ostringstream os;
-         os << "Point Load\r\n";
-         os << "P = " << strMagnitude;
-         os << "   ";
-         os << "L = " << strLocation << " from left end of girder";
-         os << "\r\n";
-         os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << " Load Case";
+         std::_tostringstream os;
+         os << _T("Point Load\r\n");
+         os << _T("P = ") << strMagnitude;
+         os << _T("   ");
+         os << _T("L = ") << strLocation << _T(" from left end of girder");
+         os << _T("\r\n");
+         os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << _T(" Load Case");
 
-         if ( load.m_Description != "" )
+         if ( load.m_Description != _T("") )
          {
-            os << "\r\n";
+            os << _T("\r\n");
             os << load.m_Description;
          }
 
@@ -1397,21 +1397,21 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
          CString strStartLocation  = FormatDimension(wstart_loc-start_lgth,pDisplayUnits->GetSpanLengthUnit(),true);
          CString strEndLocation    = FormatDimension(wend_loc-start_lgth,pDisplayUnits->GetSpanLengthUnit(),true);
 
-         std::ostringstream os;
-         os << "Distributed Load\r\n";
-         os << "Wstart = " << strStartMagnitude;
-         os << "   ";
-         os << "Wend = " << strEndMagnitude;
-         os << "\r\n";
-         os << "Lstart = " << strStartLocation;
-         os << "   ";
-         os << "Lend = " << strEndLocation << " from left end of girder";
-         os << "\r\n";
-         os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << " Load Case";
+         std::_tostringstream os;
+         os << _T("Distributed Load\r\n");
+         os << _T("Wstart = ") << strStartMagnitude;
+         os << _T("   ");
+         os << _T("Wend = ") << strEndMagnitude;
+         os << _T("\r\n");
+         os << _T("Lstart = ") << strStartLocation;
+         os << _T("   ");
+         os << _T("Lend = ") << strEndLocation << _T(" from left end of girder");
+         os << _T("\r\n");
+         os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << _T(" Load Case");
 
-         if ( load.m_Description != "" )
+         if ( load.m_Description != _T("") )
          {
-            os << "\r\n";
+            os << _T("\r\n");
             os << load.m_Description;
          }
 
@@ -1507,17 +1507,17 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc,
          CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
          CString strLocation  = FormatDimension(location,pDisplayUnits->GetSpanLengthUnit(),true);
 
-         std::ostringstream os;
-         os << "Moment Load\r\n";
-         os << "M = " << strMagnitude;
-         os << "   ";
-         os << "L = " << strLocation << " from left end of girder";
-         os << "\r\n";
-         os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << " Load Case";
+         std::_tostringstream os;
+         os << _T("Moment Load\r\n");
+         os << _T("M = ") << strMagnitude;
+         os << _T("   ");
+         os << _T("L = ") << strLocation << _T(" from left end of girder");
+         os << _T("\r\n");
+         os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << _T(" Load Case");
 
-         if ( load.m_Description != "" )
+         if ( load.m_Description != _T("") )
          {
-            os << "\r\n";
+            os << _T("\r\n");
             os << load.m_Description;
          }
 
@@ -1686,7 +1686,7 @@ void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSuperDoc* pDoc,
    disp_obj->GetEventSink(&sink);
 
    CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
-   point_disp->SetToolTipText("Click on me and drag to move section cut");
+   point_disp->SetToolTipText(_T("Click on me and drag to move section cut"));
 
    CComQIPtr<iSectionCutDrawStrategy,&IID_iSectionCutDrawStrategy> sc_strat(sink);
    sc_strat->Init(point_disp, pBroker, span, girder, m_pFrame);
@@ -2049,7 +2049,7 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
       AfxFormatString1(msg,IDS_E_UPDATE,m_ErrorMsg.c_str());
       CFont font;
       CFont* pOldFont = NULL;
-      if ( font.CreatePointFont(100,"Arial",pDC) )
+      if ( font.CreatePointFont(100,_T("Arial"),pDC) )
          pOldFont = pDC->SelectObject(&font);
 
       MultiLineTextOut(pDC,0,0,msg);
@@ -2079,10 +2079,10 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
    }
    else
    {
-      CString msg("Select a girder to display");
+      CString msg(_T("Select a girder to display"));
       CFont font;
       CFont* pOldFont = NULL;
-      if ( font.CreatePointFont(100,"Arial",pDC) )
+      if ( font.CreatePointFont(100,_T("Arial"),pDC) )
          pOldFont = pDC->SelectObject(&font);
 
       MultiLineTextOut(pDC,0,0,msg);

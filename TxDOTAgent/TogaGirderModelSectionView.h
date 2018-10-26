@@ -95,7 +95,7 @@ private:
    void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
 
    bool m_bUpdateError;
-   std::string m_ErrorMsg;
+   std::_tstring m_ErrorMsg;
 };
 
 /////////////////////////////////////////////////////////////////////////////

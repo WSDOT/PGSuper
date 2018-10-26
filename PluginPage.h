@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 #define PROJECT_IMPORTER_PAGE 0
 #define DATA_IMPORTER_PAGE 1

@@ -52,13 +52,13 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CDoubleTeeFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back("D1");
-   m_DimNames.push_back("D2");
-   m_DimNames.push_back("T1");
-   m_DimNames.push_back("T2");
-   m_DimNames.push_back("W1");
-   m_DimNames.push_back("Wmax");
-   m_DimNames.push_back("Wmin");
+   m_DimNames.push_back(_T("D1"));
+   m_DimNames.push_back(_T("D2"));
+   m_DimNames.push_back(_T("T1"));
+   m_DimNames.push_back(_T("T2"));
+   m_DimNames.push_back(_T("W1"));
+   m_DimNames.push_back(_T("Wmax"));
+   m_DimNames.push_back(_T("Wmin"));
 
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
@@ -350,7 +350,7 @@ void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::vector<std::string> CDoubleTeeFactory::GetDimensionNames()
+std::vector<std::_tstring> CDoubleTeeFactory::GetDimensionNames()
 {
    return m_DimNames;
 }
@@ -365,7 +365,7 @@ std::vector<const unitLength*> CDoubleTeeFactory::GetDimensionUnits(bool bSIUnit
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::string* strErrMsg)
+bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
    double d1,d2;
    double w,wmin,wmax;
@@ -376,16 +376,16 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    if ( d1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
-      std::ostringstream os;
-      os << "D1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -393,8 +393,8 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    if ( w <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][4];
-      std::ostringstream os;
-      os << "W must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("W must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -403,8 +403,8 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    if ( t1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
-      std::ostringstream os;
-      os << "T1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("T1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -412,8 +412,8 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    if ( t2 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
-      std::ostringstream os;
-      os << "T2 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("T2 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -425,11 +425,11 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
 
 void CDoubleTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
-   std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("DoubleTeeDimensions",1.0);
+   std::vector<std::_tstring>::iterator iter;
+   pSave->BeginUnit(_T("DoubleTeeDimensions"),1.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
@@ -442,13 +442,13 @@ IBeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(sysIStructured
 
    Float64 parent_version = pLoad->GetVersion();
 
-   if ( 14 <= parent_version && !pLoad->BeginUnit("DoubleTeeDimensions") )
+   if ( 14 <= parent_version && !pLoad->BeginUnit(_T("DoubleTeeDimensions")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value;
       pLoad->Property(name.c_str(),&value);
       dimensions.push_back( std::make_pair(name,value) );
@@ -491,23 +491,23 @@ Float64 CDoubleTeeFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx
    return surface_area;
 }
 
-std::string CDoubleTeeFactory::GetImage()
+std::_tstring CDoubleTeeFactory::GetImage()
 {
-   return std::string("DoubleTee.jpg");
+   return std::_tstring(_T("DoubleTee.jpg"));
 }
 
-std::string CDoubleTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "DoubleTee_Composite.gif";
+      strImage =  _T("DoubleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "DoubleTee_Noncomposite.gif";
+      strImage =  _T("DoubleTee_Noncomposite.gif");
       break;
 
    default:
@@ -518,18 +518,18 @@ std::string CDoubleTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckTyp
    return strImage;
 }
 
-std::string CDoubleTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "+Mn_DoubleTee_Composite.gif";
+      strImage =  _T("+Mn_DoubleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "+Mn_DoubleTee_Noncomposite.gif";
+      strImage =  _T("+Mn_DoubleTee_Noncomposite.gif");
       break;
 
    default:
@@ -540,18 +540,18 @@ std::string CDoubleTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes:
    return strImage;
 }
 
-std::string CDoubleTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "-Mn_DoubleTee_Composite.gif";
+      strImage =  _T("-Mn_DoubleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "-Mn_DoubleTee_Noncomposite.gif";
+      strImage =  _T("-Mn_DoubleTee_Noncomposite.gif");
       break;
 
    default:
@@ -562,18 +562,18 @@ std::string CDoubleTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes:
    return strImage;
 }
 
-std::string CDoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "Vn_DoubleTee_Composite.gif";
+      strImage =  _T("Vn_DoubleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "Vn_DoubleTee_Noncomposite.gif";
+      strImage =  _T("Vn_DoubleTee_Noncomposite.gif");
       break;
 
    default:
@@ -584,33 +584,33 @@ std::string CDoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::Suppor
    return strImage;
 }
 
-std::string CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "DoubleTee_Effective_Flange_Width_Interior_Girder_2008.gif";
+      return _T("DoubleTee_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
    else
    {
-      return "DoubleTee_Effective_Flange_Width_Interior_Girder.gif";
+      return _T("DoubleTee_Effective_Flange_Width_Interior_Girder.gif");
    }
 }
 
-std::string CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "DoubleTee_Effective_Flange_Width_Exterior_Girder_2008.gif";
+      return _T("DoubleTee_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
    else
    {
-      return "DoubleTee_Effective_Flange_Width_Exterior_Girder.gif";
+      return _T("DoubleTee_Effective_Flange_Width_Exterior_Girder.gif");
    }
 }
 
@@ -624,17 +624,17 @@ CLSID CDoubleTeeFactory::GetFamilyCLSID()
    return CLSID_DoubleTeeBeamFamily;
 }
 
-std::string CDoubleTeeFactory::GetGirderFamilyName()
+std::_tstring CDoubleTeeFactory::GetGirderFamilyName()
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
    OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::string CDoubleTeeFactory::GetPublisher()
+std::_tstring CDoubleTeeFactory::GetPublisher()
 {
-   return std::string("WSDOT");
+   return std::_tstring(_T("WSDOT"));
 }
 
 HINSTANCE CDoubleTeeFactory::GetResourceInstance()
@@ -660,17 +660,17 @@ void CDoubleTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions
                                   double& t1,double& t2,
                                   long& nWebs)
 {
-   d1 = GetDimension(dimensions,"D1");
-   d2 = GetDimension(dimensions,"D2");
-   w  = GetDimension(dimensions,"W1");
-   wmin = GetDimension(dimensions,"Wmin");
-   wmax = GetDimension(dimensions,"Wmax");
-   t1 = GetDimension(dimensions,"T1");
-   t2 = GetDimension(dimensions,"T2");
+   d1 = GetDimension(dimensions,_T("D1"));
+   d2 = GetDimension(dimensions,_T("D2"));
+   w  = GetDimension(dimensions,_T("W1"));
+   wmin = GetDimension(dimensions,_T("Wmin"));
+   wmax = GetDimension(dimensions,_T("Wmax"));
+   t1 = GetDimension(dimensions,_T("T1"));
+   t2 = GetDimension(dimensions,_T("T2"));
    nWebs = 2;
 }
 
-double CDoubleTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name)
+double CDoubleTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -714,8 +714,8 @@ void CDoubleTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions&
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double gwn = GetDimension(dimensions,"Wmin");
-   double gwx = GetDimension(dimensions,"Wmax");
+   double gwn = GetDimension(dimensions,_T("Wmin"));
+   double gwx = GetDimension(dimensions,_T("Wmax"));
 
    if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
    {
@@ -742,15 +742,15 @@ long CDoubleTeeFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensio
 
 Float64 CDoubleTeeFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double D1 = GetDimension(dimensions,"D1");
-   double D2 = GetDimension(dimensions,"D2");
+   double D1 = GetDimension(dimensions,_T("D1"));
+   double D2 = GetDimension(dimensions,_T("D2"));
 
    return D1 + D2;
 }
 
 Float64 CDoubleTeeFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   return GetDimension(dimensions,"Wmax");
+   return GetDimension(dimensions,_T("Wmax"));
 }
 
 bool CDoubleTeeFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)

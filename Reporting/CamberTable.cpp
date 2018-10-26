@@ -111,7 +111,7 @@ bool CCamberTable::AssertValid() const
 
 void CCamberTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CCamberTable" << endl;
+   os << _T("Dump for CCamberTable") << endl;
 }
 #endif // _DEBUG
 
@@ -164,9 +164,9 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
-   table3 = pgsReportStyleHolder::CreateDefaultTable(8,"Camber - Part 3 (upwards is positive)");
+   table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
    {
@@ -183,48 +183,48 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    // Setup table headings
    int col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsi"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsr"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsi")),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsr")),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bShearKey )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("deck")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User1")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("sidewalk")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"4") << " - " << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("5")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("4")) << _T(" - ") << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -374,9 +374,9 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(5,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(6 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0)+ (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
-   table3 = pgsReportStyleHolder::CreateDefaultTable(6,"Camber - Part 3 (upwards is positive)");
+   table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(6 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0)+ (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
    {
@@ -393,44 +393,44 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    // Setup table headings
    int col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bShearKey )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("deck")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User1")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("sidewalk")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
    {
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    }
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
-   std::ostringstream os;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"2") << " - " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   std::_tostringstream os;
+   (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("2")) << _T(" - ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -568,9 +568,9 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
-   table3 = pgsReportStyleHolder::CreateDefaultTable(8,"Camber - Part 3 (upwards is positive)");
+   table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
    {
@@ -587,49 +587,49 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    // Setup table headings
    int col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsi"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsr"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsi")),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsr")),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bShearKey )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"panels"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("panels")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("deck")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User1")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("sidewalk")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"4") << " - " << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("5")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("4")) << _T(" - ") << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -780,9 +780,9 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(5,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
-   table3 = pgsReportStyleHolder::CreateDefaultTable(6,"Camber - Part 3 (upwards is positive)");
+   table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
    {
@@ -799,44 +799,44 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    // Setup table headings
    int col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bShearKey )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"panel"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("panel")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("deck")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User1")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("sidewalk")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"2") << " - " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("2")) << _T(" - ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -975,9 +975,9 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
-   table3 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 3 (upwards is positive)");
+   table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table3 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
    {
@@ -994,48 +994,48 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    // Setup table headings
    int col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsi"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsr"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsi")),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("tpsr")),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bShearKey )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("deck")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User1")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if (bSidewalk)
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("sidewalk")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("5")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -1183,9 +1183,9 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    rptRcTable* table2;
    rptRcTable* table3;
 
-   table1 = pgsReportStyleHolder::CreateDefaultTable(5,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
-   table3 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 3 (upwards is positive)");
+   table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table3 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( span == ALL_SPANS )
    {
@@ -1202,45 +1202,45 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    // Setup table headings
    int col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bShearKey )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User1")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("sidewalk")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
    (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
-   std::ostringstream os;
+   std::_tostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("5")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 

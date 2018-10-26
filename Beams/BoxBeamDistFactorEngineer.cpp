@@ -93,7 +93,7 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    rptParagraph* pPara;
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),            true );
@@ -114,11 +114,11 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pPara) << "Method of Computation:"<<rptNewLine;
+   (*pPara) << _T("Method of Computation:")<<rptNewLine;
    (*pChapter) << pPara;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
-   std::string strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
+   std::_tstring strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
    (*pPara) << GetComputationDescription(span,gdr, 
                                          strGirderName, 
                                          pDeck->DeckType,
@@ -126,48 +126,48 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor Parameters" << rptNewLine;
+   (*pPara) << _T("Distribution Factor Parameters") << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   (*pPara) << "Girder Spacing: " << Sub2("S","avg") << " = " << xdim.SetValue(span_lldf.Savg) << rptNewLine;
+   (*pPara) << _T("Girder Spacing: ") << Sub2(_T("S"),_T("avg")) << _T(" = ") << xdim.SetValue(span_lldf.Savg) << rptNewLine;
    Float64 station,offset;
    pBridge->GetStationAndOffset(pgsPointOfInterest(span,gdr,span_lldf.ControllingLocation),&station, &offset);
    Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetGirderStartConnectionLength(span,gdr);
-   (*pPara) << "Measurement of Girder Spacing taken at " << location.SetValue(supp_dist)<< " from left support, measured along girder, or station = "<< rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << rptNewLine;
-   (*pPara) << "Deck Width: W = " << xdim.SetValue(span_lldf.W) << rptNewLine;
-   (*pPara) << "Moment of Inertia: I = " << inertia.SetValue(span_lldf.I) << rptNewLine;
-   (*pPara) << "Lane Width: wLane = " << xdim.SetValue(span_lldf.wLane) << rptNewLine;
-   (*pPara) << "Beam Width: b = " << xdim2.SetValue(span_lldf.b) << rptNewLine;
-   (*pPara) << "Beam Depth: d = " << xdim2.SetValue(span_lldf.d) << rptNewLine;
+   (*pPara) << _T("Measurement of Girder Spacing taken at ") << location.SetValue(supp_dist)<< _T(" from left support, measured along girder, or station = ")<< rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << rptNewLine;
+   (*pPara) << _T("Deck Width: W = ") << xdim.SetValue(span_lldf.W) << rptNewLine;
+   (*pPara) << _T("Moment of Inertia: I = ") << inertia.SetValue(span_lldf.I) << rptNewLine;
+   (*pPara) << _T("Lane Width: wLane = ") << xdim.SetValue(span_lldf.wLane) << rptNewLine;
+   (*pPara) << _T("Beam Width: b = ") << xdim2.SetValue(span_lldf.b) << rptNewLine;
+   (*pPara) << _T("Beam Depth: d = ") << xdim2.SetValue(span_lldf.d) << rptNewLine;
    Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftDe:span_lldf.rightDe;
-   (*pPara) << "Distance from exterior web of exterior beam to curb line: d" << Sub("e") << " = " << xdim.SetValue(de) << rptNewLine;
-   (*pPara) << "Possion Ratio: " << symbol(mu) << " = " << span_lldf.PossionRatio << rptNewLine;
-   (*pPara) << "Skew Angle at start: " << symbol(theta) << " = " << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
-   (*pPara) << "Skew Angle at end: " << symbol(theta) << " = " << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
-   (*pPara) << "Number of Design Lanes: N" << Sub("L") << " = " << span_lldf.Nl << rptNewLine;
-   (*pPara) << "Number of Girders: N" << Sub("b") << " = " << span_lldf.Nb << rptNewLine;
+   (*pPara) << _T("Distance from exterior web of exterior beam to curb line: d") << Sub(_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
+   (*pPara) << _T("Possion Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PossionRatio << rptNewLine;
+   (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
+   (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
+   (*pPara) << _T("Number of Design Lanes: N") << Sub(_T("L")) << _T(" = ") << span_lldf.Nl << rptNewLine;
+   (*pPara) << _T("Number of Girders: N") << Sub(_T("b")) << _T(" = ") << span_lldf.Nb << rptNewLine;
 
    if (pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::LeverRule)
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      (*pPara) << "St. Venant torsional inertia constant";
+      (*pPara) << _T("St. Venant torsional inertia constant");
       (*pChapter) << pPara;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      (*pPara) << "St. Venant torsional inertia constant: J = " << inertia.SetValue(span_lldf.J) << rptNewLine;
+      (*pPara) << _T("St. Venant torsional inertia constant: J = ") << inertia.SetValue(span_lldf.J) << rptNewLine;
 
-      (*pPara) << rptRcImage(strImagePath + "J_closed_thin_wall.png") << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + "BoxBeam_TorsionalConstant.gif") << rptNewLine;
-      (*pPara) << "Area enclosed by centerlines of elements: " << Sub2("A","o") << " = " << area.SetValue(span_lldf.Jvoid.Ao) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + _T("J_closed_thin_wall.png")) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + _T("BoxBeam_TorsionalConstant.gif")) << rptNewLine;
+      (*pPara) << _T("Area enclosed by centerlines of elements: ") << Sub2(_T("A"),_T("o")) << _T(" = ") << area.SetValue(span_lldf.Jvoid.Ao) << rptNewLine;
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"");
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
       (*pPara) << p_table;
 
-      (*p_table)(0,0) << "Element";
-      (*p_table)(0,1) << "s";
-      (*p_table)(0,2) << "t";
+      (*p_table)(0,0) << _T("Element");
+      (*p_table)(0,1) << _T("s");
+      (*p_table)(0,2) << _T("t");
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
       std::vector<BOXBEAM_J_VOID::Element>::iterator iter;
@@ -180,8 +180,8 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
 
          row++;
       }
-      (*pPara) << symbol(SUM) << "s/t = " << span_lldf.Jvoid.S_over_T << rptNewLine;
-      (*pPara) << "Torsional Constant: J = " << inertia.SetValue(span_lldf.J) << rptNewLine;
+      (*pPara) << symbol(SUM) << _T("s/t = ") << span_lldf.Jvoid.S_over_T << rptNewLine;
+      (*pPara) << _T("Torsional Constant: J = ") << inertia.SetValue(span_lldf.J) << rptNewLine;
    }
 
 
@@ -189,7 +189,7 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      (*pPara) << "Strength and Service Limit States";
+      (*pPara) << _T("Strength and Service Limit States");
       (*pChapter) << pPara;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
@@ -204,12 +204,12 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << "Distribution Factor for Negative Moment over Pier " << long(pier1+1) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier1+1) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((pier1_lldf.skew1 + pier1_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << "Span Length: L = " << xdim.SetValue(pier1_lldf.L) << rptNewLine << rptNewLine;
+      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((pier1_lldf.skew1 + pier1_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(pier1_lldf.L) << rptNewLine << rptNewLine;
 
       // Negative moment DF from pier1_lldf
       ReportMoment(pPara,
@@ -224,14 +224,14 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
    if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
-      (*pPara) << "Distribution Factor for Positive and Negative Moment in Span " << LABEL_SPAN(span) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
    else
-      (*pPara) << "Distribution Factor for Positive Moment in Span " << LABEL_SPAN(span) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << "Span Length: L = " << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
+   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
+   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
 
    ReportMoment(pPara,
                 span_lldf,
@@ -244,12 +244,12 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << "Distribution Factor for Negative Moment over Pier " << long(pier2+1) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier2+1) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((pier2_lldf.skew1 + pier2_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << "Span Length: L = " << xdim.SetValue(pier2_lldf.L) << rptNewLine << rptNewLine;
+      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((pier2_lldf.skew1 + pier2_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(pier2_lldf.L) << rptNewLine << rptNewLine;
 
       // Negative moment DF from pier2_lldf
       ReportMoment(pPara,
@@ -266,12 +266,12 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    //////////////////////////////////////////////////////////////
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor for Shear in Span " << LABEL_SPAN(span) << rptNewLine;
+   (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(span) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
       
-   (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << "Span Length: L = " << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
+   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
+   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
 
    ReportShear(pPara,
                span_lldf,
@@ -285,12 +285,12 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    //////////////////////////////////////////////////////////////
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor for Reaction at Pier " << long(pier1+1) << rptNewLine;
+   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier1+1) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((reaction1_lldf.skew1 + reaction1_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << "Span Length: L = " << xdim.SetValue(reaction1_lldf.L) << rptNewLine << rptNewLine;
+   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction1_lldf.skew1 + reaction1_lldf.skew2)/2)) << rptNewLine;
+   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction1_lldf.L) << rptNewLine << rptNewLine;
 
    ReportShear(pPara,
                reaction1_lldf,
@@ -303,12 +303,12 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor for Reaction at Pier " << long(pier2+1) << rptNewLine;
+   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier2+1) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((reaction2_lldf.skew1 + reaction2_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << "Span Length: L = " << xdim.SetValue(reaction2_lldf.L) << rptNewLine << rptNewLine;
+   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction2_lldf.skew1 + reaction2_lldf.skew2)/2)) << rptNewLine;
+   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction2_lldf.L) << rptNewLine << rptNewLine;
 
    ReportShear(pPara,
                reaction2_lldf,
@@ -322,12 +322,12 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    ////////////////////////////////////////////////////////////////////////////
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pPara) << "Fatigue Limit States";
+   (*pPara) << _T("Fatigue Limit States");
    (*pChapter) << pPara;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   std::string superscript;
+   std::_tstring superscript;
 
    rptRcScalar scalar2 = scalar;
 
@@ -338,37 +338,37 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << "Distribution Factor for Negative Moment over Pier " << LABEL_PIER(pier1) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier1) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      superscript = (pier1_lldf.bExteriorGirder ? "ME" : "MI");
-      (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(pier1_lldf.gM1.mg) << "/1.2 = " << scalar2.SetValue(pier1_lldf.gM1.mg/1.2);
+      superscript = (pier1_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier1_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(pier1_lldf.gM1.mg/1.2);
    }
 
    // Positive moment DF
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
    if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
-      (*pPara) << "Distribution Factor for Positive and Negative Moment in Span " << LABEL_SPAN(span) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
    else
-      (*pPara) << "Distribution Factor for Positive Moment in Span " << LABEL_SPAN(span) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   superscript = (span_lldf.bExteriorGirder ? "ME" : "MI");
-   (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(span_lldf.gM1.mg) << "/1.2 = " << scalar2.SetValue(span_lldf.gM1.mg/1.2);
+   superscript = (span_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+   (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gM1.mg/1.2);
 
    if ( bContinuousAtEnd || bIntegralAtEnd )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << "Distribution Factor for Negative Moment over Pier " << LABEL_PIER(pier2) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier2) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      superscript = (pier2_lldf.bExteriorGirder ? "ME" : "MI");
-      (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(pier2_lldf.gM1.mg) << "/1.2 = " << scalar2.SetValue(pier2_lldf.gM1.mg/1.2);
+      superscript = (pier2_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier2_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(pier2_lldf.gM1.mg/1.2);
    }
 
    //////////////////////////////////////////////////////////////
@@ -376,41 +376,41 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    //////////////////////////////////////////////////////////////
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor for Shear in Span " << LABEL_SPAN(span) << rptNewLine;
+   (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(span) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   superscript = (span_lldf.bExteriorGirder ? "VE" : "VI");
-   (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(span_lldf.gV1.mg) << "/1.2 = " << scalar2.SetValue(span_lldf.gV1.mg/1.2);
+   superscript = (span_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+   (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gV1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gV1.mg/1.2);
 
    //////////////////////////////////////////////////////////////
    // Reactions
    //////////////////////////////////////////////////////////////
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor for Reaction at Pier " << LABEL_PIER(pier1) << rptNewLine;
+   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier1) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   superscript = (reaction1_lldf.bExteriorGirder ? "VE" : "VI");
-   (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(reaction1_lldf.gR1.mg) << "/1.2 = " << scalar2.SetValue(reaction1_lldf.gR1.mg/1.2);
+   superscript = (reaction1_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+   (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction1_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction1_lldf.gR1.mg/1.2);
 
      ///////
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor for Reaction at Pier " << LABEL_PIER(pier2) << rptNewLine;
+   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier2) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   superscript = (reaction2_lldf.bExteriorGirder ? "VE" : "VI");
-   (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(reaction2_lldf.gR1.mg) << "/1.2 = " << scalar2.SetValue(reaction2_lldf.gR1.mg/1.2);
+   superscript = (reaction2_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+   (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction2_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction2_lldf.gR1.mg/1.2);
 }
 
 void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE(IBridge,pBridge);
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
 
@@ -429,44 +429,44 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       // Distribution factor for exterior girder
       if( gM1.EqnData.bWasUsed )
       {
-         (*pPara) << Bold("1 Loaded Lane - Equation") << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_ME_Type_G_SI.png" : "mg_1_ME_Type_G_US.png")) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane - Equation")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_ME_Type_G_SI.png") : _T("mg_1_ME_Type_G_US.png"))) << rptNewLine;
  
          if ( lldf.connectedAsUnit )
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.png" : "mg_1_MI_Type_F_US.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
          }
          else
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
             ATLASSERT(gM1.ControllingMethod&S_OVER_D_METHOD);
-            (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
-            (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
-            (*pPara)<< "D = "<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
+            (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
+            (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
+            (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
             (*pPara) << rptNewLine;
          }
 
-         (*pPara) << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
-         (*pPara) << "e = " << scalar.SetValue(gM1.EqnData.e) << rptNewLine;
-         (*pPara) << "mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg*gM1.EqnData.e) << rptNewLine;
+         (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
+         (*pPara) << _T("e = ") << scalar.SetValue(gM1.EqnData.e) << rptNewLine;
+         (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg*gM1.EqnData.e) << rptNewLine;
 
          if (gM1.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            (*pPara) << "For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls"<< rptNewLine;
-            (*pPara) << "mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg/gM1.SkewCorrectionFactor) << rptNewLine;
+            (*pPara) << _T("For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls")<< rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg/gM1.SkewCorrectionFactor) << rptNewLine;
          }
       }
 
       if (gM1.LeverRuleData.bWasUsed)
       {
-         (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
          ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
       if ( gM1.LanesBeamsData.bWasUsed )
       {
-         (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-         (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+         (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
          ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
       }
 
@@ -477,75 +477,75 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 
          if( gM2.EqnData.bWasUsed )
          {
-            (*pPara) << Bold("2+ Loaded Lane: Equation") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_G_SI.png" : "mg_2_ME_Type_G_US.png")) << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lane: Equation")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_G_SI.png") : _T("mg_2_ME_Type_G_US.png"))) << rptNewLine;
 
             if ( lldf.connectedAsUnit )
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.png" : "mg_2_MI_Type_F_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.png" : "mg_2_MI_Type_G_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_G_SI.png") : _T("mg_2_MI_Type_G_US.png"))) << rptNewLine;
                ATLASSERT(gM2.ControllingMethod&S_OVER_D_METHOD);
-               (*pPara)<< "K = "<< gM2.EqnData.K << rptNewLine;
-               (*pPara)<< "C = "<< gM2.EqnData.C << rptNewLine;
-               (*pPara)<< "D = "<< xdim.SetValue(gM2.EqnData.D) << rptNewLine;
+               (*pPara)<< _T("K = ")<< gM2.EqnData.K << rptNewLine;
+               (*pPara)<< _T("C = ")<< gM2.EqnData.C << rptNewLine;
+               (*pPara)<< _T("D = ")<< xdim.SetValue(gM2.EqnData.D) << rptNewLine;
                (*pPara) << rptNewLine;
             }
 
-            (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
-            (*pPara) << "e = " << scalar.SetValue(gM2.EqnData.e) << rptNewLine;
-            (*pPara) << "mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg*gM2.EqnData.e) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
+            (*pPara) << _T("e = ") << scalar.SetValue(gM2.EqnData.e) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg*gM2.EqnData.e) << rptNewLine;
 
             if (gM2.ControllingMethod & INTERIOR_OVERRIDE)
             {
-               (*pPara) << "For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls"<< rptNewLine;
-               (*pPara) << "mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.mg/gM2.SkewCorrectionFactor) << rptNewLine;
+               (*pPara) << _T("For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls")<< rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg/gM2.SkewCorrectionFactor) << rptNewLine;
             }
          }
 
          if (gM2.LeverRuleData.bWasUsed)
          {
-            (*pPara) << Bold("2+ Loaded Lanes: Lever Rule") << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
             ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gM2.RigidData.bWasUsed )
          {
-            (*pPara) << Bold("2+ Loaded Lanes: Rigid Method") << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Rigid Method")) << rptNewLine;
             ReportRigidMethod(pPara,gM2.RigidData,m_pBroker,pDisplayUnits);
          }
 
          if ( gM2.LanesBeamsData.bWasUsed )
          {
-            (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-            (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
             ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
       }
 
       (*pPara) << rptNewLine;
 
-      (*pPara) << Bold("Skew Correction") << rptNewLine;
+      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
       if (lldf.Method==LLDF_TXDOT)
       {
-         (*pPara) << "For TxDOT specification, we ignore skew correction, so:" << rptNewLine;
+         (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
       }
       else
       {
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + "SkewCorrection_Moment_TypeC.png") << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
       }
-      (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
+      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
-      (*pPara) << "Skew Corrected Factor: mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg);
-      (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+      (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       if ( lldf.Nl >= 2 )
       {
-         (*pPara) << "Skew Corrected Factor: mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.mg);
-         (gM2.mg > gM1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+         (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       }
    }
    else
@@ -553,35 +553,35 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       // Interior Girder
       if ( gM1.EqnData.bWasUsed )
       {
-         (*pPara) << Bold("1 Loaded Lane: Equations") << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Equations")) << rptNewLine;
          if ( lldf.connectedAsUnit )
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_F_SI.png" : "mg_1_MI_Type_F_US.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
          }
          else
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_G_SI.png" : "mg_1_MI_Type_G_US.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
             ATLASSERT(gM1.ControllingMethod&S_OVER_D_METHOD);
-            (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
-            (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
-            (*pPara)<< "D = "<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
+            (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
+            (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
+            (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
             (*pPara) << rptNewLine;
          }
 
-         (*pPara) << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
+         (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
 
       }
 
       if (gM1.LeverRuleData.bWasUsed)
       {
-         (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
          ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
       if ( gM1.LanesBeamsData.bWasUsed )
       {
-         (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-         (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+         (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
          ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
       }
 
@@ -591,59 +591,59 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 
          if ( gM2.EqnData.bWasUsed )
          {
-            (*pPara) << Bold("2+ Loaded Lanes: Equation") << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Equation")) << rptNewLine;
             if ( lldf.connectedAsUnit )
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_F_SI.png" : "mg_2_MI_Type_F_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_G_SI.png" : "mg_2_MI_Type_G_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_G_SI.png") : _T("mg_2_MI_Type_G_US.png"))) << rptNewLine;
                ATLASSERT(gM2.ControllingMethod&S_OVER_D_METHOD);
-               (*pPara)<< "K = "<< gM2.EqnData.K << rptNewLine;
-               (*pPara)<< "C = "<< gM2.EqnData.C << rptNewLine;
-               (*pPara)<< "D = "<< xdim.SetValue(gM2.EqnData.D) << rptNewLine;
+               (*pPara)<< _T("K = ")<< gM2.EqnData.K << rptNewLine;
+               (*pPara)<< _T("C = ")<< gM2.EqnData.C << rptNewLine;
+               (*pPara)<< _T("D = ")<< xdim.SetValue(gM2.EqnData.D) << rptNewLine;
                (*pPara) << rptNewLine;
             }
 
-            (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
          }
 
          if (gM2.LeverRuleData.bWasUsed)
          {
-            (*pPara) << Bold("2+ Loaded Lanes: Lever Rule") << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
             ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gM2.LanesBeamsData.bWasUsed )
          {
-            (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-            (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
             ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
       }
 
       (*pPara) << rptNewLine;
 
-      (*pPara) << Bold("Skew Correction") << rptNewLine;
+      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
       if (lldf.Method==LLDF_TXDOT)
       {
-         (*pPara) << "For TxDOT specification, we ignore skew correction, so:" << rptNewLine;
+         (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
       }
       else
       {
          Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
          if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + "SkewCorrection_Moment_TypeC.png") << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
       }
-      (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
+      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
-      (*pPara) << "Skew Corrected Factor: mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.mg);
-      (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+      (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       if ( lldf.Nl >= 2 )
       {
-         (*pPara) << "Skew Corrected Factor: mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.mg);
-         (gM2.mg > gM1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+         (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       }
    }
 }
@@ -651,7 +651,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE(IBridge,pBridge);
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -670,37 +670,37 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
       //
       if ( gV1.LeverRuleData.bWasUsed )
       {
-         (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
          ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
       if ( gV1.EqnData.bWasUsed  )
       {
-         (*pPara) << Bold("1 Loaded Lane: Equation") << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
          if (!(gV1.ControllingMethod & MOMENT_OVERRIDE))
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VE_Type_G_SI.png" : "mg_1_VE_Type_G_US.png")) << rptNewLine;
-            (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
-            (*pPara) << "e = " << scalar.SetValue(gV1.EqnData.e) << rptNewLine;
-            (*pPara) << "mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VE_Type_G_SI.png") : _T("mg_1_VE_Type_G_US.png"))) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
+            (*pPara) << _T("e = ") << scalar.SetValue(gV1.EqnData.e) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
          }
          else
          {
-            (*pPara) << " I or J was outside of range of applicability - Use moment equation results for shear"<<rptNewLine;
-            (*pPara) << "mg" << Super("VE") << Sub("1") << " = mg" << Super("ME") << Sub("1") <<" = " << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
+            (*pPara) << _T(" I or J was outside of range of applicability - Use moment equation results for shear")<<rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = mg") << Super(_T("ME")) << Sub(_T("1")) <<_T(" = ") << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
          }
       }
 
       if (gV1.ControllingMethod & INTERIOR_OVERRIDE)
       {
-         (*pPara)<< rptNewLine << "For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls"<< rptNewLine;
-         (*pPara) << "mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.mg/gV1.SkewCorrectionFactor) << rptNewLine;
+         (*pPara)<< rptNewLine << _T("For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls")<< rptNewLine;
+         (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg/gV1.SkewCorrectionFactor) << rptNewLine;
       }
 
       if ( gV1.LanesBeamsData.bWasUsed )
       {
-         (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-         (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+         (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
          ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
       }
 
@@ -710,64 +710,64 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
          if ( gV1.LeverRuleData.bWasUsed )
          {
-            (*pPara) << Bold("2+ Loaded Lanes: Lever Rule") << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
             ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gV2.EqnData.bWasUsed )
          {
-            (*pPara) << Bold("2+ Loaded Lanes: Equation") << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Equation")) << rptNewLine;
 
             if (!(gV2.ControllingMethod & MOMENT_OVERRIDE))
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VE_Type_G_SI.png" : "mg_2_VE_Type_G_US.png")) << rptNewLine;
-               (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VE_Type_G_SI.png") : _T("mg_2_VE_Type_G_US.png"))) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
 
                // have to play games here with oddball 48/b value
                ATLASSERT(gV2.EqnData.K>0.0 && gV2.EqnData.K<=1.0);
                if (bSIUnits)
-                  (*pPara) << "1200/b = " << scalar.SetValue(gV2.EqnData.K) << rptNewLine;
+                  (*pPara) << _T("1200/b = ") << scalar.SetValue(gV2.EqnData.K) << rptNewLine;
                else
-                  (*pPara) << "48/b = " << scalar.SetValue(gV2.EqnData.K) << rptNewLine;
+                  (*pPara) << _T("48/b = ") << scalar.SetValue(gV2.EqnData.K) << rptNewLine;
 
-               (*pPara) << "e = " << scalar.SetValue(gV2.EqnData.e/gV2.EqnData.K) << rptNewLine;
+               (*pPara) << _T("e = ") << scalar.SetValue(gV2.EqnData.e/gV2.EqnData.K) << rptNewLine;
 
-               (*pPara) << "mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
             }
             else
             {
-               (*pPara) << " I or J was outside of range of applicability - Use moment equation results for shear"<<rptNewLine;
-               (*pPara) << "mg" << Super("VE") << Sub("2+") << " = mg" << Super("ME") << Sub("2+") <<" = " << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
+               (*pPara) << _T(" I or J was outside of range of applicability - Use moment equation results for shear")<<rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = mg") << Super(_T("ME")) << Sub(_T("2+")) <<_T(" = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
             }
          }
 
          if (gV2.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            (*pPara) << rptNewLine << "For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls"<< rptNewLine;
-            (*pPara) << "mg" << Super("VE") << Sub("2") << " = " << scalar.SetValue(gV2.mg/gV2.SkewCorrectionFactor) << rptNewLine;
+            (*pPara) << rptNewLine << _T("For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls")<< rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg/gV2.SkewCorrectionFactor) << rptNewLine;
          }
 
          if ( gV2.LanesBeamsData.bWasUsed )
          {
-            (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-            (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
             ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
       }
 
       (*pPara) << rptNewLine;
 
-      (*pPara) << Bold("Skew Correction") << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.png" : "Skew_Correction_for_Shear_Type_F_US.png")) << rptNewLine;
+      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
 
-      (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
+      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
-      (*pPara) << "Skew Corrected Factor: mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.mg);
-      (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+      (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       if ( lldf.Nl >= 2 )
       {
-         (*pPara) << "Skew Corrected Factor: mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.mg);
-         (gV2.mg > gV1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+         (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       }
    }
    else
@@ -778,14 +778,14 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
       //
       if ( gV1.ControllingMethod &  MOMENT_OVERRIDE  )
       {
-         (*pPara) << "I or J do not comply with the limitations in LRFD Table 4.6.2.2.3a-1. The shear distribution factor is taken as that for moment. [LRFD 4.6.2.2.3a]" << rptNewLine;
-         (*pPara) << Bold("1 Loaded Lane:") << rptNewLine;
-         (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.mg/gV1.SkewCorrectionFactor) << rptNewLine;
+         (*pPara) << _T("I or J do not comply with the limitations in LRFD Table 4.6.2.2.3a-1. The shear distribution factor is taken as that for moment. [LRFD 4.6.2.2.3a]") << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane:")) << rptNewLine;
+         (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg/gV1.SkewCorrectionFactor) << rptNewLine;
 
          if ( 2 <= lldf.Nl )
          {
-            (*pPara) << Bold("2+ Loaded Lanes:") << rptNewLine;
-            (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.mg/gV2.SkewCorrectionFactor) << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes:")) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg/gV2.SkewCorrectionFactor) << rptNewLine;
          }
       }
       else
@@ -793,15 +793,15 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
          if ( gV1.LeverRuleData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
             ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gV1.EqnData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Equation") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_G_SI.png" : "mg_1_VI_Type_G_US.png")) << rptNewLine;
-            (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VI_Type_G_SI.png") : _T("mg_1_VI_Type_G_US.png"))) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
          }
 
          if ( 2 <= lldf.Nl )
@@ -810,22 +810,22 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
             if ( gV2.LeverRuleData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Lever Rule") << rptNewLine;
-               (*pPara) << Bold("Lever Rule") << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
+               (*pPara) << Bold(_T("Lever Rule")) << rptNewLine;
                ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
             }
 
             if ( gV2.EqnData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Equation") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_G_SI.png" : "mg_2_VI_Type_G_US.png")) << rptNewLine;
-               (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Equation")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_G_SI.png") : _T("mg_2_VI_Type_G_US.png"))) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
             }
 
             if ( gV2.LanesBeamsData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-               (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
                ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
             }
          }
@@ -833,17 +833,17 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
       (*pPara) << rptNewLine;
 
-      (*pPara) << Bold("Skew Correction") << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew_Correction_for_Shear_Type_F_SI.png" : "Skew_Correction_for_Shear_Type_F_US.png")) << rptNewLine;
+      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
 
-      (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
+      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
-      (*pPara) << "Skew Corrected Factor: mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.mg);
-      (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+      (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       if ( lldf.Nl >= 2 )
       {
-         (*pPara) << "Skew Corrected Factor: mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.mg);
-         (gV2.mg > gV1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+         (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       }
    }
 }
@@ -1115,7 +1115,7 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    return pLLDF;
 }
 
-std::string CBoxBeamDistFactorEngineer::GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::string& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
+std::_tstring CBoxBeamDistFactorEngineer::GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
@@ -1123,27 +1123,27 @@ std::string CBoxBeamDistFactorEngineer::GetComputationDescription(SpanIndexType 
 
    Int16 lldfMethod = pSpecEntry->GetLiveLoadDistributionMethod();
 
-   std::string descr;
+   std::_tstring descr;
 
    if ( lldfMethod == LLDF_TXDOT )
    {
-      descr = "TxDOT modifications. Treat as AASHTO Type (f,g) connected transversely sufficiently to act as a unit, regardless of deck or connectivity input. Also, do not apply skew correction factor for moment.";
+      descr = _T("TxDOT modifications. Treat as AASHTO Type (f,g) connected transversely sufficiently to act as a unit, regardless of deck or connectivity input. Also, do not apply skew correction factor for moment.");
    }
    else
    {
-      descr = "AASHTO LRFD Method per Article 4.6.2.2.";
+      descr = _T("AASHTO LRFD Method per Article 4.6.2.2.");
 
       if ( decktype == pgsTypes::sdtCompositeOverlay)
-         descr += std::string(" type (f) cross section");
+         descr += std::_tstring(_T(" type (f) cross section"));
       else if (decktype == pgsTypes::sdtNone)
-         descr += std::string(" type (g) cross section");
+         descr += std::_tstring(_T(" type (g) cross section"));
       else
          ATLASSERT(0);
 
       if (connect == pgsTypes::atcConnectedAsUnit)
-         descr += std::string(" connected transversely sufficiently to act as a unit.");
+         descr += std::_tstring(_T(" connected transversely sufficiently to act as a unit."));
       else
-         descr += std::string(" connected transversely only enough to prevent relative vertical displacement along interface.");
+         descr += std::_tstring(_T(" connected transversely only enough to prevent relative vertical displacement along interface."));
 
    }
 

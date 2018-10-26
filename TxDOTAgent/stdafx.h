@@ -30,7 +30,7 @@
 #define STRICT
 #endif
 
-#include "targetver.h"
+#include <PGSuperAll.h>
 
 #define _ATL_APARTMENT_THREADED
 #define _ATL_NO_AUTOMATIC_NAMESPACE
@@ -50,8 +50,6 @@
 
 #include <grid\gxall.h>
 
-#include <PGSuperAll.h>
-
 #include <WBFLCore.h>
 #include <WBFLTools.h>
 #include <IFace\Tools.h>
@@ -61,6 +59,8 @@
 #include <PgsExt\GirderLabel.h>
 #include <afxdlgs.h>
 #include <afxcmn.h>
+
+#include <stdio.h>
 
 
 static COLORREF TXDOT_BACK_COLOR = ::GetSysColor(COLOR_WINDOW);

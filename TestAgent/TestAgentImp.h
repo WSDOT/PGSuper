@@ -74,30 +74,30 @@ public:
 
 // ITest1250
    virtual bool RunTest(long  type,
-                        const std::string& outputFileName,
-                        const std::string poiFileName);
+                        const std::_tstring& outputFileName,
+                        const std::_tstring poiFileName);
 
    virtual bool RunTestEx(long  type,const std::vector<SpanGirderHashType>& girderList,
-                          const std::string& outputFileName,
-                          const std::string poiFileName);
+                          const std::_tstring& outputFileName,
+                          const std::_tstring poiFileName);
 
 private:
    DECLARE_AGENT_DATA;
 
-   std::string GetBridgeID();
-   std::string GetProcessID();
+   std::_tstring GetBridgeID();
+   std::_tstring GetProcessID();
 
-   bool RunDistFactorTest(std::ofstream& resultsFile, std::ofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunHL93Test(std::ofstream& resultsFile, std::ofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunCrossSectionTest(std::ofstream& resultsFile, std::ofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunDeadLoadActionTest(std::ofstream& resultsFile, std::ofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunCombinedLoadActionTest(std::ofstream& resultsFile, std::ofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunPrestressedISectionTest(std::ofstream& resultsFile, std::ofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunHandlingTest(std::ofstream& resultsFile, std::ofstream& poiFile, SpanIndexType span);
-   bool RunWsdotGirderScheduleTest(std::ofstream& resultsFile, std::ofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
-   bool RunDesignTest(std::ofstream& resultsFile, std::ofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
-   bool RunCamberTest(std::ofstream& resultsFile, std::ofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
-   bool RunFabOptimizationTest(std::ofstream& resultsFile,std::ofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
+   bool RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
+   bool RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
+   bool RunCrossSectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
+   bool RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
+   bool RunCombinedLoadActionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
+   bool RunPrestressedISectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
+   bool RunHandlingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span);
+   bool RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
+   bool RunDesignTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
+   bool RunCamberTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
+   bool RunFabOptimizationTest(std::_tofstream& resultsFile,std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
 };
 
 #endif //__TESTAGENT_H_

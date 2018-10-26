@@ -167,10 +167,10 @@ void CShearSteelPage::FillLastZone(int siz)
 {
    CString tmp;
    m_LastZone.ResetContent();
-   m_LastZone.AddString("none");
+   m_LastZone.AddString(_T("none"));
    for (int i=1; i<=siz; i++)
    {
-      tmp.Format("Zone %d",i);
+      tmp.Format(_T("Zone %d"),i);
       m_LastZone.AddString(tmp);
    }
 }

@@ -213,7 +213,7 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	}
 	else if (nCol==2)
 	{
-      const char *delims[] = {"-"," ", 0};
+      LPCTSTR delims[] = {_T("-"),_T(" "), 0};
       sysTokenizer tokizerd(delims);
       tokizerd.push_back(s);
 
@@ -302,7 +302,7 @@ void CLiveLoadAxleGrid::ResetGrid()
 		);
 
    CString cv;
-   cv.Format("Weight (%s)",pDisplayUnits->GeneralForce.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Weight (%s)"),pDisplayUnits->GeneralForce.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -311,7 +311,7 @@ void CLiveLoadAxleGrid::ResetGrid()
 			.SetValue(cv)
 		);
 
-   cv.Format("Spacing (%s)",pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Spacing (%s)"),pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -375,8 +375,8 @@ void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 
       ATLASSERT(max_spc>min_spc);
       
-      std::ostringstream os;
-      os<< min_spc<<"-"<<max_spc;
+      std::_tostringstream os;
+      os<< min_spc<<_T("-")<<max_spc;
 
       ROWCOL row = dlg->m_VariableAxleIndex + 1;
 
@@ -421,7 +421,7 @@ void CLiveLoadAxleGrid::DownloadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
          if (is_var_axl)
          {
             // can't have more than one variable axle
-            CString msg("Error - Only one variable axle may be specified"); 
+            CString msg(_T("Error - Only one variable axle may be specified")); 
             ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
             pDX->Fail();
          }
@@ -456,7 +456,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
    if (!sysTokenizer::ParseDouble(s, &d))
 	{
       CString msg; 
-      msg.Format("Error - Weight for axle %d must be a positive number", axlno);
+      msg.Format(_T("Error - Weight for axle %d must be a positive number"), axlno);
       ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
       pDX->Fail();
 	}
@@ -464,7 +464,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
    if (d<=0.0)
    {
       CString msg; 
-      msg.Format("Error - Weight for axle %d must be a positive number", axlno);
+      msg.Format(_T("Error - Weight for axle %d must be a positive number"), axlno);
       ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
       pDX->Fail();
    }
@@ -477,7 +477,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
    {
    	s = GetCellValue(nRow, 2);
 
-      const char *delims[] = {"-"," ", 0};
+      LPCTSTR delims[] = {_T("-"),_T(" "), 0};
       sysTokenizer tokizerd(delims);
       tokizerd.push_back(s);
 
@@ -488,7 +488,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
          if (!sysTokenizer::ParseDouble(tokizerd[0].c_str(), &d))
 		   {
             CString msg; 
-            msg.Format("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash", axlno);
+            msg.Format(_T("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash"), axlno);
             ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
             pDX->Fail();
 		   }
@@ -496,7 +496,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
          if (d<=0.0)
          {
             CString msg; 
-            msg.Format("Spacing value for axle %d must be greater than zero", axlno);
+            msg.Format(_T("Spacing value for axle %d must be greater than zero"), axlno);
             ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
             pDX->Fail();
          }
@@ -510,7 +510,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
             if (!sysTokenizer::ParseDouble(tokizerd[1].c_str(), &dmax))
 		      {
                CString msg; 
-               msg.Format("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash", axlno);
+               msg.Format(_T("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash"), axlno);
                ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
                pDX->Fail();
 		      }
@@ -518,7 +518,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
             if (dmax<=0.0)
             {
                CString msg; 
-               msg.Format("Max Spacing value for axle %d must be greater than zero", axlno);
+               msg.Format(_T("Max Spacing value for axle %d must be greater than zero"), axlno);
                ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
                pDX->Fail();
             }
@@ -526,7 +526,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
             if (dmax<=d)
             {
                CString msg; 
-               msg.Format("Max axle spacing must greater than Min axle spacing for axle %d", axlno);
+               msg.Format(_T("Max axle spacing must greater than Min axle spacing for axle %d"), axlno);
                ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
                pDX->Fail();
             }
@@ -538,7 +538,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
       else
       {
          CString msg; 
-         msg.Format("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash", axlno);
+         msg.Format(_T("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash"), axlno);
          ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
          pDX->Fail();
       }

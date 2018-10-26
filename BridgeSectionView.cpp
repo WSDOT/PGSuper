@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include <IFace\DrawBridgeSettings.h>
@@ -332,7 +332,7 @@ CString DumpPoints(IShape* pShape)
       point->get_Y(&y);
 
       CString str;
-      str.Format("%f, %f\r\n",::ConvertFromSysUnits(x,unitMeasure::Feet),::ConvertFromSysUnits(y,unitMeasure::Feet));
+      str.Format(_T("%f, %f\r\n"),::ConvertFromSysUnits(x,unitMeasure::Feet),::ConvertFromSysUnits(y,unitMeasure::Feet));
       strDump += str;
    }
 
@@ -531,14 +531,14 @@ void CBridgeSectionView::UpdateGirderTooltips()
          continue;
 
       CString strMsg1;
-      strMsg1.Format("Double click to edit Span %d Girder %s.\r\nRight click for more options.",LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx));
+      strMsg1.Format(_T("Double click to edit Span %d Girder %s.\r\nRight click for more options."),LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx));
 
       double fc, fci;
       fc = pBridgeMaterial->GetFcGdr(spanIdx,gdrIdx);
       fci = pBridgeMaterial->GetFciGdr(spanIdx,gdrIdx);
 
       CString strMsg2;
-      strMsg2.Format("\r\n\r\nGirder: %s\r\n%s\r\nf'ci: %s\r\nf'c: %s",
+      strMsg2.Format(_T("\r\n\r\nGirder: %s\r\n%s\r\nf'ci: %s\r\nf'c: %s"),
                      pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx),
                      matConcrete::GetTypeName((matConcrete::Type)pBridgeMaterial->GetGdrConcreteType(spanIdx,gdrIdx),true).c_str(),
                      FormatDimension(fci,pDisplayUnits->GetStressUnit()),
@@ -559,12 +559,12 @@ void CBridgeSectionView::UpdateGirderTooltips()
       {
          if ( Nsd == 0 )
          {
-            strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
                             pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
          }
          else
          {
-            strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
                             pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
          }
       }
@@ -572,12 +572,12 @@ void CBridgeSectionView::UpdateGirderTooltips()
       {
          if ( Nsd == 0 )
          {
-            strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d",
+            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d"),
                             pStrand->GetName().c_str(),Ns,Nh);
          }
          else
          {
-            strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d",
+            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d"),
                             pStrand->GetName().c_str(),Ns,Nsd,Nh);
          }
       }
@@ -587,7 +587,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
       startOffset = pBridge->GetSlabOffset(spanIdx,gdrIdx,pgsTypes::metStart);
       endOffset   = pBridge->GetSlabOffset(spanIdx,gdrIdx,pgsTypes::metEnd);
       CString strMsg4;
-      strMsg4.Format("\r\n\r\nSlab Offset\r\nStart: %s\r\nEnd: %s",
+      strMsg4.Format(_T("\r\n\r\nSlab Offset\r\nStart: %s\r\nEnd: %s"),
          FormatDimension(startOffset,pDisplayUnits->GetComponentDimUnit()),
          FormatDimension(endOffset,pDisplayUnits->GetComponentDimUnit()));
 
@@ -653,7 +653,7 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
    CString strTitle;
    CString strStation = FormatStation(station_format,m_pFrame->GetCurrentCutLocation());
 
-   strTitle.Format("Section at Station %s - Normal to Alignment",strStation);
+   strTitle.Format(_T("Section at Station %s - Normal to Alignment"),strStation);
    title->SetText(strTitle);
    title_list->AddDisplayObject(title);
 }
@@ -783,7 +783,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
          position->get_LocatorPoint(lpBottomCenter,&botCenter);
          doText->SetPosition(botCenter);
          CString strLabel;
-         strLabel.Format("%s",LABEL_GIRDER(gdrIdx));
+         strLabel.Format(_T("%s"),LABEL_GIRDER(gdrIdx));
          doText->SetText(strLabel);
          doText->SetBkMode(TRANSPARENT);
          doText->SetTextAlign(TA_CENTER | TA_TOP);
@@ -800,7 +800,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 //         topCenter->get_X(&x);
 //         topCenter->get_Y(&y);
 //         CString strCoordinates;
-//         strCoordinates.Format("Offset %s\nElev %s",FormatDimension(x,pdisp_units->GetXSectionDimUnit()),
+//         strCoordinates.Format(_T("Offset %s\nElev %s"),FormatDimension(x,pdisp_units->GetXSectionDimUnit()),
 //                                                    FormatDimension(y,pdisp_units->GetXSectionDimUnit()) );
 //
 //         doText2->SetText(strCoordinates);
@@ -879,7 +879,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    dispObj->RegisterEventSink(events);
 
    
-   CString strMsg1("Double click to edit slab.\r\nRight click for more options.");
+   CString strMsg1(_T("Double click to edit slab.\r\nRight click for more options."));
 
    CString strMsg2;
    if ( deckType != pgsTypes::sdtNone )
@@ -887,7 +887,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
       pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
       if ( slabOffsetType == pgsTypes::sotBridge )
       {
-         strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: %s\r\n%s\r\nf'c: %s",
+         strMsg2.Format(_T("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: %s\r\n%s\r\nf'c: %s"),
                         m_pFrame->GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                         FormatDimension(pBridgeDesc->GetSlabOffset(),pDisplayUnits->GetComponentDimUnit()),
@@ -897,7 +897,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
       }
       else
       {
-         strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\n%s\r\nf'c: %s",
+         strMsg2.Format(_T("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\n%s\r\nf'c: %s"),
                         m_pFrame->GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                         matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
@@ -910,8 +910,8 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    double overlay_weight = pBridge->GetOverlayWeight();
    if ( pBridge->HasOverlay() )
    {
-      strMsg3.Format("\r\n\r\n%s: %s",
-         pBridge->IsFutureOverlay() ? "Future Overlay" : "Overlay",
+      strMsg3.Format(_T("\r\n\r\n%s: %s"),
+         pBridge->IsFutureOverlay() ? _T("Future Overlay") : _T("Overlay"),
          FormatDimension(overlay_weight,pDisplayUnits->GetOverlayWeightUnit()));
    }
 
@@ -1400,14 +1400,14 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
             if ( 0 < nSpacesInGroup )
             {
-               std::ostringstream os;
+               std::_tostringstream os;
                if ( nSpacesInGroup == 1 )
                {
                   os << (LPCTSTR)strSpacing;
                }
                else
                {
-                  os << nSpacesInGroup << " spaces @ " << (LPCTSTR)strSpacing << " = " << (LPCTSTR)strTotal;
+                  os << nSpacesInGroup << _T(" spaces @ ") << (LPCTSTR)strSpacing << _T(" = ") << (LPCTSTR)strTotal;
                }
 
                text->SetText(os.str().c_str());

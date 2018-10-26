@@ -123,7 +123,7 @@ private:
 
    bool m_bValidGraph;
    bool m_bUpdateError;
-   std::string m_ErrorMsg;
+   std::_tstring m_ErrorMsg;
 
    CSize m_SupportSize;
 

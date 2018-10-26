@@ -91,9 +91,9 @@ txnEditPier::txnEditPier(PierIndexType pierIdx,
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    long nPiers = pBridgeDesc->GetBridgeDescription()->GetPierCount();
    if ( m_PierIdx == 0 || m_PierIdx == nPiers-1 )
-      m_strPierType = "Abutment";
+      m_strPierType = _T("Abutment");
    else
-      m_strPierType = "Pier";
+      m_strPierType = _T("Pier");
 }
 
 txnEditPier::~txnEditPier()
@@ -119,10 +119,10 @@ txnTransaction* txnEditPier::CreateClone() const
                           m_MoveOption);
 }
 
-std::string txnEditPier::Name() const
+std::_tstring txnEditPier::Name() const
 {
-   std::ostringstream os;
-   os << "Edit " << m_strPierType << " " << (m_PierIdx+1);
+   std::_tostringstream os;
+   os << _T("Edit ") << m_strPierType << _T(" ") << (m_PierIdx+1);
    return os.str();
 }
 

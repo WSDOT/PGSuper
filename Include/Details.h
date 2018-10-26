@@ -109,7 +109,7 @@ struct CRACKINGMOMENTDETAILS
 
 struct MINMOMENTCAPDETAILS
 {
-   std::string LimitState; // Limit State for the minimum magnitude of Mu
+   std::_tstring LimitState; // Limit State for the minimum magnitude of Mu
    Float64 Mr;     // Nominal resistance (phi*Mn)
    Float64 MrMin;  // Minimum nominal resistance max(MrMin1,MrMin2)
    Float64 MrMin1; // 1.2Mcr

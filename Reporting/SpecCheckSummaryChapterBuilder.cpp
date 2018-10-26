@@ -92,11 +92,11 @@ rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CSpanGirderReportSpecificat
 
    if( pArtifact->Passed() )
    {
-      *pPara << "The Specification Check was Successful" << rptNewLine;
+      *pPara << _T("The Specification Check was Successful") << rptNewLine;
    }
    else
    {
-      *pPara << color(Red) << "The Specification Check Was Not Successful" << color(Black) << rptNewLine;
+      *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black) << rptNewLine;
      
       GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
       bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
@@ -152,7 +152,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CSpanGirderReportSpecificat
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << "Warning:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information." << rptNewLine;
+      *pPara << _T("Warning:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.") << rptNewLine;
    }
 
    return pChapter;

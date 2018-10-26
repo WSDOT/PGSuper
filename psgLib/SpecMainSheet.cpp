@@ -126,7 +126,7 @@ void CSpecMainSheet::ExchangeDescrData(CDataExchange* pDX)
 	   DDX_Text(pDX, IDC_NAME, m_Name);
       if (m_Name.IsEmpty())
       {
-         AfxMessageBox("Name cannot be blank");
+         AfxMessageBox(_T("Name cannot be blank"));
          pDX->Fail();
       }
       m_Entry.SetName(m_Name);
@@ -227,7 +227,7 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_CyCompStressServ);
 
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT2, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_CyTensStressServ, pDisplayUnits->SqrtPressure );
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )");
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
    DDX_Text(pDX,IDC_CYS_TENS_BYLINE,tag);
    DDV_UnitValueZeroOrMore(pDX, IDC_CYS_TENS_BYLINE,m_Entry.m_CyTensStressServ, pDisplayUnits->SqrtPressure);
    DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX2, m_Entry.m_CyDoTensStressServMax);
@@ -256,7 +256,7 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_FS_CY_FAIL, m_Entry.m_CyLiftingFailFs);
    DDV_NonNegativeDouble(pDX, IDC_FS_CY_FAIL, m_Entry.m_CyLiftingFailFs);
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt(f'ci MPa)" : "sqrt(f'ci KSI)");
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci MPa)") : _T("sqrt(f'ci KSI)"));
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_SQRT,tag);
 
@@ -322,7 +322,7 @@ void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_HAULING_ALLOW_COMP, m_Entry.m_CompStressHauling);
    DDV_GreaterThanZero(pDX, IDC_HAULING_ALLOW_COMP, m_Entry.m_CompStressHauling);
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt(f'c MPa)" : "sqrt(f'c KSI)");
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c MPa)") : _T("sqrt(f'c KSI)"));
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_SQRT,tag);
 
@@ -397,7 +397,7 @@ void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_TEMP_REMOVE_ALLOW_SERVICE_COMP, m_Entry.m_TempStrandRemovalCompStress);
 
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT3, IDC_NORMAL_MAX_SQRT_UNITS3, m_Entry.m_TempStrandRemovalTensStress, pDisplayUnits->SqrtPressure );
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )");
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
    DDX_Text(pDX,IDC_CYS_TENS_BYLINE2,tag);
    DDV_UnitValueZeroOrMore(pDX,IDC_CYS_TENS_BYLINE2, m_Entry.m_TempStrandRemovalTensStress, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX3, m_Entry.m_TempStrandRemovalDoTensStressMax);
@@ -441,7 +441,7 @@ void CSpecMainSheet::ExchangeBsData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_BS_COMP_STRESS_SERVICE1A, m_Entry.m_Bs3CompStressService1A);
 
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )");
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
    DDX_Text(pDX,IDC_BS_NORMAL_TENS,tag);
    DDV_UnitValueZeroOrMore(pDX, IDC_BS_NORMAL_TENS,m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX, m_Entry.m_Bs3DoTensStressServNcMax);
@@ -479,7 +479,7 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_MOMENT, m_Entry.m_bIncludeRebar_Moment );
 
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )");
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
@@ -557,7 +557,7 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
       CheckShearCapacityMethod();
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )");
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
    DDX_UnitValueAndTag(pDX, IDC_FR,     IDC_FR_LABEL,     m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_FR_LABEL_ALWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_FR_LABEL_SLWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
@@ -623,6 +623,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_BEFORE_TEMP_STRAND_REMOVAL, IDC_BEFORE_TEMP_STRAND_REMOVAL_TAG, m_Entry.m_BeforeTempStrandRemovalLosses, pDisplayUnits->Stress);
    DDX_UnitValueAndTag(pDX, IDC_AFTER_TEMP_STRAND_REMOVAL,  IDC_AFTER_TEMP_STRAND_REMOVAL_TAG,  m_Entry.m_AfterTempStrandRemovalLosses, pDisplayUnits->Stress);
    DDX_UnitValueAndTag(pDX, IDC_AFTER_DECK_PLACEMENT,  IDC_AFTER_DECK_PLACEMENT_TAG,  m_Entry.m_AfterDeckPlacementLosses, pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_AFTER_SIDL,  IDC_AFTER_SIDL_TAG,  m_Entry.m_AfterSIDLLosses, pDisplayUnits->Stress);
 
    DDX_UnitValueAndTag(pDX, IDC_SHIPPING_TIME, IDC_SHIPPING_TIME_TAG, m_Entry.m_ShippingTime, pDisplayUnits->Time2);
 
@@ -710,7 +711,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
             Float64 value = m_Entry.m_ShippingLosses * -100.0;
             DDX_Text(pDX,IDC_SHIPPING,value);
 
-            CString strTag("%");
+            CString strTag(_T("%"));
             DDX_Text(pDX,IDC_SHIPPING_TAG,strTag);
 
             idx = 1;
@@ -955,14 +956,14 @@ BOOL CSpecMainSheet::OnInitDialog()
    // disable OK button if editing not allowed
    CString head;
    GetWindowText(head);
-   head += " - ";
+   head += _T(" - ");
    head += m_Entry.GetName().c_str();
 	if (!m_AllowEditing)
    {
       CWnd* pbut = GetDlgItem(IDOK);
       ASSERT(pbut);
       pbut->EnableWindow(m_AllowEditing);
-      head += " (Read Only)";
+      head += _T(" (Read Only)");
    }
    SetWindowText(head);
 	

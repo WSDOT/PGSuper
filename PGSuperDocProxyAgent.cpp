@@ -134,7 +134,7 @@ void CPGSuperDocProxyAgent::CreateToolBars()
 
    GET_IFACE(IEAFToolbars,pToolBars);
 
-   m_StdToolBarID = pToolBars->CreateToolBar("Standard");
+   m_StdToolBarID = pToolBars->CreateToolBar(_T("Standard"));
    CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
    pToolBar->LoadToolBar(IDR_STDTOOLBAR,NULL); // don't use a command callback because these commands are handled by 
                                                // the standard MFC message routing
@@ -143,11 +143,11 @@ void CPGSuperDocProxyAgent::CreateToolBars()
    pToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
    pToolBar->CreateDropDownButton(ID_VIEW_REPORTS,NULL,BTNS_WHOLEDROPDOWN);
 
-   m_LibToolBarID = pToolBars->CreateToolBar("Library");
+   m_LibToolBarID = pToolBars->CreateToolBar(_T("Library"));
    pToolBar = pToolBars->GetToolBar(m_LibToolBarID);
    pToolBar->LoadToolBar(IDR_LIBTOOLBAR,NULL);
 
-   m_HelpToolBarID = pToolBars->CreateToolBar("Help");
+   m_HelpToolBarID = pToolBars->CreateToolBar(_T("Help"));
    pToolBar = pToolBars->GetToolBar(m_HelpToolBarID);
    pToolBar->LoadToolBar(IDR_HELPTOOLBAR,NULL);
 
@@ -325,7 +325,7 @@ void CPGSuperDocProxyAgent::CreateGirderView(SpanIndexType spanIdx,GirderIndexTy
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
-      AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
+      AfxMessageBox(_T("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details."),MB_OK);
    }
    else
    {
@@ -340,7 +340,7 @@ void CPGSuperDocProxyAgent::CreateAnalysisResultsView(SpanIndexType spanIdx,Gird
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
-      AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
+      AfxMessageBox(_T("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details."),MB_OK);
    }
    else
    {
@@ -355,7 +355,7 @@ void CPGSuperDocProxyAgent::CreateStabilityView(SpanIndexType spanIdx,GirderInde
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
-      AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
+      AfxMessageBox(_T("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details."),MB_OK);
    }
    else
    {
@@ -528,16 +528,31 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged()
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
    CSelection selection = m_pPGSuperDoc->GetSelection();
-   SpanIndexType spanIdx = selection.SpanIdx;
 
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
    bool bClearSelection = false;
-   if ( pSpan )
-   {
-      GirderIndexType nGirders = pSpan->GetGirderCount();
-      GirderIndexType gdrIdx   = selection.GirderIdx;
 
-      if ( nGirders < gdrIdx )
+   if ( selection.Type == CSelection::Span || selection.Type == CSelection::Girder )
+   {
+      SpanIndexType spanIdx = selection.SpanIdx;
+      const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+      if ( pSpan == NULL )
+      {
+         bClearSelection = true;
+      }
+      else
+      {
+         GirderIndexType nGirders = pSpan->GetGirderCount();
+         GirderIndexType gdrIdx   = selection.GirderIdx;
+
+         if ( nGirders < gdrIdx )
+            bClearSelection = true;
+      }
+   }
+   else if ( selection.Type == CSelection::Pier )
+   {
+      PierIndexType pierIdx = selection.PierIdx;
+      const CPierData* pPier = pBridgeDesc->GetPier(pierIdx);
+      if ( pPier == NULL )
          bClearSelection = true;
    }
 
@@ -582,7 +597,7 @@ HRESULT CPGSuperDocProxyAgent::OnLiveLoadChanged()
    return S_OK;
 }
 
-HRESULT CPGSuperDocProxyAgent::OnLiveLoadNameChanged(const char* strOldName,const char* strNewName)
+HRESULT CPGSuperDocProxyAgent::OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
@@ -947,13 +962,13 @@ void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,Spa
 // IVersionInfo
 CString CPGSuperDocProxyAgent::GetVersionString(bool bIncludeBuildNumber)
 {
-   CString str("Version ");
+   CString str(_T("Version "));
    str += GetVersion(bIncludeBuildNumber);
 #if defined _BETA_VERSION
-   str += CString(" BETA");
+   str += CString(_T(" BETA"));
 #endif
 
-   str += CString(" - Built on ");
+   str += CString(_T(" - Built on "));
    str += CString(__DATE__);
    return str;
 }
@@ -964,7 +979,7 @@ CString CPGSuperDocProxyAgent::GetVersion(bool bIncludeBuildNumber)
 
    CWinApp* pApp = AfxGetApp();
    CString strExe( pApp->m_pszExeName );
-   strExe += ".dll";
+   strExe += _T(".dll");
 
    CVersionInfo verInfo;
    verInfo.Load(strExe);
@@ -979,7 +994,7 @@ CString CPGSuperDocProxyAgent::GetVersion(bool bIncludeBuildNumber)
    if (!bIncludeBuildNumber)
    {
       // remove the build number
-      int pos = strVersion.ReverseFind('.'); // find the last '.'
+      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
       strVersion = strVersion.Left(pos);
    }
 

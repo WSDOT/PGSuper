@@ -110,38 +110,38 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
-   std::string strStage;
-   std::string aux_msg1;
+   std::_tstring strStage;
+   std::_tstring aux_msg1;
    switch(stage)
    {
    case pgsTypes::CastingYard:
-      strStage = "Casting Yard Stage (At Release)";
-      aux_msg1 = "For temporary stresses before losses ";
+      strStage = _T("Casting Yard Stage (At Release)");
+      aux_msg1 = _T("For temporary stresses before losses ");
       break;
 
 //   case pgsTypes::GirderPlacement:
-//      strStage = "Girder Placement";
-//      aux_msg1 = "For stresses at service limit state after losses ";
+//      strStage = _T("Girder Placement");
+//      aux_msg1 = _T("For stresses at service limit state after losses ");
 //      break;
 
    case pgsTypes::TemporaryStrandRemoval:
-      strStage = "Temporary Strand Removal";
-      aux_msg1 = "For stresses at service limit state after losses ";
+      strStage = _T("Temporary Strand Removal");
+      aux_msg1 = _T("For stresses at service limit state after losses ");
       break;
 
    case pgsTypes::BridgeSite1:
-      strStage = "Deck and Diaphragm Placement (Bridge Site 1)";
-      aux_msg1 = "For stresses at service limit state after losses ";
+      strStage = _T("Deck and Diaphragm Placement (Bridge Site 1)");
+      aux_msg1 = _T("For stresses at service limit state after losses ");
       break;
 
    case pgsTypes::BridgeSite2:
-      strStage = "Superimposed Dead Loads (Bridge Site 2)";
-      aux_msg1 = "For stresses at service limit state after losses ";
+      strStage = _T("Superimposed Dead Loads (Bridge Site 2)");
+      aux_msg1 = _T("For stresses at service limit state after losses ");
       break;
 
    case pgsTypes::BridgeSite3:
-      strStage = "Final with Live Load (Bridge Site 3)";
-      aux_msg1 = "For stresses at service limit state after losses ";
+      strStage = _T("Final with Live Load (Bridge Site 3)");
+      aux_msg1 = _T("For stresses at service limit state after losses ");
       break;
 
    default:
@@ -149,30 +149,30 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    }
 
    GET_IFACE2(pBroker, IStageMap, pStageMap );
-   std::string strLimitState = OLE2A(pStageMap->GetLimitStateName(limitState));
+   std::_tstring strLimitState = OLE2T(pStageMap->GetLimitStateName(limitState));
 
-   std::string aux_msg2;
+   std::_tstring aux_msg2;
    switch(limitState)
    {
    case pgsTypes::ServiceI:
       if (stage==pgsTypes::CastingYard)
       {
          if (stressType == pgsTypes::Compression)
-            aux_msg2 = "in areas other than the precompressed tensile zones and without bonded auxiliary reinforcement.";
+            aux_msg2 = _T("in areas other than the precompressed tensile zones and without bonded auxiliary reinforcement.");
          else
-            aux_msg2 = "in pretensioned components";
+            aux_msg2 = _T("in pretensioned components");
       }
       else if (/*stage == pgsTypes::GirderPlacement ||*/ stage == pgsTypes::TemporaryStrandRemoval || stage==pgsTypes::BridgeSite1 || stage==pgsTypes::BridgeSite2)
       {
          if (stressType == pgsTypes::Compression)
-            aux_msg2 = "in other than segmentally constructed bridges due to permanent loads";
+            aux_msg2 = _T("in other than segmentally constructed bridges due to permanent loads");
          else
-            aux_msg2 = "for components with bonded prestressing tendons other than piles";
+            aux_msg2 = _T("for components with bonded prestressing tendons other than piles");
       }
       else if (stage==pgsTypes::BridgeSite3)
       {
          if (stressType == pgsTypes::Compression)
-            aux_msg2 = "in other than segmentally constructed bridges due to permanent and transient loads";
+            aux_msg2 = _T("in other than segmentally constructed bridges due to permanent and transient loads");
          else
             ATLASSERT(0); // shouldn't happen
       }
@@ -185,7 +185,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       if (stage==pgsTypes::BridgeSite3)
       {
          if (stressType == pgsTypes::Compression)
-            aux_msg2 = "in other than segmentally constructed bridges due to live load plus one-half of the permanent loads";
+            aux_msg2 = _T("in other than segmentally constructed bridges due to live load plus one-half of the permanent loads");
          else
             CHECK(0); // shouldn't happen
       }
@@ -198,7 +198,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       if (stage==pgsTypes::BridgeSite3)
       {
          if (stressType == pgsTypes::Tension)
-            aux_msg2 = "which involve traffic loading in members with bonded prestressing tendons other than piles";
+            aux_msg2 = _T("which involve traffic loading in members with bonded prestressing tendons other than piles");
          else
             CHECK(0); // shouldn't happen
       }
@@ -211,7 +211,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       if (stage==pgsTypes::BridgeSite3)
       {
          if (stressType == pgsTypes::Compression)
-            aux_msg2 = "in other than segmentally constructed bridges due to the Fatigue I load combination and one-half the sum of effective prestress and permanent loads";
+            aux_msg2 = _T("in other than segmentally constructed bridges due to the Fatigue I load combination and one-half the sum of effective prestress and permanent loads");
          else
             CHECK(0); // shouldn't happen
       }
@@ -225,7 +225,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    GET_IFACE2(pBroker, ILibrary,       pLib );
    GET_IFACE2(pBroker, IEnvironment,   pEnvironment);
 
-   std::string specName = pSpec->GetSpecification();
+   std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
    double c; // compression coefficient
    double t; // tension coefficient
@@ -269,46 +269,46 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       ATLASSERT(false);
    }
 
-   std::string article; // LRFD article number
+   std::_tstring article; // LRFD article number
    if ( stage == pgsTypes::CastingYard && stressType == pgsTypes::Compression )
-      article = "[5.9.4.1.1]";
+      article = _T("[5.9.4.1.1]");
    else if ( stage == pgsTypes::CastingYard && stressType == pgsTypes::Tension )
-      article = "[5.9.4.1.2]";
+      article = _T("[5.9.4.1.2]");
 //   else if ( stage == pgsTypes::GirderPlacement && stressType == pgsTypes::Compression )
-//      article = "[5.9.4.2.1]";
+//      article = _T("[5.9.4.2.1]");
 //   else if ( stage == pgsTypes::GirderPlacement && stressType == pgsTypes::Tension )
-//      article = "[5.9.4.2.2]";
+//      article = _T("[5.9.4.2.2]");
    else if ( stage == pgsTypes::TemporaryStrandRemoval && stressType == pgsTypes::Compression )
-      article = "[5.9.4.2.1]";
+      article = _T("[5.9.4.2.1]");
    else if ( stage == pgsTypes::TemporaryStrandRemoval && stressType == pgsTypes::Tension )
-      article = "[5.9.4.2.2]";
+      article = _T("[5.9.4.2.2]");
    else if ( stage == pgsTypes::BridgeSite1 && stressType == pgsTypes::Compression )
-      article = "[5.9.4.2.1]";
+      article = _T("[5.9.4.2.1]");
    else if ( stage == pgsTypes::BridgeSite1 && stressType == pgsTypes::Tension )
-      article = "[5.9.4.2.2]";
+      article = _T("[5.9.4.2.2]");
    else if ( stage == pgsTypes::BridgeSite2 && stressType == pgsTypes::Compression )
-      article = "[5.9.4.2.1]";
+      article = _T("[5.9.4.2.1]");
    else if ( stage == pgsTypes::BridgeSite3 && stressType == pgsTypes::Compression )
-      article = (limitState == pgsTypes::ServiceIA ? "[5.9.4.2.1]" : "[5.5.3.1]");
+      article = (limitState == pgsTypes::ServiceIA ? _T("[5.9.4.2.1]") : _T("[5.5.3.1]"));
    else if ( stage == pgsTypes::BridgeSite3 && stressType == pgsTypes::Tension )
-      article = "[5.9.4.2.2]";
+      article = _T("[5.9.4.2.2]");
    else
       ATLASSERT(false);
 
-   std::ostringstream os;
+   std::_tostringstream os;
    if (stage == pgsTypes::BridgeSite3)
    {
-      os << "Stress Check for " << (stressType == pgsTypes::Compression ? "Compressive" : "Tensile" ) 
-         << " Stresses for " << strLimitState << " for " << strStage << std::endl;
+      os << _T("Stress Check for ") << (stressType == pgsTypes::Compression ? _T("Compressive") : _T("Tensile") ) 
+         << _T(" Stresses for ") << strLimitState << _T(" for ") << strStage << std::endl;
    }
    else
    {
-      os << "Stress Check for " << strLimitState << " for " << strStage << std::endl;
+      os << _T("Stress Check for ") << strLimitState << _T(" for ") << strStage << std::endl;
    }
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << os.str()  << " " << article;
+   *pTitle << os.str()  << _T(" ") << article;
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -330,12 +330,12 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,vPoi.begin()->GetDistFromStart()) );
       allowable_tension = pArtifact->GetCapacity();
       allowable_tension_with_rebar = gdrArtifact->GetCastingYardCapacityWithMildRebar();
-      *p << "Allowable tensile stress";
+      *p << _T("Allowable tensile stress");
 
       if ( stage == pgsTypes::BridgeSite3 )
-          *p << " in the precompressed tensile zone";
+          *p << _T(" in the precompressed tensile zone");
 
-      *p << " = " << tension_coeff.SetValue(t) << symbol(ROOT);
+      *p << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
 
       if ( stage == pgsTypes::CastingYard )
          *p << RPT_FCI;
@@ -343,19 +343,19 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
          *p << RPT_FC;
 
       if ( b_t_max )
-         *p << " but not more than " << stress_u.SetValue(t_max);
+         *p << _T(" but not more than ") << stress_u.SetValue(t_max);
 
-      *p  << " = " << stress_u.SetValue(allowable_tension)<<rptNewLine;
+      *p  << _T(" = ") << stress_u.SetValue(allowable_tension)<<rptNewLine;
 
       if ( stage == pgsTypes::CastingYard )
       {
           Float64 As_reqd = gdrArtifact->GetCastingYardMildRebarRequirement();
-          *p << "Allowable tensile stress = " << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT) << RPT_FCI;
-          *p << " = " << stress_u.SetValue(allowable_tension_with_rebar);
+          *p << _T("Allowable tensile stress = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT) << RPT_FCI;
+          *p << _T(" = ") << stress_u.SetValue(allowable_tension_with_rebar);
           if ( !IsZero(As_reqd) )
-             *p << " if at least " << area.SetValue(As_reqd) << " of mild reinforcement is provided" << rptNewLine;
+             *p << _T(" if at least ") << area.SetValue(As_reqd) << _T(" of mild reinforcement is provided") << rptNewLine;
           else
-             *p << " if bonded reinforcement sufficient to resist the tensile force in the concrete is provided." << rptNewLine;
+             *p << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
       }
    }
 
@@ -363,21 +363,21 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    {
       pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Compression,vPoi.begin()->GetDistFromStart()) );
       allowable_compression = pArtifact->GetCapacity();
-      *p << "Allowable compressive stress = -" << c;
+      *p << _T("Allowable compressive stress = -") << c;
       if (stage == pgsTypes::CastingYard)
          *p << RPT_FCI;
       else
          *p << RPT_FC;
-      *p << " = " <<stress_u.SetValue(allowable_compression)<<rptNewLine;
+      *p << _T(" = ") <<stress_u.SetValue(allowable_compression)<<rptNewLine;
    }
 
    double fc_reqd = gdrArtifact->GetRequiredConcreteStrength(stage,limitState);
    if ( 0 < fc_reqd )
    {
       if ( stage == pgsTypes::CastingYard )
-         *p << RPT_FCI << " required to satisfy this stress check = " << stress_u.SetValue( fc_reqd ) << rptNewLine;
+         *p << RPT_FCI << _T(" required to satisfy this stress check = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;
       else
-         *p << RPT_FC  << " required to satisfy this stress check = " << stress_u.SetValue( fc_reqd ) << rptNewLine;
+         *p << RPT_FC  << _T(" required to satisfy this stress check = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;
    }
    else if ( IsZero(fc_reqd) )
    {
@@ -385,7 +385,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    }
    else
    {
-      *p << "Regardless of the concrete strength, the stress requirements will not be satisfied." << rptNewLine;
+      *p << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 }
 
@@ -411,13 +411,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
    // create and set up table
    rptRcTable* p_table;
    if (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
-      p_table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+      p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    else if (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3)
-      p_table = pgsReportStyleHolder::CreateDefaultTable(8,"");
+      p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    else if (stage == pgsTypes::CastingYard )
-      p_table = pgsReportStyleHolder::CreateDefaultTable(10,"");
+      p_table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
    else
-      p_table = pgsReportStyleHolder::CreateDefaultTable(9,"");
+      p_table = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
 
    *p << p_table;
 
@@ -439,18 +439,18 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
       (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    GET_IFACE2(pBroker, IStageMap, pStageMap );
-   std::string strLimitState = OLE2A(pStageMap->GetLimitStateName(limitState));
+   std::_tstring strLimitState = OLE2T(pStageMap->GetLimitStateName(limitState));
 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) << COLHDR("Prestress" << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col1++) << COLHDR(_T("Prestress") << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
       p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << "Prestress";
+      (*p_table)(0,col1++) << _T("Prestress");
       (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -473,12 +473,12 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) << COLHDR("Demand" << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col1++) << COLHDR(_T("Demand") << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
       p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << "Demand";
+      (*p_table)(0,col1++) << _T("Demand");
       (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -514,16 +514,16 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
       {
          p_table->SetRowSpan(0,col1,2);
          p_table->SetRowSpan(1,col2++,-1);
-         (*p_table)(0,col1++) <<"Compression" << rptNewLine << "Status" << rptNewLine << "(C/D)";
+         (*p_table)(0,col1++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
       }
 
       if ( stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII )
       {
          p_table->SetRowSpan(0,col1,2);
          p_table->SetRowSpan(1,col2++,-1);
-         (*p_table)(0,col1) <<"Tension" << rptNewLine << "Status";
+         (*p_table)(0,col1) <<_T("Tension") << rptNewLine << _T("Status");
          if ( !IsZero(allowable_tension) )
-            (*p_table)(0,col1) << rptNewLine << "(C/D)";
+            (*p_table)(0,col1) << rptNewLine << _T("(C/D)");
 
          col1++;
       }
@@ -532,31 +532,31 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) << "Tension" << rptNewLine << "Status";
+      (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status");
       if ( !IsZero(allowable_tension) )
-         (*p_table)(0,col1-1) << rptNewLine << "w/o rebar" << rptNewLine << "(C/D)";
+         (*p_table)(0,col1-1) << rptNewLine << _T("w/o rebar") << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) << "Tension" << rptNewLine << "Status" << rptNewLine << "w/ rebar";
+      (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/ rebar");
       if ( !IsZero(allowable_tension_with_rebar) )
-         (*p_table)(0,col1-1) << rptNewLine << "(C/D)";
+         (*p_table)(0,col1-1) << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) << "Compression" << rptNewLine << "Status" << rptNewLine << "(C/D)";
+      (*p_table)(0,col1++) << _T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
    }
    else
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) <<"Tension"<<rptNewLine<<"Status";
+      (*p_table)(0,col1++) <<_T("Tension")<<rptNewLine<<_T("Status");
       if ( !IsZero(allowable_tension) )
-         (*p_table)(0,col1-1) << rptNewLine << "(C/D)";
+         (*p_table)(0,col1-1) << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col1++) <<"Compression"<<rptNewLine<<"Status" << rptNewLine << "(C/D)";
+      (*p_table)(0,col1++) <<_T("Compression")<<rptNewLine<<_T("Status") << rptNewLine << _T("(C/D)");
    }
 
    p_table->SetNumberOfHeaderRows(2);
@@ -643,7 +643,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
          if ( !IsZero(allowable_tension) )
          {
             double f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
-           (*p_table)(row,col) << rptNewLine <<"("<< cap_demand.SetValue(allowable_tension,f,bPassed)<<")";
+           (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension,f,bPassed)<<_T(")");
          }
       }
 
@@ -663,7 +663,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
          if ( !IsZero(allowable_tension_with_rebar) )
          {
             double f = max(fTop,fBot);
-            (*p_table)(row,col) << rptNewLine <<"("<< cap_demand.SetValue(allowable_tension_with_rebar,f,bPassed)<<")";
+            (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension_with_rebar,f,bPassed)<<_T(")");
           }
       }
 
@@ -693,7 +693,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 		      (*p_table)(row, ++col) << RPT_FAIL;
 
          double f = min(fTop,fBot);
-         (*p_table)(row,col) << rptNewLine <<"("<< cap_demand.SetValue(allowable_compression,f,bPassed)<<")";
+         (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_compression,f,bPassed)<<_T(")");
       }
 
       row++;
@@ -738,7 +738,7 @@ bool CFlexuralStressCheckTable::AssertValid() const
 
 void CFlexuralStressCheckTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CCombinedMomentsTable" << endl;
+   os << _T("Dump for CCombinedMomentsTable") << endl;
 }
 #endif // _DEBUG
 

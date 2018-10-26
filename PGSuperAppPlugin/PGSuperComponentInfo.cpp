@@ -48,13 +48,13 @@ void CPGSuperComponentInfo::Terminate()
 
 CString CPGSuperComponentInfo::GetName()
 {
-   return "PGSuper";
+   return _T("PGSuper");
 }
 
 CString CPGSuperComponentInfo::GetDescription()
 {
    CString strExe = EAFGetApp()->m_pszExeName;
-   strExe += ".exe";
+   strExe += _T(".exe");
 
    CVersionInfo verInfo;
    verInfo.Load(strExe);
@@ -62,7 +62,7 @@ CString CPGSuperComponentInfo::GetDescription()
    CString strCopyright = verInfo.GetLegalCopyright();
 
    CString strDesc;
-   strDesc.Format("Precast-Prestressed Girder Bridge Design, Analysis, and Rating\nVersion %s\n%s",strVersion,strCopyright);
+   strDesc.Format(_T("Precast-Prestressed Girder Bridge Design, Analysis, and Rating\nVersion %s\n%s"),strVersion,strCopyright);
    return strDesc;
 }
 

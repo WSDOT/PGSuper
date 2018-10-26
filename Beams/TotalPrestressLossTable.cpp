@@ -59,7 +59,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::string strSpecName = pSpec->GetSpecification();
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -69,19 +69,8 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    bool bIgnoreElasticGain = ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ) ? true : false;
 
-   ColumnIndexType numColumns = 5;
+   ColumnIndexType numColumns = 6;
    if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
-   {
-      if ( bIgnoreInitialRelaxation )
-      {
-         numColumns = 6;
-      }
-      else
-      {
-         numColumns = 7;
-      }
-   }
-   else
    {
       if ( bIgnoreInitialRelaxation )
       {
@@ -92,6 +81,17 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
          numColumns = 8;
       }
    }
+   else
+   {
+      if ( bIgnoreInitialRelaxation )
+      {
+         numColumns = 8;
+      }
+      else
+      {
+         numColumns = 9;
+      }
+   }
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary);
@@ -99,7 +99,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
       numColumns--;
 
    if ( bIgnoreElasticGain )
-      numColumns--;
+      numColumns -= 2;
 
 
    // add one column for % Loss
@@ -109,38 +109,38 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    CTotalPrestressLossTable* table = new CTotalPrestressLossTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Total Prestress Loss" << rptNewLine;
+   *pParagraph << _T("Total Prestress Loss") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   std::string strYear = (bIgnoreElasticGain ? "" : "_2005");
+   std::_tstring strYear = (bIgnoreElasticGain ? _T("") : _T("_2005"));
    if ( 0 < NtMax )
    {
       if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
       {
          if ( bIgnoreInitialRelaxation )
          {
-            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPS_LRFD" + strYear + ".png") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLossWithPS_LRFD") + strYear + _T(".png")) << rptNewLine;
          }
          else
          {
-            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPS_WSDOT" + strYear + ".png") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLossWithPS_WSDOT") + strYear + _T(".png")) << rptNewLine;
          }
       }
       else
       {
          if ( bIgnoreInitialRelaxation )
          {
-            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPT_LRFD" + strYear + ".png") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLossWithPT_LRFD") + strYear + _T(".png")) << rptNewLine;
          }
          else
          {
-            *pParagraph << rptRcImage(strImagePath + "TotalPrestressLossWithPT_WSDOT" + strYear + ".png") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLossWithPT_WSDOT") + strYear + _T(".png")) << rptNewLine;
          }
       }
    }
@@ -148,41 +148,44 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    {
       if ( bIgnoreInitialRelaxation )
       {
-         *pParagraph << rptRcImage(strImagePath + "TotalPrestressLoss_LRFD" + strYear + ".png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLoss_LRFD") + strYear + _T(".png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + "TotalPrestressLoss_WSDOT" + strYear + ".png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLoss_WSDOT") + strYear + _T(".png")) << rptNewLine;
       }
    }
 
    *pParagraph << table << rptNewLine;
 
    int col = 0;
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
    if ( !bIgnoreInitialRelaxation )
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if ( 0 < NtMax && girderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    if ( 0 < NtMax )
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptr")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if ( !bIgnoreElasticGain )
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pED"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   {
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
 
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pLT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << "% Loss";
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << _T("% Loss");
 
    table->m_NtMax = NtMax;
    table->m_GirderData = girderData;
@@ -211,7 +214,10 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowI
       (*this)(row,col++) << stress.SetValue(details.pLosses->GetDeltaFptr());
 
    if ( !m_bIgnoreElasticGain )
+   {
       (*this)(row,col++) << stress.SetValue(details.pLosses->ElasticGainDueToDeckPlacement());
+      (*this)(row,col++) << stress.SetValue(details.pLosses->ElasticGainDueToSIDL());
+   }
 
 
    (*this)(row,col++) << stress.SetValue(details.pLosses->TimeDependentLosses());

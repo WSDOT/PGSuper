@@ -313,7 +313,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
       if ( L/S < 2.0 )
       {
          //  ratio of span length to girder spacing is out of range
-         std::ostringstream os;
+         std::_tostringstream os;
          os << "The ratio of span length to girder spacing (L/S) is less that 2. The effective flange width cannot be computed (LRFD 4.6.2.6.1)" << std::endl;
 
          pgsBridgeDescriptionStatusItem* pStatusItem = 
@@ -345,7 +345,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
                twRight = S/2;
 
             // overhang is too big
-            std::ostringstream os;
+            std::_tostringstream os;
             os << "The slab overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)" << std::endl;
 
             pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,os.str().c_str());
@@ -400,7 +400,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
       if ( 75.*M_PI/180. < maxSkew )
       {
          // skew is too large
-         std::ostringstream os;
+         std::_tostringstream os;
          os << "The maximum skew angle in the bridge system exceeds the limit of 75 degrees for computing effective flange width (LRFD 4.6.2.6.1)" << std::endl;
 
          pgsBridgeDescriptionStatusItem* pStatusItem = 
@@ -595,7 +595,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder(IBroke
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prismatic(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
     INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
     INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
@@ -618,7 +618,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
 
    CComPtr<IBeamFactory> factory;
    GetBeamFactory(pBroker,span,gdr,&factory);
-   std::string strImage = factory->GetInteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
+   std::_tstring strImage = factory->GetInteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
 
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
@@ -633,57 +633,57 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
        efw.m_Details->get_FlangeCount(&count);
 
        *pPara << rptNewLine;
-       *pPara << "Effective flange width is the least of: " << rptNewLine;
-       *pPara << symbol(DOT) << " One-quarter of the effective span length (" << Sub2("w","1") << ")" << rptNewLine;
-       *pPara << symbol(DOT) << " 12 times the average thickness of the slab, plus the greater of the web thickness";
-       *pPara << " OR one-half the width of the top flange of the girder (" << Sub2("w","2") << ")" << rptNewLine;
-       *pPara << symbol(DOT) << " The average spacing of adjacent beams (" << Sub2("w","3") << ")" << rptNewLine;
+       *pPara << _T("Effective flange width is the least of: ") << rptNewLine;
+       *pPara << symbol(DOT) << _T(" One-quarter of the effective span length (") << Sub2(_T("w"),_T("1")) << _T(")") << rptNewLine;
+       *pPara << symbol(DOT) << _T(" 12 times the average thickness of the slab, plus the greater of the web thickness");
+       *pPara << _T(" OR one-half the width of the top flange of the girder (") << Sub2(_T("w"),_T("2")) << _T(")") << rptNewLine;
+       *pPara << symbol(DOT) << _T(" The average spacing of adjacent beams (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
        *pPara << rptNewLine;
 
        if ( 1 < count )
        {
-          *pPara << Sub2("w","2") << " = " << symbol(SUM) << Sub2("w","2") << " for each web" << rptNewLine;
-          *pPara << Sub2("w","3") << " = " << symbol(SUM) << Sub2("w","3") << " for each web" << rptNewLine << rptNewLine;
+          *pPara << Sub2(_T("w"),_T("2")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("2")) << _T(" for each web") << rptNewLine;
+          *pPara << Sub2(_T("w"),_T("3")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("3")) << _T(" for each web") << rptNewLine << rptNewLine;
        }
 
-       (*pPara) << Sub2("w","1") << " = (0.25)(" << xdim.SetValue(effSpanLength) << ") = ";
-       (*pPara) << xdim.SetValue(0.25*effSpanLength) << " = " << xdim2.SetValue(0.25*effSpanLength) << rptNewLine;
+       (*pPara) << Sub2(_T("w"),_T("1")) << _T(" = (0.25)(") << xdim.SetValue(effSpanLength) << _T(") = ");
+       (*pPara) << xdim.SetValue(0.25*effSpanLength) << _T(" = ") << xdim2.SetValue(0.25*effSpanLength) << rptNewLine;
 
        for ( long flangeIdx = 0; flangeIdx < count; flangeIdx++ )
        {
           efw.m_Details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
 
           if ( 1 < count )
-             (*pPara) << rptNewLine << "Web " << long(flangeIdx+1) << rptNewLine;
+             (*pPara) << rptNewLine << _T("Web ") << long(flangeIdx+1) << rptNewLine;
 
-          (*pPara) << Sub2("w","2") << " = (12.0)(" << xdim2.SetValue(tSlab) << ") + greater of [ ";
-          (*pPara) << xdim2.SetValue(tWeb) << " : (0.5)(";
-          (*pPara) << xdim2.SetValue(wFlange) << ") ] = ";
+          (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << xdim2.SetValue(tSlab) << _T(") + greater of [ ");
+          (*pPara) << xdim2.SetValue(tWeb) << _T(" : (0.5)(");
+          (*pPara) << xdim2.SetValue(wFlange) << _T(") ] = ");
           (*pPara) << xdim2.SetValue( 12*tSlab + _cpp_max(tWeb,0.5*wFlange) ) << rptNewLine;
 
-          (*pPara) << Sub2("w","3") << " = (" << xdim.SetValue(lSpacing*2) << " + ";
-          (*pPara) << xdim.SetValue(rSpacing*2) << ")/2 = ";
+          (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = (") << xdim.SetValue(lSpacing*2) << _T(" + ");
+          (*pPara) << xdim.SetValue(rSpacing*2) << _T(")/2 = ");
           (*pPara) << xdim.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-          (*pPara) << " = " << xdim2.SetValue(lSpacing+rSpacing) << rptNewLine;
+          (*pPara) << _T(" = ") << xdim2.SetValue(lSpacing+rSpacing) << rptNewLine;
        }
 
        double effFlangeWidth;
        efw.m_Details->EffectiveFlangeWidth(&effFlangeWidth);
-       (*pPara) << rptNewLine << "Effective Flange Width = " << xdim2.SetValue(effFlangeWidth) << rptNewLine;
+       (*pPara) << rptNewLine << _T("Effective Flange Width = ") << xdim2.SetValue(effFlangeWidth) << rptNewLine;
     }
    else
    {
       if ( IsSpreadSpacing(pIBridgeDesc->GetGirderSpacingType()) )
       {
-         *pPara << "Effective flange width is taken as one-half the distance to the adjacent girder on each side of the component" << rptNewLine;
-         *pPara << "Left Tributary Width = " << xdim.SetValue(efw.twLeft*2) << rptNewLine;
-         *pPara << "Right Tributary Width = " << xdim.SetValue(efw.twRight*2) << rptNewLine;
-         *pPara << "Effective Flange Width = " << xdim.SetValue(efw.effFlangeWidth) << " = " << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
+         *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder on each side of the component") << rptNewLine;
+         *pPara << _T("Left Tributary Width = ") << xdim.SetValue(efw.twLeft*2) << rptNewLine;
+         *pPara << _T("Right Tributary Width = ") << xdim.SetValue(efw.twRight*2) << rptNewLine;
+         *pPara << _T("Effective Flange Width = ") << xdim.SetValue(efw.effFlangeWidth) << _T(" = ") << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
       }
       else
       {
-         *pPara << "Effective flange width is taken as the girder width" << rptNewLine;
-         *pPara << "Effective Flange Width = " << xdim.SetValue(efw.effFlangeWidth) << " = " << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
+         *pPara << _T("Effective flange width is taken as the girder width") << rptNewLine;
+         *pPara << _T("Effective Flange Width = ") << xdim.SetValue(efw.effFlangeWidth) << _T(" = ") << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
       }
    }
 }
@@ -693,7 +693,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
    GET_IFACE2(pBroker,IGirder,pGirder);
    long nWebs = pGirder->GetNumberOfMatingSurfaces(span,gdr);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -708,58 +708,58 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
 
    CComPtr<IBeamFactory> factory;
    GetBeamFactory(pBroker,span,gdr,&factory);
-   std::string strImage = factory->GetInteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
+   std::_tstring strImage = factory->GetInteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
 
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
    if ( use_tributary_width )
    {
-      *pPara << "Effective flange width is taken as one-half the distance to the adjacent girder on each side of the component" << rptNewLine;
-      table = pgsReportStyleHolder::CreateDefaultTable(4,"");
+      *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder on each side of the component") << rptNewLine;
+      table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
    }
    else
    {
       if ( 1 < nWebs )
       {
-         *pPara << "LRFD 4.6.2.6.1 and  C4.6.2.6.1" << rptNewLine;
-         *pPara << "For open boxes, the effective flange width of each web should be determined as though each web was an individual supporting element." << rptNewLine;
+         *pPara << _T("LRFD 4.6.2.6.1 and  C4.6.2.6.1") << rptNewLine;
+         *pPara << _T("For open boxes, the effective flange width of each web should be determined as though each web was an individual supporting element.") << rptNewLine;
       }
       else
       {
-         *pPara << "LRFD 4.6.2.6.1" << rptNewLine;
+         *pPara << _T("LRFD 4.6.2.6.1") << rptNewLine;
       }
 
       *pPara << rptNewLine;
-      *pPara << "Effective flange width is the least of: " << rptNewLine;
-      *pPara << symbol(DOT) << " One-quarter of the effective span length (" << Sub2("w","1") << ")" << rptNewLine;
-      *pPara << symbol(DOT) << " 12 times the average thickness of the slab, plus the greater of the web thickness";
-      *pPara << " OR one-half the width of the top flange of the girder (" << Sub2("w","2") << ")" << rptNewLine;
-      *pPara << symbol(DOT) << " The average spacing of adjacent beams (" << Sub2("w","3") << ")" << rptNewLine;
+      *pPara << _T("Effective flange width is the least of: ") << rptNewLine;
+      *pPara << symbol(DOT) << _T(" One-quarter of the effective span length (") << Sub2(_T("w"),_T("1")) << _T(")") << rptNewLine;
+      *pPara << symbol(DOT) << _T(" 12 times the average thickness of the slab, plus the greater of the web thickness");
+      *pPara << _T(" OR one-half the width of the top flange of the girder (") << Sub2(_T("w"),_T("2")) << _T(")") << rptNewLine;
+      *pPara << symbol(DOT) << _T(" The average spacing of adjacent beams (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
       *pPara << rptNewLine;
 
          if ( 1 < nWebs )
       {
-         *pPara << Sub2("w","2") << " = " << symbol(SUM) << Sub2("w","2") << " for each web" << rptNewLine;
-         *pPara << Sub2("w","3") << " = " << symbol(SUM) << Sub2("w","2") << " for each web" << rptNewLine << rptNewLine;
+         *pPara << Sub2(_T("w"),_T("2")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("2")) << _T(" for each web") << rptNewLine;
+         *pPara << Sub2(_T("w"),_T("3")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("2")) << _T(" for each web") << rptNewLine << rptNewLine;
       }
       
-      table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+      table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
    }
 
    *pPara << table;
 
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    if ( use_tributary_width )
    {
-      (*table)(0,1) << COLHDR("Left Spacing",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-      (*table)(0,2) << COLHDR("Right Spacing",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-      (*table)(0,3) << COLHDR("Effective Flange Width",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+      (*table)(0,1) << COLHDR(_T("Left Spacing"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+      (*table)(0,2) << COLHDR(_T("Right Spacing"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+      (*table)(0,3) << COLHDR(_T("Effective Flange Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    }
    else
    {
-      (*table)(0,1) << "";
+      (*table)(0,1) << _T("");
       table->SetColumnWidth(1,5.0);
    }
 
@@ -804,8 +804,8 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
 
    double effSpanLength;
    details->get_EffectiveSpanLength(&effSpanLength);
-   (*table)(row,1) << Sub2("w","1") << " = (0.25)(" << spanLength.SetValue(effSpanLength) << ") = ";
-   (*table)(row,1) << spanLength.SetValue(0.25*effSpanLength) << " = " << length.SetValue(0.25*effSpanLength) << rptNewLine;
+   (*table)(row,1) << Sub2(_T("w"),_T("1")) << _T(" = (0.25)(") << spanLength.SetValue(effSpanLength) << _T(") = ");
+   (*table)(row,1) << spanLength.SetValue(0.25*effSpanLength) << _T(" = ") << length.SetValue(0.25*effSpanLength) << rptNewLine;
 
    long count;
    details->get_FlangeCount(&count);
@@ -813,25 +813,25 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
    for ( long flangeIdx = 0; flangeIdx < count; flangeIdx++ )
    {
       if ( 1 < count )
-         (*table)(row,1) << rptNewLine << "Top Flange " << long(flangeIdx + 1) << rptNewLine;
+         (*table)(row,1) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
 
       double tSlab, tWeb, wFlange, lSpacing, rSpacing;
       details->get_SlabThickness(&tSlab);
       details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
-      (*table)(row,1) << Sub2("w","2") << " = (12.0)(" << length.SetValue(tSlab) << ") + greater of [ ";
-      (*table)(row,1) << length.SetValue(tWeb) << " : (0.5)(";
-      (*table)(row,1) << length.SetValue(wFlange) << ") ] = ";
+      (*table)(row,1) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
+      (*table)(row,1) << length.SetValue(tWeb) << _T(" : (0.5)(");
+      (*table)(row,1) << length.SetValue(wFlange) << _T(") ] = ");
       (*table)(row,1) << length.SetValue( 12*tSlab + _cpp_max(tWeb,0.5*wFlange) ) << rptNewLine;
 
-      (*table)(row,1) << Sub2("w","3") << " = (" << spanLength.SetValue(lSpacing*2) << " + ";
-      (*table)(row,1) << spanLength.SetValue(rSpacing*2) << ")/2 = ";
+      (*table)(row,1) << Sub2(_T("w"),_T("3")) << _T(" = (") << spanLength.SetValue(lSpacing*2) << _T(" + ");
+      (*table)(row,1) << spanLength.SetValue(rSpacing*2) << _T(")/2 = ");
       (*table)(row,1) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-      (*table)(row,1) << " = " << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+      (*table)(row,1) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
    }
 
    double effFlangeWidth;
    details->EffectiveFlangeWidth(&effFlangeWidth);
-   (*table)(row,1) << rptNewLine << "Effective Flange Width = " << length.SetValue(effFlangeWidth) << rptNewLine;
+   (*table)(row,1) << rptNewLine << _T("Effective Flange Width = ") << length.SetValue(effFlangeWidth) << rptNewLine;
 }
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -860,17 +860,17 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
     GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << "LRFD 4.6.2.6.1" << rptNewLine;
+   *pPara << _T("LRFD 4.6.2.6.1") << rptNewLine;
    *pPara << rptNewLine;
 
 
    CComPtr<IBeamFactory> factory;
    GetBeamFactory(pBroker,span,gdr,&factory);
-   std::string strImage = factory->GetExteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
+   std::_tstring strImage = factory->GetExteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
 
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
@@ -900,17 +900,17 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
       double overhang = (bLeftGirder ? lSpacing : rSpacing);
 
-      (*pPara) << "Effective flange width is one half the effective flange width of the adjacent interior beam, plus the least of:" << rptNewLine;
-      (*pPara) << "One-eighth of the effective span length: " << "(0.125)(" << xdim.SetValue(effSpanLength) << ") = "; 
-      (*pPara) << xdim.SetValue(0.125*effSpanLength) << " = " << xdim2.SetValue(0.125*effSpanLength) << rptNewLine;
-      (*pPara) << "6.0 times the average thickness of the slab, plus the greater of half the web thickness OR one-quarter the width of the top flange of the girder" << rptNewLine;
-      (*pPara) << rptTab << "(6.0)(" << xdim2.SetValue(tSlab) << ") + (0.5)(";
-      (*pPara) << xdim2.SetValue(tWeb) << ") = ";
+      (*pPara) << _T("Effective flange width is one half the effective flange width of the adjacent interior beam, plus the least of:") << rptNewLine;
+      (*pPara) << _T("One-eighth of the effective span length: ") << _T("(0.125)(") << xdim.SetValue(effSpanLength) << _T(") = "); 
+      (*pPara) << xdim.SetValue(0.125*effSpanLength) << _T(" = ") << xdim2.SetValue(0.125*effSpanLength) << rptNewLine;
+      (*pPara) << _T("6.0 times the average thickness of the slab, plus the greater of half the web thickness OR one-quarter the width of the top flange of the girder") << rptNewLine;
+      (*pPara) << rptTab << _T("(6.0)(") << xdim2.SetValue(tSlab) << _T(") + (0.5)(");
+      (*pPara) << xdim2.SetValue(tWeb) << _T(") = ");
       (*pPara) << xdim2.SetValue(6.0*tSlab + 0.5*tWeb) << rptNewLine;
-      (*pPara) << rptTab << "(6.0)(" << xdim2.SetValue(tSlab) << ") + (0.25)(";
-      (*pPara) << xdim2.SetValue(wFlange) << ") = ";
+      (*pPara) << rptTab << _T("(6.0)(") << xdim2.SetValue(tSlab) << _T(") + (0.25)(");
+      (*pPara) << xdim2.SetValue(wFlange) << _T(") = ");
       (*pPara) << xdim2.SetValue(6.0*tSlab + 0.25*wFlange) << rptNewLine;
-      (*pPara) << "The width of the overhang: " << xdim.SetValue(overhang) << " = " << xdim2.SetValue(overhang) << rptNewLine;
+      (*pPara) << _T("The width of the overhang: ") << xdim.SetValue(overhang) << _T(" = ") << xdim2.SetValue(overhang) << rptNewLine;
       (*pPara) << rptNewLine;
 
       adjacent_efw.m_Details->get_EffectiveSpanLength(&effSpanLength);
@@ -918,49 +918,49 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
       adjacent_efw.m_Details->GetFlangeParameters(0,&tWeb,&wFlange,&lSpacing,&rSpacing);
       double spacing = rSpacing + lSpacing;
 
-      (*pPara) << "The effective flange width for the adjacent interior girder is the least of:" << rptNewLine;
-      (*pPara) << "One-quarter of the effective span length: " << "(0.25)(" << xdim.SetValue(effSpanLength) << ") = "; 
-      (*pPara) << xdim.SetValue(0.25*effSpanLength) << " = " << xdim2.SetValue(0.25*effSpanLength) << rptNewLine;
-      (*pPara) << "12.0 times the average thickness of the slab, plus the greater of web thickness OR one-half the width of the top flange of the girder" << rptNewLine;
-      (*pPara) << rptTab << "(12.0)(" << xdim2.SetValue(tSlab) << ") + ";
-      (*pPara) << xdim2.SetValue(tWeb) << " = ";
+      (*pPara) << _T("The effective flange width for the adjacent interior girder is the least of:") << rptNewLine;
+      (*pPara) << _T("One-quarter of the effective span length: ") << _T("(0.25)(") << xdim.SetValue(effSpanLength) << _T(") = "); 
+      (*pPara) << xdim.SetValue(0.25*effSpanLength) << _T(" = ") << xdim2.SetValue(0.25*effSpanLength) << rptNewLine;
+      (*pPara) << _T("12.0 times the average thickness of the slab, plus the greater of web thickness OR one-half the width of the top flange of the girder") << rptNewLine;
+      (*pPara) << rptTab << _T("(12.0)(") << xdim2.SetValue(tSlab) << _T(") + ");
+      (*pPara) << xdim2.SetValue(tWeb) << _T(" = ");
       (*pPara) << xdim2.SetValue(12.0*tSlab + tWeb) << rptNewLine;
-      (*pPara) << rptTab << "(12.0)(" << xdim2.SetValue(tSlab) << ") + (0.5)(";
-      (*pPara) << xdim2.SetValue(wFlange) << ") = ";
+      (*pPara) << rptTab << _T("(12.0)(") << xdim2.SetValue(tSlab) << _T(") + (0.5)(");
+      (*pPara) << xdim2.SetValue(wFlange) << _T(") = ");
       (*pPara) << xdim2.SetValue(12.0*tSlab + 0.5*wFlange) << rptNewLine;
-      (*pPara) << "The average spacing of adjacent beams: " << xdim.SetValue(spacing) << " = " << xdim2.SetValue(spacing) << rptNewLine;
+      (*pPara) << _T("The average spacing of adjacent beams: ") << xdim.SetValue(spacing) << _T(" = ") << xdim2.SetValue(spacing) << rptNewLine;
 
-      (*pPara) << rptNewLine << "Effective Flange Width = " << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
+      (*pPara) << rptNewLine << _T("Effective Flange Width = ") << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
    }
    else
    {
       if ( IsSpreadSpacing(pIBridgeDesc->GetGirderSpacingType()) )
       {
-         *pPara << "Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width" << rptNewLine;
+         *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width") << rptNewLine;
          if ( bLeftGirder )
-           *pPara << "Left Overhang from CL girder = " << xdim.SetValue(efw.twLeft) << rptNewLine;
+           *pPara << _T("Left Overhang from CL girder = ") << xdim.SetValue(efw.twLeft) << rptNewLine;
          else
-           *pPara << "Left Spacing = " << xdim.SetValue(efw.twLeft*2) << rptNewLine;
+           *pPara << _T("Left Spacing = ") << xdim.SetValue(efw.twLeft*2) << rptNewLine;
 
          if ( bLeftGirder )
-           *pPara << "Right Spacing = " << xdim.SetValue(efw.twRight*2) << rptNewLine;
+           *pPara << _T("Right Spacing = ") << xdim.SetValue(efw.twRight*2) << rptNewLine;
          else
-           *pPara << "Right Overhang from CL girder = " << xdim.SetValue(efw.twRight) << rptNewLine;
+           *pPara << _T("Right Overhang from CL girder = ") << xdim.SetValue(efw.twRight) << rptNewLine;
       }
       else
       {
-         *pPara << "Effective flange width is taken as the girder width" << rptNewLine;
+         *pPara << _T("Effective flange width is taken as the girder width") << rptNewLine;
       }
 
       if ( efw.bContinuousBarrier )
       {
-         *pPara << "Where a structurally continuous concrete barrier is present and is included in the structural analysis as permited in Article 4.5.1 the deck slab overhang width used for the analysis as well as for checking the composite girder resistance may be extended by: "
-            << symbol(DELTA) << "w = " << Sub2("A","b") << "/(2" << Sub2("t","s") << ")" << rptNewLine;
-         *pPara << Sub2("A","b") << " = " << area.SetValue(efw.Ab) << rptNewLine;
-         *pPara << Sub2("t","s") << " = " << xdim2.SetValue(efw.ts) << rptNewLine;
+         *pPara << _T("Where a structurally continuous concrete barrier is present and is included in the structural analysis as permited in Article 4.5.1 the deck slab overhang width used for the analysis as well as for checking the composite girder resistance may be extended by: ")
+            << symbol(DELTA) << _T("w = ") << Sub2(_T("A"),_T("b")) << _T("/(2") << Sub2(_T("t"),_T("s")) << _T(")") << rptNewLine;
+         *pPara << Sub2(_T("A"),_T("b")) << _T(" = ") << area.SetValue(efw.Ab) << rptNewLine;
+         *pPara << Sub2(_T("t"),_T("s")) << _T(" = ") << xdim2.SetValue(efw.ts) << rptNewLine;
       }
 
-      *pPara << "Effective Flange Width = " << xdim.SetValue(efw.effFlangeWidth) << " = " << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
+      *pPara << _T("Effective Flange Width = ") << xdim.SetValue(efw.effFlangeWidth) << _T(" = ") << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
    }
 }
 
@@ -969,11 +969,11 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << "LRFD 4.6.2.6.1" << rptNewLine;
+   *pPara << _T("LRFD 4.6.2.6.1") << rptNewLine;
 
    *pPara << rptNewLine;
 
@@ -987,22 +987,22 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
    if ( use_tributary_width )
    {
-       *pPara << "Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width" << rptNewLine;
+       *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width") << rptNewLine;
    }
    else
    {
-      *pPara << "Effective flange width is one-half the effective width of the adjacent interior beam, plus the least of: " << rptNewLine;
-      *pPara << symbol(DOT) << " One-eights of the effective span length (" << Sub2("w","1") << ")" << rptNewLine;
-      *pPara << symbol(DOT) << " 6 times the average thickness of the slab, plus the greater of one-half the web thickness";
-      *pPara << " OR one-quarter the width of the top flange of the girder (" << Sub2("w","2") << ")" << rptNewLine;
-      *pPara << symbol(DOT) << " The width of the overhang (" << Sub2("w","3") << ")" << rptNewLine;
+      *pPara << _T("Effective flange width is one-half the effective width of the adjacent interior beam, plus the least of: ") << rptNewLine;
+      *pPara << symbol(DOT) << _T(" One-eights of the effective span length (") << Sub2(_T("w"),_T("1")) << _T(")") << rptNewLine;
+      *pPara << symbol(DOT) << _T(" 6 times the average thickness of the slab, plus the greater of one-half the web thickness");
+      *pPara << _T(" OR one-quarter the width of the top flange of the girder (") << Sub2(_T("w"),_T("2")) << _T(")") << rptNewLine;
+      *pPara << symbol(DOT) << _T(" The width of the overhang (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
    }
    *pPara << rptNewLine;
 
 
    CComPtr<IBeamFactory> factory;
    GetBeamFactory(pBroker,span,gdr,&factory);
-   std::string strImage = factory->GetExteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
+   std::_tstring strImage = factory->GetExteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
 
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
@@ -1016,34 +1016,34 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
       if ( efw.bContinuousBarrier )
       {
-          *pPara << "Where a structurally continuous concrete barrier is present and is included in the structural analysis as permited in Article 4.5.1 the deck slab overhang width used for the analysis as well as for checking the composite girder resistance may be extended by: "
-                 << symbol(DELTA) << "w = " << Sub2("A","b") << "/(2" << Sub2("t","s") << ")" << rptNewLine;
+          *pPara << _T("Where a structurally continuous concrete barrier is present and is included in the structural analysis as permited in Article 4.5.1 the deck slab overhang width used for the analysis as well as for checking the composite girder resistance may be extended by: ")
+                 << symbol(DELTA) << _T("w = ") << Sub2(_T("A"),_T("b")) << _T("/(2") << Sub2(_T("t"),_T("s")) << _T(")") << rptNewLine;
 
           nCol += 2;
       }
 
-      table = pgsReportStyleHolder::CreateDefaultTable(nCol,"");
+      table = pgsReportStyleHolder::CreateDefaultTable(nCol,_T(""));
 
       int col = 0;
-      (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*table)(0,col++) << COLHDR((bLeftGirder ? "Left Overhang" : "Left Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(0,col++) << COLHDR((bLeftGirder ? "Right Spacing" : "Right Overhang"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,col++) << COLHDR((bLeftGirder ? _T("Left Overhang") : _T("Left Spacing")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR((bLeftGirder ? _T("Right Spacing") : _T("Right Overhang")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
       if ( efw.bContinuousBarrier )
       {
-         (*table)(0,col++) << COLHDR(Sub2("A","b"),rptAreaUnitTag,pDisplayUnits->GetAreaUnit() );
-         (*table)(0,col++) << COLHDR(Sub2("t","s"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit() );
+         (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("b")),rptAreaUnitTag,pDisplayUnits->GetAreaUnit() );
+         (*table)(0,col++) << COLHDR(Sub2(_T("t"),_T("s")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit() );
       }
 
-      (*table)(0,col++) << COLHDR("Effective Flange Width",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(_T("Effective Flange Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit() );
    }
    else
    {
-      table = pgsReportStyleHolder::CreateDefaultTable(3,"");
+      table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
 
-      (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*table)(0,1) << "Adjacent Interior Beam";
-      (*table)(0,2) << "This Beam";
+      (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,1) << _T("Adjacent Interior Beam");
+      (*table)(0,2) << _T("This Beam");
 
       table->SetColumnWidth(1,5.0);
       table->SetColumnWidth(2,5.0);
@@ -1084,8 +1084,8 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
          double effSpanLength;
          efw.m_Details->get_EffectiveSpanLength(&effSpanLength);
-         (*table)(row,col) << Sub2("w","1") << " = (0.125)(" << spanLength.SetValue(effSpanLength) << ") = ";
-         (*table)(row,col) << spanLength.SetValue(0.125*effSpanLength) << " = " << length.SetValue(0.125*effSpanLength) << rptNewLine;
+         (*table)(row,col) << Sub2(_T("w"),_T("1")) << _T(" = (0.125)(") << spanLength.SetValue(effSpanLength) << _T(") = ");
+         (*table)(row,col) << spanLength.SetValue(0.125*effSpanLength) << _T(" = ") << length.SetValue(0.125*effSpanLength) << rptNewLine;
 
          long count;
          efw.m_Details->get_FlangeCount(&count);
@@ -1093,22 +1093,22 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          for ( long flangeIdx = 0; flangeIdx < count; flangeIdx++ )
          {
             if ( 1 < count )
-               (*table)(row,col) << rptNewLine << "Top Flange " << long(flangeIdx + 1) << rptNewLine;
+               (*table)(row,col) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
 
             double tSlab, tWeb, wFlange, lSpacing, rSpacing;
             efw.m_Details->get_SlabThickness(&tSlab);
             efw.m_Details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
-            (*table)(row,col) << Sub2("w","2") << " = (6.0)(" << length.SetValue(tSlab) << ") + greater of [ (0.5)(";
-            (*table)(row,col) << length.SetValue(tWeb) << ") : (0.25)(";
-            (*table)(row,col) << length.SetValue(wFlange) << ") ] = ";
+            (*table)(row,col) << Sub2(_T("w"),_T("2")) << _T(" = (6.0)(") << length.SetValue(tSlab) << _T(") + greater of [ (0.5)(");
+            (*table)(row,col) << length.SetValue(tWeb) << _T(") : (0.25)(");
+            (*table)(row,col) << length.SetValue(wFlange) << _T(") ] = ");
             (*table)(row,col) << length.SetValue( 6*tSlab + _cpp_max(0.5*tWeb,0.25*wFlange) ) << rptNewLine;
 
             double overhang = (bLeftGirder ? lSpacing : rSpacing);
-            (*table)(row,col) << Sub2("w","3") << " = " << spanLength.SetValue(overhang);
-            (*table)(row,col) << " = " << length.SetValue(overhang) << rptNewLine;
+            (*table)(row,col) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(overhang);
+            (*table)(row,col) << _T(" = ") << length.SetValue(overhang) << rptNewLine;
          }
 
-         (*table)(row,col) << rptNewLine << "Effective Flange Width = " << length.SetValue(efw.effFlangeWidth) << rptNewLine;
+         (*table)(row,col) << rptNewLine << _T("Effective Flange Width = ") << length.SetValue(efw.effFlangeWidth) << rptNewLine;
       }
       else
       {
@@ -1162,28 +1162,28 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << "LRFD 4.6.2.6.1 and  C4.6.2.6.1" << rptNewLine;
-   *pPara << "For open boxes, the effective flange width of each web should be determined as though each web was an individual supporting element." << rptNewLine;
+   *pPara << _T("LRFD 4.6.2.6.1 and  C4.6.2.6.1") << rptNewLine;
+   *pPara << _T("For open boxes, the effective flange width of each web should be determined as though each web was an individual supporting element.") << rptNewLine;
    *pPara << rptNewLine;
-   *pPara << "Effective flange width is the least of: " << rptNewLine;
-   *pPara << symbol(DOT) << " One-quarter of the effective span length (" << Sub2("w","1") << ")" << rptNewLine;
-   *pPara << symbol(DOT) << " 12 times the average thickness of the slab, plus the greater of the web thickness";
-   *pPara << " OR one-half the width of the top flange of the girder (" << Sub2("w","2") << ")" << rptNewLine;
-   *pPara << symbol(DOT) << " The average spacing of adjacent webs for interior webs (" << Sub2("w","3") << ")" << rptNewLine;
-   *pPara << symbol(DOT) << " The slab overhang plus one-half of the spacing to the adjacent interor web for exterior webs (" << Sub2("w","3") << ")" << rptNewLine;
+   *pPara << _T("Effective flange width is the least of: ") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" One-quarter of the effective span length (") << Sub2(_T("w"),_T("1")) << _T(")") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" 12 times the average thickness of the slab, plus the greater of the web thickness");
+   *pPara << _T(" OR one-half the width of the top flange of the girder (") << Sub2(_T("w"),_T("2")) << _T(")") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" The average spacing of adjacent webs for interior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" The slab overhang plus one-half of the spacing to the adjacent interor web for exterior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
    *pPara << rptNewLine;
    
-   *pPara << Sub2("w","2") << " = " << symbol(SUM) << Sub2("w","2") << " for each web" << rptNewLine;
-   *pPara << Sub2("w","3") << " = " << symbol(SUM) << Sub2("w","3") << " for each web" << rptNewLine << rptNewLine;
+   *pPara << Sub2(_T("w"),_T("2")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("2")) << _T(" for each web") << rptNewLine;
+   *pPara << Sub2(_T("w"),_T("3")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("3")) << _T(" for each web") << rptNewLine << rptNewLine;
 
 
    CComPtr<IBeamFactory> factory;
    GetBeamFactory(pBroker,span,gdr,&factory);
-   std::string strImage = factory->GetExteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
+   std::_tstring strImage = factory->GetExteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
 
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
@@ -1213,41 +1213,41 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
 
       if ( 1 < count )
-         (*pPara) << rptNewLine << "Top Flange " << long(flangeIdx + 1) << rptNewLine;
+         (*pPara) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
 
-      (*pPara) << Sub2("w","2") << " = (12.0)(" << length.SetValue(tSlab) << ") + greater of [ ";
-      (*pPara) << length.SetValue(tWeb) << " : (0.5)(";
-      (*pPara) << length.SetValue(wFlange) << ") ] = ";
+      (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
+      (*pPara) << length.SetValue(tWeb) << _T(" : (0.5)(");
+      (*pPara) << length.SetValue(wFlange) << _T(") ] = ");
       (*pPara) << length.SetValue( 12*tSlab + _cpp_max(tWeb,0.5*wFlange) ) << rptNewLine;
 
       if ( bLeftGirder && flangeIdx == 0 )
         {
         // left exterior web 
-        (*pPara) << Sub2("w","3") << " = " << spanLength.SetValue(lSpacing) << " + ";
-        (*pPara) << spanLength.SetValue(rSpacing*2) << "/2 = ";
+        (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(lSpacing) << _T(" + ");
+        (*pPara) << spanLength.SetValue(rSpacing*2) << _T("/2 = ");
         (*pPara) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-        (*pPara) << " = " << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+        (*pPara) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
         }
         else if ( !bLeftGirder && flangeIdx == count-1 )
         {
         // right exterior web 
-        (*pPara) << Sub2("w","3") << " = " << spanLength.SetValue(lSpacing*2) << "/2 + ";
-        (*pPara) << spanLength.SetValue(rSpacing) << " = ";
+        (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(lSpacing*2) << _T("/2 + ");
+        (*pPara) << spanLength.SetValue(rSpacing) << _T(" = ");
         (*pPara) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-        (*pPara) << " = " << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+        (*pPara) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
         }
         else
         {
-        (*pPara) << Sub2("w","3") << " = (" << spanLength.SetValue(lSpacing*2) << " + ";
-        (*pPara) << spanLength.SetValue(rSpacing*2) << ")/2 = ";
+        (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = (") << spanLength.SetValue(lSpacing*2) << _T(" + ");
+        (*pPara) << spanLength.SetValue(rSpacing*2) << _T(")/2 = ");
         (*pPara) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-        (*pPara) << " = " << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+        (*pPara) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
         }
    }
 
       double effFlangeWidth;
       details->EffectiveFlangeWidth(&effFlangeWidth);
-      (*pPara) << rptNewLine << "Effective Flange Width = " << length.SetValue(effFlangeWidth) << rptNewLine;
+      (*pPara) << rptNewLine << _T("Effective Flange Width = ") << length.SetValue(effFlangeWidth) << rptNewLine;
 }
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -1266,37 +1266,37 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << "LRFD 4.6.2.6.1 and  C4.6.2.6.1" << rptNewLine;
-   *pPara << "For open boxes, the effective flange width of each web should be determined as though each web was an individual supporting element." << rptNewLine;
+   *pPara << _T("LRFD 4.6.2.6.1 and  C4.6.2.6.1") << rptNewLine;
+   *pPara << _T("For open boxes, the effective flange width of each web should be determined as though each web was an individual supporting element.") << rptNewLine;
    *pPara << rptNewLine;
-   *pPara << "Effective flange width is the least of: " << rptNewLine;
-   *pPara << symbol(DOT) << " One-quarter of the effective span length (" << Sub2("w","1") << ")" << rptNewLine;
-   *pPara << symbol(DOT) << " 12 times the average thickness of the slab, plus the greater of the web thickness";
-   *pPara << " OR one-half the width of the top flange of the girder (" << Sub2("w","3") << ")" << rptNewLine;
-   *pPara << symbol(DOT) << " The average spacing of adjacent webs for interior webs (" << Sub2("w","3") << ")" << rptNewLine;
-   *pPara << symbol(DOT) << " The slab overhang plus one-half of the spacing to the adjacent interor web for exterior webs (" << Sub2("w","3") << ")" << rptNewLine;
+   *pPara << _T("Effective flange width is the least of: ") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" One-quarter of the effective span length (") << Sub2(_T("w"),_T("1")) << _T(")") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" 12 times the average thickness of the slab, plus the greater of the web thickness");
+   *pPara << _T(" OR one-half the width of the top flange of the girder (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" The average spacing of adjacent webs for interior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" The slab overhang plus one-half of the spacing to the adjacent interor web for exterior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
    *pPara << rptNewLine;
    
-   *pPara << Sub2("w","2") << " = " << symbol(SUM) << Sub2("w","2") << " for each web" << rptNewLine;
-   *pPara << Sub2("w","3") << " = " << symbol(SUM) << Sub2("w","3") << " for each web" << rptNewLine << rptNewLine;
+   *pPara << Sub2(_T("w"),_T("2")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("2")) << _T(" for each web") << rptNewLine;
+   *pPara << Sub2(_T("w"),_T("3")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("3")) << _T(" for each web") << rptNewLine << rptNewLine;
 
 
    CComPtr<IBeamFactory> factory;
    GetBeamFactory(pBroker,span,gdr,&factory);
-   std::string strImage = factory->GetExteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
+   std::_tstring strImage = factory->GetExteriorGirderEffectiveFlangeWidthImage(pBroker,pBridge->GetDeckType());
 
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
    *pPara << table;
 
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << "";
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << _T("");
 
    table->SetColumnWidth(1,5.0);
 
@@ -1322,8 +1322,8 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
 
       double effSpanLength;
       details->get_EffectiveSpanLength(&effSpanLength);
-      (*table)(row,1) << Sub2("w","1") << " = (0.25)(" << spanLength.SetValue(effSpanLength) << ") = ";
-      (*table)(row,1) << spanLength.SetValue(0.25*effSpanLength) << " = " << length.SetValue(0.25*effSpanLength) << rptNewLine;
+      (*table)(row,1) << Sub2(_T("w"),_T("1")) << _T(" = (0.25)(") << spanLength.SetValue(effSpanLength) << _T(") = ");
+      (*table)(row,1) << spanLength.SetValue(0.25*effSpanLength) << _T(" = ") << length.SetValue(0.25*effSpanLength) << rptNewLine;
 
       long count;
       details->get_FlangeCount(&count);
@@ -1331,44 +1331,44 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       for ( long flangeIdx = 0; flangeIdx < count; flangeIdx++ )
       {
          if ( 1 < count )
-            (*table)(row,1) << rptNewLine << "Web " << long(flangeIdx + 1) << rptNewLine;
+            (*table)(row,1) << rptNewLine << _T("Web ") << long(flangeIdx + 1) << rptNewLine;
 
          double tSlab, tWeb, wFlange, lSpacing, rSpacing;
          details->get_SlabThickness(&tSlab);
          details->GetFlangeParameters(flangeIdx,&tWeb,&wFlange,&lSpacing,&rSpacing);
-         (*table)(row,1) << Sub2("w","2") << " = (12.0)(" << length.SetValue(tSlab) << ") + greater of [ ";
-         (*table)(row,1) << length.SetValue(tWeb) << " : (0.5)(";
-         (*table)(row,1) << length.SetValue(wFlange) << ") ] = ";
+         (*table)(row,1) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
+         (*table)(row,1) << length.SetValue(tWeb) << _T(" : (0.5)(");
+         (*table)(row,1) << length.SetValue(wFlange) << _T(") ] = ");
          (*table)(row,1) << length.SetValue( 12*tSlab + _cpp_max(tWeb,0.5*wFlange) ) << rptNewLine;
 
          if ( bLeftGirder && flangeIdx == 0 )
          {
             // left exterior web 
-            (*table)(row,1) << Sub2("w","3") << " = " << spanLength.SetValue(lSpacing) << " + ";
-            (*table)(row,1) << spanLength.SetValue(rSpacing*2) << "/2 = ";
+            (*table)(row,1) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(lSpacing) << _T(" + ");
+            (*table)(row,1) << spanLength.SetValue(rSpacing*2) << _T("/2 = ");
             (*table)(row,1) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-            (*table)(row,1) << " = " << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+            (*table)(row,1) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
          }
          else if ( !bLeftGirder && flangeIdx == count-1 )
          {
             // right exterior web 
-            (*table)(row,1) << Sub2("w","3") << " = " << spanLength.SetValue(lSpacing*2) << "/2 + ";
-            (*table)(row,1) << spanLength.SetValue(rSpacing) << " = ";
+            (*table)(row,1) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(lSpacing*2) << _T("/2 + ");
+            (*table)(row,1) << spanLength.SetValue(rSpacing) << _T(" = ");
             (*table)(row,1) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-            (*table)(row,1) << " = " << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+            (*table)(row,1) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
          }
          else
          {
-            (*table)(row,1) << Sub2("w","3") << " = (" << spanLength.SetValue(lSpacing*2) << " + ";
-            (*table)(row,1) << spanLength.SetValue(rSpacing*2) << ")/2 = ";
+            (*table)(row,1) << Sub2(_T("w"),_T("3")) << _T(" = (") << spanLength.SetValue(lSpacing*2) << _T(" + ");
+            (*table)(row,1) << spanLength.SetValue(rSpacing*2) << _T(")/2 = ");
             (*table)(row,1) << spanLength.SetValue(lSpacing+rSpacing); // left and right spacing already halved, but present it as if it isn't
-            (*table)(row,1) << " = " << length.SetValue(lSpacing+rSpacing) << rptNewLine;
+            (*table)(row,1) << _T(" = ") << length.SetValue(lSpacing+rSpacing) << rptNewLine;
          }
       }
 
       double effFlangeWidth;
       details->EffectiveFlangeWidth(&effFlangeWidth);
-      (*table)(row,1) << rptNewLine << "Effective Flange Width = " << length.SetValue(effFlangeWidth) << rptNewLine;
+      (*table)(row,1) << rptNewLine << _T("Effective Flange Width = ") << length.SetValue(effFlangeWidth) << rptNewLine;
 
       row++;
    }

@@ -46,13 +46,13 @@ void CTxDOTComponentInfo::Terminate()
 
 CString CTxDOTComponentInfo::GetName()
 {
-   return "TxDOT PGSuper Extensions";
+   return _T("TxDOT PGSuper Extensions");
 }
 
 CString CTxDOTComponentInfo::GetDescription()
 {
    CString strDesc;
-   strDesc.Format("TxDOT-specific features for PGSuper");
+   strDesc.Format(_T("TxDOT-specific features for PGSuper"));
    return strDesc;
 }
 

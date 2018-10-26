@@ -233,7 +233,7 @@ void CShearSteelGrid::CustomInit()
 		);
 
    CString cv;
-   cv.Format("Zone Length\n(%s)",pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Zone Length\n(%s)"),pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -242,7 +242,7 @@ void CShearSteelGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Spacing\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Spacing\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -257,7 +257,7 @@ void CShearSteelGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Vertical Bars\nSize")
+			.SetValue(_T("Vertical Bars\nSize"))
 		);
 
 	this->SetStyleRange(CGXRange(0,4), CGXStyle()
@@ -265,7 +265,7 @@ void CShearSteelGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Vertical Bars\n#")
+			.SetValue(_T("Vertical Bars\n#"))
 		);
 
 	this->SetStyleRange(CGXRange(0,5), CGXStyle()
@@ -273,7 +273,7 @@ void CShearSteelGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Horizontal Bars\nSize")
+			.SetValue(_T("Horizontal Bars\nSize"))
 		);
 
 	this->SetStyleRange(CGXRange(0,6), CGXStyle()
@@ -281,7 +281,7 @@ void CShearSteelGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Horizontal Bars\n#")
+			.SetValue(_T("Horizontal Bars\n#"))
 		);
 
    // make it so that text fits correctly in header row
@@ -355,55 +355,55 @@ CString CShearSteelGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 bool CShearSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::ShearZoneInfo* pszi)
 {
    CString s = GetCellValue(nRow, 1);
-   Float64 d = atof(s);
-   if (s.IsEmpty() || (d==0.0 && s[0]!='0'))
+   Float64 d = _tstof(s);
+   if (s.IsEmpty() || (d==0.0 && s[0]!=_T('0')))
       pszi->ZoneLength = 0;
    else
       pszi->ZoneLength = d;
 
    s = GetCellValue(nRow, 2);
-   d = atof(s);
-   if (s.IsEmpty() || (d==0.0 && s[0]!='0'))
+   d = _tstof(s);
+   if (s.IsEmpty() || (d==0.0 && s[0]!=_T('0')))
       pszi->StirrupSpacing = 0;
    else
       pszi->StirrupSpacing = d;
 
    s = GetCellValue(nRow, 3);
    s.TrimLeft();
-   if (s=="none")
+   if (s==_T("none"))
       pszi->VertBarSize = 0;
    else
    {
       int l = s.GetLength();
       CString s2 = s.Right(l-1);
-      int i = atoi(s2);
-      if (s.IsEmpty() || (i==0&&s[0]!='0'))
+      int i = _tstoi(s2);
+      if (s.IsEmpty() || (i==0&&s[0]!=_T('0')))
          pszi->VertBarSize = 0;
       else
          pszi->VertBarSize = i;
    }
 
    s = GetCellValue(nRow,4);
-   pszi->nVertBars = atoi(s);
+   pszi->nVertBars = _tstoi(s);
 
 
    s = GetCellValue(nRow, 5);
    s.TrimLeft();
-   if (s=="none")
+   if (s==_T("none"))
       pszi->HorzBarSize = 0;
    else
    {
       int l = s.GetLength();
       CString s2 = s.Right(l-1);
-      int i = atoi(s2);
-      if (s.IsEmpty() || (i==0&&s[0]!='0'))
+      int i = _tstoi(s2);
+      if (s.IsEmpty() || (i==0&&s[0]!=_T('0')))
          pszi->HorzBarSize = 0;
       else
          pszi->HorzBarSize = i;
    }
 
    s = GetCellValue(nRow,6);
-   pszi->nHorzBars = atoi(s);
+   pszi->nHorzBars = _tstoi(s);
 
    return true;
 }
@@ -433,24 +433,24 @@ void CShearSteelGrid::FillGrid(const GirderLibraryEntry::ShearZoneInfoVec& rvec)
          Int32 barSize = (*it).VertBarSize;
          CString tmp;
          if (barSize == 0)
-            tmp = "none";
+            tmp = _T("none");
          else
-            tmp.Format("#%d",barSize);
+            tmp.Format(_T("#%d"),barSize);
 
          VERIFY(SetValueRange(CGXRange(nRow, 3), tmp));
 
-         tmp.Format("%d",(*it).nVertBars);
+         tmp.Format(_T("%d"),(*it).nVertBars);
          VERIFY(SetValueRange(CGXRange(nRow, 4), tmp));
 
          barSize = (*it).HorzBarSize;
          if (barSize == 0)
-            tmp = "none";
+            tmp = _T("none");
          else
-            tmp.Format("#%d",barSize);
+            tmp.Format(_T("#%d"),barSize);
 
          VERIFY(SetValueRange(CGXRange(nRow, 5), tmp));
 
-         tmp.Format("%d",(*it).nHorzBars);
+         tmp.Format(_T("%d"),(*it).nHorzBars);
          VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
 
          nRow++;

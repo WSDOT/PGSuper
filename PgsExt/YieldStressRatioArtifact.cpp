@@ -98,12 +98,12 @@ Float64 pgsYieldStressRatioArtifact::GetVehicleWeight() const
    return m_VehicleWeight;
 }
 
-void pgsYieldStressRatioArtifact::SetVehicleName(const char* str)
+void pgsYieldStressRatioArtifact::SetVehicleName(LPCTSTR str)
 {
    m_strVehicleName = str;
 }
 
-std::string pgsYieldStressRatioArtifact::GetVehicleName() const
+std::_tstring pgsYieldStressRatioArtifact::GetVehicleName() const
 {
    return m_strVehicleName;
 }

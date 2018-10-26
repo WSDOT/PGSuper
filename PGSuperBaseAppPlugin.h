@@ -89,8 +89,8 @@ protected:
    void SetLastCacheUpdateDate(const sysDate& date);
    bool UpdateCatalogCache(IProgressMonitor* pProgress);
    void RestoreLibraryAndTemplatesToDefault();
-   void DeleteCache(LPCSTR pstrCache);
-   void RecursiveDelete(LPCSTR pstr);
+   void DeleteCache(LPCTSTR pstrCache);
+   void RecursiveDelete(LPCTSTR pstr);
    
    CString GetDefaultMasterLibraryFile();
    CString GetDefaultWorkgroupTemplateFolder();

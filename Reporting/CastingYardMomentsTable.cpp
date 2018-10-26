@@ -79,7 +79,7 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,SpanIndexType span,
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Casting Yard");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Casting Yard"));
    p_table->SetNumberOfHeaderRows(2);
 
    if ( span == ALL_SPANS )
@@ -94,11 +94,11 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,SpanIndexType span,
    (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION,        rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    
    p_table->SetColumnSpan(0,1,2);
-   (*p_table)(0,1) << "Girder";
+   (*p_table)(0,1) << _T("Girder");
    p_table->SetColumnSpan(0,2,-1);
 
-   (*p_table)(1,1) << COLHDR("Moment", rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table)(1,2) << COLHDR("Shear",  rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*p_table)(1,1) << COLHDR(_T("Moment"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(1,2) << COLHDR(_T("Shear"),  rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -161,7 +161,7 @@ bool CCastingYardMomentsTable::AssertValid() const
 
 void CCastingYardMomentsTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CCastingYardMomentsTable" << endl;
+   os << _T("Dump for CCastingYardMomentsTable") << endl;
 }
 #endif // _DEBUG
 

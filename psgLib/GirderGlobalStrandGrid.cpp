@@ -606,7 +606,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 		);
 
    CString cv;
-   cv.Format("Xb\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Xb\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -615,7 +615,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Yb\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Yb\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -624,7 +624,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = "Type";
+   cv = _T("Type");
 	this->SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -633,7 +633,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Xt\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Xt\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -642,7 +642,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Yt\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Yt\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -730,13 +730,13 @@ ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridE
    if (entry.m_Type == GirderLibraryEntry::stStraight)
    {
       if (entry.m_CanDebond)
-         stype = "Straight-DB";
+         stype = _T("Straight-DB");
       else
-         stype = "Straight";
+         stype = _T("Straight");
    }
    else if (entry.m_Type == GirderLibraryEntry::stHarped)
    {
-      stype = "Harped";
+      stype = _T("Harped");
    }
    else
       ATLASSERT(0);
@@ -923,8 +923,8 @@ bool CGirderGlobalStrandGrid::EditEntry(ROWCOL row, GlobalStrandGridEntry& entry
    CStrandGridLocation dlg;
 
    dlg.m_UnitString = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
-   dlg.m_UnitString.TrimLeft("(");
-   dlg.m_UnitString.TrimRight(")");
+   dlg.m_UnitString.TrimLeft(_T("("));
+   dlg.m_UnitString.TrimRight(_T(")"));
 
    dlg.m_Row = row;
    dlg.SetEntry(entry, use_harped);

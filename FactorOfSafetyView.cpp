@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "FactorOfSafetyView.h"
@@ -124,10 +124,10 @@ int CFactorOfSafetyView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    m_Graph.SetXAxisNumberOfMajorTics(11);
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
    m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
-   m_Graph.SetYAxisTitle("Factor of Safety");
+   m_Graph.SetYAxisTitle(_T("Factor of Safety"));
 
    // initial title for child frame
-   this->SetWindowText("Girder Stability");
+   this->SetWindowText(_T("Girder Stability"));
 
    return 0;
 }
@@ -182,22 +182,22 @@ void CFactorOfSafetyView::OnDraw(CDC* pDC)
       }
 
       // Set the Y axis subtitle
-      char buffer[45];
+      TCHAR buffer[45];
       if ( m_pFrame->GetStage() == CFactorOfSafetyChildFrame::Lifting )
       {
          GET_IFACE(IGirderLiftingSpecCriteria,pCriteria);
-         sprintf_s(buffer,sizeof(buffer),"Min. FScr = %3.1f, Min. FSf = %3.1f",
+         _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSf = %3.1f"),
             pCriteria->GetLiftingCrackingFs(),
             pCriteria->GetLiftingFailureFs() );
       }
       else
       {
          GET_IFACE(IGirderHaulingSpecCriteria,pCriteria);
-         sprintf_s(buffer,sizeof(buffer),"Min. FScr = %3.1f, Min. FSr = %3.1f",
+         _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSr = %3.1f"),
             pCriteria->GetHaulingCrackingFs(),
             pCriteria->GetHaulingRolloverFs() );
       }
-      m_Graph.SetSubtitle(std::string(buffer));
+      m_Graph.SetSubtitle(std::_tstring(buffer));
 
       // Draw the graph
       m_Graph.SetOutputRect(rect);
@@ -214,12 +214,12 @@ void CFactorOfSafetyView::OnDraw(CDC* pDC)
       if (m_pFrame->GetStage() == CFactorOfSafetyChildFrame::Lifting && 
           !pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
       {
-         msg = "Lifting Analysis is Disabled in the Project Criteria Library";
+         msg = _T("Lifting Analysis is Disabled in the Project Criteria Library");
       }
       else if (m_pFrame->GetStage() == CFactorOfSafetyChildFrame::Hauling && 
           !pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
       {
-         msg = "Hauling Analysis is Disabled in the Project Criteria Library";
+         msg = _T("Hauling Analysis is Disabled in the Project Criteria Library");
       }
       else
       {
@@ -232,7 +232,7 @@ void CFactorOfSafetyView::OnDraw(CDC* pDC)
       MultiLineTextOut(pDC,0,0,msg);
 
       // give child frame a reasonable default
-      this->SetWindowText("Analysis Results");
+      this->SetWindowText(_T("Analysis Results"));
    }
 
    pDC->RestoreDC(save);
@@ -258,7 +258,7 @@ void CFactorOfSafetyView::DrawLegend(CDC* pDC)
    CPen pen2(CURVE_STYLE,CURVE_WIDTH,CURVE2_COLOR);
 
    CFont font;
-   font.CreatePointFont(80,"Arial",pDC);
+   font.CreatePointFont(80,_T("Arial"),pDC);
    CFont* oldFont = pDC->SelectObject(&font);
 
    CBrush brush;
@@ -283,13 +283,13 @@ void CFactorOfSafetyView::DrawLegend(CDC* pDC)
 
    if ( m_pFrame->GetStage() == CFactorOfSafetyChildFrame::Lifting )
    {
-      legend1 = "Min. F.S. Against Cracking (FScr)";
-      legend2 = "F.S. Against Failure (FSf)";
+      legend1 = _T("Min. F.S. Against Cracking (FScr)");
+      legend2 = _T("F.S. Against Failure (FSf)");
    }
    else
    {
-      legend1 = "Min. F.S. Against Cracking (FScr)";
-      legend2 = "F.S. Against Rollover (FSr)";
+      legend1 = _T("Min. F.S. Against Cracking (FScr)");
+      legend2 = _T("F.S. Against Rollover (FSr)");
    }
    
    size1 = pDC->GetTextExtent(legend1);
@@ -467,8 +467,8 @@ void CFactorOfSafetyView::DoUpdateNow()
    GirderIndexType gdr  = m_pFrame->GetGirderIdx();
 
    CString subtitle;
-   subtitle.Format("Span %d Girder %s", LABEL_SPAN(span), LABEL_GIRDER(gdr));
-   m_PrintSubtitle = std::string(subtitle);
+   subtitle.Format(_T("Span %d Girder %s"), LABEL_SPAN(span), LABEL_GIRDER(gdr));
+   m_PrintSubtitle = std::_tstring(subtitle);
 
    Float64 hp1,hp2;
    Float64 stepSize = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
@@ -480,9 +480,9 @@ void CFactorOfSafetyView::DoUpdateNow()
       if (pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
       {
          CString strTitle;
-         strTitle.Format("Effect of support location - Lifting Stage - %s",m_PrintSubtitle.c_str());
-         m_Graph.SetTitle(std::string(strTitle));
-         m_Graph.SetXAxisTitle("Lift Point Location from End of Girder (" + m_pXFormat->UnitTag() + ")");
+         strTitle.Format(_T("Effect of support location - Lifting Stage - %s"),m_PrintSubtitle.c_str());
+         m_Graph.SetTitle(std::_tstring(strTitle));
+         m_Graph.SetXAxisTitle(_T("Lift Point Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")"));
 
          Float64 FS1 = pGirderLiftingSpecCriteria->GetLiftingCrackingFs();
          Float64 FS2 = pGirderLiftingSpecCriteria->GetLiftingFailureFs();
@@ -490,7 +490,7 @@ void CFactorOfSafetyView::DoUpdateNow()
          Float64 loc = 0.0;
          while ( loc <= hp1 )
          {
-            pProgress->UpdateMessage("Working...");
+            pProgress->UpdateMessage(_T("Working..."));
             pgsLiftingAnalysisArtifact artifact;
 
             pArtifact->CreateLiftingAnalysisArtifact(span,gdr,loc,&artifact);
@@ -518,9 +518,9 @@ void CFactorOfSafetyView::DoUpdateNow()
       if (pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
       {
          CString strTitle;
-         strTitle.Format("Effect of support location - Transportation Stage - %s",m_PrintSubtitle.c_str());
-         m_Graph.SetTitle(std::string(strTitle));
-         m_Graph.SetXAxisTitle("Truck Support Location from End of Girder (" + m_pXFormat->UnitTag() + ")");
+         strTitle.Format(_T("Effect of support location - Transportation Stage - %s"),m_PrintSubtitle.c_str());
+         m_Graph.SetTitle(std::_tstring(strTitle));
+         m_Graph.SetXAxisTitle(_T("Truck Support Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")"));
 
          GET_IFACE(IGirderHaulingPointsOfInterest,pHaulingPoi);
 
@@ -530,7 +530,7 @@ void CFactorOfSafetyView::DoUpdateNow()
          Float64 loc = pHaulingPoi->GetMinimumOverhang(span,gdr);
          while ( loc <= hp1 )
          {
-            pProgress->UpdateMessage("Working...");
+            pProgress->UpdateMessage(_T("Working..."));
             pgsHaulingAnalysisArtifact artifact;
    #pragma Reminder("REVIEW: Equal overhangs")
             // this is probably the best thing to do with this view... but... give it some thought
@@ -601,7 +601,7 @@ void CFactorOfSafetyView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    // get paper size
    PGSuperCalculationSheet border(m_pBroker);
    CString strBottomTitle;
-   strBottomTitle.Format("PGSuper™, Copyright © %4d, WSDOT, All rights reserved",sysDate().Year());
+   strBottomTitle.Format(_T("PGSuper™, Copyright © %4d, WSDOT, All rights reserved"),sysDate().Year());
    border.SetTitle(strBottomTitle);
    CDocument* pdoc = GetDocument();
    CString path = pdoc->GetPathName();
@@ -610,7 +610,7 @@ void CFactorOfSafetyView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    if (rcPrint.IsRectEmpty())
    {
-      CHECKX(0,"Can't print border - page too small?");
+      CHECKX(0,_T("Can't print border - page too small?"));
       rcPrint = pInfo->m_rectDraw;
    }
 

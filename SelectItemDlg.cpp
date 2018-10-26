@@ -72,12 +72,12 @@ BOOL CSelectItemDlg::OnInitDialog()
 
    m_Label.SetWindowText(m_strLabel);
 
-   sysTokenizer tokenizer("\n");
+   sysTokenizer tokenizer(_T("\n"));
    tokenizer.push_back(m_strItems);
    sysTokenizer::iterator iter;
    for ( iter = tokenizer.begin(); iter != tokenizer.end(); iter++ )
    {
-      std::string strItem = *iter;
+      std::_tstring strItem = *iter;
       m_cbList.AddString(strItem.c_str());
    }
 

@@ -101,7 +101,7 @@ protected:
 
    bool m_bValidGraph;
    bool m_bUpdateError;
-   std::string m_ErrorMsg;
+   std::_tstring m_ErrorMsg;
 
    IBroker* m_pBroker;
 
@@ -111,7 +111,7 @@ protected:
    grGraphXY m_Graph;
    CRect m_PrintRect;
    bool m_IsPrinting;
-   std::string m_PrintSubtitle;
+   std::_tstring m_PrintSubtitle;
 };
 
 /////////////////////////////////////////////////////////////////////////////

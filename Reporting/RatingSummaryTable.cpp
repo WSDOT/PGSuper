@@ -70,32 +70,32 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
    scalar.SetTolerance(1.0e-6);
 
 
-   std::string strRatingType;
-   std::string strRoutine, strSpecial;
+   std::_tstring strRatingType;
+   std::_tstring strRoutine, strSpecial;
    pgsTypes::LoadRatingType routine_rating_type, special_rating_type;
    switch( ratingTableType )
    {
    case Design:
-      strRoutine = "Inventory";
-      strSpecial = "Operating";
+      strRoutine = _T("Inventory");
+      strSpecial = _T("Operating");
       routine_rating_type = pgsTypes::lrDesign_Inventory;
       special_rating_type = pgsTypes::lrDesign_Operating;
       break;
    case Legal:
-      strRoutine = "Routine Commercial Traffic";
-      strSpecial = "Specialized Hauling Vehicles";
+      strRoutine = _T("Routine Commercial Traffic");
+      strSpecial = _T("Specialized Hauling Vehicles");
       routine_rating_type = pgsTypes::lrLegal_Routine;
       special_rating_type = pgsTypes::lrLegal_Special;
       break;
    case Permit:
-      strRoutine = "Routine Permit";
-      strSpecial = "Special Permit";
+      strRoutine = _T("Routine Permit");
+      strSpecial = _T("Special Permit");
       routine_rating_type = pgsTypes::lrPermit_Routine;
       special_rating_type = pgsTypes::lrPermit_Special;
       break;
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -109,25 +109,25 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
 
    table->SetRowSpan(0,0,2);
    table->SetRowSpan(1,0,-1);
-   (*table)(0,0) << "Limit State";
+   (*table)(0,0) << _T("Limit State");
 
    table->SetRowSpan(0,1,2);
    table->SetRowSpan(1,1,-1);
-   (*table)(0,1) << "Type";
+   (*table)(0,1) << _T("Type");
 
    table->SetColumnSpan(0,2,3);
    table->SetColumnSpan(0,3,-1);
    table->SetColumnSpan(0,4,-1);
    (*table)(0,2) << strRoutine;
-   (*table)(1,2) << "RF";
-   (*table)(1,3) << Sub2(symbol(gamma),"LL");
+   (*table)(1,2) << _T("RF");
+   (*table)(1,3) << Sub2(symbol(gamma),_T("LL"));
    (*table)(1,4) << RPT_LFT_SUPPORT_LOCATION;
    table->SetColumnSpan(0,5,3);
    table->SetColumnSpan(0,6,-1);
    table->SetColumnSpan(0,7,-1);
    (*table)(0,5) << strSpecial;
-   (*table)(1,5) << "RF";
-   (*table)(1,6) << Sub2(symbol(gamma),"LL");
+   (*table)(1,5) << _T("RF");
+   (*table)(1,6) << Sub2(symbol(gamma),_T("LL"));
    (*table)(1,7) << RPT_LFT_SUPPORT_LOCATION;
  
    RowIndexType row0 = 2; // row counter for column 0
@@ -138,37 +138,37 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
       if ( ratingTableType == Design || ratingTableType == Legal )
       {
          table->SetRowSpan(row0,0,3);
-         (*table)(row0++,0) << "Strength I";
+         (*table)(row0++,0) << _T("Strength I");
          table->SetRowSpan(row0++,0,-1);
          table->SetRowSpan(row0++,0,-1);
 
-         (*table)(row1++,1) << "Flexure (+M)";
-         (*table)(row1++,1) << "Flexure (-M)";
-         (*table)(row1++,1) << "Shear";
+         (*table)(row1++,1) << _T("Flexure (+M)");
+         (*table)(row1++,1) << _T("Flexure (-M)");
+         (*table)(row1++,1) << _T("Shear");
       }
 
       if ( ratingTableType == Permit )
       {
          table->SetRowSpan(row0,0,3);
-         (*table)(row0++,0) << "Strength II";
+         (*table)(row0++,0) << _T("Strength II");
          table->SetRowSpan(row0++,0,-1);
          table->SetRowSpan(row0++,0,-1);
 
-         (*table)(row1++,1) << "Flexure (+M)";
-         (*table)(row1++,1) << "Flexure (-M)";
-         (*table)(row1++,1) << "Shear";
+         (*table)(row1++,1) << _T("Flexure (+M)");
+         (*table)(row1++,1) << _T("Flexure (-M)");
+         (*table)(row1++,1) << _T("Shear");
 
          table->SetRowSpan(row0,0,2);
-         (*table)(row0++,0) << "Service I";
+         (*table)(row0++,0) << _T("Service I");
          table->SetRowSpan(row0++,0,-1);
-         (*table)(row1++,1) << "Stress Ratio (+M)";
-         (*table)(row1++,1) << "Stress Ratio (-M)";
+         (*table)(row1++,1) << _T("Stress Ratio (+M)");
+         (*table)(row1++,1) << _T("Stress Ratio (-M)");
       }
 
       if ( ratingTableType == Design || ratingTableType == Legal )
       {
-         (*table)(row0++,0) << "Service III";
-         (*table)(row1++,1) << "Stress";
+         (*table)(row0++,0) << _T("Service III");
+         (*table)(row1++,1) << _T("Stress");
       }
    }
    else
@@ -176,28 +176,28 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
       if ( ratingTableType == Design || ratingTableType == Legal )
       {
          table->SetRowSpan(row0,0,2);
-         (*table)(row0++,0) << "Strength I";
+         (*table)(row0++,0) << _T("Strength I");
          table->SetRowSpan(row0++,0,-1);
-         (*table)(row1++,1) << "Flexure";
-         (*table)(row1++,1) << "Shear";
+         (*table)(row1++,1) << _T("Flexure");
+         (*table)(row1++,1) << _T("Shear");
       }
 
       if ( ratingTableType == Permit )
       {
          table->SetRowSpan(row0,0,2);
-         (*table)(row0++,0) << "Strength II";
+         (*table)(row0++,0) << _T("Strength II");
          table->SetRowSpan(row0++,0,-1);
-         (*table)(row1++,1) << "Flexure";
-         (*table)(row1++,1) << "Shear";
+         (*table)(row1++,1) << _T("Flexure");
+         (*table)(row1++,1) << _T("Shear");
 
-         (*table)(row0++,0) << "Service I";
-         (*table)(row1++,1) << "Stress Ratio";
+         (*table)(row0++,0) << _T("Service I");
+         (*table)(row1++,1) << _T("Stress Ratio");
       }
 
       if ( ratingTableType == Design || ratingTableType == Legal )
       {
-         (*table)(row0++,0) << "Service III";
-         (*table)(row1++,1) << "Stress";
+         (*table)(row0++,0) << _T("Service III");
+         (*table)(row1++,1) << _T("Stress");
       }
    }
 
@@ -270,9 +270,9 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
             }
             else
             {
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
             }
          }
@@ -329,9 +329,9 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
             }
             else
             {
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
             }
          }
@@ -391,21 +391,21 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
             {
                if ( bNegMoments )
                {
-                  (*table)(row,col)   << "";
-                  (*table)(row,col+1) << "";
-                  (*table)(row,col+2) << "";
+                  (*table)(row,col)   << _T("");
+                  (*table)(row,col+1) << _T("");
+                  (*table)(row,col+2) << _T("");
                   row++;
 
-                  (*table)(row,col)   << "";
-                  (*table)(row,col+1) << "";
-                  (*table)(row,col+2) << "";
+                  (*table)(row,col)   << _T("");
+                  (*table)(row,col+1) << _T("");
+                  (*table)(row,col+2) << _T("");
                   row++;
                }
                else
                {
-                  (*table)(row,col)   << "";
-                  (*table)(row,col+1) << "";
-                  (*table)(row,col+2) << "";
+                  (*table)(row,col)   << _T("");
+                  (*table)(row,col+1) << _T("");
+                  (*table)(row,col+2) << _T("");
                   row++;
                }
             }
@@ -416,9 +416,9 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
          {
             if ( ratingTableType == Design && ratingType == pgsTypes::lrDesign_Operating )
             {
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
             }
             else
@@ -446,31 +446,31 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
             // Strength I
             if ( bNegMoments )
             {
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
 
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
 
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
             }
             else
             {
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
 
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
             }
          }
@@ -480,52 +480,52 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
             // Strength II
             if ( bNegMoments )
             {
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
 
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
 
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
             }
             else
             {
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
 
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
             }
 
             // Service I
             if ( bNegMoments )
             {
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
 
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
             }
             else
             {
-               (*table)(row,col)   << "";
-               (*table)(row,col+1) << "";
-               (*table)(row,col+2) << "";
+               (*table)(row,col)   << _T("");
+               (*table)(row,col+1) << _T("");
+               (*table)(row,col+2) << _T("");
                row++;
             }
          }
@@ -533,9 +533,9 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
          if ( ratingTableType == Design || ratingTableType == Legal )
          {
             // Service III
-            (*table)(row,col)   << "";
-            (*table)(row,col+1) << "";
-            (*table)(row,col+2) << "";
+            (*table)(row,col)   << _T("");
+            (*table)(row,col+1) << _T("");
+            (*table)(row,col+2) << _T("");
             row++;
          }
       }
@@ -557,8 +557,8 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
-   std::string strName = pProductLoads->GetLiveLoadName(llType,0);
-   if ( strName == "No Live Load Defined" )
+   std::_tstring strName = pProductLoads->GetLiveLoadName(llType,0);
+   if ( strName == _T("No Live Load Defined") )
       return NULL;
 
    rptCapacityToDemand rating_factor;
@@ -573,7 +573,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
    location.IncludeSpanAndGirder(true);
 
    CComBSTR bstrTitle = ::GetLiveLoadTypeName(ratingType);
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,OLE2A(bstrTitle));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,OLE2T(bstrTitle));
 
    pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -584,17 +584,17 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
    pTable->SetColumnStyle(4,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pTable->SetStripeRowColumnStyle(4,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   (*pTable)(0,0) << "Truck";
-   (*pTable)(0,1) << "RF";
-   (*pTable)(0,2) << Sub2(symbol(gamma),"LL");
-   (*pTable)(0,3)  << "Controlling Point" << rptNewLine << RPT_LFT_SUPPORT_LOCATION;
-   (*pTable)(0,4) << "Cause";
+   (*pTable)(0,0) << _T("Truck");
+   (*pTable)(0,1) << _T("RF");
+   (*pTable)(0,2) << Sub2(symbol(gamma),_T("LL"));
+   (*pTable)(0,3)  << _T("Controlling Point") << rptNewLine << RPT_LFT_SUPPORT_LOCATION;
+   (*pTable)(0,4) << _T("Cause");
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
    {
-      std::string strName = pProductLoads->GetLiveLoadName(llType,vehIdx);
+      std::_tstring strName = pProductLoads->GetLiveLoadName(llType,vehIdx);
 
       const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,vehIdx);
 
@@ -608,42 +608,42 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
       Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress,&pYieldStressPositiveMoment,&pYieldStressNegativeMoment);
 
       Float64 gLL;
-      std::string strControlling;
+      std::_tstring strControlling;
       pgsPointOfInterest poi;
       bool bIsStressRatio = false;
       if ( pPositiveMoment )
       {
          ATLASSERT(vehIdx == pPositiveMoment->GetVehicleIndex());
          gLL = pPositiveMoment->GetLiveLoadFactor();
-         strControlling = "Positive Moment";
+         strControlling = _T("Positive Moment");
          poi = pPositiveMoment->GetPointOfInterest();
       }
       else if ( pNegativeMoment )
       {
          ATLASSERT(vehIdx == pNegativeMoment->GetVehicleIndex());
          gLL = pNegativeMoment->GetLiveLoadFactor();
-         strControlling = "Negative Moment";
+         strControlling = _T("Negative Moment");
          poi = pNegativeMoment->GetPointOfInterest();
       }
       else if ( pShear )
       {
          ATLASSERT(vehIdx == pShear->GetVehicleIndex());
          gLL = pShear->GetLiveLoadFactor();
-         strControlling = "Shear";
+         strControlling = _T("Shear");
          poi = pShear->GetPointOfInterest();
       }
       else if ( pStress )
       {
          ATLASSERT(vehIdx == pStress->GetVehicleIndex());
          gLL = pStress->GetLiveLoadFactor();
-         strControlling = "Stress";
+         strControlling = _T("Stress");
          poi = pStress->GetPointOfInterest();
       }
       else if ( pYieldStressPositiveMoment )
       {
          ATLASSERT(vehIdx == pYieldStressPositiveMoment->GetVehicleIndex());
          gLL = pYieldStressPositiveMoment->GetLiveLoadFactor();
-         strControlling = "Yield Stress Positive Moment";
+         strControlling = _T("Yield Stress Positive Moment");
          poi = pYieldStressPositiveMoment->GetPointOfInterest();
          bIsStressRatio = true;
       }
@@ -651,14 +651,14 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
       {
          ATLASSERT(vehIdx == pYieldStressNegativeMoment->GetVehicleIndex());
          gLL = pYieldStressNegativeMoment->GetLiveLoadFactor();
-         strControlling = "Yield Stress Negative Moment";
+         strControlling = _T("Yield Stress Negative Moment");
          poi = pYieldStressNegativeMoment->GetPointOfInterest();
          bIsStressRatio = true;
       }
       else
       {
          gLL = -1;
-         strControlling = "UNKNOWN";
+         strControlling = _T("UNKNOWN");
       }
 
       Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
@@ -672,7 +672,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
             (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
          if ( bIsStressRatio )
-            (*pTable)(row,1) << rptNewLine << "(Stress Ratio)";
+            (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
 
          (*pTable)(row,2) << scalar.SetValue(gLL);
          (*pTable)(row,3) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
@@ -696,17 +696,17 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,GirderIndexTy
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"Load Posting (MBE 6A.8)");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T("Load Posting (MBE 6A.8)"));
 
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    // across the top
-   (*table)(0,0) << "Vehicle";
-   (*table)(0,1) << COLHDR("Vehicle Weight", rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
-   (*table)(0,2) << "RF";
-   (*table)(0,3) << COLHDR("Safe Load Capacity", rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
-   (*table)(0,4) << COLHDR("Safe Posting Load",  rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
+   (*table)(0,0) << _T("Vehicle");
+   (*table)(0,1) << COLHDR(_T("Vehicle Weight"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
+   (*table)(0,2) << _T("RF");
+   (*table)(0,3) << COLHDR(_T("Safe Load Capacity"), rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
+   (*table)(0,4) << COLHDR(_T("Safe Posting Load"),  rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
 
    bool bLoadPostingRequired = false;
 
@@ -719,7 +719,7 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,GirderIndexTy
       if ( pRatingArtifact )
       {
          Float64 postingLoad, W, RF;
-         std::string strName;
+         std::_tstring strName;
          pRatingArtifact->GetSafePostingLoad(&postingLoad,&W,&RF,&strName);
 
          (*table)(row,col++) << strName;
@@ -735,18 +735,18 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,GirderIndexTy
          if ( RF < 1 )
             (*table)(row,col++) << tonnage.SetValue(postingLoad);
          else
-            (*table)(row,col++) << "-";
+            (*table)(row,col++) << _T("-");
 
          if ( RF < 1 )
             bLoadPostingRequired = true;
       }
       else
       {
-         (*table)(row,col++) << "";
-         (*table)(row,col++) << "";
-         (*table)(row,col++) << "";
-         (*table)(row,col++) << "";
-         (*table)(row,col++) << "";
+         (*table)(row,col++) << _T("");
+         (*table)(row,col++) << _T("");
+         (*table)(row,col++) << _T("");
+         (*table)(row,col++) << _T("");
+         (*table)(row,col++) << _T("");
       }
 
       row++;

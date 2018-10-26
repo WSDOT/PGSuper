@@ -94,7 +94,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
 void CTxDOTOptionalDesignStandardFillDlg::LoadDialogData()
 {
    int ns = m_pGirderData->GetNumStrands();
-   m_strNumStrands.Format("%d",ns);
+   m_strNumStrands.Format(_T("%d"),ns);
 
    m_To = m_pGirderData->GetStrandTo();
 }
@@ -105,14 +105,14 @@ void CTxDOTOptionalDesignStandardFillDlg::SaveDialogData()
    m_pGirderData->SetStrandTo(m_To);
 }
 
-void CTxDOTOptionalDesignStandardFillDlg::Init(CTxDOTOptionalDesignGirderData* pGirderData, ITxDOTBrokerRetriever* pBrokerRetriever, const char* entryName)
+void CTxDOTOptionalDesignStandardFillDlg::Init(CTxDOTOptionalDesignGirderData* pGirderData, ITxDOTBrokerRetriever* pBrokerRetriever, LPCTSTR entryName)
 {
    m_pGirderData = pGirderData;
    m_pBrokerRetriever = pBrokerRetriever;
    m_GirderEntryName = entryName;
 }
 
-void CTxDOTOptionalDesignStandardFillDlg::SetGirderEntryName(const char* entryName)
+void CTxDOTOptionalDesignStandardFillDlg::SetGirderEntryName(LPCTSTR entryName)
 {
    if (m_GirderEntryName != entryName)
    {
@@ -136,7 +136,7 @@ void CTxDOTOptionalDesignStandardFillDlg::OnCbnSelchangeOptNumStrands()
    }
    else
    {
-      m_strNumStrands="0";
+      m_strNumStrands=_T("0");
       m_NumStrands=0;
    }
 
@@ -158,13 +158,13 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
    if (!pGdrEntry->ComputeGlobalStrands(m_NumStrands, &numStraight, &numHarped))
    {
       ASSERT(0);
-      pout->SetWindowTextA("Error computing harped strands");
+      pout->SetWindowText(_T("Error computing harped strands"));
    }
    else
    {
       CString msg;
-      msg.Format("(No. Depressed strands = %d)", numHarped);
-      pout->SetWindowTextA(msg);
+      msg.Format(_T("(No. Depressed strands = %d)"), numHarped);
+      pout->SetWindowText(msg);
    }
 
    // To Value range
@@ -193,9 +193,9 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
       toUpper = ::ConvertFromSysUnits(toUpper, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       CString umsg;
-      umsg.Format("(Valid Range: %.3f to %.3f)",toLower, toUpper);
+      umsg.Format(_T("(Valid Range: %.3f to %.3f)"),toLower, toUpper);
 
-      pToRange->SetWindowTextA(umsg);
+      pToRange->SetWindowText(umsg);
    }
 }
 
@@ -214,7 +214,7 @@ void CTxDOTOptionalDesignStandardFillDlg::InitStrandNoCtrl()
    std::vector<StrandIndexType> strands = m_pGirderData->ComputeAvailableNumStrands(pLib);
    for (std::vector<StrandIndexType>::iterator iter = strands.begin(); iter != strands.end(); iter++)
    {
-      str.Format("%d", *iter);
+      str.Format(_T("%d"), *iter);
       pList->AddString(str);
    }
 }
@@ -233,7 +233,7 @@ void CTxDOTOptionalDesignStandardFillDlg::OnBnClickedOptCompute()
    eccCL = ::ConvertFromSysUnits(eccCL,unitMeasure::Inch);
 
    CEccentricityDlg dlg;
-   dlg.m_Message.Format("e, CL = %.3f in\n e, girder ends = %.3f in", eccCL, eccEnds);
+   dlg.m_Message.Format(_T("e, CL = %.3f in\n e, girder ends = %.3f in"), eccCL, eccEnds);
    dlg.DoModal();
 }
 

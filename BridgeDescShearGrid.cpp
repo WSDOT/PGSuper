@@ -151,8 +151,8 @@ void CGirderDescShearGrid::InsertRow(bool bAppend)
    Float64 zonlen = ::ConvertToSysUnits(3.0,unitMeasure::Feet);
    zonlen = ::ConvertFromSysUnits(zonlen,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    CString cval;
-   cval.Format("%g",zonlen);
-   SetStyleRange(CGXRange(nRow,1), CGXStyle().SetValue(_T(cval)));
+   cval.Format(_T("%g"),zonlen);
+   SetStyleRange(CGXRange(nRow,1), CGXStyle().SetValue(cval));
 
    // zone length in the last row is infinite.
    ROWCOL nrows = GetRowCount();
@@ -254,7 +254,7 @@ void CGirderDescShearGrid::CustomInit()
 			.SetValue(_T("Zone\n#"))
 		);
 
-   CString cv = CString("Zone Length\n") + CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+   CString cv = CString(_T("Zone Length\n")) + CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -263,7 +263,7 @@ void CGirderDescShearGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = CString("Spacing\n") + CString(pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv = CString(_T("Spacing\n")) + CString(pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -277,7 +277,7 @@ void CGirderDescShearGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Vertical Bars\nSize")
+			.SetValue(_T("Vertical Bars\nSize"))
 		);
 
 	SetStyleRange(CGXRange(0,4), CGXStyle()
@@ -285,7 +285,7 @@ void CGirderDescShearGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Vertical Bars\n#")
+			.SetValue(_T("Vertical Bars\n#"))
 		);
 
 	SetStyleRange(CGXRange(0,5), CGXStyle()
@@ -293,7 +293,7 @@ void CGirderDescShearGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Horizontal Bars\nSize")
+			.SetValue(_T("Horizontal Bars\nSize"))
 		);
 
 	SetStyleRange(CGXRange(0,6), CGXStyle()
@@ -301,7 +301,7 @@ void CGirderDescShearGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Horizontal Bars\n#")
+			.SetValue(_T("Horizontal Bars\n#"))
 		);
 
    // make it so that text fits correctly in header row
@@ -375,55 +375,55 @@ CString CGirderDescShearGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 bool CGirderDescShearGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::ShearZoneInfo* pszi)
 {
    CString s = GetCellValue(nRow, 1);
-   Float64 d = atof(s);
-   if (s.IsEmpty() || (d==0.0 && s[0]!='0'))
+   Float64 d = _tstof(s);
+   if (s.IsEmpty() || (d==0.0 && s[0]!=_T('0')))
       pszi->ZoneLength = 0;
    else
       pszi->ZoneLength = d;
 
    s = GetCellValue(nRow, 2);
-   d = atof(s);
-   if (s.IsEmpty() || (d==0.0 && s[0]!='0'))
+   d = _tstof(s);
+   if (s.IsEmpty() || (d==0.0 && s[0]!=_T('0')))
       pszi->StirrupSpacing = 0;
    else
       pszi->StirrupSpacing = d;
 
    s = GetCellValue(nRow, 3);
    s.TrimLeft();
-   if (s=="none")
+   if (s==_T("none"))
       pszi->VertBarSize = 0;
    else
    {
       int l = s.GetLength();
       CString s2 = s.Right(l-1);
-      int i = atoi(s2);
-      if (s.IsEmpty() || (i==0&&s[0]!='0'))
+      int i = _tstoi(s2);
+      if (s.IsEmpty() || (i==0&&s[0]!=_T('0')))
          pszi->VertBarSize = 0;
       else
          pszi->VertBarSize = i;
    }
 
    s = GetCellValue(nRow,4);
-   pszi->nVertBars = atoi(s);
+   pszi->nVertBars = _tstoi(s);
 
 
    s = GetCellValue(nRow, 5);
    s.TrimLeft();
-   if (s=="none")
+   if (s==_T("none"))
       pszi->HorzBarSize = 0;
    else
    {
       int l = s.GetLength();
       CString s2 = s.Right(l-1);
-      int i = atoi(s2);
-      if (s.IsEmpty() || (i==0&&s[0]!='0'))
+      int i = _tstoi(s2);
+      if (s.IsEmpty() || (i==0&&s[0]!=_T('0')))
          pszi->HorzBarSize = 0;
       else
          pszi->HorzBarSize = i;
    }
 
    s = GetCellValue(nRow,6);
-   pszi->nHorzBars = atoi(s);
+   pszi->nHorzBars = _tstoi(s);
 
    return true;
 }
@@ -458,25 +458,25 @@ void CGirderDescShearGrid::FillGrid(const GirderLibraryEntry::ShearZoneInfoVec& 
          BarSizeType barSize = (*it).VertBarSize;
          CString tmp;
          if (barSize == 0)
-            tmp = "none";
+            tmp = _T("none");
          else
-            tmp.Format("#%d",barSize);
+            tmp.Format(_T("#%d"),barSize);
 
          VERIFY(SetValueRange(CGXRange(nRow, 3), tmp));
 
-         tmp.Format("%d",(*it).nVertBars);
+         tmp.Format(_T("%d"),(*it).nVertBars);
          VERIFY(SetValueRange(CGXRange(nRow, 4), tmp));
 
 
          barSize = (*it).HorzBarSize;
          if (barSize == 0)
-            tmp = "none";
+            tmp = _T("none");
          else
-            tmp.Format("#%d",barSize);
+            tmp.Format(_T("#%d"),barSize);
 
          VERIFY(SetValueRange(CGXRange(nRow, 5), tmp));
 
-         tmp.Format("%d",(*it).nHorzBars);
+         tmp.Format(_T("%d"),(*it).nHorzBars);
          VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
 
          nRow++;

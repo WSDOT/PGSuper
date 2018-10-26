@@ -30,7 +30,7 @@
 //
 #include <PgsExt\PierData.h>
 #include "BridgeDescFramingGrid.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingPage dialog
 

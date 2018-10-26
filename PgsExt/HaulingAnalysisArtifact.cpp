@@ -707,6 +707,16 @@ void pgsHaulingAnalysisArtifact::SetTotalInitialEccentricity(Float64 val)
    m_TotalInitialEccentricity = val;
 }
 
+Float64 pgsHaulingAnalysisArtifact::GetIx() const
+{
+   return m_Ix;
+}
+
+void pgsHaulingAnalysisArtifact::SetIx(Float64 ix)
+{
+   m_Ix = ix;
+}
+
 Float64 pgsHaulingAnalysisArtifact::GetIy() const
 {
    return m_Iy;
@@ -1072,6 +1082,7 @@ void pgsHaulingAnalysisArtifact::MakeCopy(const pgsHaulingAnalysisArtifact& rOth
    m_EccentricityDueToPlacementTolerance = rOther.m_EccentricityDueToPlacementTolerance;
    m_OffsetFactor = rOther.m_OffsetFactor;
    m_TotalInitialEccentricity = rOther.m_TotalInitialEccentricity;
+   m_Ix = rOther.m_Ix;
    m_Iy = rOther.m_Iy;
    m_Zo = rOther.m_Zo;
    m_ZoPrime = rOther.m_ZoPrime;

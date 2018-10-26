@@ -103,7 +103,7 @@ void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 
       // Look for the last :
       // The text to the left of the last : is the window title
-      int idx = window_text.ReverseFind(':');
+      int idx = window_text.ReverseFind(_T(':'));
       if (idx != -1) // -1 meams : was not found
          window_title = window_text.Left(idx);
       else

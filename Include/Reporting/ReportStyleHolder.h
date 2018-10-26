@@ -38,7 +38,7 @@
    proto.SetPrecision( im.Precision )
 
 #define RPT_OFFSET(_value_,_um_) \
-_um_.SetValue(fabs(_value_)) << (::Sign(_value_) < 0 ? " L" : (::Sign(_value_) > 0 ? " R" : ""))
+_um_.SetValue(fabs(_value_)) << (::Sign(_value_) < 0 ? _T(" L") : (::Sign(_value_) > 0 ? _T(" R") : _T("")))
 
 #define RPT_BEARING(_value_) rptRcString(_value_,true)
 #define RPT_ANGLE(_value_) rptRcString(_value_,true)
@@ -81,43 +81,43 @@ public:
 
    //------------------------------------------------------------------------
    // Return the Style for the Report Title.
-   static const std::string& GetReportTitleStyle();
+   static const std::_tstring& GetReportTitleStyle();
 
    //------------------------------------------------------------------------
    // Return the Style for the Report Subtitle.
-   static const std::string& GetReportSubtitleStyle();
+   static const std::_tstring& GetReportSubtitleStyle();
 
    //------------------------------------------------------------------------
    // Return the Style for the Chapter Titles.
-   static const std::string& GetChapterTitleStyle();
+   static const std::_tstring& GetChapterTitleStyle();
 
    //------------------------------------------------------------------------
    // Return the style for Headings
-   static const std::string& GetHeadingStyle();
+   static const std::_tstring& GetHeadingStyle();
 
    //------------------------------------------------------------------------
    // Return the style for Subheadings
-   static const std::string& GetSubheadingStyle(); 
+   static const std::_tstring& GetSubheadingStyle(); 
 
    //------------------------------------------------------------------------
    // Return the style for table column headings
-   static const std::string& GetTableColumnHeadingStyle();
+   static const std::_tstring& GetTableColumnHeadingStyle();
 
    //------------------------------------------------------------------------
    // Returns the style for table cells.  Use the CS_XXXX and CJ_XXXX constants
    // to specify a style.
-   static const std::string& GetTableCellStyle(Uint32 style);
+   static const std::_tstring& GetTableCellStyle(Uint32 style);
 
    //------------------------------------------------------------------------
    // Returns the style for table cells.  Use the CS_XXXX and CJ_XXXX constants
    // to specify a style.
-   static const std::string& GetTableStripeRowCellStyle(Uint32 style);
+   static const std::_tstring& GetTableStripeRowCellStyle(Uint32 style);
 
    //------------------------------------------------------------------------
-   static const std::string& GetFootnoteStyle();
+   static const std::_tstring& GetFootnoteStyle();
 
    //------------------------------------------------------------------------
-   static const std::string& GetCopyrightStyle();
+   static const std::_tstring& GetCopyrightStyle();
 
    //------------------------------------------------------------------------
    // Returns the maximum table width to be used in any given chapter
@@ -127,22 +127,22 @@ public:
    // Returns a pointer to a dynamically allocated defaultly configured table 
    // with 0.75" wide columns
    // If bLoadingColumn is true, column 1 is 1.5" wide
-   static rptRcTable* CreateDefaultTable(ColumnIndexType numColumns, std::string label);
+   static rptRcTable* CreateDefaultTable(ColumnIndexType numColumns, std::_tstring label);
 
    //------------------------------------------------------------------------ 
    // Returns a pointer to a dynamically allocated defaultly configured table 
    // with 0.75" wide columns
    // This table does not have a heading row.
-   static rptRcTable* CreateTableNoHeading(ColumnIndexType numColumns, std::string label);
+   static rptRcTable* CreateTableNoHeading(ColumnIndexType numColumns, std::_tstring label);
 
    static void ConfigureTable(rptRcTable* pTable);
 
    //------------------------------------------------------------------------ 
    // Returns the path to where the images are stored.
-   static const std::string& GetImagePath();
+   static const std::_tstring& GetImagePath();
 
-   static void SetReportCoverImage(const char* strImagePath);
-   static const std::string& GetReportCoverImage();
+   static void SetReportCoverImage(LPCTSTR strImagePath);
+   static const std::_tstring& GetReportCoverImage();
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -157,19 +157,19 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   static std::string ms_ReportTitleStyle;
-   static std::string ms_ReportSubtitleStyle;
-   static std::string ms_ChapterTitleStyle;
-   static std::string ms_HeadingStyle;
-   static std::string ms_SubheadingStyle;
-   static std::string ms_TableColumnHeadingStyle;
-   static std::string ms_FootnoteStyle;
-   static std::string ms_CopyrightStyle;
-   static std::string ms_TableCellStyle[4];
-   static std::string ms_TableStripeRowCellStyle[4];
-   static std::auto_ptr<std::string> ms_pImagePath;
+   static std::_tstring ms_ReportTitleStyle;
+   static std::_tstring ms_ReportSubtitleStyle;
+   static std::_tstring ms_ChapterTitleStyle;
+   static std::_tstring ms_HeadingStyle;
+   static std::_tstring ms_SubheadingStyle;
+   static std::_tstring ms_TableColumnHeadingStyle;
+   static std::_tstring ms_FootnoteStyle;
+   static std::_tstring ms_CopyrightStyle;
+   static std::_tstring ms_TableCellStyle[4];
+   static std::_tstring ms_TableStripeRowCellStyle[4];
+   static std::auto_ptr<std::_tstring> ms_pImagePath;
    static double ms_MaxTableWidth;
-   static std::string ms_ReportCoverImage;
+   static std::_tstring ms_ReportCoverImage;
 
    // GROUP: LIFECYCLE
 

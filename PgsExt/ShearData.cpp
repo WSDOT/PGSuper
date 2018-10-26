@@ -52,7 +52,7 @@ TopFlangeBarSize(0),
 TopFlangeBarSpacing(0.0),
 bDoStirrupsEngageDeck(true),
 bIsRoughenedSurface(true),
-strRebarMaterial("AASHTO M31 (A615) - Grade 60")
+strRebarMaterial(_T("AASHTO M31 (A615) - Grade 60"))
 {
    // make sure we have at least one zone
    CShearZoneData tmp;
@@ -122,7 +122,7 @@ HRESULT CShearData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    HRESULT hr = S_OK;
 
-   pStrLoad->BeginUnit("ShearData");  // named this for historical reasons
+   pStrLoad->BeginUnit(_T("ShearData"));  // named this for historical reasons
    double version;
    pStrLoad->get_Version(&version);
 
@@ -132,25 +132,25 @@ HRESULT CShearData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       var.Clear();
       var.vt = VT_BSTR;
-      pStrLoad->get_Property("RebarType",&var);
-      strRebarMaterial = OLE2A(var.bstrVal);
+      pStrLoad->get_Property(_T("RebarType"),&var);
+      strRebarMaterial = OLE2T(var.bstrVal);
    }
 
    var.Clear();
    var.vt = VT_UI4;
-   pStrLoad->get_Property("ConfinementBarSize", &var );
+   pStrLoad->get_Property(_T("ConfinementBarSize"), &var );
    ConfinementBarSize = var.uiVal;
 
    var.Clear();
    var.vt = VT_UI4;
-   pStrLoad->get_Property("ConfinementZone", &var );
+   pStrLoad->get_Property(_T("ConfinementZone"), &var );
    NumConfinementZones = var.uiVal;
 
    if (3.0 < version)
    {
       var.Clear();
       var.vt = VT_BOOL;
-      pStrLoad->get_Property("DoStirrupsEngageDeck", &var );
+      pStrLoad->get_Property(_T("DoStirrupsEngageDeck"), &var );
       bDoStirrupsEngageDeck = (var.boolVal == VARIANT_TRUE ? true : false);
    }
 
@@ -158,24 +158,24 @@ HRESULT CShearData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       var.Clear();
       var.vt = VT_BOOL;
-      pStrLoad->get_Property("IsRoughenedSurface", &var );
+      pStrLoad->get_Property(_T("IsRoughenedSurface"), &var );
       bIsRoughenedSurface = (var.boolVal == VARIANT_TRUE ? true : false);
    }
 
    var.Clear();
    var.vt = VT_UI4;
-   pStrLoad->get_Property("TopFlangeBarSize", &var );
+   pStrLoad->get_Property(_T("TopFlangeBarSize"), &var );
    TopFlangeBarSize = var.uiVal;
 
    var.Clear();
    var.vt = VT_R8;
-   pStrLoad->get_Property("TopFlangeBarSpacing", &var );
+   pStrLoad->get_Property(_T("TopFlangeBarSpacing"), &var );
    TopFlangeBarSpacing = var.dblVal;
 
    ShearZones.clear();
 
    var.vt = VT_I4;
-   hr = pStrLoad->get_Property("ZoneCount", &var );
+   hr = pStrLoad->get_Property(_T("ZoneCount"), &var );
    if ( FAILED(hr) )
       return hr;
 
@@ -201,18 +201,18 @@ HRESULT CShearData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    HRESULT hr = S_OK;
 
 
-   pStrSave->BeginUnit("ShearData",6.0);
+   pStrSave->BeginUnit(_T("ShearData"),6.0);
 
-   pStrSave->put_Property("RebarType",CComVariant(strRebarMaterial.c_str()));
-   pStrSave->put_Property("ConfinementBarSize", CComVariant(ConfinementBarSize));
-   pStrSave->put_Property("ConfinementZone",    CComVariant(NumConfinementZones));
-   pStrSave->put_Property("DoStirrupsEngageDeck",CComVariant(bDoStirrupsEngageDeck));
-   pStrSave->put_Property("IsRoughenedSurface",CComVariant(bIsRoughenedSurface));
-   pStrSave->put_Property("TopFlangeBarSize",   CComVariant(TopFlangeBarSize));
-   pStrSave->put_Property("TopFlangeBarSpacing",CComVariant(TopFlangeBarSpacing));
+   pStrSave->put_Property(_T("RebarType"),CComVariant(strRebarMaterial.c_str()));
+   pStrSave->put_Property(_T("ConfinementBarSize"), CComVariant(ConfinementBarSize));
+   pStrSave->put_Property(_T("ConfinementZone"),    CComVariant(NumConfinementZones));
+   pStrSave->put_Property(_T("DoStirrupsEngageDeck"),CComVariant(bDoStirrupsEngageDeck));
+   pStrSave->put_Property(_T("IsRoughenedSurface"),CComVariant(bIsRoughenedSurface));
+   pStrSave->put_Property(_T("TopFlangeBarSize"),   CComVariant(TopFlangeBarSize));
+   pStrSave->put_Property(_T("TopFlangeBarSpacing"),CComVariant(TopFlangeBarSpacing));
 
    CComVariant var( (Int32)ShearZones.size() );
-   hr = pStrSave->put_Property("ZoneCount", var );
+   hr = pStrSave->put_Property(_T("ZoneCount"), var );
    if ( FAILED(hr) )
       return hr;
 
@@ -322,7 +322,7 @@ HRESULT CShearData::ShearProc(IStructuredSave* pSave,
    if ( pSave )
    {
       CComVariant var( (Int32)pObj->ShearZones.size() );
-      hr = pSave->put_Property("ZoneCount", var );
+      hr = pSave->put_Property(_T("ZoneCount"), var );
       if ( FAILED(hr) )
          return hr;
 
@@ -341,7 +341,7 @@ HRESULT CShearData::ShearProc(IStructuredSave* pSave,
 
       CComVariant var;
       var.vt = VT_I4;
-      hr = pLoad->get_Property("ZoneCount", &var );
+      hr = pLoad->get_Property(_T("ZoneCount"), &var );
       if ( FAILED(hr) )
          return hr;
 

@@ -112,11 +112,11 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
 
    // defaults
    CString strVersion = theApp.GetVersion(true);
-   CString strFTPServer("ftp://ftp.wsdot.wa.gov/public/bridge/Software/PGSuper");
+   CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/bridge/Software/PGSuper"));
    CString strDefaultMasterLibraryURL;
-   strDefaultMasterLibraryURL.Format("%s/Version_%s/WSDOT.lbr",strFTPServer,strVersion);
+   strDefaultMasterLibraryURL.Format(_T("%s/Version_%s/WSDOT.lbr"),strFTPServer,strVersion);
    CString strDefaultWorkgroupTemplateFolderURL;
-   strDefaultWorkgroupTemplateFolderURL.Format("%s/Version_%s/WSDOT_Templates/",strFTPServer,strVersion);
+   strDefaultWorkgroupTemplateFolderURL.Format(_T("%s/Version_%s/WSDOT_Templates/"),strFTPServer,strVersion);
 
    m_SharedResourceType   = (SharedResourceType)  pApp->GetProfileInt(_T("Settings"),_T("SharedResourceType"),  iDefaultSharedResourceType);
    m_CacheUpdateFrequency = (CacheUpdateFrequency)pApp->GetProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),iDefaultCacheUpdateFrequency);
@@ -176,31 +176,31 @@ void CPGSuperBaseAppPlugin::RegistryConvert()
 
    // If we were set to a local library stored in old format, create a new catalog server 
    // and add its settings to the registry
-   if (masterlib!="Bogus" && type==srtLocal)
+   if (masterlib!=_T("Bogus") && type==srtLocal)
    {
       // our publisher and server is "Local Files"
-      pApp->WriteProfileString(_T("Options"),_T("CatalogServer"),"Local Files");
-      pApp->WriteProfileString(_T("Options"),_T("Publisher"),    "Local Files");
+      pApp->WriteProfileString(_T("Options"),_T("CatalogServer"),_T("Local Files"));
+      pApp->WriteProfileString(_T("Options"),_T("Publisher"),    _T("Local Files"));
 
       // create that server
-      CFileSystemPGSuperCatalogServer server("Local Files",masterlib,tempfolder);
+      CFileSystemPGSuperCatalogServer server(_T("Local Files"),masterlib,tempfolder);
       CString create_string = GetCreationString(&server);
 
       int count = pApp->GetProfileInt(_T("Servers"),_T("Count"),-1);
       count==-1 ? count=1 : count++;
       pApp->WriteProfileInt(_T("Servers"),_T("Count"),count);
 
-      CString key(char(count-1+'A'));
+      CString key(TCHAR(count-1+_T('A')));
       pApp->WriteProfileString(_T("Servers"), key, create_string);
    }
 
    // Delete profile strings if they are not empty
-   if (masterlib!="Bogus")
+   if (masterlib!=_T("Bogus"))
    {
       pApp->WriteProfileString(_T("Options"),_T("MasterLibraryLocal"),NULL);
    }
 
-   if (tempfolder!="Bogus")
+   if (tempfolder!=_T("Bogus"))
    {
       pApp->WriteProfileString(_T("Options"),_T("WorkgroupTemplatesLocal"), NULL);
    }
@@ -276,7 +276,7 @@ CString CPGSuperBaseAppPlugin::GetMasterLibraryPublisher() const
    switch( m_SharedResourceType )
    {
    case srtDefault:
-      strPublisher = "Default libraries installed with PGSuper";
+      strPublisher = _T("Default libraries installed with PGSuper");
       break;
 
    case srtInternetFtp:
@@ -285,7 +285,7 @@ CString CPGSuperBaseAppPlugin::GetMasterLibraryPublisher() const
       break;
 
    case srtLocal:
-      strPublisher = "Published on Local Network";
+      strPublisher = _T("Published on Local Network");
       break;
 
    default:
@@ -304,7 +304,7 @@ void CPGSuperBaseAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
 
    if (!bFirstRun && pApp->IsDocLoaded())
    {
-      AfxMessageBox("Program settings cannot be changed while a project is open. Close this project and try again.",MB_OK|MB_ICONINFORMATION);
+      AfxMessageBox(_T("Program settings cannot be changed while a project is open. Close this project and try again."),MB_OK|MB_ICONINFORMATION);
    }
    else
    {
@@ -380,7 +380,7 @@ void CPGSuperBaseAppPlugin::UpdateCache()
       BOOL bFirstRun = pApp->IsFirstRun();
       if (bFirstRun)
       {
-         LOG("Update Cache -> First Run");
+         LOG(_T("Update Cache -> First Run"));
 
          // if this is the first time PGSuper is run after installation
          // go right to the program settings. OnProgramSettings will
@@ -391,10 +391,10 @@ void CPGSuperBaseAppPlugin::UpdateCache()
       {
          if ( AreUpdatesPending() )
          {
-            LOG("Time to update cache and Updates are pending");
+            LOG(_T("Time to update cache and Updates are pending"));
             // this is not the first time, it is time to check for updates,
             // and sure enough there are updates pending.... do the update
-            int result = ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),"There are updates to Master Library and Workgroup Templates pending.\n\nWould you like to update PGSuper now?","Pending Updates",MB_YESNO | MB_ICONINFORMATION);
+            int result = ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),_T("There are updates to Master Library and Workgroup Templates pending.\n\nWould you like to update PGSuper now?"),_T("Pending Updates"),MB_YESNO | MB_ICONINFORMATION);
 
             if ( result == IDYES )
                was_error = !DoCacheUpdate();
@@ -416,7 +416,7 @@ void CPGSuperBaseAppPlugin::UpdateCache()
    }
    catch(...)
    {
-      error_msg = "Error cause was unknown";
+      error_msg = _T("Error cause was unknown");
       was_error = true;
    }
 
@@ -425,7 +425,7 @@ void CPGSuperBaseAppPlugin::UpdateCache()
       // Things are totally screwed if we end up here. Reset to default library and templates from install
       RestoreLibraryAndTemplatesToDefault();
       CString msg;
-      msg.Format("The following error occurred while loading Library and Template server information:\n %s \nThese settings have been restored to factory defaults.",error_msg);
+      msg.Format(_T("The following error occurred while loading Library and Template server information:\n %s \nThese settings have been restored to factory defaults."),error_msg);
       ::AfxMessageBox(msg,MB_ICONINFORMATION);
    }
 }
@@ -440,18 +440,18 @@ void CPGSuperBaseAppPlugin::RestoreLibraryAndTemplatesToDefault()
    m_MasterLibraryFileURL = m_MasterLibraryFileCache;
 }
 
-void CPGSuperBaseAppPlugin::DeleteCache(LPCSTR pstrCache)
+void CPGSuperBaseAppPlugin::DeleteCache(LPCTSTR pstrCache)
 {
    RecursiveDelete(pstrCache);
    ::RemoveDirectory(pstrCache);
 }
 
-void CPGSuperBaseAppPlugin::RecursiveDelete(LPCSTR pstr)
+void CPGSuperBaseAppPlugin::RecursiveDelete(LPCTSTR pstr)
 {
    CFileFind finder;
 
    CString strWildcard(pstr);
-   strWildcard += "\\*.*";
+   strWildcard += _T("\\*.*");
 
    BOOL bWorking = finder.FindFile(strWildcard);
    while ( bWorking )
@@ -479,10 +479,10 @@ void CPGSuperBaseAppPlugin::RecursiveDelete(LPCSTR pstr)
 
 bool CPGSuperBaseAppPlugin::IsTimeToUpdateCache()
 {
-   LOG("IsTimeToUpdateCache()");
+   LOG(_T("IsTimeToUpdateCache()"));
    if ( m_SharedResourceType == srtDefault )
    {
-      LOG("Using default resource type, no updating");
+      LOG(_T("Using default resource type, no updating"));
       return false;
    }
 
@@ -490,12 +490,12 @@ bool CPGSuperBaseAppPlugin::IsTimeToUpdateCache()
    bool bTimeToUpdate = false;
    if ( m_CacheUpdateFrequency == Never )
    {
-      LOG("Never update");
+      LOG(_T("Never update"));
       bTimeToUpdate = false;
    }
    else if ( m_CacheUpdateFrequency == Always )
    {
-      LOG("Always update");
+      LOG(_T("Always update"));
       bTimeToUpdate = true;
    }
    else 
@@ -506,17 +506,17 @@ bool CPGSuperBaseAppPlugin::IsTimeToUpdateCache()
       Int16 update_frequency = 0; // in days
       if ( m_CacheUpdateFrequency == Daily )
       {
-         LOG("Update daily");
+         LOG(_T("Update daily"));
          update_frequency = 1;
       }
       else if ( m_CacheUpdateFrequency == Weekly )
       {
-         LOG("Update weekly");
+         LOG(_T("Update weekly"));
          update_frequency = 7;
       }
       else if ( m_CacheUpdateFrequency == Monthly )
       {
-         LOG("Update monthly");
+         LOG(_T("Update monthly"));
          update_frequency = 30;
       }
 
@@ -529,7 +529,7 @@ bool CPGSuperBaseAppPlugin::IsTimeToUpdateCache()
       }
    }
 
-   LOG("Time to update = " << (bTimeToUpdate ? "Yes" : "No"));
+   LOG(_T("Time to update = ") << (bTimeToUpdate ? _T("Yes") : _T("No")));
    return bTimeToUpdate;
 }
 
@@ -538,7 +538,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
    // get the MD5 files from the Internet or local network, compute the MD5 of the cache
    // if different, then there is an update pending
 
-   LOG("AreUpdatesPending()");
+   LOG(_T("AreUpdatesPending()"));
 
    bool bUpdatesPending = false;
    if ( m_SharedResourceType == srtDefault )
@@ -569,7 +569,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
          else
          {
             CString msg;
-            msg.Format("Error - currently selected catalog server not found. Name was: %s",m_CurrentCatalogServer);
+            msg.Format(_T("Error - currently selected catalog server not found. Name was: %s"),m_CurrentCatalogServer);
             CCatalogServerException exc(CCatalogServerException::ceServerNotFound, msg);
             throw exc;
          }
@@ -584,7 +584,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
       ATLASSERT(0);
    }
 
-   LOG("Pending updates = " << (bUpdatesPending ? "Yes" : "No"));
+   LOG(_T("Pending updates = ") << (bUpdatesPending ? _T("Yes") : _T("No")));
    return bUpdatesPending;
 }
 
@@ -593,7 +593,7 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
 {
    CEAFApp* pApp = EAFGetApp();
 
-   LOG("DoUpdateCache()");
+   LOG(_T("DoUpdateCache()"));
 
    // create a progress window
    CComPtr<IProgressMonitorWindow> wndProgress;
@@ -615,7 +615,7 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
 
    // Save the current cache in case of failure
    DeleteCache(strSaveCache); // be safe and delete the previous "SaveCache" if one exists
-   int retval = rename(strCache,strSaveCache); // rename the existing cache to "SaveCache" in case there is an update error
+   int retval = _trename(strCache,strSaveCache); // rename the existing cache to "SaveCache" in case there is an update error
    if ( retval != 0 )
    {
       // there was an error renaming the cache
@@ -640,7 +640,7 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
    {
       // set cache folder
       m_MasterLibraryFileCache = GetCacheFolder() + GetMasterLibraryFileName();
-      m_WorkgroupTemplateFolderCache = GetCacheFolder() + GetTemplateSubFolderName() + CString("\\");
+      m_WorkgroupTemplateFolderCache = GetCacheFolder() + GetTemplateSubFolderName() + CString(_T("\\"));
 
       // Catalog server takes care of business
       try
@@ -653,13 +653,13 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
 
             m_MasterLibraryFileURL = pserver->GetMasterLibraryURL(m_Publisher);
 
-            if ( m_MasterLibraryFileURL == "" )
-               m_MasterLibraryFileCache = "";
+            if ( m_MasterLibraryFileURL == _T("") )
+               m_MasterLibraryFileCache = _T("");
          }
          else
          {
             CString msg;
-            msg.Format("Error: Cannot perform update - Currently selected catalog server is not in server list. Name is %s",m_CurrentCatalogServer);
+            msg.Format(_T("Error: Cannot perform update - Currently selected catalog server is not in server list. Name is %s"),m_CurrentCatalogServer);
             AfxMessageBox(msg,MB_ICONEXCLAMATION);
             bSuccessful = false;
          }
@@ -693,13 +693,13 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
    {
       // otherwise, delete the messed up cache and put it back the way it was
       DeleteCache(strCache);
-      rename(strSaveCache,strCache);
+      _trename(strSaveCache,strCache);
    }
 
    if (bSuccessful)
-      progress->put_Message(0,CComBSTR("The Master Library and Templates have been updated"));
+      progress->put_Message(0,CComBSTR(_T("The Master Library and Templates have been updated")));
    else
-      progress->put_Message(0,CComBSTR("Update failed. Previous settings restored."));
+      progress->put_Message(0,CComBSTR(_T("Update failed. Previous settings restored.")));
 
    if ( bSuccessful )
    {
@@ -741,7 +741,7 @@ CString CPGSuperBaseAppPlugin::GetDefaultMasterLibraryFile()
    CEAFApp* pApp = EAFGetApp();
 
    CString strAppPath = pApp->GetAppLocation();
-   return strAppPath + CString("WSDOT.lbr");
+   return strAppPath + CString(_T("WSDOT.lbr"));
 }
 
 CString CPGSuperBaseAppPlugin::GetDefaultWorkgroupTemplateFolder()
@@ -749,7 +749,7 @@ CString CPGSuperBaseAppPlugin::GetDefaultWorkgroupTemplateFolder()
    CEAFApp* pApp = EAFGetApp();
 
    CString strAppPath = pApp->GetAppLocation();
-   return strAppPath + CString("Templates");
+   return strAppPath + CString(_T("Templates"));
 }
 
 CString CPGSuperBaseAppPlugin::GetCacheFolder()
@@ -760,9 +760,9 @@ CString CPGSuperBaseAppPlugin::GetCacheFolder()
    BOOL bResult = ::SHGetSpecialFolderPath(NULL,buffer,CSIDL_APPDATA,FALSE);
 
    if ( !bResult )
-      return pApp->GetAppLocation() + CString("Cache\\");
+      return pApp->GetAppLocation() + CString(_T("Cache\\"));
    else
-      return CString(buffer) + CString("\\PGSuper\\");
+      return CString(buffer) + CString(_T("\\PGSuper\\"));
 }
 
 CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()
@@ -773,9 +773,9 @@ CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()
    BOOL bResult = ::SHGetSpecialFolderPath(NULL,buffer,CSIDL_APPDATA,FALSE);
 
    if ( !bResult )
-      return pApp->GetAppLocation() + CString("SaveCache\\");
+      return pApp->GetAppLocation() + CString(_T("SaveCache\\"));
    else
-      return CString(buffer) + CString("\\PGSuper_Save\\");
+      return CString(buffer) + CString(_T("\\PGSuper_Save\\"));
 }
 
 const CPGSuperCatalogServers* CPGSuperBaseAppPlugin::GetCatalogServers() const

@@ -37,8 +37,8 @@
 // FORWARD DECLARATIONS
 //
 // Utility constants, stuff for TxDOT CAD export
-#define CAD_DELIM	" "
-#define CAD_SPACE	" "
+#define CAD_DELIM	_T(" ")
+#define CAD_SPACE	_T(" ")
 
 // MISCELLANEOUS
 //
@@ -74,9 +74,9 @@ class CadWriterWorkerBee
 public:
    CadWriterWorkerBee(bool doWriteTitles); 
 
-   void WriteFloat64(Float64 val, const char* title, Int16 nchars, const char* format, bool doDelim);
-   void WriteInt16(Int16 val, const char* title, Int16 nchars, const char* format, bool doDelim);
-   void WriteString(const char* val, const char* title, Int16 nchars, const char* format, bool doDelim);
+   void WriteFloat64(Float64 val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim);
+   void WriteInt16(Int16 val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim);
+   void WriteString(LPCTSTR val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim);
    void WriteBlankSpaces(Int16 ns);
    void WriteToFile(FILE* fp);
 
@@ -84,22 +84,22 @@ private:
    bool m_DoWriteTitles;
 
    // The text to be written
-   char m_DataLine[BF_SIZ];
-   char m_TitleLine[BF_SIZ];
-   char m_DashLine[BF_SIZ];
+   TCHAR m_DataLine[BF_SIZ];
+   TCHAR m_TitleLine[BF_SIZ];
+   TCHAR m_DashLine[BF_SIZ];
 
    // Cursors for location of last write
-   char* m_DataLineCursor;
-   char* m_TitleLineCursor;
-   char* m_DashLineCursor;
+   LPTSTR m_DataLineCursor;
+   LPTSTR m_TitleLineCursor;
+   LPTSTR m_DashLineCursor;
 
    CadWriterWorkerBee(); // no default const
-   void WriteTitle(const char* title, Int16 nchars, bool doDelim);
+   void WriteTitle(LPCTSTR title, Int16 nchars, bool doDelim);
 
    // remaining buffer sizes for *printf_s type functions
    size_t DataBufferRemaining() const
    {
-      return sizeof(*m_DataLineCursor)*(m_DataLine+BF_SIZ-m_DataLineCursor);
+      return sizeof(*m_DataLineCursor)*(m_DataLine+BF_SIZ-m_DataLineCursor)/sizeof(TCHAR);
    }
 };
 

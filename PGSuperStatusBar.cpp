@@ -147,10 +147,10 @@ void CPGSuperStatusBar::Reset()
    CEAFStatusBar::Reset();
 
    int idx = GetAnalysisModePaneIndex();
-   SetPaneText( idx, "" );
+   SetPaneText( idx, _T("") );
 
    idx = GetAutoCalcPaneIndex();
-   SetPaneText( idx, "" );
+   SetPaneText( idx, _T("") );
 }
 
 void CPGSuperStatusBar::AutoCalcEnabled( bool bEnable )
@@ -171,13 +171,13 @@ void CPGSuperStatusBar::SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType an
    switch( analysisType )
    {
    case pgsTypes::Simple:
-      strAnalysisType = "Simple Span";
+      strAnalysisType = _T("Simple Span");
       break;
    case pgsTypes::Continuous:
-      strAnalysisType = "Continuous";
+      strAnalysisType = _T("Continuous");
       break;
    case pgsTypes::Envelope:
-      strAnalysisType = "Envelope";
+      strAnalysisType = _T("Envelope");
       break;
    }
 

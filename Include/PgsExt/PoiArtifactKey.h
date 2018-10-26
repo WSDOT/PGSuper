@@ -194,6 +194,10 @@ public:
 
    bool operator<(const pgsPoiArtifactKey& rOther) const;
 
+   pgsTypes::Stage GetStage() const { return m_Stage; }
+   pgsTypes::LimitState GetLimitState() const { return m_LimitState; }
+   Float64 GetDistFromStart() const { return m_DistFromStart; }
+
    // GROUP: OPERATIONS
 
    // GROUP: ACCESS

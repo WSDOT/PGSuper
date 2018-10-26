@@ -201,7 +201,7 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    try
    {
-      hr = pStrLoad->BeginUnit("BridgeDescription");
+      hr = pStrLoad->BeginUnit(_T("BridgeDescription"));
 
       double version;
       pStrLoad->get_Version(&version);
@@ -210,62 +210,62 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       var.vt = VT_BOOL;
 
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("GirderFamilyName",&var);
-      m_strGirderFamilyName = OLE2A(var.bstrVal);
+      hr = pStrLoad->get_Property(_T("GirderFamilyName"),&var);
+      m_strGirderFamilyName = OLE2T(var.bstrVal);
 
       if ( version < 6 )
       {
          // in version 5 and earlier... GirderFamilyName was actually a beam factory name
          // map the beam factory name to its actual girder family
-         if ( m_strGirderFamilyName == "Precast I-Beam" )
+         if ( m_strGirderFamilyName == _T("Precast I-Beam") )
          {
-            m_strGirderFamilyName = "I-Beam";
+            m_strGirderFamilyName = _T("I-Beam");
          }
-         else if ( m_strGirderFamilyName == "Nebraska NU Girder" )
+         else if ( m_strGirderFamilyName == _T("Nebraska NU Girder") )
          {
-            m_strGirderFamilyName = "I-Beam";
+            m_strGirderFamilyName = _T("I-Beam");
          }
-         else if ( m_strGirderFamilyName == "Precast U-Beam (WSDOT)" ||
-                   m_strGirderFamilyName == "Precast U-Beam (TXDOT)" )
+         else if ( m_strGirderFamilyName == _T("Precast U-Beam (WSDOT)") ||
+                   m_strGirderFamilyName == _T("Precast U-Beam (TXDOT)") )
          {
-            m_strGirderFamilyName = "U-Beam";
+            m_strGirderFamilyName = _T("U-Beam");
          }
-         else if ( m_strGirderFamilyName == "Double Tee (WSDOT)" ||
-                   m_strGirderFamilyName == "Double Tee (TxDOT)" )
+         else if ( m_strGirderFamilyName == _T("Double Tee (WSDOT)") ||
+                   m_strGirderFamilyName == _T("Double Tee (TxDOT)") )
          {
-            m_strGirderFamilyName = "Double Tee";
+            m_strGirderFamilyName = _T("Double Tee");
          }
       }
 
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("GirderOrientation",&var);
+      hr = pStrLoad->get_Property(_T("GirderOrientation"),&var);
       m_GirderOrientation = (pgsTypes::GirderOrientationType)(var.lVal);
 
       var.vt = VT_BOOL;
-      hr = pStrLoad->get_Property("UseSameGirderForEntireBridge",&var);
+      hr = pStrLoad->get_Property(_T("UseSameGirderForEntireBridge"),&var);
       m_bSameGirderName = (var.boolVal == VARIANT_TRUE ? true : false);
 
       if ( m_bSameGirderName )
       {
          var.vt = VT_BSTR;
-         hr = pStrLoad->get_Property("Girder",&var);
-         m_strGirderName = OLE2A(var.bstrVal);
+         hr = pStrLoad->get_Property(_T("Girder"),&var);
+         m_strGirderName = OLE2T(var.bstrVal);
       }
 
       var.vt = VT_BOOL;
-      hr = pStrLoad->get_Property("UseSameNumberOfGirdersInAllSpans",&var);
+      hr = pStrLoad->get_Property(_T("UseSameNumberOfGirdersInAllSpans"),&var);
       m_bSameNumberOfGirders = (var.boolVal == VARIANT_TRUE ? true : false);
 
       if ( m_bSameNumberOfGirders )
       {
          var.vt = VT_I2;
-         hr = pStrLoad->get_Property("GirderCount",&var);
+         hr = pStrLoad->get_Property(_T("GirderCount"),&var);
          m_nGirders = (GirderIndexType)var.iVal;
       }
 
       if ( version < 2 )
       {
-         hr = pStrLoad->get_Property("UseSameGirderSpacingForEntireBridge",&var);
+         hr = pStrLoad->get_Property(_T("UseSameGirderSpacingForEntireBridge"),&var);
          bool bSameGirderSpacing = (var.boolVal == VARIANT_TRUE ? true : false);
          if ( bSameGirderSpacing )
             m_GirderSpacingType = pgsTypes::sbsUniform;
@@ -275,22 +275,22 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       else
       {
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("GirderSpacingType",&var);
+         hr = pStrLoad->get_Property(_T("GirderSpacingType"),&var);
          m_GirderSpacingType = (pgsTypes::SupportedBeamSpacing)(var.lVal);
       }
 
       if ( IsBridgeSpacing(m_GirderSpacingType) )
       {
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("GirderSpacing",&var);
+         hr = pStrLoad->get_Property(_T("GirderSpacing"),&var);
          m_GirderSpacing = var.dblVal;
 
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("MeasurementLocation",&var);
+         hr = pStrLoad->get_Property(_T("MeasurementLocation"),&var);
          m_MeasurementLocation = (pgsTypes::MeasurementLocation)(var.lVal);
 
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("MeasurementType",&var);
+         hr = pStrLoad->get_Property(_T("MeasurementType"),&var);
          m_MeasurementType = (pgsTypes::MeasurementType)(var.lVal);      
 
          if ( 3 == version )
@@ -298,7 +298,7 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             //added in version 3, removed in version 4, no longer used
             // just load the value and keep going
             var.vt = VT_I4;
-            hr = pStrLoad->get_Property("WorkPointLocation",&var);
+            hr = pStrLoad->get_Property(_T("WorkPointLocation"),&var);
             //m_WorkPointLocation = (pgsTypes::WorkPointLocation)(var.lVal);      
          }
 
@@ -306,27 +306,27 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             // added in version 4
             var.vt = VT_UI4;
-            hr = pStrLoad->get_Property("RefGirder",&var);
+            hr = pStrLoad->get_Property(_T("RefGirder"),&var);
             m_RefGirderIdx = (GirderIndexType)var.ulVal;
 
-            hr = pStrLoad->get_Property("RefGirderOffsetType",&var);
+            hr = pStrLoad->get_Property(_T("RefGirderOffsetType"),&var);
             m_RefGirderOffsetType = (pgsTypes::OffsetMeasurementType)(var.lVal);
 
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("RefGirderOffset",&var);
+            hr = pStrLoad->get_Property(_T("RefGirderOffset"),&var);
             m_RefGirderOffset = var.dblVal;
          }
       }
 
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("LLDFMethod",&var);
+      hr = pStrLoad->get_Property(_T("LLDFMethod"),&var);
       m_LLDFMethod = (pgsTypes::DistributionFactorMethod)(var.lVal);
 
       if ( 4 <= version )
       {
          // added in version 4
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("AlignmentOffset",&var);
+         hr = pStrLoad->get_Property(_T("AlignmentOffset"),&var);
          m_AlignmentOffset = var.dblVal;
       }
 
@@ -334,19 +334,19 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          // added in version 5
          var.vt = VT_UI4;
-         hr = pStrLoad->get_Property("SlabOffsetType",&var);
+         hr = pStrLoad->get_Property(_T("SlabOffsetType"),&var);
          m_SlabOffsetType = (pgsTypes::SlabOffsetType)(var.lVal);
          if ( m_SlabOffsetType == pgsTypes::sotBridge )
          {
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("SlabOffset",&var);
+            hr = pStrLoad->get_Property(_T("SlabOffset"),&var);
             m_SlabOffset = var.dblVal;
          }
       }
 
-      hr = pStrLoad->BeginUnit("Piers");
+      hr = pStrLoad->BeginUnit(_T("Piers"));
       var.vt = VT_UI2;
-      hr = pStrLoad->get_Property("PierCount",&var);
+      hr = pStrLoad->get_Property(_T("PierCount"),&var);
       PierIndexType nPiers = (PierIndexType)var.uiVal;
       PierIndexType pierIdx = 0;
       // allocate, number, and associated all piers with bridge before loading
@@ -367,7 +367,7 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       pStrLoad->EndUnit();
 
 
-      pStrLoad->BeginUnit("Spans");
+      pStrLoad->BeginUnit(_T("Spans"));
       SpanIndexType nSpans = nPiers-1;
       for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
       {
@@ -402,7 +402,7 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
 
       Float64 railing_version;
-      hr = pStrLoad->BeginUnit("LeftRailingSystem");
+      hr = pStrLoad->BeginUnit(_T("LeftRailingSystem"));
       pStrLoad->get_Version(&railing_version);
       hr = m_LeftRailingSystem.Load(pStrLoad,pProgress);
 
@@ -425,7 +425,7 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit();
 
-      hr = pStrLoad->BeginUnit("RightRailingSystem");
+      hr = pStrLoad->BeginUnit(_T("RightRailingSystem"));
       pStrLoad->get_Version(&railing_version);
       hr = m_RightRailingSystem.Load(pStrLoad,pProgress);
 
@@ -466,50 +466,50 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 HRESULT CBridgeDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
-   pStrSave->BeginUnit("BridgeDescription",6.0);
+   pStrSave->BeginUnit(_T("BridgeDescription"),6.0);
 
    // GirderFamilyName was actually a beam factory name in version 5... in version 6 of this
    // data block, it is really a girder family name
-   pStrSave->put_Property("GirderFamilyName",CComVariant(CComBSTR(m_strGirderFamilyName.c_str())));
+   pStrSave->put_Property(_T("GirderFamilyName"),CComVariant(CComBSTR(m_strGirderFamilyName.c_str())));
 
-   pStrSave->put_Property("GirderOrientation",CComVariant(m_GirderOrientation));
+   pStrSave->put_Property(_T("GirderOrientation"),CComVariant(m_GirderOrientation));
 
-   pStrSave->put_Property("UseSameGirderForEntireBridge",CComVariant(m_bSameGirderName));
+   pStrSave->put_Property(_T("UseSameGirderForEntireBridge"),CComVariant(m_bSameGirderName));
    if ( m_bSameGirderName )
    {
-      pStrSave->put_Property("Girder",CComVariant(CComBSTR(m_strGirderName.c_str())));
+      pStrSave->put_Property(_T("Girder"),CComVariant(CComBSTR(m_strGirderName.c_str())));
    }
 
-   pStrSave->put_Property("UseSameNumberOfGirdersInAllSpans",CComVariant(m_bSameNumberOfGirders) );
+   pStrSave->put_Property(_T("UseSameNumberOfGirdersInAllSpans"),CComVariant(m_bSameNumberOfGirders) );
    if ( m_bSameNumberOfGirders )
    {
-      pStrSave->put_Property("GirderCount",CComVariant(m_nGirders));
+      pStrSave->put_Property(_T("GirderCount"),CComVariant(m_nGirders));
    }
 
-   pStrSave->put_Property("GirderSpacingType",CComVariant(m_GirderSpacingType) ); // changed in version 2
+   pStrSave->put_Property(_T("GirderSpacingType"),CComVariant(m_GirderSpacingType) ); // changed in version 2
    if ( IsBridgeSpacing(m_GirderSpacingType) )
    {
-      pStrSave->put_Property("GirderSpacing",       CComVariant(m_GirderSpacing));
-      pStrSave->put_Property("MeasurementLocation", CComVariant(m_MeasurementLocation));
-      pStrSave->put_Property("MeasurementType",     CComVariant(m_MeasurementType));
+      pStrSave->put_Property(_T("GirderSpacing"),       CComVariant(m_GirderSpacing));
+      pStrSave->put_Property(_T("MeasurementLocation"), CComVariant(m_MeasurementLocation));
+      pStrSave->put_Property(_T("MeasurementType"),     CComVariant(m_MeasurementType));
 
       // added in version 4
-      pStrSave->put_Property("RefGirder",CComVariant(m_RefGirderIdx));
-      pStrSave->put_Property("RefGirderOffsetType",CComVariant(m_RefGirderOffsetType));
-      pStrSave->put_Property("RefGirderOffset",CComVariant(m_RefGirderOffset));
+      pStrSave->put_Property(_T("RefGirder"),CComVariant(m_RefGirderIdx));
+      pStrSave->put_Property(_T("RefGirderOffsetType"),CComVariant(m_RefGirderOffsetType));
+      pStrSave->put_Property(_T("RefGirderOffset"),CComVariant(m_RefGirderOffset));
    }
 
-   hr = pStrSave->put_Property("LLDFMethod",CComVariant(m_LLDFMethod));
+   hr = pStrSave->put_Property(_T("LLDFMethod"),CComVariant(m_LLDFMethod));
 
-   hr = pStrSave->put_Property("AlignmentOffset",CComVariant(m_AlignmentOffset)); // added in version 4
+   hr = pStrSave->put_Property(_T("AlignmentOffset"),CComVariant(m_AlignmentOffset)); // added in version 4
 
    // added in version 5
-   hr = pStrSave->put_Property("SlabOffsetType",CComVariant(m_SlabOffsetType));
+   hr = pStrSave->put_Property(_T("SlabOffsetType"),CComVariant(m_SlabOffsetType));
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
-      hr = pStrSave->put_Property("SlabOffset",CComVariant(m_SlabOffset));
+      hr = pStrSave->put_Property(_T("SlabOffset"),CComVariant(m_SlabOffset));
    
-   pStrSave->BeginUnit("Piers",1.0);
-   pStrSave->put_Property("PierCount",CComVariant((long)m_Piers.size()));
+   pStrSave->BeginUnit(_T("Piers"),1.0);
+   pStrSave->put_Property(_T("PierCount"),CComVariant((long)m_Piers.size()));
    std::vector<CPierData*>::iterator pierIter;
    for ( pierIter = m_Piers.begin(); pierIter != m_Piers.end(); pierIter++ )
    {
@@ -519,7 +519,7 @@ HRESULT CBridgeDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->EndUnit();
 
 
-   pStrSave->BeginUnit("Spans",1.0);
+   pStrSave->BeginUnit(_T("Spans"),1.0);
    std::vector<CSpanData*>::iterator spanIter;
    for ( spanIter = m_Spans.begin(); spanIter != m_Spans.end(); spanIter++ )
    {
@@ -531,11 +531,11 @@ HRESULT CBridgeDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    m_Deck.Save(pStrSave,pProgress);
 
-   pStrSave->BeginUnit("LeftRailingSystem",2.0);
+   pStrSave->BeginUnit(_T("LeftRailingSystem"),2.0);
    m_LeftRailingSystem.Save(pStrSave,pProgress);
    pStrSave->EndUnit();
 
-   pStrSave->BeginUnit("RightRailingSystem",2.0);
+   pStrSave->BeginUnit(_T("RightRailingSystem"),2.0);
    m_RightRailingSystem.Save(pStrSave,pProgress);
    pStrSave->EndUnit();
    
@@ -957,12 +957,12 @@ GirderIndexType CBridgeDescription::GetGirderCount() const
    return m_nGirders;
 }
 
-void CBridgeDescription::SetGirderFamilyName(const char* strName)
+void CBridgeDescription::SetGirderFamilyName(LPCTSTR strName)
 {
    m_strGirderFamilyName = strName;
 }
 
-const char* CBridgeDescription::GetGirderFamilyName() const
+LPCTSTR CBridgeDescription::GetGirderFamilyName() const
 {
    return m_strGirderFamilyName.c_str();
 }
@@ -977,17 +977,17 @@ bool CBridgeDescription::UseSameGirderForEntireBridge() const
    return m_bSameGirderName;
 }
 
-const char* CBridgeDescription::GetGirderName() const
+LPCTSTR CBridgeDescription::GetGirderName() const
 {
    return m_strGirderName.c_str();
 }
 
-void CBridgeDescription::RenameGirder(const char* strName)
+void CBridgeDescription::RenameGirder(LPCTSTR strName)
 {
    m_strGirderName = strName;
 }
 
-void CBridgeDescription::SetGirderName(const char* strName)
+void CBridgeDescription::SetGirderName(LPCTSTR strName)
 {
    if ( m_strGirderName != strName )
    {
@@ -1438,11 +1438,11 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
 
       for(GroupIndexType iGroup = 0; iGroup< thisNGroups; iGroup++)
       {
-         std::string thisGirderName;
+         std::_tstring thisGirderName;
          GirderIndexType nthisGstart, nthisGend;
          pthisSpan->GetGirderTypes()->GetGirderGroup(iGroup, &nthisGstart, &nthisGend, thisGirderName);
 
-         std::string origGirderName = thisGirderName;
+         std::_tstring origGirderName = thisGirderName;
          if (iGroup < origNGroups)
          {
             GirderIndexType norigGstart, norigGend;

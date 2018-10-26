@@ -106,7 +106,7 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
    {
       for ( int i = 0; i < count; i++ )
       {
-         CString key(char(i+'A'));
+         CString key(TCHAR(i+_T('A')));
          CString strValue = theApp->GetProfileString(_T("Servers"),key);
 
          CPGSuperCatalogServer* pserver = CreateCatalogServer(strValue);
@@ -119,7 +119,7 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
    }
 
    // Always have a WSDOT and TxDOT server
-   if (!IsServerDefined("WSDOT"))
+   if (!IsServerDefined(_T("WSDOT")))
       m_Servers.insert( ServerPtr(new CFtpPGSuperCatalogServer()) ); // wsdot
 
    if (!IsServerDefined("TxDOT"))
@@ -135,7 +135,7 @@ void CPGSuperCatalogServers::SaveToRegistry(CWinApp* theApp) const
    {
       CString server_creation_string = GetCreationString(iter->get());
 
-      CString key(char(i+'A'));
+      CString key(TCHAR(i+_T('A')));
       theApp->WriteProfileString(_T("Servers"), key, server_creation_string);
    }
 }

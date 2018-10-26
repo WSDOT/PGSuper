@@ -47,32 +47,32 @@ public:
    virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsPoiMgr* pPoiMgr);
    virtual void CreateDistFactorEngineer(IBroker* pBroker,long agentID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng);
    virtual void CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng);
-   virtual std::vector<std::string> GetDimensionNames();
+   virtual std::vector<std::_tstring> GetDimensionNames();
    virtual std::vector<const unitLength*> GetDimensionUnits(bool bSIUnits);
    virtual std::vector<double> GetDefaultDimensions();
    virtual bool IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual CLSID GetFamilyCLSID();
-   virtual std::string GetGirderFamilyName();
-   virtual std::string GetPublisher();
+   virtual std::_tstring GetGirderFamilyName();
+   virtual std::_tstring GetPublisher();
    virtual HINSTANCE GetResourceInstance();
    virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs);
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings();
    virtual long GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions);
    virtual Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType);
-   virtual std::string GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType);
-   virtual std::string GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType);
-   virtual std::string GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType);
-   virtual std::string GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType);
-   virtual std::string GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType);
-   virtual std::string GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType);
+   virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType);
+   virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType);
+   virtual std::_tstring GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType);
+   virtual std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType);
+   virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType);
+   virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType);
 
 protected:
-   std::vector<std::string> m_DimNames;
+   std::vector<std::_tstring> m_DimNames;
    std::vector<double> m_DefaultDims;
    std::vector<const unitLength*> m_DimUnits[2];
 
-   double GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name);
+   double GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name);
 
    virtual bool ExcludeExteriorBeamShearKeys() = 0;
    virtual bool UseOverallWidth() = 0;

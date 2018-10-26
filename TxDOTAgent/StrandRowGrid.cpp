@@ -192,19 +192,19 @@ void CStrandRowGrid::FillGrid(const CTxDOTOptionalDesignGirderData::AvailableStr
 
       // row index
       CString crow;
-      crow.Format("%d",row);
+      crow.Format(_T("%d"),row);
       SetStyleRange(CGXRange(row,0), CGXStyle()
-         .SetValue(_T(crow)));
+         .SetValue(crow));
 
       // Elevation
       Float64 elev = ::ConvertFromSysUnits(avail_row.RowElev ,unitMeasure::Inch);
       CString strelev;
-      strelev.Format("%.3f",elev);
+      strelev.Format(_T("%.3f"),elev);
 
       SetStyleRange(CGXRange(row,1), CGXStyle()
          .SetReadOnly(TRUE)
          .SetUserAttribute(1,avail_row.RowElev) // use user attribute to store entire double - this way we don't have to worry about string conversion
-         .SetValue(_T(strelev)));
+         .SetValue(strelev));
 
       // Combo box containing available strands
       CString strStrands = GetStrandRowList(avail_row.AvailableStrandIncrements);
@@ -217,19 +217,19 @@ void CStrandRowGrid::FillGrid(const CTxDOTOptionalDesignGirderData::AvailableStr
       if (srit != filledStrandRows.end())
       {
          const CTxDOTOptionalDesignGirderData::StrandRow& rsrow = *srit;
-         strCurrent.Format("%d", rsrow.StrandsInRow);
+         strCurrent.Format(_T("%d"), rsrow.StrandsInRow);
       }
       else
       {
-         // No strands at the elev - Get the first entry from the strand list as the default selection (should be "0")
-         int idx = strStrands.Find("\n",0);
+         // No strands at the elev - Get the first entry from the strand list as the default selection (should be _T("0"))
+         int idx = strStrands.Find(_T("\n"),0);
          strCurrent = strStrands.Left(idx);
       }
 
       SetStyleRange(CGXRange(row,2), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T(strStrands))
-			.SetValue(_T(strCurrent))
+			.SetChoiceList(strStrands)
+			.SetValue(strCurrent)
          );
 
       iter++;
@@ -252,7 +252,7 @@ CTxDOTOptionalDesignGirderData::StrandRowContainer CStrandRowGrid::GetData()
    {
       // Get rows that have strands
       CString strStrands = GetCellValue(row,2);
-      if (strStrands!="0")
+      if (strStrands!=_T("0"))
       {
          CTxDOTOptionalDesignGirderData::StrandRow strrow;
 
@@ -286,7 +286,7 @@ void CStrandRowGrid::ComputeStrands(StrandIndexType* pNum, Float64* pCg)
    {
       // Get rows that have strands
       CString strStrands = GetCellValue(row,2);
-      if (strStrands!="0")
+      if (strStrands!=_T("0"))
       {
          long strandcnt;
          sysTokenizer::ParseLong(strStrands, &strandcnt);  // save num strands as integral value as well
@@ -325,7 +325,7 @@ CString CStrandRowGrid::GetStrandRowList(const std::vector<CTxDOTOptionalDesignG
    {
       const CTxDOTOptionalDesignGirderData::StrandIncrement& strd = *it;
       CString tmp;
-      tmp.Format("%d\n",strd.TotalStrands);
+      tmp.Format(_T("%d\n"),strd.TotalStrands);
 
       strands_list += tmp;
    }

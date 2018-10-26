@@ -79,7 +79,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,G
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Casting Yard Stresses");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Casting Yard Stresses"));
 
    if ( span == ALL_SPANS )
    {
@@ -89,8 +89,8 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,G
 
    // Set up table headings
    (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION,                  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR(RPT_FTOP << rptNewLine << "Girder",    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,2) << COLHDR(RPT_FBOT << rptNewLine << "Girder",    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,1) << COLHDR(RPT_FTOP << rptNewLine << _T("Girder"),    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,2) << COLHDR(RPT_FBOT << rptNewLine << _T("Girder"),    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

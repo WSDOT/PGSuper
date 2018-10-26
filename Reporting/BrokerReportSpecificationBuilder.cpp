@@ -50,7 +50,7 @@ boost::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::Creat
    {
       boost::shared_ptr<CReportSpecification> pRptSpec( new CBrokerReportSpecification(rptDesc.GetReportName(),m_pBroker) );
 
-      std::vector<std::string> chList = dlg.m_ChapterList;
+      std::vector<std::_tstring> chList = dlg.m_ChapterList;
       AddChapters(rptDesc,chList,pRptSpec);
 
       return pRptSpec;
@@ -82,11 +82,11 @@ void CBrokerReportSpecificationBuilder::AddChapters(const CReportDescription& rp
 }
 
 
-void CBrokerReportSpecificationBuilder::AddChapters(const CReportDescription& rptDesc,const std::vector<std::string>& chList,boost::shared_ptr<CReportSpecification>& pRptSpec)
+void CBrokerReportSpecificationBuilder::AddChapters(const CReportDescription& rptDesc,const std::vector<std::_tstring>& chList,boost::shared_ptr<CReportSpecification>& pRptSpec)
 {
    std::vector<CChapterInfo> vChInfo = rptDesc.GetChapterInfo();
 
-   std::vector<std::string>::const_iterator iter;
+   std::vector<std::_tstring>::const_iterator iter;
    for ( iter = chList.begin(); iter != chList.end(); iter++ )
    {
       CChapterInfo search;

@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 static const Uint32 SSIZE = 1440 * 1/2; // (twips)
 
 
-UINT CMomentLoadDrawStrategyImpl::ms_Format = ::RegisterClipboardFormat("MomentLoadDrawStrategyImpl");
+UINT CMomentLoadDrawStrategyImpl::ms_Format = ::RegisterClipboardFormat(_T("MomentLoadDrawStrategyImpl"));
 
 CMomentLoadDrawStrategyImpl::CMomentLoadDrawStrategyImpl()
 {

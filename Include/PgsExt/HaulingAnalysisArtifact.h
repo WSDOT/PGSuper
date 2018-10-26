@@ -432,6 +432,9 @@ public:
    Float64 GetRadiusOfStability() const;
    void SetRadiusOfStability(Float64 val);
 
+   Float64 GetIx() const;
+   void SetIx(Float64 ix);
+
    Float64 GetIy() const;
    void SetIy(Float64 iy);
 
@@ -530,6 +533,7 @@ private:
    Float64 m_OffsetFactor;
    Float64 m_TotalInitialEccentricity;
    Float64 m_RadiusOfStability;
+   Float64 m_Ix;
    Float64 m_Iy;
    Float64 m_Zo;
    Float64 m_ZoPrime;

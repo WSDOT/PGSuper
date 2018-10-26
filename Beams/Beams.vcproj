@@ -25,7 +25,7 @@
 			UseOfMFC="2"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -51,7 +51,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm600 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include"
 				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -128,7 +128,8 @@
 			UseOfMFC="2"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -153,8 +154,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm600 "
-				Optimization="2"
-				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -190,6 +195,9 @@
 				ModuleDefinitionFile=".\Beams.def"
 				GenerateDebugInformation="false"
 				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
@@ -320,6 +328,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ElasticGainDueToSIDLTable.h"
+				>
+			</File>
+			<File
 				RelativePath="ElasticShorteningTable.h"
 				>
 			</File>
@@ -376,11 +388,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Iface\PsLossEngineer.h"
+				RelativePath="PsLossEngineer.h"
 				>
 			</File>
 			<File
-				RelativePath="PsLossEngineer.h"
+				RelativePath="..\Include\Iface\PsLossEngineer.h"
 				>
 			</File>
 			<File
@@ -1028,6 +1040,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\ElasticGainDueToSIDLTable.cpp"
+				>
 			</File>
 			<File
 				RelativePath="ElasticShorteningTable.cpp"

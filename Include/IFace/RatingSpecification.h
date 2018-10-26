@@ -46,8 +46,8 @@ interface IRatingSpecification : IUnknown
    virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType) const = 0;
    virtual void EnableRating(pgsTypes::LoadRatingType ratingType,bool bEnable) = 0;
 
-   virtual std::string GetRatingSpecification() const = 0;
-   virtual void SetRatingSpecification(const std::string& spec) = 0;
+   virtual std::_tstring GetRatingSpecification() const = 0;
+   virtual void SetRatingSpecification(const std::_tstring& spec) = 0;
 
    virtual void SetADTT(Int16 adtt) = 0;
    virtual Int16 GetADTT() const = 0; // < 0 = Unknown

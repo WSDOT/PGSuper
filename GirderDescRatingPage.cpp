@@ -64,10 +64,10 @@ BOOL CGirderDescRatingPage::OnInitDialog()
 {
    // Initialize the condition factor combo box
    CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
-   pcbConditionFactor->AddString("Good or Satisfactory (Structure condition rating 6 or higher)");
-   pcbConditionFactor->AddString("Fair (Structure condition rating of 5)");
-   pcbConditionFactor->AddString("Poor (Structure condition rating 4 or lower)");
-   pcbConditionFactor->AddString("Other");
+   pcbConditionFactor->AddString(_T("Good or Satisfactory (Structure condition rating 6 or higher)"));
+   pcbConditionFactor->AddString(_T("Fair (Structure condition rating of 5)"));
+   pcbConditionFactor->AddString(_T("Poor (Structure condition rating 4 or lower)"));
+   pcbConditionFactor->AddString(_T("Other"));
    pcbConditionFactor->SetCurSel(0);
 
    CPropertyPage::OnInitDialog();

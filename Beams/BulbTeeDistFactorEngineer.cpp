@@ -115,7 +115,7 @@ void CBulbTeeDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    m_pImpl->BuildReport(span,gdr,pChapter,pDisplayUnits);
 }
 
-bool CBulbTeeDistFactorEngineer::Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile)
+bool CBulbTeeDistFactorEngineer::Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
 {
    return m_pImpl->Run1250Tests(span,gdr,ls,pid,bridgeId,resultsFile,poiFile);
 }
@@ -131,7 +131,7 @@ bool CBulbTeeDistFactorEngineer::GetDFResultsEx(SpanIndexType span, GirderIndexT
                                gV,  gV1, gV2, gR, gR1, gR2 ); 
 }
 
-std::string CBulbTeeDistFactorEngineer::GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::string& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
+std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
    GET_IFACE(ILiveLoads,pLiveLoads);
    GET_IFACE(ISpecification,    pSpec);
@@ -141,24 +141,24 @@ std::string CBulbTeeDistFactorEngineer::GetComputationDescription(SpanIndexType 
    Int16 method = pSpecEntry->GetLiveLoadDistributionMethod();
 
    // Things are only weird for WSDOT method
-   std::string descr;
+   std::_tstring descr;
    if (method==LLDF_WSDOT)
    {
       if (decktype == pgsTypes::sdtCompositeOverlay && connect == pgsTypes::atcConnectedAsUnit)
       {
-         descr = "WSDOT Method per Design Memorandum 2-1999 Dated February 22, 1999 using type (k) cross section.";
+         descr = _T("WSDOT Method per Design Memorandum 2-1999 Dated February 22, 1999 using type (k) cross section.");
       }
       else if (connect == pgsTypes::atcConnectedAsUnit)
       {
-         descr = "AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section connected transversely sufficiently to act as a unit.";
+         descr = _T("AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section connected transversely sufficiently to act as a unit.");
       }
       else
       {
-         descr = "AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section connected transversely only enough to prevent relative vertical displacement along interface.";
+         descr = _T("AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section connected transversely only enough to prevent relative vertical displacement along interface.");
       }
 
       // special string if roa is ignored
-      std::string straction = pLiveLoads->GetLLDFSpecialActionText();
+      std::_tstring straction = pLiveLoads->GetLLDFSpecialActionText();
       if ( !straction.empty() )
       {
          descr += straction;

@@ -98,12 +98,12 @@ Float64 pgsStressRatingArtifact::GetVehicleWeight() const
    return m_VehicleWeight;
 }
 
-void pgsStressRatingArtifact::SetVehicleName(const char* str)
+void pgsStressRatingArtifact::SetVehicleName(LPCTSTR str)
 {
    m_strVehicleName = str;
 }
 
-std::string pgsStressRatingArtifact::GetVehicleName() const
+std::_tstring pgsStressRatingArtifact::GetVehicleName() const
 {
    return m_strVehicleName;
 }

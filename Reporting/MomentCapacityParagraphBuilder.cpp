@@ -63,7 +63,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 
    rptParagraph* p = new rptParagraph;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,"Moment Capacity at Midspan");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Moment Capacity at Midspan"));
    *p << pTable << rptNewLine;
 
    pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
@@ -71,8 +71,8 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 
    // Setup the table
 
-   (*pTable)(0,0) << "";
-   (*pTable)(0,1) << "Composite Girder";
+   (*pTable)(0,0) << _T("");
+   (*pTable)(0,1) << _T("Composite Girder");
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), true );
@@ -101,7 +101,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   (*pTable)(row,0) << "Factored Moment, Strength I, " << Sub2("M","u");
+   (*pTable)(row,0) << _T("Factored Moment, Strength I, ") << Sub2(_T("M"),_T("u"));
    (*pTable)(row,1) << moment.SetValue( Mu );
 
    // strength II if permit truck is defined
@@ -112,14 +112,14 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    {
       const pgsFlexuralCapacityArtifact* pStr2CompositeCap = pArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthII,poi.GetDistFromStart()));
 
-      (*pTable)(++row,0) << "Factored Moment, Strength II, " << Sub2("M","u");
+      (*pTable)(++row,0) << _T("Factored Moment, Strength II, ") << Sub2(_T("M"),_T("u"));
       (*pTable)(  row,1) << moment.SetValue( pStr2CompositeCap->GetDemand() );
 
       str2_passed = pStr2CompositeCap->Passed();
    }
 
    row++;
-   (*pTable)(row,0) << "Moment Capacity, " << symbol(phi) << Sub2("M","n");
+   (*pTable)(row,0) << _T("Moment Capacity, ") << symbol(phi) << Sub2(_T("M"),_T("n"));
    (*pTable)(row,1) << moment.SetValue( Mr );
 
    GET_IFACE2(pBroker,ISpecification, pSpec);
@@ -135,16 +135,16 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
       if ( pCompositeCap->IsOverReinforced() )
       {
          // Show limiting capacity of over reinforced section along with Mr
-         (*pTable)(row,1) << "(" << moment.SetValue( mcd.Phi * mcd.MnMin ) << ")";
+         (*pTable)(row,1) << _T("(") << moment.SetValue( mcd.Phi * mcd.MnMin ) << _T(")");
       }
       row++;
 
-      (*pTable)(row,0) << "Under Reinforced";
-      (*pTable)(row,1) << (pCompositeCap->IsUnderReinforced() ? "Yes" : "No");
+      (*pTable)(row,0) << _T("Under Reinforced");
+      (*pTable)(row,1) << (pCompositeCap->IsUnderReinforced() ? _T("Yes") : _T("No"));
       row++;
 
-      (*pTable)(row,0) << "Over Reinforced";
-      (*pTable)(row,1) << (pCompositeCap->IsOverReinforced() ? "Yes" : "No");
+      (*pTable)(row,0) << _T("Over Reinforced");
+      (*pTable)(row,1) << (pCompositeCap->IsOverReinforced() ? _T("Yes") : _T("No"));
       row++;
    }
    else
@@ -157,7 +157,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    }
 
 
-   (*pTable)(row,0) << "Status" << rptNewLine << "(" << symbol(phi) << Sub2("M","n") << "/" << Sub2("M","u") << ")";
+   (*pTable)(row,0) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("M"),_T("n")) << _T("/") << Sub2(_T("M"),_T("u")) << _T(")");
    if ( pCompositeCap->Passed() )
       (*pTable)(row,1) << RPT_PASS;
    else
@@ -165,11 +165,11 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 
    if ( IsZero( Mu ) )
    {
-      (*pTable)(row,1) << rptNewLine << "(" << symbol(INFINITY) << ")";
+      (*pTable)(row,1) << rptNewLine << _T("(") << symbol(INFINITY) << _T(")");
    }
    else
    {
-      (*pTable)(row,1) << rptNewLine << "(" << scalar.SetValue(Mr/Mu) << ")";
+      (*pTable)(row,1) << rptNewLine << _T("(") << scalar.SetValue(Mr/Mu) << _T(")");
    }
 
 
@@ -177,10 +177,10 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    {
       if ( pCompositeCap->IsOverReinforced() )
       {
-         (*pTable)(row,1) << " *";
-         *p << "* Over reinforced sections may be adequate if M" << Sub("u") << " does not exceed the minimum resistance specified in LRFD C5.7.3.3.1" << rptNewLine;
-         *p << "  Limiting capacity of over reinforced sections are shown in parentheses" << rptNewLine;
-         *p << "  See Moment Capacity Details chapter for additional information" << rptNewLine;
+         (*pTable)(row,1) << _T(" *");
+         *p << _T("* Over reinforced sections may be adequate if M") << Sub(_T("u")) << _T(" does not exceed the minimum resistance specified in LRFD C5.7.3.3.1") << rptNewLine;
+         *p << _T("  Limiting capacity of over reinforced sections are shown in parentheses") << rptNewLine;
+         *p << _T("  See Moment Capacity Details chapter for additional information") << rptNewLine;
       }
    }
 

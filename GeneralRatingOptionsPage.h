@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "EditRatingCriteria.h"
 
 
@@ -35,7 +35,7 @@ public:
 	CGeneralRatingOptionsPage();
 	virtual ~CGeneralRatingOptionsPage();
 
-   std::vector<std::string> m_RatingSpecs;
+   std::vector<std::_tstring> m_RatingSpecs;
    
    txnGeneralRatingData m_Data;
 

@@ -137,12 +137,36 @@ pgsFlexuralStressArtifact* pgsGirderArtifact::GetFlexuralStressArtifact(const pg
    return &(*found).second;
 }
 
+std::vector<pgsFlexuralStressArtifactKey> pgsGirderArtifact::GetFlexuralStressArtifactKeys() const
+{
+   std::vector<pgsFlexuralStressArtifactKey> keys;
+   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator iter;
+   for ( iter = m_FlexuralStressArtifacts.begin(); iter != m_FlexuralStressArtifacts.end(); iter++ )
+   {
+      keys.push_back(iter->first);
+   }
+
+   return keys;
+}
+
 void pgsGirderArtifact::AddFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key,
                                                   const pgsFlexuralCapacityArtifact& pmartifact,
                                                   const pgsFlexuralCapacityArtifact& nmartifact)
 {
    m_PositiveMomentFlexuralCapacityArtifacts.insert(std::make_pair(key,pmartifact));
    m_NegativeMomentFlexuralCapacityArtifacts.insert(std::make_pair(key,nmartifact));
+}
+
+std::vector<pgsFlexuralCapacityArtifactKey> pgsGirderArtifact::GetFlexuralCapacityArtifactKeys() const
+{
+   std::vector<pgsFlexuralCapacityArtifactKey> keys;
+   std::map<pgsFlexuralCapacityArtifactKey,pgsFlexuralCapacityArtifact>::const_iterator iter;
+   for ( iter = m_PositiveMomentFlexuralCapacityArtifacts.begin(); iter != m_PositiveMomentFlexuralCapacityArtifacts.end(); iter++ )
+   {
+      keys.push_back(iter->first);
+   }
+
+   return keys;
 }
 
 const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetPositiveMomentFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key) const

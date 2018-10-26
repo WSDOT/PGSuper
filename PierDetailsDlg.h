@@ -51,9 +51,9 @@ public:
 
    pgsTypes::MovePierOption GetMovePierOption();
    double GetStation();
-   const char* GetOrientation();
+   LPCTSTR GetOrientation();
 
-   const char* GetConnection(pgsTypes::PierFaceType pierFace);
+   LPCTSTR GetConnection(pgsTypes::PierFaceType pierFace);
    pgsTypes::PierConnectionType GetConnectionType();
    
    GirderIndexType GetNumGirders(pgsTypes::PierFaceType pierFace);

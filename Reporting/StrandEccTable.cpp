@@ -76,8 +76,8 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    bool bTempStrands = (0 < pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) ? true : false);
 
    // Setup table
-   std::ostringstream os;
-   os << "Strand Eccentricity for Span " << LABEL_SPAN(span) << " Girder " << LABEL_GIRDER(girder);
+   std::_tostringstream os;
+   os << _T("Strand Eccentricity for Span ") << LABEL_SPAN(span) << _T(" Girder ") << LABEL_GIRDER(girder);
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 9 : 7,os.str().c_str());
 
    p_table->SetNumberOfHeaderRows(2);
@@ -93,11 +93,11 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
 
    // straight/harped/temporary
    p_table->SetColumnSpan(0,col, (bTempStrands ? 5 : 3));
-   (*p_table)(0,col++) << "Eccentricity";
+   (*p_table)(0,col++) << _T("Eccentricity");
 
    // strand slope
    p_table->SetColumnSpan(0,col, 2);
-   (*p_table)(0,col++) << "Strand Slope";
+   (*p_table)(0,col++) << _T("Strand Slope");
 
    ColumnIndexType i;
    for ( i = col; i < p_table->GetNumberOfColumns(); i++ )
@@ -108,22 +108,22 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    p_table->SetRowSpan(1,col++,-1);
    p_table->SetRowSpan(1,col++,-1);
 
-   (*p_table)(1,col++) << COLHDR("Straight", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(1,col++) << COLHDR("Harped",   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(1,col++) << COLHDR(_T("Straight"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(1,col++) << COLHDR(_T("Harped"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    if ( bTempStrands )
    {
-      (*p_table)(1,col++) << COLHDR("Temporary", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*p_table)(1,col++) << COLHDR("All" << rptNewLine << "(w/ Temp)", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*p_table)(1,col++) << COLHDR("Permanent" << rptNewLine << "(w/o Temp)", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(1,col++) << COLHDR(_T("Temporary"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(1,col++) << COLHDR(_T("All") << rptNewLine << _T("(w/ Temp)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(1,col++) << COLHDR(_T("Permanent") << rptNewLine << _T("(w/o Temp)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
    else
    {
-      (*p_table)(1,col++) << COLHDR("All" << rptNewLine << "Strands", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(1,col++) << COLHDR(_T("All") << rptNewLine << _T("Strands"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
 
-   (*p_table)(1,col++) << "Average" << rptNewLine << "(1:n)";
-   (*p_table)(1,col++) << "Maximum" << rptNewLine << "(1:n)";
+   (*p_table)(1,col++) << _T("Average") << rptNewLine << _T("(1:n)");
+   (*p_table)(1,col++) << _T("Maximum") << rptNewLine << _T("(1:n)");
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, gdrloc, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPointOfInterest, spanloc, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -185,11 +185,11 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
       if ( stage == pgsTypes::CastingYard )
       {
          (*p_table)(row,col++) << gdrloc.SetValue(stage, poi);
-         (*p_table)(row,col++) << "";
+         (*p_table)(row,col++) << _T("");
       }
       else
       {
-         (*p_table)(row,col++) << "";
+         (*p_table)(row,col++) << _T("");
          (*p_table)(row,col++) << spanloc.SetValue( stage, poi, end_size );
       }
 
@@ -199,19 +199,19 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
          if ( 0 < Ns )
             (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetSsEccentricity( poi, &nEff ) );
          else
-            (*p_table)(row,col++) << "-";
+            (*p_table)(row,col++) << _T("-");
 
          if ( 0 < Nh )
             (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetHsEccentricity( poi, &nEff ) );
          else
-            (*p_table)(row,col++) << "-";
+            (*p_table)(row,col++) << _T("-");
 
          if ( bTempStrands )
          {
             if ( 0 < Nt )
                (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetTempEccentricity( poi, &nEff ) );
             else
-               (*p_table)(row,col++) << "-";
+               (*p_table)(row,col++) << _T("-");
 
             (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( poi, true, &nEff ) );
          }
@@ -234,8 +234,8 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
          }
          else
          {
-            (*p_table)(row,col++) << "-";
-            (*p_table)(row,col++) << "-";
+            (*p_table)(row,col++) << _T("-");
+            (*p_table)(row,col++) << _T("-");
          }
       }
 
@@ -284,7 +284,7 @@ bool CStrandEccTable::AssertValid() const
 
 void CStrandEccTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CStrandEccTable" << endl;
+   os << _T("Dump for CStrandEccTable") << endl;
 }
 #endif // _DEBUG
 

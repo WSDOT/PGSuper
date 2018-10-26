@@ -46,21 +46,21 @@ CLASS
 ****************************************************************************/
 
 
-inline std::string StringForEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType type)
+inline std::_tstring StringForEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType type)
 {
    switch (type)
    {
    case ConnectionLibraryEntry::FromBearingAlongGirder:
-      return std::string("FromBearingAlongGirder");
+      return std::_tstring(_T("FromBearingAlongGirder"));
    case ConnectionLibraryEntry::FromBearingNormalToPier:
-      return std::string("FromBearingNormalToPier");
+      return std::_tstring(_T("FromBearingNormalToPier"));
    case ConnectionLibraryEntry::FromPierAlongGirder:
-      return std::string("FromPierAlongGirder");
+      return std::_tstring(_T("FromPierAlongGirder"));
    case ConnectionLibraryEntry::FromPierNormalToPier:
-      return std::string("FromPierNormalToPier");
+      return std::_tstring(_T("FromPierNormalToPier"));
    default:
       ATLASSERT(0);
-      return std::string("FromPierNormalToPier");
+      return std::_tstring(_T("FromPierNormalToPier"));
    };
 }
 
@@ -105,30 +105,30 @@ ConnectionLibraryEntry& ConnectionLibraryEntry::operator= (const ConnectionLibra
 //======================== OPERATIONS =======================================
 bool ConnectionLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit("ConnectionLibraryEntry", 5.0);
+   pSave->BeginUnit(_T("ConnectionLibraryEntry"), 5.0);
 
-   pSave->Property("Name",this->GetName().c_str());
-   pSave->Property("DiaphragmHeight", m_DiaphragmHeight);
-   pSave->Property("GirderEndDistance", m_GirderEndDistance);
-   pSave->Property("GirderBearingOffset", m_GirderBearingOffset);
-   pSave->Property("SupportWidth",m_SupportWidth);// added in version 4
+   pSave->Property(_T("Name"),this->GetName().c_str());
+   pSave->Property(_T("DiaphragmHeight"), m_DiaphragmHeight);
+   pSave->Property(_T("GirderEndDistance"), m_GirderEndDistance);
+   pSave->Property(_T("GirderBearingOffset"), m_GirderBearingOffset);
+   pSave->Property(_T("SupportWidth"),m_SupportWidth);// added in version 4
 
    // changed/added in version 5
-   pSave->Property("EndDistanceMeasurementType", StringForEndDistanceMeasurementType(m_EndDistanceMeasure).c_str() );
-   pSave->Property("BearingOffsetMeasurementType",m_BearingOffsetMeasure == AlongGirder ? "AlongGirder" : "NormalToPier");
+   pSave->Property(_T("EndDistanceMeasurementType"), StringForEndDistanceMeasurementType(m_EndDistanceMeasure).c_str() );
+   pSave->Property(_T("BearingOffsetMeasurementType"),m_BearingOffsetMeasure == AlongGirder ? _T("AlongGirder") : _T("NormalToPier"));
 
-   pSave->Property("DiaphragmWidth",m_DiaphragmWidth);
+   pSave->Property(_T("DiaphragmWidth"),m_DiaphragmWidth);
 
    // diaphragm load type - added for version 2.0
    if (m_DiaphragmLoadType==ApplyAtBearingCenterline)
-      pSave->Property("DiaphragmLoadType","ApplyAtBearingCenterline");
+      pSave->Property(_T("DiaphragmLoadType"),_T("ApplyAtBearingCenterline"));
    else if (m_DiaphragmLoadType==ApplyAtSpecifiedLocation)
    {
-      pSave->Property("DiaphragmLoadType","ApplyAtSpecifiedLocation");
-      pSave->Property("DiaphragmLoadLocation",m_DiaphragmLoadLocation);
+      pSave->Property(_T("DiaphragmLoadType"),_T("ApplyAtSpecifiedLocation"));
+      pSave->Property(_T("DiaphragmLoadLocation"),m_DiaphragmLoadLocation);
    }
    else if (m_DiaphragmLoadType==DontApply)
-      pSave->Property("DiaphragmLoadType","DontApply");
+      pSave->Property(_T("DiaphragmLoadType"),_T("DontApply"));
    else
       PRECONDITION(0);
 
@@ -139,46 +139,46 @@ bool ConnectionLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
 bool ConnectionLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
-   if(pLoad->BeginUnit("ConnectionLibraryEntry"))
+   if(pLoad->BeginUnit(_T("ConnectionLibraryEntry")))
    {
       Float64 version = pLoad->GetVersion();
       if (5.0 < version)
          THROW_LOAD(BadVersion,pLoad);
 
-      std::string name;
-      if(pLoad->Property("Name",&name))
+      std::_tstring name;
+      if(pLoad->Property(_T("Name"),&name))
          this->SetName(name.c_str());
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("DiaphragmHeight", &m_DiaphragmHeight))
+      if(!pLoad->Property(_T("DiaphragmHeight"), &m_DiaphragmHeight))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("GirderEndDistance", &m_GirderEndDistance))
+      if(!pLoad->Property(_T("GirderEndDistance"), &m_GirderEndDistance))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("GirderBearingOffset", &m_GirderBearingOffset))
+      if(!pLoad->Property(_T("GirderBearingOffset"), &m_GirderBearingOffset))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if ( 4.0 <= version )
       {
-         if(!pLoad->Property("SupportWidth", &m_SupportWidth))
+         if(!pLoad->Property(_T("SupportWidth"), &m_SupportWidth))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if ( 3.0 <= version && version < 5.0 )
       {
-         std::string tmp;
+         std::_tstring tmp;
 
-         if(!pLoad->Property("MeasurementType",&tmp))
+         if(!pLoad->Property(_T("MeasurementType"),&tmp))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (tmp=="AlongGirder")
+         if (tmp==_T("AlongGirder"))
          {
             m_BearingOffsetMeasure = AlongGirder;
             m_EndDistanceMeasure = FromBearingAlongGirder;
          }
-         else if (tmp=="NormalToPier")
+         else if (tmp==_T("NormalToPier"))
          {
             m_BearingOffsetMeasure = NormalToPier;
             m_EndDistanceMeasure = FromBearingNormalToPier;
@@ -190,24 +190,24 @@ bool ConnectionLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else if ( 5.0 <= version )
       {
-         std::string tmp;
+         std::_tstring tmp;
 
-         if(!pLoad->Property("EndDistanceMeasurementType",&tmp))
+         if(!pLoad->Property(_T("EndDistanceMeasurementType"),&tmp))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (tmp=="FromBearingAlongGirder" || tmp=="AlongGirder")
+         if (tmp==_T("FromBearingAlongGirder") || tmp==_T("AlongGirder"))
          {
             m_EndDistanceMeasure = FromBearingAlongGirder;
          }
-         else if (tmp=="FromBearingNormalToPier" || tmp=="NormalToPier")
+         else if (tmp==_T("FromBearingNormalToPier") || tmp==_T("NormalToPier"))
          {
             m_EndDistanceMeasure = FromBearingNormalToPier;
          }
-         else if (tmp=="FromPierAlongGirder")
+         else if (tmp==_T("FromPierAlongGirder"))
          {
             m_EndDistanceMeasure = FromPierAlongGirder;
          }
-         else if (tmp=="FromPierNormalToPier")
+         else if (tmp==_T("FromPierNormalToPier"))
          {
             m_EndDistanceMeasure = FromPierNormalToPier;
          }
@@ -217,14 +217,14 @@ bool ConnectionLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
 
 
-         if(!pLoad->Property("BearingOffsetMeasurementType",&tmp))
+         if(!pLoad->Property(_T("BearingOffsetMeasurementType"),&tmp))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (tmp=="AlongAlignment" || tmp=="AlongGirder") // AlongAlignment is an artifact after testing but before release of 2.1
+         if (tmp==_T("AlongAlignment") || tmp==_T("AlongGirder")) // AlongAlignment is an artifact after testing but before release of 2.1
          {
             m_BearingOffsetMeasure = AlongGirder;
          }
-         else if (tmp=="NormalToPier")
+         else if (tmp==_T("NormalToPier"))
          {
             m_BearingOffsetMeasure = NormalToPier;
          }
@@ -234,26 +234,26 @@ bool ConnectionLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      if(!pLoad->Property("DiaphragmWidth", &m_DiaphragmWidth))
+      if(!pLoad->Property(_T("DiaphragmWidth"), &m_DiaphragmWidth))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if (2.0 <= version)
       {
-         std::string tmp;
-         if(!pLoad->Property("DiaphragmLoadType",&tmp))
+         std::_tstring tmp;
+         if(!pLoad->Property(_T("DiaphragmLoadType"),&tmp))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (tmp=="ApplyAtBearingCenterline")
+         if (tmp==_T("ApplyAtBearingCenterline"))
          {
             m_DiaphragmLoadType = ApplyAtBearingCenterline;
          }
-         else if (tmp=="ApplyAtSpecifiedLocation")
+         else if (tmp==_T("ApplyAtSpecifiedLocation"))
          {
             m_DiaphragmLoadType = ApplyAtSpecifiedLocation;
-            if(!pLoad->Property("DiaphragmLoadLocation",&m_DiaphragmLoadLocation))
+            if(!pLoad->Property(_T("DiaphragmLoadLocation"),&m_DiaphragmLoadLocation))
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
-         else if (tmp=="DontApply")
+         else if (tmp==_T("DontApply"))
          {
             m_DiaphragmLoadType=DontApply;
          }
@@ -481,13 +481,13 @@ bool ConnectionLibraryEntry::AssertValid() const
 
 void ConnectionLibraryEntry::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for ConnectionLibraryEntry"<<endl;
-   os << "   m_GirderEndDistance     ="<< m_GirderEndDistance <<endl;
-   os << "   m_GirderBearingOffset   ="<< m_GirderBearingOffset << endl;
-   os << "   m_DiaphragmHeight       ="<< m_DiaphragmHeight <<endl;
-   os << "   m_DiaphragmWidth        ="<< m_DiaphragmWidth <<endl;
-   os << "   m_DiaphragmLoadType     ="<<m_DiaphragmLoadType     <<endl;
-   os << "   m_DiaphragmLoadLocation ="<<m_DiaphragmLoadLocation <<endl;
+   os << _T("Dump for ConnectionLibraryEntry")<<endl;
+   os << _T("   m_GirderEndDistance     =")<< m_GirderEndDistance <<endl;
+   os << _T("   m_GirderBearingOffset   =")<< m_GirderBearingOffset << endl;
+   os << _T("   m_DiaphragmHeight       =")<< m_DiaphragmHeight <<endl;
+   os << _T("   m_DiaphragmWidth        =")<< m_DiaphragmWidth <<endl;
+   os << _T("   m_DiaphragmLoadType     =")<<m_DiaphragmLoadType     <<endl;
+   os << _T("   m_DiaphragmLoadLocation =")<<m_DiaphragmLoadLocation <<endl;
 
    libLibraryEntry::Dump( os );
 }

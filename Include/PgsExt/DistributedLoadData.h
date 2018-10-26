@@ -62,7 +62,7 @@ public:
    Float64  m_WStart;    // if load type is uniform, then locations are ignored and this is only 
    Float64  m_WEnd;
    bool     m_Fractional;
-   std::string m_Description;
+   std::_tstring m_Description;
 
 
 };

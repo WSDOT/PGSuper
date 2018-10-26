@@ -122,8 +122,8 @@ public:
 
    virtual bool LoadMe(sysIStructuredLoad* pLoad);
 
-   void SetMasterLibraryInfo(const char* strPublisher,const char* strLibFile);
-   void GetMasterLibraryInfo(std::string& strPublisher,std::string& strLibFile) const;
+   void SetMasterLibraryInfo(LPCTSTR strPublisher,LPCTSTR strLibFile);
+   void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strLibFile) const;
 
    // GROUP: INQUIRY
 
@@ -147,8 +147,8 @@ private:
    Uint32 m_RatingLibIdx;
    Uint32 m_LiveLibIdx;
 
-   std::string m_strPublisher;
-   std::string m_strLibFile;
+   std::_tstring m_strPublisher;
+   std::_tstring m_strLibFile;
 
    // GROUP: LIFECYCLE
 

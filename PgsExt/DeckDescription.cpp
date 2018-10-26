@@ -206,36 +206,36 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
 
    try
    {
-      hr = pStrLoad->BeginUnit("Deck");
+      hr = pStrLoad->BeginUnit(_T("Deck"));
       double version;
       hr = pStrLoad->get_Version(&version);
 
       CComVariant var;
 
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SlabType", &var );
+      hr = pStrLoad->get_Property(_T("SlabType"), &var );
       DeckType = (pgsTypes::SupportedDeckType)(int)var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("TransverseConnectivity", &var );
+      hr = pStrLoad->get_Property(_T("TransverseConnectivity"), &var );
       TransverseConnectivity = (pgsTypes::AdjacentTransverseConnectivity)(int)var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("GrossDepth", &var );
+      hr = pStrLoad->get_Property(_T("GrossDepth"), &var );
       GrossDepth = var.dblVal;
 
       if ( version < 2 )
       {
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("LeftOverhang", &var );
+         hr = pStrLoad->get_Property(_T("LeftOverhang"), &var );
          double LeftOverhang = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("RightOverhang", &var );
+         hr = pStrLoad->get_Property(_T("RightOverhang"), &var );
          double RightOverhang = var.dblVal;
 
          // make this into a deck edge point
@@ -253,12 +253,12 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       else
       {
          var.vt = VT_I4;
-         pStrLoad->get_Property("DeckEdgePointCount",&var);
+         pStrLoad->get_Property(_T("DeckEdgePointCount"),&var);
          long nPoints = var.lVal;
 
          if ( 0 < nPoints )
          {
-            pStrLoad->BeginUnit("DeckEdgePoints");
+            pStrLoad->BeginUnit(_T("DeckEdgePoints"));
             for ( long i = 0;i < nPoints; i++ )
             {
                CDeckPoint point;
@@ -271,17 +271,17 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("OverhangEdgeDepth",&var);
+      hr = pStrLoad->get_Property(_T("OverhangEdgeDepth"),&var);
       OverhangEdgeDepth = var.dblVal;
 
       var.Clear();
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("OverhangTaperType",&var);
+      hr = pStrLoad->get_Property(_T("OverhangTaperType"),&var);
       OverhangTaper = (pgsTypes::DeckOverhangTaper)(var.lVal);
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("Fillet", &var );
+      hr = pStrLoad->get_Property(_T("Fillet"), &var );
       Fillet = var.dblVal;
 
       if ( version < 4 )
@@ -291,36 +291,36 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          // the supplied pointer. Slab offset is for the entire bridge
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabOffset", &var );
+         hr = pStrLoad->get_Property(_T("SlabOffset"), &var );
          *pSlabOffset = var.dblVal;
          *pSlabOffsetType = pgsTypes::sotBridge;
       }
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("PanelDepth",&var );
+      hr = pStrLoad->get_Property(_T("PanelDepth"),&var );
       PanelDepth = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("PanelSupport",&var );
+      hr = pStrLoad->get_Property(_T("PanelSupport"),&var );
       PanelSupport = var.dblVal;
 
       var.Clear();
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("WearingSurfaceType",&var);
+      hr = pStrLoad->get_Property(_T("WearingSurfaceType"),&var);
       WearingSurface = (pgsTypes::WearingSurfaceType)(var.lVal);
 
       if ( version < 3.0 )
       {
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("OverlayDepth", &var );
+         hr = pStrLoad->get_Property(_T("OverlayDepth"), &var );
          OverlayDepth = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("OverlayDensity", &var );
+         hr = pStrLoad->get_Property(_T("OverlayDensity"), &var );
          OverlayDensity = var.dblVal;
 
          Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
@@ -332,19 +332,19 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       {
          var.Clear();
          var.vt = VT_BOOL;
-         pStrLoad->get_Property("InputAsDepthAndDensity",&var);
+         pStrLoad->get_Property(_T("InputAsDepthAndDensity"),&var);
          bInputAsDepthAndDensity = (var.boolVal == VARIANT_TRUE ? true : false);
 
          if ( bInputAsDepthAndDensity )
          {
             var.Clear();
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("OverlayDepth", &var );
+            hr = pStrLoad->get_Property(_T("OverlayDepth"), &var );
             OverlayDepth = var.dblVal;
 
             var.Clear();
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("OverlayDensity", &var );
+            hr = pStrLoad->get_Property(_T("OverlayDensity"), &var );
             OverlayDensity = var.dblVal;
 
             Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
@@ -354,7 +354,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          {
             var.Clear();
             var.vt = VT_R8;
-            pStrLoad->get_Property("OverlayWeight",&var); // added in version 3.0
+            pStrLoad->get_Property(_T("OverlayWeight"),&var); // added in version 3.0
             OverlayWeight = var.dblVal;
          }
 
@@ -362,7 +362,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SacrificialDepth", &var );
+      hr = pStrLoad->get_Property(_T("SacrificialDepth"), &var );
       SacrificialDepth = var.dblVal;
 
       // there was a bug in the PGSuper interface that allowed the sacrifical depth to
@@ -375,108 +375,108 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       {
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabFc", &var );
+         hr = pStrLoad->get_Property(_T("SlabFc"), &var );
          SlabFc = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabWeightDensity", &var );
+         hr = pStrLoad->get_Property(_T("SlabWeightDensity"), &var );
          SlabWeightDensity = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabStrengthDensity", &var );
+         hr = pStrLoad->get_Property(_T("SlabStrengthDensity"), &var );
          SlabStrengthDensity = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabMaxAggregateSize", &var );
+         hr = pStrLoad->get_Property(_T("SlabMaxAggregateSize"), &var );
          SlabMaxAggregateSize = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabK1", &var );
+         hr = pStrLoad->get_Property(_T("SlabK1"), &var );
          SlabEcK1 = var.dblVal;
 
          var.Clear();
          var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property("SlabUserEc",&var);
+         hr = pStrLoad->get_Property(_T("SlabUserEc"),&var);
          SlabUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("SlabEc", &var );
+         hr = pStrLoad->get_Property(_T("SlabEc"), &var );
          SlabEc = var.dblVal;
       }
       else
       {
-         hr = pStrLoad->BeginUnit("SlabConcrete");
+         hr = pStrLoad->BeginUnit(_T("SlabConcrete"));
 
          var.Clear();
          var.vt = VT_BSTR;
-         hr = pStrLoad->get_Property("Type",&var);
-         SlabConcreteType = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2A(var.bstrVal));
+         hr = pStrLoad->get_Property(_T("Type"),&var);
+         SlabConcreteType = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2T(var.bstrVal));
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("Fc", &var );
+         hr = pStrLoad->get_Property(_T("Fc"), &var );
          SlabFc = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("WeightDensity", &var );
+         hr = pStrLoad->get_Property(_T("WeightDensity"), &var );
          SlabWeightDensity = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("StrengthDensity", &var );
+         hr = pStrLoad->get_Property(_T("StrengthDensity"), &var );
          SlabStrengthDensity = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("MaxAggregateSize", &var );
+         hr = pStrLoad->get_Property(_T("MaxAggregateSize"), &var );
          SlabMaxAggregateSize = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("EcK1", &var );
+         hr = pStrLoad->get_Property(_T("EcK1"), &var );
          SlabEcK1 = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("EcK2", &var );
+         hr = pStrLoad->get_Property(_T("EcK2"), &var );
          SlabEcK2 = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("CreepK1", &var );
+         hr = pStrLoad->get_Property(_T("CreepK1"), &var );
          SlabCreepK1 = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("CreepK2", &var );
+         hr = pStrLoad->get_Property(_T("CreepK2"), &var );
          SlabCreepK2 = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("ShrinkageK1", &var );
+         hr = pStrLoad->get_Property(_T("ShrinkageK1"), &var );
          SlabShrinkageK1 = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("ShrinkageK2", &var );
+         hr = pStrLoad->get_Property(_T("ShrinkageK2"), &var );
          SlabShrinkageK2 = var.dblVal;
 
          var.Clear();
          var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property("UserEc",&var);
+         hr = pStrLoad->get_Property(_T("UserEc"),&var);
          SlabUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
 
          if ( SlabUserEc )
          {
             var.Clear();
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("Ec", &var );
+            hr = pStrLoad->get_Property(_T("Ec"), &var );
             SlabEc = var.dblVal;
          }
 
@@ -484,14 +484,14 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          {
             var.Clear();
             var.vt = VT_BOOL;
-            hr = pStrLoad->get_Property("HasFct",&var);
+            hr = pStrLoad->get_Property(_T("HasFct"),&var);
             SlabHasFct = (var.boolVal == VARIANT_TRUE ? true : false);
 
             if ( SlabHasFct )
             {
                var.Clear();
                var.vt = VT_R8;
-               hr = pStrLoad->get_Property("Fct", &var );
+               hr = pStrLoad->get_Property(_T("Fct"), &var );
                SlabFct = var.dblVal;
             }
          }
@@ -501,13 +501,13 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
 
       if ( 4 < version )
       {
-         pStrLoad->BeginUnit("Condition");
+         pStrLoad->BeginUnit(_T("Condition"));
          var.vt = VT_I4;
-         pStrLoad->get_Property("ConditionFactorType",&var);
+         pStrLoad->get_Property(_T("ConditionFactorType"),&var);
          Condition = (pgsTypes::ConditionFactorType)(var.lVal);
 
          var.vt = VT_R8;
-         pStrLoad->get_Property("ConditionFactor",&var);
+         pStrLoad->get_Property(_T("ConditionFactor"),&var);
          ConditionFactor = var.dblVal;
       
          pStrLoad->EndUnit();
@@ -534,17 +534,17 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("Deck",6.0);
+   pStrSave->BeginUnit(_T("Deck"),6.0);
 
-   pStrSave->put_Property("SlabType",         CComVariant(DeckType));
-   pStrSave->put_Property("TransverseConnectivity", CComVariant(TransverseConnectivity)); // added for version 14.0
-   pStrSave->put_Property("GrossDepth",       CComVariant(GrossDepth));
+   pStrSave->put_Property(_T("SlabType"),         CComVariant(DeckType));
+   pStrSave->put_Property(_T("TransverseConnectivity"), CComVariant(TransverseConnectivity)); // added for version 14.0
+   pStrSave->put_Property(_T("GrossDepth"),       CComVariant(GrossDepth));
 
-   pStrSave->put_Property("DeckEdgePointCount",CComVariant((long)DeckEdgePoints.size()));
+   pStrSave->put_Property(_T("DeckEdgePointCount"),CComVariant((long)DeckEdgePoints.size()));
 
    if ( 0 < DeckEdgePoints.size() )
    {
-      pStrSave->BeginUnit("DeckEdgePoints",1.0);
+      pStrSave->BeginUnit(_T("DeckEdgePoints"),1.0);
       std::vector<CDeckPoint>::iterator iter;
       for ( iter = DeckEdgePoints.begin(); iter != DeckEdgePoints.end(); iter++ )
       {
@@ -554,61 +554,61 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->EndUnit();
    }
 
-   pStrSave->put_Property("OverhangEdgeDepth",CComVariant(OverhangEdgeDepth));
-   pStrSave->put_Property("OverhangTaperType",CComVariant(OverhangTaper));
-   pStrSave->put_Property("Fillet",           CComVariant(Fillet));
-   //pStrSave->put_Property("SlabOffset",       CComVariant(SlabOffset)); // removed in version 4 (moved up to bridge level)
-   pStrSave->put_Property("PanelDepth",       CComVariant(PanelDepth));
-   pStrSave->put_Property("PanelSupport",     CComVariant(PanelSupport));
-   pStrSave->put_Property("WearingSurfaceType", CComVariant(WearingSurface));
+   pStrSave->put_Property(_T("OverhangEdgeDepth"),CComVariant(OverhangEdgeDepth));
+   pStrSave->put_Property(_T("OverhangTaperType"),CComVariant(OverhangTaper));
+   pStrSave->put_Property(_T("Fillet"),           CComVariant(Fillet));
+   //pStrSave->put_Property(_T("SlabOffset"),       CComVariant(SlabOffset)); // removed in version 4 (moved up to bridge level)
+   pStrSave->put_Property(_T("PanelDepth"),       CComVariant(PanelDepth));
+   pStrSave->put_Property(_T("PanelSupport"),     CComVariant(PanelSupport));
+   pStrSave->put_Property(_T("WearingSurfaceType"), CComVariant(WearingSurface));
 
-   pStrSave->put_Property("InputAsDepthAndDensity",CComVariant(bInputAsDepthAndDensity)); // added in version 3.0
+   pStrSave->put_Property(_T("InputAsDepthAndDensity"),CComVariant(bInputAsDepthAndDensity)); // added in version 3.0
    if ( bInputAsDepthAndDensity )
    {
-      pStrSave->put_Property("OverlayDepth",     CComVariant(OverlayDepth));
-      pStrSave->put_Property("OverlayDensity",   CComVariant(OverlayDensity));
+      pStrSave->put_Property(_T("OverlayDepth"),     CComVariant(OverlayDepth));
+      pStrSave->put_Property(_T("OverlayDensity"),   CComVariant(OverlayDensity));
    }
    else
    {
-      pStrSave->put_Property("OverlayWeight",CComVariant(OverlayWeight)); // added in version 3.0
+      pStrSave->put_Property(_T("OverlayWeight"),CComVariant(OverlayWeight)); // added in version 3.0
    }
 
-   pStrSave->put_Property("SacrificialDepth", CComVariant(SacrificialDepth));
+   pStrSave->put_Property(_T("SacrificialDepth"), CComVariant(SacrificialDepth));
 
    // Added in version 6
    // new parameters are Unit, SlabConcreteType, SlabHasFct, and SlabFct
-   pStrSave->BeginUnit("SlabConcrete",1.0);
+   pStrSave->BeginUnit(_T("SlabConcrete"),1.0);
 
-      pStrSave->put_Property("Type",CComVariant( matConcrete::GetTypeName((matConcrete::Type)SlabConcreteType,false).c_str() ));
-      pStrSave->put_Property("Fc",               CComVariant(SlabFc));
-      pStrSave->put_Property("WeightDensity",    CComVariant(SlabWeightDensity));
-      pStrSave->put_Property("StrengthDensity",  CComVariant(SlabStrengthDensity));
-      pStrSave->put_Property("MaxAggregateSize", CComVariant(SlabMaxAggregateSize));
-      pStrSave->put_Property("EcK1",             CComVariant(SlabEcK1));
-      pStrSave->put_Property("EcK2",             CComVariant(SlabEcK2));
-      pStrSave->put_Property("CreepK1",          CComVariant(SlabCreepK1)); 
-      pStrSave->put_Property("CreepK2",          CComVariant(SlabCreepK2));
-      pStrSave->put_Property("ShrinkageK1",      CComVariant(SlabShrinkageK1)); 
-      pStrSave->put_Property("ShrinkageK2",      CComVariant(SlabShrinkageK2));
-      pStrSave->put_Property("UserEc", CComVariant(SlabUserEc));
+      pStrSave->put_Property(_T("Type"),CComVariant( matConcrete::GetTypeName((matConcrete::Type)SlabConcreteType,false).c_str() ));
+      pStrSave->put_Property(_T("Fc"),               CComVariant(SlabFc));
+      pStrSave->put_Property(_T("WeightDensity"),    CComVariant(SlabWeightDensity));
+      pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(SlabStrengthDensity));
+      pStrSave->put_Property(_T("MaxAggregateSize"), CComVariant(SlabMaxAggregateSize));
+      pStrSave->put_Property(_T("EcK1"),             CComVariant(SlabEcK1));
+      pStrSave->put_Property(_T("EcK2"),             CComVariant(SlabEcK2));
+      pStrSave->put_Property(_T("CreepK1"),          CComVariant(SlabCreepK1)); 
+      pStrSave->put_Property(_T("CreepK2"),          CComVariant(SlabCreepK2));
+      pStrSave->put_Property(_T("ShrinkageK1"),      CComVariant(SlabShrinkageK1)); 
+      pStrSave->put_Property(_T("ShrinkageK2"),      CComVariant(SlabShrinkageK2));
+      pStrSave->put_Property(_T("UserEc"), CComVariant(SlabUserEc));
 
       if ( SlabUserEc )
-         pStrSave->put_Property("Ec",     CComVariant(SlabEc));
+         pStrSave->put_Property(_T("Ec"),     CComVariant(SlabEc));
 
       if ( SlabConcreteType != pgsTypes::Normal )
       {
-         pStrSave->put_Property("HasFct",CComVariant(SlabHasFct));
+         pStrSave->put_Property(_T("HasFct"),CComVariant(SlabHasFct));
          
          if ( SlabHasFct )
-            pStrSave->put_Property("Fct",CComVariant(SlabFct));
+            pStrSave->put_Property(_T("Fct"),CComVariant(SlabFct));
       }
 
    pStrSave->EndUnit();
 
    // Added in version 5
-   pStrSave->BeginUnit("Condition",1.0);
-   pStrSave->put_Property("ConditionFactorType",CComVariant(Condition));
-   pStrSave->put_Property("ConditionFactor",CComVariant(ConditionFactor));
+   pStrSave->BeginUnit(_T("Condition"),1.0);
+   pStrSave->put_Property(_T("ConditionFactorType"),CComVariant(Condition));
+   pStrSave->put_Property(_T("ConditionFactor"),CComVariant(ConditionFactor));
    pStrSave->EndUnit(); // Condition
 
    DeckRebarData.Save(pStrSave,pProgress);

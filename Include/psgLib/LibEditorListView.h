@@ -115,9 +115,9 @@ private:
 
    // context menu is selected
    //void OnCmenuSelected(UINT id);
-   bool EditEntry(libILibrary* plib, const char* entryName);
-   void DeleteEntry(libILibrary* plib, const char* entryName, bool force=false);
-   void DuplicateEntry(libILibrary* plib, const char* entryName);
+   bool EditEntry(libILibrary* plib, LPCTSTR entryName);
+   void DeleteEntry(libILibrary* plib, LPCTSTR entryName, bool force=false);
+   void DuplicateEntry(libILibrary* plib, LPCTSTR entryName);
    bool DoesEntryExist(const CString& entryName);
    bool GetSelectedEntry(CString* entryName, libILibrary** pplib)const;
    int InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i);

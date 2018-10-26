@@ -70,7 +70,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILibrary, pLib );
    GET_IFACE2(pBroker,ISpecification, pSpec );
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -79,7 +79,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
-      *pPara << "Slab Offset check disabled in Project Criteria library entry. No analysis performed." << rptNewLine;
+      *pPara << _T("Slab Offset check disabled in Project Criteria library entry. No analysis performed.") << rptNewLine;
       return pChapter;
    }
 
@@ -98,7 +98,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
    
-   rptRcTable* pTable1 = pgsReportStyleHolder::CreateDefaultTable(8,"Haunch Details - Part 1");
+   rptRcTable* pTable1 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Haunch Details - Part 1"));
    *pPara << pTable1;
 
    if ( span == ALL_SPANS )
@@ -107,7 +107,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       pTable1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(9,"Haunch Details - Part 2");
+   rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(9,_T("Haunch Details - Part 2"));
    *pPara << pTable2;
 
    if ( span == ALL_SPANS )
@@ -116,26 +116,26 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       pTable2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   std::string strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
    (*pTable1)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*pTable1)(0,1) << "Station";
-   (*pTable1)(0,2) << COLHDR("Offset", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*pTable1)(0,3) << COLHDR("Top" << rptNewLine << "Slab" << rptNewLine << "Elevation", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*pTable1)(0,4) << COLHDR("Girder" << rptNewLine << "Chord" << rptNewLine << "Elevation",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*pTable1)(0,5) << COLHDR("Slab" << rptNewLine << "Thickness", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*pTable1)(0,6) << COLHDR("Fillet",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*pTable1)(0,7) << COLHDR("Excess" << rptNewLine << "Camber",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable1)(0,1) << _T("Station");
+   (*pTable1)(0,2) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,3) << COLHDR(_T("Top") << rptNewLine << _T("Slab") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,4) << COLHDR(_T("Girder") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,5) << COLHDR(_T("Slab") << rptNewLine << _T("Thickness"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable1)(0,6) << COLHDR(_T("Fillet"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable1)(0,7) << COLHDR(_T("Excess") << rptNewLine << _T("Camber"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
    (*pTable2)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*pTable2)(0,1) << "Crown" << rptNewLine << "Slope" << rptNewLine << "(" << Sub2("m","d") << ")" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable2)(0,2) << "Girder" << rptNewLine << "Orientation" << rptNewLine << "(" << Sub2("m","g") << ")" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable2)(0,3)<< COLHDR("Top" << rptNewLine << "Width",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*pTable2)(0,4)<< COLHDR("Profile" << rptNewLine << "Effect",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*pTable2)(0,5)<< COLHDR("Girder" << rptNewLine << "Orientation" << rptNewLine << "Effect",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*pTable2)(0,6)<< COLHDR("Required" << rptNewLine << "Slab" << rptNewLine << "Offset" << ("*"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*pTable2)(0,7)<< COLHDR("Top" << rptNewLine << "Girder" << rptNewLine << "Elevation" << Super("**"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-   (*pTable2)(0,8)<< COLHDR("Actual" << rptNewLine << "Depth" << Super("***"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable2)(0,1) << _T("Crown") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << Sub2(_T("m"),_T("d")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable2)(0,2) << _T("Girder") << rptNewLine << _T("Orientation") << rptNewLine << _T("(") << Sub2(_T("m"),_T("g")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable2)(0,3)<< COLHDR(_T("Top") << rptNewLine << _T("Width"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable2)(0,4)<< COLHDR(_T("Profile") << rptNewLine << _T("Effect"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable2)(0,5)<< COLHDR(_T("Girder") << rptNewLine << _T("Orientation") << rptNewLine << _T("Effect"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable2)(0,6)<< COLHDR(_T("Required") << rptNewLine << _T("Slab") << rptNewLine << _T("Offset") << (_T("*")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable2)(0,7)<< COLHDR(_T("Top") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation") << Super(_T("**")),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+   (*pTable2)(0,8)<< COLHDR(_T("Actual") << rptNewLine << _T("Depth") << Super(_T("***")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
@@ -151,9 +151,9 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
       (*pTable1)(row1,2) << dim.SetValue( fabs(haunch.Offset) );
       if ( haunch.Offset < 0 )
-         (*pTable1)(row1,2) << " (L)";
+         (*pTable1)(row1,2) << _T(" (L)");
       else if ( 0 < haunch.Offset )
-         (*pTable1)(row1,2) << " (R)";
+         (*pTable1)(row1,2) << _T(" (R)");
 
       (*pTable1)(row1,3) << dim.SetValue( haunch.ElevAlignment );
       (*pTable1)(row1,4) << dim.SetValue( haunch.ElevGirder );
@@ -185,44 +185,43 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pPara;
-   *pPara << Super("*") << " required slab offset from top of girder to top of slab at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet + Camber Effect + Profile Effect + Girder Orientation Effect)" << rptNewLine;
+   *pPara << Super(_T("*")) << _T(" required slab offset from top of girder to top of slab at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet + Camber Effect + Profile Effect + Girder Orientation Effect)") << rptNewLine;
 
    if ( slabOffsetType == pgsTypes::sotBridge )
    {
-      // one "A" dimension for whole bridge
+      // one _T("A") dimension for whole bridge
       Float64 A = pBridgeDesc->GetSlabOffset();
-      *pPara << Super("**") << " includes the effects of camber and based on Slab Offset of " << comp.SetValue(A) << "." << rptNewLine;
-      *pPara << Super("***") << " top of girder to top of slab based on Slab Offset of " << comp.SetValue(A) << ". (Deck Elevation - Top Girder Elevation)" << rptNewLine;
+      *pPara << Super(_T("**")) << _T(" includes the effects of camber and based on Slab Offset of ") << comp.SetValue(A) << _T(".") << rptNewLine;
+      *pPara << Super(_T("***")) << _T(" top of girder to top of slab based on Slab Offset of ") << comp.SetValue(A) << _T(". (Deck Elevation - Top Girder Elevation)") << rptNewLine;
    }
    else
    {
-      // "A" dim is span by span or per girder... doesn't really matter... get it by girder
+      // _T("A") dim is span by span or per girder... doesn't really matter... get it by girder
       const CGirderTypes* pGirderTypes = pBridgeDesc->GetSpan(span)->GetGirderTypes();
       Float64 Astart = pGirderTypes->GetSlabOffset(gdr,pgsTypes::metStart);
       Float64 Aend   = pGirderTypes->GetSlabOffset(gdr,pgsTypes::metEnd);
-      *pPara << Super("**") << " includes the effects of camber and based on Slab Offset at the start of the girder of " << comp.SetValue(Astart);
-      *pPara << " and a Slab Offset at the end of the girder of " << comp.SetValue(Aend) << "." << rptNewLine;
+      *pPara << Super(_T("**")) << _T(" includes the effects of camber and based on Slab Offset at the start of the girder of ") << comp.SetValue(Astart);
+      *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(".") << rptNewLine;
 
-      *pPara << Super("***") << " actual depth from top of girder to top of slab based on Slab Offset at the start of the girder of " << comp.SetValue(Astart);
-      *pPara << " and a Slab Offset at the end of the girder of " << comp.SetValue(Aend) << ". (Top Slab Elevation - Top Girder Elevation)" << rptNewLine;
+      *pPara << Super(_T("***")) << _T(" actual depth from top of girder to top of slab based on Slab Offset at the start of the girder of ") << comp.SetValue(Astart);
+      *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(". (Top Slab Elevation - Top Girder Elevation)") << rptNewLine;
    }
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   *pPara << "Required Slab Offset at intersection of centerline bearing and centerline girder (\"A\" Dimension): " << comp.SetValue(haunch_details.RequiredSlabOffset) << rptNewLine;
-   *pPara << "Maximum Increase in Haunch Depth between Bearings: " << comp.SetValue(haunch_details.HaunchDiff) << rptNewLine;
-   *pPara << "WSDOT stirrup and deck panel leveling bolt lengths are set based on the \"A\" dimension. If the haunch depth increases more than " << comp.SetValue(::ConvertToSysUnits(2.0,unitMeasure::Inch)) << " stirrup and/or bolt lengths may need to be adjusted on the plan sheets." << rptNewLine;
+   *pPara << _T("Required Slab Offset at intersection of centerline bearing and centerline girder (\"A\" Dimension): ") << comp.SetValue(haunch_details.RequiredSlabOffset) << rptNewLine;
+   *pPara << _T("Maximum Increase in Haunch Depth between Bearings: ") << comp.SetValue(haunch_details.HaunchDiff) << rptNewLine;
 
    *pPara << rptNewLine << rptNewLine;
 
-   *pPara << "Top Slab Elevation = Elevation of the roadway surface directly above the centerline of the girder." << rptNewLine;
-   *pPara << "Girder Chord Elevation = Elevation of an imaginary chord paralleling the top of the undeformed girder that intersects the roadway surface above the point of bearing at the left end of the girder." << rptNewLine;
+   *pPara << _T("Top Slab Elevation = Elevation of the roadway surface directly above the centerline of the girder.") << rptNewLine;
+   *pPara << _T("Girder Chord Elevation = Elevation of an imaginary chord paralleling the top of the undeformed girder that intersects the roadway surface above the point of bearing at the left end of the girder.") << rptNewLine;
 
-   *pPara << "Profile Effect = Deck Elevation - Girder Chord Elevation" << rptNewLine;
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ProfileEffect.gif");
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GirderOrientationEffect.gif")  << rptNewLine;
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GirderOrientationEffectEquation.png")  << rptNewLine;
+   *pPara << _T("Profile Effect = Deck Elevation - Girder Chord Elevation") << rptNewLine;
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ProfileEffect.gif"));
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GirderOrientationEffect.gif"))  << rptNewLine;
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GirderOrientationEffectEquation.png"))  << rptNewLine;
 
    return pChapter;
 }

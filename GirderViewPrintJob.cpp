@@ -102,14 +102,14 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
    ATLASSERT(  spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS  );
 
-   title.Format("Span %d Girder %s - PGSuper™, Copyright © %4d, WSDOT, All rights reserved", LABEL_SPAN(spanIdx), LABEL_GIRDER(gdrIdx), sysDate().Year());  border.SetTitle(title);
+   title.Format(_T("Span %d Girder %s - PGSuper™, Copyright © %4d, WSDOT, All rights reserved"), LABEL_SPAN(spanIdx), LABEL_GIRDER(gdrIdx), sysDate().Year());  border.SetTitle(title);
    CString path = pDoc->GetPathName();
    border.SetFileName(path);
    CRect rcPrint = border.Print(pDC, 1);
 
    if (rcPrint.IsRectEmpty())
    {
-      CHECKX(0,"Can't print border - page too small?");
+      CHECKX(0,_T("Can't print border - page too small?"));
       rcPrint = pInfo->m_rectDraw;
    }
 
@@ -150,7 +150,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    CFont* oldfont = pDC->SelectObject(&pvf);
    pDC->SetTextAlign(TA_LEFT|TA_TOP);
    CString tstr = UserLoads::GetStageName(m_pFrame->GetLoadingStage()).c_str();
-   CString topcap = "Elevation View (Loading shown in " + tstr + ")";
+   CString topcap = _T("Elevation View (Loading shown in ") + tstr + _T(")");
    CSize csiz = pDC->GetTextExtent( topcap );
    int x = (rcPrint.left+rcPrint.right)/2 - csiz.cx/2;
    int y = pvrect.bottom + 2*csiz.cy;
@@ -179,7 +179,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    sysNumericFormatTool nf(rlen.Format, rlen.Width, rlen.Precision);
    Float64 dist = ::ConvertFromSysUnits(m_pFrame->GetCurrentCutLocation(), rlen.UnitOfMeasure);
    CString msg;
-   msg.Format("Section Cut At %s %s",nf.AsString(dist).c_str(), rlen.UnitOfMeasure.UnitTag().c_str());
+   msg.Format(_T("Section Cut At %s %s"),nf.AsString(dist).c_str(), rlen.UnitOfMeasure.UnitTag().c_str());
 
    CFont svf;
    svf.CreatePointFont(m_iFtPrint, m_csFtPrint, pDC);

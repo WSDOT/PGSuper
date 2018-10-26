@@ -55,7 +55,7 @@ CStructuredLoad::~CStructuredLoad()
 }
 
 //======================== OPERATORS  =======================================
-bool CStructuredLoad::BeginUnit(const char* name)
+bool CStructuredLoad::BeginUnit(LPCTSTR name)
 {
    HRESULT hr = m_pStrLoad->BeginUnit( name );
    return SUCCEEDED(hr) ? true : false;
@@ -81,6 +81,14 @@ double CStructuredLoad::GetParentVersion()
    return version;
 }
 
+std::_tstring CStructuredLoad::GetParentUnit()
+{
+   USES_CONVERSION;
+   CComBSTR bstr;
+   HRESULT hr = m_pStrLoad->get_ParentUnit(&bstr);
+   return OLE2T(bstr);
+}
+
 double CStructuredLoad::GetTopVersion()
 {
    double version;
@@ -88,18 +96,18 @@ double CStructuredLoad::GetTopVersion()
    return version;
 }
 
-bool CStructuredLoad::Property(const char* name, std::string* pvalue)
+bool CStructuredLoad::Property(LPCTSTR name, std::_tstring* pvalue)
 {
    USES_CONVERSION;
    VARIANT var;
    var.vt = VT_BSTR;
    HRESULT hr = m_pStrLoad->get_Property( name, &var );
-   *pvalue = OLE2A( var.bstrVal );
+   *pvalue = OLE2T( var.bstrVal );
    ::SysFreeString( var.bstrVal );
    return SUCCEEDED(hr) ? true : false;
 }
 
-bool CStructuredLoad::Property(const char* name, Float64* pvalue)
+bool CStructuredLoad::Property(LPCTSTR name, Float64* pvalue)
 {
    VARIANT var;
    var.vt = VT_R8;
@@ -108,7 +116,7 @@ bool CStructuredLoad::Property(const char* name, Float64* pvalue)
    return SUCCEEDED(hr) ? true : false;
 }
 
-bool CStructuredLoad::Property(const char* name, Int16* pvalue)
+bool CStructuredLoad::Property(LPCTSTR name, Int16* pvalue)
 {
    VARIANT var;
    var.vt = VT_I2;
@@ -117,7 +125,7 @@ bool CStructuredLoad::Property(const char* name, Int16* pvalue)
    return SUCCEEDED(hr) ? true : false;
 }
 
-bool CStructuredLoad::Property(const char* name, Uint16* pvalue)
+bool CStructuredLoad::Property(LPCTSTR name, Uint16* pvalue)
 {
    VARIANT var;
    var.vt = VT_UI2;
@@ -126,7 +134,7 @@ bool CStructuredLoad::Property(const char* name, Uint16* pvalue)
    return SUCCEEDED(hr) ? true : false;
 }
 
-bool CStructuredLoad::Property(const char* name, Int32* pvalue)
+bool CStructuredLoad::Property(LPCTSTR name, Int32* pvalue)
 {
    VARIANT var;
    var.vt = VT_I4;
@@ -135,7 +143,7 @@ bool CStructuredLoad::Property(const char* name, Int32* pvalue)
    return SUCCEEDED(hr) ? true : false;
 }
 
-bool CStructuredLoad::Property(const char* name, Uint32* pvalue)
+bool CStructuredLoad::Property(LPCTSTR name, Uint32* pvalue)
 {
    VARIANT var;
    var.vt = VT_UI4;
@@ -144,7 +152,7 @@ bool CStructuredLoad::Property(const char* name, Uint32* pvalue)
    return SUCCEEDED(hr) ? true : false;
 }
 
-bool CStructuredLoad::Property(const char* name, bool* pvalue)
+bool CStructuredLoad::Property(LPCTSTR name, bool* pvalue)
 {
    VARIANT var;
    var.vt = VT_BOOL;
@@ -159,18 +167,18 @@ bool CStructuredLoad::Eof()const
    return ( hr == S_OK ? true : false );
 }
 
-std::string CStructuredLoad::GetStateDump() const
+std::_tstring CStructuredLoad::GetStateDump() const
 {
-   std::string str("State data not available");
+   std::_tstring str(_T("State data not available"));
    return str;
 }
 
-std::string CStructuredLoad::GetUnit() const
+std::_tstring CStructuredLoad::GetUnit() const
 {
    USES_CONVERSION;
    CComBSTR bstrUnit;
    m_pStrLoad->LoadRawUnit(&bstrUnit);
-   std::string str(OLE2A(bstrUnit));
+   std::_tstring str(OLE2T(bstrUnit));
    return str;
 }
 
@@ -206,7 +214,7 @@ bool CStructuredLoad::AssertValid() const
 
 void CStructuredLoad::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CStructuredLoad" << endl;
+   os << _T("Dump for CStructuredLoad") << endl;
 }
 #endif // _DEBUG
 

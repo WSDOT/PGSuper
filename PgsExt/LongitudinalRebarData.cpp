@@ -46,7 +46,7 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 CLongitudinalRebarData::CLongitudinalRebarData() :
-strRebarMaterial("AASHTO M31 (A615) - Grade 60")
+strRebarMaterial(_T("AASHTO M31 (A615) - Grade 60"))
 {
 }
 
@@ -87,7 +87,7 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
 
    HRESULT hr = S_OK;
 
-   pStrLoad->BeginUnit("LongitudinalRebar"); 
+   pStrLoad->BeginUnit(_T("LongitudinalRebar")); 
    double version;
    pStrLoad->get_Version(&version);
 
@@ -97,39 +97,39 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
    {
       var.Clear();
       var.vt = VT_BSTR;
-      pStrLoad->get_Property("RebarType",&var);
-      strRebarMaterial = OLE2A(var.bstrVal);
+      pStrLoad->get_Property(_T("RebarType"),&var);
+      strRebarMaterial = OLE2T(var.bstrVal);
    }
 
    var.Clear();
    var.vt = VT_I4;
-   pStrLoad->get_Property("RebarRowCount", &var );
+   pStrLoad->get_Property(_T("RebarRowCount"), &var );
    long count = var.lVal;
 
    RebarRows.clear();
    for ( long row = 0; row < count; row++ )
    {
-      pStrLoad->BeginUnit("RebarRow");
+      pStrLoad->BeginUnit(_T("RebarRow"));
 
       RebarRow rebar_row;
 
       var.vt = VT_I4;
-      pStrLoad->get_Property("Face",         &var);
+      pStrLoad->get_Property(_T("Face"),         &var);
       rebar_row.Face = (GirderFace)(var.lVal);
 
       var.vt = VT_R8;
-      pStrLoad->get_Property("Cover",        &var);
+      pStrLoad->get_Property(_T("Cover"),        &var);
       rebar_row.Cover = var.dblVal;
 
       var.vt = VT_I4;
-      pStrLoad->get_Property("NumberOfBars", &var);
+      pStrLoad->get_Property(_T("NumberOfBars"), &var);
       rebar_row.NumberOfBars = var.lVal;
 
-      pStrLoad->get_Property("BarSize", &var);
+      pStrLoad->get_Property(_T("BarSize"), &var);
       rebar_row.BarSize = var.lVal;
 
       var.vt = VT_R8;
-      pStrLoad->get_Property("BarSpacing", &var);
+      pStrLoad->get_Property(_T("BarSpacing"), &var);
       rebar_row.BarSpacing = var.dblVal;
 
       RebarRows.push_back(rebar_row);
@@ -147,22 +147,22 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
    HRESULT hr = S_OK;
 
 
-   pStrSave->BeginUnit("LongitudinalRebar",2.0);
+   pStrSave->BeginUnit(_T("LongitudinalRebar"),2.0);
 
-   pStrSave->put_Property("RebarType",CComVariant(strRebarMaterial.c_str()));
+   pStrSave->put_Property(_T("RebarType"),CComVariant(strRebarMaterial.c_str()));
 
    long count = RebarRows.size();
-   pStrSave->put_Property("RebarRowCount",CComVariant(count));
+   pStrSave->put_Property(_T("RebarRowCount"),CComVariant(count));
    std::vector<RebarRow>::iterator iter;
    for ( iter = RebarRows.begin(); iter != RebarRows.end(); iter++ )
    {
-      pStrSave->BeginUnit("RebarRow",1.0);
+      pStrSave->BeginUnit(_T("RebarRow"),1.0);
       const RebarRow& rebar_row = *iter;
-      pStrSave->put_Property("Face",         CComVariant(rebar_row.Face));
-      pStrSave->put_Property("Cover",        CComVariant(rebar_row.Cover));
-      pStrSave->put_Property("NumberOfBars", CComVariant(rebar_row.NumberOfBars));
-      pStrSave->put_Property("BarSize",      CComVariant(rebar_row.BarSize));
-      pStrSave->put_Property("BarSpacing",   CComVariant(rebar_row.BarSpacing));
+      pStrSave->put_Property(_T("Face"),         CComVariant(rebar_row.Face));
+      pStrSave->put_Property(_T("Cover"),        CComVariant(rebar_row.Cover));
+      pStrSave->put_Property(_T("NumberOfBars"), CComVariant(rebar_row.NumberOfBars));
+      pStrSave->put_Property(_T("BarSize"),      CComVariant(rebar_row.BarSize));
+      pStrSave->put_Property(_T("BarSpacing"),   CComVariant(rebar_row.BarSpacing));
       pStrSave->EndUnit();
    }
 

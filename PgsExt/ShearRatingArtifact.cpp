@@ -98,12 +98,12 @@ Float64 pgsShearRatingArtifact::GetVehicleWeight() const
    return m_VehicleWeight;
 }
 
-void pgsShearRatingArtifact::SetVehicleName(const char* str)
+void pgsShearRatingArtifact::SetVehicleName(LPCTSTR str)
 {
    m_strVehicleName = str;
 }
 
-std::string pgsShearRatingArtifact::GetVehicleName() const
+std::_tstring pgsShearRatingArtifact::GetVehicleName() const
 {
    return m_strVehicleName;
 }

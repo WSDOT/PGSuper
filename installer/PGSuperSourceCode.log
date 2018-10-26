@@ -1,5 +1,5 @@
-Build started at  July 30, 2010  10:57:48
-Output Package: C:\ARP_INSTALLER\Install_PGSuper_Source_2.4.0.4.exe
+Build started at  November 17, 2010  15:19:40
+Output Package: C:\ARP_INSTALLER\Install_PGSuper_Source_2.4.1.0.exe
 Creating Package
      File 'AASHTO.lbr' in package.
      File 'AlignmentDescriptionDlg.cpp' in package.
@@ -78,6 +78,8 @@ Creating Package
      File 'EffectOfPostTensionedTemporaryStrandsTable.h' in package.
      File 'ElasticGainDueToDeckPlacementTable.cpp' in package.
      File 'ElasticGainDueToDeckPlacementTable.h' in package.
+     File 'ElasticGainDueToSIDLTable.cpp' in package.
+     File 'ElasticGainDueToSIDLTable.h' in package.
      File 'ElasticShorteningTable.cpp' in package.
      File 'ElasticShorteningTable.h' in package.
      File 'FinalPrestressLossTable.cpp' in package.
@@ -1378,6 +1380,7 @@ Creating Package
      File 'DeckedSlabBeam_Effective_Flange_Width_Interior_Girder_2008.gif' in package.
      File 'DeckedSlabBeam_Noncomposite.gif' in package.
      File 'DeltaFcd.png' in package.
+     File 'DeltaFcd2.png' in package.
      File 'DeltaFpt.png' in package.
      File 'DeltaFpt_2005.png' in package.
      File 'DeltaFpt_NoTTS.png' in package.
@@ -1438,6 +1441,7 @@ Creating Package
      File 'eg Pic.jpg' in package.
      File 'eg.png' in package.
      File 'ElasticGain.png' in package.
+     File 'ElasticGain2.png' in package.
      File 'ex.png' in package.
      File 'ExteriorBarrier.jpg' in package.
      File 'ex_2000.png' in package.
@@ -1798,6 +1802,7 @@ Creating Package
      File 'PGSuperLibraryMgrCATID.h' in package.
      File 'PGSuperTypes.h' in package.
      File 'PGSuperUnits.h' in package.
+     File 'PGSuperVersion.h' in package.
      File 'Beams.idl' in package.
      File 'PGSuperIEPlugin.idl' in package.
      File 'AutoLib.h' in package.
@@ -1971,7 +1976,6 @@ Creating Package
      File 'resource.h' in package.
      File 'stdafx.cpp' in package.
      File 'stdafx.h' in package.
-     File 'targetver.h' in package.
      File 'MasterLibrary.lbr' in package.
      File 'PGSuperCatalog.ini' in package.
      File 'Type A.pgt' in package.
@@ -2115,7 +2119,6 @@ Creating Package
      File 'resource.h' in package.
      File 'stdafx.cpp' in package.
      File 'stdafx.h' in package.
-     File 'targetver.h' in package.
      File 'PGSuperAppPlugin.cpp' in package.
      File 'PGSuperAppPlugin.h' in package.
      File 'PGSuperBaseAppPlugin.cpp' in package.
@@ -2373,7 +2376,6 @@ Creating Package
      File 'ReadMe.txt' in package.
      File 'StdAfx.cpp' in package.
      File 'StdAfx.h' in package.
-     File 'targetver.h' in package.
      File 'HalfInchSpecialStrand.pgs' in package.
      File '24S_5SB12_25.pgs' in package.
      File '24S_5SB12_40.pgs' in package.
@@ -3677,7 +3679,6 @@ Creating Package
      File 'StrandSlopeCheck.cpp' in package.
      File 'StrandStressCheckTable.cpp' in package.
      File 'StressChapterBuilder.cpp' in package.
-     File 'targetver.h' in package.
      File 'UserDefinedLoadsChapterBuilder.cpp' in package.
      File 'UserDisplacementsTable.cpp' in package.
      File 'UserMomentsTable.cpp' in package.
@@ -4080,7 +4081,6 @@ Creating Package
      File 'stdafx.h' in package.
      File 'StrandRowGrid.cpp' in package.
      File 'StrandRowGrid.h' in package.
-     File 'targetver.h' in package.
      File 'TexasCamberAndDeflectionChapterBuilder.cpp' in package.
      File 'TexasCamberAndDeflectionChapterBuilder.h' in package.
      File 'TexasGirderSummaryChapterBuilder.cpp' in package.
@@ -4274,7 +4274,6 @@ Creating Package
      File 'resource.h' in package.
      File 'stdafx.cpp' in package.
      File 'stdafx.h' in package.
-     File 'targetver.h' in package.
      File 'WSDOTAgent.cpp' in package.
      File 'WSDOTAgent.def' in package.
      File 'WSDOTAgent.idl' in package.
@@ -4291,4 +4290,4 @@ Creating EXE
      Creating data section...
      Appending Data Section
      Appending File Groups
-Build completed at  July 30, 2010  10:58:37
+Build completed at  November 17, 2010  15:20:36

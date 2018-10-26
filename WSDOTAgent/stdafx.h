@@ -30,7 +30,7 @@
 #define STRICT
 #endif
 
-#include "targetver.h"
+#include <PGSuperVersion.h>
 
 #define _ATL_APARTMENT_THREADED
 #define _ATL_NO_AUTOMATIC_NAMESPACE

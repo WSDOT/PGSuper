@@ -185,8 +185,8 @@ public:
    // Get the icon for this entry
    virtual HICON GetIcon() const;
 
-   void SetDescription(const char* name);
-   std::string GetDescription() const;
+   void SetDescription(LPCTSTR name);
+   std::_tstring GetDescription() const;
 
    void SetSpecificationVersion(lrfrVersionMgr::Version version);
    lrfrVersionMgr::Version GetSpecificationVersion() const;
@@ -211,7 +211,7 @@ private:
 
    // general
    lrfrVersionMgr::Version m_SpecificationVersion;
-   std::string m_Description;
+   std::_tstring m_Description;
 
    bool m_bAlwaysRate;
 

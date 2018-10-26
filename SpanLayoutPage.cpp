@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperDoc.h"
 #include "SpanLayoutPage.h"
 #include "SpanDetailsDlg.h"
@@ -91,11 +91,11 @@ BOOL CSpanLayoutPage::OnInitDialog()
 
 
    CString strSpanLabel;
-   strSpanLabel.Format("Span %d",LABEL_SPAN(spanIdx));
+   strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(spanIdx));
    GetDlgItem(IDC_SPAN_LABEL)->SetWindowText(strSpanLabel);
 
    CString strSpanLengthNote;
-   strSpanLengthNote.Format("The length of Span %d is changed by moving all piers after Pier %d. Only the length of Span %d is changed.",LABEL_SPAN(spanIdx),LABEL_PIER(spanIdx),LABEL_SPAN(spanIdx));
+   strSpanLengthNote.Format(_T("The length of Span %d is changed by moving all piers after Pier %d. Only the length of Span %d is changed."),LABEL_SPAN(spanIdx),LABEL_PIER(spanIdx),LABEL_SPAN(spanIdx));
    GetDlgItem(IDC_SPAN_LENGTH_NOTE)->SetWindowText(strSpanLengthNote);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

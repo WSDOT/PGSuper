@@ -123,11 +123,11 @@ BOOL CSpecBridgeSite3Page::OnInitDialog()
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
    if ( pDad->m_Entry.GetSpecificationType() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
-      pWnd->SetWindowText("Service IA (Live Load Plus One-Half of Permanent Loads) (LRFD 5.9.4.2.1)");
+      pWnd->SetWindowText(_T("Service IA (Live Load Plus One-Half of Permanent Loads) (LRFD 5.9.4.2.1)"));
    }
    else
    {
-      pWnd->SetWindowText("Fatigue I (Live Load Plus One-Half of Permanent Loads) (LRFD 5.5.3.1)");
+      pWnd->SetWindowText(_T("Fatigue I (Live Load Plus One-Half of Permanent Loads) (LRFD 5.5.3.1)"));
    }
 
 	return TRUE;  // return TRUE unless you set the focus to a control

@@ -38,7 +38,7 @@ CLASS
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 rptCapacityToDemand::rptCapacityToDemand():
-rptRcString("Undef"),
+rptRcString(_T("Undef")),
 m_RcSymbolInfinity(rptRcSymbol::INFINITY),
 m_Capacity(0.0), m_Demand(0.0), m_Passed(false)
 {
@@ -46,7 +46,7 @@ m_Capacity(0.0), m_Demand(0.0), m_Passed(false)
 }
 
 rptCapacityToDemand::rptCapacityToDemand(Float64 capacity, Float64 demand, bool passed):
-rptRcString("Undef"),
+rptRcString(_T("Undef")),
 m_RcSymbolInfinity(rptRcSymbol::INFINITY),
 m_Capacity(capacity), m_Demand(demand), m_Passed(passed)
 {
@@ -94,21 +94,21 @@ rptReportContent& rptCapacityToDemand::SetValue(Float64 capacity, Float64 demand
       return rptRcString::SetValue(this->AsString().c_str());
 }
 
-std::string rptCapacityToDemand::AsString() const
+std::_tstring rptCapacityToDemand::AsString() const
 {
    if(IsEqual(m_Capacity,0.0))
    {
 //      ATLASSERT(0); // c/d for c==0.0 makes no sense - return return 0.00, but this should be caught by caller
-      return std::string("0.00"); 
+      return std::_tstring(_T("0.00")); 
    }
    else if (IsEqual(m_Demand,0.0))
    {
-      return std::string("inf"); 
+      return std::_tstring(_T("inf")); 
    }
    else if (Sign(m_Capacity) != Sign(m_Demand))
    {
       // Cannot have negative c/d
-      return std::string("-");
+      return std::_tstring(_T("-"));
    }
    else
    {
@@ -116,16 +116,16 @@ std::string rptCapacityToDemand::AsString() const
 
       if (cd > 10.0)
       {
-         return std::string("10+");
+         return std::_tstring(_T("10+"));
       }
       else
       {
-         std::string cds = m_FormatTool.AsString(cd);
+         std::_tstring cds = m_FormatTool.AsString(cd);
 
-         if (cds==std::string("1.00") && !m_Passed)
+         if (cds==std::_tstring(_T("1.00")) && !m_Passed)
          {
             // Force out of tolerance value to report 0.99
-            return std::string("0.99");
+            return std::_tstring(_T("0.99"));
          }
 
          // Report computed value

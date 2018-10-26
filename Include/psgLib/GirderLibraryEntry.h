@@ -154,7 +154,7 @@ class PSGLIBCLASS GirderLibraryEntry : public libLibraryEntry, public ISupportIc
        public sysSubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>
 {
 public:
-   typedef std::map<std::string,CClassFactoryHolder> ClassFactoryCollection;
+   typedef std::map<std::_tstring,CClassFactoryHolder> ClassFactoryCollection;
    static ClassFactoryCollection ms_ClassFactories;
 
    // the dialog is our friend.
@@ -175,7 +175,7 @@ public:
                            mtAbsoluteDistance       = 2
    };
 
-   typedef std::pair<std::string,double> Dimension;
+   typedef std::pair<std::_tstring,double> Dimension;
    typedef std::vector<Dimension> Dimensions;
 
    //------------------------------------------------------------------------
@@ -224,7 +224,7 @@ public:
    enum DiaphragmWeightMethod { dwmCompute, dwmInput };
    struct DiaphragmLayoutRule
    {
-      std::string Description;
+      std::_tstring Description;
       Float64 Weight;
       DiaphragmWeightMethod Method;
       Float64 MinSpan;
@@ -238,7 +238,7 @@ public:
       Float64 Location;
 
       DiaphragmLayoutRule() :
-      Description("New Rule")
+      Description(_T("New Rule"))
       {
          MinSpan = 0;
          MaxSpan = 0;
@@ -333,15 +333,15 @@ public:
    class GirderEntryDataError
    {
    public:
-      GirderEntryDataError(ErrorType type, const std::string& msg, Int32 index=0)
+      GirderEntryDataError(ErrorType type, const std::_tstring& msg, Int32 index=0)
          : m_Type(type), m_ErrorInfo(index), m_Msg(msg) {}
       ErrorType GetErrorType() const                     {return m_Type;}
       Int32 GetErrorInfo() const                         {return m_ErrorInfo;}
-      std::string GetErrorMsg() const                    {return m_Msg;}
+      std::_tstring GetErrorMsg() const                    {return m_Msg;}
    private:
       ErrorType   m_Type;
       Int32       m_ErrorInfo;  // index of offending thing (if applicable).
-      std::string m_Msg;      // a default error message
+      std::_tstring m_Msg;      // a default error message
    };
 
    typedef std::vector<GirderEntryDataError> GirderEntryDataErrorVec;
@@ -392,12 +392,12 @@ public:
    void SetBeamFactory(IBeamFactory* pFactory);
    void GetBeamFactory(IBeamFactory** ppFactory) const;
 
-   std::string GetGirderFamilyName() const;
+   std::_tstring GetGirderFamilyName() const;
 
    //------------------------------------------------------------------------
    const Dimensions& GetDimensions() const;
-   double GetDimension(const std::string& name) const;
-   void SetDimension(const std::string& name,double value,bool bAdjustStrands);
+   double GetDimension(const std::_tstring& name) const;
+   void SetDimension(const std::_tstring& name,double value,bool bAdjustStrands);
 
    //------------------------------------------------------------------------
    // Remove all strands
@@ -524,11 +524,11 @@ public:
 
    //------------------------------------------------------------------------
    // Set material for shear steel
-   void SetShearSteelMaterial(const std::string& name);
+   void SetShearSteelMaterial(const std::_tstring& name);
 
    //------------------------------------------------------------------------
    // Get material name for shear steel
-   std::string GetShearSteelMaterial() const;
+   std::_tstring GetShearSteelMaterial() const;
 
    //------------------------------------------------------------------------
    // Set vector of shear zone information. Note that zones are stored in
@@ -566,11 +566,11 @@ public:
 
    //------------------------------------------------------------------------
    // Set material for Long steel
-   void SetLongSteelMaterial(const std::string& name);
+   void SetLongSteelMaterial(const std::_tstring& name);
 
    //------------------------------------------------------------------------
    // Get material name for Long steel
-   std::string GetLongSteelMaterial() const;
+   std::_tstring GetLongSteelMaterial() const;
 
    //------------------------------------------------------------------------
    // Set the location of the harping point as a ratio of span length
@@ -658,7 +658,7 @@ public:
 
    //------------------------------------------------------------------------
    // Get name of section from factory
-   std::string GetSectionName() const;
+   std::_tstring GetSectionName() const;
 
    //------------------------------------------------------------------------
    // Returns true if this girder can be post-tensioned
@@ -685,14 +685,14 @@ private:
 
    bool m_bUseDifferentHarpedGridAtEnds;
 
-   std::string m_ShearSteelMaterial;
+   std::_tstring m_ShearSteelMaterial;
    BarSizeType m_ShearSteelBarSize;
    Uint16 m_LastConfinementZone;
    bool m_bStirrupsEngageDeck;
    bool m_bIsRoughenedSurface;
    BarSizeType m_TopFlangeShearBarSize;
    Float64 m_TopFlangeShearBarSpacing;
-   std::string m_LongSteelMaterial;
+   std::_tstring m_LongSteelMaterial;
    Float64 m_HarpingPointLocation;
    Float64 m_MinHarpingPointLocation;
    bool m_bMinHarpingPointLocation;
@@ -852,9 +852,9 @@ private:
    bool IsEqual(IPoint2d* p1,IPoint2d* p2) const;
    bool IsEqual(IPoint2dCollection* points1,IPoint2dCollection* points2) const;
 
-   void AddDimension(const std::string& name,double value);
+   void AddDimension(const std::_tstring& name,double value);
 
-   HRESULT CreateBeamFactory(const std::string& strCLSID);
+   HRESULT CreateBeamFactory(const std::_tstring& strCLSID);
    void LoadIBeamDimensions(sysIStructuredLoad* pLoad);
 
    // GROUP: ACCESS

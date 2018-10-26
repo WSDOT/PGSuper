@@ -40,9 +40,9 @@ txnInsertPointLoad::txnInsertPointLoad(const CPointLoadData& loadData)
    m_LoadData = loadData;
 }
 
-std::string txnInsertPointLoad::Name() const
+std::_tstring txnInsertPointLoad::Name() const
 {
-   return "Insert Point Load";
+   return _T("Insert Point Load");
 }
 
 txnTransaction* txnInsertPointLoad::CreateClone() const
@@ -96,9 +96,9 @@ txnDeletePointLoad::txnDeletePointLoad(Uint32 loadIdx)
    m_LoadIdx = loadIdx;
 }
 
-std::string txnDeletePointLoad::Name() const
+std::_tstring txnDeletePointLoad::Name() const
 {
-   return "Delete Point Load";
+   return _T("Delete Point Load");
 }
 
 txnTransaction* txnDeletePointLoad::CreateClone() const
@@ -155,9 +155,9 @@ txnEditPointLoad::txnEditPointLoad(Uint32 loadIdx,const CPointLoadData& oldLoadD
    m_LoadData[1] = newLoadData;
 }
 
-std::string txnEditPointLoad::Name() const
+std::_tstring txnEditPointLoad::Name() const
 {
-   return "Edit Point Load";
+   return _T("Edit Point Load");
 }
 
 txnTransaction* txnEditPointLoad::CreateClone() const
@@ -209,9 +209,9 @@ txnInsertDistributedLoad::txnInsertDistributedLoad(const CDistributedLoadData& l
    m_LoadData = loadData;
 }
 
-std::string txnInsertDistributedLoad::Name() const
+std::_tstring txnInsertDistributedLoad::Name() const
 {
-   return "Insert Distributed Load";
+   return _T("Insert Distributed Load");
 }
 
 txnTransaction* txnInsertDistributedLoad::CreateClone() const
@@ -265,9 +265,9 @@ txnDeleteDistributedLoad::txnDeleteDistributedLoad(Uint32 loadIdx)
    m_LoadIdx = loadIdx;
 }
 
-std::string txnDeleteDistributedLoad::Name() const
+std::_tstring txnDeleteDistributedLoad::Name() const
 {
-   return "Delete Distributed Load";
+   return _T("Delete Distributed Load");
 }
 
 txnTransaction* txnDeleteDistributedLoad::CreateClone() const
@@ -325,9 +325,9 @@ txnEditDistributedLoad::txnEditDistributedLoad(Uint32 loadIdx,const CDistributed
    m_LoadData[1] = newLoadData;
 }
 
-std::string txnEditDistributedLoad::Name() const
+std::_tstring txnEditDistributedLoad::Name() const
 {
-   return "Edit Distributed Load";
+   return _T("Edit Distributed Load");
 }
 
 txnTransaction* txnEditDistributedLoad::CreateClone() const
@@ -379,9 +379,9 @@ txnInsertMomentLoad::txnInsertMomentLoad(const CMomentLoadData& loadData)
    m_LoadData = loadData;
 }
 
-std::string txnInsertMomentLoad::Name() const
+std::_tstring txnInsertMomentLoad::Name() const
 {
-   return "Insert Moment Load";
+   return _T("Insert Moment Load");
 }
 
 txnTransaction* txnInsertMomentLoad::CreateClone() const
@@ -435,9 +435,9 @@ txnDeleteMomentLoad::txnDeleteMomentLoad(Uint32 loadIdx)
    m_LoadIdx = loadIdx;
 }
 
-std::string txnDeleteMomentLoad::Name() const
+std::_tstring txnDeleteMomentLoad::Name() const
 {
-   return "Delete Moment Load";
+   return _T("Delete Moment Load");
 }
 
 txnTransaction* txnDeleteMomentLoad::CreateClone() const
@@ -494,9 +494,9 @@ txnEditMomentLoad::txnEditMomentLoad(Uint32 loadIdx,const CMomentLoadData& oldLo
    m_LoadData[1] = newLoadData;
 }
 
-std::string txnEditMomentLoad::Name() const
+std::_tstring txnEditMomentLoad::Name() const
 {
-   return "Edit Moment Load";
+   return _T("Edit Moment Load");
 }
 
 txnTransaction* txnEditMomentLoad::CreateClone() const

@@ -97,14 +97,14 @@ public:
    void SetGirderCount(GirderIndexType nGirders);
    GirderIndexType GetGirderCount() const;
 
-   void SetGirderFamilyName(const char* strName);
-   const char* GetGirderFamilyName() const;
+   void SetGirderFamilyName(LPCTSTR strName);
+   LPCTSTR GetGirderFamilyName() const;
 
    void UseSameGirderForEntireBridge(bool bSame);
    bool UseSameGirderForEntireBridge() const;
-   const char* GetGirderName() const;
-   void RenameGirder(const char* strName);
-   void SetGirderName(const char* strName);
+   LPCTSTR GetGirderName() const;
+   void RenameGirder(LPCTSTR strName);
+   void SetGirderName(LPCTSTR strName);
    const GirderLibraryEntry* GetGirderLibraryEntry() const;
    void SetGirderLibraryEntry(const GirderLibraryEntry* pEntry);
 
@@ -203,8 +203,8 @@ private:
    const GirderLibraryEntry* m_pGirderLibraryEntry;
 
    pgsTypes::GirderOrientationType m_GirderOrientation;
-   std::string m_strGirderName;
-   std::string m_strGirderFamilyName;
+   std::_tstring m_strGirderName;
+   std::_tstring m_strGirderFamilyName;
 
    pgsTypes::DistributionFactorMethod m_LLDFMethod;
 

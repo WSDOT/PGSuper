@@ -47,7 +47,7 @@ m_WEnd(0.0),
 m_StartLocation(0.5),
 m_EndLocation(0.5),
 m_Fractional(true),
-m_Description("")
+m_Description(_T(""))
 {
 
 }
@@ -104,49 +104,49 @@ HRESULT CDistributedLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit("DistributedLoad",2.0);
+   pSave->BeginUnit(_T("DistributedLoad"),2.0);
 
-   hr = pSave->put_Property("LoadCase",CComVariant((long)m_LoadCase));
+   hr = pSave->put_Property(_T("LoadCase"),CComVariant((long)m_LoadCase));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Stage",CComVariant((long)m_Stage));
+   hr = pSave->put_Property(_T("Stage"),CComVariant((long)m_Stage));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Type",CComVariant((long)m_Type));
+   hr = pSave->put_Property(_T("Type"),CComVariant((long)m_Type));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Span",CComVariant(m_Span));
+   hr = pSave->put_Property(_T("Span"),CComVariant(m_Span));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Girder",CComVariant(m_Girder));
+   hr = pSave->put_Property(_T("Girder"),CComVariant(m_Girder));
    if ( FAILED(hr) )
       return hr;
    
-   hr = pSave->put_Property("StartLocation",CComVariant(m_StartLocation));
+   hr = pSave->put_Property(_T("StartLocation"),CComVariant(m_StartLocation));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("EndLocation",CComVariant(m_EndLocation));
+   hr = pSave->put_Property(_T("EndLocation"),CComVariant(m_EndLocation));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("WStart",CComVariant(m_WStart));
+   hr = pSave->put_Property(_T("WStart"),CComVariant(m_WStart));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("WEnd",CComVariant(m_WEnd));
+   hr = pSave->put_Property(_T("WEnd"),CComVariant(m_WEnd));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Fractional",CComVariant((long)m_Fractional));
+   hr = pSave->put_Property(_T("Fractional"),CComVariant((long)m_Fractional));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Description",CComVariant(m_Description.c_str()));
+   hr = pSave->put_Property(_T("Description"),CComVariant(m_Description.c_str()));
    if ( FAILED(hr) )
       return hr;
 
@@ -161,7 +161,7 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
 
    HRESULT hr;
 
-   hr = pLoad->BeginUnit("DistributedLoad");
+   hr = pLoad->BeginUnit(_T("DistributedLoad"));
    if ( FAILED(hr) )
       return hr;
 
@@ -170,7 +170,7 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
 
    CComVariant var;
    var.vt = VT_I4;
-   hr = pLoad->get_Property("LoadCase",&var);
+   hr = pLoad->get_Property(_T("LoadCase"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -186,7 +186,7 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
       return STRLOAD_E_INVALIDFORMAT;
    }
 
-   hr = pLoad->get_Property("Stage",&var);
+   hr = pLoad->get_Property(_T("Stage"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -202,7 +202,7 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
       return STRLOAD_E_INVALIDFORMAT;
    }
 
-   hr = pLoad->get_Property("Type",&var);
+   hr = pLoad->get_Property(_T("Type"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -217,46 +217,46 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
    }
 
    var.vt = VT_I4;
-   hr = pLoad->get_Property("Span",&var);
+   hr = pLoad->get_Property(_T("Span"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_Span = var.iVal;
 
    var.vt = VT_I4;
-   hr = pLoad->get_Property("Girder",&var);
+   hr = pLoad->get_Property(_T("Girder"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_Girder = var.iVal;
    
    var.vt = VT_R8;
-   hr = pLoad->get_Property("StartLocation",&var);
+   hr = pLoad->get_Property(_T("StartLocation"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_StartLocation = var.dblVal;
 
-   hr = pLoad->get_Property("EndLocation",&var);
+   hr = pLoad->get_Property(_T("EndLocation"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_EndLocation = var.dblVal;
 
-   hr = pLoad->get_Property("WStart",&var);
+   hr = pLoad->get_Property(_T("WStart"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_WStart = var.dblVal;
 
-   hr = pLoad->get_Property("WEnd",&var);
+   hr = pLoad->get_Property(_T("WEnd"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_WEnd = var.dblVal;
 
    var.vt = VT_I4;
-   hr = pLoad->get_Property("Fractional",&var);
+   hr = pLoad->get_Property(_T("Fractional"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -265,11 +265,11 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
    if ( 1 < version )
    {
       var.vt = VT_BSTR;
-      hr = pLoad->get_Property("Description",&var);
+      hr = pLoad->get_Property(_T("Description"),&var);
       if ( FAILED(hr) )
          return hr;
 
-      m_Description = OLE2A(var.bstrVal);
+      m_Description = OLE2T(var.bstrVal);
    }
 
    hr = pLoad->EndUnit();

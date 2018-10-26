@@ -99,9 +99,9 @@ void CGirderDescDebondGrid::InsertRow()
    debond_length = ::ConvertFromSysUnits(debond_length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    
    CString strDebondLength;
-   strDebondLength.Format("%g",debond_length);
-   SetStyleRange(CGXRange(nRow,2), CGXStyle().SetValue(_T(strDebondLength)));
-   SetStyleRange(CGXRange(nRow,3), CGXStyle().SetValue(_T(strDebondLength)));
+   strDebondLength.Format(_T("%g"),debond_length);
+   SetStyleRange(CGXRange(nRow,2), CGXStyle().SetValue(strDebondLength));
+   SetStyleRange(CGXRange(nRow,3), CGXStyle().SetValue(strDebondLength));
 
 
 	ScrollCellInView(nRow+1, GetLeftCol());
@@ -167,9 +167,9 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 			.SetValue(_T("Strand"))
 		);
 
-   CString cv = CString("Debond\nLength\n") + 
+   CString cv = CString(_T("Debond\nLength\n")) + 
                 CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str()) + 
-                CString("\nLeft End");
+                CString(_T("\nLeft End"));
 	SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -178,9 +178,9 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 			.SetValue(cv)
 		);
 
-   cv = CString("Debond\nLength\n") + 
+   cv = CString(_T("Debond\nLength\n")) + 
         CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str()) + 
-        CString("\nRight End");
+        CString(_T("\nRight End"));
 	SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -211,7 +211,7 @@ void CGirderDescDebondGrid::SetRowStyle(ROWCOL nRow)
    CString strStrands = GetStrandList(nRow);
 
    // Get the first entry from the strand list... this will be the default selection
-   int idx = strStrands.Find("\n",0);
+   int idx = strStrands.Find(_T("\n"),0);
    CString strFirst = strStrands.Left(idx);
 
    SetStyleRange(CGXRange(nRow,0), CGXStyle()
@@ -220,8 +220,8 @@ void CGirderDescDebondGrid::SetRowStyle(ROWCOL nRow)
 
    SetStyleRange(CGXRange(nRow,1), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)  //
-			.SetChoiceList(_T(strStrands))
-			.SetValue(_T(strFirst))
+			.SetChoiceList(strStrands)
+			.SetValue(strFirst)
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
@@ -283,11 +283,11 @@ void CGirderDescDebondGrid::FillGrid(const std::vector<CDebondInfo>& debondInfo)
       /////////////////////// Strand Index ///////////////////////
       CString strStrand;
       if ( debond_info.idxStrand2 != -1 )
-         strStrand.Format("%d & %d",debond_info.idxStrand1+1,debond_info.idxStrand2+1);
+         strStrand.Format(_T("%d & %d"),debond_info.idxStrand1+1,debond_info.idxStrand2+1);
       else
-         strStrand.Format("%d",debond_info.idxStrand1+1);
+         strStrand.Format(_T("%d"),debond_info.idxStrand1+1);
 
-      SetStyleRange(CGXRange(row,1), CGXStyle().SetValue(_T(strStrand)));
+      SetStyleRange(CGXRange(row,1), CGXStyle().SetValue(strStrand));
 
 
       //////////////////////// Debond Length - Left /////////////////
@@ -295,15 +295,15 @@ void CGirderDescDebondGrid::FillGrid(const std::vector<CDebondInfo>& debondInfo)
       debond_length = ::ConvertFromSysUnits(debond_length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    
       CString strDebondLength;
-      strDebondLength.Format("%g",debond_length);
-      SetStyleRange(CGXRange(row,2), CGXStyle().SetValue(_T(strDebondLength)));
+      strDebondLength.Format(_T("%g"),debond_length);
+      SetStyleRange(CGXRange(row,2), CGXStyle().SetValue(strDebondLength));
 
       //////////////////////// Debond Length - Right /////////////////
       debond_length = debond_info.Length2;
       debond_length = ::ConvertFromSysUnits(debond_length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    
-      strDebondLength.Format("%g",debond_length);
-      SetStyleRange(CGXRange(row,3), CGXStyle().SetValue(_T(strDebondLength)));
+      strDebondLength.Format(_T("%g"),debond_length);
+      SetStyleRange(CGXRange(row,3), CGXStyle().SetValue(strDebondLength));
 
       row++;
    }
@@ -327,18 +327,18 @@ void CGirderDescDebondGrid::GetData(std::vector<CDebondInfo>& debondInfo)
       ////////////// Strand Index ////////////////////
       CString strStrands = GetCellValue(row+1,1);
 
-      int idx = strStrands.Find("&",0);
+      int idx = strStrands.Find(_T("&"),0);
       if ( idx < 0 )
       {
          // '&' not found... therefore only a single value
-         debond_info.idxStrand1 = atoi(strStrands) - 1;
+         debond_info.idxStrand1 = _tstoi(strStrands) - 1;
          debond_info.idxStrand2 = INVALID_INDEX;
       }
       else
       {
          // there are two strand indicies
-         debond_info.idxStrand1 = atoi(strStrands.Mid(0,idx)) - 1;
-         debond_info.idxStrand2 = atoi(strStrands.Mid(idx+1)) - 1;
+         debond_info.idxStrand1 = _tstoi(strStrands.Mid(0,idx)) - 1;
+         debond_info.idxStrand2 = _tstoi(strStrands.Mid(idx+1)) - 1;
       }
 
       ///////// Debond Length - Left ///////////////
@@ -379,7 +379,7 @@ Float64 CGirderDescDebondGrid::GetDebondLength(ROWCOL row,ROWCOL col)
 
    Float64 length;
    CString strDebondLength = GetCellValue(row,col);
-   length = atof(strDebondLength);
+   length = _tstof(strDebondLength);
 
    // this is in display units... convert to system units
    length = ::ConvertToSysUnits(length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
@@ -416,8 +416,8 @@ void CGirderDescDebondGrid::UpdateStrandLists()
 
       SetStyleRange(CGXRange(row+1,1), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T(strStrands))
-			.SetValue(_T(strCurrent))
+			.SetChoiceList(strStrands)
+			.SetValue(strCurrent)
          );
    }
 }
@@ -457,7 +457,7 @@ CString CGirderDescDebondGrid::GetStrandList(ROWCOL nRow)
    for (std::vector<CString>::iterator it=strList.begin(); it!=strList.end(); it++)
    {
       this_rows_list += *it;
-      this_rows_list += "\n";
+      this_rows_list += _T("\n");
    }
 
    return this_rows_list;
@@ -491,18 +491,18 @@ void CGirderDescDebondGrid::SymmetricDebond(bool bSymmetricDebond)
 
    m_bSymmetricDebond = bSymmetricDebond;
 
-   CString strColHeading = CString("Debond\nLength\n") + 
+   CString strColHeading = CString(_T("Debond\nLength\n")) + 
                            CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 
    if ( m_bSymmetricDebond )
    {
       VERIFY(HideCols(3,3));
-      strColHeading += "\nBoth End";
+      strColHeading += _T("\nBoth End");
    }
    else
    {
       VERIFY(HideCols(3,3,FALSE));
-      strColHeading += "\nLeft End";
+      strColHeading += _T("\nLeft End");
    }
 
 	SetStyleRange(CGXRange(0,2), CGXStyle()

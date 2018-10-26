@@ -93,13 +93,13 @@ void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
          const CPGSuperCatalogServer* psrvr = m_Servers.GetServer(m_CurrentServer);
          if (psrvr==NULL)
          {
-            ::AfxMessageBox("The selected server is invalid - please select another or the generic library package",MB_ICONEXCLAMATION);
+            ::AfxMessageBox(_T("The selected server is invalid - please select another or the generic library package"),MB_ICONEXCLAMATION);
             pDX->Fail();
          }
 
          if(!psrvr->DoesPublisherExist(m_Publisher))
          {
-            ::AfxMessageBox("The selected server is invalid - please select another or the generic library package",MB_ICONEXCLAMATION);
+            ::AfxMessageBox(_T("The selected server is invalid - please select another or the generic library package"),MB_ICONEXCLAMATION);
             pDX->Fail();
          }
 
@@ -134,7 +134,7 @@ void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
          if (bchanged)
          {
             // Prompt user to update server
-            int st = ::AfxMessageBox("A change has been made to the server configuration. You must run an update before the configuration can be saved. Do you want to run update now?",MB_YESNO);
+            int st = ::AfxMessageBox(_T("A change has been made to the server configuration. You must run an update before the configuration can be saved. Do you want to run update now?"),MB_YESNO);
             if (st==IDYES)
             {
                m_bUpdateCache = true;
@@ -184,13 +184,13 @@ BOOL CConfigurePGSuperDlg::OnInitDialog()
    ServerList();
 
    CWnd* pWnd = GetDlgItem(IDC_EDIT);
-   pWnd->SetWindowText("PGSuper doesn't have any default girders, design criteria, or other settings. All of the \"default\" information is stored in the Master Library and User and Workgroup Templates.\r\n\r\nPGSuper must be configured to use a specific Master Library and Templates. Use the Help button to get more information.");
+   pWnd->SetWindowText(_T("PGSuper doesn't have any default girders, design criteria, or other settings. All of the \"default\" information is stored in the Master Library and User and Workgroup Templates.\r\n\r\nPGSuper must be configured to use a specific Master Library and Templates. Use the Help button to get more information."));
 
    pWnd = GetDlgItem(IDC_FIRST_RUN);
    if ( m_bFirstRun )
-      pWnd->SetWindowText("This is the first time you've run PGSuper since it was installed. Before you can use PGSuper, it must be configured.");
+      pWnd->SetWindowText(_T("This is the first time you've run PGSuper since it was installed. Before you can use PGSuper, it must be configured."));
    else
-      pWnd->SetWindowText("Set the User, Library, and Template Configuration information.");
+      pWnd->SetWindowText(_T("Set the User, Library, and Template Configuration information."));
 
    if ( m_bFirstRun )
       HideOkAndCancelButtons();
@@ -217,19 +217,19 @@ void CConfigurePGSuperDlg::UpdateFrequencyList()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_UPDATE_FREQUENCY);
 
-   int idx = pCB->AddString("Never");
+   int idx = pCB->AddString(_T("Never"));
    pCB->SetItemData(idx,Never);
 
-   idx = pCB->AddString("Every time PGSuper starts");
+   idx = pCB->AddString(_T("Every time PGSuper starts"));
    pCB->SetItemData(idx,Always);
 
-   idx = pCB->AddString("Once a day");
+   idx = pCB->AddString(_T("Once a day"));
    pCB->SetItemData(idx,Daily);
 
-   idx = pCB->AddString("Once a week");
+   idx = pCB->AddString(_T("Once a week"));
    pCB->SetItemData(idx,Weekly);
 
-   idx = pCB->AddString("Once a month");
+   idx = pCB->AddString(_T("Once a month"));
    pCB->SetItemData(idx,Monthly);
 }
 
@@ -321,7 +321,7 @@ void CConfigurePGSuperDlg::PublisherList()
       wndProgress.CoCreateInstance(CLSID_ProgressMonitorWindow);
       wndProgress->put_HasGauge(VARIANT_FALSE);
       wndProgress->put_HasCancel(VARIANT_FALSE);
-      wndProgress->Show(CComBSTR("Fetching package names from server..."),GetSafeHwnd());
+      wndProgress->Show(CComBSTR(_T("Fetching package names from server...")),GetSafeHwnd());
 
       // fill up the list box
       const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
@@ -377,13 +377,13 @@ void CConfigurePGSuperDlg::PublisherList()
          CListBox* pLB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
          pLB->ResetContent();
 
-		 pLB->AddString("An error occured while accessing the list");
-		 pLB->AddString("of publishers.");
+		 pLB->AddString(_T("An error occured while accessing the list"));
+		 pLB->AddString(_T("of publishers."));
          if (!m_bFirstRun )
 		 {
-			 pLB->AddString("");
-			 pLB->AddString("The most recently downloaded settings");
-			 pLB->AddString("will be used");
+			 pLB->AddString(_T(""));
+			 pLB->AddString(_T("The most recently downloaded settings"));
+			 pLB->AddString(_T("will be used"));
 			 pLB->EnableWindow(FALSE);
 		 }
 
@@ -478,7 +478,7 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
             else
             {
                pWeb->EnableWindow(FALSE);
-               m_PublisherHyperLink.SetURL(CString("No web link defined for this publisher."));
+               m_PublisherHyperLink.SetURL(CString(_T("No web link defined for this publisher.")));
             }
          }
       }
@@ -486,6 +486,6 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
    else
    {
       pWeb->EnableWindow(FALSE);
-      m_PublisherHyperLink.SetURL(CString("No web link defined for this publisher."));
+      m_PublisherHyperLink.SetURL(CString(_T("No web link defined for this publisher.")));
    }
 }

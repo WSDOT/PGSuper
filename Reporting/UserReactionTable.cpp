@@ -75,7 +75,7 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,SpanIndexType span,Girder
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>("Reactions - User Defined Loads",true,analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>(_T("Reactions - User Defined Loads"),true,analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -92,9 +92,9 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       ColumnIndexType col = 0;
 
       if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
-         (*p_table)(row,col++) << "Abutment " << LABEL_PIER(pier);
+         (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*p_table)(row,col++) << "Pier " << LABEL_PIER(pier);
+         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
 
       if ( analysisType == pgsTypes::Envelope )
@@ -165,7 +165,7 @@ bool CUserReactionTable::AssertValid() const
 
 void CUserReactionTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CUserReactionTable" << endl;
+   os << _T("Dump for CUserReactionTable") << endl;
 }
 #endif // _DEBUG
 

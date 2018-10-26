@@ -188,13 +188,13 @@ interface IProductLoads : IUnknown
    virtual void GetIntermediateDiaphragmLoads(pgsTypes::Stage stage, SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<DiaphragmLoad>* pLoads)=0;
    virtual void GetEndDiaphragmLoads(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2)=0;
 
-   virtual std::vector<std::string> GetVehicleNames(pgsTypes::LiveLoadType llType,GirderIndexType gdr) = 0;
+   virtual std::vector<std::_tstring> GetVehicleNames(pgsTypes::LiveLoadType llType,GirderIndexType gdr) = 0;
 
    // Shear Key load (applied from girder library entry)
    virtual bool HasShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
    virtual void GetShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ShearKeyLoad>* pLoads)=0;
 
-   virtual std::string GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex) = 0;
+   virtual std::_tstring GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex) = 0;
    virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType) = 0;
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex) = 0;
 };

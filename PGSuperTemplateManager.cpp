@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperTemplateManager.h"
 
 #ifdef _DEBUG
@@ -59,10 +59,10 @@ void CPGSuperTemplateManager::GetTemplates(const CString& strRootSourcePath,cons
       {
 
          CString strSourcePath;
-         strSourcePath.Format("%s%c%s",strRootSourcePath,m_cFolderSeparator,strFileTitle);
+         strSourcePath.Format(_T("%s%c%s"),strRootSourcePath,m_cFolderSeparator,strFileTitle);
 
          CString strDestinationPath;
-         strDestinationPath.Format("%s\\%s",strRootDestinationPath,strFileTitle);
+         strDestinationPath.Format(_T("%s\\%s"),strRootDestinationPath,strFileTitle);
 
          folders.push_back(std::make_pair(strSourcePath,strDestinationPath));
       }
@@ -90,7 +90,7 @@ void CPGSuperTemplateManager::GetTemplateFiles(const CString& strSourcePath,cons
    ASSERT(!strTemplateSuffix.IsEmpty());
 
    CFileFind* pTemplateFinder = CreateFileFinder();
-   CString strTemplateFileSpec = strSourcePath + CString(m_cFolderSeparator) + CString("*.") + strTemplateSuffix;
+   CString strTemplateFileSpec = strSourcePath + CString(m_cFolderSeparator) + CString(_T("*.")) + strTemplateSuffix;
 
    BOOL bWorkingOnFiles = pTemplateFinder->FindFile(strTemplateFileSpec);
    while ( bWorkingOnFiles )
@@ -98,17 +98,17 @@ void CPGSuperTemplateManager::GetTemplateFiles(const CString& strSourcePath,cons
       bWorkingOnFiles = pTemplateFinder->FindNextFile();
       CString strRemoteFile = pTemplateFinder->GetFilePath();
 
-      CString strLocalFile = strDestinationPath + "\\" + pTemplateFinder->GetFileName();
+      CString strLocalFile = strDestinationPath + _T("\\") + pTemplateFinder->GetFileName();
 
       CString strMessage;
-      strMessage.Format("Downloading %s",pTemplateFinder->GetFileTitle());
+      strMessage.Format(_T("Downloading %s"),pTemplateFinder->GetFileTitle());
       pProgress->put_Message(0,CComBSTR(strMessage));
 
       BOOL bSuccess = GetFile(strRemoteFile,strLocalFile);
 
       if ( !bSuccess )
       {
-         strMessage.Format("Failed to download %s",pTemplateFinder->GetFileTitle());
+         strMessage.Format(_T("Failed to download %s"),pTemplateFinder->GetFileTitle());
          pProgress->put_Message(0,CComBSTR(strMessage));
       }
    } // end of while
@@ -118,7 +118,7 @@ void CPGSuperTemplateManager::GetTemplateFiles(const CString& strSourcePath,cons
 
 
    CFileFind* pIconFinder = CreateFileFinder();
-   CString strIconFileSpec = strSourcePath + CString(m_cFolderSeparator) + CString("*.ico");
+   CString strIconFileSpec = strSourcePath + CString(m_cFolderSeparator) + CString(_T("*.ico"));
 
    bWorkingOnFiles = pIconFinder->FindFile(strIconFileSpec);
    while ( bWorkingOnFiles )
@@ -126,17 +126,17 @@ void CPGSuperTemplateManager::GetTemplateFiles(const CString& strSourcePath,cons
       bWorkingOnFiles = pIconFinder->FindNextFile();
       CString strRemoteFile = pIconFinder->GetFilePath();
 
-      CString strLocalFile = strDestinationPath + "\\" + pIconFinder->GetFileName();
+      CString strLocalFile = strDestinationPath + _T("\\") + pIconFinder->GetFileName();
 
       CString strMessage;
-      strMessage.Format("Downloading icon for %s",pIconFinder->GetFileTitle());
+      strMessage.Format(_T("Downloading icon for %s"),pIconFinder->GetFileTitle());
       pProgress->put_Message(0,CComBSTR(strMessage));
 
       BOOL bSuccess = GetFile(strRemoteFile,strLocalFile);
 
       if ( !bSuccess )
       {
-         strMessage.Format("Failed to download icon for %s",pIconFinder->GetFileTitle());
+         strMessage.Format(_T("Failed to download icon for %s"),pIconFinder->GetFileTitle());
          pProgress->put_Message(0,CComBSTR(strMessage));
       }
    } // end of while
@@ -149,7 +149,7 @@ void CPGSuperTemplateManager::GetTemplateFiles(const CString& strSourcePath,cons
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 CFileTemplateManager::CFileTemplateManager() :
-CPGSuperTemplateManager('\\')
+CPGSuperTemplateManager(_T('\\'))
 {
 }
 
@@ -167,7 +167,7 @@ BOOL CFileTemplateManager::GetFile(const CString& strSource,const CString& strDe
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 CFTPTemplateManager::CFTPTemplateManager(CFtpConnection* pFTP) :
-CPGSuperTemplateManager('/')
+CPGSuperTemplateManager(_T('/'))
 {
    m_pFTP = pFTP;
 }

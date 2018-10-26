@@ -58,7 +58,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    // Create and configure the table
    ColumnIndexType numColumns = 8;
@@ -70,28 +70,28 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "[5.9.5.4.2b] Creep of Girder Concrete : " << symbol(DELTA) << RPT_STRESS("pCR") << rptNewLine;
+   *pParagraph << _T("[5.9.5.4.2b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << rptNewLine;
 
    if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpCR_PT.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR_PT.png")) << rptNewLine;
    else
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpCR.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR.png")) << rptNewLine;
 
    // creep loss   
    *pParagraph << table << rptNewLine;
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
    if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
-      (*table)(0,1) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,1) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    else
-      (*table)(0,1) << COLHDR(RPT_STRESS("cgp") << " + " << symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,1) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   (*table)(0,2) << Sub2("k","td");
-   (*table)(0,3) << COLHDR(Sub2("t","i"),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
-   (*table)(0,4) << COLHDR(Sub2("t","d"),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
-   (*table)(0,5) << Sub2(symbol(psi),"b") << "(" << Sub2("t","d") << "," << Sub2("t","i") << ")";
-   (*table)(0,6) << Sub2("K","id");
-   (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS("pCR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2) << Sub2(_T("k"),_T("td"));
+   (*table)(0,3) << COLHDR(Sub2(_T("t"),_T("i")),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
+   (*table)(0,4) << COLHDR(Sub2(_T("t"),_T("d")),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
+   (*table)(0,5) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("d")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
+   (*table)(0,6) << Sub2(_T("K"),_T("id"));
+   (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

@@ -49,23 +49,23 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CIBeamFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back("C1");
-   m_DimNames.push_back("D1");
-   m_DimNames.push_back("D2");
-   m_DimNames.push_back("D3");
-   m_DimNames.push_back("D4");
-   m_DimNames.push_back("D5");
-   m_DimNames.push_back("D6");
-   m_DimNames.push_back("D7");
-   m_DimNames.push_back("T1");
-   m_DimNames.push_back("T2");
-   m_DimNames.push_back("W1");
-   m_DimNames.push_back("W2");
-   m_DimNames.push_back("W3");
-   m_DimNames.push_back("W4");
-   m_DimNames.push_back("EndBlockWidth");
-   m_DimNames.push_back("EndBlockLength");
-   m_DimNames.push_back("EndBlockTransition");
+   m_DimNames.push_back(_T("C1"));
+   m_DimNames.push_back(_T("D1"));
+   m_DimNames.push_back(_T("D2"));
+   m_DimNames.push_back(_T("D3"));
+   m_DimNames.push_back(_T("D4"));
+   m_DimNames.push_back(_T("D5"));
+   m_DimNames.push_back(_T("D6"));
+   m_DimNames.push_back(_T("D7"));
+   m_DimNames.push_back(_T("T1"));
+   m_DimNames.push_back(_T("T2"));
+   m_DimNames.push_back(_T("W1"));
+   m_DimNames.push_back(_T("W2"));
+   m_DimNames.push_back(_T("W3"));
+   m_DimNames.push_back(_T("W4"));
+   m_DimNames.push_back(_T("EndBlockWidth"));
+   m_DimNames.push_back(_T("EndBlockLength"));
+   m_DimNames.push_back(_T("EndBlockTransition"));
 
 //   std::sort(m_DimNames.begin(),m_DimNames.end());
 
@@ -221,9 +221,9 @@ void CIBeamFactory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanInd
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
    Float64 ebWidth, ebLength, ebTransition;
-   ebWidth      = GetDimension(dimensions,"EndBlockWidth");
-   ebLength     = GetDimension(dimensions,"EndBlockLength");
-   ebTransition = GetDimension(dimensions,"EndBlockTransition");
+   ebWidth      = GetDimension(dimensions,_T("EndBlockWidth"));
+   ebLength     = GetDimension(dimensions,_T("EndBlockLength"));
+   ebTransition = GetDimension(dimensions,_T("EndBlockTransition"));
 
    CComPtr<IGirderSection> gdrSection;
    CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrSection);
@@ -273,7 +273,7 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanInd
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
 
 #if defined _DEBUG
-   std::string strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
+   std::_tstring strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
    ATLASSERT( strGirderName == pGirderEntry->GetName() );
 #endif
 
@@ -281,8 +281,8 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanInd
    Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
 
    Float64 ebLength, ebTransition;
-   ebLength     = GetDimension(pGirderEntry->GetDimensions(),"EndBlockLength");
-   ebTransition = GetDimension(pGirderEntry->GetDimensions(),"EndBlockTransition");
+   ebLength     = GetDimension(pGirderEntry->GetDimensions(),_T("EndBlockLength"));
+   ebTransition = GetDimension(pGirderEntry->GetDimensions(),_T("EndBlockTransition"));
 
    PoiAttributeType attrib = POI_TABULAR | POI_GRAPHICAL;
 
@@ -450,7 +450,7 @@ void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
 }
 
 
-std::vector<std::string> CIBeamFactory::GetDimensionNames()
+std::vector<std::_tstring> CIBeamFactory::GetDimensionNames()
 {
    return m_DimNames;
 }
@@ -465,7 +465,7 @@ std::vector<const unitLength*> CIBeamFactory::GetDimensionUnits(bool bSIUnits)
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::string* strErrMsg)
+bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
    double c1;
    double d1,d2,d3,d4,d5,d6,d7;
@@ -492,24 +492,24 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    if ( d1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][1];
-      std::ostringstream os;
-      os << "D1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d3 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D3 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D3 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -517,24 +517,24 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    if ( d4 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][4];
-      std::ostringstream os;
-      os << "D4 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D4 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d5 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D5 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D5 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d6 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D6 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D6 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -542,8 +542,8 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    if ( d7 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][7];
-      std::ostringstream os;
-      os << "D7 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D7 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -551,16 +551,16 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    if ( w1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][10];
-      std::ostringstream os;
-      os << "W1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("W1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( w2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "W2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("W2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -568,16 +568,16 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    if ( w3 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][12];
-      std::ostringstream os;
-      os << "W3 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("W3 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( w4 < 0.0 )
    {
-      std::ostringstream os;
-      os << "W4 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("W4 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -585,8 +585,8 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    if ( t1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][8];
-      std::ostringstream os;
-      os << "T1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("T1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -594,24 +594,24 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    if ( t2 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
-      std::ostringstream os;
-      os << "T2 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("T2 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( c1 < 0.0 )
    {
-      std::ostringstream os;
-      os << "C1 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( c1 > d4 )
    {
-      std::ostringstream os;
-      os << "C1 must be greater than D4" << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be greater than D4") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -621,11 +621,11 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
 
 void CIBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
-   std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("IBeamDimensions",2.0);
+   std::vector<std::_tstring>::iterator iter;
+   pSave->BeginUnit(_T("IBeamDimensions"),2.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
@@ -637,12 +637,12 @@ IBeamFactory::Dimensions CIBeamFactory::LoadSectionDimensions(sysIStructuredLoad
    Float64 parent_version = pLoad->GetVersion();
 
    IBeamFactory::Dimensions dimensions;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
    {
-      if ( pLoad->BeginUnit("IBeamDimensions") )
+      if ( pLoad->BeginUnit(_T("IBeamDimensions")) )
          dimVersion = pLoad->GetVersion();
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -650,17 +650,17 @@ IBeamFactory::Dimensions CIBeamFactory::LoadSectionDimensions(sysIStructuredLoad
 
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value;
       if ( !pLoad->Property(name.c_str(),&value) )
       {
          // failed to read dimension value...
          
-         if ( dimVersion < 2 && parent_version < 3.0 && name == "C1" )
+         if ( dimVersion < 2 && parent_version < 3.0 && name == _T("C1") )
          {
             value = 0.0; // set the default value
          }
-         else if ( dimVersion < 2 && parent_version < 14 && (name == "EndBlockWidth" || name == "EndBlockLength" || name == "EndBlockTransition") )
+         else if ( dimVersion < 2 && parent_version < 14 && (name == _T("EndBlockWidth") || name == _T("EndBlockLength") || name == _T("EndBlockTransition")) )
          {
             value = 0.0;
          }
@@ -686,9 +686,9 @@ bool CIBeamFactory::IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderInd
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
    Float64 ebWidth, ebLength, ebTransition;
-   ebWidth      = GetDimension(dimensions,"EndBlockWidth");
-   ebLength     = GetDimension(dimensions,"EndBlockLength");
-   ebTransition = GetDimension(dimensions,"EndBlockTransition");
+   ebWidth      = GetDimension(dimensions,_T("EndBlockWidth"));
+   ebLength     = GetDimension(dimensions,_T("EndBlockLength"));
+   ebTransition = GetDimension(dimensions,_T("EndBlockTransition"));
 
    bool bPrismatic = true;
    if ( IsZero(ebWidth) || (IsZero(ebLength) && IsZero(ebTransition)) )
@@ -761,23 +761,23 @@ Float64 CIBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,Gir
    return S;
 }
 
-std::string CIBeamFactory::GetImage()
+std::_tstring CIBeamFactory::GetImage()
 {
-   return std::string("IBeam.jpg");
+   return std::_tstring(_T("IBeam.jpg"));
 }
 
-std::string CIBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
-      strImage =  "IBeam_Slab_CIP.gif";
+      strImage =  _T("IBeam_Slab_CIP.gif");
       break;
 
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "IBeam_Slab_SIP.gif";
+      strImage =  _T("IBeam_Slab_SIP.gif");
       break;
 
    default:
@@ -788,15 +788,15 @@ std::string CIBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType de
    return strImage;
 }
 
-std::string CIBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "+Mn_IBeam_Composite.gif";
+      strImage =  _T("+Mn_IBeam_Composite.gif");
       break;
 
    default:
@@ -807,15 +807,15 @@ std::string CIBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::Sup
    return strImage;
 }
 
-std::string CIBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "-Mn_IBeam_Composite.gif";
+      strImage =  _T("-Mn_IBeam_Composite.gif");
       break;
 
    default:
@@ -826,15 +826,15 @@ std::string CIBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::Sup
    return strImage;
 }
 
-std::string CIBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "Vn_IBeam.gif";
+      strImage =  _T("Vn_IBeam.gif");
       break;
 
    default:
@@ -845,33 +845,33 @@ std::string CIBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedD
    return strImage;
 }
 
-std::string CIBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "IBeam_Effective_Flange_Width_Interior_Girder_2008.gif";
+      return _T("IBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
    else
    {
-      return "IBeam_Effective_Flange_Width_Interior_Girder.gif";
+      return _T("IBeam_Effective_Flange_Width_Interior_Girder.gif");
    }
 }
 
-std::string CIBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "IBeam_Effective_Flange_Width_Exterior_Girder_2008.gif";
+      return _T("IBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
    else
    {
-      return "IBeam_Effective_Flange_Width_Exterior_Girder.gif";
+      return _T("IBeam_Effective_Flange_Width_Exterior_Girder.gif");
    }
 }
 
@@ -885,17 +885,17 @@ CLSID CIBeamFactory::GetFamilyCLSID()
    return CLSID_WFBeamFamily;
 }
 
-std::string CIBeamFactory::GetGirderFamilyName()
+std::_tstring CIBeamFactory::GetGirderFamilyName()
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
    OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::string CIBeamFactory::GetPublisher()
+std::_tstring CIBeamFactory::GetPublisher()
 {
-   return std::string("WSDOT");
+   return std::_tstring(_T("WSDOT"));
 }
 
 HINSTANCE CIBeamFactory::GetResourceInstance()
@@ -921,26 +921,26 @@ void CIBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                   double& t1,double& t2, double& c1,
                                   double& ebWidth,double& ebLength,double& ebTransition)
 {
-   d1 = GetDimension(dimensions,"D1");
-   d2 = GetDimension(dimensions,"D2");
-   d3 = GetDimension(dimensions,"D3");
-   d4 = GetDimension(dimensions,"D4");
-   d5 = GetDimension(dimensions,"D5");
-   d6 = GetDimension(dimensions,"D6");
-   d7 = GetDimension(dimensions,"D7");
-   w1 = GetDimension(dimensions,"W1");
-   w2 = GetDimension(dimensions,"W2");
-   w3 = GetDimension(dimensions,"W3");
-   w4 = GetDimension(dimensions,"W4");
-   t1 = GetDimension(dimensions,"T1");
-   t2 = GetDimension(dimensions,"T2");
-   c1 = GetDimension(dimensions,"C1"); 
-   ebWidth = GetDimension(dimensions,"EndBlockWidth");
-   ebLength = GetDimension(dimensions,"EndBlockLength");
-   ebTransition = GetDimension(dimensions,"EndBlockTransition");
+   d1 = GetDimension(dimensions,_T("D1"));
+   d2 = GetDimension(dimensions,_T("D2"));
+   d3 = GetDimension(dimensions,_T("D3"));
+   d4 = GetDimension(dimensions,_T("D4"));
+   d5 = GetDimension(dimensions,_T("D5"));
+   d6 = GetDimension(dimensions,_T("D6"));
+   d7 = GetDimension(dimensions,_T("D7"));
+   w1 = GetDimension(dimensions,_T("W1"));
+   w2 = GetDimension(dimensions,_T("W2"));
+   w3 = GetDimension(dimensions,_T("W3"));
+   w4 = GetDimension(dimensions,_T("W4"));
+   t1 = GetDimension(dimensions,_T("T1"));
+   t2 = GetDimension(dimensions,_T("T2"));
+   c1 = GetDimension(dimensions,_T("C1")); 
+   ebWidth = GetDimension(dimensions,_T("EndBlockWidth"));
+   ebLength = GetDimension(dimensions,_T("EndBlockLength"));
+   ebTransition = GetDimension(dimensions,_T("EndBlockTransition"));
 }
 
-double CIBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name)
+double CIBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -985,12 +985,12 @@ void CIBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dim
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double T1 = GetDimension(dimensions,"T1");
-   double T2 = GetDimension(dimensions,"T2");
-   double W1 = GetDimension(dimensions,"W1");
-   double W2 = GetDimension(dimensions,"W2");
-   double W3 = GetDimension(dimensions,"W3");
-   double W4 = GetDimension(dimensions,"W4");
+   double T1 = GetDimension(dimensions,_T("T1"));
+   double T2 = GetDimension(dimensions,_T("T2"));
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
+   double W3 = GetDimension(dimensions,_T("W3"));
+   double W4 = GetDimension(dimensions,_T("W4"));
 
    double top_w = T1 + 2.0*(W1+W2);
    double bot_w = T2 + 2.0*(W3+W4);
@@ -1023,25 +1023,25 @@ long CIBeamFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 
 Float64 CIBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double D1 = GetDimension(dimensions,"D1");
-   double D2 = GetDimension(dimensions,"D2");
-   double D3 = GetDimension(dimensions,"D3");
-   double D4 = GetDimension(dimensions,"D4");
-   double D5 = GetDimension(dimensions,"D5");
-   double D6 = GetDimension(dimensions,"D6");
-   double D7 = GetDimension(dimensions,"D7");
+   double D1 = GetDimension(dimensions,_T("D1"));
+   double D2 = GetDimension(dimensions,_T("D2"));
+   double D3 = GetDimension(dimensions,_T("D3"));
+   double D4 = GetDimension(dimensions,_T("D4"));
+   double D5 = GetDimension(dimensions,_T("D5"));
+   double D6 = GetDimension(dimensions,_T("D6"));
+   double D7 = GetDimension(dimensions,_T("D7"));
 
    return D1 + D2 + D3 + D4 + D5 + D6 + D7;
 }
 
 Float64 CIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double W1 = GetDimension(dimensions,"W1");
-   double W2 = GetDimension(dimensions,"W2");
-   double W3 = GetDimension(dimensions,"W3");
-   double W4 = GetDimension(dimensions,"W4");
-   double T1 = GetDimension(dimensions,"T1");
-   double T2 = GetDimension(dimensions,"T2");
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
+   double W3 = GetDimension(dimensions,_T("W3"));
+   double W4 = GetDimension(dimensions,_T("W4"));
+   double T1 = GetDimension(dimensions,_T("T1"));
+   double T2 = GetDimension(dimensions,_T("T2"));
 
    double top = 2*(W1+W2) + T1;
    double bot = 2*(W3+W4) + T2;

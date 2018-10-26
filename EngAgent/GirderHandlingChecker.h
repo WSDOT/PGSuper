@@ -130,7 +130,7 @@ private:
                               const pgsLiftingAnalysisArtifact& rArtifact, 
                               const std::vector<pgsPointOfInterest>& rpoiVec,
                               std::vector<Float64>* pmomVec, 
-                              Float64* pMidSpanDeflection, Float64* pOverhangDeflection);
+                              Float64* pMidSpanDeflection);
    void ComputeLiftingStresses(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,
                                const HANDLINGCONFIG& liftConfig,
                                const std::vector<pgsPointOfInterest>& rpoiVec,
@@ -142,7 +142,6 @@ private:
                                         const std::vector<pgsPointOfInterest>& rpoiVec,
                                         const std::vector<Float64>& momVec,
                                         Float64 midSpanDeflection,
-                                        Float64 overhangDeflection,
                                         pgsLiftingAnalysisArtifact* pArtifact);
 
 
@@ -152,13 +151,13 @@ private:
    void ComputeHaulingMoments(SpanIndexType span,GirderIndexType gdr,
                               const pgsHaulingAnalysisArtifact& rArtifact, 
                               const std::vector<pgsPointOfInterest>& rpoiVec,
-                              std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection,Float64* pOverhangDeflection);
+                              std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
 
 
    void ComputeHaulingRollAngle(SpanIndexType span,GirderIndexType gdr,
                                 pgsHaulingAnalysisArtifact* pArtifact, 
                                 const std::vector<pgsPointOfInterest> rpoiVec,
-                                std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection,Float64* pOverhangDeflection);
+                                std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
    void ComputeHaulingStresses(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,
                                const HANDLINGCONFIG& haulConfig,
                                const std::vector<pgsPointOfInterest>& rpoiVec,
@@ -168,8 +167,6 @@ private:
    void ComputeHaulingFsForCracking(SpanIndexType span,GirderIndexType gdr,
                                     const std::vector<pgsPointOfInterest>& rpoiVec,
                                     const std::vector<Float64>& momVec,
-                                    Float64 midSpanDeflection,
-                                    Float64 overhangDeflection,
                                     pgsHaulingAnalysisArtifact* pArtifact);
    void ComputeHaulingFsForRollover(SpanIndexType span,GirderIndexType gdr,pgsHaulingAnalysisArtifact* pArtifact);
 
@@ -179,7 +176,7 @@ private:
                        Float64 leftOH,Float64 glen,Float64 rightOH,
                        Float64 E, 
                        const std::vector<pgsPointOfInterest>& rpoiVec,
-                       std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection, Float64* pOverhangDeflection);
+                       std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
 
    void GetRequirementsForAlternativeTensileStress(const pgsPointOfInterest& poi,Float64 ftu,Float64 ftd,Float64 fbu,Float64 fbd,Float64* pY,Float64* pA,Float64* pT,Float64* pAs);
 

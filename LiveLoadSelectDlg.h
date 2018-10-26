@@ -37,9 +37,9 @@ class CLiveLoadSelectDlg : public CDialog
 {
 // Construction
 public:
-   CLiveLoadSelectDlg(std::vector< std::string>& allNames, std::vector< std::string>& dsgnNames,
-                      std::vector< std::string>& fatigueNames,
-                      std::vector< std::string>& str2Names, CWnd* pParent = NULL);   // standard constructor
+   CLiveLoadSelectDlg(std::vector< std::_tstring>& allNames, std::vector< std::_tstring>& dsgnNames,
+                      std::vector< std::_tstring>& fatigueNames,
+                      std::vector< std::_tstring>& str2Names, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CLiveLoadSelectDlg)
@@ -68,10 +68,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
-   std::vector< std::string>& m_AllNames;
-   std::vector< std::string>& m_DesignNames;
-   std::vector< std::string>& m_FatigueNames;
-   std::vector< std::string>& m_PermitNames;
+   std::vector< std::_tstring>& m_AllNames;
+   std::vector< std::_tstring>& m_DesignNames;
+   std::vector< std::_tstring>& m_FatigueNames;
+   std::vector< std::_tstring>& m_PermitNames;
    double m_DesignTruckImpact;
    double m_DesignLaneImpact;
    double m_FatigueTruckImpact;

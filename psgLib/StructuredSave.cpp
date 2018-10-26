@@ -55,7 +55,7 @@ CStructuredSave::~CStructuredSave()
 }
 
 //======================== OPERATORS  =======================================
-void CStructuredSave::BeginUnit(const char* name, Float64 version)
+void CStructuredSave::BeginUnit(LPCTSTR name, Float64 version)
 {
    m_pStrSave->BeginUnit( name, version );
 }
@@ -79,6 +79,14 @@ Float64 CStructuredSave::GetParentVersion()
    return version;
 }
 
+std::_tstring CStructuredSave::GetParentUnit()
+{
+   USES_CONVERSION;
+   CComBSTR bstr;
+   HRESULT hr = m_pStrSave->get_ParentUnit(&bstr);
+   return OLE2T(bstr);
+}
+
 Float64 CStructuredSave::GetTopVersion()
 {
    double version;
@@ -86,16 +94,16 @@ Float64 CStructuredSave::GetTopVersion()
    return version;
 }
 
-void CStructuredSave::Property(const char* name, const char* value)
+void CStructuredSave::Property(LPCTSTR name, LPCTSTR value)
 {
    USES_CONVERSION;
    VARIANT var;
    var.vt = VT_BSTR;
-   var.bstrVal = A2BSTR( value );
+   var.bstrVal = T2BSTR( value );
    m_pStrSave->put_Property( name, var );
 }
 
-void CStructuredSave::Property(const char* name, Float64 value)
+void CStructuredSave::Property(LPCTSTR name, Float64 value)
 {
    VARIANT var;
    var.vt = VT_R8;
@@ -103,7 +111,7 @@ void CStructuredSave::Property(const char* name, Float64 value)
    m_pStrSave->put_Property( name, var );
 }
 
-void CStructuredSave::Property(const char* name, Int16 value)
+void CStructuredSave::Property(LPCTSTR name, Int16 value)
 {
    VARIANT var;
    var.vt = VT_I2;
@@ -111,7 +119,7 @@ void CStructuredSave::Property(const char* name, Int16 value)
    m_pStrSave->put_Property( name, var );
 }
 
-void CStructuredSave::Property(const char* name, Uint16 value)
+void CStructuredSave::Property(LPCTSTR name, Uint16 value)
 {
    VARIANT var;
    var.vt = VT_UI2;
@@ -119,7 +127,7 @@ void CStructuredSave::Property(const char* name, Uint16 value)
    m_pStrSave->put_Property( name, var );
 }
 
-void CStructuredSave::Property(const char* name, Int32 value)
+void CStructuredSave::Property(LPCTSTR name, Int32 value)
 {
    VARIANT var;
    var.vt = VT_I4;
@@ -127,7 +135,7 @@ void CStructuredSave::Property(const char* name, Int32 value)
    m_pStrSave->put_Property( name, var );
 }
 
-void CStructuredSave::Property(const char* name, Uint32 value)
+void CStructuredSave::Property(LPCTSTR name, Uint32 value)
 {
    VARIANT var;
    var.vt = VT_UI4;
@@ -135,7 +143,7 @@ void CStructuredSave::Property(const char* name, Uint32 value)
    m_pStrSave->put_Property( name, var );
 }
 
-void CStructuredSave::Property(const char* name, bool value)
+void CStructuredSave::Property(LPCTSTR name, bool value)
 {
    VARIANT var;
    var.vt = VT_BOOL;
@@ -143,7 +151,7 @@ void CStructuredSave::Property(const char* name, bool value)
    m_pStrSave->put_Property( name, var );
 }
 
-void CStructuredSave::PutUnit(const char* xml)
+void CStructuredSave::PutUnit(LPCTSTR xml)
 {
    m_pStrSave->SaveRawUnit(xml);
 }

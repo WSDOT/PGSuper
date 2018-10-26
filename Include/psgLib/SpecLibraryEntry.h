@@ -185,11 +185,11 @@ public:
 
    //------------------------------------------------------------------------
    // Set string to describe specification
-   void SetDescription(const char* name);
+   void SetDescription(LPCTSTR name);
 
    //------------------------------------------------------------------------
    // Get string to describe specification
-   std::string GetDescription() const;
+   std::_tstring GetDescription() const;
 
    //------------------------------------------------------------------------
    // Get Max strand slope for 0.5 and 0.6" strands. If bool value is false,
@@ -831,6 +831,10 @@ public:
    void SetAfterDeckPlacementLosses(Float64 loss);
 
    //------------------------------------------------------------------------
+   Float64 GetAfterSIDLLosses() const;
+   void SetAfterSIDLLosses(Float64 loss);
+
+   //------------------------------------------------------------------------
    // Returns the final losses for a lump sum method
    Float64 GetFinalLosses() const;
    void SetFinalLosses(Float64 loss);
@@ -1010,7 +1014,7 @@ private:
    // general
    lrfdVersionMgr::Version m_SpecificationType;
    lrfdVersionMgr::Units m_SpecificationUnits;
-   std::string m_Description;
+   std::_tstring m_Description;
 
    // casting yard
    bool    m_DoCheckStrandSlope;
@@ -1152,6 +1156,7 @@ private:
    Float64 m_BeforeTempStrandRemovalLosses;
    Float64 m_AfterTempStrandRemovalLosses;
    Float64 m_AfterDeckPlacementLosses;
+   Float64 m_AfterSIDLLosses;
 
    Float64 m_Dset; // anchor set
    Float64 m_WobbleFriction; // wobble friction, K

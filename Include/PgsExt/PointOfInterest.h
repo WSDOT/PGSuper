@@ -332,7 +332,7 @@ public:
    virtual rptReportContent& SetValue(pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endOffset = 0.0);
 
    //------------------------------------------------------------------------
-   std::string AsString() const;
+   std::_tstring AsString() const;
 
    // Prefixes the POI with Span s Girder g
    void IncludeSpanAndGirder(bool bIncludeSpanAndGirder);

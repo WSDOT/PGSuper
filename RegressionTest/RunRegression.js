@@ -91,6 +91,10 @@ var endDate = new Date();
 var endTime = endDate.getTime();
 var elapsed = (endTime-startTime)/60000.0;
 DisplayMessage("Elapsed Time was: "+elapsed+" Minutes");
+
+var myFile = FSO.OpenTextFile("RegTest.log",8,true); // 8 = ForAppending (for some reason the ForAppending constant isn't defined)
+myFile.WriteLine(endDate.toString() + " : Elapsed Time was: "+elapsed+" Minutes");
+myFile.close();
   
       
 WScript.Quit(st);
@@ -215,6 +219,7 @@ function InitTest (currFolder)
    OldTxDOTAgentState = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}");
    if ( OldTxDOTAgentState != "Enabled" )
         wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}","Enabled","REG_SZ");
+
 }
 
 function SetPGSuperLibrary(server, publisher)

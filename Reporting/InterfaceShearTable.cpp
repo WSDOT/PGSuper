@@ -89,12 +89,12 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,IStageMap,pStageMap);
-   *pPara << "Horizontal Interface Shears/Length for " << OLE2A(pStageMap->GetLimitStateName(ls)) << " Limit State [5.8.4]" << rptNewLine;
+   *pPara << _T("Horizontal Interface Shears/Length for ") << OLE2T(pStageMap->GetLimitStateName(ls)) << _T(" Limit State [5.8.4]") << rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
    *pPara << table;
 
    if ( span == ALL_SPANS )
@@ -112,22 +112,22 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table->SetColumnSpan(0,1,3);
-   (*table)(0,1) << "5.8.4.2";
-   (*table)(1,1)  << COLHDR("s", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*table)(1,2)  << COLHDR("s"<<Sub("max"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*table)(1,3) << "Status";
+   (*table)(0,1) << _T("5.8.4.2");
+   (*table)(1,1)  << COLHDR(_T("s"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*table)(1,2)  << COLHDR(_T("s")<<Sub(_T("max")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*table)(1,3) << _T("Status");
 
    table->SetColumnSpan(0,2,3);
-   (*table)(0,2) << "5.8.4.4";
-   (*table)(1,4)  << COLHDR("a"<<Sub("vf"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(1,5)  << COLHDR("a"<<Sub("vf min"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(1,6) << "Status";
+   (*table)(0,2) << _T("5.8.4.4");
+   (*table)(1,4)  << COLHDR(_T("a")<<Sub(_T("vf")), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(1,5)  << COLHDR(_T("a")<<Sub(_T("vf min")), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(1,6) << _T("Status");
 
    table->SetColumnSpan(0,3,3);
-   (*table)(0,3) << "5.8.4.1";
-   (*table)(1,7)  << COLHDR("|v" << Sub("ui") << "|", rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-   (*table)(1,8)  << COLHDR(symbol(phi) << "v" << Sub("ni"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-   (*table)(1,9) << "Status" << rptNewLine << "(" << symbol(phi) << Sub2("v","ni") << "/" << "|" << Sub2("v","ui") << "|)";
+   (*table)(0,3) << _T("5.8.4.1");
+   (*table)(1,7)  << COLHDR(_T("|v") << Sub(_T("ui")) << _T("|"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(1,8)  << COLHDR(symbol(phi) << _T("v") << Sub(_T("ni")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(1,9) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("v"),_T("ni")) << _T("/") << _T("|") << Sub2(_T("v"),_T("ui")) << _T("|)");
 
    table->SetColumnSpan(0,4,-1);
    table->SetColumnSpan(0,5,-1);
@@ -197,7 +197,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
       {
          if (pArtifact->GetNumLegs() < pArtifact->GetNumLegsReqd())
          {
-            (*table)(row,col) << color(Blue)<< "* " << color(Black);
+            (*table)(row,col) << color(Blue)<< _T("* ") << color(Black);
             do_note = true;
             minlegs = pArtifact->GetNumLegsReqd();
          }
@@ -209,7 +209,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
       else
          (*table)(row,col) << RPT_FAIL;
 
-      (*table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(vr,vu,bPassed) << ")";
+      (*table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(vr,vu,bPassed) << _T(")");
 
       row++;
    }
@@ -218,7 +218,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara<<color(Blue)<< "*" << color(Black)<<" Note: b"<<Sub("v")<<" exceeds "<<dimu.SetValue(bvmax)<<" and number of legs < "<< minlegs<<rptNewLine;
+      *pPara<<color(Blue)<< _T("*") << color(Black)<<_T(" Note: b")<<Sub(_T("v"))<<_T(" exceeds ")<<dimu.SetValue(bvmax)<<_T(" and number of legs < ")<< minlegs<<rptNewLine;
    }
 }
 
@@ -250,7 +250,7 @@ bool CInterfaceShearTable::AssertValid() const
 
 void CInterfaceShearTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CInterfaceShearTable" << endl;
+   os << _T("Dump for CInterfaceShearTable") << endl;
 }
 #endif // _DEBUG
 

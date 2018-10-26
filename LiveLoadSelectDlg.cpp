@@ -40,8 +40,8 @@ static char THIS_FILE[] = __FILE__;
 // CLiveLoadSelectDlg dialog
 
 
-CLiveLoadSelectDlg::CLiveLoadSelectDlg(std::vector< std::string>& allNames, std::vector< std::string>& dsgnNames,
-                                       std::vector< std::string>& fatigueNames,std::vector< std::string>& str2Names,CWnd* pParent /*=NULL*/)
+CLiveLoadSelectDlg::CLiveLoadSelectDlg(std::vector< std::_tstring>& allNames, std::vector< std::_tstring>& dsgnNames,
+                                       std::vector< std::_tstring>& fatigueNames,std::vector< std::_tstring>& str2Names,CWnd* pParent /*=NULL*/)
 	: CDialog(CLiveLoadSelectDlg::IDD, pParent), 
      m_AllNames(allNames),
      m_DesignNames(dsgnNames),
@@ -87,7 +87,7 @@ void CLiveLoadSelectDlg::DoDataExchange(CDataExchange* pDX)
          {
             CString str;
             m_ctlDesignLL.GetText(icnt, str);
-            m_DesignNames.push_back( std::string(str));
+            m_DesignNames.push_back( std::_tstring(str));
          }
       }
 
@@ -101,7 +101,7 @@ void CLiveLoadSelectDlg::DoDataExchange(CDataExchange* pDX)
          {
             CString str;
             m_ctlFatigueLL.GetText(icnt, str);
-            m_FatigueNames.push_back( std::string(str));
+            m_FatigueNames.push_back( std::_tstring(str));
          }
       }
 
@@ -115,7 +115,7 @@ void CLiveLoadSelectDlg::DoDataExchange(CDataExchange* pDX)
          {
             CString str;
             m_ctlPermitLL.GetText(icnt, str);
-            m_PermitNames.push_back( std::string(str));
+            m_PermitNames.push_back( std::_tstring(str));
          }
       }
    }
@@ -144,9 +144,9 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
    m_ctlFatigueLL.SetCheckStyle( BS_AUTOCHECKBOX );
    m_ctlPermitLL.SetCheckStyle( BS_AUTOCHECKBOX );
 
-   for (std::vector< std::string>::iterator it=m_AllNames.begin(); it!=m_AllNames.end(); it++)
+   for (std::vector< std::_tstring>::iterator it=m_AllNames.begin(); it!=m_AllNames.end(); it++)
    {
-      const char* str = it->c_str();
+      LPCTSTR str = it->c_str();
       m_ctlDesignLL.AddString(str);
       m_ctlFatigueLL.AddString(str);
       m_ctlPermitLL.AddString(str);
@@ -155,10 +155,10 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
 
    // Set the check marks for the various loads
    // design
-   std::vector< std::string>::reverse_iterator iter;
+   std::vector< std::_tstring>::reverse_iterator iter;
    for ( iter = m_DesignNames.rbegin(); iter != m_DesignNames.rend(); iter++)
    {
-      const char* str = iter->c_str();
+      LPCTSTR str = iter->c_str();
       int idx = m_ctlDesignLL.FindString(-1, str);
       if (idx != LB_ERR)
       {
@@ -170,7 +170,7 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
    // fatigue
    for (iter = m_FatigueNames.rbegin(); iter != m_FatigueNames.rend(); iter++)
    {
-      const char* str = iter->c_str();
+      LPCTSTR str = iter->c_str();
       int idx = m_ctlFatigueLL.FindString(-1, str);
       if (idx != LB_ERR)
       {
@@ -182,7 +182,7 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
    // permit
    for (iter = m_PermitNames.rbegin(); iter != m_PermitNames.rend(); iter++)
    {
-      const char* str = iter->c_str();
+      LPCTSTR str = iter->c_str();
       int idx = m_ctlPermitLL.FindString(-1, str);
       if (idx != LB_ERR)
       {

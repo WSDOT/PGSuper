@@ -79,7 +79,7 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,unitmgtStressData>("User Defined Loads",false,analysisType,pDisplayUnits,pDisplayUnits->GetStressUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,unitmgtStressData>(_T("User Defined Loads"),false,analysisType,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
    if ( span == ALL_SPANS )
    {
@@ -165,52 +165,52 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
 
          if ( analysisType == pgsTypes::Envelope )
          {
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxDC1[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxDC1[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxDC1[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxDC1[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMinDC1[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMinDC1[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMinDC1[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMinDC1[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxDW1[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxDW1[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxDW1[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxDW1[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMinDW1[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMinDW1[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMinDW1[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMinDW1[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxDC2[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxDC2[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxDC2[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxDC2[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMinDC2[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMinDC2[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMinDC2[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMinDC2[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxDW2[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxDW2[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxDW2[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxDW2[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMinDW2[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMinDW2[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMinDW2[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMinDW2[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxLL3[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxLL3[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxLL3[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxLL3[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMinLL3[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMinLL3[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMinLL3[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMinLL3[index] );
          }
          else
          {
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxDC1[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxDC1[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxDC1[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxDC1[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxDW1[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxDW1[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxDW1[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxDW1[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxDC2[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxDC2[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxDC2[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxDC2[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxDW2[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxDW2[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxDW2[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxDW2[index] );
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue( fTopMaxLL3[index] ) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue( fBotMaxLL3[index] );
+            (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue( fTopMaxLL3[index] ) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue( fBotMaxLL3[index] );
          }
 
          row++;

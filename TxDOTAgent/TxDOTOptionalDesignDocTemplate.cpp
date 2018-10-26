@@ -61,8 +61,8 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
    GetDocString(strFileName,CDocTemplate::fileNewName);
 
    CString strItemName;
-   if ( strExtName != "" )
-      strItemName.Format("%s (%s)",strFileName,strExtName);
+   if ( strExtName != _T("") )
+      strItemName.Format(_T("%s (%s)"),strFileName,strExtName);
    else
       strItemName = strFileName;
 
@@ -79,26 +79,26 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
    if ( strWorkgroupFolderName.GetLength() != 0 )
    {
       CEAFTemplateGroup* pGroup = new CEAFTemplateGroup(this);
-      pGroup->SetGroupName("Templates");
+      pGroup->SetGroupName(_T("Templates"));
       m_TemplateGroup.AddGroup(pGroup);
       FindInFolder(strWorkgroupFolderName,pGroup,hIcon);
 
-      // CEAFSplashScreen::SetText("");
+      // CEAFSplashScreen::SetText(_T(""));
    }
 }
 
-void CTxDOTOptionalDesignDocTemplate::FindInFolder(LPCSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon)
+void CTxDOTOptionalDesignDocTemplate::FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon)
 {
    HICON folderIcon = defaultIcon;
 
    //CString strMsg;
-   //strMsg.Format("Searching for PGSuper Project Templates in %s",strPath);
+   //strMsg.Format(_T("Searching for PGSuper Project Templates in %s"),strPath);
    //CEAFSplashScreen::SetText(strMsg);
 
    CString strIconFile = strPath;
-   int i = strIconFile.ReverseFind('\\');
+   int i = strIconFile.ReverseFind(_T('\\'));
    strIconFile += strIconFile.Mid(i);
-   strIconFile += ".ico";
+   strIconFile += _T(".ico");
    HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
    if ( hIcon )
       folderIcon = hIcon;
@@ -106,14 +106,14 @@ void CTxDOTOptionalDesignDocTemplate::FindInFolder(LPCSTR strPath,CEAFTemplateGr
    FindTemplateFiles(strPath,pGroup,folderIcon); // find template files in this folder
 }
 
-void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon)
+void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon)
 {
    CString strTemplateSuffix;
    VERIFY(strTemplateSuffix.LoadString(IDS_TEMPLATE_SUFFIX));
    ASSERT(!strTemplateSuffix.IsEmpty());
 
    CFileFind finder;
-   CString strTemplateFileSpec = strPath + CString("\\*.") + strTemplateSuffix;
+   CString strTemplateFileSpec = strPath + CString(_T("\\*.")) + strTemplateSuffix;
    BOOL bHasTemplateFiles = finder.FindFile(strTemplateFileSpec);
    while ( bHasTemplateFiles )
    {
@@ -122,7 +122,7 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCSTR strPath,CEAFTempl
       HICON fileIcon = folderIcon;
 
       CString strIconFile = finder.GetFilePath();
-      strIconFile.Replace(strTemplateSuffix,"ico");
+      strIconFile.Replace(strTemplateSuffix,_T("ico"));
       HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
       if ( hIcon )
          fileIcon = hIcon;

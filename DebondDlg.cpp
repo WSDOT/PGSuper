@@ -77,7 +77,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
          if (debond_info.Length1 >= gdr_length2 || debond_info.Length2 >= gdr_length2)
          {
             HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
-	         AfxMessageBox( "Debond length cannot exceed one half of girder length.", MB_ICONEXCLAMATION);
+	         AfxMessageBox( _T("Debond length cannot exceed one half of girder length."), MB_ICONEXCLAMATION);
 	         pDX->Fail();
          }
       }
@@ -215,11 +215,11 @@ std::vector<CString>  CGirderDescDebondPage::GetStrandList()
          CString str;
          if ( nextnum-currnum == 1 )
          {
-            str.Format("%d",nextnum);
+            str.Format(_T("%d"),nextnum);
          }
          else
          {
-            str.Format("%d & %d", nextnum-1, nextnum );
+            str.Format(_T("%d & %d"), nextnum-1, nextnum );
          }
 
          strList.push_back(str);
@@ -428,7 +428,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
 
    pDC->SetTextAlign(TA_CENTER);
    CFont font;
-   font.CreatePointFont(80,"Arial",pDC);
+   font.CreatePointFont(80,_T("Arial"),pDC);
    CFont* old_font = pDC->SelectObject(&font);
    pDC->SetBkMode(TRANSPARENT);
 
@@ -467,7 +467,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       pDC->Ellipse(&rect);
 
       CString strLabel;
-      strLabel.Format("%d",strIdx+1);
+      strLabel.Format(_T("%d"),strIdx+1);
       pDC->TextOut(dx,dy,strLabel);
    }
 
@@ -620,15 +620,15 @@ void CGirderDescDebondPage::OnChange()
       percent = 100.0 * (double)ndbs/ns;
 
    CString str;
-   str.Format("Number of straight strands = %d", ns);
+   str.Format(_T("Number of straight strands = %d"), ns);
    CWnd* pNs = GetDlgItem(IDC_NUMSTRAIGHT);
    pNs->SetWindowText(str);
 
-   str.Format("Number of debonded strands = %d", ndbs);
+   str.Format(_T("Number of debonded strands = %d"), ndbs);
    CWnd* pNdb = GetDlgItem(IDC_NUM_DEBONDED);
    pNdb->SetWindowText(str);
 
-   str.Format("Percentage of straight strands debonded = %.1f%%", percent);
+   str.Format(_T("Percentage of straight strands debonded = %.1f%%"), percent);
    CWnd* pPcnt = GetDlgItem(IDC_PERCENT_DEBONDED);
    pPcnt->SetWindowText(str);
 }

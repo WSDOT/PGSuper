@@ -55,23 +55,23 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CBoxBeamFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back("H1");
-   m_DimNames.push_back("H2");
-   m_DimNames.push_back("H3");
-   m_DimNames.push_back("H4");
-   m_DimNames.push_back("H5");
-   m_DimNames.push_back("H6");
-   m_DimNames.push_back("H7");
-   m_DimNames.push_back("W1");
-   m_DimNames.push_back("W2");
-   m_DimNames.push_back("W3");
-   m_DimNames.push_back("W4");
-   m_DimNames.push_back("F1");
-   m_DimNames.push_back("F2");
-   m_DimNames.push_back("C1");
-   m_DimNames.push_back("Jmax");
-   m_DimNames.push_back("ShearKeyDepth");
-   m_DimNames.push_back("EndBlockLength");
+   m_DimNames.push_back(_T("H1"));
+   m_DimNames.push_back(_T("H2"));
+   m_DimNames.push_back(_T("H3"));
+   m_DimNames.push_back(_T("H4"));
+   m_DimNames.push_back(_T("H5"));
+   m_DimNames.push_back(_T("H6"));
+   m_DimNames.push_back(_T("H7"));
+   m_DimNames.push_back(_T("W1"));
+   m_DimNames.push_back(_T("W2"));
+   m_DimNames.push_back(_T("W3"));
+   m_DimNames.push_back(_T("W4"));
+   m_DimNames.push_back(_T("F1"));
+   m_DimNames.push_back(_T("F2"));
+   m_DimNames.push_back(_T("C1"));
+   m_DimNames.push_back(_T("Jmax"));
+   m_DimNames.push_back(_T("ShearKeyDepth"));
+   m_DimNames.push_back(_T("EndBlockLength"));
 
    m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H1
    m_DefaultDims.push_back(::ConvertToSysUnits(29.5,unitMeasure::Inch)); // H2
@@ -163,183 +163,183 @@ void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,Sp
 
 
 
-bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::string* strErrMsg)
+bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg)
 {
    double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
    GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
 
    if ( H1 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "H1 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("H1 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( H2 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "H2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("H2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( H3 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "H3 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("H3 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( H4 < 0.0 )
    {
-      std::ostringstream os;
-      os << "H4 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("H4 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( H5 < 0.0 )
    {
-      std::ostringstream os;
-      os << "H5 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("H5 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( H6 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "H6 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("H6 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( H7 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "H7 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("H7 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( W1 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "W1 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("W1 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( W2 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "W2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("W2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( W3 < 0.0 )
    {
-      std::ostringstream os;
-      os << "W3 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("W3 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( W4 < 0.0 )
    {
-      std::ostringstream os;
-      os << "W4 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("W4 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( F1 < 0.0 )
    {
-      std::ostringstream os;
-      os << "F1 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("F1 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( F2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "F2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("F2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( C1 < 0.0 )
    {
-      std::ostringstream os;
-      os << "C1 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( C1 >= H7 )
    {
-      std::ostringstream os;
-      os << "C1 must be less than H7" << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be less than H7") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( H1+H2+H3+TOLERANCE <= H4+H5+H6+H7 )
    {
-      std::ostringstream os;
-      os << "H1+H2+H3 must be greater than or equal to H4+H5+H6+H7" << std::ends;
+      std::_tostringstream os;
+      os << _T("H1+H2+H3 must be greater than or equal to H4+H5+H6+H7") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( F1 > W3/2 )
    {
-      std::ostringstream os;
-      os << "F1 must be less than W3/2" << std::ends;
+      std::_tostringstream os;
+      os << _T("F1 must be less than W3/2") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( F1 > H2/2 )
    {
-      std::ostringstream os;
-      os << "F1 must be less than H2/2" << std::ends;
+      std::_tostringstream os;
+      os << _T("F1 must be less than H2/2") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( F2 > W3/2 )
    {
-      std::ostringstream os;
-      os << "F2 must be less than W3/2" << std::ends;
+      std::_tostringstream os;
+      os << _T("F2 must be less than W3/2") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( F2 > H2/2 )
    {
-      std::ostringstream os;
-      os << "F2 must be less than H2/2" << std::ends;
+      std::_tostringstream os;
+      os << _T("F2 must be less than H2/2") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( J < 0.0 )
    {
-      std::ostringstream os;
-      os << "Maximum joint size must be zero or greater" << std::ends;
+      std::_tostringstream os;
+      os << _T("Maximum joint size must be zero or greater") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( shearKeyDepth > H1+H2+H3+TOLERANCE )
    {
-      std::ostringstream os;
-      os << "Shear Key Depth must be less than total section depth" << std::ends;
+      std::_tostringstream os;
+      os << _T("Shear Key Depth must be less than total section depth") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -349,11 +349,11 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
 
 void CBoxBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
-   std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("BoxBeamDimensions",3.0);
+   std::vector<std::_tstring>::iterator iter;
+   pSave->BeginUnit(_T("BoxBeamDimensions"),3.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
@@ -372,18 +372,18 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
       // ordering of old dimensions
       const long NDMS=17;
       //                            0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16
-      const char* box_dims[NDMS]={"H1","H2","H3","H4","H5","H6","H7","H8","W1","W2","W3","W4","W5","F1","F2","C1","Jmax"};
+      LPCTSTR box_dims[NDMS]={_T("H1"),_T("H2"),_T("H3"),_T("H4"),_T("H5"),_T("H6"),_T("H7"),_T("H8"),_T("W1"),_T("W2"),_T("W3"),_T("W4"),_T("W5"),_T("F1"),_T("F2"),_T("C1"),_T("Jmax")};
       double dim_vals[NDMS];
       for (long id=0; id<NDMS; id++)
       {
          if ( !pLoad->Property(box_dims[id],&(dim_vals[id])) )
          {
-            std::string name(box_dims[id]);
-            if ( parent_version < 9.0 && name == "Jmax")
+            std::_tstring name(box_dims[id]);
+            if ( parent_version < 9.0 && name == _T("Jmax"))
             {
                dim_vals[id] = 0.0;
             }
-            else if ( parent_version < 3.0 && (name == "C1" || name == "C2" ) )
+            else if ( parent_version < 3.0 && (name == _T("C1") || name == _T("C2") ) )
             {
                dim_vals[id] = 0.0;
             }
@@ -444,40 +444,40 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
        J = dim_vals[16];
 
       // now we can set our local dimensions
-      dimensions.push_back(Dimension("H1",H1));
-      dimensions.push_back(Dimension("H2",H2));
-      dimensions.push_back(Dimension("H3",H3));
-      dimensions.push_back(Dimension("H4",H4));
-      dimensions.push_back(Dimension("H5",H5));
-      dimensions.push_back(Dimension("H6",H6));
-      dimensions.push_back(Dimension("H7",H7));
-      dimensions.push_back(Dimension("W1",W1));
-      dimensions.push_back(Dimension("W2",W2));
-      dimensions.push_back(Dimension("W3",W3));
-      dimensions.push_back(Dimension("W4",W4));
-      dimensions.push_back(Dimension("F1",F1));
-      dimensions.push_back(Dimension("F2",F2));
-      dimensions.push_back(Dimension("C1",C1));
-      dimensions.push_back(Dimension("Jmax",J));
+      dimensions.push_back(Dimension(_T("H1"),H1));
+      dimensions.push_back(Dimension(_T("H2"),H2));
+      dimensions.push_back(Dimension(_T("H3"),H3));
+      dimensions.push_back(Dimension(_T("H4"),H4));
+      dimensions.push_back(Dimension(_T("H5"),H5));
+      dimensions.push_back(Dimension(_T("H6"),H6));
+      dimensions.push_back(Dimension(_T("H7"),H7));
+      dimensions.push_back(Dimension(_T("W1"),W1));
+      dimensions.push_back(Dimension(_T("W2"),W2));
+      dimensions.push_back(Dimension(_T("W3"),W3));
+      dimensions.push_back(Dimension(_T("W4"),W4));
+      dimensions.push_back(Dimension(_T("F1"),F1));
+      dimensions.push_back(Dimension(_T("F2"),F2));
+      dimensions.push_back(Dimension(_T("C1"),C1));
+      dimensions.push_back(Dimension(_T("Jmax"),J));
 
-      dimensions.push_back(Dimension("ShearKeyDepth",0.0));
-      dimensions.push_back(Dimension("EndBlockLength",0.0));
+      dimensions.push_back(Dimension(_T("ShearKeyDepth"),0.0));
+      dimensions.push_back(Dimension(_T("EndBlockLength"),0.0));
    }
    else
    {
       Float64 dimVersion = 1.0;
       if ( 14 <= parent_version )
       {
-         if ( pLoad->BeginUnit("BoxBeamDimensions") )
+         if ( pLoad->BeginUnit(_T("BoxBeamDimensions")) )
             dimVersion = pLoad->GetVersion();
          else
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      std::vector<std::string>::iterator iter;
+      std::vector<std::_tstring>::iterator iter;
       for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
       {
-         std::string name = *iter;
+         std::_tstring name = *iter;
          Float64 value;
          if ( !pLoad->Property(name.c_str(),&value) )
          {
@@ -485,20 +485,20 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
             
             // if this is before dimension data block versio 2 and the
             // dimension is Jmax, the fail to read is expected
-            if ( dimVersion < 2 && parent_version < 9.0 && name == "Jmax" )
+            if ( dimVersion < 2 && parent_version < 9.0 && name == _T("Jmax") )
             {
                value = 0.0; // set the default value
             }
-            else if ( dimVersion < 2 && parent_version < 3.0 && name == "C1" )
+            else if ( dimVersion < 2 && parent_version < 3.0 && name == _T("C1") )
             {
                value = 0.0;
             }
             // Added shear key and end block in version 3
-            else if ( dimVersion < 3 && name == "ShearKeyDepth" )
+            else if ( dimVersion < 3 && name == _T("ShearKeyDepth") )
             {
                value = 0.0;
             }
-            else if ( dimVersion < 3 && name == "EndBlockLength" )
+            else if ( dimVersion < 3 && name == _T("EndBlockLength") )
             {
                value = 0.0;
             }
@@ -532,9 +532,9 @@ Float64 CBoxBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,G
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 W3 = GetDimension(dimensions,"W3");
-   Float64 H2 = GetDimension(dimensions,"H2");
-   Float64 F1 = GetDimension(dimensions,"F1");
+   Float64 W3 = GetDimension(dimensions,_T("W3"));
+   Float64 H2 = GetDimension(dimensions,_T("H2"));
+   Float64 F1 = GetDimension(dimensions,_T("F1"));
 
    Float64 void_surface_area = Lg*( 2*(H2 - 2*F1) + 2*(W3 - 2*F1) + 4*sqrt(2*F1*F1) );
 
@@ -559,11 +559,11 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    CComPtr<IStrandMover> sm = pStrandMover;
 
    // set the shapes for harped strand bounds - only in the thinest part of the webs
-   double H1 = GetDimension(dimensions,"H1");
-   double H2 = GetDimension(dimensions,"H2");
-   double H3 = GetDimension(dimensions,"H3");
-   double W2 = GetDimension(dimensions,"W2");
-   double W3 = GetDimension(dimensions,"W3");
+   double H1 = GetDimension(dimensions,_T("H1"));
+   double H2 = GetDimension(dimensions,_T("H2"));
+   double H3 = GetDimension(dimensions,_T("H3"));
+   double W2 = GetDimension(dimensions,_T("W2"));
+   double W3 = GetDimension(dimensions,_T("W3"));
 
    double width = W2;
    double depth = H1+H2+H3;
@@ -614,9 +614,9 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::string CBoxBeamFactory::GetImage()
+std::_tstring CBoxBeamFactory::GetImage()
 {
-   return std::string("BoxBeam.gif");
+   return std::_tstring(_T("BoxBeam.gif"));
 }
 
 
@@ -656,23 +656,23 @@ void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                     double& shearKeyDepth,
                                     double& endBlockLength)
 {
-   H1 = GetDimension(dimensions,"H1");
-   H2 = GetDimension(dimensions,"H2");
-   H3 = GetDimension(dimensions,"H3");
-   H4 = GetDimension(dimensions,"H4");
-   H5 = GetDimension(dimensions,"H5");
-   H6 = GetDimension(dimensions,"H6");
-   H7 = GetDimension(dimensions,"H7");
-   W1 = GetDimension(dimensions,"W1");
-   W2 = GetDimension(dimensions,"W2");
-   W3 = GetDimension(dimensions,"W3");
-   W4 = GetDimension(dimensions,"W4");
-   F1 = GetDimension(dimensions,"F1");
-   F2 = GetDimension(dimensions,"F2");
-   C1 = GetDimension(dimensions,"C1");
-   J  = GetDimension(dimensions,"Jmax");
-   shearKeyDepth   = GetDimension(dimensions,"ShearKeyDepth");
-   endBlockLength  = GetDimension(dimensions,"EndBlockLength");
+   H1 = GetDimension(dimensions,_T("H1"));
+   H2 = GetDimension(dimensions,_T("H2"));
+   H3 = GetDimension(dimensions,_T("H3"));
+   H4 = GetDimension(dimensions,_T("H4"));
+   H5 = GetDimension(dimensions,_T("H5"));
+   H6 = GetDimension(dimensions,_T("H6"));
+   H7 = GetDimension(dimensions,_T("H7"));
+   W1 = GetDimension(dimensions,_T("W1"));
+   W2 = GetDimension(dimensions,_T("W2"));
+   W3 = GetDimension(dimensions,_T("W3"));
+   W4 = GetDimension(dimensions,_T("W4"));
+   F1 = GetDimension(dimensions,_T("F1"));
+   F2 = GetDimension(dimensions,_T("F2"));
+   C1 = GetDimension(dimensions,_T("C1"));
+   J  = GetDimension(dimensions,_T("Jmax"));
+   shearKeyDepth   = GetDimension(dimensions,_T("ShearKeyDepth"));
+   endBlockLength  = GetDimension(dimensions,_T("EndBlockLength"));
 }
 
 
@@ -683,11 +683,11 @@ void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double W1 = GetDimension(dimensions,"W1");
-   double W2 = GetDimension(dimensions,"W2");
-   double W3 = GetDimension(dimensions,"W3");
-   double W4 = GetDimension(dimensions,"W4");
-   double J  = GetDimension(dimensions,"Jmax");
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
+   double W3 = GetDimension(dimensions,_T("W3"));
+   double W4 = GetDimension(dimensions,_T("W4"));
+   double J  = GetDimension(dimensions,_T("Jmax"));
 
    // girder width is max of top and bottom width
    double gwt = 2*(W1+W2) + W3;
@@ -730,7 +730,7 @@ bool CBoxBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgs
    case pgsTypes::sbsUniformAdjacent:
    case pgsTypes::sbsGeneralAdjacent:
       {
-      double sk = GetDimension(dimensions,"ShearKeyDepth");
+      double sk = GetDimension(dimensions,_T("ShearKeyDepth"));
       is_key = sk > 0.0;
       }
       break;
@@ -914,10 +914,10 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
 
 Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double W1 = GetDimension(dimensions,"W1");
-   double W2 = GetDimension(dimensions,"W2");
-   double W3 = GetDimension(dimensions,"W3");
-   double W4 = GetDimension(dimensions,"W4");
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
+   double W3 = GetDimension(dimensions,_T("W3"));
+   double W4 = GetDimension(dimensions,_T("W4"));
 
    double top = 2*(W1+W2) + W3;
 

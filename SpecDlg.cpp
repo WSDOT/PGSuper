@@ -39,13 +39,13 @@ static char THIS_FILE[] = __FILE__;
 // CSpecDlg dialog
 
 
-CSpecDlg::CSpecDlg(const std::vector<std::string>& specs,CWnd* pParent /*=NULL*/)
+CSpecDlg::CSpecDlg(const std::vector<std::_tstring>& specs,CWnd* pParent /*=NULL*/)
 	: CDialog(CSpecDlg::IDD, pParent),
    m_Specs( specs )
 {
 	//{{AFX_DATA_INIT(CSpecDlg)
 	//}}AFX_DATA_INIT
-	m_Spec = "";
+	m_Spec = _T("");
 }
 
 
@@ -72,7 +72,7 @@ BOOL CSpecDlg::OnInitDialog()
    CComboBox* pBox = (CComboBox*)GetDlgItem( IDC_SPEC );
    ASSERT( pBox );
 
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
    for ( iter = m_Specs.begin(); iter < m_Specs.end(); iter++ )
    {
       CString spec( (*iter).c_str() );
