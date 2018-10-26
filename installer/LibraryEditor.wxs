@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+   <!-- Include project wide variables -->
+   <?include Variables.wxi?>
+
+   <Fragment>
+
+      <!-- Library Editor -->
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource="$(var.PGSuperSourceRoot)\AutomationDlls\$(var.PlatformFolder)" >
+         <Component Id="LibraryEditor"
+                    Guid="{CB88E193-C467-4944-84EC-46A30B82C5CF}"
+                    Win64="$(var.IsWin64)">
+
+            <File Id="PGSuperLibrary.dll"    Name="PGSuperLibrary.dll" KeyPath="yes"/>
+
+            <!-- Library File associations -->
+            <ProgId Id="PGSuperLibrary.Document" Icon="PGSuperLibrary.dll" IconIndex="0"/>
+
+            <!-- Create component categories for things that can plug into the library editor-->
+            <?define LibraryEditorPluginCATID={C5D5FD2B-955B-4f34-BD8F-150736BC92D3}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="Component Categories\$(var.LibraryEditorPluginCATID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="Component Categories\$(var.LibraryEditorPluginCATID)"
+                           Name="800"
+                           Value="PGSuper Library Editor Components"
+                           Type="string" />
+
+            <!-- Register the library editor as a plug-in into the BridgeLink Application-->
+            <?define LibraryEditorBridgeLinkPluginCLSID={E67716CF-F63C-472c-8FF9-3C959A736097}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.LibraryEditorBridgeLinkPluginCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.LibraryEditorBridgeLinkPluginCLSID)"
+                           Value="PGSuper Library Editor"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.LibraryEditorBridgeLinkPluginCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperLibrary.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.LibraryEditorBridgeLinkPluginCLSID)\Implemented Categories\$(var.BridgeLinkAppPluginCATID)"
+                           Value=""
+                           Type="string" />
+         </Component>
+      </DirectoryRef>
+   </Fragment>
+</Wix>

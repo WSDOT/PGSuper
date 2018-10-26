@@ -286,8 +286,8 @@ void pgsDesignArtifact::SetConcreteStrength(Float64 fc)
    // update Ec if not input by user
    if (!m_IsUserEc)
    {
-      double density = m_Concrete.GetDensity();
-      double Ec = lrfdConcreteUtil::ModE(fc,density,false);
+      Float64 density = m_Concrete.GetDensity();
+      Float64 Ec = lrfdConcreteUtil::ModE(fc,density,false);
       m_Concrete.SetE(Ec);
    }
 }
@@ -487,9 +487,10 @@ void pgsDesignArtifact::SetFinalDesignState(const ConcreteStrengthDesignState& s
 }
 
 
-void pgsDesignArtifact::ConcreteStrengthDesignState::SetState(bool controlledByMin, pgsTypes::Stage stage, pgsTypes::StressType stressType, 
+void pgsDesignArtifact::ConcreteStrengthDesignState::SetStressState(bool controlledByMin, pgsTypes::Stage stage, pgsTypes::StressType stressType, 
               pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
 {
+   m_Action = actStress;
    m_MinimumControls = controlledByMin;
    m_Stage = stage;
    m_StressType = stressType;
@@ -497,9 +498,22 @@ void pgsDesignArtifact::ConcreteStrengthDesignState::SetState(bool controlledByM
    m_StressLocation = stressLocation;
 }
 
+void pgsDesignArtifact::ConcreteStrengthDesignState::SetShearState(pgsTypes::Stage stage, pgsTypes::LimitState limitState)
+{
+   m_Action = actShear;
+   m_MinimumControls = false;
+   m_Stage = stage;
+   m_LimitState = limitState;
+}
+
 bool pgsDesignArtifact::ConcreteStrengthDesignState::WasControlledByMinimum() const
 {
    return m_MinimumControls;
+}
+
+pgsDesignArtifact::ConcreteStrengthDesignState::Action pgsDesignArtifact::ConcreteStrengthDesignState::GetAction() const
+{
+   return m_Action;
 }
 
 pgsTypes::Stage pgsDesignArtifact::ConcreteStrengthDesignState::Stage() const
@@ -510,7 +524,7 @@ pgsTypes::Stage pgsDesignArtifact::ConcreteStrengthDesignState::Stage() const
 
 pgsTypes::StressType pgsDesignArtifact::ConcreteStrengthDesignState::StressType() const
 {
-   PRECONDITION(m_MinimumControls==false);
+   PRECONDITION(m_MinimumControls==false && m_Action==actStress);
    return m_StressType;
 }
 
@@ -522,8 +536,19 @@ pgsTypes::LimitState pgsDesignArtifact::ConcreteStrengthDesignState::LimitState(
 
 pgsTypes::StressLocation pgsDesignArtifact::ConcreteStrengthDesignState::StressLocation() const
 {
-   PRECONDITION(m_MinimumControls==false);
+   PRECONDITION(m_MinimumControls==false && m_Action==actStress);
    return m_StressLocation;
+}
+
+void pgsDesignArtifact::ConcreteStrengthDesignState::SetRequiredAdditionalRebar(bool wasReqd)
+{
+   m_RequiredAdditionalRebar = wasReqd;
+}
+
+bool pgsDesignArtifact::ConcreteStrengthDesignState::GetRequiredAdditionalRebar() const
+{
+   ATLASSERT(m_Stage==pgsTypes::CastingYard || m_Stage==pgsTypes::Lifting || m_Stage==pgsTypes::Hauling);
+   return m_RequiredAdditionalRebar;
 }
 
 inline LPCTSTR StageString(pgsTypes::Stage stage)
@@ -627,11 +652,22 @@ std::_tstring pgsDesignArtifact::ConcreteStrengthDesignState::AsString() const
    {
       return std::_tstring(_T("Minimum"));
    }
-   else
+   else if (m_Action==actStress)
    {
       std::_tostringstream sstr;
-      sstr<< StageString(m_Stage)<<_T(", ")<<LimitStateString(m_LimitState)<<_T(", ")<<StressTypeString(m_StressType)<<_T(", at ")<<StressLocationString(m_StressLocation);
+      sstr<< _T("flexural stress in ") << StageString(m_Stage)<<_T(", ")<<LimitStateString(m_LimitState)<<_T(", ")<<StressTypeString(m_StressType)<<_T(", at ")<<StressLocationString(m_StressLocation);
       return sstr.str();
+   }
+   else if (m_Action==actShear)
+   {
+      std::_tostringstream sstr;
+      sstr<< _T("ultimate shear stress in ") << StageString(m_Stage)<<_T(", ")<<LimitStateString(m_LimitState);
+      return sstr.str();
+   }
+   else
+   {
+      ATLASSERT(0);
+      return std::_tstring(_T("unknown design state. "));
    }
 }
 
@@ -646,10 +682,23 @@ bool pgsDesignArtifact::ConcreteStrengthDesignState::operator==(const ConcreteSt
       // both are true
       return true;
    }
+   else if (m_Action != rOther.m_Action)
+   {
+      return false;
+   }
    else
    {
-      return m_Stage==rOther.m_Stage && m_StressType==rOther.m_StressType &&
-             m_LimitState==rOther.m_LimitState && m_StressLocation==rOther.m_StressLocation;
+      if (m_Action==actStress)
+      {
+         return m_Stage==rOther.m_Stage && m_StressType==rOther.m_StressType &&
+                m_LimitState==rOther.m_LimitState && m_StressLocation==rOther.m_StressLocation &&
+                m_RequiredAdditionalRebar==rOther.m_RequiredAdditionalRebar;
+      }
+      else
+      {
+         ATLASSERT(rOther.m_Action==actShear);
+         return m_Stage==rOther.m_Stage && m_LimitState==rOther.m_LimitState;
+      }
    }
 }
 

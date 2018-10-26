@@ -69,6 +69,7 @@ LOG
 class PGSEXTCLASS pgsLiftingStressAnalysisArtifact
 {
 public:
+
    // GROUP: DATA MEMBERS
 
    // GROUP: LIFECYCLE
@@ -91,6 +92,14 @@ public:
    pgsLiftingStressAnalysisArtifact& operator = (const pgsLiftingStressAnalysisArtifact& rOther);
 
    // GROUP: OPERATIONS
+   bool   Passed() const;
+   bool   CompressionPassed() const;
+   bool   TensionPassed() const;
+
+   // Get maximized stresses based on minimum C/D ratios
+   void GetMaxCompressiveStress(Float64* fTop, Float64* fBottom, Float64* Capacity) const;
+   void GetMaxTensileStress(Float64* fTop, Float64* fBottom, Float64* CapacityTop, Float64* CapacityBottom) const;
+
    // GROUP: ACCESS
 
    Float64 GetEffectiveHorizPsForce() const;
@@ -111,8 +120,20 @@ public:
    Float64 GetMaximumConcreteCompressiveStress() const;
    Float64 GetMaximumConcreteTensileStress() const;
 
-   void SetAlternativeTensileStressParameters(Float64 YnaUp,Float64 YnaNone,Float64 YnaDown,Float64 At, Float64 T,Float64 As);
-   void GetAlternativeTensileStressParameters(Float64* YnaUp,Float64* YnaNone,Float64* YnaDown,Float64* At, Float64* T,Float64* As) const;
+   void SetAlternativeTensileStressParameters(ImpactDir impact, Float64 Yna,   Float64 At,   Float64 T,  
+                                              Float64 AsProvd,  Float64 AsReqd,  Float64 fAllow);
+
+   void GetAlternativeTensileStressParameters(ImpactDir impact, Float64* Yna,   Float64* At,   Float64* T,  
+                                              Float64* AsProvd,  Float64* AsReqd,  Float64* fAllow) const;
+
+   void SetCompressiveCapacity(Float64 fAllowableCompression);
+   void GetCompressiveCapacity(Float64* fAllowableCompression) const;
+
+   // Tensile capacity for each impact direction
+   void GetTensileCapacities(Float64* pUpward,  Float64* pNoImpact, Float64* pDownward) const;
+
+   void SetRequiredConcreteStrength(Float64 fciComp,Float64 fciTensNoRebar,Float64 fciTensWithRebar);
+   void GetRequiredConcreteStrength(Float64 *pfciComp,Float64 *pfciTensNoRebar,Float64 *pfciTensWithRebar) const;
 
    // GROUP: INQUIRY
    // GROUP: DEBUG
@@ -143,10 +164,19 @@ protected:
    Float64 m_BottomFiberStressNoImpact;
    Float64 m_BottomFiberStressDownward;
 
-   Float64 m_Yna[3];
-   Float64 m_At;
-   Float64 m_T;
-   Float64 m_As;
+   // Alternate tensile stress values for each impact direction
+   Float64 m_Yna[SIZE_OF_IMPACTDIR];
+   Float64 m_At[SIZE_OF_IMPACTDIR];
+   Float64 m_T[SIZE_OF_IMPACTDIR];
+   Float64 m_AsReqd[SIZE_OF_IMPACTDIR];
+   Float64 m_AsProvd[SIZE_OF_IMPACTDIR];
+   Float64 m_fAllow[SIZE_OF_IMPACTDIR];
+
+   Float64 m_AllowableCompression;
+   Float64 m_ReqdCompConcreteStrength;
+   Float64 m_ReqdTensConcreteStrengthNoRebar;
+   Float64 m_ReqdTensConcreteStrengthWithRebar;
+   bool m_WasRebarReqd;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -221,6 +251,8 @@ public:
    pgsLiftingCrackingAnalysisArtifact& operator = (const pgsLiftingCrackingAnalysisArtifact& rOther);
 
    // GROUP: OPERATIONS
+   bool Passed() const;
+
    // GROUP: ACCESS
    Float64 GetVerticalMoment() const;
    void SetVerticalMoment(Float64 m);
@@ -241,6 +273,9 @@ public:
 
    Float64 GetFsCracking() const;
    void SetFsCracking(Float64 fs);
+
+   Float64 GetAllowableFsForCracking() const;
+   void SetAllowableFsForCracking(Float64 val);
 
    // GROUP: INQUIRY
    // GROUP: DEBUG
@@ -276,6 +311,7 @@ private:
    Float64 m_LateralMoment;
    Float64 m_ThetaCrackingMax;
    Float64 m_FsCracking;
+   Float64 m_AllowableFsForCracking;
    CrackedFlange m_CrackedFlange;
    Float64 m_LateralMomentStress;
 
@@ -334,6 +370,10 @@ public:
    pgsLiftingAnalysisArtifact& operator = (const pgsLiftingAnalysisArtifact& rOther);
 
    // GROUP: OPERATIONS
+   bool Passed() const;
+   bool PassedFailureCheck() const;
+   bool PassedStressCheck() const;
+
    // GROUP: ACCESS
 
    // Is girder stable for lifting? - If yr is less than zero, cg of girder
@@ -348,6 +388,12 @@ public:
    Float64 GetMinFsForCracking() const;
 
    // allowable FS's
+   Float64 GetAllowableFsForCracking() const;
+   void SetAllowableFsForCracking(Float64 val);
+
+   Float64 GetAllowableFsForFailure() const;
+   void SetAllowableFsForFailure(Float64 val);
+
    Float64 GetThetaFailureMax() const;
    void SetThetaFailureMax(Float64 val);
 
@@ -458,7 +504,7 @@ public:
    std::vector<pgsPointOfInterest> GetLiftingPointsOfInterest() const;
 
    // returns the top and bottom girder stresses for the supplied vector of locations
-   void GetGirderStress(std::vector<double> locs,bool bMin,bool bIncludePrestress,std::vector<double>& fTop,std::vector<double>& fBot) const;
+   void GetGirderStress(std::vector<Float64> locs,bool bMin,bool bIncludePrestress,std::vector<Float64>& fTop,std::vector<Float64>& fBot) const;
 
    void GetMinMaxStresses(Float64* minStress, Float64* maxStress,Float64* minDistFromStart,Float64* maxDistFromStart) const;
 
@@ -495,13 +541,7 @@ public:
                                            const pgsLiftingCrackingAnalysisArtifact& artifact);
    const pgsLiftingCrackingAnalysisArtifact* GetLiftingCrackingAnalysisArtifact(Float64 distFromStart) const;
 
-   void SetAlterantiveTensileStressAsMax(Float64 AsMax);
-   Float64 GetAlterantiveTensileStressAsMax() const;
-
-   void SetAllowableTensileConcreteStressParameters(double f,bool bMax,double fmax);
-   void SetAllowableCompressionFactor(double c);
-   void SetAlternativeTensileConcreteStressFactor(double f);
-   void GetRequiredConcreteStrength(double *pfcCompression,double *pfcTension,bool* pMinRebarRequired) const;
+   void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const;
 
    // GROUP: INQUIRY
 
@@ -563,18 +603,12 @@ private:
 
    bool m_IsStable;
 
+   Float64 m_AllowableFsForCracking;
+   Float64 m_AllowableFsForFailure;
+
    std::vector<pgsPointOfInterest> m_LiftingPois; // sorted same as below collections
    std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less> m_LiftingStressAnalysisArtifacts;
    std::map<Float64,pgsLiftingCrackingAnalysisArtifact,Float64_less> m_LiftingCrackingAnalysisArtifacts;
-
-   Float64 m_AsMax;
-
-   // allowable stress parameters
-   Float64 m_C;
-   Float64 m_T;
-   Float64 m_Talt;
-   bool m_bfmax;
-   Float64 m_fmax;
 
 public:
    #if defined _DEBUG

@@ -740,8 +740,8 @@ ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridE
    GetParam()->SetLockReadOnly(FALSE);
 
    ROWCOL nrow_orig = nRow;
-   double x = entry.m_X;
-   double y = entry.m_Y;
+   Float64 x = entry.m_X;
+   Float64 y = entry.m_Y;
 
    CString stype;
    if (entry.m_Type == GirderLibraryEntry::stStraight)

@@ -50,6 +50,7 @@
 // FORWARD DECLARATIONS
 //
 interface IBroker;
+interface IAllowableConcreteStress;
 
 // MISCELLANEOUS
 //
@@ -171,6 +172,7 @@ private:
 
    void CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pgsStrandStressArtifact* pArtifact);
    void CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,ALLOWSTRESSCHECKTASK task,pgsGirderArtifact* pGdrArtifact);
+   void CheckCastingYardGirderStresses(SpanIndexType span,GirderIndexType gdr, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsGirderArtifact* pGdrArtifact);
    void CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsGirderArtifact* pGdrArtifact);
    void CheckShear(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsPointOfInterest>& rVPoi,pgsTypes::LimitState ls,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
    void CheckSplittingZone(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
@@ -179,6 +181,7 @@ private:
    void CheckHoldDownForce(SpanIndexType span,GirderIndexType gdr,pgsHoldDownForceArtifact* pArtifact);
    void CheckConstructability(SpanIndexType span,GirderIndexType gdr,pgsConstructabilityArtifact* pArtifact);
    void CheckDebonding(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType,pgsDebondArtifact* pArtifact);
+
 
    void UpdateSlabOffsetAdjustmentModel(pgsDesignArtifact* pArtifact);
 
@@ -195,11 +198,12 @@ private:
    void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress);
    void DesignEndZone(bool firstTime, arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
    void DesignForShipping(IProgress* pProgress);
-   std::vector<DebondLevelType> DesignForShippingDebondingFinal(IProgress* pProgress);
+   bool CheckShippingStressDesign(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config);
 
    void DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
    void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,IProgress* pProgress);
    void DesignEndZoneReleaseHarping(const arDesignOptions& options, IProgress* pProgress);
+   bool CheckLiftingStressDesign(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config);
 
    void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsDesignArtifact& artifact, IProgress* pProgress);
    std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress);
@@ -229,7 +233,7 @@ private:
    pgsStirrupCheckAtPoisArtifact CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage, pgsTypes::LimitState ls, Float64 vu,
                                                                   Float64 fcSlab,Float64 fcGdr, Float64 fy, bool checkConfinement,const GDRCONFIG* pConfig);
 
-   void InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const GDRCONFIG* pConfig);
+   void InitShearCheck(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsPointOfInterest>& VPoi,pgsTypes::LimitState ls,const GDRCONFIG* pConfig);
    bool IsDeepSection( const pgsPointOfInterest& poi);
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact );
    void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact );

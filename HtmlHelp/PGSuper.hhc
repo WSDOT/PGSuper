@@ -1069,12 +1069,20 @@
         <param name="Local" value="Theoretical Manual\Lifting_of_Long_Prestressed_Girders.htm">
       </object>
       <li><object type="text/sitemap">
-        <param name="Name" value="Hauling of Long Prestressed Girders">
+        <param name="Name" value="Hauling of Long Prestressed Girders - WSDOT Method">
         <param name="Local" value="Theoretical Manual\Hauling_of_Long_Prestressed_Girders.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Hauling of Long Prestressed Girders - KDOT Method">
+        <param name="Local" value="Theoretical Manual\hauling_of_long_prestressed_girders_kdot_method.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="References - Lateral Stability for Lifting and Hauling Analyses">
+        <param name="Local" value="Theoretical Manual\PsglibLateral_Stability_of_Long_Prestr.htm">
       </object>
       </ul>
     <li><object type="text/sitemap">
-      <param name="Name" value="Longitudinal Reinforcement For Shear">
+      <param name="Name" value="Longitudinal Reinforcement in Girders">
       <param name="Local" value="Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm">
     </object>
     <li><object type="text/sitemap">

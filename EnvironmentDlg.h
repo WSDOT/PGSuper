@@ -43,7 +43,7 @@ public:
 	//{{AFX_DATA(CEnvironmentDlg)
 	enum { IDD = IDD_ENVIRONMENT };
 	int		m_Exposure;
-	double	m_RelHumidity;
+	Float64	m_RelHumidity;
 	//}}AFX_DATA
 
 

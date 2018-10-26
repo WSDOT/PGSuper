@@ -241,7 +241,7 @@ void CTxDOTOptionalDesignGirderViewPage::CutAtRightEnd()
 
 void CTxDOTOptionalDesignGirderViewPage::CutAtNext()
 {
-   double f = m_CurrentCutLocation/m_MaxCutLocation;
+   Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
    f = ::RoundOff(f+0.1,0.1);
    if ( 1 < f )
       f = 1;
@@ -251,7 +251,7 @@ void CTxDOTOptionalDesignGirderViewPage::CutAtNext()
 
 void CTxDOTOptionalDesignGirderViewPage::CutAtPrev()
 {
-   double f = m_CurrentCutLocation/m_MaxCutLocation;
+   Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
    f = ::RoundOff(f-0.1,0.1);
    if ( f < 0 )
       f = 0;

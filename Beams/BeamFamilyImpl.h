@@ -159,7 +159,7 @@ protected:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CDoubleTeeBeamFamily - beam family for double tee beams
+// CDoubleTeeBeamFamily - beam family for Float64 tee beams
 class ATL_NO_VTABLE CDoubleTeeBeamFamily : 
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CDoubleTeeBeamFamily, &CLSID_DoubleTeeBeamFamily>,

@@ -93,7 +93,7 @@ private:
    void SetRowStyle(ROWCOL nRow);
    void SelectRow(ROWCOL nRow);
 
-   void ParseRow(ROWCOL nRow, CDataExchange* pDX, double* pX,double* pY);
+   void ParseRow(ROWCOL nRow, CDataExchange* pDX, Float64* pX,Float64* pY);
 
    void SwapRows(ROWCOL row1,ROWCOL row2);
 

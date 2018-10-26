@@ -110,7 +110,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
       if (m_Load.m_Type!=UserLoads::Uniform)
       {
          // location takes some effort
-         double lft_locval, rgt_locval;
+         Float64 lft_locval, rgt_locval;
          CString str;
          m_LeftLocationCtrl.GetWindowText(str);
          if (!sysTokenizer::ParseDouble(str, &lft_locval))

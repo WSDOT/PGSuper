@@ -60,7 +60,7 @@ public:
    CComPtr<IPoint2dCollection> m_BarrierPoints;
 
    bool m_bStructurallyContinuous;
-   double m_CurbOffset;
+   Float64 m_CurbOffset;
 
    bool m_AllowEditing;
 

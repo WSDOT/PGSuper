@@ -89,21 +89,6 @@ rptChapter* CTexasGirderSummaryChapterBuilder::Build(CReportSpecification* pRptS
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-
-#if defined IGNORE_2007_CHANGES
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-   {
-
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Red) << bold(ON) << "Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored." << bold(OFF) << color(Black) << rptNewLine;
-   }
-#endif
-
    // let the paragraph builder to all the work here...
    std::vector<SpanGirderHashType> spanGirders;
    spanGirders.push_back( HashSpanGirder(span, girder) );

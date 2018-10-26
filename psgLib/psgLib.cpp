@@ -432,7 +432,7 @@ HRESULT pgslibPGSuperDocHeader(IStructuredLoad* pStrLoad)
    if ( FAILED(hr) )
       return hr;
 
-   double ver;
+   Float64 ver;
    pStrLoad->get_Version(&ver);
 
    if ( 1.0 < ver )
@@ -473,7 +473,7 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
    if ( FAILED(hr) )
       return hr;
 
-   double ver;
+   Float64 ver;
    pStrLoad->get_Version(&ver);
    if (ver!=1.0)
       return E_FAIL; // bad version

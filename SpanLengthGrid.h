@@ -74,8 +74,8 @@ public:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    // fill grid with data
-   void FillGrid(const std::vector<double>& vSpanLengths);
-   void GetSpanLengths(std::vector<double>& vSpanLengths);
+   void FillGrid(const std::vector<Float64>& vSpanLengths);
+   void GetSpanLengths(std::vector<Float64>& vSpanLengths);
 
 private:
    // set up styles for interior rows

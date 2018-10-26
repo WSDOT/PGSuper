@@ -142,15 +142,6 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
    CREEPCOEFFICIENTDETAILS details;
 
-#if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
-   {
-      pPara = new rptParagraph();
-      *pChapter << pPara;
-      *pPara << color(Red) << bold(ON) << _T(_T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.")) << bold(OFF) << color(Black) << rptNewLine;
-   }
-#endif
-
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
@@ -180,15 +171,6 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
          }
          else
          {
-#if defined IGNORE_2007_CHANGES
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
-            *pPara << Bold(_T("for which:")) << rptNewLine;
-            
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
-            else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
-#else
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
             else
@@ -196,11 +178,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
             *pPara << Bold(_T("for which:")) << rptNewLine;
             
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims || lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType())
+            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
-            else
+            else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
-#endif // IGNORE_2007_CHANGES
+            else
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
 
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
@@ -211,16 +194,11 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
             *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
             *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << rptNewLine;
             *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-           *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                  << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
-#else
-           if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-           {
-              *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                     << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
-           }
-#endif
+            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+            {
+               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
+                      << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
+            }
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
          } // spec
@@ -274,14 +252,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
@@ -295,14 +271,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
@@ -316,14 +290,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
@@ -360,15 +332,6 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
 
    CREEPCOEFFICIENTDETAILS details;
 
-#if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
-   {
-      pPara = new rptParagraph();
-      *pChapter << pPara;
-      *pPara << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
-   }
-#endif
-
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
@@ -398,26 +361,18 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
          }
          else
          {
-#if defined IGNORE_2007_CHANGES
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
-            *pPara << Bold(_T("for which:")) << rptNewLine;
-            
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
-            else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
-#else
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
             else
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
             *pPara << Bold(_T("for which:")) << rptNewLine;
-            
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims || lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType())
+
+            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
-            else
+            else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
-#endif // IGNORE_2007_CHANGES
+            else
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
 
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
@@ -428,16 +383,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
             *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
             *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << rptNewLine;
             *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-           *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                  << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
-#else
-           if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+
+            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
            {
               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
                      << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
            }
-#endif
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
          } // spec
@@ -465,14 +416,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
@@ -523,15 +472,6 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
    CREEPCOEFFICIENTDETAILS details;
 
-#if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
-   {
-      pPara = new rptParagraph();
-      *pChapter << pPara;
-      *pPara << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
-   }
-#endif
-
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
@@ -561,27 +501,20 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
         }
         else
         {
-#if defined IGNORE_2007_CHANGES
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
-            *pPara << Bold(_T("for which:")) << rptNewLine;
-            
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
-            else
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
-#else
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
             else
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
             *pPara << Bold(_T("for which:")) << rptNewLine;
             
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims || lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType())
+            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
-            else
+            else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
-#endif // IGNORE_2007_CHANGES
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
+            else
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
+
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
 
@@ -590,16 +523,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
             *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << rptNewLine;
             *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-           *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                  << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
-#else
+
            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
            {
               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
                      << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
            }
-#endif
            *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
            *pPara << rptNewLine;
         } // spec
@@ -676,14 +605,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
@@ -697,14 +624,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
@@ -718,14 +643,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
@@ -739,14 +662,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
@@ -760,14 +681,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
@@ -781,14 +700,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-#if defined IGNORE_2007_CHANGES
-         *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#else
+
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
          else
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-#endif
+
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;

@@ -100,7 +100,7 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
          m_Load.m_Girder = ival;
 
       // location takes some effort
-      double locval;
+      Float64 locval;
       CString str;
       m_LocationCtrl.GetWindowText(str);
       if (!sysTokenizer::ParseDouble(str, &locval))

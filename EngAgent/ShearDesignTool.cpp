@@ -305,6 +305,8 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
 
    m_LongReinfShearAs = 0.0;
 
+   m_RequiredFcForShearStress = 0.0;
+
    GET_IFACE(IStirrupGeometry,pStirrupGeometry);
    m_bIsCurrentStirrupLayoutSymmetrical = pStirrupGeometry->AreStirrupZonesSymmetrical(m_Span,m_Girder);
 
@@ -546,10 +548,32 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
    for ( ; poiIter != poiIterEnd; poiIter++)
    {
       const pgsPointOfInterest& poi = *poiIter;
+      if (poi.HasAttribute(pgsTypes::BridgeSite3, POI_CRITSECTSHEAR1))
+      {
+         // Strip CSS's of their attribute
+         pgsPointOfInterest newpoi = poi;
+         PoiAttributeType nattrib = poi.GetAttributes(pgsTypes::BridgeSite3);
+         nattrib = nattrib ^ POI_CRITSECTSHEAR1;
+         newpoi.SetAttributes(pgsTypes::BridgeSite3, nattrib);
 
-      m_PoiMgr.AddPointOfInterest(poi);
+         m_PoiMgr.AddPointOfInterest(newpoi);
+      }
+      else
+      {
+         m_PoiMgr.AddPointOfInterest(poi);
+      }
    }
 
+   // Get CSS for current configuration and add POI to our list
+   GDRCONFIG gconfig = GetGirderConfiguration();
+
+   pgsPointOfInterest cssLeft, cssRight;
+   GET_IFACE(IPointOfInterest,pPOI);
+   pPOI->GetCriticalSection(pgsTypes::StrengthI,m_Span,m_Girder,gconfig,&cssLeft,&cssRight);
+   m_PoiMgr.AddPointOfInterest(cssLeft);
+   m_PoiMgr.AddPointOfInterest(cssRight);
+
+   // Some additional pois
    const PoiAttributeType attrib = POI_ALLACTIONS | POI_ALLOUTPUT;
 
    std::vector<pgsTypes::Stage> stages;
@@ -634,17 +658,23 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
    m_PoiMgr.GetPointsOfInterest(m_Span, m_Girder, pgsTypes::BridgeSite3, POI_SHEAR, POIMGR_OR, &m_DesignPois);
 }
 
-void pgsShearDesignTool::Validate()
+pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::Validate()
 {
    // Copy shear data from girder artifact. This is the data we design on
    m_ShearData = m_pArtifact->GetShearData();
 
    // Precompute and cache some needed values for design
-   ValidateVerticalAvsDemand();
-   ValidateHorizontalAvsDemand();
+   ShearDesignOutcome sd = ValidateVerticalAvsDemand();
+
+   if (sd != sdFail)
+   {
+      ValidateHorizontalAvsDemand();
+   }
+
+   return sd;
 }
 
-void pgsShearDesignTool::ValidateVerticalAvsDemand()
+pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDemand()
 {
    GET_IFACE(IShearCapacity,pShearCap);
 
@@ -661,6 +691,7 @@ void pgsShearDesignTool::ValidateVerticalAvsDemand()
 
    // Av/s demand details are stored in spec check results
    bool was_strut_tie_reqd = false;
+   Float64 FcRequiredForStrutTieStress = 0.0;
    std::vector<pgsPointOfInterest>::const_iterator i( m_DesignPois.begin());
    while ( i != m_DesignPois.end())
    {
@@ -681,8 +712,25 @@ void pgsShearDesignTool::ValidateVerticalAvsDemand()
 
             avs_val = pvertart->GetAvOverSReqd();
 
-            was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metStart);
-            was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metEnd);
+            if( pvertart->IsStrutAndTieRequired(pgsTypes::metStart) || pvertart->IsStrutAndTieRequired(pgsTypes::metEnd))
+            {
+               was_strut_tie_reqd = true;
+
+               // Compute concrete strength required if shear stress forces strut and tie at CSS
+               GET_IFACE(IShearCapacity,pShearCapacity);
+               GDRCONFIG config = this->GetGirderConfiguration(); // current design
+
+               SHEARCAPACITYDETAILS scd;
+               pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthI, pgsTypes::BridgeSite3, poi, config, &scd );
+
+               Float64 fcreq = fabs(scd.vfc * config.Fc / 0.18); // LRFD 5.8.3.2
+
+               // FUDGE: Give concrete strength a small bump up. Found some regression tests that were missing
+               //        by just a smidge...
+               fcreq *= 1.01;
+
+               FcRequiredForStrutTieStress = max(FcRequiredForStrutTieStress, fcreq);
+            }
          }
          else
          {
@@ -703,8 +751,21 @@ void pgsShearDesignTool::ValidateVerticalAvsDemand()
 
                avs_II = pvertart->GetAvOverSReqd();
 
-               was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metStart);
-               was_strut_tie_reqd |= pvertart->IsStrutAndTieRequired(pgsTypes::metEnd);
+               if( pvertart->IsStrutAndTieRequired(pgsTypes::metStart) || pvertart->IsStrutAndTieRequired(pgsTypes::metEnd))
+               {
+                  was_strut_tie_reqd = true;
+
+                  // Compute concrete strength required if shear stress forces strut and tie at CSS
+                  GET_IFACE(IShearCapacity,pShearCapacity);
+                  GDRCONFIG config = this->GetGirderConfiguration(); // current design
+
+                  SHEARCAPACITYDETAILS scd;
+                  pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthII, pgsTypes::BridgeSite3, poi, config, &scd );
+
+                  Float64 fcreq = fabs(scd.vfc * config.Fc / 0.18); // LRFD 5.8.3.2
+
+                  FcRequiredForStrutTieStress = max(FcRequiredForStrutTieStress, fcreq);
+               }
             }
             else
             {
@@ -731,14 +792,19 @@ void pgsShearDesignTool::ValidateVerticalAvsDemand()
       i++;
    }
 
-   // Post strut and tie note if needed
+   ShearDesignOutcome sd = sdSuccess;
+
    if (was_strut_tie_reqd)
    {
-      m_pArtifact->AddDesignNote(pgsDesignArtifact::dnShearRequiresStrutAndTie);
+      // Strut and tie required. Save required f'c and set return code
+      m_RequiredFcForShearStress = FcRequiredForStrutTieStress; // will need this to compute a realistic f'c
+      sd = sdDesignFailedFromShearStress;
    }
 
    // Process demand curve for symmetry and maximizing at girder ends
    ProcessAvsDemand(m_VertShearAvsDemandAtPois, m_VertShearAvsDemandAtX);
+
+   return sd;
 }
 
 void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations)
@@ -1065,10 +1131,15 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignStirrups(Float6
    m_LeftCSS  = leftCSS;
    m_RightCSS = rightCSS;
 
-   ShearDesignOutcome st=sdSuccess;
-
    // Compute and cache some needed values
-   Validate();
+   ShearDesignOutcome st = Validate();
+
+   // It is possible that we failed above due to shear stress requirement on f'c and f'c was changed.
+   // If this happened, we must continue through rest of design and preserve the design outcome
+   if (st == sdFail)
+   {
+      return st; 
+   }
 
    if (DoDesignFromScratch())
    {
@@ -1087,7 +1158,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignStirrups(Float6
       }
    }
 
-   if(st==sdSuccess && !this->GetExtendBarsIntoDeck())
+   if(st!=sdFail && !this->GetExtendBarsIntoDeck())
    {
       // Primary bars not used for horizontal shear
       // Design additional horizontal shear bars
@@ -1097,7 +1168,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignStirrups(Float6
       }
    }
 
-   if (st==sdSuccess)
+   if (st!=sdFail)
    {
       // Splitting
       if(!DetailAdditionalSplitting())
@@ -1106,7 +1177,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignStirrups(Float6
       }
    }
 
-   if (st==sdSuccess)
+   if (st!=sdFail)
    {
       // Confinement
       if(!DetailAdditionalConfinement())
@@ -1120,10 +1191,15 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignStirrups(Float6
    m_pArtifact->SetNumberOfStirrupZonesDesigned( m_ShearData.ShearZones.size() );
    m_pArtifact->SetShearData(m_ShearData);
 
-   if (st==sdSuccess)
+   if (st!=sdFail)
    {
       // Long Reinforcement for shar
-      st = DesignLongReinfShear();
+      ShearDesignOutcome stlocal = DesignLongReinfShear();
+
+      if (stlocal!=sdSuccess)
+      {
+         st = stlocal; 
+      }
    }
 
    return st;
@@ -1132,6 +1208,11 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignStirrups(Float6
 Float64 pgsShearDesignTool::GetRequiredAsForLongReinfShear() const
 {
    return m_LongReinfShearAs;
+}
+
+Float64 pgsShearDesignTool::GetFcRequiredForShearStress() const
+{
+   return m_RequiredFcForShearStress;
 }
 
 bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
@@ -1274,6 +1355,11 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
                   // Make zone length a multiple of required spacing
                   zone_len = CeilOff(zone_len, zone_data.BarSpacing); 
 
+                  // FUDGE: Artificiallly increase zone length by two bar spacings. This is done
+                  //        because POI's for design are not exactly located at zone termination
+                  //        locations.
+                  zone_len += 2.0 * zone_data.BarSpacing;
+
                   // Is the zone long enough?
                   if (zone_len >= L_zone_min)
                   {
@@ -1397,6 +1483,12 @@ bool  pgsShearDesignTool::ModifyPreExistingStirrupDesign()
       }
    }
 
+   // Expand stirrup zone lengths so stirrup spacings fit exactly. Only for symmetrical cases
+   if (m_bIsCurrentStirrupLayoutSymmetrical)
+   {
+      ExpandStirrupZoneLengths(m_ShearData.ShearZones);
+   }
+
    return true;
 }
 
@@ -1485,12 +1577,18 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
                return false;
             }
          }
+
+         // Set flag that this zone was redesigned
+         rzdata.bWasDesigned = true;
+
       }
 
       // make sure we've met spacing requirements
       if(rzdata.BarSpacing > max_spacing)
       {
          rzdata.BarSpacing = max_spacing;
+
+         rzdata.bWasDesigned = true;
       }
 
       // Extend vertical bars into deck if design option is selected
@@ -1545,6 +1643,8 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
                rzdata.VertBarSize = szdAtCSS.VertBarSize;
                rzdata.BarSpacing  = szdAtCSS.BarSpacing;
                rzdata.nVertBars   = szdAtCSS.nVertBars;
+
+               rzdata.bWasDesigned = true;
             }
 
             idx++;
@@ -1554,6 +1654,46 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
    }
 
    return true;
+}
+
+void pgsShearDesignTool::ExpandStirrupZoneLengths(CShearData::ShearZoneVec& shearZones)
+{
+   CShearData::ShearZoneIterator it = shearZones.begin();
+   CShearData::ShearZoneIterator ite = shearZones.end();
+   if (ite!=it)
+   {
+      ite--; // We don't modify last zone
+   }
+
+   while(it!=ite)
+   {
+      CShearZoneData& rzdata(*it);
+
+      // Only tweak zones that we designed
+      if (rzdata.bWasDesigned)
+      {
+         if (!IsZero(rzdata.BarSpacing))
+         {
+            Float64 rns = rzdata.ZoneLength / rzdata.BarSpacing; // real number of spaces
+            Int32   ins = (Int32)rns;                            // chopped integer number of spaces
+            Float64 rmdr = rns - ins;                            // remainder
+
+            // Determine if zone length is an integral number of spaces within tolerance
+            if ( !(IsZero(rmdr, SPACING_TOL) || IsEqual(1.0, rmdr, SPACING_TOL)) )
+            {
+               // Bar spacing doesn't fit. 
+               // Round zone spacing up to next increment.
+               rzdata.ZoneLength = rzdata.BarSpacing * (ins+1);
+            }
+         }
+         else
+         {
+            ATLASSERT(0); // should always have positive bar spacing
+         }
+      }
+
+      it++;
+   }
 }
 
 bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
@@ -2054,6 +2194,9 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
             SHEARCAPACITYDETAILS scd;
             pShearCapacity->GetShearCapacityDetails( limit_states[ils], pgsTypes::BridgeSite3, poi, config, &scd);
 
+            // We only design for the positive moment case. Users are on their own for negative moment (slab reinforcement)
+            if(scd.bTensionBottom)
+            {
             // Longitudinal steel check
             pgsLongReinfShearArtifact l_artifact;
             m_pLongReinfShearChecker->CheckLongReinfShear(poi, pgsTypes::BridgeSite3, limit_states[ils], scd, &config, &l_artifact);
@@ -2115,6 +2258,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                else
                {
                   ATLASSERT(0);
+                  }
                }
             }
          }
@@ -2151,7 +2295,19 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 
    Float64 spec_spacing=Float64_Max;
 
-   pgsStirrupCheckAtPoisArtifactKey keyI(pgsTypes::BridgeSite3, pgsTypes::StrengthI, location);
+   // If we are inside of CSS, use location of CSS for stirrup detailing. This gets rid
+   // of wierdness happening close to supports - like small negative moment affecting dv
+   Float64 detail_loc = location;
+   if (location < m_LeftCSS)
+   {
+      detail_loc = m_LeftCSS;
+   }
+   else if (location > m_RightCSS)
+   {
+      detail_loc = m_RightCSS;
+   }
+
+   pgsStirrupCheckAtPoisArtifactKey keyI(pgsTypes::BridgeSite3, pgsTypes::StrengthI, detail_loc);
    const pgsStirrupCheckAtPoisArtifact* pStrI_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyI);
    if(pStrI_artf!=NULL)
    {
@@ -2165,7 +2321,7 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 
    if (m_bIsPermit)
    {
-      pgsStirrupCheckAtPoisArtifactKey keyII(pgsTypes::BridgeSite3, pgsTypes::StrengthII, location);
+      pgsStirrupCheckAtPoisArtifactKey keyII(pgsTypes::BridgeSite3, pgsTypes::StrengthII, detail_loc);
       const pgsStirrupCheckAtPoisArtifact* pStrII_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyII);
       if(pStrII_artf!=NULL)
       {
@@ -2182,7 +2338,7 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 
    Float64 spacing = spec_spacing;
 
-   // Confinement
+   // Confinement - use real location
    if (DoDesignForConfinement() && GetBarsActAsConfinement() && IsLocationInConfinementZone(location) )
    {
       // We are in a confinement zone and use primary bars for confinement

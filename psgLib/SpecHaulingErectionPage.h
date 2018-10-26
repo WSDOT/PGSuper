@@ -1,24 +1,3 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// 4500 3rd AVE SE - P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
 
 #if !defined(AFX_SPECHAULINGERECTIONPAGE_H__22F9FD45_4F00_11D2_9D5F_00609710E6CE__INCLUDED_)
 #define AFX_SPECHAULINGERECTIONPAGE_H__22F9FD45_4F00_11D2_9D5F_00609710E6CE__INCLUDED_
@@ -28,6 +7,9 @@
 #endif // _MSC_VER >= 1000
 // SpecHaulingErectionPage.h : header file
 //
+#include "resource.h"
+#include "WsdotHaulingDlg.h"
+#include "KdotHaulingDlg.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecHaulingErectionPage dialog
@@ -43,7 +25,7 @@ public:
 
 // Dialog Data
 	//{{AFX_DATA(CSpecHaulingErectionPage)
-	enum { IDD = IDD_SPEC_HAULING_ERECTION };
+	enum { IDD = IDD_SPEC_HAULING_ERECTIOND };
 		// NOTE - ClassWizard will add data members here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
@@ -60,25 +42,34 @@ public:
 public:
    void HideControls(bool hide);
 
+public:
    bool m_IsHaulingEnabled;
+   pgsTypes::HaulingAnalysisMethod m_HaulingAnalysisMethod;
+
+private:
+   // Embedded dialogs
+   CWsdotHaulingDlg m_WsdotHaulingDlg;
+   CKdotHaulingDlg  m_KdotHaulingDlg;
+
+   bool m_BeforeInit; // true 'til after oninitdialog
 
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSpecHaulingErectionPage)
-	afx_msg void OnCheckHaulingTensMax();
-	virtual BOOL OnInitDialog();
-	afx_msg void OnLumpSumMethod();
-	afx_msg void OnPerAxleMethod();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
-	void DoCheckMax();
+   virtual BOOL OnInitDialog();
+   virtual BOOL OnSetActive();
+   virtual BOOL OnKillActive();
 
-   void EnableLumpSumMethod(BOOL bEnable);
    static BOOL CALLBACK EnableWindows(HWND hwnd,LPARAM lParam);
+public:
+   afx_msg void OnCbnSelchangeHaulingMethod();
 
+   void SwapDialogs();
 };
 
 //{{AFX_INSERT_LOCATION}}

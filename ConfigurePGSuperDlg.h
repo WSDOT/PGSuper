@@ -31,7 +31,6 @@
 
 #include "PGSuperAppPlugin\resource.h"
 #include "PGSuperCatalogServers.h"
-#include <MfcTools\HyperLink.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CConfigurePGSuperDlg dialog
@@ -40,7 +39,7 @@ class CConfigurePGSuperDlg : public CDialog
 {
 // Construction
 public:
-	CConfigurePGSuperDlg(BOOL bFirstRun,CWnd* pParent = NULL);   // standard constructor
+	CConfigurePGSuperDlg(LPCTSTR lpszAppName,LPCTSTR lpszTemplateExt,BOOL bFirstRun,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CConfigurePGSuperDlg)
@@ -57,6 +56,7 @@ public:
    CacheUpdateFrequency m_CacheUpdateFrequency;
 
    CPGSuperCatalogServers m_Servers;
+   CString m_TemplateFileExt;
 
    bool m_bUpdateCache;
 
@@ -100,6 +100,7 @@ protected:
 
    void OnMethod();
 
+   CString m_AppName;
    bool m_bNetworkError;
   int	m_Method;
 public:

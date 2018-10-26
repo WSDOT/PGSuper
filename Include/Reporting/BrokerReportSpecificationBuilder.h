@@ -38,7 +38,4 @@ public:
 
 protected:
    CComPtr<IBroker> m_pBroker;
-
-   void AddChapters(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
-   void AddChapters(const CReportDescription& rptDesc,const std::vector<std::_tstring>& chList,boost::shared_ptr<CReportSpecification>& pRptSpec);
 };

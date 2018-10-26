@@ -77,7 +77,7 @@ public:
 private:
    virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc);
    // moment load diamter in difference coordinates
-   void GetWSymbolSize(iCoordinateMap* pMap, double* pd);
+   void GetWSymbolSize(iCoordinateMap* pMap, Float64* pd);
    void GetLSymbolSize(iCoordinateMap* pMap, Uint32* pd);
    void GetTSymbolSize(iCoordinateMap* pMap, Uint32* pd);
    CMomentLoadData m_Load;

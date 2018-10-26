@@ -47,6 +47,7 @@
 #define IDD_SPEC_CASTING_YARD           145
 #define IDD_LONG_STEEL                  146
 #define IDD_SPEC_HAULING_ERECTION       147
+#define IDD_WSDOT_HAULINGD              147
 #define IDD_GIRDER_DIMENSIONS           148
 #define IDD_SPEC_STRANDS                149
 #define IDD_GIRDER_MISC                 150
@@ -101,7 +102,10 @@
 #define IDI_RATING_ENTRY                202
 #define IDI_ICON1                       203
 #define IDD_STRAND_GENERATION           204
-#define IDD_LIVE_LOAD_FACTORS           306
+#define IDD_SPEC_HAULING_ERECTIOND      208
+#define IDD_KDOT_HAULINGD               209
+#define IDD_LIVE_LOAD_FACTORS1          306
+#define IDD_LIVE_LOAD_FACTORS2          307
 #define IDC_D1                          1001
 #define IDC_W1                          1002
 #define IDC_D2                          1003
@@ -180,10 +184,12 @@
 #define IDC_REMOVEROWS                  1015
 #define IDC_ROLL_STIFFNESS              1015
 #define IDC_END_BOTTOM_COVER            1015
+#define IDC_G_INTERIOR                  1015
 #define IDC_HEIGHT_GIRDER_BOTTOM        1016
 #define IDC_APPEND_ROW                  1016
 #define IDC_HP_INCREMENT                1016
 #define IDC_INSERTHORIZROW              1016
+#define IDC_SUPPORT_LESS_THAN           1016
 #define IDC_EDIT2                       1017
 #define IDC_ENTRY_NAME                  1017
 #define IDC_ADD_HARPED_STRAND           1017
@@ -807,6 +813,7 @@
 #define IDC_LONG_REINF_SHEAR_METHOD     1441
 #define IDC_RELAXATION_LOSS_METHOD      1441
 #define IDC_WEB_STRAND_TYPE_COMBO       1441
+#define IDC_HAULING_METHOD              1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_CHECK1                      1444
@@ -816,6 +823,7 @@
 #define IDC_STRAND_EXTENSIONS           1444
 #define IDC_CHECK_SPLITTING             1444
 #define IDC_TOP_FLANGE_ROUGHENED        1444
+#define IDC_IS_SUPPORT_LESS_THAN        1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
@@ -965,9 +973,17 @@
 #define IDC_EG_OVERLAY_UNIT             1547
 #define IDC_HP_BOX                      1547
 #define IDC_EG_OVERLAY_LABEL            1548
-#define IDC_EDIT3                       1548
+#define IDC_LOWER_PWR                   1548
 #define IDC_EG_LIVELOAD_UNIT            1549
+#define IDC_UPPER_PWR                   1549
 #define IDC_EG_LIVELOAD_LABEL           1550
+#define IDC_LOWER_PWR_UNIT              1550
+#define IDC_UPPER_PWR_UNIT              1551
+#define IDC_STATIC_BOUNDS               1552
+#define IDC_G_OVERHANG                  1553
+#define IDC_TRUCK_SUPPORT_DESIGN_ACCURACY 1554
+#define IDC_TRUCK_SUPPORT_DESIGN_ACCURACY_UNIT 1555
+#define IDC_SUPPORT_LESS_THAN_UNIT      1556
 #define IDC_LOWER_VEHICLE_WEIGHT_UNIT   1565
 #define IDC_LOWER_VEHICLE_WEIGHT_LABEL  1566
 #define IDC_UPPER_VEHICLE_WEIGHT_LABEL  1567
@@ -998,6 +1014,14 @@
 #define IDC_LF_UPPER4_LABEL             1591
 #define IDC_LF_UPPER4                   1592
 #define IDC_VEHICLE_WEIGHT_LABEL        1593
+#define IDC_LF_MIDDLE4_LABEL            1594
+#define IDC_LF_MIDDLE4                  1595
+#define IDC_LF_MIDDLE3_LABEL            1596
+#define IDC_LF_MIDDLE3                  1597
+#define IDC_LF_MIDDLE2_LABEL            1598
+#define IDC_LF_MIDDLE2                  1599
+#define IDC_LF_MIDDLE1_LABEL            1600
+#define IDC_LF_MIDDLE1                  1601
 #define IDS_E_BADINSTALL                1636
 #define IDS_E_PROBPERSISTS              1638
 #define IDS_E_INVALIDFORMAT             1640
@@ -1032,9 +1056,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        208
+#define _APS_NEXT_RESOURCE_VALUE        211
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1549
+#define _APS_NEXT_CONTROL_VALUE         1557
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

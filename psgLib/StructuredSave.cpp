@@ -67,14 +67,14 @@ void CStructuredSave::EndUnit()
 
 Float64 CStructuredSave::GetVersion()
 {
-   double version;
+   Float64 version;
    m_pStrSave->get_Version( &version );
    return version;
 }
 
 Float64 CStructuredSave::GetParentVersion()
 {
-   double version;
+   Float64 version;
    m_pStrSave->get_ParentVersion( &version );
    return version;
 }
@@ -89,7 +89,7 @@ std::_tstring CStructuredSave::GetParentUnit()
 
 Float64 CStructuredSave::GetTopVersion()
 {
-   double version;
+   Float64 version;
    m_pStrSave->get_TopVersion( &version );
    return version;
 }

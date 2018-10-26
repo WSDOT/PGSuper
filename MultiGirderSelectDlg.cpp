@@ -21,11 +21,11 @@
 ///////////////////////////////////////////////////////////////////////
 //
 #include "PGSuperAppPlugin\stdafx.h"
+#include "PGSuperAppPlugin\Resource.h"
 #include "PGSuperColors.h"
 #include "HtmlHelp\HelpTopics.hh"
 #include "MultiGirderSelectDlg.h"
 #include <IFace\Bridge.h>
-#include "PGSuperAppPlugin\resource.h"
 
 // CMultiGirderSelectDlg dialog
 

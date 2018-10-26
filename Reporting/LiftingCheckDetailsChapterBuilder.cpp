@@ -26,6 +26,7 @@
 
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
+#include <PgsExt\CapacityToDemand.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandlingPointOfInterest.h>
@@ -109,7 +110,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
-   const pgsLiftingCheckArtifact* pLift = pArtifact->GetLiftingCheckArtifact();
+   const pgsLiftingAnalysisArtifact* pLift = pArtifact->GetLiftingAnalysisArtifact();
 
    Float64 bracket_hgt = pGirderLiftingSpecCriteria->GetHeightOfPickPointAboveGirderTop();
 
@@ -179,13 +180,18 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    {
       const pgsPointOfInterest& poi = *i;
 
-      pgsLiftingStressCheckArtifact stressArtifact =  pLift->GetLiftingStressCheckArtifact(poi.GetDistFromStart());
+      const pgsLiftingStressAnalysisArtifact* stressArtifact =  pLift->GetLiftingStressAnalysisArtifact(poi.GetDistFromStart());
+      if(stressArtifact==NULL)
+      {
+         ATLASSERT(0);
+         continue;
+      }
  
       (*p_table)(row,0) << location.SetValue( pgsTypes::Lifting, poi, overhang );
-      (*p_table)(row,1) << force.SetValue( stressArtifact.GetEffectiveHorizPsForce());
-      (*p_table)(row,2) << dim.SetValue( stressArtifact.GetEccentricityPsForce());
+      (*p_table)(row,1) << force.SetValue( stressArtifact->GetEffectiveHorizPsForce());
+      (*p_table)(row,2) << dim.SetValue( stressArtifact->GetEccentricityPsForce());
       Float64 up, down, no;
-      stressArtifact.GetMomentImpact(&up,&no,&down);
+      stressArtifact->GetMomentImpact(&up,&no,&down);
       (*p_table)(row,3) << moment.SetValue(up);
       (*p_table)(row,4) << moment.SetValue(no);
       (*p_table)(row,5) << moment.SetValue(down);
@@ -222,66 +228,42 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    (*p_table)(1,7) << COLHDR(_T("No") << rptNewLine << _T("Impact"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*p_table)(1,8) << COLHDR(_T("Impact") << rptNewLine << _T("Down"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   rptRcTable* p_table2 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2]"));
-   *p << p_table2 << rptNewLine;
-   (*p_table2)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Pick Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table2)(0,1) << COLHDR(Sub2(_T("Y"),_T("na"))<<rptNewLine<<_T(" Impact") << rptNewLine << _T("Up"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table2)(0,2) << COLHDR(Sub2(_T("Y"),_T("na"))<<rptNewLine<<_T(" No") << rptNewLine << _T("Impact"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table2)(0,3) << COLHDR(Sub2(_T("Y"),_T("na"))<<rptNewLine<<_T(" Impact") << rptNewLine << _T("Down"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table2)(0,4) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*p_table2)(0,5) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*p_table2)(0,6) << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-
    RowIndexType row1=2;
-   RowIndexType row2=1;
    for (i = poi_vec.begin(); i!= poi_vec.end(); i++)
    {
       const pgsPointOfInterest& poi = *i;
 
-      pgsLiftingStressCheckArtifact stressArtifact =  pLift->GetLiftingStressCheckArtifact(poi.GetDistFromStart());
+      const pgsLiftingStressAnalysisArtifact* stressArtifact =  pLift->GetLiftingStressAnalysisArtifact(poi.GetDistFromStart());
+      if(stressArtifact==NULL)
+      {
+         ATLASSERT(0);
+         continue;
+      }
  
       (*p_table)(row1,0) << location.SetValue( pgsTypes::Lifting,poi,overhang );
       Float64 ps, up, down, no;
-      stressArtifact.GetTopFiberStress(&ps,&up,&no,&down);
+      stressArtifact->GetTopFiberStress(&ps,&up,&no,&down);
       (*p_table)(row1,1) << stress.SetValue( ps );
       (*p_table)(row1,2) << stress.SetValue( up );
       (*p_table)(row1,3) << stress.SetValue( no );
       (*p_table)(row1,4) << stress.SetValue( down );
-      stressArtifact.GetBottomFiberStress(&ps,&up,&no,&down);
+      stressArtifact->GetBottomFiberStress(&ps,&up,&no,&down);
       (*p_table)(row1,5) << stress.SetValue( ps );
       (*p_table)(row1,6) << stress.SetValue( up );
       (*p_table)(row1,7) << stress.SetValue( no );
       (*p_table)(row1,8) << stress.SetValue( down );
       
- 
-      (*p_table2)(row2,0) << location.SetValue( pgsTypes::Lifting, poi, overhang );
-
-      Float64 YnaUp,YnaNone,YnaDown,At,T,As;
-      stressArtifact.GetAlternativeTensileStressParameters(&YnaUp,&YnaNone,&YnaDown,&At,&T,&As);
-
-      if (YnaUp < 0 )
-          (*p_table2)(row2,1) << _T("-");
-      else
-         (*p_table2)(row2,1) << dim.SetValue(YnaUp);
-
-      if (YnaNone < 0 )
-          (*p_table2)(row2,2) << _T("-");
-      else
-         (*p_table2)(row2,2) << dim.SetValue(YnaNone);
-
-      if (YnaDown < 0 )
-          (*p_table2)(row2,3) << _T("-");
-      else
-         (*p_table2)(row2,3) << dim.SetValue(YnaDown);
-
-      (*p_table2)(row2,4) << area.SetValue(At);
-      (*p_table2)(row2,5) << force.SetValue(T);
-      (*p_table2)(row2,6) << area.SetValue(As);
-
       row1++;
-      row2++;
    }
 
+   // Rebar requirements tables. Only build table if impact is non zero
+   if (pLift->GetDownwardImpact() > 0.0)
+      BuildRebarTable(pBroker, pChapter, span, girder, idDown);
+
+   BuildRebarTable(pBroker, pChapter, span, girder, idNone);
+
+   if (pLift->GetUpwardImpact() > 0.0)
+      BuildRebarTable(pBroker, pChapter, span, girder, idUp);
    
    p = new rptParagraph;
    *pChapter << p;
@@ -308,20 +290,25 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    {
       const pgsPointOfInterest& poi = *i;
 
-      pgsLiftingCrackingCheckArtifact crackArtifact =  pLift->GetLiftingCrackingCheckArtifact(poi.GetDistFromStart());
+      const pgsLiftingCrackingAnalysisArtifact* crackArtifact =  pLift->GetLiftingCrackingAnalysisArtifact(poi.GetDistFromStart());
+      if (crackArtifact==NULL)
+      {
+         ATLASSERT(0);
+         continue;
+      }
  
       (*p_table)(row,0) << location.SetValue( pgsTypes::Lifting, poi, overhang);
-      (*p_table)(row,1) << stress.SetValue( crackArtifact.GetLateralMomentStress() );
+      (*p_table)(row,1) << stress.SetValue( crackArtifact->GetLateralMomentStress() );
 
-      if (crackArtifact.GetCrackedFlange()==BottomFlange)
+      if (crackArtifact->GetCrackedFlange()==BottomFlange)
          (*p_table)(row,2) << _T("Bottom");
       else
          (*p_table)(row,2) << _T("Top");
 
-      (*p_table)(row,3) << moment.SetValue( crackArtifact.GetLateralMoment() );
-      (*p_table)(row,4) << moment.SetValue( crackArtifact.GetVerticalMoment() );
-      (*p_table)(row,5) << angle.SetValue( crackArtifact.GetThetaCrackingMax() );
-      (*p_table)(row,6) << scalar.SetValue(crackArtifact.GetFsCracking());
+      (*p_table)(row,3) << moment.SetValue( crackArtifact->GetLateralMoment() );
+      (*p_table)(row,4) << moment.SetValue( crackArtifact->GetVerticalMoment() );
+      (*p_table)(row,5) << angle.SetValue( crackArtifact->GetThetaCrackingMax() );
+      (*p_table)(row,6) << scalar.SetValue(crackArtifact->GetFsCracking());
       row++;
    }
 
@@ -341,6 +328,144 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    return pChapter;
 }
+
+void CLiftingCheckDetailsChapterBuilder::BuildRebarTable(IBroker* pBroker,rptChapter* pChapter, SpanIndexType span, GirderIndexType girder, 
+                                                         ImpactDir dir) const
+{
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   rptRcScalar scalar;
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,        pDisplayUnits->GetAreaUnit(),         false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
+
+   rptCapacityToDemand cap_demand;
+
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
+
+   GET_IFACE2(pBroker,IArtifact,pArtifacts);
+   const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
+   const pgsLiftingAnalysisArtifact* pLift = pArtifact->GetLiftingAnalysisArtifact();
+
+   Float64 overhang = (pLift->GetGirderLength()-pLift->GetClearSpanBetweenPickPoints())/2.0;
+
+   GET_IFACE2(pBroker,IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
+   std::vector<pgsPointOfInterest> vPoi = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
+   CHECK(vPoi.size()>0);
+
+   std::_tstring tablename;
+   if (dir==idDown)
+      tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Lifting, Downward Impact");
+   else if (dir==idNone)
+      tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Lifting, Without Impact");
+   else
+      tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Lifting, Upward Impact");
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,tablename);
+   *p << pTable << rptNewLine;
+
+   ColumnIndexType col = 0;
+   (*pTable)(0,col++) << COLHDR(_T("Location from") << rptNewLine << _T("Left Pick Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*pTable)(0,col++) << _T("Tension") << rptNewLine << _T("Face");
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("Y"),_T("na")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("f"),_T("ci"))<<rptNewLine<<_T("Demand"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("A"),_T("s"))<< rptNewLine << _T("Required"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Tensile")<<rptNewLine<<_T("Capacity"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,col++) <<_T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
+
+   Int16 row=1;
+   for (std::vector<pgsPointOfInterest>::iterator i = vPoi.begin(); i!= vPoi.end(); i++)
+   {
+      const pgsPointOfInterest& poi = *i;
+
+      const pgsLiftingStressAnalysisArtifact* stressArtifact =  pLift->GetLiftingStressAnalysisArtifact(poi.GetDistFromStart());
+      if(stressArtifact==NULL)
+      {
+         ATLASSERT(0);
+         continue;
+      }
+
+      ATLASSERT(pArtifact != NULL);
+      if ( pArtifact == NULL )
+         continue;
+
+      Float64 Yna, At, T, AsProvd, AsReqd, fAllow;
+      stressArtifact->GetAlternativeTensileStressParameters(dir, &Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
+
+      (*pTable)(row,0) << location.SetValue( pgsTypes::Lifting, poi, overhang );
+
+      if (Yna < 0 )
+      {
+         // Entire section is in compression - blank out row
+         (*pTable)(row,1) << _T("Neither");
+         for ( ColumnIndexType ic = 2; ic < pTable->GetNumberOfColumns(); ic++ )
+         {
+           (*pTable)(row,ic) << _T("-");
+         }
+      }
+      else
+      {
+         // Stress demand
+         Float64 fps;
+         Float64 fTopUp, fTopNone, fTopDown;
+         Float64 fBottomUp, fBottomNone, fBottomDown;
+         stressArtifact->GetTopFiberStress(&fps, &fTopUp, &fTopNone, &fTopDown);
+         stressArtifact->GetBottomFiberStress(&fps, &fBottomUp, &fBottomNone, &fBottomDown);
+
+         Float64 fTop, fBot;
+         if(dir==idDown)
+         {
+            fTop = fTopDown;
+            fBot = fBottomDown;
+         }
+         else if(dir==idNone)
+         {
+            fTop = fTopNone;
+            fBot = fBottomNone;
+         }
+         else
+         {
+            fTop = fTopUp;
+            fBot = fBottomUp;
+         }
+
+         Float64 fTens;
+         if (fTop>0.0)
+         {
+            fTens = fTop;
+            (*pTable)(row,1) << _T("Top");
+         }
+         else
+         {
+            fTens = fBot;
+            (*pTable)(row,1) << _T("Bottom");
+         }
+
+         (*pTable)(row,2) << dim.SetValue(Yna);
+         (*pTable)(row,3) << stress.SetValue(fTens);
+         (*pTable)(row,4) << area.SetValue(At);
+         (*pTable)(row,5) << force.SetValue(T);
+         (*pTable)(row,6) << area.SetValue(AsProvd);
+         (*pTable)(row,7) << area.SetValue(AsReqd);
+         (*pTable)(row,8) << stress.SetValue(fAllow);
+         (*pTable)(row,9) <<_T("(")<< cap_demand.SetValue(fAllow,fTens,true)<<_T(")");
+      }
+
+      row++;
+   }
+
+   *p << _T("* Bars must be fully developed and lie within tension area of section before they are considered.");
+}
+
 
 
 CChapterBuilder* CLiftingCheckDetailsChapterBuilder::Clone() const

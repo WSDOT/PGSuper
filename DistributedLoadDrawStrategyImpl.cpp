@@ -116,7 +116,7 @@ STDMETHODIMP_(void) CDistributedLoadDrawStrategyImpl::XDrawPointStrategy::DrawDr
 {
    METHOD_PROLOGUE(CDistributedLoadDrawStrategyImpl,DrawPointStrategy);
 
-   double wx, wy;
+   Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
    pThis->m_ReusablePoint->put_X(wx);
    pThis->m_ReusablePoint->put_Y(wy);
@@ -131,7 +131,7 @@ STDMETHODIMP_(void) CDistributedLoadDrawStrategyImpl::XDrawPointStrategy::GetBou
    CComPtr<IPoint2d> point;
    pDO->GetPosition(&point);
 
-   double xpos;
+   Float64 xpos;
    point->get_X(&xpos);
 
    CComPtr<iDisplayList> pDL;
@@ -143,12 +143,12 @@ STDMETHODIMP_(void) CDistributedLoadDrawStrategyImpl::XDrawPointStrategy::GetBou
    CComPtr<iCoordinateMap> pMap;
    pDispMgr->GetCoordinateMap(&pMap);
 
-   double wystart, wyend;
+   Float64 wystart, wyend;
    pThis->GetWLoadHeight(pMap, &wystart, &wyend);
 
-   double girder_depth = max(pThis->m_GirderDepthAtStartOfLoad,pThis->m_GirderDepthAtEndOfLoad);
-   double top = Max3(0.0,wystart, wyend);
-   double bot = Min3(0.0,wystart, wyend);
+   Float64 girder_depth = max(pThis->m_GirderDepthAtStartOfLoad,pThis->m_GirderDepthAtEndOfLoad);
+   Float64 top = Max3(0.0,wystart, wyend);
+   Float64 bot = Min3(0.0,wystart, wyend);
 
    CComPtr<IRect2d> bounding_box;
    bounding_box.CoCreateInstance(CLSID_Rect2d);
@@ -185,10 +185,10 @@ void CDistributedLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,CO
    Float64 wyb_at_end;
    wyb_at_end = 0;
 
-   double wx_start;
+   Float64 wx_start;
    loc->get_X(&wx_start);
 
-   double wx_end = wx_start + m_LoadLength;
+   Float64 wx_end = wx_start + m_LoadLength;
 
    // pen style
    UINT nWidth = 1;
@@ -221,7 +221,7 @@ void CDistributedLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,CO
 
    // spacing of verticals
    Uint32 num_spcs = Uint32(max( Round(m_LoadLength/m_ArrowSpacing), 1));
-   double increment = double(lx_end-lx_start)/num_spcs; // use double to preserve numerical accuracy
+   Float64 increment = Float64(lx_end-lx_start)/num_spcs; // use Float64 to preserve numerical accuracy
 
    // arrow size
    CSize ar_size = GetLArrowSize(pMap);
@@ -229,7 +229,7 @@ void CDistributedLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,CO
    // first line
    DrawArrowLine(pDC, lx_start, ly_zero, ly_start, ar_size);
 
-   double lxloc = lx_start;
+   Float64 lxloc = lx_start;
    for (Uint32 it = 0; it < num_spcs; it++)
    {
       lxloc += increment;
@@ -405,17 +405,17 @@ STDMETHODIMP_(void) CDistributedLoadDrawStrategyImpl::XGravityWellStrategy::GetG
    CComPtr<IPoint2d> point;
    pPointDO->GetPosition(&point);
 
-   double wxstart, wxend;
+   Float64 wxstart, wxend;
    point->get_X(&wxstart);
    wxend = wxstart + pThis->m_LoadLength;
 
-   double wystart, wyend;
+   Float64 wystart, wyend;
    pThis->GetWLoadHeight(pMap, &wystart, &wyend);
 
    // Have to play some games here because of paint artifacts
    // Make region slightly bigger than it actually is
-   double tol_start = pThis->m_GirderDepthAtStartOfLoad/10;
-   double tol_end   = pThis->m_GirderDepthAtEndOfLoad/10;
+   Float64 tol_start = pThis->m_GirderDepthAtStartOfLoad/10;
+   Float64 tol_end   = pThis->m_GirderDepthAtEndOfLoad/10;
    wxstart -= tol_start;
    wxend   += tol_end;
 
@@ -477,14 +477,14 @@ void CDistributedLoadDrawStrategyImpl::GetTLoadHeight(iCoordinateMap* pMap, long
    }
 }
 
-void CDistributedLoadDrawStrategyImpl::GetWLoadHeight(iCoordinateMap* pMap, double* startHgt, double* endHgt)
+void CDistributedLoadDrawStrategyImpl::GetWLoadHeight(iCoordinateMap* pMap, Float64* startHgt, Float64* endHgt)
 {
    long tystart, tyend;
    GetTLoadHeight(pMap, &tystart, &tyend);
 
-   double wxo,wyo;
+   Float64 wxo,wyo;
    pMap->TPtoWP(0,0,&wxo,&wyo);
-   double wystart,wyend;
+   Float64 wystart,wyend;
    pMap->TPtoWP(0,tystart,&wxo,&wystart);
    pMap->TPtoWP(0,tyend,  &wxo,&wyend);
 

@@ -75,6 +75,7 @@ public:
    // Builds the constructability check table.
    rptRcTable* BuildSlabOffsetTable(IBroker* pBroker, const std::vector<SpanGirderHashType>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
    void BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildLongitudinalRebarGeometryCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

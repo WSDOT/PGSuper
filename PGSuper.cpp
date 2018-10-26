@@ -210,7 +210,7 @@ BOOL CPGSuperApp::InitInstance()
    // to the main application
    GetPluginCommandManager()->ReserveCommandIDRange(BRIDGELINK_PLUGIN_COMMAND_COUNT);
 
-   // user can double click on a file to open
+   // user can Float64 click on a file to open
    EnableShellOpen();
 
    // Help file defaults to the location of the application

@@ -32,6 +32,7 @@
 
 #include <PGSuperAll.h>
 #include <PGSuperUnits.h>
+#include <Reporter\Reporter.h>
 
 #if defined NOGRID
 #include "nogrid.h"
@@ -48,3 +49,5 @@
 #include <PgsExt\GirderLabel.h>
 #include <afxwin.h>
 
+#include <WBFLGenericBridge.h>
+#include <WBFLGenericBridgeTools.h>

@@ -77,7 +77,7 @@ public:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    // get data for a row
-   bool GetRowData(ROWCOL nRow,double* pStation,double* pGrade,double* pL1,double* pL2);
+   bool GetRowData(ROWCOL nRow,Float64* pStation,Float64* pGrade,Float64* pL1,Float64* pL2);
    void SetRowData(ROWCOL nRow,VertCurveData& data);
 
 private:

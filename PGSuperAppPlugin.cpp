@@ -29,7 +29,6 @@
 #include "PGSuperDocTemplate.h"
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
-#include <PsgLib\BeamFamilyManager.h>
 
 #include "PluginManagerDlg.h"
 
@@ -59,6 +58,14 @@ void CMyCmdTarget::OnProgramSettings()
    m_pMyAppPlugin->OnProgramSettings();
 }
 
+CString CPGSuperAppPlugin::GetTemplateFileExtension()
+{ 
+   CString strTemplateSuffix;
+   VERIFY(strTemplateSuffix.LoadString(IDS_PGSUPER_TEMPLATE_FILE_SUFFIX));
+   ASSERT(!strTemplateSuffix.IsEmpty());
+   return strTemplateSuffix;
+}
+
 HRESULT CPGSuperAppPlugin::FinalConstruct()
 {
    return OnFinalConstruct(); // CPGSuperBaseAppPlugin
@@ -73,28 +80,21 @@ void CPGSuperAppPlugin::ConfigurePlugins()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPluginManagerDlg dlg(_T("Manage PGSuper Plugins and Extensions"));
+   CPluginManagerDlg dlg(_T("Manage PGSuper Plugins and Extensions"),EAFGetMainFrame(),0,CATID_PGSuperDataImporter,CATID_PGSuperDataExporter,CATID_PGSuperExtensionAgent);
    dlg.DoModal(); // this DoModal is correct... the dialog takes care of its own data
 }
 
 BOOL CPGSuperAppPlugin::Init(CEAFApp* pParent)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pMyApp = AfxGetApp();
 
    DefaultInit();
 
    // See MSKB Article ID: Q118435, "Sharing Menus Between MDI Child Windows"
-   CWinApp* pMyApp = AfxGetApp();
-   m_hMenuShared = ::LoadMenu( pMyApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPERTYPE) );
+   m_hMenuShared = ::LoadMenu( pMyApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPER) );
 
    if ( m_hMenuShared == NULL )
-      return FALSE;
-
-   // Application start up can be improved if this call
-   // is executed in its own thread... Need to add some
-   // code that indicates if the call fails.. then throw
-   // a shut down exception
-   if ( FAILED(CBeamFamilyManager::Init()) )
       return FALSE;
 
    if ( !EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode )
@@ -113,25 +113,13 @@ void CPGSuperAppPlugin::Terminate()
 void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 {
    CEAFMainFrame* pFrame = EAFGetMainFrame();
-
-   // add our commands to the menu
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
 
    UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
    CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
-   if ( pFileMenu == NULL )
-   {
-      ATLASSERT(false);
-      return;
-   }
 
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
-   if ( pManageMenu == NULL )
-   {
-      ATLASSERT(false);
-      return;
-   }
 
    if ( bIntegrate )
    {
@@ -153,9 +141,11 @@ void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    }
 }
 
-CEAFDocTemplate* CPGSuperAppPlugin::CreateDocTemplate()
+std::vector<CEAFDocTemplate*> CPGSuperAppPlugin::CreateDocTemplates()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   std::vector<CEAFDocTemplate*> vDocTemplates;
 
    CPGSuperDocTemplate* pTemplate = new CPGSuperDocTemplate(
 		IDR_BRIDGEMODELEDITOR,
@@ -165,17 +155,13 @@ CEAFDocTemplate* CPGSuperAppPlugin::CreateDocTemplate()
 		RUNTIME_CLASS(CBridgePlanView),
       m_hMenuShared,1);
 
-   return pTemplate;
+   vDocTemplates.push_back(pTemplate);
+   return vDocTemplates;
 }
 
 HMENU CPGSuperAppPlugin::GetSharedMenuHandle()
 {
    return m_hMenuShared;
-}
-
-UINT CPGSuperAppPlugin::GetDocumentResourceID()
-{
-   return IDR_PGSUPERTYPE;
 }
 
 CString CPGSuperAppPlugin::GetName()
@@ -191,7 +177,6 @@ CString CPGSuperAppPlugin::GetUsageMessage()
 
 BOOL CPGSuperAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    // cmdInfo is the command line information from the application. The application
    // doesn't know about this plug-in at the time the command line parameters are parsed
    //
@@ -285,12 +270,13 @@ void CPGSuperAppPlugin::UpdateTemplates()
 {
    USES_CONVERSION;
 
+   CEAFApp* pApp = EAFGetApp();
+
    int result = AfxMessageBox(_T("All of the template library entries will be updated to match the Master Library.\n\nDo you want to proceed?"),MB_YESNO);
    if ( result == IDNO )
       return;
 
    m_bUpdatingTemplate = true;
-   CEAFApp* pApp = EAFGetApp();
 
    // Get the application into a "just started" state
    if ( pApp->SaveAllModified() )
@@ -424,7 +410,6 @@ void CPGSuperAppPlugin::ProcessLibrarySetUp(const CPGSuperCommandLineInfo& rCmdI
 void CPGSuperAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo)
 {
    USES_CONVERSION;
-
    ASSERT(rCmdInfo.m_bDo1250Test);
 
    // The document is opened when CEAFApp::InitInstance calls ProcessShellCommand

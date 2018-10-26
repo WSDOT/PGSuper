@@ -81,5 +81,13 @@ public:
    }
 };
 
+class CBridgeHint : public CObject
+{
+public:
+   // Used when a span is added or removed... 
+   PierIndexType PierIdx; // Reference pier where the span is added or removed
+   pgsTypes::PierFaceType PierFace; // Pier face where the span is added or removed
+   bool bAdded;
+};
 
 #endif // INCLUDED_HINTS_H_

@@ -66,6 +66,8 @@ protected:
    int GetColWidth(ROWCOL nCol);
    void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey);
 
+   virtual BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+
 public:
    // custom stuff for grid
    void CustomInit();
@@ -84,7 +86,9 @@ public:
 
    // fill grid with data
    void FillGrid(const std::vector<CDeckRebarData::NegMomentRebarData>& vRebarData);
-   void GetRebarData(std::vector<CDeckRebarData::NegMomentRebarData>& vRebarData);
+   bool GetRebarData(std::vector<CDeckRebarData::NegMomentRebarData>& vRebarData);
+
+   void UpdatePierList();
 
 private:
    // set up styles for interior rows
@@ -93,6 +97,8 @@ private:
 
    BOOL m_bEnableTopMat;
    BOOL m_bEnableBottomMat;
+   IndexType m_nContinuousPiers;
+   CString m_strPiers;
 };
 
 /////////////////////////////////////////////////////////////////////////////

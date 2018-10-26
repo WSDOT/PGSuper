@@ -34,6 +34,7 @@
 
 #include <psglib\ISupportLibraryManager.h>
 #include <psgLib\LibraryManager.h>
+
 #include <EAF\EAFDocument.h>
 
 class PSGLIBCLASS CLibraryEditorDoc  : public CEAFDocument , public libISupportLibraryManager
@@ -47,6 +48,7 @@ public:
 
 // Operations
 public:
+   virtual BOOL Init(); 
 
 // Overrides
 	// ClassWizard generated virtual function overrides

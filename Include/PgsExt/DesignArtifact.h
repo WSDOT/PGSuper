@@ -84,6 +84,9 @@ public:
    enum Outcome
    {
       Success,
+      SuccessButLongitudinalBarsNeeded4FlexuralTensionCy,
+      SuccessButLongitudinalBarsNeeded4FlexuralTensionLifting,
+      SuccessButLongitudinalBarsNeeded4FlexuralTensionHauling,
       TooManyStrandsReqd,
       ReleaseStrength,
       OverReinforced,
@@ -117,7 +120,10 @@ public:
    {
       dnExistingShearDesignPassedSpecCheck,
       dnShearRequiresStrutAndTie,
-      dnStrandsAddedForLongReinfShear
+      dnStrandsAddedForLongReinfShear,
+      dnLongitudinalBarsNeeded4FlexuralTensionCy,
+      dnLongitudinalBarsNeeded4FlexuralTensionLifting,
+      dnLongitudinalBarsNeeded4FlexuralTensionHauling
    };
 
 
@@ -125,18 +131,31 @@ public:
    class PGSEXTCLASS ConcreteStrengthDesignState
    {
    public:
+      enum Action {actStress, actShear}; // Concrete strength can be affected by flexural stress or shear stress
+
       ConcreteStrengthDesignState():
-      m_MinimumControls(true)
+      m_Action(actStress),
+      m_MinimumControls(true),
+      m_RequiredAdditionalRebar(false)
       {;}
 
-      void SetState(bool controlledByMin, pgsTypes::Stage stage, pgsTypes::StressType stressType, 
+      // Conc strength controlled by flexural stress
+      void SetStressState(bool controlledByMin, pgsTypes::Stage stage, pgsTypes::StressType stressType, 
                     pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation);
 
+      // Conc strength controlled by shear stress
+      void SetShearState(pgsTypes::Stage stage, pgsTypes::LimitState limitState);
+
+      Action GetAction() const;
       bool WasControlledByMinimum() const;
       pgsTypes::Stage Stage() const;
       pgsTypes::StressType StressType() const;
       pgsTypes::LimitState LimitState() const;
       pgsTypes::StressLocation StressLocation() const;
+
+      // Was additional rebar required to make tensile concrete strength?
+      void SetRequiredAdditionalRebar(bool wasReqd);
+      bool GetRequiredAdditionalRebar() const;
 
       std::_tstring AsString() const;
 
@@ -145,7 +164,9 @@ public:
       void Init() {m_MinimumControls=true;}
 
    private:
+      Action m_Action;
       bool m_MinimumControls;
+      bool m_RequiredAdditionalRebar;
       pgsTypes::Stage          m_Stage;
       pgsTypes::StressType     m_StressType;
       pgsTypes::LimitState     m_LimitState; // 

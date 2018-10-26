@@ -304,7 +304,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
       *pPara << _T("Maximum number of debonded strands per row = ") << pGdrEntry->GetMaxFractionDebondedStrandsPerRow()*100 << _T("% of strands in any row") << rptNewLine;
 
       StrandIndexType nMax;
-      double fMax;
+      Float64 fMax;
 
       pGdrEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);   
       *pPara << _T("Maximum number of debonded strands per section. The greater of ") << nMax << _T(" strands or ") << fMax*100 << _T("% of strands debonded at any section") << rptNewLine;
@@ -519,7 +519,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    long i = 1;
    while ( enum_points->Next(1,&point,NULL) != S_FALSE )
    {
-      double x,y;
+      Float64 x,y;
       point->get_X(&x);
       point->get_Y(&y);
 

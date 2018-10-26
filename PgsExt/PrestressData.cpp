@@ -38,7 +38,7 @@ HRESULT CDebondInfo::Load(IStructuredLoad* pStrLoad)
 {
    pStrLoad->BeginUnit(_T("DebondInfo"));
 
-   double version;
+   Float64 version;
    pStrLoad->get_Version(&version);
 
    CComVariant var;
@@ -495,7 +495,7 @@ HRESULT CPrestressData::Load(IStructuredLoad* pStrLoad)
 
    HRESULT hr = S_OK;
 
-   double version;
+   Float64 version;
    pStrLoad->get_Version(&version);
 
    CComVariant var;

@@ -62,8 +62,8 @@ public:
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
-   double LeftLiftPoint, RightLiftPoint;
-   double LeadingSupportPoint, TrailingSupportPoint;
+   Float64 LeftLiftPoint, RightLiftPoint;
+   Float64 LeadingSupportPoint, TrailingSupportPoint;
 
 protected:
    void MakeCopy(const CHandlingData& rOther);

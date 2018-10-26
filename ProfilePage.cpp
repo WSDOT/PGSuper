@@ -99,7 +99,7 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      double grade = m_ProfileData.Grade * 100;
+      Float64 grade = m_ProfileData.Grade * 100;
       DDX_Text(pDX, IDC_GRADE, grade );
 
       m_Grid.SetCurveData(m_ProfileData.VertCurves);

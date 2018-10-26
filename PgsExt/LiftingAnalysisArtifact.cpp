@@ -22,6 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\LiftingAnalysisArtifact.h>
+#include <PgsExt\CapacityToDemand.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,8 +40,32 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsLiftingStressAnalysisArtifact::pgsLiftingStressAnalysisArtifact()
+pgsLiftingStressAnalysisArtifact::pgsLiftingStressAnalysisArtifact():
+m_EffectiveHorizPsForce(0.0),
+m_EccentricityPsForce(0.0),
+m_MomentUpward(0.0),
+m_MomentNoImpact(0.0),
+m_MomentDownward(0.0),
+m_TopFiberStressPrestress(0.0),
+m_TopFiberStressUpward(0.0),
+m_TopFiberStressNoImpact(0.0),
+m_TopFiberStressDownward(0.0),
+m_BottomFiberStressPrestress(0.0),
+m_BottomFiberStressUpward(0.0),
+m_BottomFiberStressNoImpact(0.0),
+m_BottomFiberStressDownward(0.0),
+m_AllowableCompression(0.0),
+m_ReqdCompConcreteStrength(0.0),
+m_ReqdTensConcreteStrengthNoRebar(0.0),
+m_ReqdTensConcreteStrengthWithRebar(0.0),
+m_WasRebarReqd(0.0)
 {
+   memset(m_Yna,0,SIZE_OF_IMPACTDIR*sizeof(Float64));
+   memset(m_At,0,SIZE_OF_IMPACTDIR*sizeof(Float64));
+   memset(m_T,0,SIZE_OF_IMPACTDIR*sizeof(Float64));
+   memset(m_AsReqd,0,SIZE_OF_IMPACTDIR*sizeof(Float64));
+   memset(m_AsProvd,0,SIZE_OF_IMPACTDIR*sizeof(Float64));
+   memset(m_fAllow,0,SIZE_OF_IMPACTDIR*sizeof(Float64));
 }
 
 pgsLiftingStressAnalysisArtifact::pgsLiftingStressAnalysisArtifact(const pgsLiftingStressAnalysisArtifact& rOther)
@@ -64,6 +89,86 @@ pgsLiftingStressAnalysisArtifact& pgsLiftingStressAnalysisArtifact::operator= (c
 }
 
 //======================== OPERATIONS =======================================
+
+bool pgsLiftingStressAnalysisArtifact::TensionPassed() const
+{
+   Float64 fTop, fBottom, CapacityTop, CapacityBottom;
+   GetMaxTensileStress(&fTop, &fBottom, &CapacityTop, &CapacityBottom);
+   if ( IsGT(CapacityTop,fTop) )
+   {
+      return false;
+   }
+   else if ( IsGT(CapacityBottom,fBottom) )
+   {
+      return false;
+   }
+   else
+   {
+      return true;
+   }
+}
+
+bool pgsLiftingStressAnalysisArtifact::CompressionPassed() const
+{
+   Float64 fTop, fBottom, Capacity;
+   GetMaxCompressiveStress(&fTop, &fBottom, &Capacity);
+   if ( IsLT(fTop, Capacity))
+   {
+      return false;
+   }
+   else if ( IsLT(fBottom, Capacity) )
+   {
+      return false;
+   }
+   else
+   {
+      return true;
+   }
+}
+
+bool pgsLiftingStressAnalysisArtifact::Passed() const
+{
+    return TensionPassed() && CompressionPassed();
+}
+
+void pgsLiftingStressAnalysisArtifact::GetMaxCompressiveStress(Float64* fTop, Float64* fBottom, Float64* Capacity) const
+{
+   // Compression is easy: Allowable cannot change
+   Float64 fps, fNone;
+   Float64 fTopUp, fTopDown;
+   this->GetTopFiberStress(&fps, &fTopUp, &fNone, &fTopDown);
+   *fTop    = max(fTopUp, fTopDown);
+
+   Float64 fBotUp, fBotDown;
+   this->GetBottomFiberStress(&fps, &fBotUp, &fNone, &fBotDown);
+   *fBottom = max(fBotUp, fBotDown);
+   *Capacity = m_AllowableCompression;
+}
+
+void pgsLiftingStressAnalysisArtifact::GetMaxTensileStress(Float64* pfTop, Float64* pfBottom, Float64* pCapacityTop, Float64* pCapacityBottom) const
+{
+   // Tensile allowable can change based on location. Most find max based on C/D
+   Float64 capUp, capNone, capDown;
+   GetTensileCapacities(&capUp, &capNone, &capDown);
+   ATLASSERT(capUp>0.0 && capNone>0.0 && capDown>0.0);
+
+   // Do top of girder first
+   Float64 fps;
+   Float64 fTopUp, fTopNone, fTopDown;
+   this->GetTopFiberStress(&fps, &fTopUp, &fTopNone, &fTopDown);
+
+   // Use inline function from above
+   DetermineControllingTensileStress(fTopUp, fTopNone, fTopDown, capUp, capNone, capDown,
+                                     pfTop, pCapacityTop);
+
+   // Bottom
+   Float64 fBottomUp, fBottomNone, fBottomDown;
+   this->GetBottomFiberStress(&fps, &fBottomUp, &fBottomNone, &fBottomDown);
+
+   DetermineControllingTensileStress(fBottomUp, fBottomNone, fBottomDown, capUp, capNone, capDown,
+                                     pfBottom, pCapacityBottom);
+}
+
 //======================== ACCESS     =======================================
 Float64 pgsLiftingStressAnalysisArtifact::GetEffectiveHorizPsForce() const
 {
@@ -141,24 +246,57 @@ Float64 pgsLiftingStressAnalysisArtifact::GetMaximumConcreteTensileStress() cons
    return Max4(m_TopFiberStressUpward,m_TopFiberStressDownward,m_BottomFiberStressUpward,m_BottomFiberStressDownward);
 }
 
-void pgsLiftingStressAnalysisArtifact::SetAlternativeTensileStressParameters(Float64 YnaUp,Float64 YnaNone,Float64 YnaDown,Float64 At, Float64 T,Float64 As)
+void pgsLiftingStressAnalysisArtifact::SetAlternativeTensileStressParameters(ImpactDir impact, Float64 Yna,   Float64 At,   Float64 T,
+                                                                             Float64 AsProvd,  Float64 AsReqd,  Float64 fAllow)
 {
-   m_Yna[0] = YnaUp;
-   m_Yna[1] = YnaNone;
-   m_Yna[2] = YnaDown;
-   m_At = At;
-   m_T = T;
-   m_As = As;
+   m_Yna[impact] = Yna;
+   m_At[impact] = At;
+   m_T[impact] = T;
+   m_AsReqd[impact] = AsReqd;
+   m_AsProvd[impact] = AsProvd;
+   m_fAllow[impact] = fAllow;
 }
 
-void pgsLiftingStressAnalysisArtifact::GetAlternativeTensileStressParameters(Float64* YnaUp,Float64* YnaNone,Float64* YnaDown,Float64* At, Float64* T,Float64* As) const
+void pgsLiftingStressAnalysisArtifact::GetAlternativeTensileStressParameters(ImpactDir impact, Float64* Yna,   Float64* At,   Float64* T,  
+                                                                             Float64* AsProvd,  Float64* AsReqd,  Float64* fAllow) const
 {
-   *YnaUp = m_Yna[0];
-   *YnaNone = m_Yna[1];
-   *YnaDown = m_Yna[2];
-   *At = m_At;
-   *T = m_T;
-   *As = m_As;
+   *Yna   = m_Yna[impact];
+   *At    = m_At[impact];
+   *T     = m_T[impact];
+   *AsReqd   = m_AsReqd[impact];
+   *AsProvd  = m_AsProvd[impact];
+   *fAllow   = m_fAllow[impact];
+}
+
+void pgsLiftingStressAnalysisArtifact::SetCompressiveCapacity(Float64 fAllowable)
+{
+   m_AllowableCompression = fAllowable;
+}
+
+void pgsLiftingStressAnalysisArtifact::GetCompressiveCapacity(Float64* fAllowable) const
+{
+   *fAllowable     = m_AllowableCompression;
+}
+
+void pgsLiftingStressAnalysisArtifact::GetTensileCapacities(Float64* pUpward,  Float64* pNoImpact, Float64* pDownward) const
+{
+   *pUpward   = m_fAllow[idUp];
+   *pNoImpact = m_fAllow[idNone];
+   *pDownward = m_fAllow[idDown];
+}
+
+void pgsLiftingStressAnalysisArtifact::SetRequiredConcreteStrength(Float64 fciComp,Float64 fciTensNoRebar,Float64 fciTensWithRebar)
+{
+   m_ReqdCompConcreteStrength = fciComp;
+   m_ReqdTensConcreteStrengthNoRebar = fciTensNoRebar;
+   m_ReqdTensConcreteStrengthWithRebar = fciTensWithRebar;
+}
+
+void pgsLiftingStressAnalysisArtifact::GetRequiredConcreteStrength(Float64* pfciComp,Float64 *pfciTensNoRebar,Float64 *pfciTensWithRebar) const
+{
+   *pfciComp = m_ReqdCompConcreteStrength;
+   *pfciTensNoRebar = m_ReqdTensConcreteStrengthNoRebar;
+   *pfciTensWithRebar = m_ReqdTensConcreteStrengthWithRebar;   
 }
 
 //======================== INQUIRY    =======================================
@@ -184,12 +322,17 @@ void pgsLiftingStressAnalysisArtifact::MakeCopy(const pgsLiftingStressAnalysisAr
    m_BottomFiberStressNoImpact = rOther.m_BottomFiberStressNoImpact;
    m_BottomFiberStressDownward = rOther.m_BottomFiberStressDownward;
 
-   m_Yna[0] = rOther.m_Yna[0];
-   m_Yna[1] = rOther.m_Yna[1];
-   m_Yna[2] = rOther.m_Yna[2];
-   m_At = rOther.m_At;
-   m_T = rOther.m_T;
-   m_As = rOther.m_As;
+   std::copy(rOther.m_Yna, rOther.m_Yna+SIZE_OF_IMPACTDIR, m_Yna);
+   std::copy(rOther.m_At, rOther.m_At+SIZE_OF_IMPACTDIR, m_At);
+   std::copy(rOther.m_T, rOther.m_T+SIZE_OF_IMPACTDIR, m_T);
+   std::copy(rOther.m_AsReqd, rOther.m_AsReqd+SIZE_OF_IMPACTDIR, m_AsReqd);
+   std::copy(rOther.m_AsProvd, rOther.m_AsProvd+SIZE_OF_IMPACTDIR, m_AsProvd);
+   std::copy(rOther.m_fAllow, rOther.m_fAllow+SIZE_OF_IMPACTDIR, m_fAllow);
+
+   m_AllowableCompression = rOther.m_AllowableCompression;
+   m_ReqdCompConcreteStrength = rOther.m_ReqdCompConcreteStrength;
+   m_ReqdTensConcreteStrengthNoRebar   = rOther.m_ReqdTensConcreteStrengthNoRebar;
+   m_ReqdTensConcreteStrengthWithRebar = rOther.m_ReqdTensConcreteStrengthWithRebar;
 }
 
 void pgsLiftingStressAnalysisArtifact::MakeAssignment(const pgsLiftingStressAnalysisArtifact& rOther)
@@ -238,6 +381,7 @@ m_VerticalMoment(0.0),
 m_LateralMoment(0.0),
 m_ThetaCrackingMax(0.0),
 m_FsCracking(0.0),
+m_AllowableFsForCracking(0.0),
 m_CrackedFlange(BottomFlange),
 m_LateralMomentStress(0.0)
 {
@@ -264,7 +408,21 @@ pgsLiftingCrackingAnalysisArtifact& pgsLiftingCrackingAnalysisArtifact::operator
 }
 
 //======================== OPERATIONS =======================================
+bool pgsLiftingCrackingAnalysisArtifact::Passed() const
+{
+   return m_AllowableFsForCracking <= m_FsCracking;
+}
+
 //======================== ACCESS     =======================================
+Float64 pgsLiftingCrackingAnalysisArtifact::GetAllowableFsForCracking() const
+{
+   return m_AllowableFsForCracking;
+}
+
+void pgsLiftingCrackingAnalysisArtifact::SetAllowableFsForCracking(Float64 val)
+{
+   m_AllowableFsForCracking = val;
+}
 
 Float64 pgsLiftingCrackingAnalysisArtifact::GetVerticalMoment() const
 {
@@ -331,7 +489,6 @@ void pgsLiftingCrackingAnalysisArtifact::SetFsCracking(Float64 fs)
 }
 
 
-
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -345,6 +502,7 @@ void pgsLiftingCrackingAnalysisArtifact::MakeCopy(const pgsLiftingCrackingAnalys
    m_LateralMoment       = rOther.m_LateralMoment;
    m_ThetaCrackingMax    = rOther.m_ThetaCrackingMax;
    m_FsCracking          = rOther.m_FsCracking;
+   m_AllowableFsForCracking = rOther.m_AllowableFsForCracking;
    m_CrackedFlange       = rOther.m_CrackedFlange;
    m_LateralMomentStress = rOther.m_LateralMomentStress;
 }
@@ -408,7 +566,7 @@ pgsLiftingAnalysisArtifact::~pgsLiftingAnalysisArtifact()
 //======================== OPERATORS  =======================================
 pgsLiftingAnalysisArtifact& pgsLiftingAnalysisArtifact::operator= (const pgsLiftingAnalysisArtifact& rOther)
 {
-   if( this != &rOther )
+   if( this != &rOther ) 
    {
       MakeAssignment(rOther);
    }
@@ -417,7 +575,68 @@ pgsLiftingAnalysisArtifact& pgsLiftingAnalysisArtifact::operator= (const pgsLift
 }
 
 //======================== OPERATIONS =======================================
+bool pgsLiftingAnalysisArtifact::Passed() const
+{
+   // cracking
+   Float64 fs_crack = this->GetMinFsForCracking();
+   Float64 all_crack = this->GetAllowableFsForCracking();
+   if (fs_crack<all_crack)
+      return false;
+
+   // Failure
+   if ( !PassedFailureCheck() )
+      return false;
+
+   // Stresses
+   if (! PassedStressCheck() )
+      return false;
+
+   return true;
+}
+
+bool pgsLiftingAnalysisArtifact::PassedFailureCheck() const
+{
+   Float64 fsfail = GetFsFailure();
+   Float64 alfail = GetAllowableFsForFailure();
+   return alfail < fsfail;
+}
+
+bool pgsLiftingAnalysisArtifact::PassedStressCheck() const
+{
+   for (std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator is = m_LiftingStressAnalysisArtifacts.begin(); 
+        is!=m_LiftingStressAnalysisArtifacts.end(); is++)
+   {
+      Float64 distFromStart = is->first;
+      const pgsLiftingStressAnalysisArtifact& rart = is->second;
+
+      if (!rart.Passed())
+         return false;
+   }
+
+   return true;
+}
+
 //======================== ACCESS     =======================================
+
+Float64 pgsLiftingAnalysisArtifact::GetAllowableFsForCracking() const
+{
+   return m_AllowableFsForCracking;
+}
+
+void pgsLiftingAnalysisArtifact::SetAllowableFsForCracking(Float64 val)
+{
+   m_AllowableFsForCracking = val;
+}
+
+Float64 pgsLiftingAnalysisArtifact::GetAllowableFsForFailure() const
+{
+   return m_AllowableFsForFailure;
+}
+
+void pgsLiftingAnalysisArtifact::SetAllowableFsForFailure(Float64 val)
+{
+   m_AllowableFsForFailure = val;
+}
 
 Float64 pgsLiftingAnalysisArtifact::GetGirderLength() const
 {
@@ -858,11 +1077,11 @@ void pgsLiftingAnalysisArtifact::GetMinMaxStresses(Float64* minStress, Float64* 
 }
 
 void pgsLiftingAnalysisArtifact::GetGirderStress(
-   std::vector<double> locs, // locations were stresses are to be retreived
+   std::vector<Float64> locs, // locations were stresses are to be retreived
    bool bMin,                // if true, minimum (compression) stresses are returned
    bool bIncludePrestress,   // if true, stresses contain the effect of prestressing
-   std::vector<double>& fTop,// vector of resulting stresses at top of girder
-   std::vector<double>& fBot // vector of resulting stresses at bottom of girder
+   std::vector<Float64>& fTop,// vector of resulting stresses at top of girder
+   std::vector<Float64>& fBot // vector of resulting stresses at bottom of girder
 ) const
 {
    // get the girder stress duing lift
@@ -874,23 +1093,23 @@ void pgsLiftingAnalysisArtifact::GetGirderStress(
       Float64 distFromStart = iter->first;
       const pgsLiftingStressAnalysisArtifact& liftStressArtifact = iter->second;
 
-      std::vector<double>::iterator locIter;
+      std::vector<Float64>::iterator locIter;
       for ( locIter = locs.begin(); locIter != locs.end(); locIter++ )
       {
-         double location = *locIter;
+         Float64 location = *locIter;
          if ( IsEqual(location,distFromStart) )
          {
-            double fTopPS,fTopImpactUp,fTopNoImpact,fTopImpactDown;
+            Float64 fTopPS,fTopImpactUp,fTopNoImpact,fTopImpactDown;
             liftStressArtifact.GetTopFiberStress(&fTopPS,&fTopImpactUp,&fTopNoImpact,&fTopImpactDown);
 
-            double ft = ( bMin ? Min3(fTopImpactUp,fTopNoImpact,fTopImpactDown) : Max3(fTopImpactUp,fTopNoImpact,fTopImpactDown) );
+            Float64 ft = ( bMin ? Min3(fTopImpactUp,fTopNoImpact,fTopImpactDown) : Max3(fTopImpactUp,fTopNoImpact,fTopImpactDown) );
             if ( !bIncludePrestress )
                ft -= fTopPS;
 
-            double fBottomPS,fBottomImpactUp,fBottomNoImpact,fBottomImpactDown;
+            Float64 fBottomPS,fBottomImpactUp,fBottomNoImpact,fBottomImpactDown;
             liftStressArtifact.GetBottomFiberStress(&fBottomPS,&fBottomImpactUp,&fBottomNoImpact,&fBottomImpactDown);
 
-            double fb = ( bMin ? Min3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) : Max3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) );
+            Float64 fb = ( bMin ? Min3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) : Max3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) );
             if ( !bIncludePrestress )
                fb -= fBottomPS;
 
@@ -1085,69 +1304,28 @@ void pgsLiftingAnalysisArtifact::GetMinMaxLiftingStresses(MaxLiftingStressCollec
    }
 }
 
-
-void pgsLiftingAnalysisArtifact::SetAlterantiveTensileStressAsMax(Float64 AsMax)
+void pgsLiftingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfciComp,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const
 {
-    m_AsMax = AsMax;
-}
+   Float64 maxFciComp = -Float64_Max;
+   Float64 maxFciTensnobar = -Float64_Max;
+   Float64 maxFciTenswithbar = -Float64_Max;
 
-Float64 pgsLiftingAnalysisArtifact::GetAlterantiveTensileStressAsMax() const
-{
-    return m_AsMax;
-}
-
-void pgsLiftingAnalysisArtifact::GetRequiredConcreteStrength(double *pfciComp,double *pfciTens,bool* pMinRebarReqd) const
-{
-   Float64 min_stress, max_stress;
-   Float64 minDistFromStart, maxDistFromStart; // Distance from start for min/max stresses
-   this->GetMinMaxStresses(&min_stress, &max_stress,&minDistFromStart,&maxDistFromStart);
-
-   double fc_compression = 0.0;
-   if ( min_stress < 0 )
+   std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator is = m_LiftingStressAnalysisArtifacts.begin();
+   std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator iend = m_LiftingStressAnalysisArtifacts.end();
+   for ( ; is!=iend; is++)
    {
-      fc_compression = min_stress/m_C;
+      Float64 fciComp, fciTensNoRebar, fciTensWithRebar;
+      is->second.GetRequiredConcreteStrength(&fciComp, &fciTensNoRebar, &fciTensWithRebar);
+
+      // Use inline function for comparison
+      maxFciComp        = CompareConcreteStrength(maxFciComp, fciComp);
+      maxFciTensnobar   = CompareConcreteStrength(maxFciTensnobar, fciTensNoRebar);
+      maxFciTenswithbar = CompareConcreteStrength(maxFciTenswithbar, fciTensWithRebar);
    }
 
-   *pMinRebarReqd = false;
-   double fc_tension = -1;
-   if ( 0 < max_stress )
-   {
-      fc_tension = pow(max_stress/m_T,2);
-      if ( m_bfmax &&                  // allowable stress is limited -AND-
-              (0 < fc_tension) &&              // there is a concrete strength that might work -AND-
-              (pow(m_fmax/m_T,2) < fc_tension) )   // that strength will exceed the max limit on allowable
-      {
-         // then that concrete strength wont really work afterall
-
-         // use the alternative limit with required rebar
-         fc_tension = pow(max_stress/m_Talt,2);
-         *pMinRebarReqd = true;
-      }
-   }
-   else
-   {
-      fc_tension = 0.0;
-   }
-
-   *pfciComp = fc_compression;
-   *pfciTens = fc_tension;
-}
-
-void pgsLiftingAnalysisArtifact::SetAllowableTensileConcreteStressParameters(double f,bool bMax,double fmax)
-{
-   m_T = f;
-   m_bfmax = bMax;
-   m_fmax = fmax;
-}
-
-void pgsLiftingAnalysisArtifact::SetAllowableCompressionFactor(double c)
-{
-   m_C = c;
-}
-
-void pgsLiftingAnalysisArtifact::SetAlternativeTensileConcreteStressFactor(double f)
-{
-   m_Talt = f;
+   *pfciComp            = maxFciComp;
+   *pfcTensionNoRebar   = maxFciTensnobar;
+   *pfcTensionWithRebar = maxFciTenswithbar;
 }
 
 //======================== INQUIRY    =======================================
@@ -1195,16 +1373,12 @@ void pgsLiftingAnalysisArtifact::MakeCopy(const pgsLiftingAnalysisArtifact& rOth
    m_LeftOverhang = rOther.m_LeftOverhang;
    m_RightOverhang = rOther.m_RightOverhang;
 
+   m_AllowableFsForCracking = rOther.m_AllowableFsForCracking;
+   m_AllowableFsForFailure  = rOther.m_AllowableFsForFailure;
+
    m_LiftingStressAnalysisArtifacts   = rOther.m_LiftingStressAnalysisArtifacts;
    m_LiftingCrackingAnalysisArtifacts = rOther.m_LiftingCrackingAnalysisArtifacts;
    m_LiftingPois = rOther.m_LiftingPois;
-   m_AsMax = rOther.m_AsMax;
-
-   m_T     = rOther.m_T;
-   m_bfmax = rOther.m_bfmax;
-   m_fmax  = rOther.m_fmax;;
-   m_C     = rOther.m_C;
-   m_Talt = rOther.m_Talt;
 }
 
 void pgsLiftingAnalysisArtifact::MakeAssignment(const pgsLiftingAnalysisArtifact& rOther)
@@ -1241,13 +1415,13 @@ void pgsLiftingAnalysisArtifact::Dump(dbgDumpContext& os) const
    for (iter=m_LiftingPois.begin(); iter!=m_LiftingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
-      double loc = rpoi.GetDistFromStart();
+      Float64 loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_LiftingStressAnalysisArtifacts.find( loc );
 /*
       os<<endl;
-      double fps, fup, fno, fdown;
+      Float64 fps, fup, fno, fdown;
       found->second.GetTopFiberStress(&fps, &fup, &fno, &fdown);
       os<<_T("TopStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
 
@@ -1264,7 +1438,7 @@ void pgsLiftingAnalysisArtifact::Dump(dbgDumpContext& os) const
    for (iter=m_LiftingPois.begin(); iter!=m_LiftingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
-      double loc = rpoi.GetDistFromStart();
+      Float64 loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsLiftingCrackingAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_LiftingCrackingAnalysisArtifacts.find( loc );

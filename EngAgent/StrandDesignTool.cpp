@@ -616,7 +616,7 @@ StrandIndexType pgsStrandDesignTool::ComputeNextNumProportionalStrands(StrandInd
          }
          else
          {
-            double fra = 1.0 - m_HarpedRatio;
+            Float64 fra = 1.0 - m_HarpedRatio;
             StrandIndexType s = (StrandIndexType)ceil(fra*prevNum);
             ns = min( max(s, 1), ns_max-1);
          }
@@ -1008,7 +1008,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
             else
             {
                // TRICKY: Just finding the point where eccentricity is postitive turns out not to be enough.
-               //         The design algorithm will likely get stuck. So we double it.
+               //         The design algorithm will likely get stuck. So we Float64 it.
                m_MinPermanentStrands = GetNextNumPermanentStrands(2*ns_prev);
                LOG(_T("Found m_MinPermanentStrands = ") << ns_prev << _T("Success"));
             }
@@ -1485,6 +1485,30 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired,pgsTypes::St
    return true;
 }
 
+bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,pgsTypes::Stage stage,pgsTypes::LimitState limitState)
+{
+   Float64 fc_current = m_pArtifact->GetConcreteStrength();
+   LOG(_T("Update Final Concrete Strength for shear stress requirement. f'c required = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI f'c current = ")<< ::ConvertFromSysUnits(fc_current,unitMeasure::KSI) << _T(" KSI"));;
+
+   // round up to nearest 100psi
+   fcRequired = CeilOff(fcRequired, m_ConcreteAccuracy );
+   LOG(_T("Round up to nearest 100psi. New Required value is now = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI"));;
+
+   Float64 fc_max = GetMaximumConcreteStrength();
+   if (fcRequired>fc_max)
+   {
+      ATLASSERT(0); // should be checked by caller
+      LOG(_T("FAILED - f'c cannot exceed ")<< ::ConvertFromSysUnits(fc_max,unitMeasure::KSI) << _T(" KSI"));
+      return false;
+   }
+
+   m_FcControl.DoUpdateForShear(fcRequired, stage, limitState);
+   m_pArtifact->SetConcreteStrength(fcRequired);
+   m_bConfigDirty = true; // cache is dirty
+   LOG(_T("** Updated Final Concrete Strength to ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI"));
+
+   return true;
+}
 
 bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation)
 {
@@ -1549,7 +1573,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    return true;
 }
 
-ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(double fControl,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,double* pfc)
+ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc)
 {
    LOG(_T("Entering ComputeRequiredConcreteStrength"));
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
@@ -1583,7 +1607,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(doub
                if ( stage == pgsTypes::CastingYard )
                {
                   // try getting the alternative allowable if rebar is used
-                  double talt = pAllowStress->GetCastingYardAllowableTensionStressCoefficientWithRebar();
+                  Float64 talt = pAllowStress->GetCastingYardAllowableTensionStressCoefficientWithRebar();
                   fc_reqd = pow(fControl/talt,2);
                   result = ConcSuccessWithRebar;
                   LOG(_T("Min rebar is required to acheive required strength"));
@@ -2621,7 +2645,8 @@ pgsDesignArtifact::ConcreteStrengthDesignState pgsStrandDesignTool::GetReleaseCo
 
    bool ismin = GetReleaseStrength() == GetMinimumReleaseStrength();
 
-   state.SetState(ismin, m_FciControl.Stage(), m_FciControl.StressType(), m_FciControl.LimitState(),m_FciControl.StressLocation());
+   state.SetStressState(ismin, m_FciControl.Stage(), m_FciControl.StressType(), m_FciControl.LimitState(),m_FciControl.StressLocation());
+   state.SetRequiredAdditionalRebar(m_ReleaseStrengthResult==ConcSuccessWithRebar);
 
    return state;
 }
@@ -2632,7 +2657,18 @@ pgsDesignArtifact::ConcreteStrengthDesignState pgsStrandDesignTool::GetFinalConc
 
    bool ismin = GetConcreteStrength() == GetMinimumConcreteStrength();
 
-   state.SetState(ismin, m_FcControl.Stage(), m_FcControl.StressType(), m_FcControl.LimitState(),m_FcControl.StressLocation());
+   if (m_FcControl.ControllingAction()==pgsDesignArtifact::ConcreteStrengthDesignState::actStress)
+   {
+      // flexure controlled
+      state.SetStressState(ismin, m_FcControl.Stage(), m_FcControl.StressType(), m_FcControl.LimitState(),m_FcControl.StressLocation());
+   }
+   else
+   {
+      ATLASSERT(m_FcControl.ControllingAction()==pgsDesignArtifact::ConcreteStrengthDesignState::actShear);
+
+      // shear stress controlled
+      state.SetShearState(m_FcControl.Stage(), m_FcControl.LimitState());
+   }
 
    return state;
 }
@@ -3195,7 +3231,7 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const matPsStrand* pstrand)
 // utility struct to temporarily store and sort rows
 struct Row
 {
-   double Elevation;
+   Float64 Elevation;
    StrandIndexType   MaxInRow;
    std::vector<StrandIndexType> StrandsFilled;
    std::vector<StrandIndexType> StrandsDebonded;
@@ -4012,8 +4048,8 @@ bool pgsStrandDesignTool::LayoutDebonding(const std::vector<DebondLevelType>& rD
 
 // Losses differences can cause debond to fail - fudge by:
 // The fudge factors will cause a slight amount of over-debonding
-static double TensDebondFudge  = 1.002;
-static double ComprDebondFudge = 1.03; // fudge compression more because it's easier to get more compression strength
+static Float64 TensDebondFudge  = 1.002;
+static Float64 ComprDebondFudge = 1.03; // fudge compression more because it's easier to get more compression strength
 
 
 void pgsStrandDesignTool::GetDebondLevelForTopTension(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,

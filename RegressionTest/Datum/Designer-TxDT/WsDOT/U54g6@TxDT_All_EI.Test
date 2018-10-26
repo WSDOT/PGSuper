@@ -5,6 +5,7 @@
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Slab Offset ("A" Dimension) check failed
 
 
@@ -15,6 +16,7 @@ Slab Offset ("A" Dimension) check failed
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Slab Offset ("A" Dimension) check failed
 
 

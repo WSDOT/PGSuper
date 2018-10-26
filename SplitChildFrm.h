@@ -68,7 +68,7 @@ protected:
    virtual CRuntimeClass* GetLowerPaneClass() const =0;
 
    // Get the fraction that the top frame takes of the client window
-   virtual double GetTopFrameFraction() const =0;
+   virtual Float64 GetTopFrameFraction() const =0;
 
 
    BOOL m_bPanesCreated;

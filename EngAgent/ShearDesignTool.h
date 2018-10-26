@@ -87,7 +87,8 @@ public:
       sdSuccess,
       sdFail,
       sdRestartWithAdditionalLongRebar, // This and next are caused by long reinf for shear failure
-      sdRestartWithAdditionalStrands
+      sdRestartWithAdditionalStrands,
+      sdDesignFailedFromShearStress  // Shear stress exceeded 0.18f'c. Tool will compute required f'c
    };
 
    // GROUP: LIFECYCLE
@@ -111,6 +112,9 @@ public:
    // Note that this can be area of strands, or area of #5 bars adjusted for development
    Float64 GetRequiredAsForLongReinfShear() const;
 
+   // F'c required if shear stress fails - if sdDesignFailedFromShearStress is returned
+   Float64 GetFcRequiredForShearStress() const;
+
    // Pois for spec check and design
    std::vector<pgsPointOfInterest> GetDesignPoi();
 
@@ -124,6 +128,7 @@ private:
    // Design by Modifying existing stirrup layout 
    bool ModifyPreExistingStirrupDesign();
    bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool);
+   void ExpandStirrupZoneLengths(CShearData::ShearZoneVec& ShearZones);
 
    // Design additional horizontal shear bars if needed
    bool DetailHorizontalInterfaceShear();
@@ -233,6 +238,9 @@ private:
    // Area of steel required if longitudinal reinf for shear design kicks in
    Float64 m_LongReinfShearAs;
 
+   // f'c required for shear stress
+   Float64 m_RequiredFcForShearStress;
+
    // Shear design parameters
    struct BarLegCombo
    {
@@ -339,9 +347,9 @@ private:
    // compute and cache pois
    void ValidatePointsOfInterest(const std::vector<pgsPointOfInterest>& pois);
 
-   void Validate();
+   ShearDesignOutcome Validate();
    // Compute and cache Av/S demand
-   void ValidateVerticalAvsDemand();
+   ShearDesignOutcome ValidateVerticalAvsDemand();
    void ValidateHorizontalAvsDemand();
 
    void ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations);

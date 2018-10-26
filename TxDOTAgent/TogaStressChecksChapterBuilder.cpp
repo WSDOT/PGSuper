@@ -428,7 +428,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
           (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
          )
       {
-         bool bPassed = (limitState == pgsTypes::ServiceIII ? pFactoredStressArtifact->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) : pFactoredStressArtifact->Passed(pgsFlexuralStressArtifact::WithoutRebar));
+         bool bPassed = (limitState == pgsTypes::ServiceIII ? pFactoredStressArtifact->BottomPassed() : pFactoredStressArtifact->Passed());
 	      if ( bPassed )
 		     (*p_table)(row,++col) << RPT_PASS;
 	      else
@@ -436,7 +436,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 
          if ( !IsZero(allowable_tension) )
          {
-            double f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
+            Float64 f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
            (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension,f,bPassed)<<_T(")");
          }
       }
@@ -456,7 +456,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 
          if ( !IsZero(allowable_tension_with_rebar) )
          {
-            double f = max(fTop,fBot);
+            Float64 f = max(fTop,fBot);
             (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension_with_rebar,f,bPassed)<<_T(")");
           }
       }
@@ -473,11 +473,11 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          bool bPassed;
          if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
          {
-            bPassed = pFactoredStressArtifact->Passed(pgsFlexuralStressArtifact::WithoutRebar);
+            bPassed = pFactoredStressArtifact->Passed();
          }
          else
          {
-            bPassed = pFactoredOtherStressArtifact->Passed(pgsFlexuralStressArtifact::WithoutRebar);
+            bPassed = pFactoredOtherStressArtifact->Passed();
             pFactoredOtherStressArtifact->GetDemand( &fTop, &fBot );
          }
 
@@ -486,7 +486,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 	      else
 		      (*p_table)(row, ++col) << RPT_FAIL;
 
-         double f = min(fTop,fBot);
+         Float64 f = min(fTop,fBot);
          (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_compression,f,bPassed)<<_T(")");
       }
 

@@ -4,8 +4,7 @@
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit with required amount of mild reinforcement provided).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
@@ -39,8 +38,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit with required amount of mild reinforcement provided).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).

@@ -99,9 +99,9 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    CComPtr<IMultiWeb> beam;
    gdrsection->get_Beam(&beam);
 
-   double d1,d2;
-   double w,wmin,wmax;
-   double t1,t2;
+   Float64 d1,d2;
+   Float64 w,wmin,wmax;
+   Float64 t1,t2;
    WebIndexType nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
 
@@ -113,7 +113,7 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    beam->put_WebCount(nWebs);
 
    // figure out the overhang, w1, based on the spacing
-   double w1;
+   Float64 w1;
    if ( pBroker == NULL || spanIdx == INVALID_INDEX || gdrIdx == INVALID_INDEX )
    {
       // just use the max
@@ -129,7 +129,7 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
-      double spacing = pBridgeDesc->GetGirderSpacing();;
+      Float64 spacing = pBridgeDesc->GetGirderSpacing();;
 
       // if this is a fixed width section, then set the spacing equal to the width
       if ( IsEqual(wmin,wmax) )
@@ -157,9 +157,9 @@ void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType s
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   double d1,d2;
-   double w,wmin,wmax;
-   double t1,t2;
+   Float64 d1,d2;
+   Float64 w,wmin,wmax;
+   Float64 t1,t2;
    WebIndexType nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
 
@@ -283,9 +283,9 @@ void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType 
 }
 
 void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
-                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
+                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
 {
    HRESULT hr = S_OK;
 
@@ -295,14 +295,14 @@ void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    CComPtr<IStrandMover> sm = pStrandMover;
 
    // set the shapes for harped strand bounds - only in the thinest part of the webs
-   double d1,d2;
-   double w,wmin,wmax;
-   double t1,t2;
+   Float64 d1,d2;
+   Float64 w,wmin,wmax;
+   Float64 t1,t2;
    WebIndexType nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
 
-   double width = min(t1,t2);
-   double depth = d1 + d2;
+   Float64 width = min(t1,t2);
+   Float64 depth = d1 + d2;
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
    hr = lft_harp_rect.CoCreateInstance(CLSID_Rect);
@@ -315,7 +315,7 @@ void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    rgt_harp_rect->put_Width(width);
    rgt_harp_rect->put_Height(depth);
 
-   double hook_offset = w/2.0 + t1/2.0;
+   Float64 hook_offset = w/2.0 + t1/2.0;
 
    CComPtr<IPoint2d> lft_hook, rgt_hook;
    lft_hook.CoCreateInstance(CLSID_Point2d);
@@ -338,10 +338,10 @@ void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -355,7 +355,7 @@ std::vector<std::_tstring> CDoubleTeeFactory::GetDimensionNames()
    return m_DimNames;
 }
 
-std::vector<double> CDoubleTeeFactory::GetDefaultDimensions()
+std::vector<Float64> CDoubleTeeFactory::GetDefaultDimensions()
 {
    return m_DefaultDims;
 }
@@ -367,9 +367,9 @@ std::vector<const unitLength*> CDoubleTeeFactory::GetDimensionUnits(bool bSIUnit
 
 bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
-   double d1,d2;
-   double w,wmin,wmax;
-   double t1,t2;
+   Float64 d1,d2;
+   Float64 w,wmin,wmax;
+   Float64 t1,t2;
    WebIndexType nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
 
@@ -655,9 +655,9 @@ HICON  CDoubleTeeFactory::GetIcon()
 }
 
 void CDoubleTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                                  double& d1,double& d2,
-                                  double& w,double& wmin,double& wmax,
-                                  double& t1,double& t2,
+                                  Float64& d1,Float64& d2,
+                                  Float64& w,Float64& wmin,Float64& wmax,
+                                  Float64& t1,Float64& t2,
                                   WebIndexType& nWebs)
 {
    d1 = GetDimension(dimensions,_T("D1"));
@@ -670,7 +670,7 @@ void CDoubleTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions
    nWebs = 2;
 }
 
-double CDoubleTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+Float64 CDoubleTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -709,13 +709,13 @@ pgsTypes::SupportedBeamSpacings CDoubleTeeFactory::GetSupportedBeamSpacings()
 }
 
 void CDoubleTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
+                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double gwn = GetDimension(dimensions,_T("Wmin"));
-   double gwx = GetDimension(dimensions,_T("Wmax"));
+   Float64 gwn = GetDimension(dimensions,_T("Wmin"));
+   Float64 gwx = GetDimension(dimensions,_T("Wmax"));
 
    if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
    {
@@ -742,8 +742,8 @@ WebIndexType CDoubleTeeFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& 
 
 Float64 CDoubleTeeFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double D1 = GetDimension(dimensions,_T("D1"));
-   double D2 = GetDimension(dimensions,_T("D2"));
+   Float64 D1 = GetDimension(dimensions,_T("D1"));
+   Float64 D2 = GetDimension(dimensions,_T("D2"));
 
    return D1 + D2;
 }

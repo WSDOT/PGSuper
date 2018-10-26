@@ -272,8 +272,8 @@ void CConcreteDetailsDlg::UpdateEc()
 CString CConcreteDetailsDlg::UpdateEc(const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2)
 {
   CString strEc;
-   double fc, density, k1,k2;
-   double ec = 0;
+   Float64 fc, density, k1,k2;
+   Float64 ec = 0;
    if (sysTokenizer::ParseDouble(strFc, &fc) && 
        sysTokenizer::ParseDouble(strDensity,&density) &&
        sysTokenizer::ParseDouble(strK1,&k1) &&

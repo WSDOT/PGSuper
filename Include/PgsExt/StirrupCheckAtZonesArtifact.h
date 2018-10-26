@@ -213,7 +213,7 @@ public:
    Float64 GetStartFpj() const;
    void SetStartFpj(Float64 fpj);
    Float64 GetStartLossesAfterTransfer() const;
-   void SetStartLossesAfterTransfer(double dFpT);
+   void SetStartLossesAfterTransfer(Float64 dFpT);
    Float64 GetStartSplittingForce() const;
    Float64 GetStartSplittingResistance() const;
    void SetStartSplittingResistance(Float64 p);
@@ -233,7 +233,7 @@ public:
    Float64 GetEndFpj() const;
    void SetEndFpj(Float64 fpj);
    Float64 GetEndLossesAfterTransfer() const;
-   void SetEndLossesAfterTransfer(double dFpT);
+   void SetEndLossesAfterTransfer(Float64 dFpT);
    Float64 GetEndSplittingForce() const;
    Float64 GetEndSplittingResistance() const;
    void SetEndSplittingResistance(Float64 p);

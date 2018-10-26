@@ -1080,8 +1080,8 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDoc* pDoc, I
       GET_IFACE2(pBroker,IPointOfInterest,pPOI);
       std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,girder,stage,POI_ALLACTIONS | POI_ALLOUTPUT,POIFIND_OR);
 
-      double from_y;
-      double to_y;
+      Float64 from_y;
+      Float64 to_y;
       std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
       pgsPointOfInterest prev_poi = *iter;
 
@@ -1131,53 +1131,71 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDoc* pDoc, IBro
 
    Float64 gdr_length = pBridge->GetGirderLength(span, girder);
 
-   pgsPointOfInterest poiStart = pPOI->GetPointOfInterest(pgsTypes::CastingYard,span,girder,0.0);
-   pgsPointOfInterest poiEnd   = pPOI->GetPointOfInterest(pgsTypes::CastingYard,span,girder,gdr_length);
+   CComPtr<IRebarLayout> rebarLayout;
+   pLongRebarGeometry->GetRebarLayout(span, girder, &rebarLayout);
 
-   Float64 HgStart = pGirder->GetHeight(poiStart);
-   Float64 HgEnd   = pGirder->GetHeight(poiEnd);
-
-   if ( poiStart.GetID() == INVALID_ID )
-      poiStart.SetDistFromStart(0.0);
-
-   if ( poiEnd.GetID() == INVALID_ID )
-      poiEnd.SetDistFromStart(gdr_length);
-
-   CComPtr<IRebarSection> rebar_section_start, rebar_section_end;
-   pLongRebarGeometry->GetRebars(poiStart,&rebar_section_start);
-   pLongRebarGeometry->GetRebars(poiEnd,  &rebar_section_end);
-
-   CComPtr<IEnumRebarSectionItem> enum_start, enum_end;
-   rebar_section_start->get__EnumRebarSectionItem(&enum_start);
-   rebar_section_end->get__EnumRebarSectionItem(&enum_end);
-
-   CComPtr<IRebarSectionItem> startItem, endItem;
-   while ( enum_start->Next(1,&startItem,NULL) != S_FALSE && enum_end->Next(1,&endItem,NULL) != S_FALSE )
+   CComPtr<IEnumRebarLayoutItems> enumItems;
+   rebarLayout->get__EnumRebarLayoutItems(&enumItems);
+   
+   CComPtr<IRebarLayoutItem> rebarLayoutItem;
+   while ( enumItems->Next(1,&rebarLayoutItem,NULL) != S_FALSE )
    {
-      CComPtr<IPoint2d> startLocation, endLocation;
-      startItem->get_Location(&startLocation);
-      endItem->get_Location(&endLocation);
+      Float64 startLoc, layoutLength, endLoc;
+      rebarLayoutItem->get_Start(&startLoc);
+      rebarLayoutItem->get_Length(&layoutLength);
+      endLoc = startLoc + layoutLength;
 
-      Float64 yStart;
-      startLocation->get_Y(&yStart);
+      ATLASSERT(startLoc>=0.0 && startLoc<gdr_length);
+      ATLASSERT(endLoc>startLoc && endLoc<=gdr_length);
 
-      Float64 yEnd;
-      endLocation->get_Y(&yEnd);
+      // Get height of girder at start/end of rebar layout
+      pgsPointOfInterest poiStart(span,girder,startLoc);
+      pgsPointOfInterest poiEnd(span,girder,endLoc);
 
-      startItem.Release();
-      endItem.Release();
+      Float64 HgStart = pGirder->GetHeight(poiStart);
+      Float64 HgEnd   = pGirder->GetHeight(poiEnd);
 
-      CComPtr<IPoint2d> from_point, to_point;
-      from_point.CoCreateInstance(__uuidof(Point2d));
-      to_point.CoCreateInstance(__uuidof(Point2d));
+      CComPtr<IEnumRebarPatterns> enumPatterns;
+      rebarLayoutItem->get__EnumRebarPatterns(&enumPatterns);
 
-      from_point->put_X(0.0);
-      from_point->put_Y(yStart-HgStart);
+      CComPtr<IRebarPattern> rebarPattern;
+      while ( enumPatterns->Next(1,&rebarPattern,NULL) != S_FALSE )
+      {
+         // Currently, we only enter rebars in rows in PGSuper. If this is not the case,
+         // all bars must be drawn. But since we are drawing an elevation, we only need one bar
+         CComQIPtr<IRebarRowPattern> rowPat(rebarPattern);
+         ATLASSERT(rowPat); // Rethink single-bar logic below
 
-      to_point->put_X(gdr_length);
-      to_point->put_Y(yEnd-HgEnd);
-      
-      BuildLine(pDL, from_point, to_point, REBAR_COLOR);
+         CollectionIndexType nbars;
+         rebarPattern->get_Count(&nbars);
+         if (nbars>0)
+         {
+            CollectionIndexType ibar=0; // only need to draw one bar
+            CComPtr<IPoint2d> startBarLocation, endBarLocation;
+            rebarPattern->get_Location(0.0, ibar, &startBarLocation);
+            rebarPattern->get_Location(layoutLength, ibar, &endBarLocation);
+
+            Float64 xStart, yStart;
+            startBarLocation->get_X(&xStart);
+            startBarLocation->get_Y(&yStart);
+
+            Float64 xEnd, yEnd;
+            endBarLocation->get_X(&xEnd);
+            endBarLocation->get_Y(&yEnd);
+
+            // Move points along girder and relative to girder top
+            startBarLocation->put_X(startLoc);
+            startBarLocation->put_Y(yStart-HgStart);
+            endBarLocation->put_X(endLoc);
+            endBarLocation->put_Y(yEnd-HgEnd);
+            
+            BuildLine(pDL, startBarLocation, endBarLocation, REBAR_COLOR);
+         }
+
+         rebarPattern.Release();
+      }
+
+      rebarLayoutItem.Release();
    }
 }
 
@@ -1299,9 +1317,9 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
 
    Float64 gdr_length = pBridge->GetGirderLength(span, girder);
-   double  start_lgth = pBridge->GetGirderStartConnectionLength(span, girder);
-   double  end_lgth   = pBridge->GetGirderEndConnectionLength(span, girder);
-   double span_lgth   = gdr_length - start_lgth - end_lgth;
+   Float64  start_lgth = pBridge->GetGirderStartConnectionLength(span, girder);
+   Float64  end_lgth   = pBridge->GetGirderEndConnectionLength(span, girder);
+   Float64 span_lgth   = gdr_length - start_lgth - end_lgth;
 
    CollectionIndexType num_loads =  pUserDefinedLoadData->GetDistributedLoadCount();
 
@@ -1355,7 +1373,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
             }
          }
 
-         double load_length = wend_loc - wstart_loc;
+         Float64 load_length = wend_loc - wstart_loc;
          if(load_length<=0.0)
          {
             ATLASSERT(0); // interface should be blocking this
@@ -1767,7 +1785,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDoc* pDoc, IB
 
          for ( Uint32 i = 0; i < nStirrupsInZone; i++ )
          {
-            double x = start + left_offset + i*spacing;
+            Float64 x = start + left_offset + i*spacing;
 
             pgsPointOfInterest poi(span,girder,x);
 
@@ -1914,7 +1932,7 @@ void CGirderModelElevationView::BuildDebondTick(iDisplayList* pDL, IPoint2d* tic
    pDL->AddDisplayObject(doPnt);
 }
 
-iDimensionLine* CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,double dimension)
+iDimensionLine* CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension)
 {
    // put points at locations and make them sockets
    CComPtr<iPointDisplayObject> from_rep;

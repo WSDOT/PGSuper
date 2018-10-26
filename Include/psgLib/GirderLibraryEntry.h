@@ -186,16 +186,23 @@ public:
    // information about rows of longitudinal steel
    struct LongSteelInfo
    {
+      pgsTypes::RebarLayoutType BarLayout;
+      Float64 DistFromEnd; // Only applicable to blFromLeft, blFromRight
+      Float64 BarLength; //   Applicable to blFromLeft, blFromRight, blMidGirder
+
       pgsTypes::GirderFace  Face;
       matRebar::Size BarSize;
       CollectionIndexType NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
       bool operator==(const LongSteelInfo& rOther) const
-      {return Face         == rOther.Face       &&
-              BarSize      == rOther.BarSize    &&
-              Cover        == rOther.Cover      &&
-              BarSpacing   == rOther.BarSpacing &&
+      {return BarLayout    == rOther.BarLayout   &&
+              DistFromEnd  == rOther.DistFromEnd &&
+              BarLength    == rOther.BarLength   &&
+              Face         == rOther.Face        &&
+              BarSize      == rOther.BarSize     &&
+              Cover        == rOther.Cover       &&
+              BarSpacing   == rOther.BarSpacing  &&
               NumberOfBars == rOther.NumberOfBars;} 
 
    };

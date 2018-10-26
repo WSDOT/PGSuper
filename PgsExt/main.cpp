@@ -30,6 +30,10 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\EditByUI.h>
+#include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\GirderHandlingPointOfInterest.h>
+
+#include <EAF\EAFDisplayUnits.h>
 
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>

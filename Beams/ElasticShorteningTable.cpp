@@ -69,9 +69,9 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   double Eci = pMaterial->GetEciGdr(span,gdr);
-   double Epp = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent)->GetE();
-   double Ept = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
+   Float64 Eci = pMaterial->GetEciGdr(span,gdr);
+   Float64 Epp = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent)->GetE();
+   Float64 Ept = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -87,7 +87,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    table->mom_inertia.ShowUnitTag(true);
    if ( bIsPrismatic )
    {
-      double Ag, Ig;
+      Float64 Ag, Ig;
       GET_IFACE2(pBroker,ISectProp2,pSectProp);
       Ag = pSectProp->GetAg(pgsTypes::CastingYard,pgsPointOfInterest(span,gdr,0.0));
       Ig = pSectProp->GetIx(pgsTypes::CastingYard,pgsPointOfInterest(span,gdr,0.0));

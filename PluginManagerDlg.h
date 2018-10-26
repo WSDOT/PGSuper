@@ -30,12 +30,12 @@ class CPluginManagerDlg : public CPropertySheet
 	DECLARE_DYNAMIC(CPluginManagerDlg)
 
 public:
-	CPluginManagerDlg(UINT nIDCaption, CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CPluginManagerDlg(LPCTSTR pszCaption, CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CPluginManagerDlg(UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent);
+	CPluginManagerDlg(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent);
 	virtual ~CPluginManagerDlg();
 
 protected:
-   void Init();
+   void Init(const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent);
 
 protected:
    CPluginPage m_DataImporterPage;

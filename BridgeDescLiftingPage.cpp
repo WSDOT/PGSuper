@@ -87,11 +87,11 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   double gdrlength = pBridge->GetGirderLength(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx);
+   Float64 gdrlength = pBridge->GetGirderLength(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx);
    DDX_UnitValueAndTag( pDX, IDC_GIRDERLENGTH, IDC_GIRDERLENGTH_UNIT, gdrlength, pDisplayUnits->GetSpanLengthUnit() );
 
 #pragma Reminder("IMPLEMENT: Check clear span... make sure it is positive")
-   double clearspan = gdrlength - m_LeadingOverhang - m_TrailingOverhang;
+   Float64 clearspan = gdrlength - m_LeadingOverhang - m_TrailingOverhang;
 //   DDV_UnitValueZeroOrMore( pDX, clearspan, bUnitsSI, usLength, siLength );
 #pragma Reminder("STATUS ITEM: If leading overhang exceeds max, post status item")
 //    // this should be done in an agent

@@ -198,6 +198,10 @@ void CBridgeModelViewChildFrame::InitSpanRange()
 
    pStartSpinner->SetPos32((int)startSpanIdx+1);
    pEndSpinner->SetPos32((int)endSpanIdx+1);
+
+   CString str;
+   str.Format(_T("of %d Spans"),nSpans);
+   m_SettingsBar.GetDlgItem(IDC_SPAN_COUNT)->SetWindowText(str);
 }
 
 #if defined _DEBUG
@@ -507,7 +511,7 @@ void CBridgeModelViewChildFrame::OnInsertSpan()
       dlg.m_strItems = strItems;
       dlg.m_strTitle = _T("Insert Span");
       dlg.m_strLabel = _T("Select location to insert span");
-      dlg.m_ItemIdx = 0;
+      dlg.m_ItemIdx = 1;
 
       if ( dlg.DoModal() == IDOK )
       {
@@ -554,13 +558,13 @@ void CBridgeModelViewChildFrame::OnInsertPier()
       CString strPierType = (pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abutment") : _T("Pier"));
 
       CString strItems;
-      strItems.Format(_T("After %s %d\nBefore %s %d\n"),strPierType,(pierIdx+1),strPierType,(pierIdx+1));
+      strItems.Format(_T("After %s %d\nBefore %s %d\n"),strPierType,LABEL_PIER(pierIdx),strPierType,LABEL_PIER(pierIdx));
 
       CSelectItemDlg dlg;
       dlg.m_strItems = strItems;
       dlg.m_strTitle = _T("Insert Span");
       dlg.m_strLabel = _T("Select location to insert span");
-      dlg.m_ItemIdx = 0;
+      dlg.m_ItemIdx = 2;
 
       if ( dlg.DoModal() == IDOK )
       {

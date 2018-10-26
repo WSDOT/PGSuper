@@ -21,7 +21,7 @@
 #define IDR_PGSUPERCOMPONENTINFO        102
 #define IDR_PGSUPERAPPPLUGINIMPL        103
 #define IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN 104
-#define IDR_PGSUPERTYPE                 130
+#define IDR_PGSUPER                 130
 #define IDD_PROJECTPROPERTIES           131
 #define IDR_BRIDGEMODELEDITOR           132
 #define IDR_PROJECTIMPORTER             133
@@ -995,6 +995,7 @@
 #define IDC_STRAIGHT                    1639
 #define IDS_E_INVALIDFORMAT             1640
 #define IDC_HARPED                      1640
+#define IDC_SPAN_COUNT                  1640
 #define IDC_STATION_LOCATION_LABEL      1640
 #define IDC_LOCAL_STATIC                1641
 #define IDC_LINE_GROUP                  1641
@@ -1075,7 +1076,7 @@
 #define IDC_LLDF_SINGLE_VALUE           1710
 #define IDC_ALPHA                       1711
 #define IDC_RADIO_MULTIPLE              1711
-#define IDS_TEMPLATE_FILE_SUFFIX        1712
+#define IDS_PGSUPER_TEMPLATE_FILE_SUFFIX        1712
 #define IDC_ADIM_START_LABEL            1714
 #define IDC_ADIM_START_UNIT             1716
 #define IDS_DEFAULT_MASTER_LIB          1717
@@ -1154,16 +1155,6 @@
 #define IDC_JOIN                        12879
 #define IDS_INCOMPATIBLE_BEARING_MSG    13100
 #define IDS_INCOMPATIBLE_BEARING_MSG2   13101
-#define EAF_RESERVED_COMMAND_BASE       0x8000
-#define ID_VIEW_STATUSCENTER            32768
-#define ID_VIEW_STATUSCENTER2           32769
-#define ID_VIEW_STATUSCENTER3           32770
-#define ID_APP_LEGAL                    32771
-#define ID_UNITS_SI                     32772
-#define ID_UNITS_US                     32773
-#define ID_EDIT_UNITS                   32774
-#define ID_TIPOFTHEDAY                  32775
-#define EAF_FIRST_USER_COMMAND          0x80FF
 #define ID_HELP_JOINARPLIST             33024
 #define ID_HELP_INET_ARP                33025
 #define ID_HELP_INET_WSDOT              33026

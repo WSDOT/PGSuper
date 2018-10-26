@@ -1,6 +1,8 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include "..\PGSuperCommandIDs.h"
+#include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -93,7 +95,7 @@ IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSuperProject
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_PGSUPERTYPE         ICON                    "..\\res\\PGSuperDoc.ico"
+IDR_PGSUPER         ICON                    "..\\res\\PGSuperDoc.ico"
 IDR_PGSUPER_TEMPLATE_ICON ICON                    "..\\res\\pgs_template.ico"
 IDR_BRIDGEMODELEDITOR   ICON                    "..\\res\\Bridge.ico"
 IDR_GIRDERMODELEDITOR   ICON                    "..\\res\\GirderView.ico"
@@ -199,7 +201,7 @@ END
 // Menu
 //
 
-IDR_PGSUPERTYPE MENUEX 
+IDR_PGSUPER MENUEX 
 BEGIN
     POPUP "&File",                          65535,MFT_STRING,MFS_ENABLED
     BEGIN
@@ -1219,19 +1221,19 @@ BEGIN
     LTEXT           "Longitudinal reinforcement running the full length of the bridge",IDC_STATIC,17,65,194,8
 END
 
-IDD_GIRDERDESC_LONGITUDINAL_REBAR DIALOGEX 0, 0, 348, 233
+IDD_GIRDERDESC_LONGITUDINAL_REBAR DIALOGEX 0, 0, 422, 237
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Long. Reinforcement"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "Select Mild Steel Material",IDC_STATIC,10,10,84,8
     COMBOBOX        IDC_MILD_STEEL_SELECTOR,98,7,147,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Rows of Longitudinal Mild Steel",IDC_STATIC,7,31,334,176,0,WS_EX_TRANSPARENT
-    CONTROL         "Custom1",IDC_LONG_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,45,316,135
-    PUSHBUTTON      "Insert Row",IDC_INSERTROW,75,186,63,14
-    PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,142,185,63,14
-    PUSHBUTTON      "Append Row",IDC_APPEND_ROW,209,185,63,14
-    PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS1,94,212,159,14
+    GROUPBOX        "Rows of Longitudinal Mild Steel",IDC_STATIC,7,31,408,176,0,WS_EX_TRANSPARENT
+    CONTROL         "Custom1",IDC_LONG_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,45,393,135
+    PUSHBUTTON      "Insert Row",IDC_INSERTROW,101,186,63,14
+    PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,168,185,63,14
+    PUSHBUTTON      "Append Row",IDC_APPEND_ROW,235,185,63,14
+    PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS1,120,216,159,14
 END
 
 IDD_CONFIGUREPGSUPER DIALOGEX 0, 0, 468, 305
@@ -2131,6 +2133,7 @@ BEGIN
     LTEXT           "to",IDC_STATIC,83,3,8,8
     EDITTEXT        IDC_END_SPAN_EDIT,90,1,32,12,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
     CONTROL         "",IDC_END_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,111,1,10,12
+    LTEXT           "of n Spans",IDC_SPAN_COUNT,124,3,76,8
 END
 
 IDD_LOAD_FACTORS DIALOGEX 0, 0, 240, 179
@@ -2233,8 +2236,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,0,0
- PRODUCTVERSION 2,0,0,0
+ FILEVERSION 2,8,0,2
+ PRODUCTVERSION 2,8,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2251,12 +2254,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.8.0.1"
+            VALUE "FileVersion", "2.8.0.2"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.8.0.1"
+            VALUE "ProductVersion", "2.8.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2534,9 +2537,9 @@ BEGIN
     IDD_GIRDERDESC_LONGITUDINAL_REBAR, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 341
+        RIGHTMARGIN, 415
         TOPMARGIN, 7
-        BOTTOMMARGIN, 226
+        BOTTOMMARGIN, 230
     END
 
     IDD_CONFIGUREPGSUPER, DIALOG
@@ -2936,7 +2939,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_PGSUPERTYPE         "\n\n\n\n\n\n"
+    IDR_PGSUPER             "\n\n\n\n\n\n"
     IDR_BRIDGEMODELEDITOR   "Bridge Model View\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
     IDR_PROJECTIMPORTER     "Bridge Model View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
     IDR_GIRDERMODELEDITOR   "Girder View\n\n\n\n\n\n"
@@ -3248,7 +3251,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_TEMPLATE_FILE_SUFFIX "pgt"
+    IDS_PGSUPER_TEMPLATE_FILE_SUFFIX "pgt"
     IDS_DEFAULT_MASTER_LIB  "PGSuper.lbr"
     IDS_CANT_FIND_LIBRARY_FILE 
                             "There is a problem with the software configuration. The master library file could not be found. Please use the next window to update the Libraries and Templates configuration."

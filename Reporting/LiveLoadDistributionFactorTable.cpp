@@ -159,7 +159,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
       (*pTable)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
-      double pM, nM, V;
+      Float64 pM, nM, V;
       pDistFact->GetDistributionFactors(poi,pgsTypes::StrengthI,&pM,&nM,&V);
       (*pTable)(row,1) << df.SetValue(pM);
 

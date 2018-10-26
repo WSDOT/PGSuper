@@ -61,6 +61,8 @@
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
 #include <WBFLCore_i.c>
+#include <WBFLGenericBridge_i.c>
+#include <WBFLGenericBridgeTools_i.c>
 
 #include <Reporting\ReportStyleHolder.h>
 

@@ -1577,15 +1577,15 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StraightStrandCamberLoading.gif")) << rptNewLine;
          for ( iter = loads.begin(); iter != loads.end(); iter++ )
          {
-            double M = iter->first;
-            double X = iter->second;
+            Float64 M = iter->first;
+            Float64 X = iter->second;
 
             *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
          }
 
          *pPara << rptNewLine;
 
-         double Ml,Mr,Nl,Nr,Xl,Xr;
+         Float64 Ml,Mr,Nl,Nr,Xl,Xr;
          pCamber->GetHarpedStrandEquivLoading(spanIdx,gdrIdx,&Ml, &Mr, &Nl, &Nr, &Xl, &Xr);
          *pPara << Bold(_T("Harped Strands")) << rptNewLine;
          *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
@@ -1599,7 +1599,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
          if ( 0 < pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
          {
-            double MxferL, MxferR, MremoveL, MremoveR;
+            Float64 MxferL, MxferR, MremoveL, MremoveR;
             pCamber->GetTempStrandEquivLoading(spanIdx,gdrIdx,&MxferL,&MxferR,&MremoveL,&MremoveR);
             *pPara << Bold(_T("Temporary Strands")) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("TempStrandCamberLoading.gif")) << rptNewLine;

@@ -27,28 +27,37 @@
 // MultiGirderSelectGrid.h : header file
 //
 #include <WBFLTypes.h>
-#include <Lrfd\RebarPool.h>
+#include <Lrfd\Lrfd.h>
 
-inline void FillMaterialComboBox(CComboBox* pCB)
+inline void FillRebarMaterialComboBox(CComboBox* pCB,bool bFilterBySpec = true)
 {
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade40).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade75).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade80).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade60).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade80).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,  matRebar::Grade40).c_str()  );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,  matRebar::Grade60).c_str()  );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,  matRebar::Grade75).c_str()  );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,  matRebar::Grade80).c_str()  );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,  matRebar::Grade60).c_str()  );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,  matRebar::Grade80).c_str()  );
+
+   if ( bFilterBySpec )
+   {
+      if ( lrfdVersionMgr::SixthEditionWith2013Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A1035, matRebar::Grade100).c_str() );
+      }
+   }
 }
 
 inline void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade)
 {
    switch(idx)
    {
-   case 0:  type = matRebar::A615; grade = matRebar::Grade40; break;
-   case 1:  type = matRebar::A615; grade = matRebar::Grade60; break;
-   case 2:  type = matRebar::A615; grade = matRebar::Grade75; break;
-   case 3:  type = matRebar::A615; grade = matRebar::Grade80; break;
-   case 4:  type = matRebar::A706; grade = matRebar::Grade60; break;
-   case 5:  type = matRebar::A706; grade = matRebar::Grade80; break;
+   case 0:  type = matRebar::A615;  grade = matRebar::Grade40;  break;
+   case 1:  type = matRebar::A615;  grade = matRebar::Grade60;  break;
+   case 2:  type = matRebar::A615;  grade = matRebar::Grade75;  break;
+   case 3:  type = matRebar::A615;  grade = matRebar::Grade80;  break;
+   case 4:  type = matRebar::A706;  grade = matRebar::Grade60;  break;
+   case 5:  type = matRebar::A706;  grade = matRebar::Grade80;  break;
+   case 6:  type = matRebar::A1035; grade = matRebar::Grade100; break;
    default:
       ATLASSERT(false); // should never get here
    }
@@ -67,12 +76,17 @@ inline int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade)
       else if ( grade == matRebar::Grade80 )
          return 3;
    }
-   else
+   else if ( type == matRebar::A706 )
    {
       if ( grade == matRebar::Grade60 )
          return 4;
       else if ( grade == matRebar::Grade80 )
          return 5;
+   }
+   else if ( type == matRebar::A1035 )
+   {
+      if ( grade == matRebar::Grade100 )
+         return 6;
    }
 
    ATLASSERT(false); // should never get here

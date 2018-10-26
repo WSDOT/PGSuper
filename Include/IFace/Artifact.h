@@ -72,7 +72,7 @@ interface IArtifact : IUnknown
    virtual const pgsDesignArtifact* CreateDesignArtifact(SpanIndexType span,GirderIndexType gdr,arDesignOptions options) = 0;
    virtual const pgsDesignArtifact* GetDesignArtifact(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual void CreateLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact) = 0;
-   virtual void CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 leftSupportLoc,Float64 rightSupportLoc,pgsHaulingAnalysisArtifact* pArtifact) = 0;
+   virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 leftSupportLoc,Float64 rightSupportLoc) = 0;
 
    virtual const pgsRatingArtifact* GetRatingArtifact(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex) = 0;
 };

@@ -207,7 +207,7 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
    try
    {
       hr = pStrLoad->BeginUnit(_T("TxDOTOptionalGirderData"));
-      double version;
+      Float64 version;
       pStrLoad->get_Version(&version);
 
       // Template Data
@@ -240,7 +240,7 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
       // Bridge Input Data
       hr = pStrLoad->BeginUnit(_T("BridgeInputData"));
 
-      double brgversion;
+      Float64 brgversion;
       pStrLoad->get_Version(&brgversion);
 
       var.Clear();

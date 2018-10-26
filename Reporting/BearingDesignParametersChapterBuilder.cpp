@@ -243,7 +243,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          poi = vPoi.back();
       }
 
-      double rotation = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
+      Float64 rotation = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
       (*pTable)(row,col++) << scalar.SetValue(rotation);
 
       row++;
@@ -418,7 +418,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
 
-      double slope1 = pBridge->GetGirderSlope(span,girder);
+      Float64 slope1 = pBridge->GetGirderSlope(span,girder);
       (*pTable)(row,col++) << scalar.SetValue(slope1);
 
       
@@ -432,16 +432,16 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          poi = vPoi.back();
       }
 
-      double slope2 = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
+      Float64 slope2 = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
       (*pTable)(row,col++) << scalar.SetValue(slope2);
 
-      double slope3 = slope1 + slope2;
+      Float64 slope3 = slope1 + slope2;
       (*pTable)(row,col++) << scalar.SetValue(slope3);
 
-      double W = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
-      double D = ::ConvertToSysUnits(0.50,unitMeasure::Inch);
-      double D1 = D + W*slope3/2;
-      double D2 = D - W*slope3/2;
+      Float64 W = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
+      Float64 D = ::ConvertToSysUnits(0.50,unitMeasure::Inch);
+      Float64 D1 = D + W*slope3/2;
+      Float64 D2 = D - W*slope3/2;
 
       (*pTable)(row,col++) << recess_dimension.SetValue(W);
       (*pTable)(row,col++) << recess_dimension.SetValue(D);

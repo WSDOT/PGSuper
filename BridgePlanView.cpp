@@ -486,8 +486,43 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridge,pBridge);
+
+         if ( pHint )
+         {
+            // The span configuration of the bridge changed
+            CBridgeHint* pBridgeHint = (CBridgeHint*)pHint;
+
+            // We want to know if the span that was added or removed
+            // is within the range of spans being displayed. If it is,
+            // adjust the display range.
+            SpanIndexType nSpans = pBridge->GetSpanCount();
+            SpanIndexType nPrevSpans = nSpans + (pBridgeHint->bAdded ? -1 : 1);
+
+
+            SpanIndexType spanIdx = pBridgeHint->PierIdx + (pBridgeHint->PierFace == pgsTypes::Back ? -1 : 0);
+            if ( (m_StartSpanIdx <= spanIdx && spanIdx <= m_EndSpanIdx) || // span in range
+                 (m_EndSpanIdx == nPrevSpans-1 && spanIdx == nSpans-1) || // at end
+                 (m_StartSpanIdx == 0 && spanIdx == INVALID_INDEX) // at start
+               )
+            {
+               // new span is in the display range
+               if ( pBridgeHint->bAdded )
+               {
+                  m_EndSpanIdx++;
+               }
+               else
+               {
+                  if ( spanIdx == m_StartSpanIdx && spanIdx != 0)
+                     m_StartSpanIdx++; // span at start of range was removed, so make the range smaller
+                  else
+                     m_EndSpanIdx--; // span at within or at the end of the range was removed...
+               }
+            }
+         }
+
+         // Make sure we aren't displaying spans past the end of the bridge
          SpanIndexType nSpans = pBridge->GetSpanCount();
-         m_EndSpanIdx = nSpans-1;
+         m_EndSpanIdx = (nSpans <= m_EndSpanIdx ? nSpans-1 : m_EndSpanIdx);
 
          m_pFrame->InitSpanRange();
       }
@@ -1033,8 +1068,8 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    CComPtr<iPolyLineDisplayObject> doAlignment;
    doAlignment.CoCreateInstance(CLSID_PolyLineDisplayObject);
 
-   // Register an event sink with the alignment object so that we can handle double clicks
-   // on the alignment differently then a general double click
+   // Register an event sink with the alignment object so that we can handle Float64 clicks
+   // on the alignment differently then a general Float64 click
    CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker,m_pFrame);
    IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
    CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
@@ -1524,8 +1559,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
       connectable1->Connect(0,atByID,startPlug,&dwCookie);
       connectable2->Connect(0,atByID,endPlug,  &dwCookie);
 
-      // Register an event sink with the pier centerline display object so that we can handle double clicks
-      // on the piers differently then a general double click
+      // Register an event sink with the pier centerline display object so that we can handle Float64 clicks
+      // on the piers differently then a general Float64 click
       CPierDisplayObjectEvents* pEvents = new CPierDisplayObjectEvents(pierIdx,
                                                                        nPiers,
                                                                        pBridge->GetDeckType() != pgsTypes::sdtNone,

@@ -1736,7 +1736,7 @@ bool CBridgeAgentImp::BuildCogoModel()
       CollectionIndexType curveIdx = 0;
 
       std::vector<HorzCurveData>::iterator iter;
-      for ( iter = alignment_data.HorzCurves.begin(); iter != alignment_data.HorzCurves.end(); iter++ )
+      for ( iter = alignment_data.HorzCurves.begin(); iter != alignment_data.HorzCurves.end(); iter++, curveID++, curveIdx++ )
       {
          HorzCurveData& curve_data = *iter;
 
@@ -1807,13 +1807,27 @@ bool CBridgeAgentImp::BuildCogoModel()
             if ( IsZero(fabs(back_tangent - fwd_tangent)) || IsEqual(fabs(back_tangent - fwd_tangent),M_PI) )
             {
                std::_tostringstream os;
-               os << _T("The central angle of curve ") << curveID << _T(" is 0 or 180 degrees");
+               os << _T("The central angle of horizontal curve ") << curveID << _T(" is 0 or 180 degrees. Horizontal curve was modeled as a single point at the PI location.");
                std::_tstring strMsg = os.str();
                pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
                pStatusCenter->Add(p_status_item);
-               strMsg += std::_tstring(_T("\nSee Status Center for Details"));
-               THROW_UNWIND(strMsg.c_str(),-1);
+               
+               alignment->AddEx(pi);
+
+               back_tangent = fwd_tangent;
+               prev_curve_ST_station = pi_station;
+
+               if ( curveIdx == 0 )
+               {
+                  // this is the first curve so set the reference station at the PI
+                  alignment->put_RefStation( CComVariant(pi_station) );
+               }
+
+               continue; // GO TO NEXT HORIZONTAL CURVE
+
+               //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
+               //THROW_UNWIND(strMsg.c_str(),-1);
             }
 
             CComPtr<IHorzCurve> hc;
@@ -1899,9 +1913,6 @@ bool CBridgeAgentImp::BuildCogoModel()
             // this is the first curve so set the reference station at the TS 
             alignment->put_RefStation( CComVariant(pi_station - T) );
          }
-
-         curveID++;
-         curveIdx++;  
       }
    }
 
@@ -3521,7 +3532,8 @@ void CBridgeAgentImp::LayoutSpecialPoi(SpanIndexType span,GirderIndexType gdr)
    //LayoutPrestressTransferAndDebondPoi(span,gdr); // this is done when the prestressing is updated
    LayoutPoiForDiaphragmLoads(span,gdr);
    LayoutPoiForShear(span,gdr);
-   LayoutPoiForBarCutoffs(span,gdr);
+   LayoutPoiForSlabBarCutoffs(span,gdr);
+   LayoutPoiForGirderBarCutoffs(span,gdr);
    LayoutPoiForHandling(span,gdr);     // lifting and hauling
    LayoutPoiForSectionChanges(span,gdr);
 }
@@ -3916,9 +3928,29 @@ void CBridgeAgentImp::LayoutPoiForShear(SpanIndexType span,GirderIndexType gdr)
       m_PoiMgr.AddPointOfInterest(poi_l);
       m_PoiMgr.AddPointOfInterest(poi_r);
    }
+
+   // POI's at stirrup zone boundaries
+   Float64 right_support_loc = length - right_end_size;
+   Float64 midLen = length/2.0;
+
+   ZoneIndexType npzs = GetNumPrimaryZones(span, gdr);
+   for (ZoneIndexType zn = 1; zn<npzs; zn++) // note that count starts at one
+   {
+      Float64 zStart, zEnd;
+      GetPrimaryZoneBounds(span, gdr, zn, &zStart, &zEnd);
+
+      // Nudge poi toward mid-span as this is where smaller Av/s will typically lie
+      zStart += zStart<midLen ? 0.001 : -0.001;
+
+      if (zStart>left_end_size && zStart<right_support_loc)
+      {
+         pgsPointOfInterest poi(stages,span,gdr,zStart, POI_FLEXURECAPACITY | POI_SHEAR | POI_ALLOUTPUT);
+         m_PoiMgr.AddPointOfInterest(poi);
+      }
+   }
 }
 
-void CBridgeAgentImp::LayoutPoiForBarCutoffs(SpanIndexType span,GirderIndexType gdr)
+void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(SpanIndexType span,GirderIndexType gdr)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -3944,25 +3976,116 @@ void CBridgeAgentImp::LayoutPoiForBarCutoffs(SpanIndexType span,GirderIndexType 
    {
       const CDeckRebarData::NegMomentRebarData& nmRebarData = *iter;
 
-      PoiAttributeType attribute = POI_FLEXURECAPACITY | POI_SHEAR | POI_GRAPHICAL | POI_TABULAR | POI_BARCUTOFF;
+      PoiAttributeType attribute = POI_FLEXURECAPACITY | POI_SHEAR | POI_GRAPHICAL | POI_TABULAR | POI_DECKBARCUTOFF;
 
       if ( nmRebarData.PierIdx == prev_pier )
       {
-         Float64 dist_from_start = nmRebarData.RightCutoff - left_brg_offset + left_end_size;
-         if ( gdr_length < dist_from_start )
-            dist_from_start = gdr_length - 0.0015;
+         Float64 girder_start_dist = left_brg_offset - left_end_size;
+         if ( girder_start_dist <= nmRebarData.RightCutoff )
+         {
+            Float64 dist_from_start = nmRebarData.RightCutoff - girder_start_dist;
+            if ( gdr_length < dist_from_start )
+               dist_from_start = gdr_length - 0.0015;
 
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start+0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
+            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
+            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start+0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
+         }
       }
       else if ( nmRebarData.PierIdx == next_pier )
       {
-         Float64 dist_from_start = gdr_length - (nmRebarData.LeftCutoff - right_brg_offset + right_end_size);
-         if ( dist_from_start < 0 )
-            dist_from_start = 0.0015;
+         Float64 girder_end_dist = right_brg_offset - right_end_size;
+         if ( girder_end_dist <= nmRebarData.LeftCutoff )
+         {
+            Float64 dist_from_start = gdr_length - (nmRebarData.LeftCutoff - girder_end_dist);
+            if ( dist_from_start < 0 )
+               dist_from_start = 0.0015;
 
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start-0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
+            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start-0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
+            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
+         }
+      }
+   }
+}
+
+void CBridgeAgentImp::LayoutPoiForGirderBarCutoffs(SpanIndexType span,GirderIndexType gdr)
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(span,gdr,&girder);
+
+   Float64 gdr_length = GetGirderLength(span,gdr);
+   Float64 left_brg_loc  = GetGirderStartConnectionLength(span,gdr);
+   Float64 right_brg_loc = gdr_length - GetGirderEndConnectionLength(span,gdr);
+
+   GET_IFACE(IBridgeMaterialEx,pBridgeMaterialEx);
+   Float64 fc = pBridgeMaterialEx->GetFcGdr(span, gdr);
+   pgsTypes::ConcreteType concType = pBridgeMaterialEx->GetGdrConcreteType(span, gdr);
+   bool hasFct = pBridgeMaterialEx->DoesGdrConcreteHaveAggSplittingStrength(span, gdr);
+   Float64 Fct = hasFct ? pBridgeMaterialEx->GetGdrConcreteAggSplittingStrength(span, gdr) : 0.0;
+
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard); // need camber for neg moment capacity model (camber starts in casting yard)
+   stages.push_back(pgsTypes::Lifting);
+   stages.push_back(pgsTypes::Hauling);
+   stages.push_back(pgsTypes::BridgeSite3);
+
+   const PoiAttributeType cut_attribute = POI_FLEXURESTRESS | POI_FLEXURECAPACITY | POI_SHEAR | POI_GRAPHICAL | POI_TABULAR | POI_BARCUTOFF;
+   const PoiAttributeType dev_attribute = POI_FLEXURESTRESS | POI_FLEXURECAPACITY | POI_SHEAR | POI_GRAPHICAL | POI_TABULAR | POI_BARDEVELOP;
+
+   CComPtr<IRebarLayout> rebar_layout;
+   girder->get_RebarLayout(&rebar_layout);
+
+   CollectionIndexType liCnt;
+   rebar_layout->get_Count(&liCnt);
+   for (CollectionIndexType ili=0; ili<liCnt; ili++)
+   {
+      CComPtr<IRebarLayoutItem> rebarLayoutItem;
+      rebar_layout->get_Item(ili, &rebarLayoutItem);
+
+      Float64 startLoc, barLength;
+      rebarLayoutItem->get_Start(&startLoc);
+      rebarLayoutItem->get_Length(&barLength);
+      Float64 endLoc = startLoc + barLength;
+
+      if (endLoc > gdr_length)
+      {
+         ATLASSERT(0); // probably should never happen
+         endLoc = gdr_length;
+      }
+
+      // Add pois at cutoffs if they are within bearing locations
+      if (startLoc > left_brg_loc && startLoc < right_brg_loc)
+         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,startLoc,cut_attribute) );
+
+      if (endLoc > left_brg_loc && endLoc < right_brg_loc)
+         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,endLoc,  cut_attribute) );
+
+      // we only create one pattern per layout
+      CollectionIndexType lyCnt;
+      rebarLayoutItem->get_Count(&lyCnt);
+      ATLASSERT(lyCnt==1);
+      if (lyCnt>0)
+      {
+         CComPtr<IRebarPattern> rebarPattern;
+         rebarLayoutItem->get_Item(0, &rebarPattern);
+
+         CComPtr<IRebar> rebar;
+         rebarPattern->get_Rebar(&rebar);
+         ATLASSERT(rebar);
+
+         // Get development length and add poi only if dev length is shorter than 1/2 rebar length
+         REBARDEVLENGTHDETAILS devDetails = GetRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct);
+         Float64 ldb = devDetails.ldb;
+         if (ldb < barLength/2.0)
+         {
+            startLoc += ldb;
+            endLoc -= ldb;
+
+            if (startLoc > left_brg_loc && startLoc < right_brg_loc)
+               m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages, span, gdr, startLoc, dev_attribute) );
+
+            if (endLoc > left_brg_loc && endLoc < right_brg_loc)
+               m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages, span, gdr, endLoc,   dev_attribute) );
+         }
       }
    }
 }
@@ -6146,7 +6269,7 @@ Float64 CBridgeAgentImp::GetCurbToCurbWidth(Float64 distFromStartOfBridge)
    return right_offset - left_offset;
 }
 
-Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(double distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(Float64 distFromStartOfBridge)
 {
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
@@ -6156,7 +6279,7 @@ Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(double distFromStartOfBridge)
    return offset;
 }
 
-Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(double distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(Float64 distFromStartOfBridge)
 {
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
@@ -6166,7 +6289,7 @@ Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(double distFromStartOfBridge
    return offset;
 }
 
-Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(double distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(Float64 distFromStartOfBridge)
 {
    Float64 slab_edge = GetLeftSlabEdgeOffset(distFromStartOfBridge);
 
@@ -6179,7 +6302,7 @@ Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(double distFromStartOfBridge)
    return slab_edge + toe_width;
 }
 
-Float64 CBridgeAgentImp::GetRightOverlayToeOffset(double distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetRightOverlayToeOffset(Float64 distFromStartOfBridge)
 {
    Float64 slab_edge = GetRightSlabEdgeOffset(distFromStartOfBridge);
 
@@ -7467,22 +7590,41 @@ Float64 CBridgeAgentImp::GetAsDeckTopHalf(const pgsPointOfInterest& poi,bool bDe
 
 Float64 CBridgeAgentImp::GetDevLengthFactor(SpanIndexType span,GirderIndexType gdr,IRebarSectionItem* rebarItem)
 {
+   Float64 fc = GetFcGdr(span,gdr);
+   pgsTypes::ConcreteType type = GetGdrConcreteType(span,gdr);
+   bool isFct = DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
+   Float64 fct = isFct ? GetGdrConcreteAggSplittingStrength(span,gdr) : 0.0;
+
+   return GetDevLengthFactor(rebarItem, type, fc, isFct, fct);
+}
+
+Float64 CBridgeAgentImp::GetDevLengthFactor(IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 fct)
+{
+   Float64 fra = 1.0;
+
    CComPtr<IRebar> rebar;
    rebarItem->get_Rebar(&rebar);
-   Float64 fc = GetFcGdr(span,gdr);
 
-   REBARDEVLENGTHDETAILS details = GetRebarDevelopmentLengthDetails(rebar,fc);
+   REBARDEVLENGTHDETAILS details = GetRebarDevelopmentLengthDetails(rebar, type, fc, isFct, fct);
 
-   Float64 fra = 1.0;
+   // Get distances from section cut to ends of bar
    Float64 start,end;
-   rebarItem->get_DistFromStart(&start);
-   rebarItem->get_DistFromEnd(&end);
+   rebarItem->get_LeftExtension(&start);
+   rebarItem->get_RightExtension(&end);
 
-   Float64 fra1 = start/details.ldb;
-   Float64 fra2 = end/details.ldb;
-   fra = Min3(fra1,fra2,fra);
+   Float64 cut_length = min(start, end);
+   if (cut_length > 0.0)
+   {
+      Float64 fra = cut_length/details.ldb;
+      fra = min(fra, 1.0);
 
-   return fra;
+      return fra;
+   }
+   else
+   {
+      ATLASSERT(cut_length==0.0); // sections shouldn't be cutting bars that don't exist
+      return 0.0;
+   }
 }
 
 Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi)
@@ -7497,7 +7639,7 @@ Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi)
    Float64 As = GetAsDeckTopHalf(poi,false);
 
    if ( pSpecEntry->IncludeRebarForMoment() )
-      As += GetAsGirderTopHalf(poi,false);
+   As += GetAsGirderTopHalf(poi,false);
 
    Float64 Aps = GetApsTopHalf(poi,dlaNone);
 
@@ -7531,7 +7673,7 @@ Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi,const GDRCO
    Float64 As = GetAsDeckTopHalf(poi,false);
 
    if ( pSpecEntry->IncludeRebarForMoment() )
-      As += GetAsGirderTopHalf(poi,false);
+   As += GetAsGirderTopHalf(poi,false);
 
    Float64 Aps = GetApsTopHalf(poi,config,dlaNone);
 
@@ -7564,7 +7706,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi)
 
    Float64 As = 0;
    if ( pSpecEntry->IncludeRebarForMoment() )
-      As = GetAsBottomHalf(poi,false);
+   As = GetAsBottomHalf(poi,false);
 
    Float64 Aps = GetApsBottomHalf(poi,dlaNone);
 
@@ -7597,7 +7739,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
 
    Float64 As = 0;
    if ( pSpecEntry->IncludeRebarForMoment() )
-      As = GetAsBottomHalf(poi,false);
+   As = GetAsBottomHalf(poi,false);
 
    Float64 Aps = GetApsBottomHalf(poi,config,dlaNone);
 
@@ -7619,14 +7761,29 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
    return ppr;
 }
 
-REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(IRebar* rebar,Float64 fc)
+REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct)
+{
+   CComBSTR name;
+   rebar->get_Name(&name);
+
+   Float64 Ab, db, fy;
+   rebar->get_NominalArea(&Ab);
+   rebar->get_NominalDiameter(&db);
+   rebar->get_YieldStrength(&fy);
+
+   return GetRebarDevelopmentLengthDetails(name, Ab, db, fy, type, fc, isFct, Fct);
+}
+
+REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct)
 {
    REBARDEVLENGTHDETAILS details;
-   rebar->get_NominalArea(&details.Ab);
-   rebar->get_NominalDiameter(&details.db);
-   rebar->get_YieldStrength(&details.fy);
+   details.Ab = Ab;
+   details.db = db;
+   details.fy = fy;
+
    details.fc = fc;
 
+   // LRFD 5.11.2.1
    if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
    {
       Float64 Ab = ::ConvertFromSysUnits(details.Ab,unitMeasure::Inch2);
@@ -7634,11 +7791,28 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(IRebar* 
       Float64 fc = ::ConvertFromSysUnits(details.fc,unitMeasure::KSI);
       Float64 fy = ::ConvertFromSysUnits(details.fy,unitMeasure::KSI);
    
-      details.ldb1 = 1.25*Ab*fy/sqrt(fc);
-      details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
-   
-      details.ldb2 = 0.4*db*fy;
-      details.ldb2 = ::ConvertToSysUnits(details.ldb2,unitMeasure::Inch);
+      if (name==_T("#14"))
+      {
+         details.ldb1 = 2.70*fy/sqrt(fc);
+         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
+      
+         details.ldb2 = 0.0;
+      }
+      else if (name==_T("#18"))
+      {
+         details.ldb1 = 3.5*fy/sqrt(fc);
+         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
+      
+         details.ldb2 = 0.0;
+      }
+      else
+      {
+         details.ldb1 = 1.25*Ab*fy/sqrt(fc);
+         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
+
+         details.ldb2 = 0.4*db*fy;
+         details.ldb2 = ::ConvertToSysUnits(details.ldb2,unitMeasure::Inch);
+      }
 
       Float64 ldb_min = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
 
@@ -7651,16 +7825,70 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(IRebar* 
       Float64 fc = ::ConvertFromSysUnits(details.fc,unitMeasure::MPa);
       Float64 fy = ::ConvertFromSysUnits(details.fy,unitMeasure::MPa);
    
-      details.ldb1 = 0.02*Ab*fy/sqrt(fc);
-      details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
-   
-      details.ldb2 = 0.06*db*fy;
-      details.ldb2 = ::ConvertToSysUnits(details.ldb2,unitMeasure::Millimeter);
+      if (name==_T("#14"))
+      {
+         details.ldb1 = 25*fy/sqrt(fc);
+         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
+      
+         details.ldb2 = 0.0;
+      }
+      else if (name==_T("#18"))
+      {
+         details.ldb1 = 34*fy/sqrt(fc);
+         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
+      
+         details.ldb2 = 0.0;
+      }
+      else
+      {
+         details.ldb1 = 0.02*Ab*fy/sqrt(fc);
+         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
+      
+         details.ldb2 = 0.06*db*fy;
+         details.ldb2 = ::ConvertToSysUnits(details.ldb2,unitMeasure::Millimeter);
+      }
 
       Float64 ldb_min = ::ConvertToSysUnits(12.0,unitMeasure::Millimeter);
 
       details.ldb = Max3(details.ldb1,details.ldb2,ldb_min);
    }
+
+   // Compute and apply factor for LWC
+   if (type==pgsTypes::Normal)
+   {
+      details.factor = 1.0;
+   }
+   else
+   {
+      if (isFct)
+      {
+         // compute factor
+         Float64 fck  = ::ConvertFromSysUnits(fc,unitMeasure::KSI);
+         Float64 fctk = ::ConvertFromSysUnits(Fct,unitMeasure::KSI);
+
+         details.factor = 0.22 * sqrt(fck) / fctk;
+         details.factor = min(details.factor, 1.0);
+      }
+      else
+      {
+         // fct not specified
+         if (type==pgsTypes::AllLightweight)
+         {
+            details.factor = 1.3;
+         }
+         else if (type==pgsTypes::SandLightweight)
+         {
+            details.factor = 1.2;
+         }
+         else
+         {
+            ATLASSERT(0); // new type?
+            details.factor = 1.0;
+         }
+      }
+   }
+
+   details.ldb *= details.factor;
 
    return details;
 }
@@ -7694,6 +7922,71 @@ Float64 CBridgeAgentImp::GetAsBottomMat(const pgsPointOfInterest& poi,ILongRebar
 {
    return GetAsDeckMats(poi,drt,false,true);
 }
+
+void CBridgeAgentImp::GetRebarLayout(SpanIndexType span,GirderIndexType gdr, IRebarLayout** rebarLayout)
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(span,gdr,&girder);
+
+   CComPtr<IRebarLayout> rebar_layout;
+   girder->get_RebarLayout(rebarLayout);
+}
+
+std::vector<RowIndexType> CBridgeAgentImp::CheckLongRebarGeometry(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+{
+   std::vector<RowIndexType> rowVec;
+
+   CComPtr<IRebarLayout> rebarLayout;
+   GetRebarLayout(spanIdx, gdrIdx, &rebarLayout);
+
+   CollectionIndexType rbCnt; // Same as rows in input
+   rebarLayout->get_Count(&rbCnt);
+   for (CollectionIndexType irb=0; irb<rbCnt; irb++)
+   {
+      CComPtr<IRebarLayoutItem> layoutItem;
+      rebarLayout->get_Item(irb, &layoutItem);
+
+      // check at section at mid-length of bar
+      Float64 startLoc, barLength2;
+      layoutItem->get_Start(&startLoc);
+      layoutItem->get_Length(&barLength2);
+      barLength2 /= 2.0;
+
+      pgsPointOfInterest poi(spanIdx, gdrIdx, startLoc+barLength2);
+
+      CComPtr<IGirderSection> gdrSection;
+      this->GetGirderSection(poi, &gdrSection);
+
+      CComQIPtr<IShape> girderShape(gdrSection);
+
+      CollectionIndexType patCnt;
+      layoutItem->get_Count(&patCnt);
+      for (CollectionIndexType ipat=0; ipat<patCnt; ipat++)
+      {
+         CComPtr<IRebarPattern> rebarPattern;
+         layoutItem->get_Item(ipat, &rebarPattern);
+
+         CollectionIndexType barCnt;
+         rebarPattern->get_Count(&barCnt);
+         for (CollectionIndexType ibar=0; ibar<barCnt; ibar++)
+         {
+            CComPtr<IPoint2d> location;
+            rebarPattern->get_Location(barLength2, ibar, &location);
+
+            VARIANT_BOOL isIn;
+            girderShape->PointInShape(location, &isIn);
+            if(isIn != VARIANT_TRUE)
+            {
+               rowVec.push_back(irb);
+               break; // Only need one fail for a row
+            }
+         }
+      }
+   }
+
+   return rowVec;
+}
+
 
 /////////////////////////////////////////////////////////////////////////
 // IStirrupGeometry
@@ -10874,6 +11167,60 @@ StrandIndexType CBridgeAgentImp::GetNumBondedStrandsAtSection(SpanIndexType span
    return nStrands - nDebondedStrands;
 }
 
+std::vector<StrandIndexType> CBridgeAgentImp::GetDebondedStrandsAtSection(SpanIndexType span,GirderIndexType gdr,GirderEnd end,SectionIndexType sectionIdx,pgsTypes::StrandType strandType)
+{
+   VALIDATE( GIRDER );
+
+   std::vector<StrandIndexType> debondedStrands;
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(span,gdr,&girder);
+
+   switch( strandType )
+   {
+
+   case pgsTypes::Harped:
+   case pgsTypes::Temporary:
+                    // Assumed only bonded for the end 10'... PS force is constant through the debonded section
+                    // this is different than strands debonded at the ends and bonded in the middle
+                    // Treat this strand as bonded
+      return debondedStrands;
+      break;
+
+   case pgsTypes::Straight:
+      break; // fall through to below
+
+
+   default:
+      ATLASSERT(false); // should never get here
+      return debondedStrands;
+   }
+
+   HRESULT hr;
+   CollectionIndexType nStrands;
+   CComPtr<IIndexArray> strands;
+   if (end == IStrandGeometry::geLeftEnd)
+   {
+      // left
+      hr = girder->GetStraightStrandDebondAtLeftSection(sectionIdx,&strands);
+   }
+   else
+   {
+      hr = girder->GetStraightStrandDebondAtRightSection(sectionIdx,&strands);
+   }
+   ATLASSERT(SUCCEEDED(hr));
+   strands->get_Count(&nStrands);
+
+   for ( IndexType idx = 0; idx < nStrands; idx++ )
+   {
+      StrandIndexType strandIdx;
+      strands->get_Item(idx,&strandIdx);
+      debondedStrands.push_back(strandIdx);
+   }
+
+   return debondedStrands;
+}
+
 //-----------------------------------------------------------------------------
 bool CBridgeAgentImp::CanDebondStrands(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::StrandType strandType)
 {
@@ -11200,7 +11547,19 @@ void CBridgeAgentImp::GetStrandPositionsEx(const pgsPointOfInterest& poi,const P
       break;
 
    case pgsTypes::Harped:
+      // save and restore precast harped girders adjustment shift values, before/after geting point locations
+      Float64 t_end_shift, t_hp_shift;
+      girder->get_HarpedStrandAdjustmentEnd(&t_end_shift);
+      girder->get_HarpedStrandAdjustmentHP(&t_hp_shift);
+
+      girder->put_HarpedStrandAdjustmentEnd(rconfig.EndOffset);
+      girder->put_HarpedStrandAdjustmentHP(rconfig.HpOffset);
+
       hr = girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(),&fill,ppPoints);
+
+      girder->put_HarpedStrandAdjustmentEnd(t_end_shift);
+      girder->put_HarpedStrandAdjustmentHP(t_hp_shift);
+
       break;
 
    case pgsTypes::Temporary:
@@ -14436,7 +14795,7 @@ std::vector<IUserDefinedLoads::UserMomentLoad>* CBridgeAgentImp::GetUserMomentLo
 ////////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
 //
-HRESULT CBridgeAgentImp::OnBridgeChanged()
+HRESULT CBridgeAgentImp::OnBridgeChanged(CBridgeChangedHint* pHint)
 {
 //   LOG(_T("OnBridgeChanged Event Received"));
    INVALIDATE( CLEAR_ALL );
@@ -14968,65 +15327,44 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    CLongitudinalRebarData lrd = pLongRebar->GetLongitudinalRebarData(span,gdr);
 
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(span,gdr,&girder);
-
-   CComPtr<IRebarLayout> rebar_layout;
-   girder->get_RebarLayout(&rebar_layout);
-
-   Float64 gdr_length = GetGirderLength(span,gdr);
-   pgsPointOfInterest startPoi(span,gdr,0.00);
-   pgsPointOfInterest endPoi(span,gdr,gdr_length);
-
-   CComPtr<IShape> startShape, endShape;
-   GetGirderShapeDirect(startPoi,&startShape);
-   GetGirderShapeDirect(endPoi,  &endShape);
-
-   CComPtr<IRect2d> bbStart, bbEnd;
-   startShape->get_BoundingBox(&bbStart);
-   endShape->get_BoundingBox(&bbEnd);
-
-   CComPtr<IPoint2d> topCenter, bottomCenter;
-   bbStart->get_TopCenter(&topCenter);
-   bbStart->get_BottomCenter(&bottomCenter);
-
-   Float64 startTopY, startBottomY;
-   topCenter->get_Y(&startTopY);
-   bottomCenter->get_Y(&startBottomY);
-
-   topCenter.Release();
-   bottomCenter.Release();
-
-   bbEnd->get_TopCenter(&topCenter);
-   bbEnd->get_BottomCenter(&bottomCenter);
-
-   Float64 endTopY, endBottomY;
-   topCenter->get_Y(&endTopY);
-   bottomCenter->get_Y(&endBottomY);
-
    const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = lrd.RebarRows;
-
-   std::_tstring strRebarName = pLongRebar->GetLongitudinalRebarMaterial(span,gdr);
-   matRebar::Grade grade;
-   matRebar::Type type;
-   pLongRebar->GetLongitudinalRebarMaterial(span,gdr,type,grade);
-   MaterialSpec matSpec = (type == matRebar::A615 ? msA615 : msA706);
-   RebarGrade matGrade;
-   switch(grade)
-   {
-   case matRebar::Grade40: matGrade = Grade40; break;
-   case matRebar::Grade60: matGrade = Grade60; break;
-   case matRebar::Grade75: matGrade = Grade75; break;
-   case matRebar::Grade80: matGrade = Grade80; break;
-   default:
-      ATLASSERT(false);
-   }
-
-   CComPtr<IRebarFactory> rebar_factory;
-   rebar_factory.CoCreateInstance(CLSID_RebarFactory);
-
    if ( 0 < rebar_rows.size() )
    {
+      CComPtr<IPrecastGirder> girder;
+      GetGirder(span,gdr,&girder);
+
+      Float64 gdr_length = GetGirderLength(span,gdr);
+
+      CComPtr<IRebarLayout> rebar_layout;
+      girder->get_RebarLayout(&rebar_layout);
+
+      std::_tstring strRebarName = pLongRebar->GetLongitudinalRebarMaterial(span,gdr);
+      matRebar::Grade grade;
+      matRebar::Type type;
+      pLongRebar->GetLongitudinalRebarMaterial(span,gdr,type,grade);
+      MaterialSpec matSpec = (type == matRebar::A615 ? msA615 : (type == matRebar::A706 ? msA706 : msA1035));
+      RebarGrade matGrade;
+      switch(grade)
+      {
+      case matRebar::Grade40: matGrade = Grade40; break;
+      case matRebar::Grade60: matGrade = Grade60; break;
+      case matRebar::Grade75: matGrade = Grade75; break;
+      case matRebar::Grade80: matGrade = Grade80; break;
+      case matRebar::Grade100: matGrade = Grade100; break;
+      default:
+         ATLASSERT(false);
+      }
+
+#if defined _DEBUG
+      if ( matGrade == Grade100 )
+      {
+         ATLASSERT(lrfdVersionMgr::SixthEditionWith2013Interims <= lrfdVersionMgr::GetVersion());
+      }
+#endif
+
+      CComPtr<IRebarFactory> rebar_factory;
+      rebar_factory.CoCreateInstance(CLSID_RebarFactory);
+
 //#pragma Reminder("The unitserver below leaks memory because it is referenced to strongly by all of its unit types, but has a weak ref to them. Not easy to resolve")
       CComPtr<IUnitServer> unitServer;
       unitServer.CoCreateInstance(CLSID_UnitServer);
@@ -15036,23 +15374,51 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
       CComPtr<IUnitConvert> unit_convert;
       unitServer->get_UnitConvert(&unit_convert);
 
-
-      // The library entries are built on the assumption that rebars run full length of the girder
-      CComPtr<IFlexRebarLayoutItem> flex_layout_item;
-      flex_layout_item.CoCreateInstance(CLSID_FlexRebarLayoutItem);
-
-      flex_layout_item->put_Position(lpCenter);
-      flex_layout_item->put_LengthFactor(1.0);
-      flex_layout_item->putref_Girder(girder);
-
-      CComQIPtr<IRebarLayoutItem> rebar_layout_item(flex_layout_item);
-
       for ( RowIndexType idx = 0; idx < rebar_rows.size(); idx++ )
       {
          const CLongitudinalRebarData::RebarRow& info = rebar_rows[idx];
 
-         if ( 0 < info.BarSize && 0 < info.NumberOfBars )
+         Float64 startLayout(0), endLayout(0);
+
+         if (info.GetRebarStartEnd(gdr_length, &startLayout, &endLayout))
          {
+            CComPtr<IFixedLengthRebarLayoutItem> fixedlength_layout_item;
+            hr = fixedlength_layout_item.CoCreateInstance(CLSID_FixedLengthRebarLayoutItem);
+
+            fixedlength_layout_item->put_Start(startLayout);
+            fixedlength_layout_item->put_End(endLayout);
+            fixedlength_layout_item->putref_Girder(girder);
+
+            // Set pattern for layout
+            pgsPointOfInterest startPoi(span,gdr,startLayout);
+            pgsPointOfInterest endPoi(span,gdr,endLayout);
+
+            CComPtr<IShape> startShape, endShape;
+            GetGirderShapeDirect(startPoi,&startShape);
+            GetGirderShapeDirect(endPoi,  &endShape);
+
+            CComPtr<IRect2d> bbStart, bbEnd;
+            startShape->get_BoundingBox(&bbStart);
+            endShape->get_BoundingBox(&bbEnd);
+
+            CComPtr<IPoint2d> topCenter, bottomCenter;
+            bbStart->get_TopCenter(&topCenter);
+            bbStart->get_BottomCenter(&bottomCenter);
+
+            Float64 startTopY, startBottomY;
+            topCenter->get_Y(&startTopY);
+            bottomCenter->get_Y(&startBottomY);
+
+            topCenter.Release();
+            bottomCenter.Release();
+
+            bbEnd->get_TopCenter(&topCenter);
+            bbEnd->get_BottomCenter(&bottomCenter);
+
+            Float64 endTopY, endBottomY;
+            topCenter->get_Y(&endTopY);
+            bottomCenter->get_Y(&endBottomY);
+
             BarSize bar_size = GetBarSize(info.BarSize);
             CComPtr<IRebar> rebar;
             rebar_factory->CreateRebar(matSpec,matGrade,bar_size,unit_convert,&rebar);
@@ -15090,11 +15456,11 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
             row_pattern->put_Spacing( info.BarSpacing );
             row_pattern->put_Orientation( rroHCenter );
 
-            rebar_layout_item->AddRebarPattern(row_pattern);
+            fixedlength_layout_item->AddRebarPattern(row_pattern);
+
+            rebar_layout->Add(fixedlength_layout_item);
          }
       }
-
-      rebar_layout->Add(rebar_layout_item);
    }
 }
 
@@ -15156,6 +15522,22 @@ void CBridgeAgentImp::CheckBridge()
             {
                CString strMsg;
                strMsg.Format(_T("Span %d Girder %s, Temporary strands are not in the top half of the girder"),LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx));
+               pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,strMsg);
+               pStatusCenter->Add(pStatusItem);
+            }
+         }
+
+         // Check that longitudinal rebars are located within section bounds
+         std::vector<RowIndexType> outBoundRows = CheckLongRebarGeometry(spanIdx, gdrIdx);
+         if (!outBoundRows.empty())
+         {
+            // We have bars out of bounds.
+            for(std::vector<RowIndexType>::iterator it=outBoundRows.begin(); it!=outBoundRows.end(); it++)
+            {
+               RowIndexType row = *it + 1; // UI has one-based index
+
+               CString strMsg;
+               strMsg.Format(_T("Span %d Girder %s: Longitudinal rebar row %d contains one or more bars located outside of the girder section."),LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx),row);
                pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,strMsg);
                pStatusCenter->Add(pStatusItem);
             }
@@ -15769,8 +16151,10 @@ Float64 CBridgeAgentImp::GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,
    rebar_section->get__EnumRebarSectionItem(&enum_items);
 
    Float64 cl = GetHalfElevation(poi);
-
    Float64 As = 0;
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
 
    CComPtr<IRebarSectionItem> item;
    while ( enum_items->Next(1,&item,NULL) != S_FALSE )
@@ -15796,7 +16180,7 @@ Float64 CBridgeAgentImp::GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,
          Float64 fra = 1.0;
          if ( bDevAdjust )
          {
-            fra = GetDevLengthFactor(poi.GetSpan(),poi.GetGirder(),item);
+            fra = GetDevLengthFactor(span, gdr, item);
          }
 
          As += fra*as;
@@ -16047,8 +16431,8 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
       //
       // negative moment reinforcement
       //
-   SpanIndexType span  = poi.GetSpan();
-   GirderIndexType gdr = poi.GetGirder();
+      SpanIndexType span  = poi.GetSpan();
+      GirderIndexType gdr = poi.GetGirder();
 
       Float64 start_end_size = GetGirderStartConnectionLength(span,gdr);
       Float64 end_end_size   = GetGirderEndConnectionLength(span,gdr);
@@ -16074,14 +16458,50 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
             {
                if ( nmRebarData.RebarSize != matRebar::bsNone )
                {
+                  // Explicit rebar. Reduce area for development if needed.
                   pBar = lrfdRebarPool::GetInstance()->GetRebar( nmRebarData.RebarType, nmRebarData.RebarGrade, nmRebarData.RebarSize);
 
-                  if (nmRebarData.Mat == CDeckRebarData::TopMat)
-                     As_Top += pBar->GetNominalArea()/nmRebarData.Spacing;
+                  Float64 As = pBar->GetNominalArea()/nmRebarData.Spacing;
+
+                  // Get development length of bar
+                  // remove metric from bar name
+                  std::_tstring barst(pBar->GetName());
+                  std::size_t sit = barst.find(_T(" "));
+                  if (sit != std::_tstring::npos)
+                     barst.erase(sit, barst.size()-1);
+
+                  CComBSTR barname(barst.c_str());
+                  REBARDEVLENGTHDETAILS devdet = GetRebarDevelopmentLengthDetails(barname, pBar->GetNominalArea(), 
+                                                                                  pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
+                                                                                  pDeck->SlabConcreteType, pDeck->SlabFc, 
+                                                                                  pDeck->SlabHasFct, pDeck->SlabFct);
+                  Float64 ld = devdet.ldb;
+
+                  Float64 bar_cutoff; // cutoff length from POI
+                  if ( nmRebarData.PierIdx == prev_pier )
+                  {
+                     bar_cutoff = nmRebarData.RightCutoff - dist_from_cl_prev_pier;
+                  }
                   else
-                     As_Bottom += pBar->GetNominalArea()/nmRebarData.Spacing;
+                  {
+                     bar_cutoff = nmRebarData.LeftCutoff - dist_to_cl_next_pier;
+                  }
+
+                  ATLASSERT(bar_cutoff >= -TOLERANCE);
+
+                  // Reduce As for development if needed
+                  if (bar_cutoff < ld)
+                  {
+                     As = As * bar_cutoff / ld;
+                  }
+
+                  if (nmRebarData.Mat == CDeckRebarData::TopMat)
+                     As_Top += As;
+                  else
+                     As_Bottom += As;
                }
 
+               // Lump sum bars are not adjusted for development
                if (nmRebarData.Mat == CDeckRebarData::TopMat)
                   As_Top += nmRebarData.LumpSum;
                else

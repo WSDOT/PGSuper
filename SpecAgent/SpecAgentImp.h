@@ -45,6 +45,7 @@ class ATL_NO_VTABLE CSpecAgentImp :
    public ITransverseReinforcementSpec,
    public IPrecastIGirderDetailsSpec,
    public IGirderHaulingSpecCriteriaEx,
+   public IKdotGirderHaulingSpecCriteria,
    public IGirderLiftingSpecCriteriaEx,
    public IDebondLimits,
    public IResistanceFactors
@@ -68,6 +69,7 @@ BEGIN_COM_MAP(CSpecAgentImp)
    COM_INTERFACE_ENTRY(IGirderLiftingSpecCriteriaEx)
    COM_INTERFACE_ENTRY(IGirderHaulingSpecCriteria)
    COM_INTERFACE_ENTRY(IGirderHaulingSpecCriteriaEx)
+   COM_INTERFACE_ENTRY(IKdotGirderHaulingSpecCriteria)
    COM_INTERFACE_ENTRY(IDebondLimits)
    COM_INTERFACE_ENTRY(IResistanceFactors)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
@@ -105,7 +107,7 @@ public:
    virtual Float64 GetAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
    virtual Float64 GetCastingYardWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetAllowableCompressiveStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls);
-   virtual void GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,double* pCoeff,bool* pbMax,double* pMaxValue);
+   virtual void GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64* pCoeff,bool* pbMax,Float64* pMaxValue);
    virtual Float64 GetCastingYardAllowableStress(pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
    virtual Float64 GetBridgeSiteAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
    virtual Float64 GetInitialAllowableCompressiveStress(Float64 fci);
@@ -148,7 +150,7 @@ public:
    virtual Float64 GetLiftingSweepTolerance()const;
    virtual Float64 GetLiftingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetLiftingWithMildRebarAllowableStressFactor();
-   virtual void GetLiftingAllowableTensileConcreteStressParameters(double* factor,bool* pbMax,double* fmax);
+   virtual void GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
    virtual Float64 GetLiftingAllowableTensileConcreteStressEx(Float64 fci, bool includeRebar);
    virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci);
    virtual Float64 GetLiftingModulusOfRupture(SpanIndexType span,GirderIndexType gdr);
@@ -165,10 +167,11 @@ public:
 // IGirderHaulingSpecCriteria
 public:
    virtual bool IsHaulingCheckEnabled() const;
+   virtual pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const;
    virtual void GetHaulingImpact(Float64* pDownward, Float64* pUpward) const;
    virtual Float64 GetHaulingCrackingFs() const;
    virtual Float64 GetHaulingRolloverFs() const;
-   virtual void GetHaulingAllowableTensileConcreteStressParameters(double* factor,bool* pbMax,double* fmax);
+   virtual void GetHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
    virtual Float64 GetHaulingAllowableTensileConcreteStress(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetHaulingAllowableCompressiveConcreteStress(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetHaulingAllowableTensionFactor();
@@ -203,6 +206,22 @@ public:
    virtual Float64 GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType);
    virtual Float64 GetHaulingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType);
 
+// IKdotGirderHaulingSpecCriteria
+public:
+   // Spec criteria for KDOT analyses
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStress(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStress(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetKdotHaulingAllowableTensionFactor();
+   virtual Float64 GetKdotHaulingAllowableCompressionFactor();
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor();
+   virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar);
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(Float64 fc);
+   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const;
+   virtual Float64 GetHaulingDesignLocationAccuracy() const;
+   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const;
+
 // IDebondLimits
 public:
    virtual Float64 GetMaxDebondedStrands(SpanIndexType spanIdx,GirderIndexType gdrIdx);
@@ -215,6 +234,7 @@ public:
 // IResistanceFactors
 public:
    virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression);
+   virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl);
    virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl);
    virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type);
 

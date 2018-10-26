@@ -68,8 +68,8 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
 
    // top level icon
    HICON hIcon = AfxGetApp()->LoadIcon(IDI_TXDOT);
-
-   m_TemplateGroup.AddItem( new CEAFTemplateItem(strItemName,NULL,hIcon) );
+   m_TemplateGroup.SetIcon(hIcon);
+   m_TemplateGroup.AddItem( new CEAFTemplateItem(this,strItemName,NULL,hIcon) );
 
    // Location of template folders
    CString strWorkgroupFolderName = GetTOGAFolder();
@@ -78,10 +78,10 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
 
    if ( strWorkgroupFolderName.GetLength() != 0 )
    {
-      CEAFTemplateGroup* pGroup = new CEAFTemplateGroup(this);
-      pGroup->SetGroupName(_T("Templates"));
-      m_TemplateGroup.AddGroup(pGroup);
-      FindInFolder(strWorkgroupFolderName,pGroup,hIcon);
+      //CEAFTemplateGroup* pGroup = new CEAFTemplateGroup();
+      //pGroup->SetGroupName(_T("Templates"));
+      //m_TemplateGroup.AddGroup(pGroup);
+      FindInFolder(strWorkgroupFolderName,&m_TemplateGroup,hIcon);
 
       // CEAFSplashScreen::SetText(_T(""));
    }
@@ -127,7 +127,7 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
       if ( hIcon )
          fileIcon = hIcon;
 
-      CEAFTemplateItem* pItem = new CEAFTemplateItem(finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
+      CEAFTemplateItem* pItem = new CEAFTemplateItem(this,finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
       pGroup->AddItem(pItem);
    }
 }

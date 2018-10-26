@@ -60,7 +60,7 @@ private:
       // index 0 = old data (before design), 1 = new data (design outcome)
       CGirderData m_GirderData[2];
       CShearData m_ShearData[2];
-      double m_SlabOffset[2][2]; // first index is pgsTypes::MemberEndType
+      Float64 m_SlabOffset[2][2]; // first index is pgsTypes::MemberEndType
       pgsTypes::SlabOffsetType m_SlabOffsetType[2];
    };
 

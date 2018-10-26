@@ -169,7 +169,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
 
-   double cumm_span_length = 0;
+   Float64 cumm_span_length = 0;
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
@@ -294,7 +294,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
          row++;
       }
 
-      double span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
+      Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
       cumm_span_length += span_length;
    }
 

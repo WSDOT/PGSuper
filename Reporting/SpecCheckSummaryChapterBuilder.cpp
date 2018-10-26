@@ -213,7 +213,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    pgsPointOfInterest poi = *vPoi.begin();
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   double excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
+   Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
    if ( excess_camber < 0 )
    {
       rptParagraph* pPara = new rptParagraph;

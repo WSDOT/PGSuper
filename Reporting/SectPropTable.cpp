@@ -152,12 +152,12 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
     // Write non-composite properties
    row = xs_table->GetNumberOfHeaderRows();
 
-   double Yt, Yb;
+   Float64 Yt, Yb;
    Yt = pSectProp->GetYt(pgsTypes::CastingYard,poi);
    Yb = fabs(pSectProp->GetYb(pgsTypes::CastingYard,poi));
-   double depth = Yt + Yb;
+   Float64 depth = Yt + Yb;
 
-   double span_length = pBridge->GetSpanLength(span,girder);
+   Float64 span_length = pBridge->GetSpanLength(span,girder);
 
    (*xs_table)(row++,1) << l2.SetValue( pSectProp->GetAg(pgsTypes::CastingYard,poi) );
    (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIx(pgsTypes::CastingYard,poi) );

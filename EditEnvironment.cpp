@@ -31,7 +31,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 txnEditEnvironment::txnEditEnvironment(enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
-                                       double oldRelHumidity, double newRelHumidity)
+                                       Float64 oldRelHumidity, Float64 newRelHumidity)
 {
    m_ExposureCondition[0] = oldExposureCondition;
    m_ExposureCondition[1] = newExposureCondition;

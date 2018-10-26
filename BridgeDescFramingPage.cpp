@@ -180,7 +180,7 @@ void CBridgeDescFramingPage::OnLayoutBySpanLengths()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   std::vector<double> spanLengths = m_Grid.GetSpanLengths();
+   std::vector<Float64> spanLengths = m_Grid.GetSpanLengths();
    CSpanLengthDlg dlg;
    dlg.m_SpanLengths = spanLengths;
    if ( dlg.DoModal() == IDOK )

@@ -154,7 +154,7 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
             HAUNCHDETAILS haunch_details;
             pGdrHaunch->GetHaunchDetails(span,girder,&haunch_details);
 
-            (*pTable)(row, col++) << color(Red) << _T("There is a large variation in the slab haunch thickness (") << dim2.SetValue(haunch_details.HaunchDiff) << _T("). Check stirrup length to ensure they engage the deck at all locations.") << color(Black) << rptNewLine;
+            (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
          }
          else
          {
@@ -213,9 +213,9 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    (*pTable)(0,3) << _T("Max Incline") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
    (*pTable)(0,4) << _T("Status");
 
-   double Wb, Yb, Orientation;
+   Float64 Wb, Yb, Orientation;
    pArtifact->GetGlobalGirderStabilityParameters(&Wb,&Yb,&Orientation);
-   double maxIncline = pArtifact->GetMaxGirderIncline();
+   Float64 maxIncline = pArtifact->GetMaxGirderIncline();
 
    (*pTable)(1,0) << dim.SetValue(Wb);
    (*pTable)(1,1) << dim.SetValue(Yb);
@@ -228,6 +228,36 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
       (*pTable)(1,4) << RPT_FAIL << rptNewLine << _T("Reaction falls outside of middle third of bottom width of girder");
    
    *pBody << pTable;
+}
+
+void CConstructabilityCheckTable::BuildLongitudinalRebarGeometryCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
+   const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
+   
+   if ( !pArtifact->RebarGeometryCheckPassed() )
+   {
+      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      *pChapter << pTitle;
+      *pTitle << _T("Longitudinal rebars exist outside of the girder section - ") << RPT_FAIL;
+
+      rptParagraph* pBody = new rptParagraph;
+      *pChapter << pBody;
+
+      std::vector<RowIndexType> rows = pArtifact->GetRebarRowsOutsideOfSection();
+
+      *pBody << _T("Bars are located outside of the section in the following rows: ");
+
+       CollectionIndexType nr = rows.size();
+      for (CollectionIndexType ir=0; ir<nr; ir++)
+      {
+         CollectionIndexType row = rows.at(ir);
+         *pBody << row+1;
+         if (ir!=nr-1)
+            *pBody << _T(", ");
+      }
+   }
 }
 
 //======================== ACCESS     =======================================

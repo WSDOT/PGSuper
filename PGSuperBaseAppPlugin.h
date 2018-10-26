@@ -32,6 +32,9 @@ class CPGSuperBaseAppPlugin
 public:
    CPGSuperBaseAppPlugin();
 
+   virtual CString GetAppName() const = 0;
+   virtual CString GetTemplateFileExtension() = 0;
+
    HRESULT OnFinalConstruct();
    void OnFinalRelease();
 

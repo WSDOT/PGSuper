@@ -153,7 +153,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
 
          (*p_table)(row,col++) << location.SetValue( stage, poi, end_size );
 
-         double Vi, Mmax;
+         Float64 Vi, Mmax;
          pLsForces->GetViMmax(pgsTypes::StrengthI,stage,poi,bat,&Vi,&Mmax);
 
          (*p_table)(row,col++) << moment.SetValue( Mmax );

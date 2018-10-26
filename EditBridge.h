@@ -32,7 +32,7 @@ class txnEditBridge : public txnTransaction
 public:
    txnEditBridge(const CBridgeDescription& oldBridgeDesc,const CBridgeDescription& newBridgeDesc,
       enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
-      double oldRelHumidity, double newRelHumidity
+      Float64 oldRelHumidity, Float64 newRelHumidity
       );
 
    ~txnEditBridge();

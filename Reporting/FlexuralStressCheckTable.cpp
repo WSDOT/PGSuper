@@ -227,10 +227,10 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
 
    std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
-   double c; // compression coefficient
-   double t; // tension coefficient
-   double t_max; // maximum allowable tension
-   double t_with_rebar; // allowable tension when sufficient rebar is used
+   Float64 c; // compression coefficient
+   Float64 t; // tension coefficient
+   Float64 t_max; // maximum allowable tension
+   Float64 t_with_rebar; // allowable tension when sufficient rebar is used
    bool b_t_max; // true if max allowable tension is applicable
 
    switch ( stage )
@@ -349,13 +349,9 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
 
       if ( stage == pgsTypes::CastingYard )
       {
-          Float64 As_reqd = gdrArtifact->GetCastingYardMildRebarRequirement();
           *p << _T("Allowable tensile stress = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT) << RPT_FCI;
           *p << _T(" = ") << stress_u.SetValue(allowable_tension_with_rebar);
-          if ( !IsZero(As_reqd) )
-             *p << _T(" if at least ") << area.SetValue(As_reqd) << _T(" of mild reinforcement is provided") << rptNewLine;
-          else
-             *p << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
+          *p << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
       }
    }
 
@@ -371,7 +367,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       *p << _T(" = ") <<stress_u.SetValue(allowable_compression)<<rptNewLine;
    }
 
-   double fc_reqd = gdrArtifact->GetRequiredConcreteStrength(stage,limitState);
+   Float64 fc_reqd = gdrArtifact->GetRequiredConcreteStrength(stage,limitState);
    if ( 0 < fc_reqd )
    {
       if ( stage == pgsTypes::CastingYard )
@@ -415,7 +411,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
    else if (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3)
       p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    else if (stage == pgsTypes::CastingYard )
-      p_table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
+      p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
    else
       p_table = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
 
@@ -483,6 +479,14 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
       (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
+   if ( stage == pgsTypes::CastingYard ) 
+   {
+      p_table->SetColumnSpan(0,col1,2);
+      (*p_table)(0,col1++) << _T("Tensile Capacity");
+      (*p_table)(1,col2++) << COLHDR(_T("Top"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR(_T("Bottom"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+
    // get allowable stresses
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_FLEXURESTRESS | POI_TABULAR );
@@ -491,14 +495,12 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
    const pgsFlexuralStressArtifact* pArtifact;
 
    Float64 allowable_tension;
-   Float64 allowable_tension_with_rebar;
    Float64 allowable_compression;
 
    if (stressType==pgsTypes::Tension && (stage != pgsTypes::BridgeSite2))
    {
       pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,vPoi.begin()->GetDistFromStart()) );
       allowable_tension = pArtifact->GetCapacity();
-      allowable_tension_with_rebar = gdrArtifact->GetCastingYardCapacityWithMildRebar();
    }
 
    if (stressType==pgsTypes::Compression || stage != pgsTypes::BridgeSite3)
@@ -532,15 +534,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,SKIP_CELL);
-      (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status");
-      if ( !IsZero(allowable_tension) )
-         (*p_table)(0,col1-1) << rptNewLine << _T("w/o rebar") << rptNewLine << _T("(C/D)");
-
-      p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
-      (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/ rebar");
-      if ( !IsZero(allowable_tension_with_rebar) )
-         (*p_table)(0,col1-1) << rptNewLine << _T("(C/D)");
+      (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,SKIP_CELL);
@@ -626,7 +620,33 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 
       (*p_table)(row,++col) << stress.SetValue( fBot );
 
-      // Tension w/o rebar
+
+      if ( stage == pgsTypes::CastingYard )
+      {
+         // Casting yard tension varies along length of the girder
+         allowable_tension = pArtifact->GetCapacity();
+
+         // Only print capacity if demand is in tension
+         if (fTop>0.0)
+         {
+            (*p_table)(row,++col) << stress.SetValue( allowable_tension );
+         }
+         else
+         {
+            (*p_table)(row,++col) << _T("-");
+         }
+
+         if (fBot>0.0)
+         {
+            (*p_table)(row,++col) << stress.SetValue( allowable_tension );
+         }
+         else
+         {
+            (*p_table)(row,++col) << _T("-");
+         }
+      }
+
+      // Tension 
       if ( stage == pgsTypes::CastingYard || 
 //           stage == pgsTypes::GirderPlacement || 
            stage == pgsTypes::TemporaryStrandRemoval || 
@@ -634,7 +654,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
           (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
          )
       {
-         bool bPassed = (limitState == pgsTypes::ServiceIII ? pArtifact->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) : pArtifact->Passed(pgsFlexuralStressArtifact::WithoutRebar));
+         bool bPassed = (limitState == pgsTypes::ServiceIII ? pArtifact->BottomPassed() : pArtifact->Passed());
 	      if ( bPassed )
 		     (*p_table)(row,++col) << RPT_PASS;
 	      else
@@ -642,29 +662,9 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 
          if ( !IsZero(allowable_tension) )
          {
-            double f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
+            Float64 f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
            (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension,f,bPassed)<<_T(")");
          }
-      }
-
-      // Tension w/ rebar
-      if ( stage == pgsTypes::CastingYard )
-      {
-         bool bPassed = ( fTop <= allowable_tension_with_rebar) && (fBot <= allowable_tension_with_rebar);
-         if (bPassed)
-         {
-           (*p_table)(row,++col) << RPT_PASS;
-         }
-         else
-         {
-           (*p_table)(row,++col) << RPT_FAIL;
-         }
-
-         if ( !IsZero(allowable_tension_with_rebar) )
-         {
-            double f = max(fTop,fBot);
-            (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension_with_rebar,f,bPassed)<<_T(")");
-          }
       }
 
       // Compression
@@ -679,11 +679,11 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
          bool bPassed;
          if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
          {
-            bPassed = pArtifact->Passed(pgsFlexuralStressArtifact::WithoutRebar);
+            bPassed = pArtifact->Passed();
          }
          else
          {
-            bPassed = pOtherArtifact->Passed(pgsFlexuralStressArtifact::WithoutRebar);
+            bPassed = pOtherArtifact->Passed();
             pOtherArtifact->GetDemand( &fTop, &fBot );
          }
 
@@ -692,7 +692,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 	      else
 		      (*p_table)(row, ++col) << RPT_FAIL;
 
-         double f = min(fTop,fBot);
+         Float64 f = min(fTop,fBot);
          (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_compression,f,bPassed)<<_T(")");
       }
 

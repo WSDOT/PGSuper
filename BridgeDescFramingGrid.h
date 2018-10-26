@@ -51,8 +51,8 @@ public:
 
 // Operations
 public:
-   std::vector<double> GetSpanLengths();
-   void SetSpanLengths(const std::vector<double>& spanLengths,PierIndexType fixedPierIdx);
+   std::vector<Float64> GetSpanLengths();
+   void SetSpanLengths(const std::vector<Float64>& spanLengths,PierIndexType fixedPierIdx);
 
 // Overrides
 	// ClassWizard generated virtual function overrides

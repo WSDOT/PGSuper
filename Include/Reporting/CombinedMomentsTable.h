@@ -867,7 +867,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       {
          nCols += 2;
 
-         // we have a double-width table (except for location and ped)
+         // we have a Float64-width table (except for location and ped)
          nCols += nCols-3;
       }
    }

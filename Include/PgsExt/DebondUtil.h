@@ -456,7 +456,7 @@ public:
    // utility struct to temporarily store and sort rows
    struct StrandRow
    {
-      double Elevation;
+      Float64 Elevation;
       StrandIndexType Count;
 
       StrandRow():

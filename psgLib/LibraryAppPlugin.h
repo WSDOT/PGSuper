@@ -70,9 +70,8 @@ public:
    virtual BOOL Init(CEAFApp* pParent);
    virtual void Terminate();
    virtual void IntegrateWithUI(BOOL bIntegrate);
-   virtual CEAFDocTemplate* CreateDocTemplate();
+   virtual std::vector<CEAFDocTemplate*> CreateDocTemplates();
    virtual HMENU GetSharedMenuHandle();
-   virtual UINT GetDocumentResourceID();
    virtual CString GetName();
 
 // IEAFCommandCallback

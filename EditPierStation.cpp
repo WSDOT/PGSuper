@@ -31,7 +31,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnEditPierStation::txnEditPierStation(PierIndexType pierIdx,double oldStation,double newStation,pgsTypes::MovePierOption moveOption)
+txnEditPierStation::txnEditPierStation(PierIndexType pierIdx,Float64 oldStation,Float64 newStation,pgsTypes::MovePierOption moveOption)
 {
    m_PierIdx = pierIdx;
    m_Station[0] = oldStation;

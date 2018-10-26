@@ -72,9 +72,11 @@ int CLongSteelGrid::GetColWidth(ROWCOL nCol)
    switch (nCol)
    {
    case 0:
-      return rect.Width( )/12;
+      return rect.Width( )/19;
+   case 1:
+      return rect.Width( )*3/18;
    default:
-      return rect.Width( )*2/11;
+      return rect.Width( )*2/18;
    }
 }
 
@@ -133,6 +135,8 @@ void CLongSteelGrid::Insertrow()
 	InsertRows(nRow, 1);
    SetRowStyle(nRow);
    SetCurrentCell(nRow, GetLeftCol(), GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
+   OnLayoutTypeChanged(nRow);
+	Invalidate();
 }
 
 void CLongSteelGrid::Appendrow()
@@ -143,6 +147,7 @@ void CLongSteelGrid::Appendrow()
 	InsertRows(nRow, 1);
    SetRowStyle(nRow);
    SetCurrentCell(nRow, GetLeftCol(), GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
+   OnLayoutTypeChanged(nRow);
 	Invalidate();
 }
 
@@ -188,7 +193,7 @@ void CLongSteelGrid::CustomInit()
 	this->GetParam( )->EnableUndo(FALSE);
 
    const int num_rows=0;
-   const int num_cols=5;
+   const int num_cols=8;
 
 	this->SetRowCount(num_rows);
 	this->SetColCount(num_cols);
@@ -216,28 +221,12 @@ void CLongSteelGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("Girder\nFace"))
-		);
-
-	this->SetStyleRange(CGXRange(0,2), CGXStyle()
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("Bar\nSize"))
-		);
-
-	this->SetStyleRange(CGXRange(0,3), CGXStyle()
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("# of Bars"))
+			.SetValue(_T("Measured\nFrom"))
 		);
 
    CString cv;
-   cv.Format(_T("Cover\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
-	this->SetStyleRange(CGXRange(0,4), CGXStyle()
+   cv.Format(_T("Distance\nFrom End\n(%s)"),pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
+	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -245,8 +234,50 @@ void CLongSteelGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format(_T("Spacing\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Bar\nLength\n(%s)"),pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
+	this->SetStyleRange(CGXRange(0,3), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(cv)
+		);
+
+	this->SetStyleRange(CGXRange(0,4), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(_T("Girder\nFace"))
+		);
+
+   cv.Format(_T("Cover\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,5), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(cv)
+		);
+
+	this->SetStyleRange(CGXRange(0,6), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(_T("Bar\nSize"))
+		);
+
+	this->SetStyleRange(CGXRange(0,7), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(_T("# of\nBars"))
+		);
+
+   cv.Format(_T("Spacing\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+	this->SetStyleRange(CGXRange(0,8), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -274,29 +305,50 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
 
 	this->SetStyleRange(CGXRange(nRow,1), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+			.SetChoiceList(_T("Full-Length\nLeft End\nRight End\nMid-Girder-Length\nMid-Girder-Ends"))
+			.SetValue(_T("Full-Length"))
+         .SetHorizontalAlignment(DT_RIGHT)
+         );
+
+	this->SetStyleRange(CGXRange(nRow,2,nRow,3), CGXStyle()
+			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0"))
+			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
+			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Please enter zero or greater"))
+         .SetHorizontalAlignment(DT_RIGHT)
+		);
+
+	this->SetStyleRange(CGXRange(nRow,4), CGXStyle()
+			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
 			.SetChoiceList(_T("Top\nBottom"))
 			.SetValue(_T("Top"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
-	this->SetStyleRange(CGXRange(nRow,2), CGXStyle()
+	this->SetStyleRange(CGXRange(nRow,5), CGXStyle()
+			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0"))
+			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
+			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Please enter zero or greater"))
+         .SetHorizontalAlignment(DT_RIGHT)
+         );
+
+	this->SetStyleRange(CGXRange(nRow,6), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
 			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#8\n#9\n#10\n#11\n#14\n#18"))
 			.SetValue(_T("#4"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
-	this->SetStyleRange(CGXRange(nRow,3), CGXStyle()
+	this->SetStyleRange(CGXRange(nRow,7), CGXStyle()
 			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("1"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("You must have at least one bar in a row"))
          .SetHorizontalAlignment(DT_RIGHT)
 		);
 
-	this->SetStyleRange(CGXRange(nRow,4,nRow,5), CGXStyle()
+	this->SetStyleRange(CGXRange(nRow,8), CGXStyle()
 			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
-			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Please enter a positive value"))
+			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Please enter zero or greater"))
          .SetHorizontalAlignment(DT_RIGHT)
 		);
 
@@ -318,32 +370,65 @@ CString CLongSteelGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 
 bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* plsi)
 {
-   double d;
+   Float64 d;
    int i;
 
-   CString s = GetCellValue(nRow, 1);
+   plsi->BarLayout = GetLayout(nRow); // bar layout type
+
+   if(plsi->BarLayout == pgsTypes::blFullLength)
+   {
+      // Set irrelevant data to zero
+      plsi->DistFromEnd = 0.0;
+      plsi->BarLength = 0.0;
+   }
+   else
+   {
+      CString s;
+      if(plsi->BarLayout == pgsTypes::blMidGirderEnds)
+      {
+         plsi->BarLength = 0.0;
+      }
+      else
+      {
+         s = GetCellValue(nRow, 3);
+         d = _tstof(s);
+         if (s.IsEmpty())
+            d=0;
+         else if (d==0.0 && s[0]!=_T('0'))
+            return false;
+
+         if (d<=0.0)
+         {
+            CString msg;
+            msg.Format(_T("Bar Length must be greater than zero in Row %d"), nRow);
+            ::AfxMessageBox(msg, MB_OK | MB_ICONWARNING);
+            return false;
+         }
+
+         plsi->BarLength = d;
+      }
+
+      if(plsi->BarLayout == pgsTypes::blMidGirderLength)
+      {
+         plsi->DistFromEnd = 0.0;
+      }
+      else
+      {
+         s = GetCellValue(nRow, 2);
+         d = _tstof(s);
+         if (s.IsEmpty())
+            d=0;
+         else if (d==0.0 && s[0]!=_T('0'))
+            return false;
+         plsi->DistFromEnd = d;
+      }
+   }
+
+   CString s = GetCellValue(nRow, 4);
    if (s==_T("Top"))
       plsi->Face = pgsTypes::GirderTop;
    else
       plsi->Face = pgsTypes::GirderBottom;
-
-   plsi->BarSize = GetBarSize(nRow,2);
-
-   s = GetCellValue(nRow, 3);
-   i = _tstoi(s);
-   if (s.IsEmpty())
-      i=0;
-   else if (i==0 && s[0]!=_T('0'))
-      return false;
-   plsi->NumberOfBars = i;
-
-   s = GetCellValue(nRow, 4);
-   d = _tstof(s);
-   if (s.IsEmpty())
-      d=0;
-   else if (d==0.0 && s[0]!=_T('0'))
-      return false;
-   plsi->Cover = d;
 
    s = GetCellValue(nRow, 5);
    d = _tstof(s);
@@ -351,6 +436,51 @@ bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* 
       d=0;
    else if (d==0.0 && s[0]!=_T('0'))
       return false;
+
+   if (d<0.0)
+   {
+      CString msg;
+      msg.Format(_T("Cover must be zero or greater in Row %d"), nRow);
+      ::AfxMessageBox(msg, MB_OK | MB_ICONWARNING);
+      return false;
+   }
+
+   plsi->Cover = d;
+
+   plsi->BarSize = GetBarSize(nRow);
+
+   s = GetCellValue(nRow, 7);
+   i = _tstoi(s);
+   if (s.IsEmpty())
+      i=0;
+   else if (i==0 && s[0]!=_T('0'))
+      return false;
+
+   if (i<=0)
+   {
+      CString msg;
+      msg.Format(_T("Number of bars per row must be zero or greater in Row %d"), nRow);
+      ::AfxMessageBox(msg, MB_OK | MB_ICONWARNING);
+      return false;
+   }
+
+   plsi->NumberOfBars = i;
+
+   s = GetCellValue(nRow, 8);
+   d = _tstof(s);
+   if (s.IsEmpty())
+      d=0;
+   else if (d==0.0 && s[0]!=_T('0'))
+      return false;
+
+   if (d<0.0)
+   {
+      CString msg;
+      msg.Format(_T("Bar spacing must be zero or greater in Row %d"), nRow);
+      ::AfxMessageBox(msg, MB_OK | MB_ICONWARNING);
+      return false;
+   }
+
    plsi->BarSpacing = d;
 
    return true;
@@ -358,7 +488,6 @@ bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* 
 
 void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
 {
-
    GetParam()->SetLockReadOnly(FALSE);
    CollectionIndexType size = rvec.size();
    if (size>0)
@@ -372,20 +501,46 @@ void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
       for (GirderLibraryEntry::LongSteelInfoVec::const_iterator it = rvec.begin(); it!=rvec.end(); it++)
       {
          CString tmp;
+         pgsTypes::RebarLayoutType layout = (*it).BarLayout;
+         if (layout == pgsTypes::blFullLength)
+            tmp = _T("Full-Length");
+         else if (layout == pgsTypes::blFromLeft)
+            tmp = _T("Left End");
+         else if (layout == pgsTypes::blFromRight)
+            tmp = _T("Right End");
+         else if (layout == pgsTypes::blMidGirderLength)
+            tmp = _T("Mid-Girder-Length");
+         else if (layout == pgsTypes::blMidGirderEnds)
+            tmp = _T("Mid-Girder-Ends");
+         else
+         {
+            ATLASSERT(0);
+            tmp = _T("Full-Length");
+         }
+
+         VERIFY(SetValueRange(CGXRange(nRow, 1), tmp));
+
+         VERIFY(SetValueRange(CGXRange(nRow, 2), (*it).DistFromEnd));
+         VERIFY(SetValueRange(CGXRange(nRow, 3), (*it).BarLength));
+
          pgsTypes::GirderFace face = (*it).Face;
          if (face==pgsTypes::GirderBottom)
             tmp = _T("Bottom");
          else
             tmp = _T("Top");
             
-         VERIFY(SetValueRange(CGXRange(nRow, 1), tmp));
+         VERIFY(SetValueRange(CGXRange(nRow, 4), tmp));
+
+         VERIFY(SetValueRange(CGXRange(nRow, 5), (*it).Cover));
 
          tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize((*it).BarSize).c_str());
-         VERIFY(SetValueRange(CGXRange(nRow, 2), tmp));
+         VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
 
-         VERIFY(SetValueRange(CGXRange(nRow, 3), (LONG)(*it).NumberOfBars));
-         VERIFY(SetValueRange(CGXRange(nRow, 4), (*it).Cover));
-         VERIFY(SetValueRange(CGXRange(nRow, 5), (*it).BarSpacing));
+         VERIFY(SetValueRange(CGXRange(nRow, 7), (LONG)(*it).NumberOfBars));
+         VERIFY(SetValueRange(CGXRange(nRow, 8), (*it).BarSpacing));
+
+         OnLayoutTypeChanged(nRow);
+
          nRow++;
       }
    }
@@ -400,19 +555,19 @@ BOOL CLongSteelGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	CGXControl* pControl = GetControl(nRow, nCol);
 	pControl->GetCurrentText(s);
 
-	if (nCol==3  && !s.IsEmpty( ))
+   if (nCol==7  && !s.IsEmpty( ))
 	{
       long l;
       if (!sysTokenizer::ParseLong(s, &l))
 		{
-			SetWarningText (_T("Value must be a number"));
+			SetWarningText (_T("Value must be an integer"));
 			return FALSE;
 		}
 		return TRUE;
 	}
-	else if ((nCol==4 || nCol==5)  && !s.IsEmpty( ))
+	else if ((nCol==2 || nCol==3 || nCol==5 || nCol==8)  && !s.IsEmpty( ))
 	{
-      double d;
+      Float64 d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));
@@ -424,9 +579,17 @@ BOOL CLongSteelGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	return CGXGridWnd::OnValidateCell(nRow, nCol);
 }
 
-matRebar::Size CLongSteelGrid::GetBarSize(ROWCOL row,ROWCOL col)
+void CLongSteelGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 {
-   CString s = GetCellValue(row, col);
+	if (nCol==1)
+	{
+      OnLayoutTypeChanged(nRow);
+   }
+}
+
+matRebar::Size CLongSteelGrid::GetBarSize(ROWCOL row)
+{
+   CString s = GetCellValue(row, 6);
    s.TrimLeft();
    int l = s.GetLength();
    CString s2 = s.Right(l-1);
@@ -451,4 +614,81 @@ matRebar::Size CLongSteelGrid::GetBarSize(ROWCOL row,ROWCOL col)
    }
 
    return matRebar::bsNone;
+}
+
+pgsTypes::RebarLayoutType CLongSteelGrid::GetLayout(ROWCOL nRow)
+{
+   pgsTypes::RebarLayoutType type;
+
+   CString s = GetCellValue(nRow, 1);
+   if (s==_T("Full-Length"))
+      type = pgsTypes::blFullLength;
+   else if (s==_T("Left End"))
+      type = pgsTypes::blFromLeft;
+   else if (s==_T("Right End"))
+      type = pgsTypes::blFromRight;
+   else if (s==_T("Mid-Girder-Length"))
+      type = pgsTypes::blMidGirderLength;
+   else if (s==_T("Mid-Girder-Ends"))
+      type = pgsTypes::blMidGirderEnds;
+   else
+   {
+      ATLASSERT(0); // should not happen
+      type = pgsTypes::blFullLength;
+   }
+
+   return type;
+}
+
+void CLongSteelGrid::EnableCell(ROWCOL nRow, ROWCOL nCol, BOOL bEnable)
+{
+   if (bEnable)
+   {
+      SetStyleRange(CGXRange(nRow,nCol), CGXStyle()
+         .SetEnabled(TRUE)
+         .SetFormat(GX_FMT_GEN)
+         .SetReadOnly(FALSE)
+         .SetInterior(::GetSysColor(COLOR_WINDOW))
+         );
+   }
+   else
+   {
+      SetStyleRange(CGXRange(nRow,nCol), CGXStyle()
+         .SetEnabled(FALSE)
+         .SetFormat(GX_FMT_HIDDEN)
+         .SetInterior(::GetSysColor(COLOR_BTNFACE))
+         );
+   }
+}
+
+void CLongSteelGrid::OnLayoutTypeChanged(ROWCOL nRow)
+{
+   pgsTypes::RebarLayoutType layout = GetLayout(nRow);
+
+   // Disable and enable dist from end and bar length depending on layout
+   BOOL bDistEndCol, bBarLengthCol;
+   if (layout==pgsTypes::blFullLength)
+   {
+      bDistEndCol = FALSE;
+      bBarLengthCol = FALSE;
+   }
+   else if (layout==pgsTypes::blMidGirderLength)
+   {
+      bDistEndCol = FALSE;
+      bBarLengthCol = TRUE;
+   }
+   else if (layout==pgsTypes::blMidGirderEnds)
+   {
+      bDistEndCol = TRUE;
+      bBarLengthCol = FALSE;
+   }
+   else
+   {
+      bDistEndCol = TRUE;
+      bBarLengthCol = TRUE;
+   }
+
+   EnableCell(nRow, 2, bDistEndCol);
+   EnableCell(nRow, 3, bBarLengthCol);
+
 }

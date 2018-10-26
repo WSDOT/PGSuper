@@ -92,6 +92,11 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       return pChapter;
    }
 
+   if (pGirderHaulingSpecCriteria->GetHaulingAnalysisMethod() != pgsTypes::hmWSDOT)
+   {
+      *pPara <<color(Red)<<_T("Fabrication analysis not performed. Analysis can only be performed for WSDOT hauling analysis method.")<<color(Black)<<rptNewLine;
+      return pChapter;
+   }
 
    bool bUSUnits = IS_US_UNITS(pDisplayUnits);
 
@@ -118,7 +123,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   double fci_form_stripping_without_tts = (bUSUnits ? CeilOff(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
+   Float64 fci_form_stripping_without_tts = (bUSUnits ? CeilOff(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
                                                      : CeilOff(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(6,unitMeasure::MPa)) );
    
    if ( 0 <  pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary) )
@@ -167,7 +172,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
          *pPara << _T("Number of Temporary Strands = ") << details.Nt << rptNewLine;
          *pPara << _T("Jacking Force, ") << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(details.Pjack) << rptNewLine;
 
-         double fci[4];
+         Float64 fci[4];
          fci[NO_TTS]          = (bUSUnits ? CeilOff(details.Fci[NO_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
                                           : CeilOff(details.Fci[NO_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
          fci[PS_TTS]          = (bUSUnits ? CeilOff(details.Fci[PS_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
@@ -281,7 +286,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
 //      *pPara << _T("Shipping Strength") << rptNewLine;
 //      pPara = new rptParagraph;
 //      *pChapter << pPara;
-//      double fc = (bUSUnits ? CeilOff(details.Fc, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
+//      Float64 fc = (bUSUnits ? CeilOff(details.Fc, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
 //                            : CeilOff(details.Fc, ::ConvertToSysUnits(6,  unitMeasure::MPa)));
 //      *pPara << RPT_FC << _T(" = ") << stress.SetValue(details.Fc);
 //       *pPara << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress.SetValue(fc) << rptNewLine;

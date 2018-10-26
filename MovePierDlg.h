@@ -37,7 +37,7 @@ class CMovePierDlg : public CDialog
 {
 // Construction
 public:
-	CMovePierDlg(PierIndexType pierIdx,double fromStation,double toStation,double prevPierStation,double nextPierStation,SpanIndexType nSpans,const unitStationFormat& stationFormat,CWnd* pParent = NULL);   // standard constructor
+	CMovePierDlg(PierIndexType pierIdx,Float64 fromStation,Float64 toStation,Float64 prevPierStation,Float64 nextPierStation,SpanIndexType nSpans,const unitStationFormat& stationFormat,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CMovePierDlg)
@@ -59,10 +59,10 @@ public:
 protected:
    PierIndexType m_PierIdx;
    SpanIndexType m_nSpans;
-   double m_FromStation;
-   double m_ToStation;
-   double m_PrevPierStation;
-   double m_NextPierStation;
+   Float64 m_FromStation;
+   Float64 m_ToStation;
+   Float64 m_PrevPierStation;
+   Float64 m_NextPierStation;
    const unitStationFormat& m_StationFormat;
 
 	// Generated message map functions

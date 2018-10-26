@@ -75,12 +75,12 @@ public:
    std::vector< std::_tstring>& m_DesignNames;
    std::vector< std::_tstring>& m_FatigueNames;
    std::vector< std::_tstring>& m_PermitNames;
-   double m_DesignTruckImpact;
-   double m_DesignLaneImpact;
-   double m_FatigueTruckImpact;
-   double m_FatigueLaneImpact;
-   double m_PermitTruckImpact;
-   double m_PermitLaneImpact;
+   Float64 m_DesignTruckImpact;
+   Float64 m_DesignLaneImpact;
+   Float64 m_FatigueTruckImpact;
+   Float64 m_FatigueLaneImpact;
+   Float64 m_PermitTruckImpact;
+   Float64 m_PermitLaneImpact;
 
    ILiveLoads::PedestrianLoadApplicationType m_DesignPedesType;
    ILiveLoads::PedestrianLoadApplicationType m_FatiguePedesType;

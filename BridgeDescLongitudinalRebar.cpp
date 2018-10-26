@@ -81,16 +81,30 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          if (m_Grid.GetRowData(i,&row))
          {
             // values are in display units - must convert to system
-            row.Cover      = ::ConvertToSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-            row.BarSpacing = ::ConvertToSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+            row.BarLength    = ::ConvertToSysUnits(row.BarLength, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
+            row.DistFromEnd  = ::ConvertToSysUnits(row.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
+            row.Cover        = ::ConvertToSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+            row.BarSpacing   = ::ConvertToSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
             rebarData.RebarRows.push_back(row);
+         }
+         else
+         {
+            pDX->Fail();
          }
       }
       m_RebarData = rebarData;
 
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      GetStirrupMaterial(idx,m_RebarData.BarType,m_RebarData.BarGrade);
+      if ( idx == CB_ERR )
+      {
+         m_RebarData.BarType = matRebar::A615;
+         m_RebarData.BarGrade = matRebar::Grade60;
+      }
+      else
+      {
+         GetStirrupMaterial(idx,m_RebarData.BarType,m_RebarData.BarGrade);
+      }
    }
    else
    {
@@ -103,8 +117,10 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
       for ( ; iter != iterEnd; iter++ )
       {
          CLongitudinalRebarData::RebarRow row = *iter;
-         row.BarSpacing = ::ConvertFromSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-         row.Cover      = ::ConvertFromSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         row.BarLength   = ::ConvertFromSysUnits(row.BarLength, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         row.DistFromEnd = ::ConvertFromSysUnits(row.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         row.BarSpacing  = ::ConvertFromSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         row.Cover       = ::ConvertFromSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
          rebardata.RebarRows.push_back(row);
       }
@@ -160,7 +176,7 @@ BOOL CGirderDescLongitudinalRebar::OnInitDialog()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillMaterialComboBox(pc);
+   FillRebarMaterialComboBox(pc);
 
    CPropertyPage::OnInitDialog();
 	

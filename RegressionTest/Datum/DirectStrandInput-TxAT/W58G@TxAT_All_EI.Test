@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     1    WF58G  *    44  0.60  270 24.60 10.69  14 54.0  5.500  6.800    4.656   -4.577   8838  0.545  0.671  0.44 -0.18 -0.02 -0.02 -0.22 206.57 322.73   3.00   4.83   4.83
+ 28.25   5  6.00  1     1    WF58G  *    44  0.60  270 24.60 10.69  14 54.0  5.500  6.800    4.656   -4.577   8838  0.545  0.671  0.44 -0.18 -0.02 -0.02 -0.22 206.57 322.96   3.00   4.83   4.83
 
 
 The Specification Check was Not Successful
@@ -11,7 +11,7 @@ Lifting checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     2    WF58G  *    44  0.60  270 24.60 10.69  14 54.0  5.500  6.800    4.660   -4.581   8844  0.545  0.671  0.44 -0.18 -0.02 -0.02 -0.22 206.57 322.46   3.00   4.83   4.83
+ 28.25   5  6.00  1     2    WF58G  *    44  0.60  270 24.60 10.69  14 54.0  5.500  6.800    4.660   -4.581   8844  0.545  0.671  0.44 -0.18 -0.02 -0.02 -0.22 206.57 322.69   3.00   4.83   4.83
 
 
 The Specification Check was Not Successful
@@ -25,8 +25,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit with required amount of mild reinforcement provided).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).

@@ -51,7 +51,7 @@ public:
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
-   double GetSpanLength();
+   Float64 GetSpanLength();
 
    void Init(const CSpanData* pSpan);
 
@@ -71,7 +71,7 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   double m_SpanLength;
+   Float64 m_SpanLength;
 };
 
 //{{AFX_INSERT_LOCATION}}

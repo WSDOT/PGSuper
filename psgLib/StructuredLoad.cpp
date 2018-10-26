@@ -67,16 +67,16 @@ bool CStructuredLoad::EndUnit()
    return SUCCEEDED(hr) ? true : false;
 }
 
-double CStructuredLoad::GetVersion()
+Float64 CStructuredLoad::GetVersion()
 {
-   double version;
+   Float64 version;
    HRESULT hr = m_pStrLoad->get_Version( &version );
    return version;
 }
 
-double CStructuredLoad::GetParentVersion()
+Float64 CStructuredLoad::GetParentVersion()
 {
-   double version;
+   Float64 version;
    HRESULT hr = m_pStrLoad->get_ParentVersion( &version );
    return version;
 }
@@ -89,9 +89,9 @@ std::_tstring CStructuredLoad::GetParentUnit()
    return OLE2T(bstr);
 }
 
-double CStructuredLoad::GetTopVersion()
+Float64 CStructuredLoad::GetTopVersion()
 {
-   double version;
+   Float64 version;
    HRESULT hr = m_pStrLoad->get_TopVersion( &version );
    return version;
 }

@@ -39,10 +39,23 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsFlexuralStressArtifact::pgsFlexuralStressArtifact()
+pgsFlexuralStressArtifact::pgsFlexuralStressArtifact():
+m_fTopPrestress(0.0),
+m_fBotPrestress(0.0),
+m_fTopExternal(0.0),
+m_fBotExternal(0.0),
+m_fTopDemand(0.0),
+m_fBotDemand(0.0),
+m_fAllowableStress(0.0),
+m_Yna(0.0),
+m_At(0.0),
+m_T(0.0),
+m_AsProvided(0.0),
+m_AsRequired(0.0),
+m_fAltAllowableStress(0.0),
+m_FcReqd(-99999),
+m_bIsAltTensileStressApplicable(false)
 {
-   m_bIsAltTensileStressApplicable = false;
-   m_FcReqd = -99999;
 }
 
 pgsFlexuralStressArtifact::pgsFlexuralStressArtifact(const pgsFlexuralStressArtifact& rOther)
@@ -118,100 +131,103 @@ pgsTypes::StressType pgsFlexuralStressArtifact::GetStressType() const
    return m_StressType;
 }
 
-void pgsFlexuralStressArtifact::SetRequiredConcreteStrength(double fcReqd)
+void pgsFlexuralStressArtifact::SetRequiredConcreteStrength(Float64 fcReqd)
 {
    m_FcReqd = fcReqd;
 }
 
-double pgsFlexuralStressArtifact::GetRequiredConcreteStrength() const
+Float64 pgsFlexuralStressArtifact::GetRequiredConcreteStrength() const
 {
    return m_FcReqd;
 }
 
-void pgsFlexuralStressArtifact::IsAlternativeTensileStressApplicable(bool bApplicable)
-{
-   m_bIsAltTensileStressApplicable = bApplicable;
-}
-
-bool pgsFlexuralStressArtifact::IsAlternativeTensileStressApplicable() const
-{
-   return m_bIsAltTensileStressApplicable;
-}
-
-void pgsFlexuralStressArtifact::SetAlternativeTensileStressParameters(double Yna,double At,double T,double As,double fAllow)
+void pgsFlexuralStressArtifact::SetAlternativeTensileStressParameters(Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fHigherAllow)
 {
    m_Yna = Yna;
    m_At = At;
    m_T = T;
-   m_As = As;
-   m_fAltAllowableStress = fAllow;
+   m_AsProvided = AsProvided;
+   m_AsRequired = AsRequired;
+   m_fAltAllowableStress = fHigherAllow;
 }
 
-void pgsFlexuralStressArtifact::GetAlternativeTensileStressParameters(double* Yna,double* At,double* T,double* As) const
+void pgsFlexuralStressArtifact::GetAlternativeTensileStressParameters(Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const
 {
    *Yna = m_Yna;
    *At = m_At;
    *T = m_T;
-   *As = m_As;
+   *AsProvided = m_AsProvided;
+   *AsRequired = m_AsRequired;
 }
 
-bool pgsFlexuralStressArtifact::TopPassed(pgsFlexuralStressArtifact::TensionReinforcement reinf) const
+bool pgsFlexuralStressArtifact::WasHigherAllowableStressUsed() const
+{
+   // If na<0.0, then section was in compression
+   return m_Yna>0.0 && m_AsProvided >= m_AsRequired;
+}
+
+
+bool pgsFlexuralStressArtifact::TopPassed() const
 {
    bool bPassed = true;
    Float64 fTop, fBot;
    GetDemand(&fTop,&fBot);
 
+   bPassed = StressedPassed(fTop);
+
+   return bPassed;
+}
+
+bool pgsFlexuralStressArtifact::BottomPassed() const
+{
+   bool bPassed = true;
+   Float64 fTop, fBot;
+   GetDemand(&fTop,&fBot);
+
+   bPassed = StressedPassed(fBot);
+
+   return bPassed;
+}
+
+bool pgsFlexuralStressArtifact::StressedPassed(Float64 fStress) const
+{
+   bool bPassed = true;
+
    if ( m_StressType == pgsTypes::Compression )
    {
-      if ( (fTop < m_fAllowableStress && !IsEqual(m_fAllowableStress,fTop,0.001))  )
+      if ( (fStress < m_fAllowableStress && !IsEqual(m_fAllowableStress,fStress,0.001)) )
       {
          bPassed = false;
       }
    }
    else
    {
-      bPassed = reinf == WithRebar ? TensionPassedWithRebar(fTop) : TensionPassedWithoutRebar(fTop);
-   }
-
-   return bPassed;
-}
-
-bool pgsFlexuralStressArtifact::BottomPassed(pgsFlexuralStressArtifact::TensionReinforcement reinf) const
-{
-   bool bPassed = true;
-   Float64 fTop, fBot;
-   GetDemand(&fTop,&fBot);
-
-   if ( m_StressType == pgsTypes::Compression )
-   {
-      if ( (fBot < m_fAllowableStress && !IsEqual(m_fAllowableStress,fBot,0.001)) )
+      if (m_AsProvided > m_AsRequired)
       {
-         bPassed = false;
+      // If we have adequate rebar, we can use higher limit
+         bPassed = TensionPassedWithRebar(fStress); 
       }
-   }
-   else
-   {
-      bPassed = reinf == WithRebar ? TensionPassedWithRebar(fBot) : TensionPassedWithoutRebar(fBot);
-   }
-
-   return bPassed;
-}
-
-bool pgsFlexuralStressArtifact::TensionPassedWithRebar(double fTens) const
-{
-   bool bPassed = true;
-   if ( m_bIsAltTensileStressApplicable )
-   {
-      if ( (m_fAltAllowableStress < fTens && !IsEqual(m_fAltAllowableStress,fTens,0.001) ) )
+      else
       {
-         bPassed = false;
+         bPassed = TensionPassedWithoutRebar(fStress);
       }
    }
 
    return bPassed;
 }
 
-bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(double fTens) const
+bool pgsFlexuralStressArtifact::TensionPassedWithRebar(Float64 fTens) const
+{
+   bool bPassed = true;
+   if ( (m_fAltAllowableStress < fTens && !IsEqual(m_fAltAllowableStress,fTens,0.001) ) )
+   {
+      bPassed = false;
+   }
+
+   return bPassed;
+}
+
+bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(Float64 fTens) const
 {
    bool bPassed = true;
    if ( (m_fAllowableStress < fTens && !IsEqual(m_fAllowableStress,fTens,0.001) ) )
@@ -222,7 +238,7 @@ bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(double fTens) const
    return bPassed;
 }
 
-bool pgsFlexuralStressArtifact::Passed(pgsFlexuralStressArtifact::TensionReinforcement reinf) const
+bool pgsFlexuralStressArtifact::Passed() const
 {
    // Casting Yard,               Tension,     top and bottom
    // Casting Yard,               Compression, top and bottom
@@ -243,7 +259,7 @@ bool pgsFlexuralStressArtifact::Passed(pgsFlexuralStressArtifact::TensionReinfor
    case pgsTypes::TemporaryStrandRemoval:
    case pgsTypes::BridgeSite1:
    case pgsTypes::BridgeSite2:
-      bPassed = (TopPassed(reinf) && BottomPassed(reinf));
+      bPassed = (TopPassed() && BottomPassed());
       break;
 
    case pgsTypes::BridgeSite3:
@@ -252,11 +268,11 @@ bool pgsFlexuralStressArtifact::Passed(pgsFlexuralStressArtifact::TensionReinfor
       case pgsTypes::ServiceI:
       case pgsTypes::ServiceIA:
       case pgsTypes::FatigueI:
-         bPassed = (TopPassed(reinf) && BottomPassed(reinf));
+         bPassed = (TopPassed() && BottomPassed());
          break;
 
       case pgsTypes::ServiceIII:
-      bPassed = BottomPassed(reinf);
+      bPassed = BottomPassed();
          break;
       }
       break;
@@ -285,11 +301,11 @@ void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther
    m_fAllowableStress = rOther.m_fAllowableStress;
    m_fAltAllowableStress = rOther.m_fAltAllowableStress;
    m_StressType       = rOther.m_StressType;
-   m_bIsAltTensileStressApplicable = rOther.m_bIsAltTensileStressApplicable;
    m_Yna = rOther.m_Yna;
    m_At  = rOther.m_At;
    m_T   = rOther.m_T;
-   m_As  = rOther.m_As;
+   m_AsProvided  = rOther.m_AsProvided;
+   m_AsRequired  = rOther.m_AsRequired;
    m_FcReqd = rOther.m_FcReqd;
    m_Key = rOther.m_Key;
 }

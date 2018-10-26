@@ -56,7 +56,7 @@ public:
    virtual void UpdateNow();
    void UpdateGrid();
 
-   virtual bool DoResultsExist() const;
+   virtual bool DoResultsExist();
 
 // Operations
 public:

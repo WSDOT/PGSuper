@@ -151,7 +151,7 @@ void CFactorOfSafetyView::UpdateUnits()
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
 }
 
-bool CFactorOfSafetyView::DoResultsExist() const
+bool CFactorOfSafetyView::DoResultsExist()
 {
    return m_bValidGraph;
 }
@@ -472,7 +472,6 @@ void CFactorOfSafetyView::DoUpdateNow()
    m_PrintSubtitle = std::_tstring(subtitle);
 
    Float64 hp1,hp2;
-   Float64 stepSize = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
    pStrandGeom->GetHarpingPointLocations(span,gdr,&hp1,&hp2);
 
    if ( m_pFrame->GetStage() == CFactorOfSafetyChildFrame::Lifting )
@@ -489,6 +488,7 @@ void CFactorOfSafetyView::DoUpdateNow()
          Float64 FS2 = pGirderLiftingSpecCriteria->GetLiftingFailureFs();
 
          Float64 loc = 0.0;
+         Float64 stepSize = (hp1-loc)/20;
          while ( loc <= hp1 )
          {
             pProgress->UpdateMessage(_T("Working..."));
@@ -516,7 +516,8 @@ void CFactorOfSafetyView::DoUpdateNow()
    else
    {
       GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-      if (pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
+      if (pGirderHaulingSpecCriteria->IsHaulingCheckEnabled() && 
+          pGirderHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
       {
          CString strTitle;
          strTitle.Format(_T("Effect of support location - Transportation Stage - %s"),m_PrintSubtitle.c_str());
@@ -528,22 +529,32 @@ void CFactorOfSafetyView::DoUpdateNow()
          Float64 FS1 = pGirderHaulingSpecCriteria->GetHaulingCrackingFs();
          Float64 FS2 = pGirderHaulingSpecCriteria->GetHaulingRolloverFs();
 
-         Float64 loc = pHaulingPoi->GetMinimumOverhang(span,gdr);
+         Float64 loc = min(pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metStart),
+                           pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metEnd));
+         Float64 stepSize = (hp1-loc)/20;
          while ( loc <= hp1 )
          {
-            pProgress->UpdateMessage(_T("Working..."));
-            pgsHaulingAnalysisArtifact artifact;
    #pragma Reminder("REVIEW: Equal overhangs")
+            pProgress->UpdateMessage(_T("Working..."));
             // this is probably the best thing to do with this view... but... give it some thought
-            pArtifact->CreateHaulingAnalysisArtifact(span,gdr,loc,loc,&artifact);
+            const pgsHaulingAnalysisArtifact* artifact_base = pArtifact->CreateHaulingAnalysisArtifact(span,gdr,loc,loc);
 
-            AddGraphPoint(seriesFS1,loc,artifact.GetMinFsForCracking());
-            AddGraphPoint(seriesFS2,loc,artifact.GetFsRollover());
+            // Only works for wsdot analysis
+            const pgsWsdotHaulingAnalysisArtifact* artifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(artifact_base);
+            if (artifact==NULL)
+            {
+               AddGraphPoint(seriesFS1,loc,artifact->GetMinFsForCracking());
+               AddGraphPoint(seriesFS2,loc,artifact->GetFsRollover());
 
-            AddGraphPoint(limitFS1,loc,FS1);
-            AddGraphPoint(limitFS2,loc,FS2);
+               AddGraphPoint(limitFS1,loc,FS1);
+               AddGraphPoint(limitFS2,loc,FS2);
 
-            loc += stepSize;
+               loc += stepSize;
+            }
+            else
+            {
+               ATLASSERT(0); // should not happen
+            }
          }
 
          // set flags that graph is built and up to date

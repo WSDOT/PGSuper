@@ -38,9 +38,9 @@ public:
                  const CGirderData& oldGirderData,const CGirderData& newGirderData,
                  const CShearData& oldShearData,const CShearData& newShearData,
                  const CLongitudinalRebarData& oldRebarData,const CLongitudinalRebarData& newRebarData,
-                 double oldLiftingLocation,  double newLiftingLocation,
-                 double oldTrailingOverhang, double newTrailingOverhang,
-                 double oldLeadingOverhang,  double newLeadingOverhang,
+                 Float64 oldLiftingLocation,  Float64 newLiftingLocation,
+                 Float64 oldTrailingOverhang, Float64 newTrailingOverhang,
+                 Float64 oldLeadingOverhang,  Float64 newLeadingOverhang,
                  pgsTypes::SlabOffsetType oldSlabOffsetType,pgsTypes::SlabOffsetType newSlabOffsetType,
                  Float64 oldSlabOffsetStart,Float64 newSlabOffsetStart,
                  Float64 oldSlabOffsetEnd, Float64 newSlabOffsetEnd
@@ -64,9 +64,9 @@ private:
    CGirderData m_GirderData[2];
    CShearData m_ShearData[2];
    CLongitudinalRebarData m_RebarData[2];
-   double m_LiftingLocation[2];
-   double m_TrailingOverhang[2];
-   double m_LeadingOverhang[2];
+   Float64 m_LiftingLocation[2];
+   Float64 m_TrailingOverhang[2];
+   Float64 m_LeadingOverhang[2];
 
    pgsTypes::SlabOffsetType m_SlabOffsetType[2];
    Float64 m_SlabOffset[2][2]; // first index is new/old, second index is pgsTypes::MemberEndType

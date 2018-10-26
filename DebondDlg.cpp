@@ -251,7 +251,7 @@ void CGirderDescDebondPage::OnPaint()
    {
       CComPtr<IPoint2d> point;
       points->get_Item(strIdx,&point);
-      double y;
+      Float64 y;
       point->get_Y(&y);
       y_min = _cpp_min(y,y_min);
       y_max = _cpp_max(y,y_max);

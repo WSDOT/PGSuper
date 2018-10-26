@@ -82,7 +82,7 @@ public:
 private:
    virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc);
    // point load height and width in difference coordinates
-   void GetWLoadHeight(iCoordinateMap* pMap, double* psx, double *psy);
+   void GetWLoadHeight(iCoordinateMap* pMap, Float64* psx, Float64 *psy);
    void GetLLoadHeight(iCoordinateMap* pMap, long* psx, long* psy);
    void GetTLoadHeight(iCoordinateMap* pMap, long* psx, long* psy);
    CDistributedLoadData m_Load;

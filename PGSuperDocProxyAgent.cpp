@@ -631,7 +631,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
 
 ////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
-HRESULT CPGSuperDocProxyAgent::OnBridgeChanged()
+HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    //
@@ -676,8 +676,18 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged()
       m_pPGSuperDoc->ClearSelection();
 
    m_pPGSuperDoc->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_BRIDGECHANGED, pnull );
+
+   boost::shared_ptr<CBridgeHint> pBridgeHint;
+   if ( pHint )
+   {
+      pBridgeHint = boost::shared_ptr<CBridgeHint>(new CBridgeHint);
+      pBridgeHint->PierIdx = pHint->PierIdx;
+      pBridgeHint->PierFace = pHint->PierFace;
+      pBridgeHint->bAdded = pHint->bAdded;
+   }
+
+   boost::shared_ptr<CObject> pObjHint = boost::shared_dynamic_cast<CObject,CBridgeHint>(pBridgeHint);
+   FireEvent( 0, HINT_BRIDGECHANGED, pObjHint );
 
    return S_OK;
 }

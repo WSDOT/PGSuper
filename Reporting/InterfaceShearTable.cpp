@@ -200,8 +200,8 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          (*table)(row,col++) << RPT_NA;
       }
 
-      double vu = pArtifact->GetDemand();
-      double vr = pArtifact->GetCapacity();
+      Float64 vu = pArtifact->GetDemand();
+      Float64 vr = pArtifact->GetCapacity();
       (*table)(row,col++) << shear.SetValue( vu );
       (*table)(row,col++) << shear.SetValue( vr );
 

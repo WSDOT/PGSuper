@@ -134,7 +134,7 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    CComVariant var;
 
-   double version;
+   Float64 version;
    pStrLoad->get_Version(&version);
 
    if ( 2.0 == version )

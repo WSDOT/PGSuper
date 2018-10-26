@@ -77,15 +77,15 @@ public:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    // get data for a row
-   bool GetRowData(ROWCOL nRow,double* pStation,double* pLeft,double* pRight,double* pCPO);
+   bool GetRowData(ROWCOL nRow,Float64* pStation,Float64* pLeft,Float64* pRight,Float64* pCPO);
    void SetRowData(ROWCOL nRow,CrownData2& data);
 
 private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
    void InitRowData(ROWCOL row);
-   double  GetCrownPointOffset(const CString& strAlignmentOffset);
-   CString GetCrownPointOffset(double alignmentOffset);
+   Float64  GetCrownPointOffset(const CString& strAlignmentOffset);
+   CString GetCrownPointOffset(Float64 alignmentOffset);
 //   bool EnableItemDelete();
 };
 

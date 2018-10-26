@@ -107,7 +107,7 @@ void CTrafficBarrierViewDialog::OnPaint()
 
    CComPtr<IRect2d> bbox;
    m_pShape->get_BoundingBox(&bbox);
-   double left,right,top,bottom;
+   Float64 left,right,top,bottom;
    bbox->get_Left(&left);
    bbox->get_Right(&right);
    bbox->get_Top(&top);

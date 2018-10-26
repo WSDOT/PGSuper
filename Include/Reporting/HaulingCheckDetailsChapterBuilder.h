@@ -26,6 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
+#include <PgsExt\LiftHaulConstants.h>
 
 
 /*****************************************************************************

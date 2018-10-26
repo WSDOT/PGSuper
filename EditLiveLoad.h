@@ -30,8 +30,8 @@
 struct txnEditLiveLoadData
 {
    std::vector<std::_tstring> m_VehicleNames;
-   double m_TruckImpact;
-   double m_LaneImpact;
+   Float64 m_TruckImpact;
+   Float64 m_LaneImpact;
    ILiveLoads::PedestrianLoadApplicationType m_PedestrianLoadApplicationType;
 };
 

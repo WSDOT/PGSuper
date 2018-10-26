@@ -24,6 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperDoc.h"
 #include "PierConnectionsPage.h"
 #include "PierDetailsDlg.h"

@@ -171,7 +171,7 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
    if ( FAILED(hr) )
       return hr;
 
-   double version;
+   Float64 version;
    pLoad->get_Version(&version);
 
    CComVariant var;

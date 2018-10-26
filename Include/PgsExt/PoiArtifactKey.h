@@ -91,7 +91,7 @@ public:
    pgsTypes::Stage GetStage() const { return m_Stage; }
    pgsTypes::LimitState GetLimitState() const { return m_LimitState; }
    pgsTypes::StressType GetStressType() const { return m_StressType; }
-   double GetDistFromStart() const { return m_DistFromStart; }
+   Float64 GetDistFromStart() const { return m_DistFromStart; }
 
    // GROUP: OPERATIONS
 

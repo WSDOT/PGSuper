@@ -64,6 +64,15 @@ void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsDesignArt
 static const int MIN_TBL_COLS=3; // Minimum columns in multi-girder table
 static const int MAX_TBL_COLS=8; // Maximum columns in multi-girder table
 
+// Some fails can be successses (with caveats)
+inline bool WasDesignSuccessful( pgsDesignArtifact::Outcome outcome)
+{
+      return outcome == pgsDesignArtifact::Success ||
+             outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionCy ||
+             outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionLifting ||
+             outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionHauling;
+}
+
 inline std::list<ColumnIndexType> ComputeTableCols(const std::vector<SpanGirderHashType>& spanGirders)
 {
    // Idea here is to break tables at spans. 
@@ -235,7 +244,8 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
          return pChapter;
       }
 
-      if ( pArtifact->GetOutcome() == pgsDesignArtifact::Success )
+      pgsDesignArtifact::Outcome outcome = pArtifact->GetOutcome();
+      if ( WasDesignSuccessful(outcome))
       {
          successful_design(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
       }
@@ -267,8 +277,12 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
    arDesignOptions options = pArtifact->GetDesignOptions();
 
    // Start report with design notes. Notes will be written at end of this function
-   bool doNotes = (pArtifact->GetDoDesignFlexure()!=dtNoDesign && pArtifact->GetOutcome()==pgsDesignArtifact::Success) ||
-                   pArtifact->DoDesignNotesExist();
+   bool design_success = WasDesignSuccessful( pArtifact->GetOutcome() );
+   bool conc_strength_controlled_by_shear = design_success && pArtifact->GetDoDesignShear() &&
+                                            pArtifact->GetFinalDesignState().GetAction()==pgsDesignArtifact::ConcreteStrengthDesignState::actShear;
+   bool doNotes = (design_success && pArtifact->GetDoDesignFlexure()!=dtNoDesign) || 
+                  conc_strength_controlled_by_shear || 
+                  pArtifact->DoDesignNotesExist();
 
    rptParagraph* pNotesParagraph = doNotes ? new rptParagraph() : NULL;
    if ( doNotes )
@@ -278,6 +292,9 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       *pParagraph << _T("Design Notes:");
       *pChapter << pNotesParagraph;
    }
+
+   GET_IFACE2(pBroker, IGirderData, pGirderData);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
    if (pArtifact->GetDoDesignFlexure()!=dtNoDesign)
    {
@@ -320,7 +337,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3);
       *pParagraph << pTable;
 
       pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -467,7 +484,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
          const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
 
-         double offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
+         Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
                                                                              confvec_design, 
                                                                              HsoEnd, 
                                                                              pArtifact->GetHarpStrandOffsetEnd());
@@ -653,6 +670,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          }
 
          // Current configuration
+         *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
 
@@ -669,6 +687,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          *pParagraph << _T("Proposed Design:") << rptNewLine;
          write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, rsdata);
 
+         *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
       write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, shear_data);
@@ -680,6 +699,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          *pParagraph << _T("Proposed Design:") << rptNewLine;
          write_additional_shear_data(pParagraph, pDisplayUnits, girder_length, rsdata);
 
+         *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
 
@@ -707,7 +727,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          write_design_notes(pNotesParagraph, design_notes);
       }
 
-      if (pArtifact->GetDoDesignFlexure()!=dtNoDesign && pArtifact->GetOutcome()==pgsDesignArtifact::Success)
+      if (pArtifact->GetDoDesignFlexure()!=dtNoDesign && design_success)
       {
          // Notes from a successful flexural design
          GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
@@ -734,7 +754,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          GDRCONFIG config = pArtifact->GetGirderConfiguration();
 
          GET_IFACE2(pBroker,ICamber,pCamber);
-         double excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
+         Float64 excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
          if ( excess_camber < 0 )
          {
             *pNotesParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
@@ -756,6 +776,11 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             }
          }
       }
+      else if (conc_strength_controlled_by_shear)
+      {
+         *pNotesParagraph << _T("Concrete final strength was controlled by ")<<pArtifact->GetFinalDesignState().AsString() << rptNewLine;
+         *pNotesParagraph << _T(" and changed from ") << stress.SetValue(pgirderData->Material.Fc) << _T(" to ") << stress.SetValue(pArtifact->GetConcreteStrength()) << _T(".") <<rptNewLine;
+      }
    }
 }
 
@@ -764,12 +789,51 @@ void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,r
    rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pParagraph;
 
-   *pParagraph << color(Green)
-               << _T("The design for Span ") << LABEL_SPAN(pArtifact->GetSpan())
-               << _T(" Girder ") << LABEL_GIRDER(pArtifact->GetGirder())
-               << _T(" was successful.") 
-               << color(Black)
-               << rptNewLine;
+   pgsDesignArtifact::Outcome outcome = pArtifact->GetOutcome();
+
+   if ( outcome == pgsDesignArtifact::Success)
+   {
+      *pParagraph << color(Green)
+                  << _T("The design for Span ") << LABEL_SPAN(pArtifact->GetSpan())
+                  << _T(" Girder ") << LABEL_GIRDER(pArtifact->GetGirder())
+                  << _T(" was successful.") 
+                  << color(Black)
+                  << rptNewLine;
+   }
+   else if (outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionCy ||
+            outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionLifting ||
+            outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionHauling)
+   {
+      *pParagraph << color(OrangeRed)
+                  << _T("The design for Span ") << LABEL_SPAN(pArtifact->GetSpan())
+                  << _T(" Girder ") << LABEL_GIRDER(pArtifact->GetGirder())
+                  << _T(" failed.")
+                  << color(Black);
+
+      rptParagraph* pParagraph = new rptParagraph( );
+      *pChapter << pParagraph;
+      *pParagraph << color(OrangeRed) 
+                  << _T("But, you may be able to create a successful design by adding longitudinal rebar to increase temporary tensile stress limits");
+
+      if (outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionCy)
+      {
+         *pParagraph << _T(" for release in the Casting Yard.");
+      }
+      else if(outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionLifting)
+      {
+         *pParagraph << _T(" for girder Lifting.");
+      }
+      else if(outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionHauling)
+      {
+         *pParagraph << _T(" for girder Hauling.");
+      }
+
+      *pParagraph << color(Black);
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
 
    write_artifact_data(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
 }
@@ -849,7 +913,7 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
          break;
 
       case pgsDesignArtifact::ConflictWithLongReinforcementShearSpec:
-         *pParagraph << _T("Failed designing for longitudinal reinforcement for shear due to conflicting library information. Project criteria Shear Design tab says to use longitudinal rebar, while Shear Capacity tab disables use of mild steel rebar.") << rptNewLine;
+         *pParagraph << _T("Failed designing for longitudinal reinforcement for shear due to conflicting library information. The Girder Library Shear Design tab says to use longitudinal rebar, while the Project Criteria Shear Capacity tab disables use of mild steel rebar.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::StrandsReqdForLongReinfShearAndFlexureTurnedOff:
@@ -922,6 +986,18 @@ std::wstring GetDesignNoteString(pgsDesignArtifact::DesignNote note)
       return std::wstring(_T("The number of strands was controlled by longitudinal reinforcement for shear requirements."));
       break;
 
+   case pgsDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionCy:
+      return std::wstring(_T("Refer to the casting yard \"Rebar Requirements for Tensile Stress Limit\" sections in the Details report for more information about required longitudinal reinforcement."));
+      break;
+
+   case pgsDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionLifting:
+      return std::wstring(_T("Refer to the lifting \"Rebar Requirements for Tensile Stress Limit\" sections in the Details report for more information about required longitudinal reinforcement."));
+      break;
+
+   case pgsDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionHauling:
+      return std::wstring(_T("Refer to the hauling \"Rebar Requirements for Tensile Stress Limit\" sections in the Details report for more information about required longitudinal reinforcement."));
+      break;
+
    default:
       ATLASSERT(0);
    }
@@ -985,9 +1061,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    RowIndexType row = 0;
    (*pTable)(row++,0) << _T("Parameter");
 
+   (*pTable)(row++,0) << _T("Design Outcome");
+
    if (did_flexure)
    {
-      (*pTable)(row++,0) << _T("Flexural Design Outcome");
       (*pTable)(row++,0) << _T("Number of Straight Strands");
 
       if (is_harped)
@@ -1056,53 +1133,56 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
          (*pTable)(row++,col) <<color(Red)<<_T("Failed")<<color(Black);
       }
 
-      (*pTable)(row++,col) << pArtifact->GetNumStraightStrands();
-
-      if (is_harped)
-         (*pTable)(row++,col) << pArtifact->GetNumHarpedStrands();
-
-      if (is_temporary)
-         (*pTable)(row++,col) << pArtifact->GetNumTempStrands();
-
-      GDRCONFIG config = pArtifact->GetGirderConfiguration();
-
-      // jacking forces
-      (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Straight]);
-
-      if (is_harped)
-         (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Harped]);
-
-      if (is_temporary)
-         (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Temporary]);
-
-      if (is_harped)
+      if (did_flexure)
       {
-         if (pArtifact->GetNumHarpedStrands()>0)
+         (*pTable)(row++,col) << pArtifact->GetNumStraightStrands();
+
+         if (is_harped)
+            (*pTable)(row++,col) << pArtifact->GetNumHarpedStrands();
+
+         if (is_temporary)
+            (*pTable)(row++,col) << pArtifact->GetNumTempStrands();
+
+         GDRCONFIG config = pArtifact->GetGirderConfiguration();
+
+         // jacking forces
+         (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Straight]);
+
+         if (is_harped)
+            (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Harped]);
+
+         if (is_temporary)
+            (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Temporary]);
+
+         if (is_harped)
          {
-            const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+            if (pArtifact->GetNumHarpedStrands()>0)
+            {
+               const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
 
 
-            double offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
-                                                                                confvec_design, 
-                                                                                hsoTOP2BOTTOM, 
-                                                                                pArtifact->GetHarpStrandOffsetEnd());
-            (*pTable)(row++,col) << length.SetValue(offset);
+               Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
+                                                                                   confvec_design, 
+                                                                                   hsoTOP2BOTTOM, 
+                                                                                   pArtifact->GetHarpStrandOffsetEnd());
+               (*pTable)(row++,col) << length.SetValue(offset);
 
-            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
-                                                                        confvec_design, 
-                                                                        hsoBOTTOM2BOTTOM, 
-                                                                        pArtifact->GetHarpStrandOffsetHp());
-            (*pTable)(row++,col) << length.SetValue(offset);
+               offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
+                                                                           confvec_design, 
+                                                                           hsoBOTTOM2BOTTOM, 
+                                                                           pArtifact->GetHarpStrandOffsetHp());
+               (*pTable)(row++,col) << length.SetValue(offset);
+            }
+            else
+            {
+               (*pTable)(row++,col) << _T("-");
+               (*pTable)(row++,col) << _T("-");
+            }
          }
-         else
-         {
-            (*pTable)(row++,col) << _T("-");
-            (*pTable)(row++,col) << _T("-");
-         }
+
+         (*pTable)(row++,col) << stress.SetValue(pArtifact->GetReleaseStrength());
+         (*pTable)(row++,col) << stress.SetValue(pArtifact->GetConcreteStrength());
       }
-
-      (*pTable)(row++,col) << stress.SetValue(pArtifact->GetReleaseStrength());
-      (*pTable)(row++,col) << stress.SetValue(pArtifact->GetConcreteStrength());
 
       if (did_lifting)
       {
@@ -1181,8 +1261,8 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, std::ve
 
 void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, ZoneIndexType nz, const CShearData& rsdata)
 {
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -1209,18 +1289,20 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
       }
    }
 
+   ColumnIndexType col = 0;
    if (is_stirrups)
    {
-      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(7,_T(""));
-      *pParagraph << pTables;
+      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(8);
+      *pParagraph << pTables << rptNewLine;
 
-      (*pTables)(0,0) << _T("Zone #");
-      (*pTables)(0,1) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTables)(0,2) << _T("Bar Size");
-      (*pTables)(0,3) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTables)(0,4) << _T("# Legs")<<rptNewLine<<_T("Vertical");
-      (*pTables)(0,5) << _T("# Legs")<<rptNewLine<<_T("Into Deck");
-      (*pTables)(0,6) << _T("Confinement")<<rptNewLine<<_T("Bar Size");
+      (*pTables)(0,col++) << _T("Zone #");
+      (*pTables)(0,col++) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTables)(0,col++) << COLHDR(_T("Zone Length"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTables)(0,col++) << _T("Bar Size");
+      (*pTables)(0,col++) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTables)(0,col++) << _T("# Legs")<<rptNewLine<<_T("Vertical");
+      (*pTables)(0,col++) << _T("# Legs")<<rptNewLine<<_T("Into Deck");
+      (*pTables)(0,col++) << _T("Confinement")<<rptNewLine<<_T("Bar Size");
 
       Float64 max_zoneloc = is_symm ? girderLength/2.0 : girderLength;
 
@@ -1229,10 +1311,11 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
       bool bdone(false);
       while (!bdone)
       {
+         col = 0;
          RowIndexType row = i+1;
          const CShearZoneData& rszdata = rsdata.ShearZones[i];
          zone_end += rszdata.ZoneLength;
-         (*pTables)(row,0) << rszdata.ZoneNum;
+         (*pTables)(row,col++) << rszdata.ZoneNum;
 
          if ( nz <= i+1 || max_zoneloc <= zone_end)
          {
@@ -1241,31 +1324,34 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
 
          if (!bdone)
          {
-            (*pTables)(row,1) << location.SetValue(zone_end);
+            (*pTables)(row,col++) << location.SetValue(zone_end);
+            (*pTables)(row,col++) << location.SetValue(rszdata.ZoneLength);
          }
          else
          {
             if (is_symm)
-               (*pTables)(row,1) << _T("Mid-Girder");
+               (*pTables)(row,col++) << _T("Mid-Girder");
             else
-               (*pTables)(row,1) << _T("End of Girder");
+               (*pTables)(row,col++) << _T("End of Girder");
+
+            (*pTables)(row,col++) << _T("");
          }
 
          if (rszdata.VertBarSize!=matRebar::bsNone)
          {
-            (*pTables)(row,2) << lrfdRebarPool::GetBarSize(rszdata.VertBarSize).c_str();
-            (*pTables)(row,3) << length.SetValue(rszdata.BarSpacing);
-            (*pTables)(row,4) << scalar.SetValue(rszdata.nVertBars);
-            (*pTables)(row,5) << scalar.SetValue(rszdata.nHorzInterfaceBars);
-            (*pTables)(row,6) << lrfdRebarPool::GetBarSize(rszdata.ConfinementBarSize).c_str();
+            (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rszdata.VertBarSize).c_str();
+            (*pTables)(row,col++) << length.SetValue(rszdata.BarSpacing);
+            (*pTables)(row,col++) << scalar.SetValue(rszdata.nVertBars);
+            (*pTables)(row,col++) << scalar.SetValue(rszdata.nHorzInterfaceBars);
+            (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rszdata.ConfinementBarSize).c_str();
          }
          else
          {
-            (*pTables)(row,2) << _T("none");
-            (*pTables)(row,3) << _T("--");
-            (*pTables)(row,4) << _T("--");
-            (*pTables)(row,5) << _T("--");
-            (*pTables)(row,6) << _T("--");
+            (*pTables)(row,col++) << _T("none");
+            (*pTables)(row,col++) << _T("--");
+            (*pTables)(row,col++) << _T("--");
+            (*pTables)(row,col++) << _T("--");
+            (*pTables)(row,col++) << _T("--");
          }
 
          i++;
@@ -1307,14 +1393,16 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
 
    if(is_hstirrups)
    {
-      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(5,_T(""));
-      *pParagraph << pTables;
+      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(6);
+      *pParagraph << pTables << rptNewLine;
 
-      (*pTables)(0,0) << _T("Zone #");
-      (*pTables)(0,1) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTables)(0,2) << _T("Bar Size");
-      (*pTables)(0,3) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTables)(0,4) << _T("# Legs");
+      ColumnIndexType col = 0;
+      (*pTables)(0,col++) << _T("Zone #");
+      (*pTables)(0,col++) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTables)(0,col++) << COLHDR(_T("Zone Length"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTables)(0,col++) << _T("Bar Size");
+      (*pTables)(0,col++) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTables)(0,col++) << _T("# Legs");
 
       Float64 max_zoneloc = is_symm ? girderLength/2.0 : girderLength;
 
@@ -1323,10 +1411,11 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
       bool bdone(false);
       while (!bdone)
       {
+         col = 0;
          RowIndexType row = i+1;
          const CHorizontalInterfaceZoneData& rhzdata = rsdata.HorizontalInterfaceZones[i];
          zone_end += rhzdata.ZoneLength;
-         (*pTables)(row,0) << rhzdata.ZoneNum;
+         (*pTables)(row,col++) << rhzdata.ZoneNum;
 
          if ( nhz <= i+1 || max_zoneloc <= zone_end )
          {
@@ -1335,27 +1424,30 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
 
          if (!bdone)
          {
-            (*pTables)(row,1) << location.SetValue(zone_end);
+            (*pTables)(row,col++) << location.SetValue(zone_end);
+            (*pTables)(row,col++) << location.SetValue(rhzdata.ZoneLength);
          }
          else
          {
             if (is_symm)
-               (*pTables)(row,1) << _T("Mid-Girder");
+               (*pTables)(row,col++) << _T("Mid-Girder");
             else
-               (*pTables)(row,1) << _T("End of Girder");
+               (*pTables)(row,col++) << _T("End of Girder");
+
+            (*pTables)(row,col++) << _T("");
          }
 
          if (rhzdata.BarSize!=matRebar::bsNone)
          {
-            (*pTables)(row,2) << lrfdRebarPool::GetBarSize(rhzdata.BarSize).c_str();
-            (*pTables)(row,3) << length.SetValue(rhzdata.BarSpacing);
-            (*pTables)(row,4) << scalar.SetValue(rhzdata.nBars);
+            (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rhzdata.BarSize).c_str();
+            (*pTables)(row,col++) << length.SetValue(rhzdata.BarSpacing);
+            (*pTables)(row,col++) << scalar.SetValue(rhzdata.nBars);
          }
          else
          {
-            (*pTables)(row,2) << _T("none");
-            (*pTables)(row,3) << _T("--");
-            (*pTables)(row,4) << _T("--");
+            (*pTables)(row,col++) << _T("none");
+            (*pTables)(row,col++) << _T("--");
+            (*pTables)(row,col++) << _T("--");
          }
 
          i++;

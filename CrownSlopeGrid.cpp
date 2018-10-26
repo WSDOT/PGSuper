@@ -227,7 +227,7 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow,CrownData2& data)
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
-   double station = data.Station;
+   Float64 station = data.Station;
    station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CComPtr<IStation> objStation;
@@ -246,7 +246,7 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow,CrownData2& data)
    GetParam()->EnableUndo(TRUE);
 }
 
-bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,double* pStation,double* pLeft,double* pRight,double* pCPO)
+bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pLeft,Float64* pRight,Float64* pCPO)
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
@@ -260,7 +260,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,double* pStation,double* pLeft,doub
    if ( FAILED(hr) )
       return false;
 
-   double station_value;
+   Float64 station_value;
    station->get_Value(&station_value);
    station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    *pStation = station_value;
@@ -329,20 +329,20 @@ void CCrownSlopeGrid::SortCrossSections()
    }
 }
 
-double CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
+Float64 CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   double sign = 1;
+   Float64 sign = 1;
    TCHAR cDir = strAlignmentOffset.GetAt(strAlignmentOffset.GetLength()-1);
    if ( cDir == _T('L') )
       sign = -1;
    else if ( cDir == _T('R') )
       sign = 1;
 
-   double value = _tstof(strAlignmentOffset);
+   Float64 value = _tstof(strAlignmentOffset);
    value *= sign;
 
    value = ::ConvertToSysUnits(value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
@@ -350,7 +350,7 @@ double CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
    return value;
 }
 
-CString CCrownSlopeGrid::GetCrownPointOffset(double alignmentOffset)
+CString CCrownSlopeGrid::GetCrownPointOffset(Float64 alignmentOffset)
 {
    int sign = Sign(alignmentOffset);
 

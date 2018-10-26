@@ -182,7 +182,7 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    try
    {
       hr = pStrLoad->BeginUnit(_T("RailingSystem"));
-      double version;
+      Float64 version;
       hr = pStrLoad->get_Version(&version);
 
       CComVariant var;

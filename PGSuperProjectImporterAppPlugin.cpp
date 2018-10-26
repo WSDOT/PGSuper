@@ -18,6 +18,14 @@ void CProjectImportersCmdTarget::OnConfigureProjectImporters()
    m_pMyAppPlugin->ConfigureProjectImporters();
 }
 
+CString CPGSuperProjectImporterAppPlugin::GetTemplateFileExtension()
+{ 
+   CString strTemplateSuffix;
+   VERIFY(strTemplateSuffix.LoadString(IDS_PGSUPER_TEMPLATE_FILE_SUFFIX));
+   ASSERT(!strTemplateSuffix.IsEmpty());
+   return strTemplateSuffix;
+}
+
 HRESULT CPGSuperProjectImporterAppPlugin::FinalConstruct()
 {
    m_MyCmdTarget.m_pMyAppPlugin = this;
@@ -56,14 +64,22 @@ void CPGSuperProjectImporterAppPlugin::ConfigureProjectImporters()
    {
       // when the doc template is created, it loads all the enabled plug-in objects
       // write the plugin states into the registry and then create the doc template
-      std::vector<CEAFPluginState>::iterator iter;
-      for ( iter = pluginStates.begin(); iter != pluginStates.end(); iter++ )
+      std::vector<CEAFPluginState>::iterator stateIter(pluginStates.begin());
+      std::vector<CEAFPluginState>::iterator stateIterEnd(pluginStates.end());
+      for ( ; stateIter != stateIterEnd; stateIter++ )
       {
-         CEAFPluginState& state = *iter;
+         CEAFPluginState& state = *stateIter;
          pApp->WriteProfileString(_T("Plugins"),state.GetCLSIDString(),state.IsEnabled() ? _T("Enabled") : _T("Disabled") );
       }
-      pMyTemplate = (CPGSuperImportPluginDocTemplate*)CreateDocTemplate();
-      pApp->m_pDocManager->AddDocTemplate(pMyTemplate);
+
+      std::vector<CEAFDocTemplate*> vDocTemplates = CreateDocTemplates();
+      std::vector<CEAFDocTemplate*>::iterator templateIter(vDocTemplates.begin());
+      std::vector<CEAFDocTemplate*>::iterator templateIterEnd(vDocTemplates.end());
+      for ( ; templateIter != templateIterEnd; templateIter++ )
+      {
+         pMyTemplate = (CPGSuperImportPluginDocTemplate*)*templateIter;
+         pApp->m_pDocManager->AddDocTemplate(pMyTemplate);
+      }
       return;
    }
 
@@ -107,7 +123,7 @@ BOOL CPGSuperProjectImporterAppPlugin::Init(CEAFApp* pParent)
    DefaultInit();
 
    // See MSKB Article ID: Q118435, "Sharing Menus Between MDI Child Windows"
-   m_hMenuShared = ::LoadMenu( AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPERTYPE) );
+   m_hMenuShared = ::LoadMenu( AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPER) );
 
    return (m_hMenuShared != NULL);
 }
@@ -127,13 +143,9 @@ void CPGSuperProjectImporterAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 
    UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
    CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
-   if ( pFileMenu == NULL )
-      return;
 
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
-   if ( pManageMenu == NULL )
-      return;
 
    if ( bIntegrate )
    {
@@ -146,12 +158,14 @@ void CPGSuperProjectImporterAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    }
 }
 
-CEAFDocTemplate* CPGSuperProjectImporterAppPlugin::CreateDocTemplate()
+std::vector<CEAFDocTemplate*> CPGSuperProjectImporterAppPlugin::CreateDocTemplates()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   std::vector<CEAFDocTemplate*> vDocTemplates;
+
    CPGSuperImportPluginDocTemplate* pDocTemplate = new CPGSuperImportPluginDocTemplate(
-		IDR_BRIDGEMODELEDITOR,
+		IDR_PROJECTIMPORTER,
       this,
 		RUNTIME_CLASS(CPGSuperDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
@@ -168,17 +182,15 @@ CEAFDocTemplate* CPGSuperProjectImporterAppPlugin::CreateDocTemplate()
       pDocTemplate = NULL;
    }
 
-   return pDocTemplate;
+   if ( pDocTemplate != NULL )
+      vDocTemplates.push_back(pDocTemplate);
+
+   return vDocTemplates;
 }
 
 HMENU CPGSuperProjectImporterAppPlugin::GetSharedMenuHandle()
 {
    return m_hMenuShared;
-}
-
-UINT CPGSuperProjectImporterAppPlugin::GetDocumentResourceID()
-{
-   return IDR_PGSUPERTYPE;
 }
 
 CString CPGSuperProjectImporterAppPlugin::GetName()

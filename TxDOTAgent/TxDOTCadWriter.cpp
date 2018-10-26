@@ -256,7 +256,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
 	/* 14. DESIGN LOAD COMPRESSIVE STRESS (TOP CL) */ 
    const pgsFlexuralStressArtifact* pArtifact;
-   double fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
+   Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
    pArtifact = pGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite3,
 	                                                     pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetDistFromStart()) );

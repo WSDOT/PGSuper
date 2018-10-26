@@ -25,7 +25,7 @@
 #include "PGSuperDoc.h"
 #include <IFace\Project.h>
 
-txnEditSpanLength::txnEditSpanLength(SpanIndexType spanIdx,double oldSpanLength,double newSpanLength)
+txnEditSpanLength::txnEditSpanLength(SpanIndexType spanIdx,Float64 oldSpanLength,Float64 newSpanLength)
 {
    m_SpanIdx = spanIdx;
    m_SpanLength[0] = oldSpanLength;

@@ -119,11 +119,11 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    CComPtr<IMultiWeb2> beam;
    gdrsection->get_Beam(&beam);
 
-   double c1,c2;
-   double h1,h2,h3;
-   double w2,wmin,wmax;
-   double t1,t2,t3;
-   double f1;
+   Float64 c1,c2;
+   Float64 h1,h2,h3;
+   Float64 w2,wmin,wmax;
+   Float64 t1,t2,t3;
+   Float64 f1;
    GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w2,wmin,wmax);
 
    beam->put_C1(c1);
@@ -142,7 +142,7 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    beam->put_WebCount(2);
 
    // figure out the web spacing, w2, based on the girder spacing
-   double w1;
+   Float64 w1;
    if ( pBroker == NULL || spanIdx == INVALID_INDEX || gdrIdx == INVALID_INDEX )
    {
       // just use the max
@@ -158,10 +158,10 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
-      double spacing = pBridgeDesc->GetGirderSpacing();;
+      Float64 spacing = pBridgeDesc->GetGirderSpacing();;
 
-      double top_flange_max = 2*(wmax + t1+t2+t3) + w2;
-      double top_flange_min = 2*(wmin + t1+t2+t3) + w2;
+      Float64 top_flange_max = 2*(wmax + t1+t2+t3) + w2;
+      Float64 top_flange_min = 2*(wmin + t1+t2+t3) + w2;
 
       // if this is a fixed width section, then set the spacing equal to the width
       if ( IsEqual(top_flange_max,top_flange_min) )
@@ -179,11 +179,11 @@ void CMultiWeb2Factory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType s
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   double c1,c2;
-   double h1,h2,h3;
-   double w2,wmin,wmax;
-   double t1,t2,t3;
-   double f1;
+   Float64 c1,c2;
+   Float64 h1,h2,h3;
+   Float64 w2,wmin,wmax;
+   Float64 t1,t2,t3;
+   Float64 f1;
    GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w2,wmin,wmax);
 
    Float64 height = h1 + h2 + h3;
@@ -307,15 +307,15 @@ void CMultiWeb2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType 
 }
 
 void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
-                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
+                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
 {
-   double h1,h2,h3;
-   double c1,c2;
-   double w2,wmin,wmax;
-   double t1,t2,t3;
-   double f1;
+   Float64 h1,h2,h3;
+   Float64 c1,c2;
+   Float64 w2,wmin,wmax;
+   Float64 t1,t2,t3;
+   Float64 f1;
    GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w2,wmin,wmax);
 
    HRESULT hr = S_OK;
@@ -325,8 +325,8 @@ void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
 
    CComPtr<IStrandMover> sm = pStrandMover;
 
-   double width = t2;
-   double depth = h1 + h2 + h3;
+   Float64 width = t2;
+   Float64 depth = h1 + h2 + h3;
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
    hr = lft_harp_rect.CoCreateInstance(CLSID_Rect);
@@ -339,7 +339,7 @@ void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    rgt_harp_rect->put_Width(width);
    rgt_harp_rect->put_Height(depth);
 
-   double hook_offset = w2/2.0 + t2/2.0 + t3;
+   Float64 hook_offset = w2/2.0 + t2/2.0 + t3;
 
    CComPtr<IPoint2d> lft_hook, rgt_hook;
    lft_hook.CoCreateInstance(CLSID_Point2d);
@@ -362,10 +362,10 @@ void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -379,7 +379,7 @@ std::vector<std::_tstring> CMultiWeb2Factory::GetDimensionNames()
    return m_DimNames;
 }
 
-std::vector<double> CMultiWeb2Factory::GetDefaultDimensions()
+std::vector<Float64> CMultiWeb2Factory::GetDefaultDimensions()
 {
    return m_DefaultDims;
 }
@@ -391,11 +391,11 @@ std::vector<const unitLength*> CMultiWeb2Factory::GetDimensionUnits(bool bSIUnit
 
 bool CMultiWeb2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
-   double h1,h2,h3;
-   double c1,c2;
-   double w2,wmin,wmax;
-   double t1,t2,t3;
-   double f1;
+   Float64 h1,h2,h3;
+   Float64 c1,c2;
+   Float64 w2,wmin,wmax;
+   Float64 t1,t2,t3;
+   Float64 f1;
    GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w2,wmin,wmax);
 
  // C1
@@ -801,11 +801,11 @@ HICON  CMultiWeb2Factory::GetIcon()
 }
 
 void CMultiWeb2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                                      double& h1,double& h2,double& h3,
-                                      double& t1,double& t2,double& t3,
-                                      double& f1,
-                                      double& c1,double& c2,
-                                      double& w2,double& wmin,double& wmax)
+                                      Float64& h1,Float64& h2,Float64& h3,
+                                      Float64& t1,Float64& t2,Float64& t3,
+                                      Float64& f1,
+                                      Float64& c1,Float64& c2,
+                                      Float64& w2,Float64& wmin,Float64& wmax)
 {
    c1 = GetDimension(dimensions,_T("C1"));
    c2 = GetDimension(dimensions,_T("C2"));
@@ -821,7 +821,7 @@ void CMultiWeb2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions
    wmax = GetDimension(dimensions,_T("Wmax"));
 }
 
-double CMultiWeb2Factory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+Float64 CMultiWeb2Factory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -859,22 +859,22 @@ pgsTypes::SupportedBeamSpacings CMultiWeb2Factory::GetSupportedBeamSpacings()
 }
 
 void CMultiWeb2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
+                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double T1 = GetDimension(dimensions,_T("T1"));
-   double T2 = GetDimension(dimensions,_T("T2"));
-   double T3 = GetDimension(dimensions,_T("T3"));
-   double W2 = GetDimension(dimensions,_T("W2"));
-   double Wmin = GetDimension(dimensions,_T("Wmin"));
-   double Wmax = GetDimension(dimensions,_T("Wmax"));
+   Float64 T1 = GetDimension(dimensions,_T("T1"));
+   Float64 T2 = GetDimension(dimensions,_T("T2"));
+   Float64 T3 = GetDimension(dimensions,_T("T3"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 Wmin = GetDimension(dimensions,_T("Wmin"));
+   Float64 Wmax = GetDimension(dimensions,_T("Wmax"));
 
-   double mid_width = W2 + 2.0*(T1 + T2 + T3);
+   Float64 mid_width = W2 + 2.0*(T1 + T2 + T3);
 
-   double gw_min =  mid_width + 2.0 * Wmin;
-   double gw_max =  mid_width + 2.0 * Wmax;
+   Float64 gw_min =  mid_width + 2.0 * Wmin;
+   Float64 gw_max =  mid_width + 2.0 * Wmax;
 
    if ( sdt == pgsTypes::sdtNone || sdt == pgsTypes::sdtCompositeOverlay )
    {
@@ -901,21 +901,21 @@ WebIndexType CMultiWeb2Factory::GetNumberOfWebs(const IBeamFactory::Dimensions& 
 
 Float64 CMultiWeb2Factory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double H1 = GetDimension(dimensions,_T("H1"));
-   double H2 = GetDimension(dimensions,_T("H2"));
-   double H3 = GetDimension(dimensions,_T("H3"));
+   Float64 H1 = GetDimension(dimensions,_T("H1"));
+   Float64 H2 = GetDimension(dimensions,_T("H2"));
+   Float64 H3 = GetDimension(dimensions,_T("H3"));
 
    return H1 + H2 + H3;
 }
 
 Float64 CMultiWeb2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double T1 = GetDimension(dimensions,_T("T1"));
-   double T2 = GetDimension(dimensions,_T("T2"));
-   double T3 = GetDimension(dimensions,_T("T3"));
+   Float64 T1 = GetDimension(dimensions,_T("T1"));
+   Float64 T2 = GetDimension(dimensions,_T("T2"));
+   Float64 T3 = GetDimension(dimensions,_T("T3"));
 
-   double W2 = GetDimension(dimensions,_T("W2"));
-   double Wmax = GetDimension(dimensions,_T("Wmax"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 Wmax = GetDimension(dimensions,_T("Wmax"));
 
    return 2*(T1+T2+T3+Wmax) + W2;
 }

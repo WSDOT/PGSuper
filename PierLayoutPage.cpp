@@ -195,7 +195,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // read the current value of the station edit
-   double toStation;
+   Float64 toStation;
    try
    {
       DDX_Station(&dx,IDC_STATION,toStation,pDisplayUnits->GetStationFormat());

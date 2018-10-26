@@ -3,12 +3,37 @@
 	<folders/>
 	<topics>
 		<topic>
+			<name>AnalyticalModels.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Ultimate_Moment_Capacity_Analysis.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Interface_Shear_Transfer.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Light_Weight_Concrete.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Shear_Design_Memo_August_2007.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
 			<name>PsglibLateral_Stability_of_Long_Prestr.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Fatigue.htm</name>
+			<name>Shear_Design_Attachment.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -23,32 +48,67 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Shear_Design_Memo_August_2007.htm</name>
+			<name>Live_Load_Distribution_Factors.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Shear_Design_Attachment.htm</name>
+			<name>Prestress_Losses.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>CreepDeflection.htm</name>
+			<name>Live_Load_Distribution_Factors1.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Ultimate_Moment_Capacity_Analysis.htm</name>
+			<name>Composite_Section_Properties.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>MaximumAllowableJackingForce.htm</name>
+			<name>Fatigue.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>ADimension.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>CapacityToDemand_Ratios.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Introduction_Theoretical_Manual.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>User-Defined_Live_Loads.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
 			<name>Fabrication_Optimization.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Bursting_Zone_Checks.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Lifting_of_Long_Prestressed_Girders.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>MaximumAllowableJackingForce.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -68,27 +128,7 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Live_Load_Distribution_Factors.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Shear_Design_(Determination_of_Beta_and_Theta).htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>AnalyticalModels.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Live_Load_Distribution_Factors1.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Light_Weight_Concrete.htm</name>
+			<name>Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -98,12 +138,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Prestress_Losses.htm</name>
+			<name>Generalized_Resistance_Factor_for_Flexure.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Interface_Shear_Transfer.htm</name>
+			<name>CreepDeflection.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Defining_Girder_Spacing.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -128,52 +173,12 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Composite_Section_Properties.htm</name>
+			<name>Shear_Design_(Determination_of_Beta_and_Theta).htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>ADimension.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Bursting_Zone_Checks.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Introduction_Theoretical_Manual.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Lifting_of_Long_Prestressed_Girders.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>User-Defined_Live_Loads.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Defining_Girder_Spacing.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>CapacityToDemand_Ratios.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Generalized_Resistance_Factor_for_Flexure.htm</name>
+			<name>hauling_of_long_prestressed_girders_kdot_method.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>

@@ -48,8 +48,8 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
    CComQIPtr<iEditableUnitValueTextBlock> pTextBlock(pDO);
    ATLASSERT(pTextBlock);
 
-   double old_station = pTextBlock->GetValue();
-   double new_station = pTextBlock->GetEditedValue();
+   Float64 old_station = pTextBlock->GetValue();
+   Float64 new_station = pTextBlock->GetEditedValue();
 
    if ( IsEqual(old_station,new_station) )
       return;
@@ -61,8 +61,8 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
-   double prevPierStation = 0;
-   double nextPierStation = DBL_MAX;
+   Float64 prevPierStation = 0;
+   Float64 nextPierStation = DBL_MAX;
 
    if ( m_PierIdx != 0 )
    {

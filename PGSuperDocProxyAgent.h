@@ -142,7 +142,7 @@ public:
 
 // IBridgeDescriptionEventSink
 public:
-   virtual HRESULT OnBridgeChanged();
+   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint);
    virtual HRESULT OnGirderFamilyChanged();
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();

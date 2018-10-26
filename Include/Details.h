@@ -339,6 +339,7 @@ struct REBARDEVLENGTHDETAILS
    Float64 fy;
    Float64 fc;
    Float64 db;
+   Float64 factor; // Factor applied if light weight concrete (1.0 if not)
 
    // two equations for #11 or smaller
    Float64 ldb1;

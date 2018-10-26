@@ -36,6 +36,8 @@
 
 #include <Lrfd\RebarPool.h>
 
+#include "PsgLib\RebarUIUtils.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -69,8 +71,18 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    {
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      GetStirrupMaterial(idx,m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
-      GetStirrupMaterial(idx,m_RebarData.BottomRebarType,m_RebarData.BottomRebarGrade);
+      if ( idx == CB_ERR )
+      {
+         m_RebarData.TopRebarType = matRebar::A615;
+         m_RebarData.TopRebarGrade = matRebar::Grade60;
+         m_RebarData.BottomRebarType = matRebar::A615;
+         m_RebarData.BottomRebarGrade = matRebar::Grade60;
+      }
+      else
+      {
+         GetStirrupMaterial(idx,m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
+         GetStirrupMaterial(idx,m_RebarData.BottomRebarType,m_RebarData.BottomRebarGrade);
+      }
    }
    else
    {
@@ -94,10 +106,16 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_LUMP_SUM,    IDC_TOP_MAT_LUMP_SUM_UNIT,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_LUMP_SUM, IDC_BOTTOM_MAT_LUMP_SUM_UNIT, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
 
+   DDV_GXGridWnd(pDX,&m_Grid);
    if ( pDX->m_bSaveAndValidate )
-      m_Grid.GetRebarData(m_RebarData.NegMomentRebar);
+   {
+      if ( !m_Grid.GetRebarData(m_RebarData.NegMomentRebar) )
+         pDX->Fail();
+   }
    else
+   {
       m_Grid.FillGrid(m_RebarData.NegMomentRebar);
+   }
 }
 
 
@@ -134,7 +152,7 @@ BOOL CBridgeDescDeckReinforcementPage::OnInitDialog()
    FillRebarComboBox(pcbBottomRebar);
 
    CComboBox* pcbMaterial = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillMaterialComboBox(pcbMaterial);
+   FillRebarMaterialComboBox(pcbMaterial);
 
    CPropertyPage::OnInitDialog();
    
@@ -172,6 +190,11 @@ void CBridgeDescDeckReinforcementPage::FillRebarComboBox(CComboBox* pcbRebar)
 
    idx = pcbRebar->AddString(_T("#9"));
    pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs9);
+}
+
+void CBridgeDescDeckReinforcementPage::EnableAddBtn(bool bEnable)
+{
+   GetDlgItem(IDC_ADD)->EnableWindow(bEnable);
 }
 
 void CBridgeDescDeckReinforcementPage::EnableRemoveBtn(bool bEnable)
@@ -236,6 +259,8 @@ BOOL CBridgeDescDeckReinforcementPage::OnSetActive()
    m_Grid.EnableMats(bEnableTop,bEnableBottom);
    GetDlgItem(IDC_ADD)->EnableWindow(bEnableTop || bEnableBottom);
    GetDlgItem(IDC_REMOVE)->EnableWindow(bEnableTop || bEnableBottom);
+
+   m_Grid.UpdatePierList();
 	
    return CPropertyPage::OnSetActive();
 }
@@ -274,54 +299,4 @@ BOOL CBridgeDescDeckReinforcementPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LR
       return TRUE;
    }
    return FALSE;
-}
-
-void CBridgeDescDeckReinforcementPage::FillMaterialComboBox(CComboBox* pCB)
-{
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade40).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade75).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade80).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade60).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade80).c_str() );
-}
-
-void CBridgeDescDeckReinforcementPage::GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade)
-{
-   switch(idx)
-   {
-   case 0:  type = matRebar::A615; grade = matRebar::Grade40; break;
-   case 1:  type = matRebar::A615; grade = matRebar::Grade60; break;
-   case 2:  type = matRebar::A615; grade = matRebar::Grade75; break;
-   case 3:  type = matRebar::A615; grade = matRebar::Grade80; break;
-   case 4:  type = matRebar::A706; grade = matRebar::Grade60; break;
-   case 5:  type = matRebar::A706; grade = matRebar::Grade80; break;
-   default:
-      ATLASSERT(false); // should never get here
-   }
-}
-
-int CBridgeDescDeckReinforcementPage::GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade)
-{
-   if ( type == matRebar::A615 )
-   {
-      if ( grade == matRebar::Grade40 )
-         return 0;
-      else if ( grade == matRebar::Grade60 )
-         return 1;
-      else if ( grade == matRebar::Grade75 )
-         return 2;
-      else if ( grade == matRebar::Grade80 )
-         return 3;
-   }
-   else
-   {
-      if ( grade == matRebar::Grade60 )
-         return 4;
-      else if ( grade == matRebar::Grade80 )
-         return 5;
-   }
-
-   ATLASSERT(false); // should never get here
-   return -1;
 }

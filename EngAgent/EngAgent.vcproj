@@ -1064,6 +1064,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\GirderLiftingChecker.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\KdotGirderHaulingChecker.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\LoadRater.cpp"
 				>
 			</File>
@@ -1367,6 +1375,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\WsDOTGirderHaulingChecker.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1390,6 +1402,14 @@
 			</File>
 			<File
 				RelativePath="GirderHandlingChecker.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderLiftingChecker.h"
+				>
+			</File>
+			<File
+				RelativePath=".\KdotGirderHaulingChecker.h"
 				>
 			</File>
 			<File
@@ -1422,6 +1442,10 @@
 			</File>
 			<File
 				RelativePath="StrandDesignTool.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WsDOTGirderHaulingChecker.h"
 				>
 			</File>
 		</Filter>

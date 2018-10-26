@@ -229,7 +229,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
    try
    {
       hr = pStrLoad->BeginUnit(_T("XSectionData"));
-      double version;
+      Float64 version;
       hr = pStrLoad->get_Version(&version);
 
       CComVariant var;

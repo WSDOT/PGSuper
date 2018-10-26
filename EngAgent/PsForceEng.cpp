@@ -474,7 +474,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    GET_IFACE(IGirder,pGirder);
-   double mbrDepth = pGirder->GetHeight(poi);
+   Float64 mbrDepth = pGirder->GetHeight(poi);
 
    GET_IFACE(IPrestressForce,pPrestressForce);
    Float64 fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
@@ -503,7 +503,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    GET_IFACE(IGirder,pGirder);
-   double mbrDepth = pGirder->GetHeight(poi);
+   Float64 mbrDepth = pGirder->GetHeight(poi);
 
    STRANDDEVLENGTHDETAILS details;
    details.db = pstrand->GetNominalDiameter();
@@ -525,7 +525,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    GET_IFACE(IGirder,pGirder);
-   double mbrDepth = pGirder->GetHeight(poi);
+   Float64 mbrDepth = pGirder->GetHeight(poi);
 
    GET_IFACE(IPrestressForce,pPrestressForce);
    Float64 fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,config,pgsTypes::AfterLosses);
@@ -554,7 +554,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    GET_IFACE(IGirder,pGirder);
-   double mbrDepth = pGirder->GetHeight(poi);
+   Float64 mbrDepth = pGirder->GetHeight(poi);
 
    STRANDDEVLENGTHDETAILS details;
    details.db = pstrand->GetNominalDiameter();

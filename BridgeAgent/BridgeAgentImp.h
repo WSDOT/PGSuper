@@ -157,14 +157,14 @@ public:
 public:
    virtual Float64 GetLength();
    virtual Float64 GetSpanLength(SpanIndexType span);
-   virtual double GetAlignmentOffset();
-   virtual double GetDistanceFromStartOfBridge(double station);
+   virtual Float64 GetAlignmentOffset();
+   virtual Float64 GetDistanceFromStartOfBridge(Float64 station);
    virtual SpanIndexType GetSpanCount();
    virtual PierIndexType GetPierCount();
    virtual GirderIndexType GetGirderCount(SpanIndexType span);
    virtual void GetDistanceBetweenGirders(const pgsPointOfInterest& poi,Float64 *pLeft,Float64* pRight);
-   virtual std::vector<double> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType);
-   virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(SpanIndexType spanIdx,double distFromStartOfSpan);
+   virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType);
+   virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(SpanIndexType spanIdx,Float64 distFromStartOfSpan);
    virtual void GetSpacingAlongGirder(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfGirder,Float64* leftSpacing,Float64* rightSpacing);
    virtual Float64 GetGirderLength(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetSpanLength(SpanIndexType span,GirderIndexType gdr);
@@ -183,12 +183,12 @@ public:
    virtual void GetGirderAngle(SpanIndexType span,GirderIndexType gdr,pgsTypes::PierFaceType face,IAngle** ppAngle);
    virtual void GetGirderBearing(SpanIndexType span,GirderIndexType gdr,IDirection** ppBearing);
    virtual GDRCONFIG GetGirderConfiguration(SpanIndexType span,GirderIndexType gdr);
-   virtual bool GetSpan(double station,SpanIndexType* pSpanIdx);
+   virtual bool GetSpan(Float64 station,SpanIndexType* pSpanIdx);
    virtual void GetPoint(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfSpan,IPoint2d** ppPoint);
    virtual void GetPoint(const pgsPointOfInterest& poi,IPoint2d** ppPoint);
    virtual void GetStationAndOffset(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfBridge,Float64* pStation,Float64* pOffset);
    virtual void GetStationAndOffset(const pgsPointOfInterest& poi,Float64* pStation,Float64* pOffset);
-   virtual void GetDistFromStartOfSpan(GirderIndexType gdrIdx,double distFromStartOfBridge,SpanIndexType* pSpanIdx,double* pDistFromStartOfSpan);
+   virtual void GetDistFromStartOfSpan(GirderIndexType gdrIdx,Float64 distFromStartOfBridge,SpanIndexType* pSpanIdx,Float64* pDistFromStartOfSpan);
    virtual bool IsInteriorGirder(SpanIndexType span,GirderIndexType gdr);
    virtual bool IsExteriorGirder(SpanIndexType span,GirderIndexType gdr);
    virtual bool AreGirderTopFlangesRoughened(SpanIndexType span,GirderIndexType gdr);
@@ -213,31 +213,31 @@ public:
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi);
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi);
    virtual Float64 GetPanelDepth(const pgsPointOfInterest& poi);
-   virtual Float64 GetLeftSlabEdgeOffset(double distFromStartOfBridge);
-   virtual Float64 GetRightSlabEdgeOffset(double distFromStartOfBridge);
-   virtual Float64 GetLeftSlabOverhang(double distFromStartOfBridge);
-   virtual Float64 GetRightSlabOverhang(double distFromStartOfBridge);
-   virtual Float64 GetLeftSlabOverhang(SpanIndexType span,double distFromStartOfSpan);
-   virtual Float64 GetRightSlabOverhang(SpanIndexType span,double distFromStartOfSpan);
+   virtual Float64 GetLeftSlabEdgeOffset(Float64 distFromStartOfBridge);
+   virtual Float64 GetRightSlabEdgeOffset(Float64 distFromStartOfBridge);
+   virtual Float64 GetLeftSlabOverhang(Float64 distFromStartOfBridge);
+   virtual Float64 GetRightSlabOverhang(Float64 distFromStartOfBridge);
+   virtual Float64 GetLeftSlabOverhang(SpanIndexType span,Float64 distFromStartOfSpan);
+   virtual Float64 GetRightSlabOverhang(SpanIndexType span,Float64 distFromStartOfSpan);
    virtual Float64 GetLeftSlabOverhang(PierIndexType pier);
    virtual Float64 GetRightSlabOverhang(PierIndexType pier);
    virtual Float64 GetLeftSlabEdgeOffset(PierIndexType pier);
    virtual Float64 GetRightSlabEdgeOffset(PierIndexType pier);
-   virtual Float64 GetLeftSlabGirderOverhang(SpanIndexType span,double distFromStartOfSpan); // overhangs measured normal to alignment
-   virtual Float64 GetRightSlabGirderOverhang(SpanIndexType span,double distFromStartOfSpan);
-   virtual Float64 GetLeftCurbOffset(double distFromStartOfBridge);
-   virtual Float64 GetRightCurbOffset(double distFromStartOfBridge);
-   virtual Float64 GetLeftCurbOffset(SpanIndexType span,double distFromStartOfSpan);
-   virtual Float64 GetRightCurbOffset(SpanIndexType span,double distFromStartOfSpan);
+   virtual Float64 GetLeftSlabGirderOverhang(SpanIndexType span,Float64 distFromStartOfSpan); // overhangs measured normal to alignment
+   virtual Float64 GetRightSlabGirderOverhang(SpanIndexType span,Float64 distFromStartOfSpan);
+   virtual Float64 GetLeftCurbOffset(Float64 distFromStartOfBridge);
+   virtual Float64 GetRightCurbOffset(Float64 distFromStartOfBridge);
+   virtual Float64 GetLeftCurbOffset(SpanIndexType span,Float64 distFromStartOfSpan);
+   virtual Float64 GetRightCurbOffset(SpanIndexType span,Float64 distFromStartOfSpan);
    virtual Float64 GetLeftCurbOffset(PierIndexType pier);
    virtual Float64 GetRightCurbOffset(PierIndexType pier);
    virtual Float64 GetCurbToCurbWidth(const pgsPointOfInterest& poi);
-   virtual Float64 GetCurbToCurbWidth(SpanIndexType span,GirderIndexType gdr,double distFromStartOfSpan);
-   virtual Float64 GetCurbToCurbWidth(double distFromStartOfBridge);
-   virtual Float64 GetLeftInteriorCurbOffset(double distFromStartOfBridge);
-   virtual Float64 GetRightInteriorCurbOffset(double distFromStartOfBridge);
-   virtual Float64 GetLeftOverlayToeOffset(double distFromStartOfBridge);
-   virtual Float64 GetRightOverlayToeOffset(double distFromStartOfBridge);
+   virtual Float64 GetCurbToCurbWidth(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfSpan);
+   virtual Float64 GetCurbToCurbWidth(Float64 distFromStartOfBridge);
+   virtual Float64 GetLeftInteriorCurbOffset(Float64 distFromStartOfBridge);
+   virtual Float64 GetRightInteriorCurbOffset(Float64 distFromStartOfBridge);
+   virtual Float64 GetLeftOverlayToeOffset(Float64 distFromStartOfBridge);
+   virtual Float64 GetRightOverlayToeOffset(Float64 distFromStartOfBridge);
    virtual Float64 GetLeftOverlayToeOffset(const pgsPointOfInterest& poi);
    virtual Float64 GetRightOverlayToeOffset(const pgsPointOfInterest& poi);
    virtual void GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dCollection** points);
@@ -342,6 +342,7 @@ public:
    virtual Float64 GetAsGirderTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust);
    virtual Float64 GetAsDeckTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust);
    virtual Float64 GetDevLengthFactor(SpanIndexType span,GirderIndexType gdr,IRebarSectionItem* rebarItem);
+   virtual Float64 GetDevLengthFactor(IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi);
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi);
    virtual Float64 GetCoverTopMat();
@@ -350,6 +351,9 @@ public:
    virtual Float64 GetAsBottomMat(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt);
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   virtual void CBridgeAgentImp::GetRebarLayout(SpanIndexType span,GirderIndexType gdr, IRebarLayout** rebarLayout);
+   virtual REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
+   virtual std::vector<RowIndexType> CheckLongRebarGeometry(SpanIndexType span,GirderIndexType gdr);
 
 // IStirrupGeometry
 public:
@@ -516,6 +520,7 @@ public:
    virtual SectionIndexType GetNumDebondSections(SpanIndexType span,GirderIndexType gdr,GirderEnd end,pgsTypes::StrandType strandType);
    virtual StrandIndexType GetNumDebondedStrandsAtSection(SpanIndexType span,GirderIndexType gdr,GirderEnd end,SectionIndexType sectionIdx,pgsTypes::StrandType strandType);
    virtual StrandIndexType GetNumBondedStrandsAtSection(SpanIndexType span,GirderIndexType gdr,GirderEnd end,SectionIndexType sectionIdx,pgsTypes::StrandType strandType);
+   virtual std::vector<StrandIndexType> GetDebondedStrandsAtSection(SpanIndexType span,GirderIndexType gdr,GirderEnd end,SectionIndexType sectionIdx,pgsTypes::StrandType strandType);
 
    virtual bool CanDebondStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType); // can debond any of the strands
    virtual bool CanDebondStrands(LPCTSTR strGirderName,pgsTypes::StrandType strandType);
@@ -550,7 +555,7 @@ public:
    virtual std::vector<pgsPointOfInterest> GetTenthPointPOIs(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr);
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,pgsPointOfInterest* pLeft,pgsPointOfInterest* pRight);
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,pgsPointOfInterest* pLeft,pgsPointOfInterest* pRight);
-   virtual double GetDistanceFromFirstPier(const pgsPointOfInterest& poi,pgsTypes::Stage stage);
+   virtual Float64 GetDistanceFromFirstPier(const pgsPointOfInterest& poi,pgsTypes::Stage stage);
    virtual pgsPointOfInterest GetPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
    virtual pgsPointOfInterest GetPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
    virtual pgsPointOfInterest GetNearestPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
@@ -594,12 +599,12 @@ public:
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi);
    virtual Float64 GetSurfaceArea(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetVolume(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetBridgeEIxx(double distFromStart);
-   virtual Float64 GetBridgeEIyy(double distFromStart);
+   virtual Float64 GetBridgeEIxx(Float64 distFromStart);
+   virtual Float64 GetBridgeEIyy(Float64 distFromStart);
    virtual void GetGirderShape(const pgsPointOfInterest& poi,bool bOrient,IShape** ppShape);
-   virtual void GetSlabShape(double station,IShape** ppShape);
-   virtual void GetLeftTrafficBarrierShape(double station,IShape** ppShape);
-   virtual void GetRightTrafficBarrierShape(double station,IShape** ppShape);
+   virtual void GetSlabShape(Float64 station,IShape** ppShape);
+   virtual void GetLeftTrafficBarrierShape(Float64 station,IShape** ppShape);
+   virtual void GetRightTrafficBarrierShape(Float64 station,IShape** ppShape);
    virtual Float64 GetGirderWeightPerLength(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetGirderWeight(SpanIndexType span,GirderIndexType gdr);
 
@@ -676,7 +681,7 @@ public:
 
 // IBridgeDescriptionEventSink
 public:
-   virtual HRESULT OnBridgeChanged();
+   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint);
    virtual HRESULT OnGirderFamilyChanged();
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
@@ -727,7 +732,7 @@ private:
    std::auto_ptr<matConcreteEx> m_pRailingConc[2]; // index is pgsTypes::TrafficBarrierOrientation
 
    // containers to cache shapes cut at various stations
-   typedef std::map<double,CComPtr<IShape> > ShapeContainer;
+   typedef std::map<Float64,CComPtr<IShape> > ShapeContainer;
    ShapeContainer m_DeckShapes;
    ShapeContainer m_LeftBarrierShapes;
    ShapeContainer m_RightBarrierShapes;
@@ -820,7 +825,8 @@ private:
    void LayoutPrestressTransferAndDebondPoi(SpanIndexType span,GirderIndexType gdr);
    void LayoutPoiForDiaphragmLoads(SpanIndexType span,GirderIndexType gdr);
    void LayoutPoiForShear(SpanIndexType span,GirderIndexType gdr);
-   void LayoutPoiForBarCutoffs(SpanIndexType span,GirderIndexType gdr);
+   void LayoutPoiForSlabBarCutoffs(SpanIndexType span,GirderIndexType gdr);
+   void LayoutPoiForGirderBarCutoffs(SpanIndexType span,GirderIndexType gdr);
    void LayoutPoiForHandling(SpanIndexType span,GirderIndexType gdr);
    void LayoutPoiForSectionChanges(SpanIndexType span,GirderIndexType gdr);
    void UpdateHaulingPoi(SpanIndexType span,GirderIndexType gdr);
@@ -863,7 +869,7 @@ private:
    std::vector<UserDistributedLoad>* GetUserDistributedLoads(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr);
    std::vector<UserMomentLoad>* GetUserMomentLoads(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr);
 
-   HRESULT GetSlabOverhangs(double distance,double* pLeft,double* pRight);
+   HRESULT GetSlabOverhangs(Float64 distance,Float64* pLeft,Float64* pRight);
    Float64 GetDistanceFromStartOfBridge(const pgsPointOfInterest& poi);
    Float64 GetDistanceFromStartOfBridge(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfSpan);
    HRESULT GetGirderSection(const pgsPointOfInterest& poi,IGirderSection** gdrSection);
@@ -895,7 +901,6 @@ private:
 
    void GetGirderShapeDirect(const pgsPointOfInterest& poi,IShape** ppShape);
    BarSize GetBarSize(matRebar::Size size);
-   REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar,double fc);
 
    Float64 GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,bool bDevAdjust,bool bTensionTop);
    Float64 GetApsTensionSide(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust,bool bTensionTop);
@@ -911,6 +916,8 @@ private:
 
    void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point);
    void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point);
+
+   REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
 };
 
 #endif //__BRIDGEAGENT_H_

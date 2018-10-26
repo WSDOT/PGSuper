@@ -106,7 +106,7 @@ public:
 
    //------------------------------------------------------------------------
    // Get the version number of the parent to the current unit
-   virtual double GetParentVersion();
+   virtual Float64 GetParentVersion();
 
    virtual std::_tstring GetParentUnit();
 

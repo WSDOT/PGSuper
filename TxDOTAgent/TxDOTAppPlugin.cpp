@@ -62,9 +62,12 @@ void CTxDOTAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    // no UI integration
 }
 
-CEAFDocTemplate* CTxDOTAppPlugin::CreateDocTemplate()
+std::vector<CEAFDocTemplate*> CTxDOTAppPlugin::CreateDocTemplates()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   std::vector<CEAFDocTemplate*> vDocTemplates;
+
 	CTxDOTOptionalDesignDocTemplate* pDocTemplate = new CTxDOTOptionalDesignDocTemplate(
 		IDR_TXDOTOPTIONALDESIGN,
       this,
@@ -74,17 +77,13 @@ CEAFDocTemplate* CTxDOTAppPlugin::CreateDocTemplate()
 
    pDocTemplate->SetPlugin(this);
 
-   return pDocTemplate;
+   vDocTemplates.push_back(pDocTemplate);
+   return vDocTemplates;
 }
 
 HMENU CTxDOTAppPlugin::GetSharedMenuHandle()
 {
    return NULL;
-}
-
-UINT CTxDOTAppPlugin::GetDocumentResourceID()
-{
-   return IDR_TXDOTOPTIONALDESIGN;
 }
 
 CString CTxDOTAppPlugin::GetName()

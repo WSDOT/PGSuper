@@ -192,9 +192,9 @@ public:
    virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pier,GirderIndexType gd,pgsTypes::LimitState lsr,pgsTypes::PierFaceType pierFace,Float64 fcgdr);
    virtual Float64 GetShearDistFactor(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
    virtual Float64 GetReactionDistFactor(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
-   virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,double* dfPoints,Uint32* nPoints);
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double* pM,double* nM,double* V);
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double fcgdr,double* pM,double* nM,double* V);
+   virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,Float64* dfPoints,Uint32* nPoints);
+   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V);
+   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V);
    virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
    virtual Uint32 GetNumberOfDesignLanes(SpanIndexType span);
@@ -260,7 +260,7 @@ public:
    virtual const pgsDesignArtifact* CreateDesignArtifact(SpanIndexType span,GirderIndexType gdr,arDesignOptions design);
    virtual const pgsDesignArtifact* GetDesignArtifact(SpanIndexType span,GirderIndexType gdr);
    virtual void CreateLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);
-   virtual void CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 leftSupportLoc,Float64 rightSupportLoc,pgsHaulingAnalysisArtifact* pArtifact);
+   virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 leftSupportLoc,Float64 rightSupportLoc);
    virtual const pgsRatingArtifact* GetRatingArtifact(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
 
 // ICrackedSection
@@ -271,7 +271,7 @@ public:
 
 // IBridgeDescriptionEventSink
 public:
-   virtual HRESULT OnBridgeChanged();
+   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint);
    virtual HRESULT OnGirderFamilyChanged();
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
@@ -402,7 +402,7 @@ private:
    };
    std::map<RatingArtifactKey,pgsRatingArtifact> m_RatingArtifacts[6]; // pgsTypes::LoadRatingType enum as key
 
-   std::map<PrestressPoiKey,double> m_PsForce;
+   std::map<PrestressPoiKey,Float64> m_PsForce;
 
    pgsPsForceEng             m_PsForceEngineer;
    pgsDesigner2              m_Designer;
@@ -475,7 +475,7 @@ private:
 
    // Lifting analysis artifacts
    std::map<SpanGirderHashType, std::map<Float64,pgsLiftingAnalysisArtifact,Float64_less> > m_LiftingArtifacts;
-   std::map<SpanGirderHashType, std::map<Float64,pgsHaulingAnalysisArtifact,Float64_less> > m_HaulingArtifacts;
+   std::map<SpanGirderHashType, std::map<Float64,boost::shared_ptr<pgsHaulingAnalysisArtifact>,Float64_less> > m_HaulingArtifacts;
 
    // Event Sink Cookies
    DWORD m_dwBridgeDescCookie;

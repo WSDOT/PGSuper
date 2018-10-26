@@ -51,7 +51,8 @@ void write_load_modifiers(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
 void write_environmental_conditions(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
 void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
 void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
 void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
 void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
 void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
@@ -152,25 +153,9 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
       *pPara << _T("Load Rating Criteria") << rptNewLine;
       *pPara << Bold(_T("Name: ")) << rating_name << rptNewLine;
       *pPara << Bold(_T("Description: ")) << pRatingEntry->GetDescription() << rptNewLine;
-      *pPara <<Bold(_T("Based on:  "));
-      switch( pRatingEntry->GetSpecificationVersion() )
-      {
-      case lrfrVersionMgr::FirstEdition2008:
-         *pPara << _T("AASHTO Manual for Bridge Evaluation, 1st Edition, 2008") << rptNewLine;
-         break;
+      *pPara <<Bold(_T("Based on:  ")) << lrfrVersionMgr::GetCodeString() << _T(", ") << lrfrVersionMgr::GetVersionString();
 
-      case lrfrVersionMgr::FirstEditionWith2010Interims:
-         *pPara << _T("AASHTO Manual for Bridge Evaluation, 1st Edition, 2008 with 2010 interim provisions") << rptNewLine;
-         break;
-
-      default:
-         ATLASSERT(false);
-         *pPara <<_T("Unknown") << rptNewLine;
-         break;
-      }
-
-      // write load rating criteria here
-
+      // Load rating criteria includes the design criteria... write the name here
       *pPara << _T("Load Rating Criteria includes ") << spec_name << rptNewLine;
    }
 
@@ -180,7 +165,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
 
    *pPara <<Bold(_T("Name: "))<< spec_name << rptNewLine;
    *pPara <<Bold(_T("Description: "))<<pSpecEntry->GetDescription()<<rptNewLine;
-   *pPara <<Bold(_T("Based on: ")) << _T("AASHTO LRFD Bridge Design Specifications, ") << lrfdVersionMgr::GetVersionString();
+   *pPara <<Bold(_T("Based on: ")) << lrfdVersionMgr::GetCodeString() << _T(", ") << lrfdVersionMgr::GetVersionString();
    
    lrfdVersionMgr::Units units = pSpecEntry->GetSpecificationUnits();
    if (units==lrfdVersionMgr::SI)
@@ -205,7 +190,14 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
       GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
       if (pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
       {
-         write_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
+         if(pGirderHaulingSpecCriteria->GetHaulingAnalysisMethod()==pgsTypes::hmWSDOT)
+         {
+            write_wsdot_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
+         }
+         else
+         {
+            write_kdot_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
+         }
       }
 
       write_temp_strand_removal(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
@@ -470,11 +462,11 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    } // spanIdx
 }
 
-void write_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Hauling Criteria")<<rptNewLine;
+   *pPara<<_T("Hauling Criteria - WSDOT Method")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -535,6 +527,65 @@ void write_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
          Float64 fccy = pHauling->GetHaulingAllowableCompressiveConcreteStress(spanIdx,gdrIdx);
          Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStress(spanIdx,gdrIdx);
          Float64 ft   = pHauling->GetHaulingWithMildRebarAllowableStress(spanIdx,gdrIdx);
+         *pPara<<_T("Allowable Concrete Stresses - Hauling (5.9.4.2.1)")<<rptNewLine;
+         *pPara<<_T("- Compressive Stress = ")<<stress.SetValue(fccy)<<rptNewLine;
+         *pPara<<_T("- Tensile Stress (w/o mild rebar) = ")<<stress.SetValue(ftcy) << rptNewLine;
+         *pPara<<_T("- Tensile Stress (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
+      }
+   }
+}
+
+void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+{
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara<<_T("Hauling Criteria - KDOT Method")<<rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force, pDisplayUnits->GetGeneralForceUnit(), true );
+
+   *pPara<<_T("Dynamic 'G' Factors")<<rptNewLine;
+   *pPara<<_T("- In Cantilever Region   = ")<< pSpecEntry->GetOverhangGFactor()<<rptNewLine;
+   *pPara<<_T("- Between Bunk Points = ")<< pSpecEntry->GetInteriorGFactor()<<rptNewLine;
+
+   GET_IFACE2(pBroker,IKdotGirderHaulingSpecCriteria,pHauling);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
+      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      {
+         *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
+
+         Float64 gdr_length = pBridge->GetGirderLength(span, gdr);
+
+         *pPara<<_T("Minimum support location = ")<<dim2.SetValue(pSpecEntry->GetMininumTruckSupportLocation());
+         if (pSpecEntry->GetUseMinTruckSupportLocationFactor())
+         {
+            Float64 ml = gdr_length * pSpecEntry->GetMinTruckSupportLocationFactor();
+            *pPara<<_T(", or ")<<dim2.SetValue(ml)<<_T(". Whichever is greater.")<<rptNewLine;
+         }
+         else
+         {
+            *pPara<<_T(".")<<rptNewLine;
+         }
+
+         *pPara<<_T("Support location design accuracy = ")<<dim2.SetValue(pSpecEntry->GetTruckSupportLocationAccuracy())<<rptNewLine;
+
+         Float64 fccy = pHauling->GetKdotHaulingAllowableCompressiveConcreteStress(spanIdx,gdrIdx);
+         Float64 ftcy = pHauling->GetKdotHaulingAllowableTensileConcreteStress(spanIdx,gdrIdx);
+         Float64 ft   = pHauling->GetKdotHaulingWithMildRebarAllowableStress(spanIdx,gdrIdx);
          *pPara<<_T("Allowable Concrete Stresses - Hauling (5.9.4.2.1)")<<rptNewLine;
          *pPara<<_T("- Compressive Stress = ")<<stress.SetValue(fccy)<<rptNewLine;
          *pPara<<_T("- Tensile Stress (w/o mild rebar) = ")<<stress.SetValue(ftcy) << rptNewLine;

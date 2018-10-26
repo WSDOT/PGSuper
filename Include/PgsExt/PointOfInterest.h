@@ -49,16 +49,18 @@ typedef Uint64 PoiAttributeType;
 #define POI_PSXFER            0x0020000000000000 // POI at end of prestress transfer length
 #define POI_PSDEV             0x0010000000000000 // POI at end of prestress development length
 #define POI_DEBOND            0x0008000000000000 // POI at debond location
-#define POI_BARCUTOFF         0x0004000000000000 // POI at negative moment reinforcement cutoff point
-#define POI_PICKPOINT         0x0002000000000000 // POI at lifting pick point
-#define POI_BUNKPOINT         0x0001000000000000 // POI at hauling bunk point
-#define POI_FACEOFSUPPORT     0x0000800000000000 // POI at face of support
+#define POI_DECKBARCUTOFF     0x0004000000000000 // POI at negative moment reinforcement cutoff point
+#define POI_BARCUTOFF         0x0002000000000000 // POI at girder moment reinforcement cutoff point
+#define POI_BARDEVELOP        0x0001000000000000 // POI at girder moment reinforcement development point
+#define POI_PICKPOINT         0x0000800000000000 // POI at lifting pick point
+#define POI_BUNKPOINT         0x0000400000000000 // POI at hauling bunk point
+#define POI_FACEOFSUPPORT     0x0000200000000000 // POI at face of support
 
 // Structural Action
-#define POI_FLEXURESTRESS     0x0000400000000000
-#define POI_FLEXURECAPACITY   0x0000200000000000
-#define POI_SHEAR             0x0000100000000000
-#define POI_DISPLACEMENT      0x0000080000000000
+#define POI_FLEXURESTRESS     0x0000100000000000
+#define POI_FLEXURECAPACITY   0x0000080000000000
+#define POI_SHEAR             0x0000040000000000
+#define POI_DISPLACEMENT      0x0000020000000000
 
 // section changes
 #define POI_SECTCHANGE_LEFTFACE    0x0000000000002000
@@ -74,7 +76,7 @@ typedef Uint64 PoiAttributeType;
 
 #define POI_ALLSPECIAL        POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD | \
                               POI_MIDSPAN | POI_H | POI_15H | POI_PSXFER | POI_PSDEV | POI_DEBOND |  \
-                              POI_BARCUTOFF | POI_FACEOFSUPPORT | POI_SECTCHANGE 
+                              POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | POI_FACEOFSUPPORT | POI_SECTCHANGE 
                              // note PICKPOINT and BUNKPOINT skipped on purpose
 
 // The lower 16 bits are reserved for 10th point attributes

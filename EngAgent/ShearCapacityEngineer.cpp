@@ -144,7 +144,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
       const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
 
       //GET_IFACE(IPrestressForce,pPSForce);
-      //double xfer = pPSForce->GetXferLengthAdjustment(poi);
+      //Float64 xfer = pPSForce->GetXferLengthAdjustment(poi);
 #pragma Reminder("############# - Shear Capacity, strand development length adjustment - ##############")
       // Should be using development lenght because this is an ultimate condition
       Float64 xfer = 1.0;
@@ -387,7 +387,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
 
    if ( analysisType == pgsTypes::Envelope )
    {
-      double Mmin,Mmax;
+      Float64 Mmin,Mmax;
       sysSectionValue Vmin, Vmax;
       sysSectionValue Vimin, Vimax; // shear that is concurrent with Mmin and Mmax
 
@@ -426,7 +426,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    Mu_min = IsZero(Mu_min) ? 0 : Mu_min;
 
    // driving moment is the one with the greater magnitude
-   double Mu = max(fabs(Mu_max),fabs(Mu_min));
+   Float64 Mu = max(fabs(Mu_max),fabs(Mu_min));
 
    pscd->Mu = Mu;
    pscd->RealMu = Mu;
@@ -595,8 +595,8 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
    pscd->dv = Max3( pscd->MomentArm, 0.9*pscd->de, 0.72*pscd->h );
    
 
-   double Mu = pscd->Mu;
-   double MuSign = BinarySign(Mu);
+   Float64 Mu = pscd->Mu;
+   Float64 MuSign = BinarySign(Mu);
 
    if ( bAfter1999 && shear_capacity_method != scmVciVcw )
    {
@@ -782,8 +782,8 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          GET_IFACE(IPointOfInterest,pPOI);
          std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(poi.GetSpan(),poi.GetGirder(),pgsTypes::BridgeSite3,POI_15H) );
          ATLASSERT(vPOI.size() == 2);
-         double l1 = vPOI[0].GetDistFromStart();
-         double l2 = vPOI[1].GetDistFromStart();
+         Float64 l1 = vPOI[0].GetDistFromStart();
+         Float64 l2 = vPOI[1].GetDistFromStart();
 
          bool bEndRegion = InRange(l1,poi.GetDistFromStart(),l2) ? false : true;
 
@@ -954,7 +954,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
 
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
-   double cot_theta;
+   Float64 cot_theta;
    if ( shear_capacity_method == scmVciVcw )
    {
       if ( IsLE(pscd->Vci,pscd->Vcw) )

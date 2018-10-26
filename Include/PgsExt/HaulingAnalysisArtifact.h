@@ -42,7 +42,36 @@
 
 // FORWARD DECLARATIONS
 //
-class pgsHaulingAnalysisArtifact;
+interface IEAFDisplayUnits;
+
+class PGSEXTCLASS pgsHaulingAnalysisArtifact
+{
+public:
+   //------------------------------------------------------------------------
+   // Destructor
+   virtual ~pgsHaulingAnalysisArtifact()
+   {;}
+
+   // GROUP: OPERATIONS
+   virtual bool Passed() const =0;
+   virtual bool PassedStressCheck() const =0;
+   virtual void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const =0;
+
+   virtual Float64 GetLeadingOverhang() const =0;
+   virtual Float64 GetTrailingOverhang() const =0;
+
+   virtual void BuildHaulingCheckReport(SpanIndexType span,GirderIndexType girder, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const =0;
+   virtual void BuildHaulingDetailsReport(SpanIndexType span,GirderIndexType girder, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const =0;
+
+   virtual pgsHaulingAnalysisArtifact* Clone() const =0;
+
+#if defined _DEBUG
+   virtual void Dump(dbgDumpContext& os) const =0;
+#endif
+
+   virtual void Write1250Data(SpanIndexType span,GirderIndexType girder,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const =0;
+};
+
 
 // MISCELLANEOUS
 //
@@ -50,7 +79,7 @@ class pgsHaulingAnalysisArtifact;
 
 /*****************************************************************************
 CLASS 
-   pgsHaulingStressAnalysisArtifact
+   pgsWsdotHaulingStressAnalysisArtifact
 
    Artifact that holds Hauling stress check results at a location.
 
@@ -68,7 +97,7 @@ LOG
    rdp : 03.26.1999 : Created file
 *****************************************************************************/
 
-class PGSEXTCLASS pgsHaulingStressAnalysisArtifact
+class PGSEXTCLASS pgsWsdotHaulingStressAnalysisArtifact
 {
 public:
 
@@ -78,24 +107,28 @@ public:
 
    //------------------------------------------------------------------------
    // constructor
-   pgsHaulingStressAnalysisArtifact();
+   pgsWsdotHaulingStressAnalysisArtifact();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   pgsHaulingStressAnalysisArtifact(const pgsHaulingStressAnalysisArtifact& rOther);
+   pgsWsdotHaulingStressAnalysisArtifact(const pgsWsdotHaulingStressAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~pgsHaulingStressAnalysisArtifact();
+   virtual ~pgsWsdotHaulingStressAnalysisArtifact();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   pgsHaulingStressAnalysisArtifact& operator = (const pgsHaulingStressAnalysisArtifact& rOther);
+   pgsWsdotHaulingStressAnalysisArtifact& operator = (const pgsWsdotHaulingStressAnalysisArtifact& rOther);
 
    // GROUP: OPERATIONS
-   // GROUP: ACCESS
 
+   bool Passed() const;
+   bool CompressionPassed() const;
+   bool TensionPassed() const;
+
+   // GROUP: ACCESS
    Float64 GetEffectiveHorizPsForce() const;
    void SetEffectiveHorizPsForce(Float64 f);
 
@@ -114,18 +147,35 @@ public:
    void GetBottomFiberStress(Float64* pPs, Float64* pUpward,  Float64* pNoImpact, Float64* pDownward) const;
    void SetBottomFiberStress(Float64 Ps, Float64 upward,  Float64 noImpact, Float64 downward);
 
-   void GetIncludedGirderStresses(Float64* pftu,Float64* pftd,Float64* pfbu,Float64* pfbd) const;
-   void SetIncludedGirderStresses(Float64 ftu,Float64 ftd,Float64 fbu,Float64 fbd);
+   // Get maximized stresses for plumb girder with impact based on minimum C/D ratios
+   void GetMaxPlumbCompressiveStress(Float64* fTop, Float64* fBottom, Float64* Capacity) const;
+   void GetMaxPlumbTensileStress(Float64* fTop, Float64* fBottom, Float64* CapacityTop, Float64* CapacityBottom) const;
+
+   void GetInclinedGirderStresses(Float64* pftu,Float64* pftd,Float64* pfbu,Float64* pfbd) const;
+   void SetInclinedGirderStresses(Float64 ftu,Float64 ftd,Float64 fbu,Float64 fbd);
 
    Float64 GetMaximumInclinedConcreteCompressiveStress() const;
    Float64 GetMaximumInclinedConcreteTensileStress() const;
    Float64 GetMaximumConcreteCompressiveStress() const;
    Float64 GetMaximumConcreteTensileStress() const;
 
-   void SetAlternativeTensileStressParameters(Float64 YnaUp,Float64 YnaInclined,Float64 YnaDown,ImpactDir dir, GirderOrientation orientation,Float64 At, Float64 T,Float64 As);
-   void GetAlternativeTensileStressParameters(Float64* YnaUp,Float64* YnaDown,Float64* YnaInclined,ImpactDir* dir, GirderOrientation* orientation,Float64* At, Float64* T,Float64* As) const;
+   void SetAlternativeTensileStressParameters(ImpactDir impact, Float64 Yna,   Float64 At,   Float64 T,  
+                                              Float64 AsProvd,  Float64 AsReqd,  Float64 fAllow);
 
-   Float64 GetNeutralAxis(ImpactDir dir);
+   void GetAlternativeTensileStressParameters(ImpactDir impact, Float64* Yna,   Float64* At,   Float64* T,  
+                                              Float64* AsProvd,  Float64* AsReqd,  Float64* fAllow) const;
+
+   // Tensile capacity for each impact direction
+   void GetTensileCapacities(Float64* pUpward,  Float64* pNoImpact, Float64* pDownward) const;
+
+   void SetRequiredConcreteStrength(Float64 fciComp,Float64 fciTensNoRebar,Float64 fciTensWithRebar);
+   void GetRequiredConcreteStrength(Float64 *pfciComp,Float64 *pfciTensNoRebar,Float64 *pfciTensWithRebar) const;
+
+   void SetCompressiveCapacity(Float64 fAllowableCompression);
+   Float64 GetCompressiveCapacity() const;
+
+   void SetInclinedTensileCapacity(Float64 fAllowable);
+   Float64 GetInclinedTensileCapacity() const;
 
    // GROUP: INQUIRY
    // GROUP: DEBUG
@@ -146,10 +196,10 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const pgsHaulingStressAnalysisArtifact& rOther);
+   void MakeCopy(const pgsWsdotHaulingStressAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsHaulingStressAnalysisArtifact& rOther);
+   void MakeAssignment(const pgsWsdotHaulingStressAnalysisArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -175,12 +225,20 @@ private:
 
    Float64 m_ftu,m_ftd,m_fbu,m_fbd;
 
-   Float64 m_Yna[3];
-   ImpactDir m_ImpactDir;
-   GirderOrientation m_GirderOrientation;
-   Float64 m_At;
-   Float64 m_T;
-   Float64 m_As;
+   // Alternate tensile stress values for each impact direction
+   Float64 m_Yna[SIZE_OF_IMPACTDIR];
+   Float64 m_At[SIZE_OF_IMPACTDIR];
+   Float64 m_T[SIZE_OF_IMPACTDIR];
+   Float64 m_AsReqd[SIZE_OF_IMPACTDIR];
+   Float64 m_AsProvd[SIZE_OF_IMPACTDIR];
+   Float64 m_fAllow[SIZE_OF_IMPACTDIR];
+
+   Float64 m_AllowableCompression;
+   Float64 m_AllowableInclinedTension;
+   Float64 m_ReqdCompConcreteStrength;
+   Float64 m_ReqdTensConcreteStrengthNoRebar;
+   Float64 m_ReqdTensConcreteStrengthWithRebar;
+   bool m_WasRebarReqd;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -197,7 +255,7 @@ private:
 
 /*****************************************************************************
 CLASS 
-   pgsHaulingCrackingAnalysisArtifact
+   pgsWsdotHaulingCrackingAnalysisArtifact
 
    Artifact that holds Hauling cracking check results at a location.
 
@@ -215,7 +273,7 @@ LOG
    rdp : 03.26.1999 : Created file
 *****************************************************************************/
 
-class PGSEXTCLASS pgsHaulingCrackingAnalysisArtifact
+class PGSEXTCLASS pgsWsdotHaulingCrackingAnalysisArtifact
 {
 public:
    // GROUP: DATA MEMBERS
@@ -224,22 +282,24 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsHaulingCrackingAnalysisArtifact();
+   pgsWsdotHaulingCrackingAnalysisArtifact();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   pgsHaulingCrackingAnalysisArtifact(const pgsHaulingCrackingAnalysisArtifact& rOther);
+   pgsWsdotHaulingCrackingAnalysisArtifact(const pgsWsdotHaulingCrackingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~pgsHaulingCrackingAnalysisArtifact();
+   virtual ~pgsWsdotHaulingCrackingAnalysisArtifact();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   pgsHaulingCrackingAnalysisArtifact& operator = (const pgsHaulingCrackingAnalysisArtifact& rOther);
+   pgsWsdotHaulingCrackingAnalysisArtifact& operator = (const pgsWsdotHaulingCrackingAnalysisArtifact& rOther);
 
    // GROUP: OPERATIONS
+   bool   Passed() const;
+
    // GROUP: ACCESS
 
    Float64 GetVerticalMoment() const;
@@ -261,6 +321,9 @@ public:
    Float64 GetFsCracking() const;
    void SetFsCracking(Float64 fs);
 
+   Float64 GetAllowableFsForCracking() const;
+   void SetAllowableFsForCracking(Float64 val);
+
    // GROUP: INQUIRY
    // GROUP: DEBUG
    #if defined _DEBUG
@@ -280,10 +343,10 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const pgsHaulingCrackingAnalysisArtifact& rOther);
+   void MakeCopy(const pgsWsdotHaulingCrackingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsHaulingCrackingAnalysisArtifact& rOther);
+   void MakeAssignment(const pgsWsdotHaulingCrackingAnalysisArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -298,6 +361,7 @@ private:
    Float64 m_LateralMomentStress;
    Float64 m_ThetaCrackingMax;
    Float64 m_FsCracking;
+   Float64 m_AllowableFsForCracking;
    CrackedFlange m_CrackedFlange;
 
    // GROUP: OPERATORS
@@ -314,7 +378,7 @@ private:
 
 /*****************************************************************************
 CLASS 
-   pgsHaulingAnalysisArtifact
+   pgsWsdotHaulingAnalysisArtifact
 
    Artifact which holds the detailed results of a girder Hauling check
 
@@ -332,30 +396,61 @@ LOG
    rdp : 03.25.1999 : Created file
 *****************************************************************************/
 
-class PGSEXTCLASS pgsHaulingAnalysisArtifact
+class PGSEXTCLASS pgsWsdotHaulingAnalysisArtifact : public pgsHaulingAnalysisArtifact
 {
 public:
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsHaulingAnalysisArtifact();
+   pgsWsdotHaulingAnalysisArtifact();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   pgsHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact& rOther);
+   pgsWsdotHaulingAnalysisArtifact(const pgsWsdotHaulingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~pgsHaulingAnalysisArtifact();
+   virtual ~pgsWsdotHaulingAnalysisArtifact();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   pgsHaulingAnalysisArtifact& operator = (const pgsHaulingAnalysisArtifact& rOther);
+   pgsWsdotHaulingAnalysisArtifact& operator = (const pgsWsdotHaulingAnalysisArtifact& rOther);
 
    // GROUP: OPERATIONS
+   // virtual functions
+   virtual bool Passed() const;
+   virtual bool PassedStressCheck() const;
+   virtual void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const;
+
+   virtual Float64 GetLeadingOverhang() const;
+   virtual Float64 GetTrailingOverhang() const;
+
+   virtual void BuildHaulingCheckReport(SpanIndexType span,GirderIndexType girder,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+   virtual void BuildHaulingDetailsReport(SpanIndexType span,GirderIndexType girder, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+
+   virtual pgsHaulingAnalysisArtifact* Clone() const;
+
+   virtual void Write1250Data(SpanIndexType span,GirderIndexType girder,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const;
+
    // GROUP: ACCESS
+
+   // allowable FS's
+   Float64 GetAllowableFsForCracking() const;
+   void SetAllowableFsForCracking(Float64 val);
+
+   Float64 GetAllowableFsForRollover() const;
+   void SetAllowableFsForRollover(Float64 val);
+
+   Float64 GetAllowableSpanBetweenSupportLocations() const;
+   void SetAllowableSpanBetweenSupportLocations(Float64 val);
+
+   Float64 GetAllowableLeadingOverhang() const;
+   void SetAllowableLeadingOverhang(Float64 val);
+
+   Float64 GetMaxGirderWgt() const;
+   void SetMaxGirderWgt(Float64 maxWgt);
 
    // factors of safety
    Float64 GetMinFsForCracking() const;
@@ -370,8 +465,6 @@ public:
    Float64 GetClearSpanBetweenSupportLocations() const;
    void SetClearSpanBetweenSupportLocations(Float64 val);
 
-   Float64 GetLeadingOverhang() const;
-   Float64 GetTrailingOverhang() const;
    void SetOverhangs(Float64 trailing,Float64 leading);
 
    void SetGirderWeight(Float64 wgt);
@@ -450,14 +543,13 @@ public:
    Float64 GetEqualibriumAngle() const;
    void SetEqualibriumAngle(Float64 val);
 
-   // points of interest used for this lifing analysis
+   // points of interest used for this hauling analysis
    void SetHaulingPointsOfInterest(const std::vector<pgsPointOfInterest>& rPois);
    std::vector<pgsPointOfInterest> GetHaulingPointsOfInterest() const;
 
    void GetMinMaxStresses(Float64* minStress, Float64* maxStress) const;
    void GetMinMaxInclinedStresses(Float64* pftuMin,Float64* pftdMin,Float64* pfbuMin,Float64* pfbdMin,
                                   Float64* pftuMax,Float64* pftdMax,Float64* pfbuMax,Float64* pfbdMax) const;
-
 
    // get max top (tension) and bottom (compression) stresses (minus prestress) at all analysis points along girder
    struct MaxdHaulingStresses
@@ -478,20 +570,16 @@ public:
    void GetMinMaxHaulingStresses(MaxHaulingStressCollection& rMaxStresses) const;
 
    void AddHaulingStressAnalysisArtifact(Float64 distFromStart,
-                                      const pgsHaulingStressAnalysisArtifact& artifact);
-   const pgsHaulingStressAnalysisArtifact* GetHaulingStressAnalysisArtifact(Float64 distFromStart) const;
+                                      const pgsWsdotHaulingStressAnalysisArtifact& artifact);
+   const pgsWsdotHaulingStressAnalysisArtifact* GetHaulingStressAnalysisArtifact(Float64 distFromStart) const;
 
    void AddHaulingCrackingAnalysisArtifact(Float64 distFromStart,
-                                      const pgsHaulingCrackingAnalysisArtifact& artifact);
-   const pgsHaulingCrackingAnalysisArtifact* GetHaulingCrackingAnalysisArtifact(Float64 distFromStart) const;
+                                      const pgsWsdotHaulingCrackingAnalysisArtifact& artifact);
+   const pgsWsdotHaulingCrackingAnalysisArtifact* GetHaulingCrackingAnalysisArtifact(Float64 distFromStart) const;
 
-   void SetAlterantiveTensileStressAsMax(Float64 AsMax);
-   Float64 GetAlterantiveTensileStressAsMax() const;
-
-   void GetRequiredConcreteStrength(double *pfcCompression,double *pfcTension,bool* pMinRebarRequired,double fcMax,bool bDesign) const;
-   void SetAllowableTensileConcreteStressParameters(double f,bool bMax,double fmax);
-   void SetAllowableCompressionFactor(double c);
-   void SetAlternativeTensileConcreteStressFactor(double f);
+   void SetAllowableTensileConcreteStressParameters(Float64 f,bool bMax,Float64 fmax);
+   void SetAllowableCompressionFactor(Float64 c);
+   void SetAlternativeTensileConcreteStressFactor(Float64 f);
 
    // GROUP: INQUIRY
 
@@ -501,11 +589,21 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const pgsHaulingAnalysisArtifact& rOther);
+   void MakeCopy(const pgsWsdotHaulingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsHaulingAnalysisArtifact& rOther);
+   void MakeAssignment(const pgsWsdotHaulingAnalysisArtifact& rOther);
 
+   // reporting functions
+   bool BuildImpactedStressTable(SpanIndexType span,GirderIndexType girder, rptChapter* pChapter,
+                                 IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildInclinedStressTable(SpanIndexType span,GirderIndexType girder,rptChapter* pChapter,
+                                 IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildOtherTables(rptChapter* pChapter,
+                         IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+
+   void BuildRebarTable(IBroker* pBroker, rptChapter* pChapter, SpanIndexType span, GirderIndexType girder, 
+                        ImpactDir dir) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -546,12 +644,10 @@ private:
    Float64 m_TrailingOverhang;
 
    std::vector<pgsPointOfInterest> m_HaulingPois; // sorted same as below collections
-   std::map<Float64,pgsHaulingStressAnalysisArtifact,Float64_less> m_HaulingStressAnalysisArtifacts;
-   std::map<Float64,pgsHaulingCrackingAnalysisArtifact,Float64_less> m_HaulingCrackingAnalysisArtifacts;
+   std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less> m_HaulingStressAnalysisArtifacts;
+   std::map<Float64,pgsWsdotHaulingCrackingAnalysisArtifact,Float64_less> m_HaulingCrackingAnalysisArtifacts;
 
    Float64 m_GirderWeight; // total girder weight
-
-   Float64 m_AsMax;
 
    // allowable stress parameters
    Float64 m_C;
@@ -559,6 +655,12 @@ private:
    bool m_bfmax;
    Float64 m_fmax;
    Float64 m_Talt;
+
+   Float64 m_AllowableSpanBetweenSupportLocations;
+   Float64 m_AllowableLeadingOverhang;
+   Float64 m_AllowableFsForCracking;
+   Float64 m_AllowableFsForRollover;
+   Float64 m_MaxGirderWgt;
 
 public:
    // GROUP: DEBUG
@@ -585,5 +687,4 @@ public:
 
 // EXTERNAL REFERENCES
 //
-
 #endif // INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_

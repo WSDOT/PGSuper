@@ -222,9 +222,9 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
          }
       }
 
-      double Mu    = pArtifact->GetDemand();
-      double Mr    = pArtifact->GetCapacity();
-      double MrMin = pArtifact->GetMinCapacity() ;
+      Float64 Mu    = pArtifact->GetDemand();
+      Float64 Mr    = pArtifact->GetCapacity();
+      Float64 MrMin = pArtifact->GetMinCapacity() ;
 
       (*p_table)(row,col++) << moment.SetValue( Mu );
       (*p_table)(row,col++) << moment.SetValue( Mr );

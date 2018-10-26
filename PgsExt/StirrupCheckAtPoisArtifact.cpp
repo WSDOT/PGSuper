@@ -455,14 +455,14 @@ Float64 pgsVerticalShearArtifact::GetCapacity() const
    return m_Capacity;
 }
 
-void pgsVerticalShearArtifact::SetEndSpacing(pgsTypes::MemberEndType end,double AvS_provided,double AvS_at_CS)
+void pgsVerticalShearArtifact::SetEndSpacing(pgsTypes::MemberEndType end,Float64 AvS_provided,Float64 AvS_at_CS)
 {
    m_bEndSpacingApplicable[end] = true;
    m_AvSprovided[end] = AvS_provided;
    m_AvSatCS[end]     = AvS_at_CS;
 }
 
-void pgsVerticalShearArtifact::GetEndSpacing(pgsTypes::MemberEndType end,double* pAvS_provided,double* pAvS_at_CS)
+void pgsVerticalShearArtifact::GetEndSpacing(pgsTypes::MemberEndType end,Float64* pAvS_provided,Float64* pAvS_at_CS)
 {
    *pAvS_provided = m_AvSprovided[end];
    *pAvS_at_CS    = m_AvSatCS[end];
@@ -588,6 +588,7 @@ m_Fc(0),
 m_Bv(0),
 m_Sall(0),
 m_Fy(0),
+m_bWasFyLimited(false),
 m_AvOverSMin_5_8_4_4_1(0),
 m_AvOverSMin_5_8_4_1_3(0),
 m_AvOverSMin(0),
@@ -815,6 +816,16 @@ void pgsHorizontalShearArtifact::SetFy(Float64 fy)
    m_Fy = fy;
 }
 
+bool pgsHorizontalShearArtifact::WasFyLimited() const
+{
+   return m_bWasFyLimited;
+}
+
+void pgsHorizontalShearArtifact::WasFyLimited(bool bWasLimited)
+{
+   m_bWasFyLimited = bWasLimited;
+}
+
 bool pgsHorizontalShearArtifact::Is5_8_4_1_4Applicable() const
 {
    return m_VsAvg >= m_VsLimit;
@@ -926,7 +937,7 @@ Float64 pgsHorizontalShearArtifact::GetDv() const
    return m_Dv;
 }
 
-void pgsHorizontalShearArtifact::SetDv(double dv)
+void pgsHorizontalShearArtifact::SetDv(Float64 dv)
 {
    m_Dv = dv;
 }
@@ -936,7 +947,7 @@ Float64 pgsHorizontalShearArtifact::GetI() const
    return m_I;
 }
 
-void pgsHorizontalShearArtifact::SetI(double i)
+void pgsHorizontalShearArtifact::SetI(Float64 i)
 {
    m_I = i;
 }
@@ -946,7 +957,7 @@ Float64 pgsHorizontalShearArtifact::GetQ() const
    return m_Q;
 }
 
-void pgsHorizontalShearArtifact::SetQ(double q)
+void pgsHorizontalShearArtifact::SetQ(Float64 q)
 {
    m_Q = q;
 }
@@ -956,7 +967,7 @@ Float64 pgsHorizontalShearArtifact::GetK1() const
    return m_K1;
 }
 
-void pgsHorizontalShearArtifact::SetK1(double k1)
+void pgsHorizontalShearArtifact::SetK1(Float64 k1)
 {
    m_K1 = k1;
 }
@@ -966,7 +977,7 @@ Float64 pgsHorizontalShearArtifact::GetK2() const
    return m_K2;
 }
 
-void pgsHorizontalShearArtifact::SetK2(double k2)
+void pgsHorizontalShearArtifact::SetK2(Float64 k2)
 {
    m_K2 = k2;
 }
@@ -981,14 +992,14 @@ void pgsHorizontalShearArtifact::SetAvOverSReqd(const Float64& vu)
    m_AvsReqd = vu;
 }
 
-void pgsHorizontalShearArtifact::SetEndSpacing(pgsTypes::MemberEndType end,double AvS_provided,double AvS_at_CS)
+void pgsHorizontalShearArtifact::SetEndSpacing(pgsTypes::MemberEndType end,Float64 AvS_provided,Float64 AvS_at_CS)
 {
    m_bEndSpacingApplicable[end] = true;
    m_AvSprovided[end] = AvS_provided;
    m_AvSatCS[end]     = AvS_at_CS;
 }
 
-void pgsHorizontalShearArtifact::GetEndSpacing(pgsTypes::MemberEndType end,double* pAvS_provided,double* pAvS_at_CS)
+void pgsHorizontalShearArtifact::GetEndSpacing(pgsTypes::MemberEndType end,Float64* pAvS_provided,Float64* pAvS_at_CS)
 {
    *pAvS_provided = m_AvSprovided[end];
    *pAvS_at_CS    = m_AvSatCS[end];
@@ -1056,6 +1067,7 @@ void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOth
    m_SGirder      = rOther.m_SGirder;
    m_Sall         = rOther.m_Sall;
    m_Fy           = rOther.m_Fy;
+   m_bWasFyLimited = rOther.m_bWasFyLimited;
    m_AvOverSMin_5_8_4_4_1   = rOther.m_AvOverSMin_5_8_4_4_1;
    m_AvOverSMin_5_8_4_1_3   = rOther.m_AvOverSMin_5_8_4_1_3;
    m_AvOverSMin   = rOther.m_AvOverSMin;

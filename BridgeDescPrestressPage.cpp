@@ -1455,7 +1455,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
       CString strOffset;
       CWnd* pWnd = GetDlgItem(IDC_HPOFFSET_HP);
       pWnd->GetWindowText(strOffset);
-      double offset = _tstof(strOffset);
+      Float64 offset = _tstof(strOffset);
 
       offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
@@ -1492,7 +1492,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
       CString strOffset;
       CWnd* pWnd = GetDlgItem(IDC_HPOFFSET_END);
       pWnd->GetWindowText(strOffset);
-      double offset = _tstof(strOffset);
+      Float64 offset = _tstof(strOffset);
       offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );

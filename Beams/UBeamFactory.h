@@ -61,12 +61,12 @@ public:
    virtual void CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng);
    virtual void CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng);
    virtual void CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
-                                  double endIncrement, double hpIncrement, IStrandMover** strandMover);
+                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover);
    virtual std::vector<std::_tstring> GetDimensionNames();
    virtual std::vector<const unitLength*> GetDimensionUnits(bool bSIUnits);
-   virtual std::vector<double> GetDefaultDimensions();
+   virtual std::vector<Float64> GetDefaultDimensions();
    virtual bool ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg);
    virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions);
    virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad);
@@ -89,7 +89,7 @@ public:
    virtual HICON GetIcon();
    virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs);
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings();
-   virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing);
+   virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing);
    virtual WebIndexType GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions);
    virtual Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType);
    virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType);
@@ -98,14 +98,14 @@ public:
 
 public:
    std::vector<std::_tstring> m_DimNames;
-   std::vector<double> m_DefaultDims;
+   std::vector<Float64> m_DefaultDims;
    std::vector<const unitLength*> m_DimUnits[2];
 
    void GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                      double& d1,double& d2,double& d3,double& d4,double& d5,double& d6,double& d7,
-                      double& w1,double& w2,double& w3,double& w4,double& w5,
-                      double& t);
-   double GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name);
+                      Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& d7,
+                      Float64& w1,Float64& w2,Float64& w3,Float64& w4,Float64& w5,
+                      Float64& t);
+   Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name);
 
 private:
    void ConfigureShape(const IBeamFactory::Dimensions& dimensions, IUBeam* shape);

@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 // CMovePierDlg dialog
 
 
-CMovePierDlg::CMovePierDlg(PierIndexType pierIdx,double fromStation,double toStation,double prevPierStation,double nextPierStation,SpanIndexType nSpans,const unitStationFormat& stationFormat,CWnd* pParent /*=NULL*/)
+CMovePierDlg::CMovePierDlg(PierIndexType pierIdx,Float64 fromStation,Float64 toStation,Float64 prevPierStation,Float64 nextPierStation,SpanIndexType nSpans,const unitStationFormat& stationFormat,CWnd* pParent /*=NULL*/)
 	: CDialog(CMovePierDlg::IDD, pParent),
    m_StationFormat(stationFormat)
 {

@@ -109,8 +109,21 @@ void CBridgeDescDeckRebarGrid::AddRow()
 
    // Set some default data
    CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+   CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
+   ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
    CDeckRebarData::NegMomentRebarData rebarData;
-   rebarData.PierIdx = 1;
+
+   // find the first continuous pier
+   for ( PierIndexType pierIdx = 0; pierIdx < pGrandParent->m_BridgeDesc.GetPierCount(); pierIdx++ )
+   {
+      pgsTypes::PierConnectionType connectionType = pGrandParent->m_BridgeDesc.GetPier(pierIdx)->GetConnectionType();
+      if ( connectionType != pgsTypes::Hinged && connectionType != pgsTypes::Roller )
+      {
+         rebarData.PierIdx = pierIdx;
+         break;
+      }
+   }
    rebarData.Mat = CDeckRebarData::TopMat;
    rebarData.LumpSum = 0;
    rebarData.RebarGrade = pParent->m_RebarData.TopRebarGrade;
@@ -244,13 +257,16 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 	EnableIntelliMouse();
 	SetFocus();
 
+   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+   ASSERT(pParent);
+
+   pParent->EnableRemoveBtn( false ); // start off disabled
+
 	GetParam( )->EnableUndo(TRUE);
 }
 
-void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
+void CBridgeDescDeckRebarGrid::UpdatePierList()
 {
-   GetParam()->EnableUndo(FALSE);
-
    CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
    ASSERT(pParent);
 
@@ -258,26 +274,55 @@ void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
    ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
    PierIndexType nPiers = pGrandParent->m_BridgeDesc.GetPierCount();
-   CString strPiers;
+   IndexType idx = 0;
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
-      if ( pierIdx == 0 )
+      const CPierData* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
+      if ( pPier->GetConnectionType() != pgsTypes::Hinged && pPier->GetConnectionType() != pgsTypes::Roller )
       {
-         strPiers.Format(_T("%d"),pierIdx+1);
-      }
-      else
-      {
-         CString str = strPiers;
-         strPiers.Format(_T("%s\n%d"),str,pierIdx+1);
+         // only include the pier in the drop down list if it is continuous
+         if ( idx == 0 )
+         {
+            m_strPiers.Format(_T("%d"),LABEL_PIER(pierIdx));
+            idx++;
+         }
+         else
+         {
+            CString str = m_strPiers;
+            m_strPiers.Format(_T("%s\n%d"),str,LABEL_PIER(pierIdx));
+            idx++;
+         }
       }
    }
 
-	this->SetStyleRange(CGXRange(nRow,1), CGXStyle()
-			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(strPiers)
-			.SetValue(strPiers.Left(strPiers.Find(_T("\n"),0)))
-         .SetHorizontalAlignment(DT_RIGHT)
-         );
+   m_nContinuousPiers = idx;
+
+   pParent->EnableAddBtn( 0 < m_nContinuousPiers ? true : false );
+}
+
+void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
+{
+   GetParam()->EnableUndo(FALSE);
+
+
+   if ( 0 < m_nContinuousPiers )
+   {
+	   this->SetStyleRange(CGXRange(nRow,1), CGXStyle()
+			   .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+			   .SetChoiceList(m_strPiers)
+			   .SetValue(m_strPiers.Left(m_strPiers.Find(_T("\n"),0)))
+            .SetHorizontalAlignment(DT_RIGHT)
+            );
+   }
+   else
+   {
+	   this->SetStyleRange(CGXRange(nRow,1), CGXStyle()
+			   .SetValue(_T(""))
+            .SetEnabled(FALSE)
+            .SetFormat(GX_FMT_HIDDEN)
+            .SetInterior(::GetSysColor(COLOR_BTNFACE))
+            );
+   }
 
    CString strMats = (m_bEnableTopMat && m_bEnableBottomMat ? _T("Top\nBottom") : _T("Top"));
    this->SetStyleRange(CGXRange(nRow,2), CGXStyle()
@@ -336,31 +381,33 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    CString strPier = GetCellValue(nRow,1);
    pRebarData->PierIdx = _tstoi(strPier) - 1;
 
+   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+   ASSERT(pParent);
+
    // mat
    CString strMat = GetCellValue(nRow,2);
    pRebarData->Mat = (strMat == _T("Top") ? CDeckRebarData::TopMat : CDeckRebarData::BottomMat);
 
    // lump sum area
    CString strAs = GetCellValue(nRow,3);
-   double As = _tstof(strAs);
+   Float64 As = _tstof(strAs);
    As = ::ConvertToSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
    pRebarData->LumpSum = As;
 
    // bar size
-   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
    pRebarData->RebarGrade = pParent->m_RebarData.TopRebarGrade;
    pRebarData->RebarType  = pParent->m_RebarData.TopRebarType;
    pRebarData->RebarSize  = GetBarSize(nRow,4);
    
    // spacing
    CString strSpacing = GetCellValue(nRow,5);
-   double spacing = _tstof(strSpacing);
+   Float64 spacing = _tstof(strSpacing);
    spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pRebarData->Spacing = spacing;
 
    // left offset
    CString strCutoff = GetCellValue(nRow,6);
-   double cutoff = _tstof(strCutoff);
+   Float64 cutoff = _tstof(strCutoff);
    cutoff = ::ConvertToSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    pRebarData->LeftCutoff = cutoff;
 
@@ -418,7 +465,7 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    SetValueRange(CGXRange(nRow,2),rebarData.Mat == CDeckRebarData::TopMat ? _T("Top") : _T("Bottom"));
 
    // lump sum area
-   double As = rebarData.LumpSum;
+   Float64 As = rebarData.LumpSum;
    As = ::ConvertFromSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,3),As);
 
@@ -428,19 +475,69 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    VERIFY(SetValueRange(CGXRange(nRow, 4), tmp));
 
    // spacing
-   double spacing = rebarData.Spacing;
+   Float64 spacing = rebarData.Spacing;
    spacing = ::ConvertFromSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,5),spacing);
 
+   // Cutoffs - don't input cut-offs for non-continuous side of pier
+   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+   ASSERT(pParent);
+
+   CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
+   ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+   const CPierData* pPier = pGrandParent->m_BridgeDesc.GetPier(rebarData.PierIdx);
+
    // left cutoff
-   double cutoff = rebarData.LeftCutoff;
+   Float64 cutoff = rebarData.LeftCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,6),cutoff);
+   if ( pPier->GetConnectionType() == pgsTypes::Hinged || 
+        pPier->GetConnectionType() == pgsTypes::Roller ||
+        pPier->GetConnectionType() == pgsTypes::IntegralAfterDeckHingeBack || 
+        pPier->GetConnectionType() == pgsTypes::IntegralBeforeDeckHingeBack 
+      )
+   {
+      SetStyleRange(CGXRange(nRow,6), CGXStyle()
+         .SetEnabled(FALSE)
+         .SetFormat(GX_FMT_HIDDEN)
+         .SetInterior(::GetSysColor(COLOR_BTNFACE))
+         );
+   }
+   else
+   {
+      SetStyleRange(CGXRange(nRow,6), CGXStyle()
+         .SetEnabled(TRUE)
+         .SetFormat(GX_FMT_GEN)
+         .SetReadOnly(FALSE)
+         .SetInterior(::GetSysColor(COLOR_WINDOW))
+         );
+   }
 
    // right cutoff
    cutoff = rebarData.RightCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,7),cutoff);
+   if ( pPier->GetConnectionType() == pgsTypes::Hinged || 
+        pPier->GetConnectionType() == pgsTypes::Roller ||
+        pPier->GetConnectionType() == pgsTypes::IntegralAfterDeckHingeAhead || 
+        pPier->GetConnectionType() == pgsTypes::IntegralBeforeDeckHingeAhead 
+      )
+   {
+      SetStyleRange(CGXRange(nRow,7), CGXStyle()
+         .SetEnabled(FALSE)
+         .SetFormat(GX_FMT_HIDDEN)
+         .SetInterior(::GetSysColor(COLOR_BTNFACE))
+         );
+   }
+   else
+   {
+      SetStyleRange(CGXRange(nRow,7), CGXStyle()
+         .SetEnabled(TRUE)
+         .SetFormat(GX_FMT_GEN)
+         .SetReadOnly(FALSE)
+         .SetInterior(::GetSysColor(COLOR_WINDOW))
+         );
+   }
 
    GetParam()->SetLockReadOnly(TRUE);
 	GetParam()->EnableUndo(TRUE);
@@ -460,7 +557,14 @@ void CBridgeDescDeckRebarGrid::FillGrid(const std::vector<CDeckRebarData::NegMom
 
    // size grid
    for (CollectionIndexType i = 0; i < size; i++)
-	   AddRow();
+   {
+	   ROWCOL nRow = 0;
+      nRow = GetRowCount()+1;
+	   nRow = max(1, nRow);
+
+	   InsertRows(nRow, 1);
+      SetRowStyle(nRow);
+   }
 
    // fill grid
    ROWCOL nRow=1;
@@ -478,17 +582,20 @@ void CBridgeDescDeckRebarGrid::FillGrid(const std::vector<CDeckRebarData::NegMom
 	GetParam()->EnableUndo(TRUE);
 }
 
-void CBridgeDescDeckRebarGrid::GetRebarData(std::vector<CDeckRebarData::NegMomentRebarData>& vRebarData)
+bool CBridgeDescDeckRebarGrid::GetRebarData(std::vector<CDeckRebarData::NegMomentRebarData>& vRebarData)
 {
    vRebarData.clear();
 
-  ROWCOL rows = GetRowCount();
-  for ( ROWCOL row = 1; row <= rows; row++ )
-  {
-     CDeckRebarData::NegMomentRebarData rebarData;
-     GetRowData(row,&rebarData);
+   ROWCOL rows = GetRowCount();
+   for ( ROWCOL row = 1; row <= rows; row++ )
+   {
+      CDeckRebarData::NegMomentRebarData rebarData;
+      if ( !GetRowData(row,&rebarData) )
+         return false;
+
      vRebarData.push_back(rebarData);
-  }
+   }
+   return true;
 }
 
 void CBridgeDescDeckRebarGrid::EnableMats(BOOL bEnableTop,BOOL bEnableBottom)
@@ -497,3 +604,64 @@ void CBridgeDescDeckRebarGrid::EnableMats(BOOL bEnableTop,BOOL bEnableBottom)
    m_bEnableBottomMat = bEnableBottom;
 }
 
+BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
+{
+	CString s;
+	CGXControl* pControl = GetControl(nRow, nCol);
+	pControl->GetCurrentText(s);
+
+   if ( s.IsEmpty() )
+   {
+      SetWarningText(_T("Value must be a number"));
+      return FALSE;
+   }
+
+   if ( nCol == 1 )
+   {
+      CString strPier = GetCellValue(nRow,1);
+      PierIndexType pierIdx = _tstoi(strPier) - 1;
+
+      CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+      ASSERT(pParent);
+
+      CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
+      ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+      const CPierData* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
+
+      if ( pPier->GetConnectionType() == pgsTypes::Hinged || pPier->GetConnectionType() == pgsTypes::Roller )
+      {
+         CString strMsg;
+         strMsg.Format(_T("Pier %d has a hinge/roller type connection. It cannot have supplimental reinforcement. Remove this row from the Supplemental Reinforcement Grid"),LABEL_PIER(pierIdx));
+         SetWarningText(strMsg);
+         return FALSE;
+      }
+   }
+
+   if ( nCol == 3 )
+   {
+      CString strAs = GetCellValue(nRow,3);
+      Float64 As = _tstof(strAs);
+      if ( As < 0 )
+      {
+         SetWarningText(_T("As must be greater than zero"));
+         return FALSE;
+      }
+   }
+
+   if ( nCol == 6 || nCol == 7 )
+   {
+      CString strCutoff = GetCellValue(nRow,6);
+      Float64 leftCutoff = _tstof(strCutoff);
+
+      strCutoff = GetCellValue(nRow,7);
+      Float64 rightCutoff = _tstof(strCutoff);
+
+      if ( IsLE(leftCutoff+rightCutoff,0.0) )
+      {
+         SetWarningText(_T("Bar length must be greater than zero"));
+         return FALSE;
+      }
+   }
+
+	return CGXGridWnd::OnValidateCell(nRow, nCol);
+}

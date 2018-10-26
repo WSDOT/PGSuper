@@ -78,6 +78,10 @@ END_CONNECTION_POINT_MAP()
 
 DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERAPPPLUGINIMPL)
 
+   virtual CString GetAppName() const { return "PGSuper"; }
+   virtual CString GetTemplateFileExtension();
+
+
    HRESULT FinalConstruct();
    void FinalRelease();
 
@@ -101,9 +105,8 @@ public:
    virtual BOOL Init(CEAFApp* pParent);
    virtual void Terminate();
    virtual void IntegrateWithUI(BOOL bIntegrate);
-   virtual CEAFDocTemplate* CreateDocTemplate();
+   virtual std::vector<CEAFDocTemplate*> CreateDocTemplates();
    virtual HMENU GetSharedMenuHandle();
-   virtual UINT GetDocumentResourceID();
    virtual CString GetName();
 
 // IEAFAppCommandLine

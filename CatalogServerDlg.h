@@ -40,6 +40,7 @@ class CCatalogServerDlg : public CDialog
 // Construction
 public:
 	CCatalogServerDlg(CWnd* pParent = NULL);   // standard constructor
+	CCatalogServerDlg(const CString& strExt,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCatalogServerDlg)
@@ -49,6 +50,7 @@ public:
 
 
    CPGSuperCatalogServers m_Servers;
+   CString m_TemplateFileExt;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

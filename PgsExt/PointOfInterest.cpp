@@ -542,12 +542,30 @@ std::_tstring rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
+   if ( m_POI.HasAttribute(m_Stage,POI_DECKBARCUTOFF) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("Bar Cutoff");
+      nAttributes++;
+   }
+
    if ( m_POI.HasAttribute(m_Stage,POI_BARCUTOFF) )
    {
       if ( 0 < nAttributes )
          strAttrib += _T(", ");
 
       strAttrib += _T("Bar Cutoff");
+      nAttributes++;
+   }
+
+   if ( m_POI.HasAttribute(m_Stage,POI_BARDEVELOP) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("Bar Develop.");
       nAttributes++;
    }
 

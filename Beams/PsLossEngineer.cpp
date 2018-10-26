@@ -295,6 +295,8 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    Float64 Ac;
    Float64 Ic;
    Float64 Ybc;
+   Float64 Volume;
+   Float64 SurfaceArea;
    Float64 Ad;
    Float64 ed;
    Float64 Ksh;
@@ -328,7 +330,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
    GetLossParameters(poi,config,
-                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Ad, &ed, &Ksh,
+                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Volume, &SurfaceArea,&Ad, &ed, &Ksh,
                      &eperm, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
@@ -450,6 +452,8 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    Float64 Ac;
    Float64 Ic;
    Float64 Ybc;
+   Float64 Volume;
+   Float64 SurfaceArea;
    Float64 Ad;
    Float64 ed;
    Float64 Ksh;
@@ -483,7 +487,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
    GetLossParameters(poi,config,
-                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Ad, &ed, &Ksh,
+                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &eperm, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
@@ -536,8 +540,8 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
                                 Ec,
                                 Eci,
                                 EcSlab,
-                                Ag, // volume/length
-                                perimeter, // surface area/length
+                                Volume, // volume/length
+                                SurfaceArea, // surface area/length
                                 Aslab, // volume/length for slab
                                 Pslab, // surface area/length for slab
                                 Ag,
@@ -629,6 +633,8 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    Float64 Ac;
    Float64 Ic;
    Float64 Ybc;
+   Float64 Volume;
+   Float64 SurfaceArea;
    Float64 Ad;
    Float64 ed;
    Float64 Ksh;
@@ -677,7 +683,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    }
 
    GetLossParameters(poi,config,
-                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Ad, &ed, &Ksh,
+                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &eperm, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
@@ -895,6 +901,8 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    Float64 Ac;
    Float64 Ic;
    Float64 Ybc;
+   Float64 Volume;
+   Float64 SurfaceArea;
    Float64 Ad;
    Float64 ed;
    Float64 Ksh;
@@ -928,7 +936,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
    GetLossParameters(poi,config,
-                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Ad, &ed, &Ksh,
+                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &eperm, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
@@ -1148,15 +1156,6 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
-
-#if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
-   {
-      pParagraph = new rptParagraph();
-      *pChapter << pParagraph;
-      *pParagraph << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
-   }
-#endif
 
    GET_IFACE(IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> bsPoi = pIPoi->GetPointsOfInterest( span, gdr, pgsTypes::BridgeSite3, POI_TABULAR );
@@ -1994,6 +1993,8 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    Float64* pAc,
    Float64* pIc,
    Float64* pYbc,
+   Float64* pVolume,
+   Float64* pSurfaceArea,
    Float64* pAd,
    Float64* ped,
    Float64* pKsh,
@@ -2102,6 +2103,9 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *pAc  = pSectProp2->GetAg( pgsTypes::BridgeSite2, poi, config.Fc );
    *pIc  = pSectProp2->GetIx( pgsTypes::BridgeSite2, poi, config.Fc );
    *pYbc = pSectProp2->GetYb( pgsTypes::BridgeSite2, poi, config.Fc );
+
+   *pVolume = pSectProp2->GetVolume(span,gdr);
+   *pSurfaceArea = pSectProp2->GetSurfaceArea(span,gdr);
 
    // area of deck
    if ( pBridge->IsCompositeDeck() )
@@ -2341,15 +2345,6 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Final Prestress Losses") << rptNewLine;
-
-#if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
-   {
-      pParagraph = new rptParagraph();
-      *pChapter << pParagraph;
-      *pParagraph << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
-   }
-#endif
 
    GET_IFACE(IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> bsPoi = pIPoi->GetPointsOfInterest( span, gdr, pgsTypes::BridgeSite3, POI_TABULAR );

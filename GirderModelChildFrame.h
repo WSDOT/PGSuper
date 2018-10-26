@@ -122,7 +122,7 @@ protected:
    void UpdateBar();
 
    virtual CRuntimeClass* GetLowerPaneClass() const;
-   virtual double GetTopFrameFraction() const;
+   virtual Float64 GetTopFrameFraction() const;
    void UpdateCutLocation(CutLocation cutLoc,Float64 cut = 0.0);
    void OnUpdateFrameTitle(BOOL bAddToTitle);
    

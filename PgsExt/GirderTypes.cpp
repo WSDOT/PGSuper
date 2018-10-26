@@ -122,7 +122,7 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       hr = pStrLoad->BeginUnit(_T("GirderTypes"));
 
-      double version;
+      Float64 version;
       hr = pStrLoad->get_Version(&version);
 
       bool bSameGirder = m_pSpan->GetBridgeDescription()->UseSameGirderForEntireBridge();
@@ -140,7 +140,7 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             hr = pStrLoad->BeginUnit(_T("GirderGroup"));
 
-            double grp_version;
+            Float64 grp_version;
             hr = pStrLoad->get_Version(&grp_version);
             ATLASSERT(grp_version == 1);
 

@@ -70,6 +70,8 @@ protected:
    BOOL OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+   void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
+
 public:
    // custom stuff for grid
    void CustomInit();
@@ -85,11 +87,15 @@ public:
    void FillGrid(const CLongitudinalRebarData& rebarData);
 
 private:
+   // changes formating of cell when measurement type changes
+   pgsTypes::RebarLayoutType GetLayout(ROWCOL nRow);
+   void OnLayoutTypeChanged(ROWCOL nRow);
+
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
 
    matRebar::Size GetBarSize(ROWCOL row);
-
+   void EnableCell(ROWCOL nRow, ROWCOL nCol, BOOL bEnable);
 };
 
 /////////////////////////////////////////////////////////////////////////////

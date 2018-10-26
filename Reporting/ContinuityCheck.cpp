@@ -107,7 +107,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    RowIndexType row = 1;
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
-      double fBottom = pContinuity->GetContinuityStressLevel(pierIdx,girder);
+      Float64 fBottom = pContinuity->GetContinuityStressLevel(pierIdx,girder);
 
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
          (*pTable)(row,0) << _T("Abutment ") << (long)(pierIdx+1);

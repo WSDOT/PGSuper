@@ -449,12 +449,15 @@ void CGirderMainSheet::UploadLongitudinalData()
 
    GirderLibraryEntry::LongSteelInfoVec vec = m_Entry.GetLongSteelInfo();
 
-   // convert units
+   // Convert to display units before filling grid
    for (GirderLibraryEntry::LongSteelInfoVec::iterator it = vec.begin(); it!=vec.end(); it++)
    {
+      (*it).BarLength = ::ConvertFromSysUnits((*it).BarLength, pDisplayUnits->SpanLength.UnitOfMeasure );
+      (*it).DistFromEnd = ::ConvertFromSysUnits((*it).DistFromEnd, pDisplayUnits->SpanLength.UnitOfMeasure );
       (*it).Cover = ::ConvertFromSysUnits((*it).Cover, pDisplayUnits->ComponentDim.UnitOfMeasure );
       (*it).BarSpacing = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure );
    }
+
    m_LongSteelPage.m_Grid.FillGrid(vec);
 }
 
@@ -474,9 +477,15 @@ void CGirderMainSheet::ExchangeLongitudinalData(CDataExchange* pDX)
          if (m_LongSteelPage.m_Grid.GetRowData(i,&lsi))
          {
             // values are in display units - must convert to system
-            lsi.Cover      = ::ConvertToSysUnits(lsi.Cover, pDisplayUnits->ComponentDim.UnitOfMeasure );
-            lsi.BarSpacing = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure );
+            lsi.BarLength    = ::ConvertToSysUnits(lsi.BarLength, pDisplayUnits->SpanLength.UnitOfMeasure );
+            lsi.DistFromEnd  = ::ConvertToSysUnits(lsi.DistFromEnd, pDisplayUnits->SpanLength.UnitOfMeasure );
+            lsi.Cover        = ::ConvertToSysUnits(lsi.Cover, pDisplayUnits->ComponentDim.UnitOfMeasure );
+            lsi.BarSpacing   = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure );
             vec.push_back(lsi);
+         }
+         else
+         {
+            pDX->Fail();
          }
       }
       m_Entry.SetLongSteelInfo(vec);
@@ -563,7 +572,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
       BOOL bval = m_Entry.m_MaxDebondLengthBySpanFraction<0 ? FALSE:TRUE;
       DDX_Check(pDX, IDC_CHECK_MAX_LENGTH_FRACTION, bval);
 
-      double dval = (bval!=FALSE) ? m_Entry.m_MaxDebondLengthBySpanFraction : 0.0;
+      Float64 dval = (bval!=FALSE) ? m_Entry.m_MaxDebondLengthBySpanFraction : 0.0;
       DDX_Percentage(pDX,IDC_MAX_LENGTH_FRACTION, dval);
 
       bval = m_Entry.m_MaxDebondLengthByHardDistance<0 ? FALSE:TRUE;
@@ -581,7 +590,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
       if(bval!=FALSE)
       {
          DDX_Percentage(pDX,IDC_MAX_LENGTH_FRACTION, m_Entry.m_MaxDebondLengthBySpanFraction);
-         double dval = m_Entry.m_MaxDebondLengthBySpanFraction * 100;
+         Float64 dval = m_Entry.m_MaxDebondLengthBySpanFraction * 100;
          DDV_MinMaxDouble(pDX, dval, 0.0, 45.0);
       }
       else

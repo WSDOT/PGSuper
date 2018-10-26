@@ -86,7 +86,7 @@ BOOL CSplitChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pCont
    }
 
    // Add the first pane
-   int top_siz = (int)(((double)lpcs->cy)*GetTopFrameFraction());
+   int top_siz = (int)(((Float64)lpcs->cy)*GetTopFrameFraction());
    int bot_siz = lpcs->cy - top_siz;
    if ( !m_SplitterWnd.CreateView(0,0,pContext->m_pNewViewClass, CSize(lpcs->cx,top_siz), pContext) )
    {

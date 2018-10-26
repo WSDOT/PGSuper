@@ -66,8 +66,15 @@ bool txnInsertSpan::Execute()
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   // Default length for new spans
-   pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,::ConvertToSysUnits(100.0,unitMeasure::Feet));
+   // Default length for new spans is the length of the
+   // previous span
+   const CSpanData* pSpan = pIBridgeDesc->GetSpan(m_RefPierIdx);
+   if ( pSpan == NULL ) // m_RefPierIdx must be for the last pier... 
+      pSpan = pIBridgeDesc->GetSpan(m_RefPierIdx-1); // ... get the previous span
+
+   Float64 span_length = pSpan->GetSpanLength();
+
+   pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,span_length);
 
    pEvents->FirePendingEvents();
 

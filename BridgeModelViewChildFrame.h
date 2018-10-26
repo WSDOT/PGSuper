@@ -120,7 +120,7 @@ protected:
    bool m_bCutLocationInitialized;
 
    virtual CRuntimeClass* GetLowerPaneClass() const;
-   virtual double GetTopFrameFraction() const;
+   virtual Float64 GetTopFrameFraction() const;
    void DoFilePrint(bool direct);
 
    Float64 m_CurrentCutLocation;

@@ -262,7 +262,21 @@ void write_moment_data_table(IBroker* pBroker,
 
    std::_tostringstream os;
    os << _T("Moment Capacity [5.7.3.2.4] - ") << strStageName << std::endl;
-   ColumnIndexType nColumns = (bPositiveMoment ? 15 : 11);
+
+   ColumnIndexType nColumns;
+   if(bPositiveMoment)
+   {
+      nColumns = 14;
+      if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
+         nColumns++;
+   }
+   else
+   {
+      nColumns = 10;
+   }
+
+   if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
+      nColumns++; // for epsilon_t
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str());
 

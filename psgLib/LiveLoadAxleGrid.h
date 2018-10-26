@@ -88,8 +88,8 @@ private:
    void SetRowStyle(ROWCOL nRow);
 
    enum SpacingType {stNone, stFixed, stVariable} ;
-   SpacingType ParseAxleRow(ROWCOL nRow, CDataExchange* pDX, double* pWeight, 
-                            double* pSpacingMin, double* pSpacingMax);
+   SpacingType ParseAxleRow(ROWCOL nRow, CDataExchange* pDX, Float64* pWeight, 
+                            Float64* pSpacingMin, Float64* pSpacingMax);
 
 };
 

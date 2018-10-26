@@ -212,7 +212,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
    try
    {
       hr = pStrLoad->BeginUnit(_T("TxDOTOptionalGirderData"));
-      double version;
+      Float64 version;
       pStrLoad->get_Version(&version);
 
       CComVariant var;

@@ -30,7 +30,7 @@ class txnEditEnvironment : public txnTransaction
 {
 public:
    txnEditEnvironment(enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
-                      double oldRelHumidity, double newRelHumidity );
+                      Float64 oldRelHumidity, Float64 newRelHumidity );
 
    ~txnEditEnvironment();
 

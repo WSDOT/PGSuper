@@ -82,9 +82,9 @@ public:
    bool bUseInteriorRailing; // true if an interior railing is used (sidewalk must also be used)
 
    // sidewalk dimensions
-   double Width;
-   double LeftDepth;
-   double RightDepth;
+   Float64 Width;
+   Float64 LeftDepth;
+   Float64 RightDepth;
 
    bool bBarriersOnTopOfSidewalk;
    bool bSidewalkStructurallyContinuous;

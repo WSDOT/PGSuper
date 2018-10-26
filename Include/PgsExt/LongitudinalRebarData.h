@@ -73,8 +73,13 @@ LOG
 class PGSEXTCLASS CLongitudinalRebarData
 {
 public:
-   struct RebarRow 
+   class PGSEXTCLASS RebarRow 
    {
+   public:
+      pgsTypes::RebarLayoutType BarLayout;
+      Float64 DistFromEnd; // Only applicable to blFromLeft, blFromRight
+      Float64 BarLength; //   Applicable to blFromLeft, blFromRight, blMidGirder
+
       pgsTypes::GirderFace  Face;
       matRebar::Size BarSize;
       CollectionIndexType NumberOfBars;
@@ -82,11 +87,27 @@ public:
       Float64     BarSpacing;
 
       RebarRow():
-      Face(pgsTypes::GirderTop), BarSize(matRebar::bsNone), NumberOfBars(0), Cover(0), BarSpacing(0)
+         Face(pgsTypes::GirderTop), BarSize(matRebar::bsNone), NumberOfBars(0), Cover(0), BarSpacing(0),
+         BarLayout(pgsTypes::blFullLength), DistFromEnd(0), BarLength(0)
       {;}
 
       bool operator==(const RebarRow& other) const
       {
+         if(BarLayout != other.BarLayout) return false;
+
+         if(BarLayout != pgsTypes::blFullLength)
+         {
+            if(BarLayout != pgsTypes::blMidGirderEnds)
+            {
+               if ( !IsEqual(BarLength,  other.BarLength) ) return false;
+            }
+
+            if(BarLayout != pgsTypes::blMidGirderLength)
+            {
+               if ( !IsEqual(DistFromEnd,  other.DistFromEnd) ) return false;
+            }
+         }
+
          if(Face != other.Face) return false;
          if(BarSize != other.BarSize) return false;
          if ( !IsEqual(Cover,  other.Cover) ) return false;
@@ -95,6 +116,11 @@ public:
 
          return true;
       };
+
+      // Get locations of rebar start and end measured from left end of girder
+      // given a girder length. Return false if entire bar is outside of girder.
+      bool GetRebarStartEnd(Float64 girderLength, Float64* pBarStart, Float64* pBarEnd) const;
+
    };
 
    matRebar::Type BarType;

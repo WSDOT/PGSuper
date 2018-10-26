@@ -44,7 +44,7 @@ void CInplaceSpanLengthEditEvents::Handle_OnChanged(iDisplayObject* pDO)
    CComQIPtr<iEditableUnitValueTextBlock> pTextBlock(pDO);
    ATLASSERT(pTextBlock);
 
-   double new_span_length = pTextBlock->GetEditedValue();
+   Float64 new_span_length = pTextBlock->GetEditedValue();
 
    if ( IsLE(new_span_length,0.0) )
    {
@@ -54,7 +54,7 @@ void CInplaceSpanLengthEditEvents::Handle_OnChanged(iDisplayObject* pDO)
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   double old_span_length = pBridgeDesc->GetSpan(m_SpanIdx)->GetSpanLength();
+   Float64 old_span_length = pBridgeDesc->GetSpan(m_SpanIdx)->GetSpanLength();
 
    if ( !IsEqual(old_span_length,new_span_length) )
    {

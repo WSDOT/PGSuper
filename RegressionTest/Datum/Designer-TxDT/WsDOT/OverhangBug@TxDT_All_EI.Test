@@ -9,6 +9,7 @@ Tensile stress check failed for Service I for the Deck and Diaphragm Placement S
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Confinement zone checks failed.
 Slab Offset ("A" Dimension) check failed
+Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -22,6 +23,7 @@ Tensile stress check failed for Service I for the Deck and Diaphragm Placement S
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Confinement zone checks failed.
 Slab Offset ("A" Dimension) check failed
+Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -32,5 +34,6 @@ Slab Offset ("A" Dimension) check failed
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Confinement zone checks failed.
+Hauling checks failed
 
 

@@ -56,7 +56,7 @@ public:
 
 // Implementation
    public:
-   std::vector<double> m_SpanLengths;
+   std::vector<Float64> m_SpanLengths;
    int m_PierIdx;
 
 protected:

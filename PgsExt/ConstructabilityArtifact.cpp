@@ -174,6 +174,21 @@ bool pgsConstructabilityArtifact::GlobalGirderStabilityPassed() const
    return (maxIncline < m_Orientation) ? false : true;
 }
 
+void pgsConstructabilityArtifact::SetRebarRowsOutsideOfSection(const std::vector<RowIndexType>& rows)
+{
+   m_RebarRowsOutsideSection = rows;
+}
+
+std::vector<RowIndexType> pgsConstructabilityArtifact::GetRebarRowsOutsideOfSection() const
+{
+   return m_RebarRowsOutsideSection;
+}
+
+bool pgsConstructabilityArtifact::RebarGeometryCheckPassed() const
+{
+   return m_RebarRowsOutsideSection.empty();
+}
+
 bool pgsConstructabilityArtifact::Pass() const
 {
    if ( !SlabOffsetPassed() )
@@ -182,9 +197,11 @@ bool pgsConstructabilityArtifact::Pass() const
    if ( !GlobalGirderStabilityPassed() )
       return false;
 
+   if (! RebarGeometryCheckPassed() )
+      return false;
+
    return true;
 }
-
 
  //======================== ACCESS     =======================================
 
@@ -204,6 +221,8 @@ void pgsConstructabilityArtifact::MakeCopy(const pgsConstructabilityArtifact& rO
    m_Wbottom = rOther.m_Wbottom;
    m_Ybottom = rOther.m_Ybottom;
    m_Orientation = rOther.m_Orientation;
+
+   m_RebarRowsOutsideSection = rOther.m_RebarRowsOutsideSection;
 }
 
 void pgsConstructabilityArtifact::MakeAssignment(const pgsConstructabilityArtifact& rOther)

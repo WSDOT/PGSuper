@@ -96,7 +96,7 @@ STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObj
 
    pThis->m_pCutLocation = pCutLoc;
 
-   double pos = pThis->m_pCutLocation->GetCurrentCutLocation();
+   Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
 
    CComPtr<IPoint2d> pnt;
    pnt.CoCreateInstance(CLSID_Point2d);
@@ -146,7 +146,7 @@ STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDrawPointStrategy::DrawDragImag
 {
    METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DrawPointStrategy);
 
-   double wx, wy;
+   Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
    pThis->m_CachePoint->put_X(wx);
    pThis->m_CachePoint->put_Y(wy);
@@ -192,9 +192,9 @@ void CTogaSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float6
    pDispMgr->GetCoordinateMap(&pMap);
 
    // height of cut above/below girder
-   double xo,yo;
+   Float64 xo,yo;
    pMap->TPtoWP(0,0,&xo,&yo);
-   double x2,y2;
+   Float64 x2,y2;
    pMap->TPtoWP(SSIZE,SSIZE,&x2,&y2);
 
    Float64 width = (x2-xo)/2.0;  // width is half of height
@@ -287,7 +287,7 @@ STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnChanged(
 
    if (ppdo)
    {
-      double pos = pThis->m_pCutLocation->GetCurrentCutLocation();
+      Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
    
       CComPtr<IPoint2d> pnt;
       pnt.CoCreateInstance(CLSID_Point2d);
@@ -304,9 +304,9 @@ STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnDragMove
 {
    METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
 
-   double pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
+   Float64 pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
 
-   double xoff;
+   Float64 xoff;
    offset->get_Dx(&xoff);
 
    pos += xoff;
@@ -400,8 +400,8 @@ STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseMov
 STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
 {
    METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
-   double pos = pThis->m_pCutLocation->GetCurrentCutLocation();
-   double xoff = BinarySign(zDelta)*1.0;
+   Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
+   Float64 xoff = BinarySign(zDelta)*1.0;
    pos += xoff * pThis->m_gdrLength/100.0;
    pThis->PutPosition(pos);
    return true;
@@ -416,9 +416,9 @@ STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnKeyDown(
    case VK_RIGHT:
    case VK_LEFT:
       {
-         double pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
+         Float64 pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
 
-         double xoff = nChar==VK_RIGHT ? 1.0 : -1.0;
+         Float64 xoff = nChar==VK_RIGHT ? 1.0 : -1.0;
          pos += xoff * pThis->m_gdrLength/100.0;
 
          pThis->PutPosition(pos);
@@ -452,7 +452,7 @@ STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnContextM
    return false;
 }
 
-void CTogaSectionCutDisplayImpl::PutPosition(double pos)
+void CTogaSectionCutDisplayImpl::PutPosition(Float64 pos)
 {
    if (pos < 0.0)
       pos = 0.0;

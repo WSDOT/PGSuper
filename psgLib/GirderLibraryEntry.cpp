@@ -77,7 +77,8 @@ static char THIS_FILE[] = __FILE__;
 // from 18.0 to 19.0 move all shear reinforcment into CShearData. Created LegacyShearData for conversion
 // from 19.0 to 20.0 added shear design parameters
 // from 20.0 to 21.0 Web strands can be harped or straight e.g.,  ForceHarpedStrandsStraight
-#define CURRENT_VERSION 21.0
+// from 21.0 to 22.0 Added layout options for longitudinal rebar
+#define CURRENT_VERSION 22.0
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) {
@@ -384,7 +385,11 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("LongitudinalBarGrade"),   (long)m_LongitudinalBarGrade); // added in version 18
    for (LongSteelInfoVec::const_iterator itl = m_LongSteelInfo.begin(); itl!=m_LongSteelInfo.end(); itl++)
    {
-      pSave->BeginUnit(_T("LongSteelInfo"), 2.0);
+      pSave->BeginUnit(_T("LongSteelInfo"), 3.0); // From 2-3.0 in version 22.0.
+
+      pSave->Property(_T("BarLayout"), Int32((*itl).BarLayout)); // These 3 added in version 22.0
+      pSave->Property(_T("DistFromEnd"), (*itl).DistFromEnd);
+      pSave->Property(_T("BarLength"), (*itl).BarLength);
 
       if (itl->Face==pgsTypes::GirderBottom)
          pSave->Property(_T("Face"), _T("Bottom"));
@@ -1421,7 +1426,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          legacy.m_ShearZoneInfo.clear();
          while(pLoad->BeginUnit(_T("ShearZones")))
          {
-            double shear_zone_version = pLoad->GetVersion();
+            Float64 shear_zone_version = pLoad->GetVersion();
 
             if(3 < shear_zone_version )
                THROW_LOAD(BadVersion,pLoad);
@@ -1551,6 +1556,28 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       m_LongSteelInfo.clear();
       while(pLoad->BeginUnit(_T("LongSteelInfo")))
       {
+         // Added layout options in local version 3.0, outer version 22.0
+         if ( pLoad->GetVersion() < 3.0 )
+         {
+            li.BarLayout = pgsTypes::blFullLength;
+            li.DistFromEnd = 0.0;
+            li.BarLength = 0.0;
+         }
+         else
+         {
+            Int32 layout;
+            if(!pLoad->Property(_T("BarLayout"),  &layout))
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            li.BarLayout = (pgsTypes::RebarLayoutType)layout;
+
+            if(!pLoad->Property(_T("DistFromEnd"), &li.DistFromEnd))
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if(!pLoad->Property(_T("BarLength"), &li.BarLength))
+               THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
          if(!pLoad->Property(_T("Face"), &tmp))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1713,7 +1740,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_AvailableBarSpacings.clear();
          for (IndexType is=0; is<size; is++)
          {
-            double spacing;
+            Float64 spacing;
             if ( !pLoad->Property(_T("Spacing"),&spacing) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2345,7 +2372,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          pvec->push_back(GirderEntryDataError(NumberOfBarsIsZero,os.str(),num));
       }
 
-      if ((*itl).BarSpacing==0)
+      if ((*itl).NumberOfBars>1 && (*itl).BarSpacing==0)
       {
          std::_tostringstream os;
          os << _T("The bar spacing in long. rebar row #")<<num<<_T(" must be greater than zero.");

@@ -293,6 +293,9 @@ public:
    void EnableHaulingDesign(bool enable);
    bool IsHaulingDesignEnabled() const;
 
+   void SetHaulingAnalysisMethod(pgsTypes::HaulingAnalysisMethod method);
+   pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const;
+
    //------------------------------------------------------------------------
    // Get upward impact for hauling
    Float64 GetHaulingUpwardImpact() const;
@@ -999,6 +1002,17 @@ public:
    void SetTruckSupportLocationAccuracy(Float64 x);
    Float64 GetTruckSupportLocationAccuracy() const;
 
+   // Values used for KDOT method only
+   void SetUseMinTruckSupportLocationFactor(bool factor);
+   bool GetUseMinTruckSupportLocationFactor() const;
+   void SetMinTruckSupportLocationFactor(Float64 factor);
+   Float64 GetMinTruckSupportLocationFactor() const;
+
+   void SetOverhangGFactor(Float64 factor);
+   Float64 GetOverhangGFactor() const;
+   void SetInteriorGFactor(Float64 factor);
+   Float64 GetInteriorGFactor() const;
+
    void SetMininumLiftingPointLocation(Float64 x); // < 0 means use Hg
    Float64 GetMininumLiftingPointLocation() const;
    void SetLiftingPointLocationAccuracy(Float64 x);
@@ -1108,6 +1122,8 @@ private:
    // hauling
    bool    m_EnableHaulingCheck;
    bool    m_EnableHaulingDesign;
+   pgsTypes::HaulingAnalysisMethod m_HaulingAnalysisMethod;
+
    Float64 m_HeHaulingCrackFs;
    Float64 m_HeHaulingRollFs;
    
@@ -1146,6 +1162,11 @@ private:
    Float64 m_MinHaulPoint;
    Float64 m_HaulPointAccuracy;
 
+   // Used for KDOT only
+   bool    m_UseMinTruckSupportLocationFactor;
+   Float64 m_MinTruckSupportLocationFactor;
+   Float64 m_OverhangGFactor;
+   Float64 m_InteriorGFactor;
 
    // temporary strand removal
    Float64 m_TempStrandRemovalCompStress;

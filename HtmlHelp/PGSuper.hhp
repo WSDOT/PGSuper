@@ -162,13 +162,12 @@ PierDetails\General.htm
 PierDetails\Connections.htm
 PierDetails\Girder_Spacing.htm
 Dialogs\Design_Criteria.htm
-Girder Editing Wizard\Prestressing.htm
 Girder Editing Wizard\Condition_and_Rating_(Girder).htm
 Girder Editing Wizard\Lifting_and_Shipping.htm
-Girder Editing Wizard\Girder_Materials.htm
 Girder Editing Wizard\Transverse_Reinforcement.htm
-Dialogs\Library_Import_Entry_Conflict.htm
 Girder Editing Wizard\Longitudinal_Reinforcement.htm
+Girder Editing Wizard\Prestressing.htm
+Dialogs\Library_Import_Entry_Conflict.htm
 Girder View\Girder_View_Section.htm
 Girder View\Girder_View_Elevation.htm
 Dialogs\Live_Load_Distibution_Factors.htm
@@ -178,6 +177,7 @@ Dialogs\Direct_Selection_of_Strand_Fill.htm
 Dialogs\Specify_User-Defined_Live_Loads.htm
 Dialogs\Girder_Editing_Dialog.htm
 Dialogs\Fill_Live_Load_Distribution_Factors_With_Computed_Values.htm
+Girder Editing Wizard\Girder_Materials.htm
 Dialogs\Units.htm
 Dialogs\Load_Modifiers.htm
 Dialogs\Edit_User_Defined_Loads.htm
@@ -242,7 +242,7 @@ Theoretical Manual\Composite_Section_Properties.htm
 Theoretical Manual\Concrete_Material_Properties.htm
 Theoretical Manual\Generalized_Resistance_Factor_for_Flexure.htm
 Theoretical Manual\Fabrication_Optimization.htm
-Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm
+Theoretical Manual\Live_Load_Distribution_Factors.htm
 Theoretical Manual\Live_Load_Distribution_Factors_-_TxDOT_Method.htm
 Theoretical Manual\Hauling_of_Long_Prestressed_Girders.htm
 Theoretical Manual\MaximumAllowableJackingForce.htm
@@ -251,13 +251,13 @@ Theoretical Manual\Bursting_Zone_Checks.htm
 Theoretical Manual\Live_Load_Distribution_Factors1.htm
 Theoretical Manual\Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm
 Theoretical Manual\User-Defined_Live_Loads.htm
-Theoretical Manual\Prestress_Losses.htm
-Theoretical Manual\Live_Load_Distribution_Factors.htm
+Theoretical Manual\Shear_Design_(Determination_of_Beta_and_Theta).htm
+Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm
 Theoretical Manual\Light_Weight_Concrete.htm
 Theoretical Manual\Interface_Shear_Transfer.htm
 Theoretical Manual\Ultimate_Moment_Capacity_Analysis.htm
 Theoretical Manual\AnalyticalModels.htm
-Theoretical Manual\Shear_Design_(Determination_of_Beta_and_Theta).htm
+Theoretical Manual\Prestress_Losses.htm
 Adminstrator's Guide\Chapter 3\Chapter_3.htm
 Adminstrator's Guide\Chapter 2\Introduction_to_Customizing_PGSuper.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_menu_commands.htm
@@ -266,45 +266,45 @@ Adminstrator's Guide\Chapter 4\LIBRARYEDITORGetting_Started.htm
 Adminstrator's Guide\Chapter 4\Chapter_4.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_New_command.htm
 Adminstrator's Guide\Chapter 1\Introduction_to_Installation.htm
-Adminstrator's Guide\Chapter 2\Chapter_2.htm
 Adminstrator's Guide\Chapter 3\Creating_Project_Templates.htm
 Adminstrator's Guide\Chapter 2\Creating_Library_Entries.htm
 Adminstrator's Guide\Chapter 3\Deploying_Project_Templates.htm
 Adminstrator's Guide\Chapter 3\Introduction_to_Project_Templates.htm
 Adminstrator's Guide\Chapter 1\Chapter_2.htm
 Adminstrator's Guide\Chapter 2\Deploying_the_Master_Library.htm
+Adminstrator's Guide\Chapter 2\Chapter_2.htm
 Adminstrator's Guide\Introduction_Admin_Guide.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000021.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Save_As_command.htm
+Adminstrator's Guide\Chapter 4\Rename_The_Selected_Entry.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Exit_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000002.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORDelete_the_Selected_Entry_from_t.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORAdd_a_New_Entry_to_Library.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000004.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Open_command.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Close_command.htm
-Adminstrator's Guide\Chapter 4\Rename_The_Selected_Entry.htm
+Adminstrator's Guide\Chapter 4\Import_From_PGSuper_Project.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Save_As_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Save_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORDuplicate_the_Selected_Entry.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITOREdit_the_Selected_Library_Entry.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORUnits_menu.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000020.htm
-Adminstrator's Guide\Chapter 4\Import_From_PGSuper_Project.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000027.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Close_command.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORView_Status_Bar_Command.htm
+Theoretical Manual\PsglibLateral_Stability_of_Long_Prestr.htm
 Program Settings\User_Info.htm
 Bridge Description\Cross_Section.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000024.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000005.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORView_Status_Bar_Command.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000003.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000027.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORstatus_bar.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000029.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORView_Toolbar_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORtoolbar.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORPGSuper_Project.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000030.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000003.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000005.htm
 User's Guide\Girder_Editing\Materials.htm
-Theoretical Manual\PsglibLateral_Stability_of_Long_Prestr.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORHelp_Using_Help_Command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000041.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000042.htm
@@ -321,6 +321,7 @@ Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000025.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000037.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORSystem_Minimize_Command.htm
 Program Settings\File_Locations.htm
+Theoretical Manual\hauling_of_long_prestressed_girders_kdot_method.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000034.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORLibrary_Entry.htm
 User's Guide\StatusCenter\GirderConnectionError.htm

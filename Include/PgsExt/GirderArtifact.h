@@ -72,12 +72,12 @@
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
 #endif
 
-#if !defined INCLUDED_PGSEXT_HAULINGCHECKARTIFACT_H_
-#include <PgsExt\HaulingCheckArtifact.h>
+#if !defined INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_
+#include <PgsExt\HaulingAnalysisArtifact.h>
 #endif
 
-#if !defined INCLUDED_PGSEXT_LIFTINGCHECKARTIFACT_H_
-#include <PgsExt\LiftingCheckArtifact.h>
+#if !defined INCLUDED_PGSEXT_LIFTINGANALYSISARTIFACT_H_
+#include <PgsExt\LiftingAnalysisArtifact.h>
 #endif
 
 #include <PgsExt\DebondArtifact.h>
@@ -182,29 +182,28 @@ public:
    const pgsConstructabilityArtifact* GetConstructabilityArtifact() const;
    pgsConstructabilityArtifact* GetConstructabilityArtifact();
 
-   void SetLiftingCheckArtifact(pgsLiftingCheckArtifact* artifact);
-   const pgsLiftingCheckArtifact* GetLiftingCheckArtifact() const;
+   void SetLiftingAnalysisArtifact(pgsLiftingAnalysisArtifact* artifact);
+   const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact() const;
    
-   void SetHaulingCheckArtifact(pgsHaulingCheckArtifact*  artifact);
-   const pgsHaulingCheckArtifact* GetHaulingCheckArtifact() const;
+   void SetHaulingAnalysisArtifact(pgsHaulingAnalysisArtifact*  artifact);
+   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
 
    pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact();
    const pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact() const;
 
-   void SetCastingYardMildRebarRequirement(Float64 As);
-   Float64 GetCastingYardMildRebarRequirement() const;
 
    void SetCastingYardCapacityWithMildRebar(Float64 fAllow);
    Float64 GetCastingYardCapacityWithMildRebar() const;
-
    pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType);
    const pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType) const;
    
    bool Passed() const;
 
-   double GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const;
-   double GetRequiredConcreteStrength() const;
-   double GetRequiredReleaseStrength() const;
+   bool DidFlexuralStressesPass() const;
+
+   Float64 GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredConcreteStrength() const;
+   Float64 GetRequiredReleaseStrength() const;
 
    // GROUP: INQUIRY
 
@@ -240,14 +239,12 @@ private:
 
    pgsPrecastIGirderDetailingArtifact m_PrecastIGirderDetailingArtifact;
 
-   std::auto_ptr<pgsLiftingCheckArtifact> m_pLiftingCheckArtifact;
-   std::auto_ptr<pgsHaulingCheckArtifact> m_pHaulingCheckArtifact;
+   std::auto_ptr<pgsLiftingAnalysisArtifact> m_pLiftingAnalysisArtifact;
+   std::auto_ptr<pgsHaulingAnalysisArtifact> m_pHaulingAnalysisArtifact;
 
    pgsDeflectionCheckArtifact m_DeflectionCheckArtifact;
 
    pgsDebondArtifact m_DebondArtifact[3];
-
-   Float64 m_CastingYardAs; // required area of steel for casting yard tension stresses
    Float64 m_CastingYardAllowable; // allowable tensile stress for casting yard with required mild rebar
 };
 

@@ -139,7 +139,7 @@ void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType sta
    CComPtr<IBoxBeam> beam;
    gdrsection->get_Beam(&beam);
 
-   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
+   Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
    GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
 
    beam->put_H1(H1);
@@ -165,7 +165,7 @@ void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType sta
 
 bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg)
 {
-   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
+   Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
    GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
 
    if ( H1 <= 0.0 )
@@ -373,7 +373,7 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
       const long NDMS=17;
       //                            0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16
       LPCTSTR box_dims[NDMS]={_T("H1"),_T("H2"),_T("H3"),_T("H4"),_T("H5"),_T("H6"),_T("H7"),_T("H8"),_T("W1"),_T("W2"),_T("W3"),_T("W4"),_T("W5"),_T("F1"),_T("F2"),_T("C1"),_T("Jmax")};
-      double dim_vals[NDMS];
+      Float64 dim_vals[NDMS];
       for (long id=0; id<NDMS; id++)
       {
          if ( !pLoad->Property(box_dims[id],&(dim_vals[id])) )
@@ -402,7 +402,7 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
 
       // Now we have values in old format, convert to new. 
       // Refer to BoxBeam.vsd visio file in documentation for mapping
-      double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J;
+      Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J;
 
       // H1 = H8
       H1 = dim_vals[7];
@@ -594,9 +594,9 @@ Float64 CBoxBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,G
 }
 
 void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
-                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
+                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
 {
    HRESULT hr = S_OK;
 
@@ -606,14 +606,14 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    CComPtr<IStrandMover> sm = pStrandMover;
 
    // set the shapes for harped strand bounds - only in the thinest part of the webs
-   double H1 = GetDimension(dimensions,_T("H1"));
-   double H2 = GetDimension(dimensions,_T("H2"));
-   double H3 = GetDimension(dimensions,_T("H3"));
-   double W2 = GetDimension(dimensions,_T("W2"));
-   double W3 = GetDimension(dimensions,_T("W3"));
+   Float64 H1 = GetDimension(dimensions,_T("H1"));
+   Float64 H2 = GetDimension(dimensions,_T("H2"));
+   Float64 H3 = GetDimension(dimensions,_T("H3"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 W3 = GetDimension(dimensions,_T("W3"));
 
-   double width = W2;
-   double depth = H1+H2+H3;
+   Float64 width = W2;
+   Float64 depth = H1+H2+H3;
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
    hr = lft_harp_rect.CoCreateInstance(CLSID_Rect);
@@ -626,7 +626,7 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    rgt_harp_rect->put_Width(width);
    rgt_harp_rect->put_Height(depth);
 
-   double hook_offset = (W3 + width)/2.0;
+   Float64 hook_offset = (W3 + width)/2.0;
 
    CComPtr<IPoint2d> lft_hook, rgt_hook;
    lft_hook.CoCreateInstance(CLSID_Point2d);
@@ -649,10 +649,10 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -685,23 +685,23 @@ HICON  CBoxBeamFactory::GetIcon()
 }
 
 void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                                    double& H1, 
-                                    double& H2, 
-                                    double& H3, 
-                                    double& H4, 
-                                    double& H5,
-                                    double& H6, 
-                                    double& H7, 
-                                    double& W1, 
-                                    double& W2, 
-                                    double& W3, 
-                                    double& W4, 
-                                    double& F1, 
-                                    double& F2, 
-                                    double& C1,
-                                    double& J,
-                                    double& shearKeyDepth,
-                                    double& endBlockLength)
+                                    Float64& H1, 
+                                    Float64& H2, 
+                                    Float64& H3, 
+                                    Float64& H4, 
+                                    Float64& H5,
+                                    Float64& H6, 
+                                    Float64& H7, 
+                                    Float64& W1, 
+                                    Float64& W2, 
+                                    Float64& W3, 
+                                    Float64& W4, 
+                                    Float64& F1, 
+                                    Float64& F2, 
+                                    Float64& C1,
+                                    Float64& J,
+                                    Float64& shearKeyDepth,
+                                    Float64& endBlockLength)
 {
    H1 = GetDimension(dimensions,_T("H1"));
    H2 = GetDimension(dimensions,_T("H2"));
@@ -725,22 +725,22 @@ void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
 
 
 void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
+                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double W1 = GetDimension(dimensions,_T("W1"));
-   double W2 = GetDimension(dimensions,_T("W2"));
-   double W3 = GetDimension(dimensions,_T("W3"));
-   double W4 = GetDimension(dimensions,_T("W4"));
-   double J  = GetDimension(dimensions,_T("Jmax"));
+   Float64 W1 = GetDimension(dimensions,_T("W1"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 W3 = GetDimension(dimensions,_T("W3"));
+   Float64 W4 = GetDimension(dimensions,_T("W4"));
+   Float64 J  = GetDimension(dimensions,_T("Jmax"));
 
    // girder width is max of top and bottom width
-   double gwt = 2*(W1+W2) + W3;
-   double gwb = 2*(W4+W2) + W3;
+   Float64 gwt = 2*(W1+W2) + W3;
+   Float64 gwb = 2*(W4+W2) + W3;
 
-   double gw = max(gwt,gwb);
+   Float64 gw = max(gwt,gwb);
 
    if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
    {
@@ -777,7 +777,7 @@ bool CBoxBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgs
    case pgsTypes::sbsUniformAdjacent:
    case pgsTypes::sbsGeneralAdjacent:
       {
-      double sk = GetDimension(dimensions,_T("ShearKeyDepth"));
+      Float64 sk = GetDimension(dimensions,_T("ShearKeyDepth"));
       is_key = sk > 0.0;
       }
       break;
@@ -824,7 +824,7 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
       return;
    }
 
-   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
+   Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
    GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
 
    if (shearKeyDepth==0.0)
@@ -834,8 +834,8 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
 
    // NOTE: To understand what is going on here, refer to figures in BoxBeam.vsd for descriptions 
    //       of shear key area regions and variables
-   double Htotal = H1 + H2 + H3;
-   double HW = Htotal - (H4 + H5 + H6 + H7);
+   Float64 Htotal = H1 + H2 + H3;
+   Float64 HW = Htotal - (H4 + H5 + H6 + H7);
 
    // First compute uniform area that occurs when beams have zero joint spacing. This is done for 
    // each of the three comparisons of W4 and W1.
@@ -844,9 +844,9 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
    {
       // Bottom flange wider than top (Case 1)
       // 5 sections to deal with
-      double A1(0.0), A2(0.0), A3(0.0), A4(0.0), A5(0.0);
-      double Hreg = shearKeyDepth; // shear key remaining from top of current section
-      double h;
+      Float64 A1(0.0), A2(0.0), A3(0.0), A4(0.0), A5(0.0);
+      Float64 Hreg = shearKeyDepth; // shear key remaining from top of current section
+      Float64 h;
       if (Hreg > 0.0)
       {
          h = min(Hreg, H4);
@@ -883,9 +883,9 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
    {
       // Top wider than bottom (Case 2)
       // 5 sections to deal with
-      double A1(0.0), A2(0.0), A3(0.0), A4(0.0), A5(0.0);
-      double Hreg = shearKeyDepth - H4; // shear key remaining from top of current section
-      double h;
+      Float64 A1(0.0), A2(0.0), A3(0.0), A4(0.0), A5(0.0);
+      Float64 Hreg = shearKeyDepth - H4; // shear key remaining from top of current section
+      Float64 h;
       if (Hreg > 0.0)
       {
          h = min(Hreg, H5);
@@ -920,9 +920,9 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
    else // (W4==W1)
    {
       // Flange widths are equal (Case 3) - 3 sections to deal with
-      double A1(0.0), A2(0.0), A3(0.0);
-      double Hreg = shearKeyDepth - H4; // shear key remaining from top of current section
-      double h;
+      Float64 A1(0.0), A2(0.0), A3(0.0);
+      Float64 Hreg = shearKeyDepth - H4; // shear key remaining from top of current section
+      Float64 h;
       if (Hreg > 0.0)
       {
          h = min(Hreg, H5);
@@ -961,14 +961,14 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
 
 Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double W1 = GetDimension(dimensions,_T("W1"));
-   double W2 = GetDimension(dimensions,_T("W2"));
-   double W3 = GetDimension(dimensions,_T("W3"));
-   double W4 = GetDimension(dimensions,_T("W4"));
+   Float64 W1 = GetDimension(dimensions,_T("W1"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 W3 = GetDimension(dimensions,_T("W3"));
+   Float64 W4 = GetDimension(dimensions,_T("W4"));
 
-   double top = 2*(W1+W2) + W3;
+   Float64 top = 2*(W1+W2) + W3;
 
-   double bot = 2*(W4+W2) + W3;
+   Float64 bot = 2*(W4+W2) + W3;
 
    return max(top,bot);
 }

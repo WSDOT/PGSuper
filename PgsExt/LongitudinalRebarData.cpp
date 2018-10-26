@@ -89,7 +89,7 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
    HRESULT hr = S_OK;
 
    pStrLoad->BeginUnit(_T("LongitudinalRebar")); 
-   double version;
+   Float64 version;
    pStrLoad->get_Version(&version);
 
    CComVariant var;
@@ -128,6 +128,21 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
       pStrLoad->get_Version(&bar_version);
 
       RebarRow rebar_row;
+
+      if ( bar_version > 2 )
+      {
+         var.vt = VT_I4;
+         pStrLoad->get_Property(_T("BarLayout"),         &var);
+         rebar_row.BarLayout = (pgsTypes::RebarLayoutType)(var.lVal);
+
+         var.vt = VT_R8;
+         pStrLoad->get_Property(_T("DistFromEnd"),        &var);
+         rebar_row.DistFromEnd = var.dblVal;
+
+         var.vt = VT_R8;
+         pStrLoad->get_Property(_T("BarLength"),        &var);
+         rebar_row.BarLength = var.dblVal;
+      }
 
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("Face"),         &var);
@@ -177,7 +192,7 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
    HRESULT hr = S_OK;
 
 
-   pStrSave->BeginUnit(_T("LongitudinalRebar"),3.0);
+   pStrSave->BeginUnit(_T("LongitudinalRebar"),4.0);
 
    pStrSave->put_Property(_T("BarGrade"),     CComVariant(BarGrade));
    pStrSave->put_Property(_T("BarType"),      CComVariant(BarType));
@@ -187,8 +202,13 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
    std::vector<RebarRow>::iterator iter;
    for ( iter = RebarRows.begin(); iter != RebarRows.end(); iter++ )
    {
-      pStrSave->BeginUnit(_T("RebarRow"),2.0);
+      pStrSave->BeginUnit(_T("RebarRow"),3.0);
       const RebarRow& rebar_row = *iter;
+
+      pStrSave->put_Property(_T("BarLayout"),     CComVariant(rebar_row.BarLayout));
+      pStrSave->put_Property(_T("DistFromEnd"),   CComVariant(rebar_row.DistFromEnd));
+      pStrSave->put_Property(_T("BarLength"),     CComVariant(rebar_row.BarLength));
+
       pStrSave->put_Property(_T("Face"),         CComVariant(rebar_row.Face));
       pStrSave->put_Property(_T("Cover"),        CComVariant(rebar_row.Cover));
       pStrSave->put_Property(_T("NumberOfBars"), CComVariant(rebar_row.NumberOfBars));
@@ -216,7 +236,11 @@ void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry& rGird
       GirderLibraryEntry::LongSteelInfo& lsi = *iter;
 
       RebarRow rebar_row;
-      rebar_row.Face       = (pgsTypes::GirderFace)lsi.Face;
+      rebar_row.BarLayout    = lsi.BarLayout;
+      rebar_row.BarLength    = lsi.BarLength;
+      rebar_row.DistFromEnd  = lsi.DistFromEnd;
+
+      rebar_row.Face         = lsi.Face;
       rebar_row.NumberOfBars = lsi.NumberOfBars;
       rebar_row.Cover      = lsi.Cover;
       rebar_row.BarSize    = lsi.BarSize;
@@ -226,6 +250,102 @@ void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry& rGird
    }
 
    //strRebarMaterial = rGird.GetLongSteelMaterial();
+}
+
+bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 girderLength, Float64* pBarStart, Float64* pBarEnd) const
+{
+
+   *pBarStart = 0.0;
+   *pBarEnd   = 0.0;
+
+   if ( matRebar::bsNone != this->BarSize && 0 < this->NumberOfBars )
+   {
+      // Determine longitudinal start and end of rebar layout
+      if(this->BarLayout == pgsTypes::blFullLength)
+      {
+         *pBarStart = 0.0;
+         *pBarEnd = girderLength;
+      }
+      else if(this->BarLayout == pgsTypes::blFromLeft)
+      {
+         if (this->DistFromEnd < girderLength)
+         {
+            *pBarStart = this->DistFromEnd;
+            if (*pBarStart + this->BarLength < girderLength)
+            {
+               *pBarEnd = *pBarStart + this->BarLength;
+            }
+            else
+            {
+               *pBarEnd = girderLength;
+            }
+         }
+         else
+         {
+            return false; // no bar within girder
+         }
+      }
+      else if(this->BarLayout == pgsTypes::blFromRight)
+      {
+         if (this->DistFromEnd < girderLength)
+         {
+            *pBarEnd = girderLength - this->DistFromEnd;
+            if (*pBarEnd - this->BarLength > 0.0)
+            {
+               *pBarStart = *pBarEnd - this->BarLength;
+            }
+            else
+            {
+               *pBarStart = 0.0;
+            }
+         }
+         else
+         {
+            return false; // no bar within girder
+         }
+      }
+      else if(this->BarLayout == pgsTypes::blMidGirderEnds)
+      {
+         Float64 gl2 = girderLength/2.0;
+
+         if (this->DistFromEnd < gl2)
+         {
+            *pBarStart = this->DistFromEnd;
+            *pBarEnd   = girderLength - this->DistFromEnd;
+         }
+         else
+         {
+            return false; // no bar within girder
+         }
+      }
+      else if(this->BarLayout == pgsTypes::blMidGirderLength)
+      {
+         Float64 gl2 = girderLength/2.0;
+
+         if (this->BarLength > girderLength)
+         {
+            *pBarStart = 0.0;
+            *pBarEnd   = girderLength;
+         }
+         else
+         {
+            *pBarStart = gl2 - this->BarLength/2.0;
+            *pBarEnd   = gl2 + this->BarLength/2.0;
+         }
+      }
+      else
+      {
+         ATLASSERT(0); // new bar layout type?
+      }
+
+      ATLASSERT(*pBarStart<*pBarEnd);
+
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 //======================== ACCESS     =======================================

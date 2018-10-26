@@ -87,7 +87,7 @@ void COptionalDeflectionCheck::Build(rptChapter* pChapter, const pgsGirderArtifa
       rptParagraph* p = new rptParagraph;
       *pChapter<<p;
 
-      double min, max;
+      Float64 min, max;
       pDef->GetDemand(&min,&max);
 
       *p<< _T("Allowable deflection span ratio = L/")<<pDef->GetAllowableSpanRatio()<<rptNewLine;

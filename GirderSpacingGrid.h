@@ -69,7 +69,7 @@ public:
    CGirderSpacingGridData GetGirderSpacingData();
    void SetGirderSpacingData(const CGirderSpacingGridData& gridData);
 
-   void SetPierSkewAngle(double skewAngle);
+   void SetPierSkewAngle(Float64 skewAngle);
 
    void SetMeasurementType(pgsTypes::MeasurementType mt);
    void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
@@ -96,8 +96,8 @@ protected:
 
 public:
    // custom stuff for grid
-   void Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,double skewAngle,bool bAbutment);
-   void CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,double skewAngle,bool bAbutment);
+   void Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment);
+   void CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment);
    void CustomInit();
    void FillGrid(const CGirderSpacing* pGirderSpacing);
    void FillGrid();
@@ -111,12 +111,12 @@ private:
    BOOL m_bEnabled;
    PierIndexType m_PierIdx;
    bool m_bAbutment;
-   double m_PierSkewAngle;
+   Float64 m_PierSkewAngle;
    
    CGirderSpacingGridData m_GridData;
 
-   std::vector<double> m_MinGirderSpacing;
-   std::vector<double> m_MaxGirderSpacing;
+   std::vector<Float64> m_MinGirderSpacing;
+   std::vector<Float64> m_MaxGirderSpacing;
 
    pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
 

@@ -48,6 +48,7 @@
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\RatingSpecification.h>
 
+#include <Plugins\BeamFamilyCLSID.h>
 
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)

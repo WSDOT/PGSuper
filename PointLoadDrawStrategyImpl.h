@@ -77,7 +77,7 @@ public:
 private:
    virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc);
    // point load height and width in difference coordinates
-   void GetWSymbolSize(iCoordinateMap* pMap, double* psx, double *psy);
+   void GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64 *psy);
    void GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy);
    void GetTSymbolSize(iCoordinateMap* pMap, long* psx, long* psy);
    CPointLoadData m_Load;

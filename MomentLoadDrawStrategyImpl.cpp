@@ -103,7 +103,7 @@ STDMETHODIMP_(void) CMomentLoadDrawStrategyImpl::XDrawPointStrategy::DrawDragIma
 {
    METHOD_PROLOGUE(CMomentLoadDrawStrategyImpl,DrawPointStrategy);
 
-   double wx, wy;
+   Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
    pThis->m_CachePoint->put_X(wx);
    pThis->m_CachePoint->put_Y(wy);
@@ -118,7 +118,7 @@ STDMETHODIMP_(void) CMomentLoadDrawStrategyImpl::XDrawPointStrategy::GetBounding
    CComPtr<IPoint2d> point;
    pDO->GetPosition(&point);
 
-   double xpos;
+   Float64 xpos;
    point->get_X(&xpos);
 
    CComPtr<iDisplayList> pDL;
@@ -130,7 +130,7 @@ STDMETHODIMP_(void) CMomentLoadDrawStrategyImpl::XDrawPointStrategy::GetBounding
    CComPtr<iCoordinateMap> pMap;
    pDispMgr->GetCoordinateMap(&pMap);
 
-   double diameter;
+   Float64 diameter;
    pThis->GetWSymbolSize(pMap, &diameter);
 
    CComPtr<IRect2d> bounding_box;
@@ -374,15 +374,15 @@ void CMomentLoadDrawStrategyImpl::GetTSymbolSize(iCoordinateMap* pMap, Uint32* p
 //   *psx = SSIZE/6.;
 }
 
-void CMomentLoadDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, double* pd)
+void CMomentLoadDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64* pd)
 {
    Uint32 d;
    GetTSymbolSize(pMap, &d);
 
-   double xo,yo;
+   Float64 xo,yo;
    pMap->TPtoWP(0,0,&xo,&yo);
 
-   double x2,y2;
+   Float64 x2,y2;
    pMap->TPtoWP(d,d,&x2,&y2);
 
    *pd = x2-xo;

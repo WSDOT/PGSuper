@@ -376,6 +376,20 @@ struct pgsTypes
       AllLightweight,
       SandLightweight
    } ConcreteType;
+
+   // Rebar layout defines where longitudinal rebar is placed along girder. 
+   enum RebarLayoutType 
+   {
+      blFullLength,      // extends full length
+      blFromLeft,        // measured from left end of girder
+      blFromRight,       // measured from right end of girder
+      blMidGirderLength, // centered at mid-girder - fixed length
+      blMidGirderEnds    // centered at mid-girder - measured from ends of girder
+   };
+
+   // Hauling analysis
+   enum HaulingAnalysisMethod {hmWSDOT,   // WashDOT
+                               hmKDOT };  // Kansas
 };
 
 
@@ -568,8 +582,8 @@ public:
 struct DEBONDCONFIG
 {
    StrandIndexType strandIdx; // index of strand that is debonded (indexed by total # of filled strand locations)
-   double LeftDebondLength;   // length of debond at left end of the girder
-   double RightDebondLength;  // length of debond at right end of the girder
+   Float64 LeftDebondLength;   // length of debond at left end of the girder
+   Float64 RightDebondLength;  // length of debond at right end of the girder
 
    bool operator<(const DEBONDCONFIG& other) const
    {

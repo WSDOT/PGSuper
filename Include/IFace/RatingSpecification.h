@@ -76,7 +76,7 @@ interface IRatingSpecification : IUnknown
 
    virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL) = 0;
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) const = 0;
-   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) const = 0;
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) const = 0;
 
    virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t) = 0;
    virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) const = 0;

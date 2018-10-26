@@ -66,6 +66,7 @@ void CRatingDescriptionPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CRatingDescriptionPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CRatingDescriptionPage)
 	//}}AFX_MSG_MAP
+   ON_CBN_SELCHANGE(IDC_SPECIFICATION,OnSpecificationChanged)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 END_MESSAGE_MAP()
 
@@ -81,11 +82,11 @@ BOOL CRatingDescriptionPage::OnInitDialog()
 {
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
    int idx;
-   idx = pSpec->AddString(_T("1st Edition, 2008"));
-   pSpec->SetItemData(idx,(DWORD)lrfrVersionMgr::FirstEdition2008);
-
-   idx = pSpec->AddString(_T("1st Edition, 2008 with 2010 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfrVersionMgr::FirstEditionWith2010Interims);
+   for ( int i = 1; i < (int)lrfrVersionMgr::LastVersion; i++ )
+   {
+      idx = pSpec->AddString(lrfrVersionMgr::GetVersionString((lrfrVersionMgr::Version)(i)).c_str());
+      pSpec->SetItemData(idx,(DWORD)(i));
+   }
 
    CPropertyPage::OnInitDialog();
 	
@@ -98,4 +99,10 @@ lrfrVersionMgr::Version CRatingDescriptionPage::GetSpecVersion()
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
    int idx = pSpec->GetCurSel();
    return (lrfrVersionMgr::Version)(pSpec->GetItemData(idx));
+}
+
+void CRatingDescriptionPage::OnSpecificationChanged()
+{
+   CRatingDialog* pParent = (CRatingDialog*)GetParent();
+   pParent->UpdatePageLayout();
 }

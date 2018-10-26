@@ -957,7 +957,7 @@ void CBridgeDescGeneralPage::OnGirderNameChanged()
    int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"),MB_YESNO);
    if ( result == IDNO )
    {
-      pCB->SetCurSel(m_GirderNameIdx);
+      pCB->SetCurSel((int)m_GirderNameIdx);
       return;
    }
 
@@ -1160,7 +1160,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
 
          GirderIndexType nGirders = pSpan->GetGirderCount();
-         double w = 0;
+         Float64 w = 0;
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
             const GirderLibraryEntry* pEntry = pGirderTypes->GetGirderLibraryEntry(gdrIdx);
@@ -1227,14 +1227,14 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    {
       // get skew information so spacing ranges can be skew adjusted
       const CPierData* pPrevPier = pSpan->GetPrevPier();
-      double prevSkewAngle;
+      Float64 prevSkewAngle;
       pBridge->GetSkewAngle(pPrevPier->GetStation(),pPrevPier->GetOrientation(),&prevSkewAngle);
 
       const CPierData* pNextPier = pSpan->GetNextPier();
-      double nextSkewAngle;
+      Float64 nextSkewAngle;
       pBridge->GetSkewAngle(pNextPier->GetStation(),pNextPier->GetOrientation(),&nextSkewAngle);
 
-      double startSkewCorrection, endSkewCorrection;
+      Float64 startSkewCorrection, endSkewCorrection;
       if ( m_GirderSpacingMeasurementType == pgsTypes::NormalToItem )
       {
          startSkewCorrection = 1;
@@ -1265,13 +1265,13 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          CComPtr<IBeamFactory> factory;
          pGdrEntry->GetBeamFactory(&factory);
 
-         double min, max;
+         Float64 min, max;
          factory->GetAllowableSpacingRange(dimensions,m_Deck.DeckType,m_GirderSpacingType,&min,&max);
 
-         double min1 = min*startSkewCorrection;
-         double max1 = max*startSkewCorrection;
-         double min2 = min*endSkewCorrection;
-         double max2 = max*endSkewCorrection;
+         Float64 min1 = min*startSkewCorrection;
+         Float64 max1 = max*startSkewCorrection;
+         Float64 min2 = min*endSkewCorrection;
+         Float64 max2 = max*endSkewCorrection;
 
          if ( IsGirderSpacing(m_GirderSpacingType) )
          {

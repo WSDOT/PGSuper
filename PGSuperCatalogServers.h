@@ -32,6 +32,7 @@ class CPGSuperCatalogServers
 public:
    CPGSuperCatalogServers();
    ~CPGSuperCatalogServers();
+   void SetTemplateFileExtenstion(const CString& strExt);
    void AddServer(CPGSuperCatalogServer* pserver);
    CollectionIndexType GetServerCount() const;
    const CPGSuperCatalogServer* GetServer(CollectionIndexType index) const;
@@ -48,7 +49,7 @@ private:
    class CatalogServerCompareByName
    {
    public:
-      bool operator () (const boost::shared_ptr<CPGSuperCatalogServer> pserver1, const boost::shared_ptr<CPGSuperCatalogServer> pserver2) const
+      bool operator () (const boost::shared_ptr<CPGSuperCatalogServer>& pserver1, const boost::shared_ptr<CPGSuperCatalogServer>& pserver2) const
       {
          return pserver1->GetServerName() < pserver2->GetServerName();
       }
@@ -57,6 +58,7 @@ private:
    typedef boost::shared_ptr<CPGSuperCatalogServer> ServerPtr;
    typedef std::set<ServerPtr ,CatalogServerCompareByName> Servers;
    Servers m_Servers;
+   CString m_strExt;
 };
 
 #endif // INCLUDED_PGSUPERCATALOGSERVERS_H_

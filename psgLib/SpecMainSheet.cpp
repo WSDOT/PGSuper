@@ -239,6 +239,12 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_CYS_TENS_BYLINE2,tag);
    DDV_UnitValueZeroOrMore(pDX, IDC_CYS_TENS_BYLINE2,m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure );
 
+   if (pDX->m_bSaveAndValidate && m_Entry.m_CyTensStressServWithRebar < m_Entry.m_CyTensStressServ)
+   {
+      AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
+      pDX->Fail();
+   }
+
 	DDX_Text(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
    DDV_GreaterThanZero(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
 }
@@ -290,6 +296,12 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_LIFT_TENS2,tag);
    DDV_UnitValueZeroOrMore(pDX, IDC_LIFT_TENS2,m_Entry.m_TensStressLiftingWithRebar, pDisplayUnits->SqrtPressure );
 
+   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressLiftingWithRebar < m_Entry.m_CyTensStressLifting)
+   {
+      AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
+      pDX->Fail();
+   }
+
    DDX_Percentage(pDX, IDC_IMPACT_UPWARD_LIFTING, m_Entry.m_LiftingUpwardImpact);
    DDV_MinMaxDouble(pDX, m_Entry.m_LiftingUpwardImpact, 0.0, 1.0);
 	DDX_Percentage(pDX, IDC_IMPACT_DOWNWARD_LIFTING, m_Entry.m_LiftingDownwardImpact);
@@ -306,13 +318,21 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    }
 }
 
-void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
+bool CSpecMainSheet::IsHaulingEnabled() const
+{
+   return m_Entry.m_EnableHaulingCheck;
+}
+
+void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-
-   m_SpecHaulingErectionPage.m_IsHaulingEnabled = m_Entry.m_EnableHaulingCheck;
+   if (pDX->m_bSaveAndValidate)
+   {
+      ATLASSERT(m_SpecHaulingErectionPage.m_HaulingAnalysisMethod==pgsTypes::hmWSDOT);
+      m_Entry.m_HaulingAnalysisMethod = pgsTypes::hmWSDOT;
+   }
 
 	DDX_Text(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_HeHaulingCrackFs);
    DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_HeHaulingCrackFs);
@@ -343,6 +363,12 @@ void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_HAULING_MAX_TENSSQRT2, IDC_HAULING_MAX_TENSSQRT_UNITS, m_Entry.m_TensStressHaulingWithRebar, pDisplayUnits->SqrtPressure  );
    DDX_Text(pDX,IDC_HAUL_TENS2,tag);
    DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_MAX_TENSSQRT2,m_Entry.m_TensStressHaulingWithRebar, pDisplayUnits->SqrtPressure );
+
+   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebar < m_Entry.m_TensStressHauling)
+   {
+      AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
+      pDX->Fail();
+   }
 
    // Validate truck roll stiffness input
    DDX_Radio(pDX, IDC_LUMPSUM_METHOD, m_Entry.m_TruckRollStiffnessMethod );
@@ -386,6 +412,57 @@ void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
    DDV_UnitValueGreaterThanZero(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
 }
+
+void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      ATLASSERT(m_SpecHaulingErectionPage.m_HaulingAnalysisMethod==pgsTypes::hmKDOT);
+      m_Entry.m_HaulingAnalysisMethod = pgsTypes::hmKDOT;
+   }
+
+	DDX_Text(pDX, IDC_HAULING_ALLOW_COMP, m_Entry.m_CompStressHauling);
+   DDV_GreaterThanZero(pDX, IDC_HAULING_ALLOW_COMP, m_Entry.m_CompStressHauling);
+
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c MPa)") : _T("sqrt(f'c KSI)"));
+
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_MAX_TENSSQRT, IDC_HAULING_MAX_TENSSQRT_UNITS, m_Entry.m_TensStressHauling, pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_HAUL_TENS,tag);
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAUL_TENS,m_Entry.m_TensStressHauling, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENS_MAX, m_Entry.m_DoTensStressHaulingMax);
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENS_MAX, IDC_HAULING_TENS_MAX_UNITS, m_Entry.m_TensStressHaulingMax, pDisplayUnits->Stress );
+   if (m_Entry.m_DoTensStressHaulingMax)
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENS_MAX,m_Entry.m_TensStressHaulingMax, pDisplayUnits->Stress );
+
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_MAX_TENSSQRT2, IDC_HAULING_MAX_TENSSQRT_UNITS, m_Entry.m_TensStressHaulingWithRebar, pDisplayUnits->SqrtPressure  );
+   DDX_Text(pDX,IDC_HAUL_TENS2,tag);
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_MAX_TENSSQRT2,m_Entry.m_TensStressHaulingWithRebar, pDisplayUnits->SqrtPressure );
+
+   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebar < m_Entry.m_TensStressHauling)
+   {
+      AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
+      pDX->Fail();
+   }
+
+	DDX_Text(pDX, IDC_G_OVERHANG, m_Entry.m_OverhangGFactor);
+   DDV_MinMaxDouble(pDX, m_Entry.m_OverhangGFactor, 1.0, 100.0);
+	DDX_Text(pDX, IDC_G_INTERIOR, m_Entry.m_InteriorGFactor);
+   DDV_MinMaxDouble(pDX, m_Entry.m_InteriorGFactor, 1.0, 100.0);
+
+   DDX_KeywordUnitValueAndTag(pDX,IDC_MIN_TRUCK_SUPPORT,IDC_MIN_TRUCK_SUPPORT_UNIT,_T("H"),m_Entry.m_MinHaulPoint, pDisplayUnits->SpanLength);
+
+   DDX_UnitValueAndTag(pDX, IDC_TRUCK_SUPPORT_DESIGN_ACCURACY,IDC_TRUCK_SUPPORT_DESIGN_ACCURACY_UNIT,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_TRUCK_SUPPORT_DESIGN_ACCURACY,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
+
+   DDX_Check_Bool(pDX, IDC_IS_SUPPORT_LESS_THAN, m_Entry.m_UseMinTruckSupportLocationFactor);
+
+	DDX_Text(pDX, IDC_SUPPORT_LESS_THAN, m_Entry.m_MinTruckSupportLocationFactor);
+   DDV_MinMaxDouble(pDX, m_Entry.m_MinTruckSupportLocationFactor, 0.0, 0.4);
+}
+
 
 void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
 {
@@ -483,7 +560,6 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_CBEnum(pDX, IDC_NEG_MOMENT, m_Entry.m_bIncludeForNegMoment);
 
    DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_MOMENT, m_Entry.m_bIncludeRebar_Moment );
-
 
    CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
@@ -745,7 +821,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
 
       DDX_CBIndex(pDX,IDC_LOSS_METHOD,idx);
 
-      double dummy = 0;
+      Float64 dummy = 0;
       if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
            m_Entry.m_LossMethod == LOSSES_AASHTO_LUMPSUM || m_Entry.m_LossMethod == LOSSES_WSDOT_LUMPSUM ||
            m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2004)

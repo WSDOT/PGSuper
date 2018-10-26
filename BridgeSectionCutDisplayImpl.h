@@ -103,7 +103,7 @@ private:
    
    CComPtr<IPoint2d> m_CachePoint;
 
-   void PutPosition(double pos);
+   void PutPosition(Float64 pos);
 };
 
 

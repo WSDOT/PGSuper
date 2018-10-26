@@ -107,7 +107,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,G
       const pgsPointOfInterest& poi = *i;
       (*p_table)(row,0) << location.SetValue( pgsTypes::CastingYard, poi );
 
-      double fTop, fBot;
+      Float64 fTop, fBot;
       pProductForces->GetStress(pgsTypes::CastingYard,pftGirder, poi, SimpleSpan, &fTop, &fBot);
       (*p_table)(row,1) << stress.SetValue( fTop );
       (*p_table)(row,2) << stress.SetValue( fBot );

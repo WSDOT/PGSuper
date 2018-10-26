@@ -333,7 +333,7 @@ CString DumpPoints(IShape* pShape)
       CComPtr<IPoint2d> point;
       points->get_Item(i,&point);
 
-      double x,y;
+      Float64 x,y;
       point->get_X(&x);
       point->get_Y(&y);
 
@@ -357,9 +357,9 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IBridge,pBridge);
-      double first_station = pBridge->GetPierStation(0);
-      double last_station  = pBridge->GetPierStation(pBridge->GetPierCount()-1);
-      double cut_station = m_pFrame->GetCurrentCutLocation();
+      Float64 first_station = pBridge->GetPierStation(0);
+      Float64 last_station  = pBridge->GetPierStation(pBridge->GetPierCount()-1);
+      Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
       if ( !InRange(first_station,cut_station,last_station) )
          m_pFrame->InvalidateCutLocation();
@@ -539,7 +539,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
       CString strMsg1;
       strMsg1.Format(_T("Double click to edit Span %d Girder %s.\r\nRight click for more options."),LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx));
 
-      double fc, fci;
+      Float64 fc, fci;
       fc = pBridgeMaterial->GetFcGdr(spanIdx,gdrIdx);
       fci = pBridgeMaterial->GetFciGdr(spanIdx,gdrIdx);
 
@@ -681,7 +681,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   double firstPierStation = pBridgeDesc->GetPier(0)->GetStation();
+   Float64 firstPierStation = pBridgeDesc->GetPier(0)->GetStation();
 
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
@@ -696,9 +696,9 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    dispMgr->FindDisplayList(GIRDER_LABEL_DISPLAY_LIST,&girder_label_list);
    girder_label_list->Clear();
 
-   double cut_station = m_pFrame->GetCurrentCutLocation();
+   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
-   double distFromStartOfBridge = cut_station - firstPierStation;
+   Float64 distFromStartOfBridge = cut_station - firstPierStation;
 
    m_GirderIDs.clear();
    m_NextGirderID = 0;
@@ -706,10 +706,10 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    GirderIndexType nGirders = pBridgeDesc->GetSpan(spanIdx)->GetGirderCount();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      double offset = pBridge->GetGirderOffset(spanIdx,gdrIdx,cut_station);
+      Float64 offset = pBridge->GetGirderOffset(spanIdx,gdrIdx,cut_station);
 
       SpanIndexType spanIndex;
-      double distFromStartOfSpan;
+      Float64 distFromStartOfSpan;
       pBridge->GetDistFromStartOfSpan(gdrIdx,distFromStartOfBridge,&spanIndex,&distFromStartOfSpan);
 
       if ( spanIndex == INVALID_INDEX )
@@ -718,12 +718,12 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       GirderIndexType nGirdersThisSpan = pBridgeDesc->GetSpan(spanIndex)->GetGirderCount();
       GirderIndexType gdrIndex = (nGirdersThisSpan <= gdrIdx ? nGirdersThisSpan-1 : gdrIdx);
 
-      double start_connection_length = pBridge->GetGirderStartConnectionLength(spanIndex,gdrIndex);
-      double start_bearing_offset    = pBridge->GetGirderStartBearingOffset(spanIndex,gdrIndex);
-      double end_offset = start_bearing_offset - start_connection_length;
-      double girder_length = pBridge->GetGirderLength(spanIndex,gdrIndex);
+      Float64 start_connection_length = pBridge->GetGirderStartConnectionLength(spanIndex,gdrIndex);
+      Float64 start_bearing_offset    = pBridge->GetGirderStartBearingOffset(spanIndex,gdrIndex);
+      Float64 end_offset = start_bearing_offset - start_connection_length;
+      Float64 girder_length = pBridge->GetGirderLength(spanIndex,gdrIndex);
 
-      double distFromStartOfGirder = distFromStartOfSpan - end_offset;
+      Float64 distFromStartOfGirder = distFromStartOfSpan - end_offset;
       distFromStartOfGirder = ::ForceIntoRange(0.,distFromStartOfGirder,girder_length);
 
       pgsPointOfInterest poi;
@@ -804,7 +804,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 //         doText2->SetPosition(topCenter);
 //
 //         GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
-//         double x,y;
+//         Float64 x,y;
 //         topCenter->get_X(&x);
 //         topCenter->get_Y(&y);
 //         CString strCoordinates;
@@ -818,8 +818,8 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       }
    
 
-      // Register an event sink with the girder display object so that we can handle double clicks
-      // on the girder differently then a general double click
+      // Register an event sink with the girder display object so that we can handle Float64 clicks
+      // on the girder differently then a general Float64 click
       CBridgeSectionViewGirderDisplayObjectEvents* pEvents = new CBridgeSectionViewGirderDisplayObjectEvents(spanIndex,gdrIndex,nSpans,nGirdersThisSpan,m_pFrame); // ref count = 1
       IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents); // ref count = 1
       CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk); // ref count = 2
@@ -916,7 +916,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    }
 
    CString strMsg3;
-   double overlay_weight = pBridge->GetOverlayWeight();
+   Float64 overlay_weight = pBridge->GetOverlayWeight();
    if ( pBridge->HasOverlay() )
    {
       strMsg3.Format(_T("\r\n\r\n%s: %s"),
@@ -948,8 +948,8 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
    if ( !pBridge->HasOverlay() )
       return;
 
-   double overlay_weight = pBridge->GetOverlayWeight();
-   double depth = pBridge->GetOverlayDepth();
+   Float64 overlay_weight = pBridge->GetOverlayWeight();
+   Float64 depth = pBridge->GetOverlayDepth();
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -963,20 +963,20 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
    CComPtr<iPointDisplayObject> dispObj;
    dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
-   double station = m_pFrame->GetCurrentCutLocation();
+   Float64 station = m_pFrame->GetCurrentCutLocation();
 
-   double dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
-   double left_offset, right_offset;
+   Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+   Float64 left_offset, right_offset;
    left_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
    right_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
-   double left_elev  = pRoadway->GetElevation(station,left_offset);
-   double right_elev = pRoadway->GetElevation(station,right_offset);
+   Float64 left_elev  = pRoadway->GetElevation(station,left_offset);
+   Float64 right_elev = pRoadway->GetElevation(station,right_offset);
 
    GET_IFACE2(pBroker,IRoadwayData,pRoadwayData);
-   double crown_point_offset = pRoadway->GetCrownPointOffset(station);
-   double crown_point_elev = pRoadway->GetElevation(station,crown_point_offset);
+   Float64 crown_point_offset = pRoadway->GetCrownPointOffset(station);
+   Float64 crown_point_elev = pRoadway->GetElevation(station,crown_point_offset);
 
    CComPtr<IPoint2d> pos;
    pos.CoCreateInstance(CLSID_Point2d);
@@ -1065,13 +1065,13 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    CComPtr<iPointDisplayObject> left_dispObj;
    left_dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
-   double cut_station = m_pFrame->GetCurrentCutLocation();
-   double pier_1_station = pBridge->GetPierStation(0);
-   double cut_dist_from_start = cut_station - pier_1_station;
-   double left_curb_offset  = pBridge->GetLeftCurbOffset(cut_dist_from_start);
-   double right_curb_offset = pBridge->GetRightCurbOffset(cut_dist_from_start);
+   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
+   Float64 pier_1_station = pBridge->GetPierStation(0);
+   Float64 cut_dist_from_start = cut_station - pier_1_station;
+   Float64 left_curb_offset  = pBridge->GetLeftCurbOffset(cut_dist_from_start);
+   Float64 right_curb_offset = pBridge->GetRightCurbOffset(cut_dist_from_start);
 
-   double cpo = pAlignment->GetCrownPointOffset(cut_station);
+   Float64 cpo = pAlignment->GetCrownPointOffset(cut_station);
 
    CComPtr<IDirection> normal;
    pAlignment->GetBearingNormal(cut_station,&normal);
@@ -1083,12 +1083,12 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    if ( left_shape )
    {
       // rotate the shape to match the crown slope
-      double slope = ::BinarySign(cpo-left_curb_offset)*pAlignment->GetCrownSlope(cut_station,left_curb_offset);
-      double angle = -atan(slope);
+      Float64 slope = ::BinarySign(cpo-left_curb_offset)*pAlignment->GetCrownSlope(cut_station,left_curb_offset);
+      Float64 angle = -atan(slope);
 
       // Rotate shape around edge of deck - this is where barrier origin is placed
-      double left_offset = pBridge->GetLeftSlabEdgeOffset(cut_dist_from_start);
-      double left_elev   = pAlignment->GetElevation(cut_station,left_offset);
+      Float64 left_offset = pBridge->GetLeftSlabEdgeOffset(cut_dist_from_start);
+      Float64 left_elev   = pAlignment->GetElevation(cut_station,left_offset);
 
       CComPtr<IPoint2d> de_point;
       de_point.CoCreateInstance(CLSID_Point2d);
@@ -1123,8 +1123,8 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    if ( right_shape )
    {
       // rotate the shape to match the crown slope
-      double slope = ::BinarySign(right_curb_offset-cpo)*pAlignment->GetCrownSlope(cut_station,right_curb_offset);
-      double angle = atan(slope);
+      Float64 slope = ::BinarySign(right_curb_offset-cpo)*pAlignment->GetCrownSlope(cut_station,right_curb_offset);
+      Float64 angle = atan(slope);
       CComQIPtr<IXYPosition> position(right_shape);
       CComPtr<IPoint2d> hook_point;
       position->get_LocatorPoint(lpHookPoint,&hook_point);
@@ -1149,16 +1149,16 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    // place sockets at curb line so we can do a curb-to-curb dimension line
    CComQIPtr<iConnectable> left_connectable(left_dispObj);
    CComQIPtr<iConnectable> right_connectable(right_dispObj);
-   double dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(m_pFrame->GetCurrentCutLocation());
-   double left_offset, right_offset;
+   Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(m_pFrame->GetCurrentCutLocation());
+   Float64 left_offset, right_offset;
    left_offset  = pBridge->GetLeftCurbOffset(dist_from_start_of_bridge);
    right_offset = pBridge->GetRightCurbOffset(dist_from_start_of_bridge);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
-   double left_elev  = pRoadway->GetElevation(m_pFrame->GetCurrentCutLocation(),left_offset);
-   double right_elev = pRoadway->GetElevation(m_pFrame->GetCurrentCutLocation(),right_offset);
+   Float64 left_elev  = pRoadway->GetElevation(m_pFrame->GetCurrentCutLocation(),left_offset);
+   Float64 right_elev = pRoadway->GetElevation(m_pFrame->GetCurrentCutLocation(),right_offset);
 
-   double elev = _cpp_max(left_elev,right_elev);
+   Float64 elev = _cpp_max(left_elev,right_elev);
 
    CComPtr<IPoint2d> p1, p2;
    p1.CoCreateInstance(CLSID_Point2d);
@@ -1230,7 +1230,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
       socket1.Release();
       socket2.Release();
 
-      double left_icb_offset, right_icb_offset;
+      Float64 left_icb_offset, right_icb_offset;
       left_icb_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
       right_icb_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
 
@@ -1271,9 +1271,9 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    CComPtr<iDisplayList> girder_list;
    dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&girder_list);
 
-   double cut_location = m_pFrame->GetCurrentCutLocation();
-   double distFromStartOfBridge = pBridge->GetDistanceFromStartOfBridge(cut_location);
-   double distFromStartOfSpan   = cut_location - pBridge->GetPierStation(spanIdx);
+   Float64 cut_location = m_pFrame->GetCurrentCutLocation();
+   Float64 distFromStartOfBridge = pBridge->GetDistanceFromStartOfBridge(cut_location);
+   Float64 distFromStartOfSpan   = cut_location - pBridge->GetPierStation(spanIdx);
 
    // get length unit so section can be labelled
    GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
@@ -1287,7 +1287,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
    // find the bottom of the "lowest" girder so all the dimension lines can be at
    // the same elevation
-   double yLowest = DBL_MAX;
+   Float64 yLowest = DBL_MAX;
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       CComPtr<iDisplayObject> doGirder;
@@ -1323,7 +1323,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       CComPtr<IPoint2d> p;
       position->get_LocatorPoint(lpBottomCenter,&p);
 
-      double y;
+      Float64 y;
       p->get_Y(&y);
       yLowest = _cpp_min(y,yLowest);
    }
@@ -1365,13 +1365,13 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
          SpaceBetweenGirder spacingData = *iter;
 
          // get the girder spacing for this group
-         double spacing = spacingData.spacing;
+         Float64 spacing = spacingData.spacing;
          GirderIndexType firstGdrIdx = spacingData.firstGdrIdx;
          GirderIndexType lastGdrIdx  = spacingData.lastGdrIdx;
       
          IndexType nSpacesInGroup = lastGdrIdx - firstGdrIdx;
 
-         double total = spacing*nSpacesInGroup;
+         Float64 total = spacing*nSpacesInGroup;
 
          // Create dimension line display object for this spacing group
          CComPtr<iDimensionLine> doDimLine;
@@ -1518,7 +1518,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       //
       // Create Left Slab Overhang Dimension Line
       //
-      double leftOverhang = pBridge->GetLeftSlabOverhang(distFromStartOfBridge);
+      Float64 leftOverhang = pBridge->GetLeftSlabOverhang(distFromStartOfBridge);
       if ( 0 <= leftOverhang )
       {
          CComPtr<iDimensionLine> leftOverhangDimLine;
@@ -1570,7 +1570,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       //
       // Create Right Overhang Dimension Line
       //
-      double rightOverhang = pBridge->GetRightSlabOverhang(distFromStartOfBridge);
+      Float64 rightOverhang = pBridge->GetRightSlabOverhang(distFromStartOfBridge);
       if ( 0 <= rightOverhang )
       {
          CComPtr<iDimensionLine> rightOverhangDimLine;
@@ -1657,7 +1657,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       ccText->SetBkMode(TRANSPARENT);
 
-      double ccWidth = pBridge->GetCurbToCurbWidth( distFromStartOfBridge );
+      Float64 ccWidth = pBridge->GetCurbToCurbWidth( distFromStartOfBridge );
       CString strCurb = FormatDimension(ccWidth,rlen);
       ccText->SetText(strCurb);
 
@@ -1848,7 +1848,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    // Interior overlay width
    if (doLeftTB && pBridge->HasOverlay())
    {
-      double left_icb_offset, right_icb_offset;
+      Float64 left_icb_offset, right_icb_offset;
       left_icb_offset  = pBridge->GetLeftOverlayToeOffset(distFromStartOfBridge);
       right_icb_offset = pBridge->GetRightOverlayToeOffset(distFromStartOfBridge);
 
@@ -1936,13 +1936,13 @@ SpanIndexType CBridgeSectionView::GetSpanIndex()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    
-   double cut_station = m_pFrame->GetCurrentCutLocation();
+   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
    const CSpanData* pSpan = pBridgeDesc->GetSpan(0);
    while ( pSpan )
    {
-      double prev_pier_station = pSpan->GetPrevPier()->GetStation();
-      double next_pier_station = pSpan->GetNextPier()->GetStation();
+      Float64 prev_pier_station = pSpan->GetPrevPier()->GetStation();
+      Float64 next_pier_station = pSpan->GetNextPier()->GetStation();
 
       if ( prev_pier_station <= cut_station && cut_station <= next_pier_station )
          return pSpan->GetSpanIndex();

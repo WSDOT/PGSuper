@@ -1722,64 +1722,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="HaulingCheckArtifact.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="HoldDownForceArtifact.cpp"
 				>
 				<FileConfiguration
@@ -1838,65 +1780,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="LiftingAnalysisArtifact.cpp"
+				RelativePath=".\KdotHaulingAnalysisArtifact.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="LiftingCheckArtifact.cpp"
+				RelativePath="LiftingAnalysisArtifact.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -3267,11 +3155,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\HaulingCheckArtifact.h"
+				RelativePath="..\Include\PgsExt\HoldDownForceArtifact.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\HoldDownForceArtifact.h"
+				RelativePath="..\Include\PgsExt\KdotHaulingAnalysisArtifact.h"
 				>
 			</File>
 			<File
@@ -3280,10 +3168,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\LiftingAnalysisArtifact.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\PgsExt\LiftingCheckArtifact.h"
 				>
 			</File>
 			<File

@@ -40,14 +40,15 @@ public:
 // Dialog Data
 	enum { IDD = IDD_MANAGE_PLUGINS };
 
-   void Init(int pageType);
+   void Init(LPCTSTR strSection,const CATID& catid);
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-   bool InitList(const CATID& catid);
+   bool InitList();
 
-   int m_PageType;
+   CATID m_CATID;
+   CString m_Section;
 
 	CCheckListBox 	m_ctlPluginList;
    std::vector<CString> m_CLSIDs;

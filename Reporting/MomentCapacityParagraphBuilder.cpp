@@ -96,8 +96,8 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 //   const pgsFlexuralCapacityArtifact* pGirderCap = pArtifact->GetFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite1,pgsTypes::StrengthI,poi.GetDistFromStart()));
    const pgsFlexuralCapacityArtifact* pCompositeCap = pArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,poi.GetDistFromStart()));
 
-   double Mu = pCompositeCap->GetDemand();
-   double Mr = pCompositeCap->GetCapacity();
+   Float64 Mu = pCompositeCap->GetDemand();
+   Float64 Mr = pCompositeCap->GetCapacity();
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 

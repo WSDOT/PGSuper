@@ -49,7 +49,7 @@ public:
 	//{{AFX_DATA(CBridgeDescEnvironmental)
 	enum { IDD = IDD_BRIDGEDESC_ENVIRONMENTAL };
 	int		m_Exposure;
-	double	m_RelHumidity;
+	Float64	m_RelHumidity;
 	//}}AFX_DATA
 
 // Overrides

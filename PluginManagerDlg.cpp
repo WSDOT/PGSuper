@@ -31,16 +31,16 @@
 
 IMPLEMENT_DYNAMIC(CPluginManagerDlg, CPropertySheet)
 
-CPluginManagerDlg::CPluginManagerDlg(UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage)
+CPluginManagerDlg::CPluginManagerDlg(UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent)
 	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage)
 {
-   Init();
+   Init(catidDataImporter,catidDataExporter,catidExtensionAgent);
 }
 
-CPluginManagerDlg::CPluginManagerDlg(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage)
+CPluginManagerDlg::CPluginManagerDlg(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent)
 	:CPropertySheet(pszCaption, pParentWnd, iSelectPage)
 {
-   Init();
+   Init(catidDataImporter,catidDataExporter,catidExtensionAgent);
 }
 
 CPluginManagerDlg::~CPluginManagerDlg()
@@ -48,7 +48,7 @@ CPluginManagerDlg::~CPluginManagerDlg()
 }
 
 
-void CPluginManagerDlg::Init()
+void CPluginManagerDlg::Init(const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent)
 {
    m_psh.dwFlags |= PSH_HASHELP | PSH_NOAPPLYNOW;
 
@@ -60,9 +60,9 @@ void CPluginManagerDlg::Init()
    m_DataExporterPage.m_psp.pszTitle = _T("Data Exporters");
    m_ExtensionAgentPage.m_psp.pszTitle = _T("Extensions");
 
-   m_DataImporterPage.Init(DATA_IMPORTER_PAGE);
-   m_DataExporterPage.Init(DATA_EXPORTER_PAGE);
-   m_ExtensionAgentPage.Init(EXTENSION_AGENT_PAGE);
+   m_DataImporterPage.Init(_T("Plugins"),catidDataImporter);
+   m_DataExporterPage.Init(_T("Plugins"),catidDataExporter);
+   m_ExtensionAgentPage.Init(_T("Extensions"),catidExtensionAgent);
 
    AddPage(&m_DataImporterPage);
    AddPage(&m_DataExporterPage);

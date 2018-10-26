@@ -33,7 +33,7 @@ class txnCopyGirderData
 public:
    std::_tstring m_strGirderName;
    CGirderData m_GirderData;
-   double m_SlabOffset[2];
+   Float64 m_SlabOffset[2];
 };
 
 class txnCopyGirder : public txnTransaction

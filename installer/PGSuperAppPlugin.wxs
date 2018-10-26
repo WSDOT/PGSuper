@@ -1,0 +1,769 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+   <!-- Include project wide variables -->
+   <?include Variables.wxi?>
+   <?include PGSuperCATID.wxi?>
+
+   <Fragment>
+      <!-- PGSuper files -->
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource ="$(var.PGSuperSourceRoot)\AutomationDlls\$(var.PlatformFolder)" >
+
+         <Component Id ="PGSuperComponents"
+                    Guid="{4C928CD6-FC90-4dfa-A141-F943C43CED0F}"
+                    Win64="$(var.IsWin64)">
+
+            <File Id="PGSuperAppPlugin.dll"    Name="PGSuperAppPlugin.dll" KeyPath ="yes"/>
+
+            <!-- PGSuper File associations -->
+            <ProgId Id="PGSuper.Template" Icon="PGSuperAppPlugin.dll" IconIndex="25" />
+            <ProgId Id="PGSuper.Document" Icon="PGSuperAppPlugin.dll" IconIndex="0" />
+
+            <!-- PGSuper registry entries-->
+
+            <!-- PGSuper Application Plugin -->
+            <?define PGSuperAppPluginCLSID={C1731920-FBCA-40FA-959D-9B749F03DEC0}?>
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperAppPluginCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperAppPluginCLSID)"
+                           Value="PGSuper"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperAppPluginCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperAppPlugin.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperAppPluginCLSID)\Implemented Categories\$(var.BridgeLinkAppPluginCATID)"
+                           Value=""
+                           Type="string" />
+
+            <!-- PGSuper Component Information Object -->
+            <?define PGSuperComponentInfoCLSID={3EB252D0-84CF-4f09-98CA-9C0A80472258}?>
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperComponentInfoCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperComponentInfoCLSID)"
+                           Value="PGSuper Component Information"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperComponentInfoCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperAppPlugin.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperComponentInfoCLSID)\Implemented Categories\$(var.BridgeLinkComponentInfoCATID)"
+                           Value=""
+                           Type="string" />
+
+            <!-- PGSuper Project Importer Object -->
+            <?define PGSuperProjectImporterCLSID={552AB673-3D3D-47E6-AFD6-4EA033A8A7F2}?>
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperProjectImporterCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperProjectImporterCLSID)"
+                           Value="PGSuper Project Importer"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperProjectImporterCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperAppPlugin.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperProjectImporterCLSID)\Implemented Categories\$(var.BridgeLinkAppPluginCATID)"
+                           Value=""
+                           Type="string" />
+
+            <!-- PGSuper Component Categories -->
+
+            <!-- Component categories for the PGSuper Application plugin
+           The following items can be added into PGSuper:
+           * PGSuper Component Information
+           * PGSuper Agents
+           * PGSuper Extension Agents
+           * PGSuper Beam Families
+           * Project Importers
+           * Data Importers
+           * Data Exporters-->
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="Component Categories\$(var.BridgeLinkComponentInfoCATID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="Component Categories\$(var.BridgeLinkComponentInfoCATID)"
+                           Name="800"
+                           Value="PGSuper Component Information"
+                           Type="string" />
+
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="Component Categories\$(var.PGSuperAgentCATID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="Component Categories\$(var.PGSuperAgentCATID)"
+                           Name="800"
+                           Value="PGSuper Agent"
+                           Type="string" />
+
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="Component Categories\$(var.PGSuperExtensionAgentCATID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="Component Categories\$(var.PGSuperExtensionAgentCATID)"
+                           Name="800"
+                           Value="PGSuper Extension Agent"
+                           Type="string" />
+
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="Component Categories\$(var.PGSuperBeamFamilyCATID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="Component Categories\$(var.PGSuperBeamFamilyCATID)"
+                           Name="800"
+                           Value="PGSuper Beam Family"
+                           Type="string" />
+
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="Component Categories\$(var.PGSuperProjectImporterCATID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="Component Categories\$(var.PGSuperProjectImporterCATID)"
+                           Name="800"
+                           Value="PGSuper Project Importer Plugin"
+                           Type="string" />
+
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="Component Categories\$(var.PGSuperDataImporterCATID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="Component Categories\$(var.PGSuperDataImporterCATID)"
+                           Name="800"
+                           Value="PGSuper Data Importer Plugin"
+                           Type="string" />
+
+            <RegistryKey ForceCreateOnInstall="yes"
+                         ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="Component Categories\$(var.PGSuperDataExporterCATID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="Component Categories\$(var.PGSuperDataExporterCATID)"
+                           Name="800"
+                           Value="PGSuper Data Exporter Plugin"
+                           Type="string" />
+         </Component>
+            </DirectoryRef>
+
+
+
+      <DirectoryRef Id="BridgeLinkStartMenuFolder"
+                    FileSource ="$(var.PGSuperSourceRoot)\AutomationDlls\$(var.PlatformFolder)" >
+         <Component Id ="PGSuperHelpFiles"
+                    Guid="{0FB577A0-EA95-41be-9685-23C26D335514}"
+                    Win64="$(var.IsWin64)">
+
+            <!-- Start Menu Shortcuts -->
+            <Shortcut Id="PGSuperHelpShortcut"
+                      Name="PGSuper Documentation"
+                      Description="PGSuper Documentation"
+                      Target="[APPLICATIONFOLDER]PGSuper.chm"
+                      WorkingDirectory="APPLICATIONFOLDER"
+                  />
+
+            <RegistryValue Root="HKCU"
+                           Key="Software\Microsoft\[ProductName]"
+                           Name="installed"
+                           Type="integer"
+                           Value="1"
+                           KeyPath="yes"/>
+         </Component>
+      </DirectoryRef>
+
+
+            <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource ="$(var.PGSuperSourceRoot)\App\$(var.PlatformFolder)" >
+         <Component Id="MD5Deep"
+                    Guid="{22D58AA0-9F9E-4907-B3B5-20510C46A173}"
+                    Win64="$(var.IsWin64)">
+            <File Id="md5deep.exe" Name="md5deep.exe" KeyPath="yes"/>
+         </Component>
+      </DirectoryRef>
+
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource ="$(var.PGSuperSourceRoot)\App\$(var.PlatformFolder)" >
+         <Component Id="MakePgz"
+                    Guid="{7E389B52-BC5E-410c-9665-77100FFA4151}"
+                    Win64="$(var.IsWin64)">
+            <File Id="makepgz.exe" Name="MakePgz.exe" KeyPath="yes"/>
+         </Component>
+      </DirectoryRef>
+
+      <!-- The non-COM dll's used by PGSuper -->
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource="$(var.PGSuperSourceRoot)\AutomationDlls\$(var.PlatformFolder)" >
+         <Component Id="PGSuperComponents2"
+                    Guid="{B9D339F1-E572-4C2C-9ABF-43003365BF78}"
+                    Win64="$(var.IsWin64)">
+            <File Id="PGSuperReporting.dll"  Name="PGSuperReporting.dll" KeyPath="yes"/>
+            <File Id="PGSuperExt.dll"        Name="PGSuperExt.dll" />
+         </Component>
+      </DirectoryRef>
+
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource ="$(var.PGSuperSourceRoot)\App" >
+         <Component Id="PGSuperComponents3"
+                    Guid="{C14B00D3-560F-4959-9540-6413E7CC7796}"
+                    Win64="$(var.IsWin64)">
+            <File Id="pgsuper.chm"  Name="PGSuper.chm" KeyPath="yes"/>
+            <File Id="trucks.pgs"   Name="Trucks.pgs"/>
+            <File Id="pgsuper.tip"  Name="PGSuper.tip"/>
+         </Component>
+      </DirectoryRef>
+
+
+      <!-- Very Old PGSuper File Converter -->
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource="$(var.PGSuperSourceRoot)\AutomationDLLs\$(var.PlatformFolder)">
+
+         <Component Id="PGSuperFileConverter"
+                    Guid="{C9306137-1456-42D6-80BF-D1272F96A572}"
+                    Win64="$(var.IsWin64)">
+            <Class Id="{AC90A497-B0F5-48BD-B9AC-BA1B0B87EC24}"
+                   Context="InprocServer32"
+                   Description="Convert.PgsFileConvert1"
+                   Advertise="yes">
+               <ProgId Id="Convert.PgsFileConvert1"
+                       Description="Convert.PgsFileConvert1"
+                       Advertise="yes" />
+            </Class>
+            <File Id="Convert.dll"
+                  Name="Convert.dll"
+                  KeyPath="yes"/>
+
+            <TypeLib Id="{1F0A5765-4B65-4811-A2E6-9CF35E7E86F3}"
+                     Advertise="yes"
+                     Cost="1"
+                     Description="Converts PGSuper version 0.80, 0.81, and 0.82 files to version 0.83"
+                     HelpDirectory="APPLICATIONFOLDER"
+                     Language="0"
+                     MajorVersion="256"
+                     MinorVersion="0" />
+            <RegistryKey Id="_F24864FF6E9B4F31982A44F4C322C8FE"
+                         ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Key="CLSID\{AC90A497-B0F5-48BD-B9AC-BA1B0B87EC24}\Implemented Categories\{40FC6ED5-2438-11CF-A3DB-080036F12502}"
+                         Root="HKCR" />
+            <RegistryKey Id="_022D1F33305C4CA3BD9F57FA75AA3E08"
+                         ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Key="CLSID\{AC90A497-B0F5-48BD-B9AC-BA1B0B87EC24}\Programmable"
+                         Root="HKCR" />
+            <RegistryValue Id="_0A773B16D69041DCB8FFBDE5BDCAE7FB"
+                           Root="HKCR"
+                           Key="CLSID\{AC90A497-B0F5-48BD-B9AC-BA1B0B87EC24}\InprocServer32"
+                           Name="ThreadingModel"
+                           Value="Apartment"
+                           Type="string" />
+            <RegistryValue Id="_8E0A969B38924046A6A2C6533D9F1C58"
+                           Root="HKCR"
+                           Key="CLSID\{AC90A497-B0F5-48BD-B9AC-BA1B0B87EC24}\TypeLib"
+                           Value="{1F0A5765-4B65-4811-A2E6-9CF35E7E86F3}"
+                           Type="string" />
+            <RegistryValue Id="_7D2CAD10D8E54310B46DBD3E46A53101"
+                           Root="HKCR"
+                           Key="CLSID\{AC90A497-B0F5-48BD-B9AC-BA1B0B87EC24}\VERSION"
+                           Value="1.0"
+                           Type="string" />
+            <RegistryValue Id="_D32EFFCFB20F4C72A4B4C2C19D535082"
+                           Root="HKCR"
+                           Key="Interface\{D8AE6B3E-FAA1-4BEC-836D-71D23CFF6D6D}"
+                           Value="PgsFileConvert1"
+                           Type="string" />
+            <RegistryValue Id="_A667C67F94014246AB38061AA70D3C43"
+                           Root="HKCR"
+                           Key="Interface\{D8AE6B3E-FAA1-4BEC-836D-71D23CFF6D6D}\ProxyStubClsid"
+                           Value="{00020424-0000-0000-C000-000000000046}"
+                           Type="string" />
+            <RegistryValue Id="_A8FF7EDBD15145819302BD9D5B7BA050"
+                           Root="HKCR"
+                           Key="Interface\{D8AE6B3E-FAA1-4BEC-836D-71D23CFF6D6D}\ProxyStubClsid32"
+                           Value="{00020424-0000-0000-C000-000000000046}"
+                           Type="string" />
+            <RegistryValue Id="_3044CAC744664EC98A4F157122F9098A"
+                           Root="HKCR"
+                           Key="Interface\{D8AE6B3E-FAA1-4BEC-836D-71D23CFF6D6D}\TypeLib"
+                           Value="{1F0A5765-4B65-4811-A2E6-9CF35E7E86F3}"
+                           Type="string" />
+            <RegistryValue Id="_3D9B043ADF294E21AEB42B61FFFDABA9"
+                           Root="HKCR"
+                           Key="Interface\{D8AE6B3E-FAA1-4BEC-836D-71D23CFF6D6D}\TypeLib"
+                           Name="Version"
+                           Value="1.0"
+                           Type="string" />
+         </Component>
+      </DirectoryRef>
+
+      <!-- Grid Control -->
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource ="$(var.GridSourceRoot)$(var.PlatformFolder)">
+         <Component Id="GridControl"
+                    Guid="{AD86F1C4-31CF-4D3C-B7BE-9A38C0BAC715}"
+                    Win64="$(var.IsWin64)">
+            <File Id="rwuxthemesu90.dll"
+                  Name="RWUXThemeSU90.dll" />
+            <File Id="wsdot_og1204asu.dll"
+                  Name="wsdot_og1204asu.dll" KeyPath="yes"/>
+            <File Id="sfl504asu.dll"
+                  Name="sfl504asu.dll"/>
+         </Component>
+      </DirectoryRef>
+
+
+      <!-- PGSuper Agents -->
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource="$(var.PGSuperSourceRoot)\AutomationDLLs\$(var.PlatformFolder)">
+
+         <Component Id="AnalysisAgent"
+                    Guid="{B4242086-386A-4F91-9650-19C831F810BE}"
+                    Win64="$(var.IsWin64)">
+            <File Id="PGSuperAnalysisAgent.dll"
+                  Name="PGSuperAnalysisAgent.dll"
+                  KeyPath="yes"/>
+            <?define PGSuperAnalysisAgentCLSID={BE55D0A2-68EC-11D2-883C-006097C68A9C}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperAnalysisAgentCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperAnalysisAgentCLSID)"
+                           Value="AnalysisAgent Class"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperAnalysisAgentCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperAnalysisAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperAnalysisAgentCLSID)\Implemented Categories\$(var.PGSuperAgentCATID)"
+                           Value=""
+                           Type="string" />
+         </Component>
+         <Component Id="BridgeAgent"
+                    Guid="{A805854A-FCF7-411A-AA2E-988605E82186}"
+                    Win64="$(var.IsWin64)">
+            <File Id="PGSuperBridgeAgent.dll"
+                  Name="PGSuperBridgeAgent.dll"
+                  KeyPath="yes"/>
+            <?define PGSuperBridgeAgentCLSID={59753CA0-3B7B-11d2-8EC5-006097DF3C68}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperBridgeAgentCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperBridgeAgentCLSID)"
+                           Value="BridgeAgent Class"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperBridgeAgentCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperBridgeAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperBridgeAgentCLSID)\Implemented Categories\$(var.PGSuperAgentCATID)"
+                           Value=""
+                           Type="string" />
+         </Component>
+         <Component Id="EngAgent"
+                    Guid="{AF75C91F-F9D3-4E91-94E8-6AB49B097803}"
+                    Win64="$(var.IsWin64)">
+            <File Id="PGSuperEngAgent.dll"
+                  Name="PGSuperEngAgent.dll"
+                  KeyPath="yes"/>
+
+            <?define PGSuperEngAgentCLSID={B455A760-6DAF-11D2-8EE9-006097DF3C68}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperEngAgentCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperEngAgentCLSID)"
+                           Value="EngAgent Class"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperEngAgentCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperEngAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperEngAgentCLSID)\Implemented Categories\$(var.PGSuperAgentCATID)"
+                           Value=""
+                           Type="string" />
+         </Component>
+         <Component Id="ProjectAgent"
+                    Guid="{515C4041-17A0-4C07-BA15-83255877D3E2}"
+                    Win64="$(var.IsWin64)">
+            <File Id="PGSuperProjectAgent.dll"
+                  Name="PGSuperProjectAgent.dll"
+                  KeyPath="yes"/>
+            <?define PGSuperProjectAgentCLSID={59D50426-265C-11D2-8EB0-006097DF3C68}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperProjectAgentCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperProjectAgentCLSID)"
+                           Value="ProjectAgent Class"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperProjectAgentCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperProjectAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperProjectAgentCLSID)\Implemented Categories\$(var.PGSuperAgentCATID)"
+                           Value=""
+                           Type="string" />
+         </Component>
+         <Component Id="ReportAgent"
+                    Guid="{715052E0-0199-4B3B-B003-27C1C9148315}"
+                    Win64="$(var.IsWin64)">
+            <File Id="PGSuperReportAgent.dll"
+                  Name="PGSuperReportAgent.dll"
+                  KeyPath="yes"/>
+
+            <?define PGSuperReportAgentCLSID={3D5066F2-27BE-11D2-8EB2-006097DF3C68}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperReportAgentCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperReportAgentCLSID)"
+                           Value="PGSuper ReportAgent Class"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperReportAgentCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperReportAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperReportAgentCLSID)\Implemented Categories\$(var.PGSuperAgentCATID)"
+                           Value=""
+                           Type="string" />
+         </Component>
+         <Component Id="SpecAgent"
+                    Guid="{7A838074-0A75-49C2-A5CE-D3024B6B0762}"
+                    Win64="$(var.IsWin64)">
+            <File Id="PGSuperSpecAgent.dll"
+                  Name="PGSuperSpecAgent.dll"
+                  KeyPath="yes"/>
+            <?define PGSuperSpecAgentCLSID={EC915470-6E76-11D2-8EEB-006097DF3C68}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperSpecAgentCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperSpecAgentCLSID)"
+                           Value="SpecAgent Class"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperSpecAgentCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperSpecAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperSpecAgentCLSID)\Implemented Categories\$(var.PGSuperAgentCATID)"
+                           Value=""
+                           Type="string" />
+         </Component>
+         <Component Id="TestAgent"
+                    Guid="{4E6C75C8-B5A1-4D8D-A3F4-5D9AB8B3107E}"
+                    Win64="$(var.IsWin64)">
+            <File Id="PGSuperTestAgent.dll"
+                  Name="PGSuperTestAgent.dll"
+                  KeyPath="yes"/>
+            <?define PGSuperTestAgentCLSID={433B5860-71BF-11D3-ADC5-00105A9AF985}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperTestAgentCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTestAgentCLSID)"
+                           Value="TestAgent Class"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTestAgentCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]PGSuperTestAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTestAgentCLSID)\Implemented Categories\$(var.PGSuperAgentCATID)"
+                           Value=""
+                           Type="string" />
+         </Component>
+      </DirectoryRef>
+
+      <!-- WSDOT PGSuper Extensions -->
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource ="$(var.PGSuperSourceRoot)\Extensions\WSDOT\$(var.PlatformFolder)">
+
+         <Component Id="WSDOTAgent"
+                    Guid="{BD788945-CBAB-4537-AE4D-840404768FBF}"
+                    Win64="$(var.IsWin64)">
+            <File Id="WSDOTAgent.dll"
+                  Name="WSDOTAgent.dll"
+                  KeyPath="yes"/>
+
+            <!-- WSDOT Component Information Object-->
+            <?define PGSuperWSDOTComponentInfoCLSID={78D50F7D-4825-4FB0-86CC-CAAF7326B8FB}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperWSDOTComponentInfoCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperWSDOTComponentInfoCLSID)"
+                           Value="WSDOT Component Information"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperWSDOTComponentInfoCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]WSDOTAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperWSDOTComponentInfoCLSID)\Implemented Categories\$(var.BridgeLinkComponentInfoCATID)"
+                           Value=""
+                           Type="string" />
+
+            <!-- WSDOT Extension Agent-->
+            <?define PGSuperWSDOTExtensionAgentCLSID={338AD645-BAF2-41DC-964E-A9DFC8123253}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperWSDOTExtensionAgentCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperWSDOTExtensionAgentCLSID)"
+                           Value="WSDOT Extensions"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperWSDOTExtensionAgentCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]WSDOTAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperWSDOTExtensionAgentCLSID)\Implemented Categories\$(var.PGSuperExtensionAgentCATID)"
+                           Value=""
+                           Type="string" />
+         </Component>
+      </DirectoryRef>
+
+      <Feature Id="WSDOTExtensions"
+               Absent="allow"
+               ConfigurableDirectory="APPLICATIONFOLDER"
+               Description="Extend PGSuper with WSDOT specific features"
+               Display="expand"
+               Title="WSDOT Extensions (Optional)"
+               Level="1">
+         <ComponentRef Id="WSDOTAgent"/>
+      </Feature>
+
+      <!-- TxDOT PGSuper Extensions -->
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource="$(var.PGSuperSourceRoot)\Extensions\TxDOT\$(var.PlatformFolder)">
+         <Directory Id="TogaTemplates" Name="TogaTemplates" />
+         <Component Id="TxDOTAgent"
+                    Guid="{D0E840E4-9139-4FD3-A162-AAEBAF31686E}"
+                    Win64="$(var.IsWin64)">
+            <File Id="TxDOTAgent.dll"
+                  Name="TxDOTAgent.dll"
+                  KeyPath="yes" />
+
+            <!-- TOGA file associations -->
+            <ProgId Id="Toga.Document" Icon="TxDOTAgent.dll" IconIndex="0"/>
+
+
+            <!-- CAD Data Exporter -->
+            <?define TxDOTCADDataExporterCLSID={F106BA9D-6C17-40b9-BF97-A43103CABECF}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                       Root="HKCR"
+                       Key ="CLSID\$(var.TxDOTCADDataExporterCLSID)"/>
+          <RegistryValue Root="HKCR"
+                         Key="CLSID\$(var.TxDOTCADDataExporterCLSID)"
+                         Value="TxDOT CAD Data Exporter"
+                         Type="string" />
+          <RegistryValue Root="HKCR"
+                         Key="CLSID\$(var.TxDOTCADDataExporterCLSID)\InprocServer32"
+                         Value="[APPLICATIONFOLDER]TxDOTAgent.dll"
+                         Type="string" />
+          <RegistryValue Root="HKCR"
+                         Key="CLSID\$(var.TxDOTCADDataExporterCLSID)\Implemented Categories\$(var.PGSuperDataExporterCATID)"
+                         Value=""
+                         Type="string" />
+
+            <!-- TOGA Component-->
+            <?define TOGABridgeLinkAppPluginCLSID={FB446ED8-EBFA-46a0-9D84-8E5DC53A371F}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.TOGABridgeLinkAppPluginCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.TOGABridgeLinkAppPluginCLSID)"
+                           Value="TxDOT Optional Girder Analysis Component"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.TOGABridgeLinkAppPluginCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]TxDOTAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.TOGABridgeLinkAppPluginCLSID)\Implemented Categories\$(var.BridgeLinkAppPluginCATID)"
+                           Value=""
+                           Type="string" />
+
+            <!-- TxDOT Extension Agent -->
+            <?define PGSuperTxDOTExtensionAgentCLSID={360F7694-BE5B-4E97-864F-EF3575689C6E}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperTxDOTExtensionAgentCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTxDOTExtensionAgentCLSID)"
+                           Value="TxDOT Extensions"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTxDOTExtensionAgentCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]TxDOTAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTxDOTExtensionAgentCLSID)\Implemented Categories\$(var.PGSuperExtensionAgentCATID)"
+                           Value=""
+                           Type="string" />
+
+            <!-- TxDOT Component Information Object -->
+            <?define PGSuperTxDOTInfoCLSID={539E5AB9-4302-45f9-9FAD-B8E2DB6867F1}?>
+            <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
+                         Root="HKCR"
+                         Key ="CLSID\$(var.PGSuperTxDOTInfoCLSID)"/>
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTxDOTInfoCLSID)"
+                           Value="TxDOT Component Information"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTxDOTInfoCLSID)\InprocServer32"
+                           Value="[APPLICATIONFOLDER]TxDOTAgent.dll"
+                           Type="string" />
+            <RegistryValue Root="HKCR"
+                           Key="CLSID\$(var.PGSuperTxDOTInfoCLSID)\Implemented Categories\$(var.BridgeLinkComponentInfoCATID)"
+                           Value=""
+                           Type="string" />
+
+         </Component>
+      </DirectoryRef>
+
+      <DirectoryRef Id="APPLICATIONFOLDER"
+                    FileSource="$(var.PGSuperSourceRoot)\Extensions\TxDOT">
+         <Component Id="TxDOTAgentHelp"
+                    Guid="{271F65A9-BD21-408d-B5F5-2CD134975B62}"
+                    Win64="$(var.IsWin64)">
+            <File Id="TOGA.chm"
+                  Name="TOGA.chm"
+                  KeyPath ="yes"/>
+         </Component>
+      </DirectoryRef>
+      
+      <!-- TOGA Start Menu Shortcut-->
+      <DirectoryRef Id="BridgeLinkStartMenuFolder">
+         <Component Id="TogaApplicationShortcut"
+                    Guid="{9116E392-14A9-4051-91C0-809BF001A4F1}"
+                    Win64="$(var.IsWin64)">
+
+            <Shortcut Id="TogaHelpShortcut"
+                      Name="TOGA Documentation"
+                      Description="Texas Optional Girder Analysis (TOGA) Documentation"
+                      Target="[APPLICATIONFOLDER]TOGA.chm"
+                      WorkingDirectory="APPLICATIONFOLDER"
+                  />
+            <RegistryValue Root="HKCU"
+                           Key="Software\Microsoft\[ProductName]"
+                           Name="installed"
+                           Type="integer"
+                           Value="1"
+                           KeyPath="yes"/>
+         </Component>
+      </DirectoryRef>
+
+      <!-- TxDOT Toga Templates -->
+      <DirectoryRef Id="TogaTemplates"
+                    FileSource ="$(var.PGSuperSourceRoot)\Extensions\TxDOT\TogaTemplates">
+
+         <Component Id="TxDOTTogaTemplates"
+                    Guid="{33EF4043-2872-4B2D-9087-E6CA254D09B0}"
+                    Win64="$(var.IsWin64)">
+            <File Id="TogaTemplate.pgs"
+                  Name="TogaTemplate.pgs"
+                  KeyPath="yes"/>
+            <File Id="Tx28.togt"
+                  Name="Tx28.togt"/>
+            <File Id="Tx34.togt"
+                  Name="Tx34.togt"/>
+            <File Id="Tx40.togt"
+                  Name="Tx40.togt" />
+            <File Id="Tx46.togt"
+                  Name="Tx46.togt"/>
+            <File Id="Tx54.togt"
+                  Name="Tx54.togt" />
+            <File Id="Tx62.togt"
+                  Name="Tx62.togt"/>
+            <File Id="Tx70.togt"
+                  Name="Tx70.togt"/>
+            <File Id="TYPE_A.togt"
+                  Name="TYPE A.togt"/>
+            <File Id="TYPE_B.togt"
+                  Name="TYPE B.togt" />
+            <File Id="TYPE_C.togt"
+                  Name="TYPE C.togt" />
+            <File Id="TYPE_IV.togt"
+                  Name="TYPE IV.togt"/>
+            <File Id="Type_VI.togt"
+                  Name="Type VI.togt" />
+         </Component>
+      </DirectoryRef>
+
+      <Feature Id="TxDOTExtensions"
+               Absent="allow"
+               ConfigurableDirectory="APPLICATIONFOLDER"
+               Description="Extend PGSuper with TxDOT specific features"
+               Display="expand"
+               Title="TxDOT Extensions (Optional)"
+               Level="1">
+         <ComponentRef Id="TxDOTAgent"/>
+         <ComponentRef Id="TxDOTAgentHelp"/>
+         <ComponentRef Id="TogaApplicationShortcut"/>
+         <ComponentRef Id="TxDOTTogaTemplates"/>
+      </Feature>
+
+      <Feature Id="PGSuper"
+               Absent="allow"
+               ConfigurableDirectory="APPLICATIONFOLDER"
+               Description="Design, Analysis, and Load Rating of Precast Concrete Girder Bridges"
+               Display="expand"
+               Title="PGSuper (Optional)"
+               Level="1">
+
+         <FeatureRef Id="WSDOTExtensions"/>
+         <FeatureRef Id="TxDOTExtensions"/>
+
+         <ComponentRef Id="PGSuperComponents" Primary="yes" />
+         <ComponentRef Id="PGSuperComponents2" />
+         <ComponentRef Id="PGSuperComponents3" />
+         <ComponentRef Id="PGSuperHelpFiles"/>
+         <ComponentRef Id="MD5Deep" />
+         <ComponentRef Id="MakePgz" />
+         <ComponentRef Id="PGSuperLibraryFile" />
+         <ComponentRef Id="PGSuperFileConverter"/>
+         <ComponentRef Id="GridControl"/>
+
+         <ComponentRef Id="LibraryEditor"/>
+
+         <ComponentRef Id="AnalysisAgent"/>
+         <ComponentRef Id="BridgeAgent"/>
+         <ComponentRef Id="EngAgent"/>
+         <ComponentRef Id="ProjectAgent"/>
+         <ComponentRef Id="ReportAgent"/>
+         <ComponentRef Id="SpecAgent"/>
+         <ComponentRef Id="TestAgent"/>
+
+         <ComponentRef Id="PGSuperBeams"/>
+         <ComponentRef Id="Deck_Bulb_Tees" />
+         <ComponentRef Id="Multiweb" />
+         <ComponentRef Id="Slabs" />
+         <ComponentRef Id="UGirders" />
+         <ComponentRef Id="WBTGirders" />
+         <ComponentRef Id="WFGirders" />
+         <ComponentRef Id="WGirders" />
+      </Feature>
+   </Fragment>
+</Wix>

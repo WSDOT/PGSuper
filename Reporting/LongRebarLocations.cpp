@@ -31,6 +31,8 @@
 
 #include <WBFLGenericBridgeTools.h>
 
+#include <PgsExt\LongitudinalRebarData.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -70,17 +72,19 @@ CLongRebarLocations& CLongRebarLocations::operator= (const CLongRebarLocations& 
 }
 
 //======================== OPERATIONS =======================================
-void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
                                 IEAFDisplayUnits* pDisplayUnits) const
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nspans = pBridge->GetSpanCount();
    CHECK(span<nspans);
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),  false );
+   Float64 gdr_length = pBridge->GetGirderLength(span,gdr);
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,    pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(),   false );
 
    rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter<<pHead;
@@ -89,57 +93,67 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexT
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   // get bars a girder middle (really doesn't matter).
-   Float64 mid = pBridge->GetGirderLength(span,girder)/2.0;
-   pgsPointOfInterest poi(span,girder,mid);
-   CComPtr<IRebarSection> rebars;
-   pLongRebarGeometry->GetRebars(poi,&rebars);
+   GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
+   CLongitudinalRebarData lrd = pLongRebar->GetLongitudinalRebarData(span,gdr);
 
-   CollectionIndexType count;
-   rebars->get_Count(&count);
+   const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = lrd.RebarRows;
 
+   CollectionIndexType count = rebar_rows.size();
    if ( count == 0 )
    {
       *pPara<<_T("No Longitudinal Rebar Defined")<<rptNewLine;
       return;
    }
 
-   *pPara<<_T("All longitudinal rebars run the entire length of the girder")<<rptNewLine;
+   *pPara<<_T("Bar start and end locations measured from left end of girder")<<rptNewLine;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    *pPara << p_table;
 
-   (*p_table)(0,0) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(0,1) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(0,2) << _T("Bar") << rptNewLine << _T("Size");
+   (*p_table)(0,0) << _T("Row");
+   (*p_table)(0,1) << COLHDR(_T("Bar Start"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,2) << COLHDR(_T("Bar End"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,3) << _T("Girder") << rptNewLine << _T("Face");
+   (*p_table)(0,4) << COLHDR(_T("Cover"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,5) << _T("Bar") << rptNewLine << _T("Size");
+   (*p_table)(0,6) << _T("# of") << rptNewLine << _T("Bars");
+   (*p_table)(0,7) << COLHDR(_T("Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    int row=1;
 
-   CComPtr<IEnumRebarSectionItem> enumRebarSectionItem;
-   rebars->get__EnumRebarSectionItem(&enumRebarSectionItem);
-
-   CComPtr<IRebarSectionItem> rebar_section_item;
-   while ( enumRebarSectionItem->Next(1,&rebar_section_item,0) != S_FALSE )
+   for(std::vector<CLongitudinalRebarData::RebarRow>::const_iterator rit=rebar_rows.begin(); rit!=rebar_rows.end(); rit++)
    {
-      CComPtr<IPoint2d> location;
-      rebar_section_item->get_Location(&location);
-      double x,y;
-      location->get_X(&x);
-      location->get_Y(&y);
+      const CLongitudinalRebarData::RebarRow& rowData = *rit;
 
-      CComPtr<IRebar> rebar;
-      rebar_section_item->get_Rebar(&rebar);
+      Float64 startLoc, endLoc;
+      bool onGirder = rowData.GetRebarStartEnd(gdr_length, &startLoc, &endLoc);
 
-      CComBSTR bstrName;
-      rebar->get_Name(&bstrName);
+      const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(lrd.BarType, lrd.BarGrade, rowData.BarSize);
+      if (pRebar)
+      {
+         (*p_table)(row,0) << row;
 
-      (*p_table)(row,0) << dim.SetValue(x);
-      (*p_table)(row,1) << dim.SetValue(y);
-      (*p_table)(row,2) << OLE2T(bstrName);
-      
-      
-      row++;
-      rebar_section_item.Release();
+         if (onGirder)
+            (*p_table)(row,1) << length.SetValue(startLoc);
+         else
+            (*p_table)(row,1) << color(Red) << _T("Off") << color(Black);
+
+         if (onGirder)
+            (*p_table)(row,2) << length.SetValue(endLoc);
+         else
+            (*p_table)(row,2)  << color(Red) << _T("Girder") << color(Black);
+
+         (*p_table)(row,3) << (rowData.Face==pgsTypes::GirderTop ? _T("Top") : _T("Bottom"));
+         (*p_table)(row,4) << dim.SetValue(rowData.Cover);
+         (*p_table)(row,5) << pRebar->GetName();
+         (*p_table)(row,6) << rowData.NumberOfBars;
+         if(rowData.NumberOfBars > 1)
+            (*p_table)(row,7) << dim.SetValue(rowData.BarSpacing);
+         else
+            (*p_table)(row,7) << _T("-");
+         
+         row++;
+      }
    }
 }
 

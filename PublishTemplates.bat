@@ -1,6 +1,6 @@
 REM - Script to publish templates and master library to WSDOT ftp server
 
-SET TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSuper\Version_2.7.0
+SET TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSuper\Version_2.8.0
 
 del %TARGET%\WSDOT.*
 del %TARGET%\AASHTO.*

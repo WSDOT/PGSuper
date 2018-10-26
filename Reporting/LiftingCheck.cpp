@@ -31,8 +31,9 @@
 #include <IFace\Project.h>
 
 #include <PgsExt\PointOfInterest.h>
-#include <PgsExt\LiftingCheckArtifact.h>
+#include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\GirderArtifact.h>
+#include <PgsExt\CapacityToDemand.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
@@ -99,8 +100,9 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   rptCapacityToDemand cap_demand;
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -114,7 +116,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
-   const pgsLiftingCheckArtifact* pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
+   const pgsLiftingAnalysisArtifact* pLiftArtifact = pArtifact->GetLiftingAnalysisArtifact();
 
    // unstable girders are a problem
    if (!pLiftArtifact->IsGirderStable())
@@ -127,9 +129,9 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
 
-   double c; // compression coefficient
-   double t; // tension coefficient
-   double t_max; // maximum allowable tension
+   Float64 c; // compression coefficient
+   Float64 t; // tension coefficient
+   Float64 t_max; // maximum allowable tension
    bool b_t_max; // true if max allowable tension is applicable
 
    c = pSpecEntry->GetCyCompStressLifting();
@@ -138,86 +140,180 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    Float64 t2 = pSpecEntry->GetMaxConcreteTensWithRebarLifting();
 
+   Float64 capCompression = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(span,girder);
+
    *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FCI << _T(" = ") << 
-      stress.SetValue(pLiftArtifact->GetAllowableCompressionStress())<< _T(" ") <<
+      stress.SetValue(capCompression)<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
    *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FCI;
    if ( b_t_max )
       *p << _T(" but not more than: ") << stress.SetValue(t_max);
-   *p << _T(" = ") << stress.SetValue(pLiftArtifact->GetAllowableTensileStress())<< _T(" ") <<
+   *p << _T(" = ") << stress.SetValue(pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(span,girder))<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
-   double As_reqd = pLiftArtifact->GetAlterantiveTensileStressAsMax();
    *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FCI
-       << _T(" = ") << stress.SetValue(pLiftArtifact->GetAlternativeTensionAllowableStress()) << _T(" ") << stress.GetUnitTag();
-   if ( !IsZero(As_reqd) )
-       *p << _T(" if at least ") << area.SetValue(As_reqd) << _T(" of mild reinforcement is provided") << rptNewLine;
-   else
-       *p << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
+      << _T(" = ") << stress.SetValue(pGirderLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(span,girder)) << _T(" ") << stress.GetUnitTag()
+      << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
    *p <<_T("Allowable factor of safety against cracking = ")<<pLiftArtifact->GetAllowableFsForCracking()<<rptNewLine;
 
-   double fc_reqd_comp,fc_reqd_tens;
-   bool min_rebar_reqd;
-   pLiftArtifact->GetRequiredConcreteStrength(&fc_reqd_comp,&fc_reqd_tens,&min_rebar_reqd);
+   Float64 fc_reqd_comp,fc_reqd_tens, fc_reqd_tens_wrebar;
+   pLiftArtifact->GetRequiredConcreteStrength(&fc_reqd_comp,&fc_reqd_tens,&fc_reqd_tens_wrebar);
 
-   double fci_reqd = max(fc_reqd_comp,fc_reqd_tens);
+   *p << RPT_FCI << _T(" required for Compressive stress = ");
+   if ( 0 < fc_reqd_comp )
+      *p << stress_u.SetValue( fc_reqd_comp ) << rptNewLine;
+   else
+      *p << symbol(INFINITY) << rptNewLine;
 
-   if ( 0 < fci_reqd )
-      *p << RPT_FCI << _T(" required to satisfy this stress check = ") << stress_u.SetValue( fci_reqd ) << rptNewLine;
+   *p << RPT_FCI << _T(" required for Tensile stress without sufficient reinforcement = ");
+   if ( 0 < fc_reqd_tens )
+      *p << stress_u.SetValue( fc_reqd_tens ) << rptNewLine;
+   else
+      *p << symbol(INFINITY) << rptNewLine;
+
+   *p << RPT_FCI << _T(" required for Tensile stress with sufficient reinforcement to resist the tensile force in the concrete = ");
+   if ( 0 < fc_reqd_tens_wrebar )
+      *p << stress_u.SetValue( fc_reqd_tens_wrebar ) << rptNewLine;
+   else
+      *p << symbol(INFINITY) << rptNewLine;
 
    GET_IFACE2(pBroker,IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
    poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
    *p << p_table;
-   (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Pick Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR(_T("Min") << rptNewLine << _T("Stress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,2) << COLHDR(_T("Max") << rptNewLine << _T("Stress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,3) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/o Rebar");
-   (*p_table)(0,4) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/  Rebar");
-   (*p_table)(0,5) << _T("Compression") << rptNewLine << _T("Status");
-   (*p_table)(0,6) << Sub2(_T("FS"),_T("cr"));
-   (*p_table)(0,7) << _T("FS") << rptNewLine << _T("Status");
+
+   int col1=0;
+   int col2=0;
+   p_table->SetRowSpan(0,col1,2);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
+
+   (*p_table)(0,col1++) << COLHDR(_T("Location from") << rptNewLine << _T("Left Pick Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+
+   p_table->SetColumnSpan(0,col1,2);
+   (*p_table)(0,col1++) << _T("Max") << rptNewLine << _T("Demand");
+   (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+   p_table->SetColumnSpan(0,col1,2);
+   (*p_table)(0,col1++) << _T("Min") << rptNewLine << _T("Demand");
+   (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+   p_table->SetColumnSpan(0,col1,2);
+   (*p_table)(0,col1++) << _T("Tensile") << rptNewLine << _T("Capacity");
+   (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+   p_table->SetRowSpan(0,col1,2);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
+   (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
+
+   p_table->SetRowSpan(0,col1,2);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
+   (*p_table)(0,col1++) << _T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
+
+   p_table->SetRowSpan(0,col1,2);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
+   (*p_table)(0,col1++) << Sub2(_T("FS"),_T("cr"));
+
+   p_table->SetRowSpan(0,col1,2);
+   p_table->SetRowSpan(1,col2++,SKIP_CELL);
+   (*p_table)(0,col1++) << _T("FS") << rptNewLine << _T("Status");
+
+   p_table->SetNumberOfHeaderRows(2);
+   for ( ColumnIndexType i = col1; i < p_table->GetNumberOfColumns(); i++ )
+      p_table->SetColumnSpan(0,i,SKIP_CELL);
 
    Float64 overhang = (pLiftArtifact->GetGirderLength() - pLiftArtifact->GetClearSpanBetweenPickPoints())/2.0;
 
-   RowIndexType row=1;
+   RowIndexType row=2;
    for (std::vector<pgsPointOfInterest>::const_iterator i = poi_vec.begin(); i!= poi_vec.end(); i++)
    {
       const pgsPointOfInterest& poi = *i;
 
-      pgsLiftingStressCheckArtifact stressArtifact = pLiftArtifact->GetLiftingStressCheckArtifact(poi.GetDistFromStart());
-      pgsLiftingCrackingCheckArtifact crackArtifact =  pLiftArtifact->GetLiftingCrackingCheckArtifact(poi.GetDistFromStart());
- 
+      const pgsLiftingStressAnalysisArtifact* stressArtifact = pLiftArtifact->GetLiftingStressAnalysisArtifact(poi.GetDistFromStart());
+      const pgsLiftingCrackingAnalysisArtifact* crackArtifact =  pLiftArtifact->GetLiftingCrackingAnalysisArtifact(poi.GetDistFromStart());
+
+      if (stressArtifact==NULL || crackArtifact==NULL)
+      {
+         ATLASSERT(0); // this should not happen
+         continue;
+      }
       (*p_table)(row,0) << location.SetValue( pgsTypes::Lifting,poi,overhang );
-      (*p_table)(row,1) << stress.SetValue(stressArtifact.GetMaximumConcreteCompressiveStress());
-      (*p_table)(row,2) << stress.SetValue(stressArtifact.GetMaximumConcreteTensileStress());
 
-      if ( stressArtifact.TensionPassed() )
-          (*p_table)(row,3) << RPT_PASS;
-      else
-          (*p_table)(row,3) << RPT_FAIL;
+      // Tension
+      Float64 fTensTop, fTensBottom, tensCapacityTop, tensCapacityBottom;
+      stressArtifact->GetMaxTensileStress(&fTensTop, &fTensBottom, &tensCapacityTop, &tensCapacityBottom);
 
+      // Compression
+      Float64 fPs, fTopUpward, fTopNoImpact, fTopDownward;
+      stressArtifact->GetTopFiberStress(&fPs, &fTopUpward, &fTopNoImpact, &fTopDownward);
 
-      if ( stressArtifact.AlternativeTensionPassed() )
-          (*p_table)(row,4) << RPT_PASS;
-      else
-          (*p_table)(row,4) << RPT_FAIL;
+      Float64 fBotUpward, fBotNoImpact, fBotDownward;
+      stressArtifact->GetBottomFiberStress(&fPs, &fBotUpward, &fBotNoImpact, &fBotDownward);
 
-      if ( stressArtifact.CompressionPassed() )
-          (*p_table)(row,5) << RPT_PASS;
-      else
-          (*p_table)(row,5) << RPT_FAIL;
+      Float64 fTopMin = Min3(fTopUpward, fTopNoImpact, fTopDownward);
+      Float64 fBotMin = Min3(fBotUpward, fBotNoImpact, fBotDownward);
 
-      (*p_table)(row,6) << scalar.SetValue(crackArtifact.GetFsCracking());
-      
-      if (crackArtifact.Passed() )
-         (*p_table)(row,7) << RPT_PASS;
+      ColumnIndexType col = 1;
+      (*p_table)(row,col++) << stress.SetValue(fTensTop);
+      (*p_table)(row,col++) << stress.SetValue(fTensBottom);
+      (*p_table)(row,col++) << stress.SetValue(fTopMin);
+      (*p_table)(row,col++) << stress.SetValue(fBotMin);
+
+      if (fTensTop>0)
+      {
+         (*p_table)(row,col++) << stress.SetValue(tensCapacityTop);
+      }
       else
       {
-         (*p_table)(row,7) << RPT_FAIL;
+         (*p_table)(row,col++) << _T("-");
+      }
+
+      if (fTensBottom>0)
+      {
+         (*p_table)(row,col++) << stress.SetValue(tensCapacityBottom);
+      }
+      else
+      {
+         (*p_table)(row,col++) << _T("-");
+      }
+
+      // Determine which c/d controls. top or bottom
+      Float64 fTens, capTens;
+      if( IsCDLess(cdPositive, tensCapacityTop, fTensTop, tensCapacityBottom, fTensBottom))
+      {
+         fTens = fTensTop;
+         capTens = tensCapacityTop;
+      }
+      else
+      {
+         fTens = fTensBottom;
+         capTens = tensCapacityBottom;
+      }
+
+      if ( stressArtifact->TensionPassed() )
+          (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,true)<<_T(")");
+      else
+          (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,false)<<_T(")");
+
+      Float64 fComp = min(fTopMin, fBotMin);
+      
+      if ( stressArtifact->CompressionPassed() )
+          (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");
+      else
+          (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,false)<<_T(")");
+
+      (*p_table)(row,col++) << scalar.SetValue(crackArtifact->GetFsCracking());
+      
+      if (crackArtifact->Passed() )
+         (*p_table)(row,col++) << RPT_PASS;
+      else
+      {
+         (*p_table)(row,col++) << RPT_FAIL;
       }
 
       row++;

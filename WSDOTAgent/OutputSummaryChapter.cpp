@@ -35,12 +35,13 @@
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\MomentCapacity.h>
+#include <IFace\GirderHandlingSpecCriteria.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\LiftingCheckArtifact.h>
+#include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\GirderData.h>
 
 #ifdef _DEBUG
@@ -176,20 +177,6 @@ void section_properties(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span
 
 void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits)
 {
-#if defined IGNORE_2007_CHANGES
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
-   {
-
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
-   }
-#endif
-
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
@@ -395,7 +382,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    else
       (*pTable)(row,0) << _T("Estimated camber immediately before slab casting at ")<< min_days<<_T(" days, D");
 
-   double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
+   Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
    if ( D < 0 )
       (*pTable)(row,1) << color(Red) << camber.SetValue( D ) << color(Black);
    else
@@ -474,7 +461,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    }
 
    (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
-   double excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
+   Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
    if ( excess_camber < 0 )
       (*pTable)(row,1) << color(Red) << camber.SetValue( excess_camber ) << color(Black);
    else
@@ -585,40 +572,26 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    Float64 fTop,fBot;
    Float64 fAllow;
    
-   Float64 AsMin = pArtifact->GetCastingYardMildRebarRequirement();
-
    // Populate the table
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-
 
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,psxfer_left.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
 
-   (*pTable)(row,0) << _T("Top of girder at prestress transfer length from left end (w/o mild rebar)");
-   (*pTable)(row,1) << _T("Service I");
-   (*pTable)(row,2) << stress.SetValue( fTop );
-   (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
-      (*pTable)(row,4) << RPT_PASS;
-   else
-      (*pTable)(row,4) << RPT_FAIL;
-   row++;
-
-   fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
-   if ( !IsZero(AsMin) )
+   if (pStresses->WasHigherAllowableStressUsed())
    {
-      (*pTable)(row,0) << _T("Top of girder at prestress transfer length from left end (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
+      (*pTable)(row,0) << _T("Top of girder tension at prestress transfer length from left end (w/ mild rebar) ");
    }
    else
    {
-      (*pTable)(row,0) << _T("Top of girder at prestress transfer length from left end (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
+      (*pTable)(row,0) << _T("Top of girder tension at prestress transfer length from left end (w/o mild rebar) ");
    }
 
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( fTop <= fAllow )
+   if ( pStresses->TopPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -627,11 +600,12 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,psxfer_left.GetDistFromStart()));
    pStresses->GetDemand( &fTop, &fBot );
    fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << _T("Bottom of girder at prestress transfer length from left end");
+
+   (*pTable)(row,0) << _T("Bottom of girder compression at prestress transfer length from left end");
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
+   if ( pStresses->BottomPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -639,51 +613,41 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    if ( h_left.GetID() != INVALID_ID )
    {
-   pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,h_left.GetDistFromStart()));
-   pStresses->GetDemand( &fTop, &fBot );
-   fAllow = pStresses->GetCapacity();
+      pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,h_left.GetDistFromStart()));
+      pStresses->GetDemand( &fTop, &fBot );
+      fAllow = pStresses->GetCapacity();
 
-   (*pTable)(row,0) << _T("Top of girder at h from left end (w/o mild rebar)");
-   (*pTable)(row,1) << _T("Service I");
-   (*pTable)(row,2) << stress.SetValue( fTop );
-   (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
-      (*pTable)(row,4) << RPT_PASS;
-   else
-      (*pTable)(row,4) << RPT_FAIL;
-   row++;
+      if (pStresses->WasHigherAllowableStressUsed())
+      {
+         (*pTable)(row,0) << _T("Top of girder tension at h from left end (w/ mild rebar) ");
+      }
+      else
+      {
+         (*pTable)(row,0) << _T("Top of girder tension at h from left end (w/o mild rebar) ");
+      }
 
-   fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
-   if ( !IsZero(AsMin) )
-   {
-      (*pTable)(row,0) << _T("Top of girder at h from left end (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
+      (*pTable)(row,1) << _T("Service I");
+      (*pTable)(row,2) << stress.SetValue( fTop );
+      (*pTable)(row,3) << stress.SetValue( fAllow );
+      if ( pStresses->TopPassed() )
+         (*pTable)(row,4) << RPT_PASS;
+      else
+         (*pTable)(row,4) << RPT_FAIL;
+      row++;
+
+      pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetDistFromStart()));
+      pStresses->GetDemand( &fTop, &fBot );
+      fAllow = pStresses->GetCapacity();
+      (*pTable)(row,0) << _T("Bottom of girder compression at h from left end");
+      (*pTable)(row,1) << _T("Service I");
+      (*pTable)(row,2) << stress.SetValue( fBot );
+      (*pTable)(row,3) << stress.SetValue( fAllow );
+      if ( pStresses->BottomPassed() )
+         (*pTable)(row,4) << RPT_PASS;
+      else
+         (*pTable)(row,4) << RPT_FAIL;
+      row++;
    }
-   else
-   {
-      (*pTable)(row,0) << _T("Top of girder at h from left end (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
-   }
-   (*pTable)(row,1) << _T("Service I");
-   (*pTable)(row,2) << stress.SetValue( fTop );
-   (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( fTop <= fAllow )
-      (*pTable)(row,4) << RPT_PASS;
-   else
-      (*pTable)(row,4) << RPT_FAIL;
-   row++;
-
-   pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetDistFromStart()));
-   pStresses->GetDemand( &fTop, &fBot );
-   fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << _T("Bottom of girder at h from left end");
-   (*pTable)(row,1) << _T("Service I");
-   (*pTable)(row,2) << stress.SetValue( fBot );
-   (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
-      (*pTable)(row,4) << RPT_PASS;
-   else
-      (*pTable)(row,4) << RPT_FAIL;
-   row++;
-}
 
    if ( 0 < NhMax )
    {
@@ -692,29 +656,20 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,hp_left.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << _T("Top of girder at harping point (w/o mild rebar)");
-         (*pTable)(row,1) << _T("Service I");
-         (*pTable)(row,2) << stress.SetValue( fTop );
-         (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
-            (*pTable)(row,4) << RPT_PASS;
-         else
-            (*pTable)(row,4) << RPT_FAIL;
-         row++;
 
-         fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
-         if ( !IsZero(AsMin) )
+         if (pStresses->WasHigherAllowableStressUsed())
          {
-            (*pTable)(row,0) << _T("Top of girder at harping point (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
+            (*pTable)(row,0) << _T("Top of girder tension at harping point (w/ mild rebar)");
          }
          else
          {
-            (*pTable)(row,0) << _T("Top of girder at harping point (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
+            (*pTable)(row,0) << _T("Top of girder tension at harping point (w/o mild rebar)");
          }
+
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( fTop <= fAllow )
+         if ( pStresses->TopPassed() )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -723,11 +678,11 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,hp_left.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << _T("Bottom of girder at harping point");
+         (*pTable)(row,0) << _T("Bottom of girder compression at harping point");
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
+         if ( pStresses->BottomPassed() )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -738,29 +693,20 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,hp_left.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << _T("Top of girder at left harping point (w/o mild rebar)");
-         (*pTable)(row,1) << _T("Service I");
-         (*pTable)(row,2) << stress.SetValue( fTop );
-         (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
-            (*pTable)(row,4) << RPT_PASS;
-         else
-            (*pTable)(row,4) << RPT_FAIL;
-         row++;
 
-         fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
-         if ( !IsZero(AsMin) )
+         if (pStresses->WasHigherAllowableStressUsed())
          {
-            (*pTable)(row,0) << _T("Top of girder at left harping point (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
+            (*pTable)(row,0) << _T("Top of girder tension at left harping point (w/ mild rebar)");
          }
          else
          {
-            (*pTable)(row,0) << _T("Top of girder at left harping point (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
+            (*pTable)(row,0) << _T("Top of girder tension at left harping point (w/o mild rebar)");
          }
+
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( fTop <= fAllow )
+         if ( pStresses->TopPassed() )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -769,11 +715,11 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,hp_left.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << _T("Bottom of girder at left harping point");
+         (*pTable)(row,0) << _T("Bottom of girder compression at left harping point");
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
+         if ( pStresses->BottomPassed() )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -782,29 +728,20 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,hp_right.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << _T("Top of girder at right harping point (w/o mild rebar)");
-         (*pTable)(row,1) << _T("Service I");
-         (*pTable)(row,2) << stress.SetValue( fTop );
-         (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
-            (*pTable)(row,4) << RPT_PASS;
-         else
-            (*pTable)(row,4) << RPT_FAIL;
-         row++;
 
-         fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
-         if ( !IsZero(AsMin) )
+         if (pStresses->WasHigherAllowableStressUsed())
          {
-            (*pTable)(row,0) << _T("Top of girder at right harping point (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
+            (*pTable)(row,0) << _T("Top of girder tension at right harping point (w/ mild rebar)");
          }
          else
          {
-            (*pTable)(row,0) << _T("Top of girder at right harping point (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided0");
+            (*pTable)(row,0) << _T("Top of girder tension at right harping point (w/o mild rebar)");
          }
+
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( fTop <= fAllow )
+         if ( pStresses->TopPassed() )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -813,11 +750,11 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,hp_right.GetDistFromStart()));
          pStresses->GetDemand( &fTop, &fBot );
          fAllow = pStresses->GetCapacity();
-         (*pTable)(row,0) << _T("Bottom of girder at right harping point");
+         (*pTable)(row,0) << _T("Bottom of girder compression at right harping point");
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
+         if ( pStresses->BottomPassed() )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -827,51 +764,41 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    if ( h_right.GetID() != INVALID_ID )
    {
-   pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,h_right.GetDistFromStart()));
-   pStresses->GetDemand( &fTop, &fBot );
-   fAllow = pStresses->GetCapacity();
+      pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,h_right.GetDistFromStart()));
+      pStresses->GetDemand( &fTop, &fBot );
+      fAllow = pStresses->GetCapacity();
 
-   (*pTable)(row,0) << _T("Top of girder at h from right end (w/o mild rebar)");
-   (*pTable)(row,1) << _T("Service I");
-   (*pTable)(row,2) << stress.SetValue( fTop );
-   (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
-      (*pTable)(row,4) << RPT_PASS;
-   else
-      (*pTable)(row,4) << RPT_FAIL;
-   row++;
+      if (pStresses->WasHigherAllowableStressUsed())
+      {
+         (*pTable)(row,0) << _T("Top of girder tension at h from right end (w/ mild rebar)");
+      }
+      else
+      {
+         (*pTable)(row,0) << _T("Top of girder tension at h from right end (w/o mild rebar)");
+      }
 
-   fAllow = pArtifact->GetCastingYardCapacityWithMildRebar();
-   if ( !IsZero(AsMin) )
-   {
-      (*pTable)(row,0) << _T("Top of girder at h from right end (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
+      (*pTable)(row,1) << _T("Service I");
+      (*pTable)(row,2) << stress.SetValue( fTop );
+      (*pTable)(row,3) << stress.SetValue( fAllow );
+      if ( pStresses->TopPassed() )
+         (*pTable)(row,4) << RPT_PASS;
+      else
+         (*pTable)(row,4) << RPT_FAIL;
+      row++;
+
+      pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetDistFromStart()));
+      pStresses->GetDemand( &fTop, &fBot );
+      fAllow = pStresses->GetCapacity();
+      (*pTable)(row,0) << _T("Bottom of girder compression at h from right end");
+      (*pTable)(row,1) << _T("Service I");
+      (*pTable)(row,2) << stress.SetValue( fBot );
+      (*pTable)(row,3) << stress.SetValue( fAllow );
+      if ( pStresses->BottomPassed() )
+         (*pTable)(row,4) << RPT_PASS;
+      else
+         (*pTable)(row,4) << RPT_FAIL;
+      row++;
    }
-   else
-   {
-      (*pTable)(row,0) << _T("Top of girder at h from right end (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
-   }
-   (*pTable)(row,1) << _T("Service I");
-   (*pTable)(row,2) << stress.SetValue( fTop );
-   (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( fTop <= fAllow )
-      (*pTable)(row,4) << RPT_PASS;
-   else
-      (*pTable)(row,4) << RPT_FAIL;
-   row++;
-
-   pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetDistFromStart()));
-   pStresses->GetDemand( &fTop, &fBot );
-   fAllow = pStresses->GetCapacity();
-   (*pTable)(row,0) << _T("Bottom of girder at h from right end");
-   (*pTable)(row,1) << _T("Service I");
-   (*pTable)(row,2) << stress.SetValue( fBot );
-   (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
-      (*pTable)(row,4) << RPT_PASS;
-   else
-      (*pTable)(row,4) << RPT_FAIL;
-   row++;
-}
 }
 
 
@@ -959,7 +886,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->TopPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -972,7 +899,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->BottomPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -986,7 +913,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->TopPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -999,7 +926,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->BottomPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1015,7 +942,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->TopPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1028,7 +955,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->BottomPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1117,7 +1044,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+      if ( pStresses->BottomPassed() )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1131,7 +1058,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->TopPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1146,7 +1073,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+      if ( pStresses->BottomPassed() )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1236,7 +1163,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->BottomPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1251,7 +1178,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << _T("Service IA");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+      if ( pStresses->BottomPassed() )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1266,7 +1193,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << _T("Fatigue I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+      if ( pStresses->BottomPassed() )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1281,7 +1208,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->TopPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1296,7 +1223,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << _T("Service IA");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+      if ( pStresses->TopPassed() )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1311,7 +1238,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << _T("Fatigue I");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+      if ( pStresses->TopPassed() )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1325,7 +1252,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service III");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->BottomPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1341,7 +1268,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+   if ( pStresses->BottomPassed() )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1357,7 +1284,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << _T("Service IA");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+      if ( pStresses->BottomPassed() )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1373,7 +1300,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << _T("Fatigue I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
+      if ( pStresses->BottomPassed() )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1576,7 +1503,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
-   const pgsLiftingCheckArtifact* pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
+   const pgsLiftingAnalysisArtifact* pLiftArtifact = pArtifact->GetLiftingAnalysisArtifact();
 
    if (pLiftArtifact==NULL)
    {
@@ -1623,10 +1550,11 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
       Float64 min_stress, max_stress;
       Float64 minDistFromStart, maxDistFromStart;
       pLiftArtifact->GetMinMaxStresses(&min_stress, &max_stress, &minDistFromStart, &maxDistFromStart);
-      Float64 max_all_stress = pLiftArtifact->GetAllowableTensileStress();
-      Float64 min_all_stress = pLiftArtifact->GetAllowableCompressionStress();
-      Float64 allow_with_rebar = pLiftArtifact->GetAlternativeTensionAllowableStress();
-      Float64 AsMin = pLiftArtifact->GetAlterantiveTensileStressAsMax();
+
+      GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
+      Float64 max_all_stress  = pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(span,girder);
+      Float64 allow_with_rebar = pGirderLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(span,girder);
+      Float64 min_all_stress     = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(span,girder);
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -1639,14 +1567,8 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
          (*pTable)(row,3) << RPT_FAIL;
       row++;
 
-      if ( !IsZero(AsMin) )
-      {
-         (*pTable)(row,0) << _T("Tensile Stress (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
-      }
-      else
-      {
-         (*pTable)(row,0) << _T("Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
-      }
+      (*pTable)(row,0) << _T("Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
+
       (*pTable)(row,1) <<  stress.SetValue(max_stress);
       (*pTable)(row,2) <<  stress.SetValue(allow_with_rebar);
       if (allow_with_rebar>=max_stress)
@@ -1696,11 +1618,12 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
-   const pgsHaulingCheckArtifact* pHaulArtifact = pArtifact->GetHaulingCheckArtifact();
+   const pgsHaulingAnalysisArtifact* pHaulArtifact_base = pArtifact->GetHaulingAnalysisArtifact();
+   const pgsWsdotHaulingAnalysisArtifact* pHaulArtifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(pHaulArtifact_base);
 
    if (pHaulArtifact==NULL)
    {
-      *p<<_T("Hauling check not performed because it is not enabled in the library")<<rptNewLine;
+      *p<<_T("WSDOT Hauling check not performed because it is not enabled in the library")<<rptNewLine;
       return;
    }
 
@@ -1734,12 +1657,13 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    Float64 min_stress, max_stress;
    pHaulArtifact->GetMinMaxStresses(&min_stress, &max_stress);
-   Float64 max_all_stress = pHaulArtifact->GetAllowableTensileStress();
-   Float64 min_all_stress = pHaulArtifact->GetAllowableCompressionStress();
-   Float64 allow_with_rebar = pHaulArtifact->GetAlternativeTensionAllowableStress();
-   Float64 AsMin = pHaulArtifact->GetAlterantiveTensileStressAsMax();
 
-   Uint16 row = 1;
+   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   Float64 max_all_stress  = pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(span,girder);
+   Float64 allow_with_rebar = pGirderHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(span,girder);
+   Float64 min_all_stress     = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(span,girder);
+
+   RowIndexType row = 1;
    (*pTable)(row,0) << _T("Tensile Stress (w/o mild rebar)");
    (*pTable)(row,1) <<  stress.SetValue(max_stress);
    (*pTable)(row,2) <<  stress.SetValue(max_all_stress);
@@ -1749,14 +1673,7 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
       (*pTable)(row,3) << RPT_FAIL;
    row++;
 
-   if ( !IsZero(AsMin) )
-   {
-      (*pTable)(row,0) << _T("Tensile Stress (if at least ") << area.SetValue(AsMin) << _T(" of mild reinforcement is provided)");
-   }
-   else
-   {
-      (*pTable)(row,0) << _T("Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
-   }
+   (*pTable)(row,0) << _T("Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
 
    (*pTable)(row,1) <<  stress.SetValue(max_stress);
    (*pTable)(row,2) <<  stress.SetValue(allow_with_rebar);

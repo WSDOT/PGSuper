@@ -112,7 +112,7 @@ HRESULT CDeckPoint::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    try
    {
       hr = pStrLoad->BeginUnit(_T("DeckPoint"));
-      double version;
+      Float64 version;
       hr = pStrLoad->get_Version(&version);
 
       CComVariant var;

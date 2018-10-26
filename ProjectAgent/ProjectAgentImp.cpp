@@ -25,6 +25,7 @@
 #include "ProjectAgent.h"
 #include "ProjectAgent_i.h"
 #include "ProjectAgentImp.h"
+#include "StatusItems.h"
 #include <algorithm>
 #include <typeinfo>
 #include <map>
@@ -50,6 +51,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Transactions.h>
+#include <IFace\StatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 
 // tranactions executed by this agent
@@ -349,7 +351,7 @@ HRESULT CProjectAgentImp::SpecificationProc(IStructuredSave* pSave,IStructuredLo
    {
       pLoad->BeginUnit(_T("Specification"));
 
-      double version;
+      Float64 version;
 
       pLoad->get_Version(&version);
 
@@ -528,7 +530,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       // it is ok if this fails... older versions files don't have this data block
       if (!FAILED(pLoad->BeginUnit(_T("RatingSpecification"))) )
       {
-         double version;
+         Float64 version;
 
          pLoad->get_Version(&version);
 
@@ -931,7 +933,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
       if ( FAILED(hr) )
          bConvert = true; 
 
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
       if ( version < 2 )
       {
@@ -968,31 +970,31 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
          hr = pLoad->get_Property(_T("AlignmentDirection"),&var);
          if ( FAILED(hr) )
             return hr;
-         double Direction = var.dblVal;
+         Float64 Direction = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("FwdTangent"),&var);
          if ( FAILED(hr) )
             return hr;
-         double FwdTangent = var.dblVal;
+         Float64 FwdTangent = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("BkTangent"),&var);
          if ( FAILED(hr) )
             return hr;
-         double BkTangent = var.dblVal;
+         Float64 BkTangent = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("Radius"),&var);
          if ( FAILED(hr) )
             return hr;
-         double Radius = var.dblVal;
+         Float64 Radius = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("PIStation"),&var);
          if ( FAILED(hr) )
             return hr;
-         double PIStation = var.dblVal;
+         Float64 PIStation = var.dblVal;
 
          if ( !bConvert )
          {
@@ -1084,7 +1086,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
             if ( FAILED(hr) )
                return hr;
 
-            double hc_version;
+            Float64 hc_version;
             pLoad->get_Version(&hc_version);
 
             var.vt = VT_R8;
@@ -1229,49 +1231,49 @@ HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pL
          hr = pLoad->get_Property(_T("Station"),&var);
          if ( FAILED(hr) )
             return hr;
-         double Station = var.dblVal;
+         Float64 Station = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("Elevation"),&var);
          if ( FAILED(hr) )
             return hr;
-         double Elevation = var.dblVal;
+         Float64 Elevation = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("Grade"),&var);
          if ( FAILED(hr) )
             return hr;
-         double Grade = var.dblVal;
+         Float64 Grade = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("G1"),&var);
          if ( FAILED(hr) )
             return hr;
-         double G1 = var.dblVal;
+         Float64 G1 = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("G2"),&var);
          if ( FAILED(hr) )
             return hr;
-         double G2 = var.dblVal;
+         Float64 G2 = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("PVIStation"),&var);
          if ( FAILED(hr) )
             return hr;
-         double PVIStation = var.dblVal;
+         Float64 PVIStation = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("PVIElevation"),&var);
          if ( FAILED(hr) )
             return hr;
-         double PVIElevation = var.dblVal;
+         Float64 PVIElevation = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("Length"),&var);
          if ( FAILED(hr) )
             return hr;
-         double Length = var.dblVal;
+         Float64 Length = var.dblVal;
 
          // put into new data structures
          if ( method == PROFILE_STRAIGHT )
@@ -1437,13 +1439,13 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
          hr = pLoad->get_Property(_T("Left"),&var);
          if ( FAILED(hr) )
             return hr;
-         double left = var.dblVal;
+         Float64 left = var.dblVal;
 
          var.vt = VT_R8;
          hr = pLoad->get_Property(_T("Right"),&var);
          if ( FAILED(hr) )
             return hr;
-         double right = var.dblVal;
+         Float64 right = var.dblVal;
 
          CrownData2 crown;
          crown.Station = 0;
@@ -1520,7 +1522,7 @@ HRESULT CProjectAgentImp::PierDataProc(IStructuredSave* pSave,IStructuredLoad* p
    }
    else
    {
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
       if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
@@ -1542,7 +1544,7 @@ HRESULT CProjectAgentImp::PierDataProc2(IStructuredSave* pSave,IStructuredLoad* 
    }
    else
    {
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
 
       bool bInputSymmetricalPierConnections = true;
@@ -1631,7 +1633,7 @@ HRESULT CProjectAgentImp::XSectionDataProc(IStructuredSave* pSave,IStructuredLoa
    }
    else
    {
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
       if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
@@ -1711,7 +1713,7 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pObj->m_BridgeDescription.SetSlabOffset( xSectionData.SlabOffset );
       pObj->m_BridgeDescription.SetSlabOffsetType( pgsTypes::sotBridge );
 
-      double spacing_width = (xSectionData.GdrLineCount-1)*(xSectionData.GdrSpacing);
+      Float64 spacing_width = (xSectionData.GdrLineCount-1)*(xSectionData.GdrSpacing);
       ATLASSERT( xSectionData.GdrSpacingMeasurement == CXSectionData::Normal );
       CDeckPoint point;
       point.LeftEdge  = spacing_width/2 + xSectionData.LeftOverhang;
@@ -1785,7 +1787,7 @@ HRESULT CProjectAgentImp::BridgeDescriptionProc(IStructuredSave* pSave,IStructur
    }
    else
    {
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
       if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
          return S_OK;
@@ -1808,7 +1810,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc(IStructuredSave* pSave,IStructure
    else
    {
       // reading old format
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
       if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
@@ -1837,7 +1839,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
 
       HRESULT hr;
 
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
 
       // removed at version 3 of data block
@@ -1958,7 +1960,7 @@ HRESULT CProjectAgentImp::ShearDataProc(IStructuredSave* pSave,IStructuredLoad* 
    else
    {
       // reading old format
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
       if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
@@ -1983,7 +1985,7 @@ HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad*
 
       CComVariant var;
 
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
 
       if (version < 3)
@@ -2079,7 +2081,7 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc(IStructuredSave* pSave,IStru
    else
    {
       // reading old format
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
       if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
@@ -2098,7 +2100,7 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStr
    }
    else
    {
-      double top_version;
+      Float64 top_version;
       pLoad->get_TopVersion(&top_version);
 
       // file version is before we started saving this data... set up some default data and get the heck outta here
@@ -2140,7 +2142,7 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStr
          if ( FAILED(hr) )
             return hr;
 
-         double version;
+         Float64 version;
          pLoad->get_Version(&version);
          if ( version < 2 )
          {
@@ -2221,7 +2223,7 @@ HRESULT CProjectAgentImp::LoadFactorsProc(IStructuredSave* pSave,IStructuredLoad
    }
    else
    {
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
       if ( 3 < version )
       {
@@ -2243,7 +2245,7 @@ HRESULT CProjectAgentImp::LiftingAndHaulingDataProc(IStructuredSave* pSave,IStru
    else
    {
       // reading old format
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
       if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
@@ -2251,7 +2253,7 @@ HRESULT CProjectAgentImp::LiftingAndHaulingDataProc(IStructuredSave* pSave,IStru
 
          CComVariant var;
 
-         double version;
+         Float64 version;
          pLoad->get_Version(&version);
 
          if ( version < 3 )
@@ -2299,7 +2301,7 @@ HRESULT CProjectAgentImp::LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,I
    if ( FAILED(hr) )
       return hr;
 
-   double version;
+   Float64 version;
    pLoad->get_Version(&version);
 
    CComVariant var;
@@ -2394,7 +2396,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc(IStructuredSave* pSave,IStruc
    else
    {
       // reading old format
-      double parentVersion;
+      Float64 parentVersion;
       pLoad->get_ParentVersion(&parentVersion);
       if ( parentVersion <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
@@ -2435,7 +2437,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
       pObj->m_BridgeDescription.SetDistributionFactorMethod(pgsTypes::DirectlyInput);
 
 
-      double version;
+      Float64 version;
       pLoad->get_Version(&version);
 
       if ( version < 1.1 )
@@ -2447,19 +2449,19 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
          if ( FAILED(hr) )
             return hr;
 
-         double V = var.dblVal;
+         Float64 V = var.dblVal;
 
          hr = pLoad->get_Property(_T("MomentDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
-         double M = var.dblVal;
+         Float64 M = var.dblVal;
 
          hr = pLoad->get_Property(_T("ReactionDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
-         double R = var.dblVal;
+         Float64 R = var.dblVal;
 
          // Fill up the data structures
          CPierData* pPier = pObj->m_BridgeDescription.GetPier(0);
@@ -2501,7 +2503,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
       {
          // Load data from 1.1 to pre-version 2.0 format into temporary variables
 
-         double M[2], V[2], R[2];
+         Float64 M[2], V[2], R[2];
 
          var.vt = VT_R8 ;
          hr = pLoad->get_Property(_T("IntShearDistFactor"), &var );
@@ -2592,7 +2594,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
             do
             {
-               double pM, nM, V, R;
+               Float64 pM, nM, V, R;
 
                var.vt = VT_R8;
                hr = pLoad->BeginUnit(_T("Pier"));
@@ -2716,7 +2718,7 @@ HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLo
          if ( FAILED(hr) )
             return hr;
 
-         double version;
+         Float64 version;
          pLoad->get_Version(&version);
          if ( 2 <= version )
          {
@@ -2775,7 +2777,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
       if (!FAILED(pLoad->BeginUnit(_T("LiveLoads"))))
       {
          CComVariant var;
-         double version;
+         Float64 version;
          pLoad->get_Version(&version);
          if ( 2 < version )
          {
@@ -3130,6 +3132,7 @@ STDMETHODIMP CProjectAgentImp::Init()
    //HRESULT hr = S_OK;
 
    m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidRebarStrengthWarning     = pStatusCenter->RegisterCallback(new pgsRebarStrengthStatusCallback());
 
    return S_OK;
 }
@@ -3396,6 +3399,74 @@ void CProjectAgentImp::ReleaseGirderLibraryEntries()
    }
 }
 
+void CProjectAgentImp::VerifyRebarGrade()
+{
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+
+   SpanIndexType nSpans = m_BridgeDescription.GetSpanCount();
+
+   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   {
+      CSpanData* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+      CGirderTypes girderTypes = *pSpan->GetGirderTypes();
+      GirderIndexType nGirders = pSpan->GetGirderCount();
+
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         CGirderData& girderData = girderTypes.GetGirderData(gdrIdx);
+
+         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && girderData.LongitudinalRebarData.BarGrade == matRebar::Grade100 )
+         {
+            CString strMsg;
+            strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Span %d Girder %s has been changed to %s"),
+                           lrfdVersionMgr::GetCodeString().c_str(),
+                           lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
+                           LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx),
+                           lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+            pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(spanIdx,gdrIdx,pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
+            pStatusCenter->Add(pStatusItem);
+
+            girderData.LongitudinalRebarData.BarType = matRebar::A615;
+            girderData.LongitudinalRebarData.BarGrade = matRebar::Grade60;
+         }
+
+         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && girderData.ShearData.ShearBarGrade == matRebar::Grade100 )
+         {
+            CString strMsg;
+            strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Span %d Girder %s has been changed to %s"),
+                           lrfdVersionMgr::GetCodeString().c_str(),
+                           lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
+                           LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx),
+                           lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+            pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(spanIdx,gdrIdx,pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
+            pStatusCenter->Add(pStatusItem);
+
+            girderData.ShearData.ShearBarType  = matRebar::A615;
+            girderData.ShearData.ShearBarGrade = matRebar::Grade60;
+         }
+      }
+
+      pSpan->SetGirderTypes(girderTypes);
+   }
+
+   CDeckDescription* pDeck = m_BridgeDescription.GetDeckDescription();
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == matRebar::Grade100 )
+   {
+      CString strMsg;
+      strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nDeck reinforcement has been changed to %s"),
+                     lrfdVersionMgr::GetCodeString().c_str(),
+                     lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
+                     lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+      pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(INVALID_INDEX,INVALID_INDEX,pgsRebarStrengthStatusItem::Deck,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
+      pStatusCenter->Add(pStatusItem);
+
+      pDeck->DeckRebarData.TopRebarType     = matRebar::A615;
+      pDeck->DeckRebarData.TopRebarGrade    = matRebar::Grade60;
+      pDeck->DeckRebarData.BottomRebarType  = matRebar::A615;
+      pDeck->DeckRebarData.BottomRebarGrade = matRebar::Grade60;
+   }
+}
+
 STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 {
    HRESULT hr = S_OK;
@@ -3518,11 +3589,11 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          GirderLibraryEntry::Dimensions dimensions = pEntry->GetDimensions();
          CComPtr<IGirderSection> gdrSection;
          beamFactory->CreateGirderSection(NULL,0,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
-         double topWidth, botWidth;
+         Float64 topWidth, botWidth;
          gdrSection->get_TopWidth(&topWidth);
          gdrSection->get_BottomWidth(&botWidth);
-         double width = _cpp_max(topWidth,botWidth);
-         double jointWidth = m_BridgeDescription.GetGirderSpacing() - width;
+         Float64 width = _cpp_max(topWidth,botWidth);
+         Float64 jointWidth = m_BridgeDescription.GetGirderSpacing() - width;
          jointWidth = IsZero(jointWidth) ? 0 : jointWidth;
 
          if ( 0 <= jointWidth )
@@ -4209,13 +4280,13 @@ void CProjectAgentImp::SetPier(PierIndexType pierIdx,const CPierData& pierData)
    }
 }
 
-void CProjectAgentImp::SetSpanLength(SpanIndexType spanIdx,double newLength)
+void CProjectAgentImp::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
 {
    if ( m_BridgeDescription.SetSpanLength(spanIdx,newLength) )
       Fire_BridgeChanged();
 }
 
-void CProjectAgentImp::MovePier(PierIndexType pierIdx,double newStation,pgsTypes::MovePierOption moveOption)
+void CProjectAgentImp::MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption)
 {
    if ( m_BridgeDescription.MovePier(pierIdx,newStation,moveOption) )
       Fire_BridgeChanged();
@@ -4469,7 +4540,11 @@ void CProjectAgentImp::DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType f
 
    UseBridgeLibraryEntries();
 
-   Fire_BridgeChanged();
+   CBridgeChangedHint* pHint = new CBridgeChangedHint;
+   pHint->PierIdx = pierIdx;
+   pHint->PierFace = faceForSpan;
+   pHint->bAdded = false;
+   Fire_BridgeChanged(pHint);
 }
 
 void CProjectAgentImp::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,const CSpanData* pSpanData,const CPierData* pPierData)
@@ -4480,7 +4555,11 @@ void CProjectAgentImp::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceTyp
    
    UseBridgeLibraryEntries();
 
-   Fire_BridgeChanged();
+   CBridgeChangedHint* pHint = new CBridgeChangedHint;
+   pHint->PierIdx = refPierIdx;
+   pHint->PierFace = pierFace;
+   pHint->bAdded = true;
+   Fire_BridgeChanged(pHint);
 }
 
 void CProjectAgentImp::SetLiveLoadDistributionFactorMethod(pgsTypes::DistributionFactorMethod method)
@@ -4569,7 +4648,7 @@ pgsTypes::SupportedBeamSpacing CProjectAgentImp::GetGirderSpacingType()
    return m_BridgeDescription.GetGirderSpacingType();
 }
 
-void CProjectAgentImp::SetGirderSpacing(double spacing)
+void CProjectAgentImp::SetGirderSpacing(Float64 spacing)
 {
    if ( !IsEqual(m_BridgeDescription.GetGirderSpacing(),spacing) )
    {
@@ -5442,34 +5521,59 @@ void CProjectAgentImp::SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL)
 Float64 CProjectAgentImp::GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault) const
 {
    const RatingLibraryEntry* pRatingEntry = GetRatingEntry( m_RatingSpec.c_str() );
-   return GetLiveLoadFactor(ls,GetADTT(),pRatingEntry,bResolveIfDefault);
+   return GetLiveLoadFactor(ls,GetSpecialPermitType(),GetADTT(),pRatingEntry,bResolveIfDefault);
 }
 
-Float64 CProjectAgentImp::GetLiveLoadFactor(pgsTypes::LimitState ls,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault) const
+Float64 CProjectAgentImp::GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault) const
 {
    // returns < 0 if needs to be computed from rating library entry
    Float64 gLL = m_gLL[IndexFromLimitState(ls)];
    if ( gLL < 0 && bResolveIfDefault )
    {
       pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
-      CLiveLoadFactorModel model;
-      if ( ratingType == pgsTypes::lrPermit_Routine )
-         model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-      else if ( ratingType == pgsTypes::lrPermit_Special )
-         model = pRatingEntry->GetLiveLoadFactorModel( GetSpecialPermitType() );
-      else
-         model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-
-      if ( ::IsStrengthLimitState(ls) )
+      if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
       {
-         if ( model.GetLiveLoadFactorType() != pgsTypes::gllBilinearWithWeight )
-            gLL = model.GetStrengthLiveLoadFactor(adtt,0);
+         CLiveLoadFactorModel model;
+         if ( ratingType == pgsTypes::lrPermit_Routine )
+            model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
+         else if ( ratingType == pgsTypes::lrPermit_Special )
+            model = pRatingEntry->GetLiveLoadFactorModel( GetSpecialPermitType() );
+         else
+            model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
 
-         // gLL will be < 0 if gLL is a function of axle weight and load combination poi
+         if ( ::IsStrengthLimitState(ls) )
+         {
+            if ( model.GetLiveLoadFactorType() != pgsTypes::gllBilinearWithWeight )
+               gLL = model.GetStrengthLiveLoadFactor(adtt,0);
+
+            // gLL will be < 0 if gLL is a function of axle weight and load combination poi
+         }
+         else
+         {
+            gLL = model.GetServiceLiveLoadFactor(adtt);
+         }
       }
       else
       {
-         gLL = model.GetServiceLiveLoadFactor(adtt);
+         CLiveLoadFactorModel2 model;
+         if ( ratingType == pgsTypes::lrPermit_Routine )
+            model = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
+         else if ( ratingType == pgsTypes::lrPermit_Special )
+            model = pRatingEntry->GetLiveLoadFactorModel2( specialPermitType );
+         else
+            model = pRatingEntry->GetLiveLoadFactorModel2(ratingType);
+
+         if ( ::IsStrengthLimitState(ls) )
+         {
+            if ( model.GetLiveLoadFactorType() != pgsTypes::gllBilinearWithWeight )
+               gLL = model.GetStrengthLiveLoadFactor(adtt,0);
+
+            // gLL will be < 0 if gLL is a function of axle weight and load combination poi
+         }
+         else
+         {
+            gLL = model.GetServiceLiveLoadFactor(adtt);
+         }
       }
    }
 
@@ -6125,6 +6229,8 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
 
    m_bUpdateJackingForce = true;
 
+   VerifyRebarGrade();
+
    if ( bFireEvent )
       Fire_SpecificationChanged();
 }
@@ -6505,8 +6611,21 @@ void CProjectAgentImp::FirePendingEvents()
    if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_RELHUMIDITY) )
       Fire_RelHumidityChanged();
 
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_BRIDGE) || sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY))
-      Fire_BridgeChanged();
+   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY))
+      Fire_BridgeChanged(NULL);
+
+   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_BRIDGE) )
+   {
+      std::vector<CBridgeChangedHint*>::iterator iter(m_PendingBridgeChangedHints.begin());
+      std::vector<CBridgeChangedHint*>::iterator end(m_PendingBridgeChangedHints.end());
+      for ( ; iter != end; iter++ )
+      {
+         CBridgeChangedHint* pHint = *iter;
+         Fire_BridgeChanged(pHint);
+      }
+
+      m_PendingBridgeChangedHints.clear();
+   }
 //
 // pretty much all the event handers do the same thing when the bridge or girder family changes
 // no sence firing two events
@@ -6558,31 +6677,31 @@ void CProjectAgentImp::CancelPendingEvents()
 
 ////////////////////////////////////////////////////////////////////////
 // ILimits
-double CProjectAgentImp::GetMaxSlabFc()
+Float64 CProjectAgentImp::GetMaxSlabFc()
 {
    ATLASSERT(false); // obsolete - only applicable to normal weight concrete
    return m_pSpecEntry->GetMaxSlabFc(pgsTypes::Normal);
 }
 
-double CProjectAgentImp::GetMaxGirderFci()
+Float64 CProjectAgentImp::GetMaxGirderFci()
 {
    ATLASSERT(false); // obsolete - only applicable to normal weight concrete
    return m_pSpecEntry->GetMaxGirderFci(pgsTypes::Normal);
 }
 
-double CProjectAgentImp::GetMaxGirderFc()
+Float64 CProjectAgentImp::GetMaxGirderFc()
 {
    ATLASSERT(false); // obsolete - only applicable to normal weight concrete
    return m_pSpecEntry->GetMaxGirderFc(pgsTypes::Normal);
 }
 
-double CProjectAgentImp::GetMaxConcreteUnitWeight()
+Float64 CProjectAgentImp::GetMaxConcreteUnitWeight()
 {
    ATLASSERT(false); // obsolete - only applicable to normal weight concrete
    return m_pSpecEntry->GetMaxConcreteUnitWeight(pgsTypes::Normal);
 }
 
-double CProjectAgentImp::GetMaxConcreteAggSize()
+Float64 CProjectAgentImp::GetMaxConcreteAggSize()
 {
    ATLASSERT(false); // obsolete - only applicable to normal weight concrete
    return m_pSpecEntry->GetMaxConcreteAggSize(pgsTypes::Normal);
@@ -6590,27 +6709,27 @@ double CProjectAgentImp::GetMaxConcreteAggSize()
 
 ////////////////////////////////////////////////////////////////////////
 // ILimits2
-double CProjectAgentImp::GetMaxSlabFc(pgsTypes::ConcreteType concType)
+Float64 CProjectAgentImp::GetMaxSlabFc(pgsTypes::ConcreteType concType)
 {
    return m_pSpecEntry->GetMaxSlabFc(concType);
 }
 
-double CProjectAgentImp::GetMaxGirderFci(pgsTypes::ConcreteType concType)
+Float64 CProjectAgentImp::GetMaxGirderFci(pgsTypes::ConcreteType concType)
 {
    return m_pSpecEntry->GetMaxGirderFci(concType);
 }
 
-double CProjectAgentImp::GetMaxGirderFc(pgsTypes::ConcreteType concType)
+Float64 CProjectAgentImp::GetMaxGirderFc(pgsTypes::ConcreteType concType)
 {
    return m_pSpecEntry->GetMaxGirderFc(concType);
 }
 
-double CProjectAgentImp::GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType)
+Float64 CProjectAgentImp::GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType)
 {
    return m_pSpecEntry->GetMaxConcreteUnitWeight(concType);
 }
 
-double CProjectAgentImp::GetMaxConcreteAggSize(pgsTypes::ConcreteType concType)
+Float64 CProjectAgentImp::GetMaxConcreteAggSize(pgsTypes::ConcreteType concType)
 {
    return m_pSpecEntry->GetMaxConcreteAggSize(concType);
 }
@@ -6746,12 +6865,12 @@ void CProjectAgentImp::SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std:
    }
 }
 
-double CProjectAgentImp::GetTruckImpact(pgsTypes::LiveLoadType llType)
+Float64 CProjectAgentImp::GetTruckImpact(pgsTypes::LiveLoadType llType)
 {
    return m_TruckImpact[llType];
 }
 
-void CProjectAgentImp::SetTruckImpact(pgsTypes::LiveLoadType llType,double impact)
+void CProjectAgentImp::SetTruckImpact(pgsTypes::LiveLoadType llType,Float64 impact)
 {
    if ( !IsEqual(m_TruckImpact[llType],impact) )
    {
@@ -6760,12 +6879,12 @@ void CProjectAgentImp::SetTruckImpact(pgsTypes::LiveLoadType llType,double impac
    }
 }
 
-double CProjectAgentImp::GetLaneImpact(pgsTypes::LiveLoadType llType)
+Float64 CProjectAgentImp::GetLaneImpact(pgsTypes::LiveLoadType llType)
 {
    return m_LaneImpact[llType];
 }
 
-void CProjectAgentImp::SetLaneImpact(pgsTypes::LiveLoadType llType,double impact)
+void CProjectAgentImp::SetLaneImpact(pgsTypes::LiveLoadType llType,Float64 impact)
 {
    if ( !IsEqual(m_LaneImpact[llType],impact) )
    {
@@ -7182,71 +7301,143 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
       lrfrVersionMgr::SetVersion( m_pRatingEntry->GetSpecificationVersion() );
 
       // update live load factors
-      const CLiveLoadFactorModel& design_inventory_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
-      if ( !design_inventory_model.AllowUserOverride() )
+      if ( m_pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
       {
-         m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]  = -1;
-         m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = -1;
-      }
-
-      const CLiveLoadFactorModel& design_operating_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating);
-      if ( !design_operating_model.AllowUserOverride() )
-      {
-         m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Operating)]  = -1;
-         m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = -1;
-      }
-
-      const CLiveLoadFactorModel& legal_routine_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine);
-      if ( !legal_routine_model.AllowUserOverride() )
-      {
-         m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]  = -1;
-         m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = -1;
-      }
-
-      const CLiveLoadFactorModel& legal_special_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Special);
-      if ( !legal_special_model.AllowUserOverride() )
-      {
-         m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]  = -1;
-         m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = -1;
-      }
-
-      const CLiveLoadFactorModel& permit_routine_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-      if ( !permit_routine_model.AllowUserOverride() )
-      {
-         m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]  = -1;
-         m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]    = -1;
-      }
-
-      if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithEscort )
-      {
-         const CLiveLoadFactorModel& permit_special_single_trip_escorted_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithEscort);
-         if ( !permit_special_single_trip_escorted_model.AllowUserOverride() )
+         const CLiveLoadFactorModel& design_inventory_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
+         if ( !design_inventory_model.AllowUserOverride() )
          {
-            m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]  = -1;
-            m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]    = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = -1;
          }
-      }
-      else if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithTraffic )
-      {
-         const CLiveLoadFactorModel& permit_special_single_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithTraffic);
-         if ( !permit_special_single_trip_traffic_model.AllowUserOverride() )
+
+         const CLiveLoadFactorModel& design_operating_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating);
+         if ( !design_operating_model.AllowUserOverride() )
          {
-            m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]  = -1;
-            m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]    = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Operating)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = -1;
          }
-      }
-      else if ( m_SpecialPermitType == pgsTypes::ptMultipleTripWithTraffic )
-      {
-         const CLiveLoadFactorModel& permit_special_multiple_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptMultipleTripWithTraffic);
-         if ( !permit_special_multiple_trip_traffic_model.AllowUserOverride() )
+
+         const CLiveLoadFactorModel& legal_routine_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine);
+         if ( !legal_routine_model.AllowUserOverride() )
          {
-            m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]  = -1;
-            m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]    = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = -1;
+         }
+
+         const CLiveLoadFactorModel& legal_special_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Special);
+         if ( !legal_special_model.AllowUserOverride() )
+         {
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = -1;
+         }
+
+         const CLiveLoadFactorModel& permit_routine_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
+         if ( !permit_routine_model.AllowUserOverride() )
+         {
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]    = -1;
+         }
+
+         if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithEscort )
+         {
+            const CLiveLoadFactorModel& permit_special_single_trip_escorted_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithEscort);
+            if ( !permit_special_single_trip_escorted_model.AllowUserOverride() )
+            {
+               m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]  = -1;
+               m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]    = -1;
+            }
+         }
+         else if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithTraffic )
+         {
+            const CLiveLoadFactorModel& permit_special_single_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithTraffic);
+            if ( !permit_special_single_trip_traffic_model.AllowUserOverride() )
+            {
+               m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]  = -1;
+               m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]    = -1;
+            }
+         }
+         else if ( m_SpecialPermitType == pgsTypes::ptMultipleTripWithTraffic )
+         {
+            const CLiveLoadFactorModel& permit_special_multiple_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptMultipleTripWithTraffic);
+            if ( !permit_special_multiple_trip_traffic_model.AllowUserOverride() )
+            {
+               m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]  = -1;
+               m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]    = -1;
+            }
+         }
+         else
+         {
+            ATLASSERT(false); // should never get here
          }
       }
       else
       {
-         ATLASSERT(false); // should never get here
+         const CLiveLoadFactorModel2& design_inventory_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrDesign_Inventory);
+         if ( !design_inventory_model.AllowUserOverride() )
+         {
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = -1;
+         }
+
+         const CLiveLoadFactorModel2& design_operating_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrDesign_Operating);
+         if ( !design_operating_model.AllowUserOverride() )
+         {
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Operating)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_Operating)] = -1;
+         }
+
+         const CLiveLoadFactorModel2& legal_routine_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrLegal_Routine);
+         if ( !legal_routine_model.AllowUserOverride() )
+         {
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = -1;
+         }
+
+         const CLiveLoadFactorModel2& legal_special_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrLegal_Special);
+         if ( !legal_special_model.AllowUserOverride() )
+         {
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = -1;
+         }
+
+         const CLiveLoadFactorModel2& permit_routine_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
+         if ( !permit_routine_model.AllowUserOverride() )
+         {
+            m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)]  = -1;
+            m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)]    = -1;
+         }
+
+         if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithEscort )
+         {
+            const CLiveLoadFactorModel2& permit_special_single_trip_escorted_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::ptSingleTripWithEscort);
+            if ( !permit_special_single_trip_escorted_model.AllowUserOverride() )
+            {
+               m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]  = -1;
+               m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]    = -1;
+            }
+         }
+         else if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithTraffic )
+         {
+            const CLiveLoadFactorModel2& permit_special_single_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::ptSingleTripWithTraffic);
+            if ( !permit_special_single_trip_traffic_model.AllowUserOverride() )
+            {
+               m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]  = -1;
+               m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]    = -1;
+            }
+         }
+         else if ( m_SpecialPermitType == pgsTypes::ptMultipleTripWithTraffic )
+         {
+            const CLiveLoadFactorModel2& permit_special_multiple_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::ptMultipleTripWithTraffic);
+            if ( !permit_special_multiple_trip_traffic_model.AllowUserOverride() )
+            {
+               m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)]  = -1;
+               m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)]    = -1;
+            }
+         }
+         else
+         {
+            ATLASSERT(false); // should never get here
+         }
       }
    }
 }

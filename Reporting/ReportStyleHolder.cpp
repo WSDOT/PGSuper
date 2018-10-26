@@ -24,6 +24,9 @@
 #include <Reporting\ReportStyleHolder.h>
 #include <ctype.h>
 
+#include <EAF\EAFUtilities.h>
+#include <EAF\EAFApp.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -305,25 +308,35 @@ const std::_tstring& pgsReportStyleHolder::GetCopyrightStyle()
    return ms_CopyrightStyle;
 }
 
-double pgsReportStyleHolder::GetMaxTableWidth()
+Float64 pgsReportStyleHolder::GetMaxTableWidth()
 {
    return ms_MaxTableWidth;
 }
 
-rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, std::_tstring label)
+rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, const std::_tstring& strLabel)
+{
+   return CreateDefaultTable(numColumns,strLabel.c_str());
+}
+
+rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, LPCTSTR lpszLabel)
 {
    rptRcTable* pTable = new rptRcTable( numColumns, 0.0/*pgsReportStyleHolder::GetMaxTableWidth()*/ );
-   if (!label.empty())
-      pTable->TableLabel() << label;
+   if (lpszLabel != NULL)
+      pTable->TableLabel() << lpszLabel;
 
    pgsReportStyleHolder::ConfigureTable(pTable);
 
    return pTable;
 }
 
-rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, std::_tstring label)
+rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, const std::_tstring& strLabel)
 {
-   rptRcTable* pTable = CreateDefaultTable(numColumns,label);
+   return CreateTableNoHeading(numColumns,strLabel.c_str());
+}
+
+rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, LPCTSTR lpszLabel)
+{
+   rptRcTable* pTable = CreateDefaultTable(numColumns,lpszLabel);
 
    pTable->SetTableHeaderStyle( pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
    pTable->SetNumberOfHeaderRows(0);
@@ -375,18 +388,22 @@ const std::_tstring& pgsReportStyleHolder::GetImagePath()
       std::_tstring filename(szBuff);
       make_upper( filename.begin(), filename.end() );
 
-      // find first occurance of "PGSUPER"
-      std::_tstring strPGSuper(_T("PGSUPER"));
-      std::_tstring::size_type loc = filename.find(strPGSuper);
+      CEAFApp* pApp = EAFGetApp();
+      // find first occurance of the application name
+      std::_tstring strAppName(pApp->m_pszAppName);
+      make_upper( strAppName.begin(), strAppName.end() );
+      std::_tstring::size_type loc = filename.find(strAppName);
       if ( loc != std::_tstring::npos )
       {
-         loc += strPGSuper.length();
+         loc += strAppName.length();
       }
       else
       {
          // something is wrong... that find should have succeeded
          // hard code the default install location so that there is a remote chance of success
-         filename = _T("\\PROGRAM FILES\\WSDOT\\PGSUPER");
+         TCHAR szNativeProgramFilesFolder[MAX_PATH];
+         ExpandEnvironmentStrings(_T("%ProgramW6432%"),szNativeProgramFilesFolder,ARRAYSIZE(szNativeProgramFilesFolder));
+         filename = _T("\\") + std::_tstring(szNativeProgramFilesFolder) + _T("\\WSDOT\\") + strAppName;
          loc = filename.length();
       }
 

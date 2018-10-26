@@ -205,9 +205,6 @@ bool pgsPoiArtifactKey::operator<(const pgsPoiArtifactKey& rOther) const
    if ( m_LimitState > rOther.m_LimitState )
       return false;
 
-   if ( m_DistFromStart < rOther.m_DistFromStart )
-      return true;
-
    if ( IsEqual(m_DistFromStart,rOther.m_DistFromStart) || m_DistFromStart > rOther.m_DistFromStart )
       return false;
 

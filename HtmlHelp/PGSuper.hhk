@@ -5,11 +5,6 @@
 </object>
 <ul>
   <li><object type="text/sitemap">
-    <param name="Name" value="Capacity/Demand">
-    <param name="Name" value="CapacityToDemand Ratios">
-    <param name="Local" value="Theoretical Manual\CapacityToDemand_Ratios.htm">
-  </object>
-  <li><object type="text/sitemap">
     <param name="Name" value="A&quot;Dimension">
     <param name="Name" value="A Dimension Calculation">
     <param name="Local" value="Theoretical Manual\ADimension.htm">
@@ -1047,6 +1042,11 @@
     <param name="Local" value="User's Guide\Girder_Editing\Strands.htm">
     <param name="Name" value="Lifting of Long Prestressed Girders">
     <param name="Local" value="Theoretical Manual\Lifting_of_Long_Prestressed_Girders.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Capacity/Demand">
+    <param name="Name" value="CapacityToDemand Ratios">
+    <param name="Local" value="Theoretical Manual\CapacityToDemand_Ratios.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="CG">
@@ -4693,6 +4693,11 @@
     <param name="Name" value="Increase Girder C.G">
     <param name="Name" value="Hauling Tab">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibHauling_and_Erection_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Increased Tensile Allowable for Temporary Conditions">
+    <param name="Name" value="Longitudinal Reinforcement in Girders">
+    <param name="Local" value="Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Indicator Description">
@@ -9627,6 +9632,11 @@
     <param name="Name" value="Temporary Straight Strands">
     <param name="Name" value="Straight Strands Tab">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibStrands_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Temporary Tensile Stress Limits">
+    <param name="Name" value="Longitudinal Reinforcement in Girders">
+    <param name="Local" value="Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Tensile Stress">

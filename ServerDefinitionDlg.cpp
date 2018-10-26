@@ -27,7 +27,7 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "ServerDefinitionDlg.h"
 
-#include <MfcTools\CustomDDX.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -38,8 +38,8 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CServerDefinitionDlg dialog
 // constructor when adding a new server
-CServerDefinitionDlg::CServerDefinitionDlg(const CPGSuperCatalogServers& servers,CWnd* pParent /*=NULL*/)
-	: CDialog(CServerDefinitionDlg::IDD, pParent), m_Servers(servers)
+CServerDefinitionDlg::CServerDefinitionDlg(const CPGSuperCatalogServers& servers,const CString& strExt,CWnd* pParent /*=NULL*/)
+	: CDialog(CServerDefinitionDlg::IDD, pParent), m_Servers(servers), m_TemplateFileExt(strExt)
 {
    // default to ftp
    m_ServerType = srtInternetFtp;
@@ -51,9 +51,9 @@ CServerDefinitionDlg::CServerDefinitionDlg(const CPGSuperCatalogServers& servers
 }
 
 // constructor when editing an existing server
-CServerDefinitionDlg::CServerDefinitionDlg(const CPGSuperCatalogServers& servers,const CPGSuperCatalogServer* pCurrentServer,
+CServerDefinitionDlg::CServerDefinitionDlg(const CPGSuperCatalogServers& servers,const CPGSuperCatalogServer* pCurrentServer,const CString& strExt,
                                            CWnd* pParent /*=NULL*/)
-	: CDialog(CServerDefinitionDlg::IDD, pParent), m_Servers(servers)
+	: CDialog(CServerDefinitionDlg::IDD, pParent), m_Servers(servers), m_TemplateFileExt(strExt)
 {
 	m_ServerName = pCurrentServer->GetServerName();
    m_ServerType = pCurrentServer->GetServerType();
@@ -257,19 +257,19 @@ CPGSuperCatalogServer* CServerDefinitionDlg::CreateServer()
    // Factory up our server
    if (m_ServerType==srtInternetFtp)
    {
-      CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(m_ServerName, m_ServerAddress);
+      CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(m_ServerName, m_ServerAddress, m_TemplateFileExt);
       ATLASSERT(psvr);
       return psvr;
    }
    else if (m_ServerType==srtInternetHttp)
    {
-      CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(m_ServerName, m_ServerAddress);
+      CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(m_ServerName, m_ServerAddress, m_TemplateFileExt);
       ATLASSERT(psvr);
       return psvr;
    }
    else if (m_ServerType==srtLocal)
    {
-      CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(m_ServerName, m_LocalMasterLibraryFile, m_LocalWorkgroupTemplateFolder);
+      CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(m_ServerName, m_LocalMasterLibraryFile, m_LocalWorkgroupTemplateFolder, m_TemplateFileExt);
       ATLASSERT(psvr);
       return psvr;
    }

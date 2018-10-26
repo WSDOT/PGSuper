@@ -27,8 +27,9 @@
 #include <PsgLib\BeamFamilyManager.h>
 
 CBeamFamilyManager::FamilyContainer CBeamFamilyManager::m_Families;
+std::vector<CString> CBeamFamilyManager::m_Names;
 
-HRESULT CBeamFamilyManager::Init()
+HRESULT CBeamFamilyManager::Init(CATID catid)
 {
    CComPtr<ICatRegister> pICatReg = 0;
    HRESULT hr;
@@ -51,7 +52,7 @@ HRESULT CBeamFamilyManager::Init()
 
    const int nID = 1;
    CATID ID[nID];
-   ID[0] = CATID_BeamFamily;
+   ID[0] = catid;
 
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
 
@@ -63,21 +64,15 @@ HRESULT CBeamFamilyManager::Init()
       CString str(pszUserType);
 
       m_Families.insert( std::make_pair(str,clsid[0]) );
+      m_Names.push_back(str);
    }
 
    return S_OK;
 }
 
-std::vector<CString> CBeamFamilyManager::GetBeamFamilyNames()
+const std::vector<CString>& CBeamFamilyManager::GetBeamFamilyNames()
 {
-   std::vector<CString> names;
-   FamilyContainer::iterator iter;
-   for ( iter = m_Families.begin(); iter != m_Families.end(); iter++ )
-   {
-      names.push_back( iter->first );
-   }
-
-   return names;
+   return m_Names;
 }
 
 HRESULT CBeamFamilyManager::GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily)
@@ -104,4 +99,10 @@ CLSID CBeamFamilyManager::GetBeamFamilyCLSID(LPCTSTR strName)
       return CLSID_NULL;
 
    return found->second;
+}
+
+void CBeamFamilyManager::Reset()
+{
+   m_Families.clear();
+   m_Names.clear();
 }

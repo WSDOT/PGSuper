@@ -42,6 +42,7 @@
 #include "Designer2.h"
 #include "PsForceEng.h"
 #include "GirderHandlingChecker.h"
+#include "GirderLiftingChecker.h"
 #include <DesignConfigUtil.h>
 
 #include "StatusItems.h"
@@ -78,6 +79,8 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define MIN_SPAN_DEPTH_RATIO 4
+
+static Float64 gs_60KSI = ::ConvertToSysUnits(60.0,unitMeasure::KSI);
 
 /****************************************************************************
 CLASS
@@ -561,24 +564,27 @@ pgsGirderArtifact pgsDesigner2::Check(SpanIndexType span,GirderIndexType gdr)
    CheckDebonding(span,gdr,pgsTypes::Harped,gdr_artifact.GetDebondArtifact(pgsTypes::Harped));
    CheckDebonding(span,gdr,pgsTypes::Temporary,gdr_artifact.GetDebondArtifact(pgsTypes::Temporary));
 
-   pgsGirderHandlingChecker handling_checker(m_pBroker,m_StatusGroupID);
+   pgsGirderLiftingChecker lifting_checker(m_pBroker,m_StatusGroupID);
 
    GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    if (pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
    {
-      pgsLiftingCheckArtifact* pLiftingCheckArtifact = new(pgsLiftingCheckArtifact);
+      pgsLiftingAnalysisArtifact* pLiftingAnalysisArtifact = new(pgsLiftingAnalysisArtifact);
 
-      handling_checker.CheckLifting(span,gdr,pLiftingCheckArtifact);
-      gdr_artifact.SetLiftingCheckArtifact(pLiftingCheckArtifact);
+      lifting_checker.CheckLifting(span,gdr,pLiftingAnalysisArtifact);
+      gdr_artifact.SetLiftingAnalysisArtifact(pLiftingAnalysisArtifact);
    }
 
    GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
    if (pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
    {
-      pgsHaulingCheckArtifact* pHaulingCheckArtifact = new(pgsHaulingCheckArtifact);
+      // Use factory function to create correct hauling checker
+      pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);
 
-      handling_checker.CheckHauling(span,gdr,pHaulingCheckArtifact);
-      gdr_artifact.SetHaulingCheckArtifact(pHaulingCheckArtifact);
+      std::auto_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
+
+      pgsHaulingAnalysisArtifact* pHaulingAnalysisArtifact = hauling_checker->CheckHauling(span,gdr,LOGGER);
+      gdr_artifact.SetHaulingAnalysisArtifact(pHaulingAnalysisArtifact);
    }
 
    return gdr_artifact;
@@ -884,7 +890,7 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
       }
 
       // we've succussfully completed all the design steps
-      // we are DONE!
+      // we are DONE! (except for one possible problem with release strength further down...)
       bDone = true;
    } while ( cIter < nIterMax && !bDone );
 
@@ -922,7 +928,60 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
    // set controlling data for concrete strengths
    artifact.SetReleaseDesignState(m_StrandDesignTool.GetReleaseConcreteDesignState());
    artifact.SetFinalDesignState(m_StrandDesignTool.GetFinalConcreteDesignState());
-   artifact.SetOutcome(pgsDesignArtifact::Success);
+
+   // One last possible hitch(s) here: If we needed to use a higher allowable release strength, it means
+   // that we assumed that there is adequate longitudinal rebar in the model to back this assumption. 
+   // We need to check this, and if there was not, the design failed; with caveats.
+   bool needsAdditionalRebar(false);
+   if (options.doDesignForFlexure!=dtNoDesign && 
+       artifact.GetReleaseDesignState().GetRequiredAdditionalRebar())
+   {
+      // Need to run a flexural spec check in casting yard to validate design
+      GDRCONFIG config = artifact.GetGirderConfiguration();
+
+      // Check tension in the casting yard
+      pgsGirderArtifact cyGdrArtifact(span,gdr);
+      CheckCastingYardGirderStresses(span, gdr, &config, pgsTypes::Tension, &cyGdrArtifact);
+
+      bool cytPassed = cyGdrArtifact.DidFlexuralStressesPass();
+      if (!cytPassed)
+      {
+         needsAdditionalRebar = true;
+
+         artifact.SetOutcome(pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionCy);
+         artifact.AddDesignNote(pgsDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionCy);
+      }
+
+      // Another possible case is hauling since the design algorithm always uses the higher final strength
+      if (!needsAdditionalRebar && options.doDesignLifting)
+      {
+         if ( !CheckLiftingStressDesign(span, gdr, config) )
+         {
+            needsAdditionalRebar = true;
+
+            artifact.SetOutcome(pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionLifting);
+            artifact.AddDesignNote(pgsDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionLifting);
+         }
+      }
+
+      // Another possible case is hauling since the design algorithm always uses the higher final strength
+      if (!needsAdditionalRebar && options.doDesignHauling)
+      {
+         if ( !CheckShippingStressDesign(span, gdr, config) )
+         {
+            needsAdditionalRebar = true;
+
+            artifact.SetOutcome(pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionHauling);
+            artifact.AddDesignNote(pgsDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionHauling);
+         }
+      }
+
+   }
+
+   if (!needsAdditionalRebar)
+   {
+      artifact.SetOutcome(pgsDesignArtifact::Success);
+   }
 
    return artifact;
 }
@@ -1025,6 +1084,144 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
 {
    USES_CONVERSION;
 
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+   pProgress->UpdateMessage(_T("Checking Girder Stresses"));
+
+   if (task.stage==pgsTypes::CastingYard)
+   {
+      // Casting yard is a different animal - check it separately
+      CheckCastingYardGirderStresses(span, gdr, NULL, task.type, pGdrArtifact);
+   }
+   else
+   {
+
+      GET_IFACE(IPointOfInterest, pIPoi);
+      GET_IFACE(IPrestressStresses, pPrestressStresses);
+      GET_IFACE(ILimitStateForces, pLimitStateForces);
+      GET_IFACE(IAllowableConcreteStress, pAllowable );
+      GET_IFACE(IGirder,pGirder);
+      GET_IFACE(ISectProp2,pSectProp2);
+      GET_IFACE(IBridgeMaterial,pMaterial);
+      GET_IFACE(ISpecification,pSpec);
+      GET_IFACE(IContinuity,pContinuity);
+      GET_IFACE(ILongRebarGeometry, pRebarGeom);
+
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(span,gdr,task.stage,POI_FLEXURESTRESS | POI_TABULAR) );
+
+      BridgeAnalysisType batTop, batBottom;
+      GetBridgeAnalysisType(gdr,task,batTop,batBottom);
+
+      std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
+      std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
+      for ( ; poiIter != poiIterEnd; poiIter++)
+      {
+         const pgsPointOfInterest& poi = *poiIter;
+
+         pgsFlexuralStressArtifactKey key(task.stage,task.ls,task.type,poi.GetDistFromStart());
+         pgsFlexuralStressArtifact artifact;
+
+         // get girder stress due to prestressing
+         Float64 fTopPrestress, fBotPrestress;
+         fTopPrestress = pPrestressStresses->GetStress(task.stage,poi,pgsTypes::TopGirder);
+         fBotPrestress = pPrestressStresses->GetStress(task.stage,poi,pgsTypes::BottomGirder);
+
+         // get girder stress due to external loads (top)
+         Float64 fTopLimitStateMin, fTopLimitStateMax;
+         pLimitStateForces->GetStress(task.ls,task.stage,poi,pgsTypes::TopGirder,false,batTop,&fTopLimitStateMin,&fTopLimitStateMax);
+         Float64 fTopLimitState = (task.type == pgsTypes::Compression ? fTopLimitStateMin : fTopLimitStateMax );
+
+         // get girder stress due to external loads (bottom)
+         Float64 fBotLimitStateMin, fBotLimitStateMax;
+         pLimitStateForces->GetStress(task.ls,task.stage,poi,pgsTypes::BottomGirder,false,batBottom,&fBotLimitStateMin,&fBotLimitStateMax);
+         Float64 fBotLimitState = (task.type == pgsTypes::Compression ? fBotLimitStateMin : fBotLimitStateMax );
+
+         Float64 k;
+         if (task.ls == pgsTypes::ServiceIA || task.ls == pgsTypes::FatigueI )
+            k = 0.5; // Use half prestress stress if service IA (See Tbl 5.9.4.2.1-1)
+         else
+            k = 1.0;
+         
+         Float64 fTop = fTopLimitState + k*fTopPrestress;
+         Float64 fBot = fBotLimitState + k*fBotPrestress;
+         artifact.SetDemand( fTop, fBot );
+         artifact.SetExternalEffects(fTopLimitState,fBotLimitState);
+         artifact.SetPrestressEffects(fTopPrestress,fBotPrestress);
+
+         // get allowable stress
+         Float64 fAllowable(0.0);
+         if(task.type == pgsTypes::Compression)
+         {
+            if ( task.ls != pgsTypes::ServiceIII )
+               fAllowable = pAllowable->GetAllowableStress(poi,task.stage,task.ls,pgsTypes::Compression);
+         }
+         else // tension
+         {
+            if ( task.stage != pgsTypes::BridgeSite2 )
+   	         fAllowable = pAllowable->GetAllowableStress(poi,task.stage,task.ls,pgsTypes::Tension);
+         }
+
+         artifact.SetCapacity(fAllowable,task.type);
+
+         // determine what concrete strength (if any) would work for this section. 
+         // what concrete strength is required to satisify the allowable stress criteria
+         // if there isn't a strength that works, use a value of -1
+         if ( task.type == pgsTypes::Compression )
+         {
+            Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(task.stage,task.ls);
+            Float64 fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
+            
+            if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
+               fc_reqd = 0;
+
+            artifact.SetRequiredConcreteStrength(fc_reqd);
+         }
+         else
+         {
+            Float64 t;
+            bool bCheckMax;
+            Float64 fmax;
+
+            pAllowable->GetAllowableTensionStressCoefficient(task.stage,task.ls,&t,&bCheckMax,&fmax);
+
+            // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
+            // otherwise, take the controlling tension
+            Float64 f = (task.stage == pgsTypes::BridgeSite3 ? fBot : _cpp_max(fTop,fBot));
+
+            Float64 fc_reqd;
+            if (f>0.0)
+            {
+               fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
+            }
+            else
+            {
+               // the maximum stress is compressive so tension isn't an issue
+               fc_reqd = 0;
+            }
+
+            if ( bCheckMax &&                  // allowable stress is limited -AND-
+                 (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
+                 (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
+            {
+               // then that concrete strength wont really work afterall
+               // too bad... this isn't going to work
+               fc_reqd = -1;
+            }
+
+            artifact.SetRequiredConcreteStrength(fc_reqd);
+         }
+
+         artifact.SetKey(key);
+
+         pGdrArtifact->AddFlexuralStressArtifact(key,artifact);
+      }
+   }
+}
+
+void pgsDesigner2::CheckCastingYardGirderStresses(SpanIndexType span, GirderIndexType gdr, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsGirderArtifact* pGdrArtifact)
+{
+   USES_CONVERSION;
+
    GET_IFACE(IPointOfInterest, pIPoi);
    GET_IFACE(IPrestressStresses, pPrestressStresses);
    GET_IFACE(ILimitStateForces, pLimitStateForces);
@@ -1032,31 +1229,60 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
    GET_IFACE(IGirder,pGirder);
    GET_IFACE(ISectProp2,pSectProp2);
    GET_IFACE(IBridgeMaterial,pMaterial);
+   GET_IFACE(IBridgeMaterialEx,pMaterialEx);
    GET_IFACE(ISpecification,pSpec);
-   GET_IFACE(IContinuity,pContinuity);
+   GET_IFACE(ILongRebarGeometry, pRebarGeom);
 
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(span,gdr,task.stage,POI_FLEXURESTRESS | POI_TABULAR) );
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
-
-   Float64 Es, fy, fu;
-   pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fy,&fu);
-   Float64 fs = 0.5*fy;
-   Float64 fsMax = (bUnitsSI ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
-   if ( fsMax < fs )
-       fs = fsMax;
-
-
-   Float64 AsMax = 0;
+   // we only work in the casting yard
+   ALLOWSTRESSCHECKTASK task;
+   task.stage = pgsTypes::CastingYard;
+   task.ls = pgsTypes::ServiceI;
+   task.type = type;
 
    BridgeAnalysisType batTop, batBottom;
    GetBridgeAnalysisType(gdr,task,batTop,batBottom);
 
-   GET_IFACE(IStageMap,pStageMap);
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
-   pProgress->UpdateMessage(_T("Checking Girder Stresses"));
+   // Precompute some values outside of poi loop
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
+
+   Float64 fci;
+   if (pConfig!=NULL)
+   {
+      fci = pConfig->Fci;
+   }
+   else
+   {
+      fci = pMaterial->GetFciGdr(span, gdr);
+   }
+
+   Float64 fLowAllowable(0.0), fHighAllowable(0.0);
+   Float64 c(0.0);
+   Float64 t(0.0), talt(0.0);
+   bool bCheckMax(false);
+   Float64 ftmax(0.0);
+   if(task.type == pgsTypes::Compression)
+   {
+      c = pAllowable->GetAllowableCompressiveStressCoefficient(task.stage,task.ls);
+
+      fLowAllowable = pAllowable->GetCastingYardAllowableStress(task.ls, pgsTypes::Compression, fci);
+      fHighAllowable = fLowAllowable;
+   }
+   else
+   {
+      pAllowable->GetAllowableTensionStressCoefficient(task.stage,task.ls,&t,&bCheckMax,&ftmax);
+      talt = pAllowable->GetCastingYardAllowableTensionStressCoefficientWithRebar();
+
+      fLowAllowable  = pAllowable->GetCastingYardAllowableStress(task.ls, pgsTypes::Tension, fci);
+      fHighAllowable = talt*sqrt(fci);
+   }
+
+   pGdrArtifact->SetCastingYardCapacityWithMildRebar( fHighAllowable );
+
+   // Use calculator object to deal with casting yard higher allowable stress
+   pgsAlternativeTensileStressCalculator altCalc(span,gdr, pGirder, pSectProp2, pRebarGeom, pMaterial, pMaterialEx, bUnitsSI);
+
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(span,gdr,task.stage,POI_FLEXURESTRESS | POI_TABULAR) );
 
    std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
@@ -1069,8 +1295,17 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
 
       // get girder stress due to prestressing
       Float64 fTopPrestress, fBotPrestress;
-      fTopPrestress = pPrestressStresses->GetStress(task.stage,poi,pgsTypes::TopGirder);
-      fBotPrestress = pPrestressStresses->GetStress(task.stage,poi,pgsTypes::BottomGirder);
+
+      if (pConfig!=NULL)
+      {
+         fTopPrestress = pPrestressStresses->GetDesignStress(task.stage,poi,pgsTypes::TopGirder,*pConfig);
+         fBotPrestress = pPrestressStresses->GetDesignStress(task.stage,poi,pgsTypes::BottomGirder,*pConfig);
+      }
+      else
+      {
+         fTopPrestress = pPrestressStresses->GetStress(task.stage,poi,pgsTypes::TopGirder);
+         fBotPrestress = pPrestressStresses->GetStress(task.stage,poi,pgsTypes::BottomGirder);
+      }
 
       // get girder stress due to external loads (top)
       Float64 fTopLimitStateMin, fTopLimitStateMax;
@@ -1082,35 +1317,19 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
       pLimitStateForces->GetStress(task.ls,task.stage,poi,pgsTypes::BottomGirder,false,batBottom,&fBotLimitStateMin,&fBotLimitStateMax);
       Float64 fBotLimitState = (task.type == pgsTypes::Compression ? fBotLimitStateMin : fBotLimitStateMax );
 
-      // get allowable stress
-      Float64 fAllowComp, fAllowTens;
-      if ( task.ls != pgsTypes::ServiceIII )
-         fAllowComp = pAllowable->GetAllowableStress(poi,task.stage,task.ls,pgsTypes::Compression);
-
-      if ( task.stage != pgsTypes::BridgeSite2 )
-      	fAllowTens = pAllowable->GetAllowableStress(poi,task.stage,task.ls,pgsTypes::Tension);
-
-      Float64 fAllowable = (task.type == pgsTypes::Compression ? fAllowComp : fAllowTens);
-
-      Float64 k;
-      if (task.ls == pgsTypes::ServiceIA || task.ls == pgsTypes::FatigueI )
-         k = 0.5; // Use half prestress stress if service IA (See Tbl 5.9.4.2.1-1)
-      else
-         k = 1.0;
-      
-      Float64 fTop = fTopLimitState + k*fTopPrestress;
-      Float64 fBot = fBotLimitState + k*fBotPrestress;
+      Float64 fTop = fTopLimitState + fTopPrestress;
+      Float64 fBot = fBotLimitState + fBotPrestress;
       artifact.SetDemand( fTop, fBot );
-      artifact.SetCapacity(fAllowable,task.type);
       artifact.SetExternalEffects(fTopLimitState,fBotLimitState);
       artifact.SetPrestressEffects(fTopPrestress,fBotPrestress);
 
-      // determine what concrete strength (if any) would work for this section. 
-      // what concrete strength is required to satisify the allowable stress criteria
-      // if there isn't a strength that works, use a value of -1
-      if ( task.type == pgsTypes::Compression )
+      // Compute allowable stress and required concrete strengths
+      Float64 fAllowable(0.0);
+      if(task.type == pgsTypes::Compression)
       {
-         Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(task.stage,task.ls);
+         fAllowable = fLowAllowable;
+
+         // req'd strength
          Float64 fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
          
          if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
@@ -1118,22 +1337,39 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
 
          artifact.SetRequiredConcreteStrength(fc_reqd);
       }
-      else
+      else // tension
       {
-         Float64 t;
-         bool bCheckMax;
-         Float64 fmax;
+         Float64 Yna, AreaTens, T, AsProvd, AsReqd;
+         bool IsAdequateRebar;
+         fAllowable = altCalc.ComputeAlternativeStressRequirements(poi, pConfig, fTop, fBot, fLowAllowable, fHighAllowable,
+                                                                   &Yna, &AreaTens, &T, &AsProvd, &AsReqd, &IsAdequateRebar);
 
-         pAllowable->GetAllowableTensionStressCoefficient(task.stage,task.ls,&t,&bCheckMax,&fmax);
+         artifact.SetAlternativeTensileStressParameters(Yna,AreaTens,T,AsProvd,AsReqd,fHighAllowable);
 
-         // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
-         // otherwise, take the controlling tension
-         Float64 f = (task.stage == pgsTypes::BridgeSite3 ? fBot : _cpp_max(fTop,fBot));
+         // Compute required concrete strength
+         // Take the controlling tension
+         Float64 f =  _cpp_max(fTop,fBot);
 
          Float64 fc_reqd;
          if (f>0.0)
          {
-            fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
+            // Is adequate rebar available to use the higher limit?
+            if (AsProvd < AsReqd)
+            {
+               fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
+               if ( bCheckMax &&                  // allowable stress is limited -AND-
+                    (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
+                    (pow(ftmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
+               {
+                  // too bad... this isn't going to work
+                  fc_reqd = -1;
+               }
+            }
+            else
+            {
+               // We have additional rebar and can go to a higher limit
+               fc_reqd = pow(f/talt,2);
+            }
          }
          else
          {
@@ -1141,135 +1377,18 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
             fc_reqd = 0;
          }
 
-         if ( bCheckMax &&                  // allowable stress is limited -AND-
-              (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
-              (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
-         {
-            // then that concrete strength wont really work afterall
-            if ( task.stage == pgsTypes::CastingYard )
-            {
-               // unless we are in the casting yard, then we can add some additional rebar
-               // and go to a higher limit
-               Float64 talt = pAllowable->GetCastingYardAllowableTensionStressCoefficientWithRebar();
-               fc_reqd = pow(f/talt,2);
-            }
-            else
-            {
-               // too bad... this isn't going to work
-               fc_reqd = -1;
-            }
-         }
          artifact.SetRequiredConcreteStrength(fc_reqd);
       }
 
-      // Determine mild steel requirement for alternative tensile stress (casting yard only)
-      if ( task.stage == pgsTypes::CastingYard )
-      {
-         Float64 Yna = -1;
-         Float64 Area = 0;
-         Float64 H = pGirder->GetHeight(poi);
+      artifact.SetCapacity(fAllowable,task.type);
 
-         Float64 T = 0;
-         if ( fTop <= 0 && fBot <= 0 )
-         {
-             // compression over entire cross section
-            T = 0;
-         }
-         else if ( 0 <= fTop && 0 <= fBot )
-         {
-             // tension over entire cross section
-             Area = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
-             Float64 fAvg = (fTop + fBot)/2;
-             T = fAvg * Area;
-
-             ATLASSERT( T != 0 );
-         }
-         else
-         {
-            ATLASSERT( BinarySign(fBot) != BinarySign(fTop) );
-
-            // Location of neutral axis from Bottom of Girder
-            Yna = (IsZero(fBot) ? 0 : H - (fTop*H/(fTop-fBot)) );
-
-            ATLASSERT( 0 <= Yna );
-
-            CComPtr<IShape> shape;
-            pSectProp2->GetGirderShape(poi,false,&shape);
-
-            CComQIPtr<IXYPosition> position(shape);
-            CComPtr<IPoint2d> bc;
-            position->get_LocatorPoint(lpBottomCenter,&bc);
-            Float64 Y;
-            bc->get_Y(&Y);
-
-            CComPtr<ILine2d> line;
-            line.CoCreateInstance(CLSID_Line2d);
-            CComPtr<IPoint2d> p1, p2;
-            p1.CoCreateInstance(CLSID_Point2d);
-            p2.CoCreateInstance(CLSID_Point2d);
-            p1->Move(-10000,Y+Yna);
-            p2->Move( 10000,Y+Yna);
-
-            Float64 fAvg;
-
-            // line clips away left hand side
-            if ( 0 <= fTop && fBot <= 0 )
-            {
-                // Tension top, compression bottom
-                // line needs to go right to left
-               line->ThroughPoints(p2,p1);
-
-               fAvg = fTop / 2;
-            }
-            else if ( fTop <= 0 && 0 <= fBot )
-            {
-                // Compression Top, Tension Bottom
-                // line needs to go left to right
-               line->ThroughPoints(p1,p2);
-
-               fAvg = fBot / 2;
-            }
-
-            CComPtr<IShape> clipped_shape;
-            shape->ClipWithLine(line,&clipped_shape);
-
-            if ( clipped_shape )
-            {
-               CComPtr<IShapeProperties> props;
-               clipped_shape->get_ShapeProperties(&props);
-
-               props->get_Area(&Area);
-            }
-            else
-            {
-               Area = 0;
-            }
-
-            T = fAvg * Area;
-
-            ATLASSERT( T != 0 );
-         }
-
-         Float64 As = T/fs;
-         ATLASSERT( 0 <= As );
-
-         artifact.IsAlternativeTensileStressApplicable(true);
-         artifact.SetAlternativeTensileStressParameters(Yna,Area,T,As,pAllowable->GetCastingYardWithMildRebarAllowableStress(span,gdr));
-         AsMax = _cpp_max(As,AsMax);
-      }
-
+      // Stow our artifact
       artifact.SetKey(key);
 
       pGdrArtifact->AddFlexuralStressArtifact(key,artifact);
    }
-
-   if ( task.stage == pgsTypes::CastingYard && task.type == pgsTypes::Tension )
-   {
-       pGdrArtifact->SetCastingYardMildRebarRequirement(AsMax);
-       pGdrArtifact->SetCastingYardCapacityWithMildRebar(pAllowable->GetCastingYardWithMildRebarAllowableStress(span,gdr));
-   }
-
 }
+
 
 pgsFlexuralCapacityArtifact pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage,pgsTypes::LimitState ls,const GDRCONFIG& config,bool bPositiveMoment)
 {
@@ -1700,6 +1819,14 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    pArtifact->SetK2(K2);
 
    // nominal shear capacities 5.8.4.1-2,3
+   if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SixthEditionWith2013Interims && gs_60KSI < fy)
+   {
+      fy = gs_60KSI;
+      pArtifact->WasFyLimited(true);
+   }
+
+   pArtifact->SetFy(fy);
+
    Float64 Vn1, Vn2, Vn3;
    lrfdConcreteUtil::HorizontalShearResistances(c, u, K1, K2, Acv, pArtifact->GetAvOverS(), Pc, fc, fy,
                                                 &Vn1, &Vn2, &Vn3);
@@ -2135,32 +2262,32 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    Float64 as = 0;
    if ( pSpecEntry->IncludeRebarForShear() )
    {
-      // TRICKY: Rebar data from config is not used here. This is only called from the design loop
-      //         once (no iterations), so all we need is the current bridge data
-      GET_IFACE(ILongRebarGeometry,pRebarGeometry);
+   // TRICKY: Rebar data from config is not used here. This is only called from the design loop
+   //         once (no iterations), so all we need is the current bridge data
+   GET_IFACE(ILongRebarGeometry,pRebarGeometry);
 
-      if ( scd.bTensionBottom )
-      {
-         as = pRebarGeometry->GetAsBottomHalf(poi,false); // not adjusted for lack of development
-         Float64 as2 = pRebarGeometry->GetAsBottomHalf(poi,true); // adjusted for lack of development
-         if ( !IsZero(as) )
-            fy *= (as2/as); // reduce effectiveness of bar for lack of development
-         else
-            fy = 0; // no strand, no development... reduce effectiveness to 0
-
-         pArtifact->SetFy(fy);
-      }
+   if ( scd.bTensionBottom )
+   {
+      as = pRebarGeometry->GetAsBottomHalf(poi,false); // not adjusted for lack of development
+      Float64 as2 = pRebarGeometry->GetAsBottomHalf(poi,true); // adjusted for lack of development
+      if ( !IsZero(as) )
+         fy *= (as2/as); // reduce effectiveness of bar for lack of development
       else
-      {
-         as = pRebarGeometry->GetAsTopHalf(poi,false); // not adjusted for lack of development
-         Float64 as2 = pRebarGeometry->GetAsTopHalf(poi,true); // adjusted for lack of development
-         if ( !IsZero(as) )
-            fy *= (as2/as); // reduce effectiveness of bar for lack of development
-         else
-            fy = 0; // no strand, no development... reduce effectiveness to 0
+         fy = 0; // no strand, no development... reduce effectiveness to 0
 
-         pArtifact->SetFy(fy);
-      }
+      pArtifact->SetFy(fy);
+   }
+   else
+   {
+      as = pRebarGeometry->GetAsTopHalf(poi,false); // not adjusted for lack of development
+      Float64 as2 = pRebarGeometry->GetAsTopHalf(poi,true); // adjusted for lack of development
+      if ( !IsZero(as) )
+         fy *= (as2/as); // reduce effectiveness of bar for lack of development
+      else
+         fy = 0; // no strand, no development... reduce effectiveness to 0
+
+      pArtifact->SetFy(fy);
+   }
    }
    pArtifact->SetAs(as);
 
@@ -2447,7 +2574,8 @@ void pgsDesigner2::CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pg
    }
 }
 
-void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const GDRCONFIG* pConfig)
+void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsPointOfInterest>& VPoi,
+                                  pgsTypes::LimitState ls,const GDRCONFIG* pConfig)
 {
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -2456,8 +2584,34 @@ void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsType
    PierIndexType prev_pier = PierIndexType(span);
    PierIndexType next_pier = prev_pier+1;
 
-
    // cache CS locations as they are very expensive to get
+   // First try to get them from our list of POI's
+   std::vector<pgsPointOfInterest> csPoi;
+   PoiAttributeType attrib = (ls == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
+   std::vector<pgsPointOfInterest>::const_iterator its = VPoi.begin();
+   std::vector<pgsPointOfInterest>::const_iterator ite = VPoi.end();
+   while(its != ite)
+   {
+      const pgsPointOfInterest& rpoi = *its;
+      if (rpoi.HasAttribute(pgsTypes::BridgeSite3, attrib))
+      {
+         csPoi.push_back(rpoi);
+      }
+
+      its++;
+   }
+
+   if (!csPoi.empty())
+   {
+      // Got them from POI list - much faster
+      ATLASSERT(csPoi.size()==2);
+      m_LeftCS = csPoi.front();
+      m_RightCS = csPoi.back();
+   }
+   else
+   {
+      // CSS's not in POI list - we need to compute them - this is really expensive,
+      // and likely for load rating cases only
    GET_IFACE(IPointOfInterest,pPOI);
    if(pConfig!=NULL)
    {
@@ -2466,6 +2620,7 @@ void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsType
    else
    {
       pPOI->GetCriticalSection(ls,span,gdr,&m_LeftCS,&m_RightCS);
+   }
    }
 
    // DETERMINE IF vu <= 0.18f'c at each POI... set a boolean flag that indicates if strut and tie analysis is required
@@ -2505,7 +2660,7 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,const std::
                               pgsTypes::LimitState ls,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact)
 {
    pgsTypes::Stage stage = pgsTypes::BridgeSite3;
-   InitShearCheck(span,gdr,ls,pConfig); // sets up some class member variables used for checking
+   InitShearCheck(span,gdr,VPoi, ls,pConfig); // sets up some class member variables used for checking
                                         // this span and girder
 
    CHECK(pStirrupArtifact);
@@ -3017,7 +3172,7 @@ void pgsDesigner2::CheckConstructability(SpanIndexType span,GirderIndexType gdr,
 
       HAUNCHDETAILS haunch_details;
       pGdrHaunch->GetHaunchDetails(span,gdr,&haunch_details);
-      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && 0.0 < haunch_details.HaunchDiff );
+      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && ::IsGT(0.0,haunch_details.HaunchDiff) );
    }
 
    ///////////////////////////////////////////////////////////////
@@ -3064,6 +3219,15 @@ void pgsDesigner2::CheckConstructability(SpanIndexType span,GirderIndexType gdr,
       }
    }
 
+   ///////////////////////////////////////////////////////////////
+   //
+   // Check if any longitudinal rebars are located outside 
+   // of the girder cross section.
+   //
+   ///////////////////////////////////////////////////////////////
+   GET_IFACE(ILongRebarGeometry,pLongRebarGeometry);
+   std::vector<RowIndexType> outBoundRows = pLongRebarGeometry->CheckLongRebarGeometry(span, gdr);
+   pArtifact->SetRebarRowsOutsideOfSection(outBoundRows);
 
 }
 
@@ -4935,6 +5099,23 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(const arDesignOptions& options, I
    // Done
 }
 
+bool pgsDesigner2::CheckLiftingStressDesign(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config)
+{
+   pgsLiftingAnalysisArtifact artifact;
+
+   HANDLINGCONFIG lift_config;
+   lift_config.GdrConfig = config;
+   lift_config.LeftOverhang = m_StrandDesignTool.GetLeftLiftingLocation();
+   lift_config.RightOverhang = m_StrandDesignTool.GetRightLiftingLocation();
+
+   pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID);
+   IGirderLiftingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderLiftingDesignPointsOfInterest*>(&m_StrandDesignTool);
+
+   checker.AnalyzeLifting(span,gdr,lift_config,pPoiLd,&artifact);
+
+   return artifact.PassedStressCheck();
+}
+
 std::vector<DebondLevelType> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail)
 {
    LOG(_T("Refine Debonded design by computing debond demand levels for release condition at End-Zone"));
@@ -5158,7 +5339,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
    SpanIndexType span  = m_StrandDesignTool.GetSpan();
    GirderIndexType gdr = m_StrandDesignTool.GetGirder();
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID); // this guy can do the stability design!
+   pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID); // this guy can do the stability design!
 
    GDRCONFIG config = m_StrandDesignTool.GetGirderConfiguration();
    if ( bProportioningStrands )
@@ -5442,13 +5623,12 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
 
       // go to the artifact to get the required release strength to satisfy the compression and
       // tension criteria
-      Float64 fci_comp, fci_tens;
-      bool minRebarRequired;
-      artifact.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&minRebarRequired);
+      Float64 fci_comp, fci_tens, fci_tens_wrebar;
+      artifact.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
 
       // if there isn't a concrete strength that will make the tension limits work,
       // get the heck outta here!
-      if ( fci_tens < 0 )
+      if ( fci_tens<0 && fci_tens_wrebar<0 )
       {
          // there isn't a concrete strength that will work (because of tension limit)
          LOG(_T("There is no concrete strength that will work for lifting after shipping design - Tension controls - FAILED"));
@@ -5457,14 +5637,13 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
          return; // bye
       }
 
-
       // we've got viable concrete strengths
       LOG(_T("Lifting Results : New f'ci (unrounded) comp = ") << ::ConvertFromSysUnits(fci_comp,unitMeasure::KSI) << _T(" ksi, tension = ") << ::ConvertFromSysUnits(fci_tens,unitMeasure::KSI) << _T(" ksi") << _T(" Pick Point = ") << ::ConvertFromSysUnits(artifact.GetLeftOverhang(),unitMeasure::Feet) << _T(" ft"));
 
-      ConcStrengthResultType rebar_reqd = (minRebarRequired) ? ConcSuccessWithRebar : ConcSuccess;
+      ConcStrengthResultType rebar_reqd = (fci_tens<0) ? ConcSuccessWithRebar : ConcSuccess;
 
       // get the controlling value
-      Float64 fci_required = max(fci_tens,fci_comp);
+      Float64 fci_required = Max3(fci_tens,fci_tens_wrebar,fci_comp);
 
       // get the maximum allowable f'ci
       Float64 fci_max = m_StrandDesignTool.GetMaximumReleaseStrength();
@@ -5534,7 +5713,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
    SpanIndexType span = m_StrandDesignTool.GetSpan();
    GirderIndexType gdr  = m_StrandDesignTool.GetGirder();
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
+   pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID);
    GDRCONFIG config = m_StrandDesignTool.GetGirderConfiguration();
 
    if ( bProportioningStrands )
@@ -5618,10 +5797,13 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
 
    Float64 fc_old = m_StrandDesignTool.GetConcreteStrength();
 
-   // Get required release strength required from artifact
-   Float64 fci_comp, fci_tens;
-   bool minRebarRequired;
-   artifact.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&minRebarRequired);
+   // Get required release strength from artifact
+   Float64 fci_comp, fci_tens, fci_tens_wrebar;
+   artifact.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
+
+   bool minRebarRequired = fci_tens<0;
+   fci_tens = max(fci_tens, fci_tens_wrebar);
+
    LOG(_T("Required Lifting Release Strength from artifact : f'ci (unrounded) tens = ") << ::ConvertFromSysUnits(fci_tens,unitMeasure::KSI) << _T(" KSI, compression = ") << ::ConvertFromSysUnits(fci_comp,unitMeasure::KSI) << _T(" KSI, Pick Point = ") << ::ConvertFromSysUnits(artifact.GetLeftOverhang(),unitMeasure::Feet) << _T(" ft"));
    ATLASSERT( fci_tens >= 0 ); // This should never happen if FScr is OK
 
@@ -5751,7 +5933,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
 
       pgsLiftingAnalysisArtifact artifact;
 
-      pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
+      pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID);
       // Designer manages it's own POIs
       IGirderLiftingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderLiftingDesignPointsOfInterest*>(&m_StrandDesignTool);
       checker.AnalyzeLifting(span,gdr,liftConfig,pPoiLd,&artifact);
@@ -5841,21 +6023,24 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    SpanIndexType span = m_StrandDesignTool.GetSpan();
    GirderIndexType gdr  = m_StrandDesignTool.GetGirder();
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
-   
-   pgsHaulingAnalysisArtifact artifact;
+   // Use factory to create appropriate hauling checker
+   pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);
+   std::auto_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
+
    bool bResult = false;
    bool bTemporaryStrandsAdded = false;
+   std::auto_ptr<pgsHaulingAnalysisArtifact> final_artifact;
 
    do
    {
       const GDRCONFIG& config = m_StrandDesignTool.GetGirderConfiguration();
 
       IGirderHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
-      bResult = checker.DesignShipping(span,gdr,config,m_bShippingDesignWithEqualCantilevers,m_bShippingDesignIgnoreConfigurationLimits,pPoiLd,&artifact,LOGGER);
+
+      std::auto_ptr<pgsHaulingAnalysisArtifact> artifact ( hauling_checker->DesignHauling(span,gdr,config,m_bShippingDesignWithEqualCantilevers,m_bShippingDesignIgnoreConfigurationLimits,pPoiLd,&bResult,LOGGER));
 
       // capture the results of the trial
-      m_StrandDesignTool.SetTruckSupportLocations(artifact.GetTrailingOverhang(),artifact.GetLeadingOverhang());
+      m_StrandDesignTool.SetTruckSupportLocations(artifact->GetTrailingOverhang(),artifact->GetLeadingOverhang());
       if (!bResult )
       {
          LOG(_T("Adding temporary strands"));
@@ -5876,8 +6061,8 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
             GET_IFACE(IGirderHaulingSpecCriteria,pCriteria);
             Float64 maxDistanceBetweenSupports = pCriteria->GetAllowableDistanceBetweenSupports();
             Float64 maxLeadingOverhang = pCriteria->GetAllowableLeadingOverhang();
-            Float64 distBetweenSupportPoints = m_StrandDesignTool.GetGirderLength() - artifact.GetTrailingOverhang() - artifact.GetLeadingOverhang();
-            if ( IsEqual(maxLeadingOverhang,artifact.GetLeadingOverhang()) &&
+            Float64 distBetweenSupportPoints = m_StrandDesignTool.GetGirderLength() - artifact->GetTrailingOverhang() - artifact->GetLeadingOverhang();
+            if ( IsEqual(maxLeadingOverhang,artifact->GetLeadingOverhang()) &&
                  IsEqual(maxDistanceBetweenSupports,distBetweenSupportPoints) )
             {
                LOG(_T("Failed to satisfy shipping requirements - shipping configuration prevents a suitable solution from being found"));
@@ -5910,6 +6095,12 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
             continue; // go back to top of loop and try again
          }
       }
+      else
+      {
+         // Capture final result
+         final_artifact = artifact;
+      }
+
    } while ( !bResult );
 
 
@@ -5917,7 +6108,10 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
 
 #if defined _DEBUG
    LOG(_T("-- Dump of Hauling Artifact After Design --"));
-   artifact.Dump(LOGGER);
+   if (final_artifact.get() != NULL)
+   {
+      final_artifact->Dump(LOGGER);
+   }
    LOG(_T("-- End Dump of Hauling Artifact --"));
 #endif
 
@@ -5926,9 +6120,12 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    
    Float64 fc_max = m_StrandDesignTool.GetMaximumConcreteStrength();
 
-   Float64 fc_tens, fc_comp;
-   bool minRebarRequired;
-   artifact.GetRequiredConcreteStrength(&fc_comp, &fc_tens, &minRebarRequired,fc_max,true);
+   // Get required release strength from artifact
+   Float64 fc_comp(0.0), fc_tens(0.0), fc_tens_wrebar(0.0);
+   final_artifact->GetRequiredConcreteStrength(&fc_comp,&fc_tens,&fc_tens_wrebar);
+
+   fc_tens = fc_tens_wrebar; // Hauling design always uses higher allowable limit (lower f'c)
+
    LOG(_T("f'c (unrounded) required for shipping; tension = ") << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << _T(" KSI, compression = ") << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI) << _T(" KSI"));
 
    if ( fc_tens < 0 )
@@ -5952,7 +6149,10 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
       }
    }
 
-   LOG(_T("Shipping Results : f'c (unrounded) tens = ") << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << _T(" KSI, Comp = ") << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI)<<_T("KSI, Left Bunk Point = ") << ::ConvertFromSysUnits(artifact.GetTrailingOverhang(),unitMeasure::Feet) << _T(" ft") << _T("    Right Bunk Point = ") << ::ConvertFromSysUnits(artifact.GetLeadingOverhang(),unitMeasure::Feet) << _T(" ft"));
+   LOG(_T("Shipping Results : f'c (unrounded) tens = ") << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << _T(" KSI, Comp = ")
+        << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI)<<_T("KSI, Left Bunk Point = ") 
+        << ::ConvertFromSysUnits(final_artifact->GetTrailingOverhang(),unitMeasure::Feet) << _T(" ft") 
+        << _T("    Right Bunk Point = ") << ::ConvertFromSysUnits(final_artifact->GetLeadingOverhang(),unitMeasure::Feet) << _T(" ft"));
 
    CHECK_PROGRESS;
 
@@ -6000,133 +6200,23 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    LOG(_T("Shipping Design Complete - Continue design") );
 }
 
-
-std::vector<DebondLevelType> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pProgress)
+bool pgsDesigner2::CheckShippingStressDesign(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config)
 {
-   pProgress->UpdateMessage(_T("Designing final debonding for Shipping"));
+   HANDLINGCONFIG ship_config;
+   ship_config.GdrConfig = config;
+   ship_config.LeftOverhang = m_StrandDesignTool.GetLeadingOverhang();
+   ship_config.RightOverhang = m_StrandDesignTool.GetTrailingOverhang();
 
-   // fine-tune debonding for shipping
-   SectionIndexType max_db_sections = m_StrandDesignTool.GetMaxNumberOfDebondSections();
+   IGirderHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
 
-   // set up our vector to return debond levels at each section
-   std::vector<DebondLevelType> shipping_debond_levels;
-   shipping_debond_levels.assign(max_db_sections,0);
+   // Use factory to create appropriate hauling checker
+   pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);
+   std::auto_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
 
-   Float64 fci_current = m_StrandDesignTool.GetReleaseStrength();
+   std::auto_ptr<pgsHaulingAnalysisArtifact> artifact( hauling_checker->AnalyzeHauling(span,gdr,ship_config,pPoiLd) );
 
-   LOG(_T(""));
-   LOG(_T("DESIGNING DEBONDING FOR SHIPPING"));
-   LOG(_T(""));
-   m_StrandDesignTool.DumpDesignParameters();
-
-   if (m_StrandDesignTool.GetFlexuralDesignType() == dtDesignForDebonding)
-   {
-      SpanIndexType   span = m_StrandDesignTool.GetSpan();
-      GirderIndexType gdr  = m_StrandDesignTool.GetGirder();
-
-      Float64 fc  = m_StrandDesignTool.GetConcreteStrength();
-      ConcStrengthResultType rebar_reqd;
-      Float64 fci = m_StrandDesignTool.GetReleaseStrength(&rebar_reqd);
-      LOG(_T("current f'c  = ") << ::ConvertFromSysUnits(fc,unitMeasure::KSI) << _T(" KSI "));
-      LOG(_T("current f'ci = ") << ::ConvertFromSysUnits(fci,unitMeasure::KSI) << _T(" KSI") );
-
-      GET_IFACE(IGirderHaulingSpecCriteria,pHaulingCrit);
-      Float64 all_tens = pHaulingCrit->GetHaulingAllowableTensileConcreteStressEx(fc,rebar_reqd==ConcSuccessWithRebar);
-      Float64 all_comp = pHaulingCrit->GetHaulingAllowableCompressiveConcreteStressEx(fc);
-      LOG(_T("Allowable tensile stress at hauling     = ") << ::ConvertFromSysUnits(all_tens,unitMeasure::KSI) << _T(" KSI")<<(rebar_reqd==ConcSuccessWithRebar ? _T(" min rebar was required for this strength"):_T(""))  );
-      LOG(_T("Allowable compressive stress at hauling = ") << ::ConvertFromSysUnits(all_comp,unitMeasure::KSI) << _T(" KSI") );
-
-      // debond levels must be measured from fully bonded section
-      GDRCONFIG config = m_StrandDesignTool.GetGirderConfiguration();
-      config.PrestressConfig.Debond[pgsTypes::Straight].clear();
-
-      // This is an analysis to determine stresses that must be reduced by debonding
-      // maximum debond level is used at this point and we should pass spec check
-      pgsHaulingAnalysisArtifact artifact;
-
-      HANDLINGCONFIG ship_config;
-      ship_config.GdrConfig = config;
-      ship_config.LeftOverhang = m_StrandDesignTool.GetLeadingOverhang();
-      ship_config.RightOverhang = m_StrandDesignTool.GetTrailingOverhang();
-
-      pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
-      IGirderHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
-
-      checker.AnalyzeHauling(span,gdr,ship_config,pPoiLd,&artifact);
-
-      StrandIndexType nss = config.PrestressConfig.GetNStrands(pgsTypes::Straight);
-      StrandIndexType nts = nss + config.PrestressConfig.GetNStrands(pgsTypes::Harped) + 
-                            config.PrestressConfig.GetNStrands(pgsTypes::Temporary); // to get an average force per strand
-      Float64 force_per_strand = 0.0;
-
-      // get vector of max stresses from artifact
-      pgsHaulingAnalysisArtifact::MaxHaulingStressCollection max_applied_stresses;
-      artifact.GetMinMaxHaulingStresses(max_applied_stresses);
-      ATLASSERT(!max_applied_stresses.empty());
-
-      // only want stresses in end zones
-      Float64 rgt_end, lft_end;
-      m_StrandDesignTool.GetMidZoneBoundaries(&lft_end, &rgt_end);
-
-      // we'll pick strand force at location just past transfer length
-      Float64 xfer_length = m_StrandDesignTool.GetTransferLength(pgsTypes::Permanent);
-
-      // Build stress demand
-      std::vector<pgsStrandDesignTool::StressDemand> stress_demands;
-      stress_demands.reserve(max_applied_stresses.size());
-
-      LOG(_T("--- Compute hauling stresses for debonding --- nss = ")<<nss);
-      GET_IFACE(IPrestressStresses, pPrestress);
-      pgsHaulingAnalysisArtifact::MaxHaulingStressIterator it( max_applied_stresses.begin() );
-      pgsHaulingAnalysisArtifact::MaxHaulingStressIterator itEnd( max_applied_stresses.end() );
-      for ( ; it != itEnd; it++)
-      {
-         CHECK_PROGRESS;
-
-         const pgsHaulingAnalysisArtifact::MaxdHaulingStresses& max_stresses = *it;
-
-         Float64 poi_loc = max_stresses.m_HaulingPoi.GetDistFromStart();
-         if(poi_loc <= lft_end || rgt_end <= poi_loc)
-         {
-            // get strand force if we haven't yet
-            if (xfer_length <= poi_loc && force_per_strand == 0.0)
-            {
-               force_per_strand = max_stresses.m_PrestressForce / nts;
-               LOG(_T("Sample prestress force per strand taken at ")<< ::ConvertFromSysUnits(poi_loc,unitMeasure::Feet)<<_T(" ft, force = ") << ::ConvertFromSysUnits(force_per_strand, unitMeasure::Kip) << _T(" kip"));
-            }
-
-            Float64 fTop = max_stresses.m_TopMaxStress;
-            Float64 fBot = max_stresses.m_BottomMinStress;
-
-            LOG(_T("At ")<< ::ConvertFromSysUnits(poi_loc,unitMeasure::Feet)<<_T(" ft, Ftop = ")<< ::ConvertFromSysUnits(fTop,unitMeasure::KSI) << _T(" ksi Fbot = ")<< ::ConvertFromSysUnits(fBot,unitMeasure::KSI) << _T(" ksi") );
-            LOG(_T("Average force per strand = ") << ::ConvertFromSysUnits(max_stresses.m_PrestressForce / nss,unitMeasure::Kip) << _T(" kip"));
-
-            pgsStrandDesignTool::StressDemand demand;
-            demand.m_Poi  = max_stresses.m_HaulingPoi;
-            demand.m_TopStress = fTop;
-            demand.m_BottomStress = fBot;
-
-            stress_demands.push_back(demand);
-         }
-      }
-
-      // compute debond levels at each section from demand
-      shipping_debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, nss, force_per_strand, all_tens, all_comp);
-
-      if (  shipping_debond_levels.empty() )
-      {
-         ATLASSERT(0);
-         LOG(_T("Debonding failed, this should not happen?"));
-
-         m_StrandDesignTool.SetOutcome(pgsDesignArtifact::DebondDesignFailed);
-         m_DesignerOutcome.AbortDesign();
-      }
-
-   }
-
-   return shipping_debond_levels;
+   return artifact->PassedStressCheck();
 }
-
 
 void pgsDesigner2::RefineDesignForAllowableStress(IProgress* pProgress)
 {
@@ -6788,6 +6878,21 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
                pArtifact->AddDesignNote(pgsDesignArtifact::dnStrandsAddedForLongReinfShear); // give user a note
             }
+         }
+      }
+      else if (sdo == pgsShearDesignTool::sdDesignFailedFromShearStress)
+      {
+         // Strut and tie required - see if we can find a f'c that will work
+         Float64 fcreqd = m_ShearDesignTool.GetFcRequiredForShearStress();
+
+         if (fcreqd < m_StrandDesignTool.GetMaximumConcreteStrength())
+         {
+            m_StrandDesignTool.UpdateConcreteStrengthForShear(fcreqd, pgsTypes::BridgeSite3, pgsTypes::StrengthI);
+         }
+         else
+         {
+            // We can't increase concrete strength enough. Just issue message
+            pArtifact->AddDesignNote(pgsDesignArtifact::dnShearRequiresStrutAndTie);
          }
       }
       else if (sdo != pgsShearDesignTool::sdSuccess)

@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
-
+#include <PgsExt\LiftingAnalysisArtifact.h>
 
 /*****************************************************************************
 CLASS 
@@ -63,6 +63,9 @@ public:
 
    //------------------------------------------------------------------------
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+
+   void BuildRebarTable(IBroker* pBroker, rptChapter* pChapter, SpanIndexType span, GirderIndexType girder, 
+                        ImpactDir dir) const;
 
    //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;

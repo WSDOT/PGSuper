@@ -122,7 +122,7 @@ private:
    void BuildSectionCutDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
    void BuildStirrupDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
    
-   iDimensionLine* BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,double dimension);
+   iDimensionLine* BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension);
    void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color);
    void BuildDebondTick(iDisplayList* pDL, IPoint2d* tickPoint,COLORREF color);
    void UpdateDisplayObjects();

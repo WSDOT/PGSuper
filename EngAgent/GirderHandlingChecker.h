@@ -29,9 +29,10 @@
 // PROJECT INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\HaulingCheckArtifact.h>
-#include <PgsExt\LiftingCheckArtifact.h>
+#include <PgsExt\HaulingAnalysisArtifact.h>
+#include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\PoiMap.h>
+#include <PgsExt\GirderModelFactory.h>
 
 #include <IFace\GirderHandlingPointOfInterest.h>
 
@@ -41,6 +42,17 @@
 // FORWARD DECLARATIONS
 //
 
+// Virtual members of polymorphic hauling checker
+class pgsGirderHaulingChecker
+{
+public:
+   virtual pgsHaulingAnalysisArtifact* CheckHauling(SpanIndexType span,GirderIndexType gdr, SHARED_LOGFILE LOGFILE)=0;
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(SpanIndexType span,GirderIndexType gdr)=0;
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(SpanIndexType span,GirderIndexType gdr,const HANDLINGCONFIG& config,IGirderHaulingDesignPointsOfInterest* pPOId)=0;
+   virtual pgsHaulingAnalysisArtifact* DesignHauling(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,IGirderHaulingDesignPointsOfInterest* pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE)=0;
+};
+
+
 // MISCELLANEOUS
 //
 
@@ -48,11 +60,11 @@
 CLASS 
    pgsGirderHandlingChecker
 
-   Design Checker for girder lifting and hauling
+   Design Checker Factory for girder lifting and hauling
 
 
 DESCRIPTION
-   Design Checker for girder lifting and hauling
+   Design Checker Factory for girder lifting and hauling
 
 
 COPYRIGHT
@@ -79,16 +91,17 @@ public:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void CheckHauling(SpanIndexType span,GirderIndexType gdr,pgsHaulingCheckArtifact* pArtifact);
-   void CheckLifting(SpanIndexType span,GirderIndexType gdr,pgsLiftingCheckArtifact* pArtifact);
 
-   void AnalyzeHauling(SpanIndexType span,GirderIndexType gdr,pgsHaulingAnalysisArtifact* pArtifact);
-   void AnalyzeHauling(SpanIndexType span,GirderIndexType gdr,const HANDLINGCONFIG& config,IGirderHaulingDesignPointsOfInterest* pPOId,pgsHaulingAnalysisArtifact* pArtifact);
-   bool DesignShipping(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,IGirderHaulingDesignPointsOfInterest* pPOId,pgsHaulingAnalysisArtifact* pArtifact,SHARED_LOGFILE LOGFILE);
+   // Factory Method to create the appropriate hauling checker
+   pgsGirderHaulingChecker* CreateGirderHaulingChecker();
 
-   void AnalyzeLifting(SpanIndexType span,GirderIndexType gdr,pgsLiftingAnalysisArtifact* pArtifact);
-   void AnalyzeLifting(SpanIndexType span,GirderIndexType gdr,const HANDLINGCONFIG& config,IGirderLiftingDesignPointsOfInterest* pPOId, pgsLiftingAnalysisArtifact* pArtifact);
-   pgsDesignCodes::OutcomeType DesignLifting(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,IGirderLiftingDesignPointsOfInterest* pPOId,pgsLiftingAnalysisArtifact* pArtifact,SHARED_LOGFILE LOGFILE);
+   // Utility functions for the checking classes
+   static void ComputeMoments(IBroker* pBroker, pgsGirderModelFactory* pGirderModelFactory, SpanIndexType span,GirderIndexType gdr,
+                       pgsTypes::Stage stage,
+                       Float64 leftOH,Float64 glen,Float64 rightOH,
+                       Float64 E, 
+                       const std::vector<pgsPointOfInterest>& rpoiVec,
+                       std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -105,13 +118,6 @@ private:
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
-   StatusCallbackIDType m_scidLiftingSupportLocationError;
-   StatusCallbackIDType m_scidLiftingSupportLocationWarning;
-   StatusCallbackIDType m_scidBunkPointLocation;
-   StatusCallbackIDType m_scidTruckStiffness;
-
-   CComPtr<IFem2dModel> m_Model;
-   pgsPoiMap m_PoiMap;
 
    // GROUP: LIFECYCLE
    // can't construct without a broker
@@ -123,63 +129,6 @@ private:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void AnalyzeLifting(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,const HANDLINGCONFIG& liftConfig,IGirderLiftingDesignPointsOfInterest* pPoiD,pgsLiftingAnalysisArtifact* pArtifact);
-   void PrepareLiftingCheckArtifact(SpanIndexType span,GirderIndexType gdr,pgsLiftingCheckArtifact* pArtifact);
-   void PrepareLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fci,Float64 Eci,pgsTypes::ConcreteType concType,pgsLiftingAnalysisArtifact* pArtifact);
-   void ComputeLiftingMoments(SpanIndexType span,GirderIndexType gdr,
-                              const pgsLiftingAnalysisArtifact& rArtifact, 
-                              const std::vector<pgsPointOfInterest>& rpoiVec,
-                              std::vector<Float64>* pmomVec, 
-                              Float64* pMidSpanDeflection);
-   void ComputeLiftingStresses(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,
-                               const HANDLINGCONFIG& liftConfig,
-                               const std::vector<pgsPointOfInterest>& rpoiVec,
-                               const std::vector<Float64>& momVec,
-                               pgsLiftingAnalysisArtifact* pArtifact);
-   void ComputeLiftingFsAgainstFailure(SpanIndexType span,GirderIndexType gdr,pgsLiftingAnalysisArtifact* pArtifact);
-   bool ComputeLiftingFsAgainstCracking(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,
-                                        const HANDLINGCONFIG& liftConfig,
-                                        const std::vector<pgsPointOfInterest>& rpoiVec,
-                                        const std::vector<Float64>& momVec,
-                                        Float64 midSpanDeflection,
-                                        pgsLiftingAnalysisArtifact* pArtifact);
-
-
-   void AnalyzeHauling(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,const HANDLINGCONFIG& config,IGirderHaulingDesignPointsOfInterest* pPOId,pgsHaulingAnalysisArtifact* pArtifact);
-   void PrepareHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 Loh,Float64 Roh,Float64 Fc,Float64 Ec,pgsTypes::ConcreteType concType,pgsHaulingAnalysisArtifact* pArtifact);
-
-   void ComputeHaulingMoments(SpanIndexType span,GirderIndexType gdr,
-                              const pgsHaulingAnalysisArtifact& rArtifact, 
-                              const std::vector<pgsPointOfInterest>& rpoiVec,
-                              std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
-
-
-   void ComputeHaulingRollAngle(SpanIndexType span,GirderIndexType gdr,
-                                pgsHaulingAnalysisArtifact* pArtifact, 
-                                const std::vector<pgsPointOfInterest> rpoiVec,
-                                std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
-   void ComputeHaulingStresses(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,
-                               const HANDLINGCONFIG& haulConfig,
-                               const std::vector<pgsPointOfInterest>& rpoiVec,
-                               const std::vector<Float64>& momVec,
-                               pgsHaulingAnalysisArtifact* pArtifact);
-   void PrepareHaulingCheckArtifact(SpanIndexType span,GirderIndexType gdr,pgsHaulingCheckArtifact* pArtifact);
-   void ComputeHaulingFsForCracking(SpanIndexType span,GirderIndexType gdr,
-                                    const std::vector<pgsPointOfInterest>& rpoiVec,
-                                    const std::vector<Float64>& momVec,
-                                    pgsHaulingAnalysisArtifact* pArtifact);
-   void ComputeHaulingFsForRollover(SpanIndexType span,GirderIndexType gdr,pgsHaulingAnalysisArtifact* pArtifact);
-
-
-   void ComputeMoments(SpanIndexType span,GirderIndexType gdr,
-                       pgsTypes::Stage stage,
-                       Float64 leftOH,Float64 glen,Float64 rightOH,
-                       Float64 E, 
-                       const std::vector<pgsPointOfInterest>& rpoiVec,
-                       std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
-
-   void GetRequirementsForAlternativeTensileStress(const pgsPointOfInterest& poi,Float64 ftu,Float64 ftd,Float64 fbu,Float64 fbd,Float64* pY,Float64* pA,Float64* pT,Float64* pAs);
-
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -208,5 +157,88 @@ public:
 
 // EXTERNAL REFERENCES
 //
+
+/*****************************************************************************
+CLASS 
+   pgsAlternativeTensileStressCalculator
+
+
+DESCRIPTION
+   Utility class for dealing with alternative tensile stress in casting yard and at lifting
+
+
+COPYRIGHT
+   Copyright © 1997-1998
+   Washington State Department Of Transportation
+   All Rights Reserved
+
+LOG
+   rdp : 03.25.2013 : Created file
+*****************************************************************************/
+
+class pgsAlternativeTensileStressCalculator
+{
+public:
+   // GROUP: LIFECYCLE
+   //------------------------------------------------------------------------
+   // Constructor
+   pgsAlternativeTensileStressCalculator(SpanIndexType span,GirderIndexType gdr, IGirder* pGirder,
+                                         ISectProp2* pSectProp2, ILongRebarGeometry* pRebarGeom,
+                                         IBridgeMaterial* pMaterial, IBridgeMaterialEx* pMaterialEx,
+                                         bool bSIUnits);
+
+   //------------------------------------------------------------------------
+   // Destructor
+   virtual ~pgsAlternativeTensileStressCalculator()
+   {;}
+
+   Float64 ComputeAlternativeStressRequirements(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
+                                                Float64 fTop, Float64 fBot, 
+                                                Float64 lowAllowTens, Float64 highAllowTens,
+                                                Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
+                                                Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar);
+
+   static void ComputeReqdFcTens(Float64 ft, // stress demand
+                          Float64 rcsT, bool rcsBfmax, Float64 rcsFmax, Float64 rcsTalt, // allowable stress coeff's
+                          Float64* pFcNo,Float64* pFcWithRebar)
+   {
+      if ( 0 < ft )
+      {
+         // Without rebar
+         if ( rcsBfmax &&  ft>rcsFmax)
+         {
+            // allowable stress is limited and we hit the limit
+            *pFcNo = -1;
+         }
+         else
+         {
+            *pFcNo = pow(ft/rcsT,2);
+         }
+
+         // With rebar
+         *pFcWithRebar = pow(ft/rcsTalt,2);
+
+      }
+      else
+      {
+         // Compression
+         *pFcNo = 0.0;
+         *pFcWithRebar = 0.0;
+      }
+   }
+
+private:
+   pgsAlternativeTensileStressCalculator(); // no default constructor
+
+   // GROUP: DATA MEMBERS
+   IGirder* m_pGirder;
+   ISectProp2* m_pSectProp2;
+   ILongRebarGeometry* m_pRebarGeom;
+   IBridgeMaterial* m_pMaterial;
+   IBridgeMaterialEx* m_pMaterialEx;
+   Float64 m_AllowableFs; // 
+
+};
+
 
 #endif // INCLUDED_PGSEXT_GIRDERHANDLINGCHECKER_H_

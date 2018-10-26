@@ -224,24 +224,24 @@ pgsConstructabilityArtifact* pgsGirderArtifact::GetConstructabilityArtifact()
    return &m_ConstructabilityArtifact;
 }
 
-void pgsGirderArtifact::SetLiftingCheckArtifact(pgsLiftingCheckArtifact* artifact)
+void pgsGirderArtifact::SetLiftingAnalysisArtifact(pgsLiftingAnalysisArtifact* artifact)
 {
-   m_pLiftingCheckArtifact = std::auto_ptr<pgsLiftingCheckArtifact>(artifact);
+   m_pLiftingAnalysisArtifact = std::auto_ptr<pgsLiftingAnalysisArtifact>(artifact);
 }
 
-const pgsLiftingCheckArtifact* pgsGirderArtifact::GetLiftingCheckArtifact() const
+const pgsLiftingAnalysisArtifact* pgsGirderArtifact::GetLiftingAnalysisArtifact() const
 {
-   return m_pLiftingCheckArtifact.get();
+   return m_pLiftingAnalysisArtifact.get();
 }
 
-void pgsGirderArtifact::SetHaulingCheckArtifact(pgsHaulingCheckArtifact* artifact)
+void pgsGirderArtifact::SetHaulingAnalysisArtifact(pgsHaulingAnalysisArtifact* artifact)
 {
-   m_pHaulingCheckArtifact = std::auto_ptr<pgsHaulingCheckArtifact>(artifact);;
+   m_pHaulingAnalysisArtifact = std::auto_ptr<pgsHaulingAnalysisArtifact>(artifact);;
 }
 
-const pgsHaulingCheckArtifact* pgsGirderArtifact::GetHaulingCheckArtifact() const
+const pgsHaulingAnalysisArtifact* pgsGirderArtifact::GetHaulingAnalysisArtifact() const
 {
-   return m_pHaulingCheckArtifact.get();
+   return m_pHaulingAnalysisArtifact.get();
 }
 
 pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact()
@@ -254,15 +254,6 @@ const pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact(
    return &m_DeflectionCheckArtifact;
 }
 
-void pgsGirderArtifact::SetCastingYardMildRebarRequirement(Float64 As)
-{
-    m_CastingYardAs = As;
-}
-
-Float64 pgsGirderArtifact::GetCastingYardMildRebarRequirement() const
-{
-    return m_CastingYardAs;
-}
 
 void pgsGirderArtifact::SetCastingYardCapacityWithMildRebar(Float64 fAllow)
 {
@@ -273,7 +264,6 @@ Float64 pgsGirderArtifact::GetCastingYardCapacityWithMildRebar() const
 {
     return m_CastingYardAllowable;
 }
-
 pgsDebondArtifact* pgsGirderArtifact::GetDebondArtifact(pgsTypes::StrandType strandType)
 {
    return &m_DebondArtifact[strandType];
@@ -306,23 +296,17 @@ bool pgsGirderArtifact::Passed() const
       bPassed &= artifact.second.Passed();
    }
 
-   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator  i2;
-   for ( i2 = m_FlexuralStressArtifacts.begin(); i2 != m_FlexuralStressArtifacts.end(); i2++ )
-   {
-      const std::pair<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>& artifact = *i2;
-      bPassed &= artifact.second.Passed(pgsFlexuralStressArtifact::WithRebar);
-      bPassed &= artifact.second.Passed(pgsFlexuralStressArtifact::WithoutRebar);
-   }
+   bPassed &= DidFlexuralStressesPass();
 
    bPassed &= m_StirrupCheckArtifact.Passed();
 
    bPassed &= m_PrecastIGirderDetailingArtifact.Passed();
 
-   if (m_pLiftingCheckArtifact.get()!=NULL)
-      bPassed &= m_pLiftingCheckArtifact->Passed();
+   if (m_pLiftingAnalysisArtifact.get()!=NULL)
+      bPassed &= m_pLiftingAnalysisArtifact->Passed();
 
-   if (m_pHaulingCheckArtifact.get()!=NULL)
-      bPassed &= m_pHaulingCheckArtifact->Passed();
+   if (m_pHaulingAnalysisArtifact.get()!=NULL)
+      bPassed &= m_pHaulingAnalysisArtifact->Passed();
 
    bPassed &= m_DeflectionCheckArtifact.Passed();
 
@@ -332,9 +316,24 @@ bool pgsGirderArtifact::Passed() const
    return bPassed;
 }
 
-double pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const
+bool pgsGirderArtifact::DidFlexuralStressesPass() const
 {
-   double fc_reqd = 0;
+   bool bPassed = true;
+
+   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator  i2;
+   for ( i2 = m_FlexuralStressArtifacts.begin(); i2 != m_FlexuralStressArtifacts.end(); i2++ )
+   {
+      const std::pair<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>& artifact = *i2;
+      bPassed &= artifact.second.Passed();
+   }
+
+   return bPassed;
+}
+
+
+Float64 pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const
+{
+   Float64 fc_reqd = 0;
 
    std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator i;
    for ( i = m_FlexuralStressArtifacts.begin(); i != m_FlexuralStressArtifacts.end(); i++ )
@@ -344,7 +343,7 @@ double pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsT
 
       if ( key.GetStage() == stage && key.GetLimitState() == ls )
       {
-         double fc = artifact.second.GetRequiredConcreteStrength();
+         Float64 fc = artifact.second.GetRequiredConcreteStrength();
 
          if ( fc < 0 ) 
             return fc;
@@ -357,9 +356,9 @@ double pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsT
    return fc_reqd;
 }
 
-double pgsGirderArtifact::GetRequiredConcreteStrength() const
+Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
 {
-   double fc_reqd = 0;
+   Float64 fc_reqd = 0;
 
    std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator i;
    for ( i = m_FlexuralStressArtifacts.begin(); i != m_FlexuralStressArtifacts.end(); i++ )
@@ -369,7 +368,7 @@ double pgsGirderArtifact::GetRequiredConcreteStrength() const
       if ( artifact.first.GetStage() == pgsTypes::CastingYard )
          continue;
 
-      double fc = artifact.second.GetRequiredConcreteStrength();
+      Float64 fc = artifact.second.GetRequiredConcreteStrength();
 
       if ( fc < 0 ) // there is no concrete strength that will work
          return fc;
@@ -378,14 +377,25 @@ double pgsGirderArtifact::GetRequiredConcreteStrength() const
          fc_reqd = _cpp_max(fc,fc_reqd);
    }
 
-   if (m_pHaulingCheckArtifact.get()!=NULL)
+   if (m_pLiftingAnalysisArtifact.get()!=NULL)
    {
-      double fc_reqd_hauling_tens,fc_reqd_hauling_comp;
-      double fcMax = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? ::ConvertToSysUnits(105,unitMeasure::MPa) : ::ConvertToSysUnits(15.0,unitMeasure::KSI);
-      bool min_rebar_reqd;
-      m_pHaulingCheckArtifact->GetRequiredConcreteStrength(&fc_reqd_hauling_comp,&fc_reqd_hauling_tens,&min_rebar_reqd,fcMax,false);
+      Float64 fc_reqd_Lifting_comp, fc_reqd_Lifting_tens, fc_reqd_Lifting_tens_wbar;
+      m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_Lifting_comp,&fc_reqd_Lifting_tens, &fc_reqd_Lifting_tens_wbar);
 
-      double fc_reqd_hauling = max(fc_reqd_hauling_tens,fc_reqd_hauling_comp);
+      Float64 fc_reqd_Lifting = max(fc_reqd_Lifting_tens_wbar,fc_reqd_Lifting_comp);
+
+      if ( fc_reqd_Lifting < 0 ) // there is no concrete strength that will work
+         return fc_reqd_Lifting;
+
+      fc_reqd = _cpp_max(fc_reqd,fc_reqd_Lifting);
+   }
+
+   if (m_pHaulingAnalysisArtifact.get()!=NULL)
+   {
+      Float64 fc_reqd_hauling_comp, fc_reqd_hauling_tens, fc_reqd_hauling_tens_wbar;
+      m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_hauling_comp,&fc_reqd_hauling_tens, &fc_reqd_hauling_tens_wbar);
+
+      Float64 fc_reqd_hauling = max(fc_reqd_hauling_tens_wbar,fc_reqd_hauling_comp);
 
       if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
          return fc_reqd_hauling;
@@ -396,9 +406,9 @@ double pgsGirderArtifact::GetRequiredConcreteStrength() const
    return fc_reqd;
 }
 
-double pgsGirderArtifact::GetRequiredReleaseStrength() const
+Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
 {
-   double fc_reqd = 0;
+   Float64 fc_reqd = 0;
 
    std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator i;
    for ( i = m_FlexuralStressArtifacts.begin(); i != m_FlexuralStressArtifacts.end(); i++ )
@@ -408,7 +418,7 @@ double pgsGirderArtifact::GetRequiredReleaseStrength() const
       if ( artifact.first.GetStage() != pgsTypes::CastingYard )
          continue;
 
-      double fc = artifact.second.GetRequiredConcreteStrength();
+      Float64 fc = artifact.second.GetRequiredConcreteStrength();
 
       if ( fc < 0 ) // there is no concrete strength that will work
          return fc;
@@ -417,16 +427,12 @@ double pgsGirderArtifact::GetRequiredReleaseStrength() const
          fc_reqd = _cpp_max(fc,fc_reqd);
    }
 
-   if (m_pLiftingCheckArtifact.get()!=NULL)
+   if (m_pLiftingAnalysisArtifact.get()!=NULL)
    {
-      double fc_reqd_lifting_tens,fc_reqd_lifting_comp;
-      bool min_rebar_reqd;
-      m_pLiftingCheckArtifact->GetRequiredConcreteStrength(&fc_reqd_lifting_comp,&fc_reqd_lifting_tens,&min_rebar_reqd);
-      
-      double fc_reqd_lifting = max(fc_reqd_lifting_tens,fc_reqd_lifting_comp);
+      Float64 fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar;
+      m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_lifting_comp,&fc_reqd_lifting_tens_norebar,&fc_reqd_lifting_tens_withrebar);
 
-      if ( fc_reqd_lifting < 0 ) // there is no concrete strength that will work
-         return fc_reqd_lifting;
+      Float64 fc_reqd_lifting = Max3(fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar);
 
       fc_reqd = _cpp_max(fc_reqd,fc_reqd_lifting);
    }
@@ -456,21 +462,19 @@ void pgsGirderArtifact::MakeCopy(const pgsGirderArtifact& rOther)
    m_HoldDownForceArtifact           = rOther.m_HoldDownForceArtifact;
    m_ConstructabilityArtifact        = rOther.m_ConstructabilityArtifact;
 
-   if(rOther.m_pLiftingCheckArtifact.get()!=NULL)
+   if(rOther.m_pLiftingAnalysisArtifact.get()!=NULL)
    {
-      m_pLiftingCheckArtifact = std::auto_ptr<pgsLiftingCheckArtifact>(new pgsLiftingCheckArtifact);
-      *m_pLiftingCheckArtifact            = *rOther.m_pLiftingCheckArtifact;
+      m_pLiftingAnalysisArtifact = std::auto_ptr<pgsLiftingAnalysisArtifact>(new pgsLiftingAnalysisArtifact);
+      *m_pLiftingAnalysisArtifact            = *rOther.m_pLiftingAnalysisArtifact;
    }
 
-   if(rOther.m_pHaulingCheckArtifact.get()!=NULL)
+   if(rOther.m_pHaulingAnalysisArtifact.get()!=NULL)
    {
-      m_pHaulingCheckArtifact = std::auto_ptr<pgsHaulingCheckArtifact>(new pgsHaulingCheckArtifact);
-      *m_pHaulingCheckArtifact            = *rOther.m_pHaulingCheckArtifact;
+      m_pHaulingAnalysisArtifact = std::auto_ptr<pgsHaulingAnalysisArtifact>(rOther.m_pHaulingAnalysisArtifact->Clone());
    }
 
 
    m_DeflectionCheckArtifact         = rOther.m_DeflectionCheckArtifact;
-   m_CastingYardAs                   = rOther.m_CastingYardAs;
    m_CastingYardAllowable            = rOther.m_CastingYardAllowable;
 
    for ( Uint16 i = 0; i < 3; i++ )

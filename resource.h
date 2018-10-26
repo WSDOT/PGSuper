@@ -40,11 +40,6 @@
 #define IDS_COMPANY                     1699
 #define IDS_E_USERDEFINED               1752
 #define IDC_APPLIST                     3333
-#define EAF_RESERVED_COMMAND_BASE       0x8000
-#define ID_APP_LEGAL                    32771
-#define ID_TIPOFTHEDAY                  32775
-#define ID_MANAGE_APP_PLUGINS           32776
-#define EAF_FIRST_USER_COMMAND          0x80FF
 #define ID_HELP_INET_ARP                33025
 #define ID_HELP_INET_WSDOT              33026
 #define ID_HELP_INET_PGSUPER            33027

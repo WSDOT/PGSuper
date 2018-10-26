@@ -65,9 +65,9 @@ BEGIN_MESSAGE_MAP(CBridgeDescFramingGrid, CGXGridWnd)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-std::vector<double> CBridgeDescFramingGrid::GetSpanLengths()
+std::vector<Float64> CBridgeDescFramingGrid::GetSpanLengths()
 {
-   std::vector<double> spanLengths;
+   std::vector<Float64> spanLengths;
 
    ROWCOL nRows = GetRowCount();
    for (ROWCOL row = 3; row <= nRows; row += 2)
@@ -78,7 +78,7 @@ std::vector<double> CBridgeDescFramingGrid::GetSpanLengths()
 
       CPierData* pPier1 = GetPierRowData(row-2);
 
-      double L = pPier2->GetStation() - pPier1->GetStation();
+      Float64 L = pPier2->GetStation() - pPier1->GetStation();
       spanLengths.push_back(L);
    }
 
@@ -86,11 +86,11 @@ std::vector<double> CBridgeDescFramingGrid::GetSpanLengths()
    return spanLengths;
 }
 
-void CBridgeDescFramingGrid::SetSpanLengths(const std::vector<double>& spanLengths,PierIndexType fixedPierIdx)
+void CBridgeDescFramingGrid::SetSpanLengths(const std::vector<Float64>& spanLengths,PierIndexType fixedPierIdx)
 {
    ROWCOL row = GetPierRow(fixedPierIdx);
    CPierData* pFixedPierData = GetPierRowData(row);
-   double station = pFixedPierData->GetStation();
+   Float64 station = pFixedPierData->GetStation();
 
    // work backwards to the first pier
    PierIndexType idx = fixedPierIdx-1;
@@ -113,10 +113,10 @@ void CBridgeDescFramingGrid::SetSpanLengths(const std::vector<double>& spanLengt
 
    ASSERT(spanLengths.size() == pDlg->m_BridgeDesc.GetSpanCount());
 
-   std::vector<double>::const_iterator iter;
+   std::vector<Float64>::const_iterator iter;
    for ( iter = spanLengths.begin(); iter != spanLengths.end(); iter++ )
    {
-      double L = *iter;
+      Float64 L = *iter;
 
       CSpanData* pNextSpan = pPrevPier->GetNextSpan();
       ASSERT(pNextSpan);
@@ -481,7 +481,7 @@ CPierData* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
    CString strStation = GetCellValue(nRow,1);
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
    m_objStation->FromString(CComBSTR(strStation),unitMode);
-   double station;
+   Float64 station;
    m_objStation->get_Value(&station);
    pPier->SetStation( ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure) );
 
@@ -597,7 +597,7 @@ void CBridgeDescFramingGrid::FillSpanRow(ROWCOL row,const CSpanData& spanData)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strSpanLength;
-   double spanLength = spanData.GetSpanLength();
+   Float64 spanLength = spanData.GetSpanLength();
    strSpanLength.Format(_T("%s"),FormatDimension(spanLength,pDisplayUnits->GetSpanLengthUnit()));
 
    SetStyleRange(CGXRange(row,1,row,2), CGXStyle()
@@ -704,7 +704,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       HRESULT hr_angle = angle->FromString(CComBSTR(strOrientation));
       if ( SUCCEEDED(hr_angle) )
       {
-         double value;
+         Float64 value;
          angle->get_Value(&value);
          if ( value < -MAX_SKEW_ANGLE || MAX_SKEW_ANGLE < value )
          {
@@ -767,11 +767,11 @@ BOOL CBridgeDescFramingGrid::CanActivateGrid(BOOL bActivate)
    if ( !bActivate )
    {
       // make sure all the grid data is active
-      std::vector<double> spanLengths = GetSpanLengths();
-      std::vector<double>::iterator iter;
+      std::vector<Float64> spanLengths = GetSpanLengths();
+      std::vector<Float64>::iterator iter;
       for ( iter = spanLengths.begin(); iter != spanLengths.end(); iter++ )
       {
-         double L = *iter;
+         Float64 L = *iter;
          if ( L <= 0 )
          {
    			AfxMessageBox(_T("Invalid Span Length"));

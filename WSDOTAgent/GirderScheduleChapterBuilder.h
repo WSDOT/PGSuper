@@ -97,6 +97,15 @@ private:
    CGirderScheduleChapterBuilder(const CGirderScheduleChapterBuilder&);
    CGirderScheduleChapterBuilder& operator=(const CGirderScheduleChapterBuilder&);
 
+   int GetReinforcementDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,CLSID& familyCLSID,IndexType* pV1,Float64 *pV2,IndexType *pV3,Float64* pV4,IndexType *pV5,Float64* pV6) const;
+
+   struct DebondInformation
+   {
+      std::vector<StrandIndexType> Strands;
+      Float64 Length;
+   };
+   int GetDebondDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,std::vector<DebondInformation>& debondInfo) const;
+
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    // GROUP: ACCESS

@@ -25,103 +25,11 @@
 
 #include <Units\SysUnitsMgr.h>
 #include <UnitMgt\UnitMgt.h>
+#include <MFCTools\Format.h>
 #include <WBFLUnitServer.h>
 #include <WBFLCogo.h>
 
 BOOL CreateAppUnitSystem(IAppUnitSystem** ppAppUnitSystem);
 void CreateDocUnitSystem(IAppUnitSystem* pAppUnitSystem,IDocUnitSystem** ppDocUnitSystem);
-
-// Helper function for formatting text
-template <class T>
-inline CString FormatDimension(double value,const T& indirectMeasure,bool bIncludeUnitTag = true)
-{
-   value = ::ConvertFromSysUnits( IsZero(value,indirectMeasure.Tol) ? 0.00 : value, indirectMeasure.UnitOfMeasure );
-   sysNumericFormatTool format_tool(indirectMeasure.Format,indirectMeasure.Width,indirectMeasure.Precision);
-   std::_tstring str = format_tool.AsString( value );
-   CString strDimension;
-   if ( bIncludeUnitTag )
-      strDimension.Format(_T("%s %s"),str.c_str(),indirectMeasure.UnitOfMeasure.UnitTag().c_str());
-   else
-      strDimension.Format(_T("%s"),str.c_str());
-
-   strDimension.TrimLeft();
-   return strDimension;
-}
-
-inline CString FormatOffset(double offset,const unitmgtLengthData& indirectMeasure,bool bIncludeUnitTag = true)
-{
-   offset = ::ConvertFromSysUnits( IsZero(offset,indirectMeasure.Tol) ? 0.00 : offset, indirectMeasure.UnitOfMeasure );
-   sysNumericFormatTool format_tool(indirectMeasure.Format,indirectMeasure.Width,indirectMeasure.Precision);
-   std::_tstring str = format_tool.AsString( offset );
-   CString strOffset;
-   if ( offset < 0 )
-      strOffset.Format(_T("%*.*f L"),indirectMeasure.Width,indirectMeasure.Precision, -offset );
-   else if ( 0 < offset )
-      strOffset.Format(_T("%*.*f R"),indirectMeasure.Width,indirectMeasure.Precision, offset );
-   else
-      strOffset.Format(_T("%*.*f"),  indirectMeasure.Width,indirectMeasure.Precision, offset );
-
-   strOffset.TrimLeft();
-
-   if ( bIncludeUnitTag )
-      strOffset += indirectMeasure.UnitOfMeasure.UnitTag().c_str();
-
-   strOffset.TrimLeft();
-
-   return strOffset;
-}
-
-inline CString FormatScalar(double value,const unitmgtScalar& indirectMeasure)
-{
-   sysNumericFormatTool format_tool(indirectMeasure.Format,indirectMeasure.Width,indirectMeasure.Precision);
-   std::_tstring str = format_tool.AsString( value );
-   CString strScalar;
-   strScalar.Format(_T("%s"),str.c_str());
-   strScalar.TrimLeft();
-   return strScalar;
-}
-
-inline CString FormatStation(const unitStationFormat& format,double value)
-{
-   return format.AsString(value).c_str();
-}
-
-inline CString FormatDirection(IDirection* pDirection)
-{
-   NSDirectionType nsDir;
-   EWDirectionType ewDir;
-   long deg;
-   long min;
-   double sec;
-
-   pDirection->get_NSDirection(&nsDir);
-   pDirection->get_EWDirection(&ewDir);
-   pDirection->get_Degree(&deg);
-   pDirection->get_Minute(&min);
-   pDirection->get_Second(&sec);
-
-   CString str;
-   str.Format(_T("%c %02d %02d %04.1f %c"),nsDir == nsNorth ? _T('N') : _T('S'), deg, min, sec, ewDir == ewEast ? _T('E') : _T('W'));
-   str.TrimLeft();
-   return str;
-}
-
-inline CString FormatAngle(IAngle* pAngle)
-{
-   long deg;
-   long min;
-   double sec;
-
-   pAngle->get_Degree(&deg);
-   pAngle->get_Minute(&min);
-   pAngle->get_Second(&sec);
-
-   char cDir = (deg < 0 ? _T('R') : _T('L'));
-
-   CString str;
-   str.Format(_T("%02d %02d %04.1f %c"),abs(deg), min, sec, cDir);
-   str.TrimLeft();
-   return str;
-}
 
 #endif // INCLUDED_PGSUPERUNITS_H_

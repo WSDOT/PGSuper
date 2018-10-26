@@ -607,7 +607,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             (*p_table)(row,0) << _T(" (w/o Temporary Strands)");
       }
 
-      double nEff;
+      Float64 nEff;
       (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( pmid[0], false, &nEff ) );
 
       if(bFirst)
@@ -649,7 +649,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             if (bFirst)
                (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
 
-            double TO;
+            Float64 TO;
             pStrandGeometry->GetHighestHarpedStrandLocation(span,girder,&TO);
             (*p_table)(row++,col) << ecc.SetValue(TO);
          }
@@ -686,7 +686,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       (*p_table)(row++,col) << Bold(_T(""));
 
       const pgsFlexuralStressArtifact* pArtifact;
-      double fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
+      Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
 
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);

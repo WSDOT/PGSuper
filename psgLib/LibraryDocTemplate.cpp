@@ -41,6 +41,10 @@ CLibraryDocTemplate::CLibraryDocTemplate(UINT nIDResource,
                                          int maxViewCount) : 
 CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   HICON hIcon = pApp->LoadIcon(IDI_LIBRARY_MANAGER);
+   m_TemplateGroup.SetIcon(hIcon);
 }
 
 CString CLibraryDocTemplate::GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const

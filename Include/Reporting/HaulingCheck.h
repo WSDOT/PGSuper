@@ -73,9 +73,10 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                      IEAFDisplayUnits* pDisplayUnits) const;
+   void Build(rptChapter* pChapter,
+              IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+              IEAFDisplayUnits* pDisplayUnits) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

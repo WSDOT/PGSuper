@@ -34,13 +34,15 @@
 class PSGLIBCLASS CBeamFamilyManager
 {
 public:
-   static HRESULT Init();
+   static HRESULT Init(CATID catid);
 
-   static std::vector<CString> GetBeamFamilyNames();
+   static const std::vector<CString>& GetBeamFamilyNames();
    static HRESULT GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily);
    static CLSID GetBeamFamilyCLSID(LPCTSTR strName);
+   static void Reset();
 
 private:
    typedef std::map<CString,CLSID> FamilyContainer;
    static FamilyContainer m_Families;
+   static std::vector<CString> m_Names;
 };
