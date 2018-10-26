@@ -120,6 +120,64 @@ BOOL CGirderModelChildFrame::Create(LPCTSTR lpszClassName,
    return bResult;
 }
 
+BOOL CGirderModelChildFrame::OnCmdMsg(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
+
+   // capture the current selection
+   CSelection selection = pDoc->GetSelection();
+
+   bool bSync = DoSyncWithBridgeModelView();
+   BOOL bIsQuickReportCommand = pDoc->IsReportCommand(nID,TRUE);
+   if ( bIsQuickReportCommand && nCode == CN_COMMAND /*&& !bSync*/ )
+   {
+      // the command is for a "quick report" and we are not sync'ed with the bridge view... we want to use our selection
+     
+      // get the selection for this view
+      SpanIndexType spanIdx;
+      GirderIndexType gdrIdx;
+      GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
+
+      pDoc->SelectGirder(spanIdx,gdrIdx,FALSE/* don't broadcast a selection change notification */);
+   }
+   
+   // continue with normal command processing
+   BOOL bHandled = CSplitChildFrame::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
+
+   if ( bIsQuickReportCommand && nCode == CN_COMMAND /*&& !bSync*/ )
+   {
+      // we messed with the selection, so put it back the way it was
+      switch(selection.Type)
+      {
+      case CSelection::None:
+         pDoc->ClearSelection(FALSE);
+         break;
+
+      case CSelection::Pier:
+         pDoc->SelectPier(selection.PierIdx,FALSE);
+         break;
+
+      case CSelection::Span:
+         pDoc->SelectSpan(selection.SpanIdx,FALSE);
+         break;
+
+      case CSelection::Girder:
+         pDoc->SelectGirder(selection.SpanIdx,selection.GirderIdx,FALSE);
+         break;
+
+      case CSelection::Deck:
+         pDoc->SelectDeck(FALSE);
+         break;
+
+      case CSelection::Alignment:
+         pDoc->SelectAlignment(FALSE);
+         break;
+      }
+   }
+
+   return bHandled;
+}
+
 BEGIN_MESSAGE_MAP(CGirderModelChildFrame, CSplitChildFrame)
 	//{{AFX_MSG_MAP(CGirderModelChildFrame)
 	ON_WM_CREATE()

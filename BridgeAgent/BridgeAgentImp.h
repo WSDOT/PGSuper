@@ -663,7 +663,7 @@ public:
    virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi);
    virtual void GetGirderEndPoints(SpanIndexType span,GirderIndexType gdr,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2);
    virtual Float64 GetOrientation(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi);
+   virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi);
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx);
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx);
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi);

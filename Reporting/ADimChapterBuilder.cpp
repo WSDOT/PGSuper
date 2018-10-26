@@ -121,8 +121,8 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    (*pTable1)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable1)(0,1) << _T("Station");
    (*pTable1)(0,2) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*pTable1)(0,3) << COLHDR(_T("Top") << rptNewLine << _T("Slab") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*pTable1)(0,4) << COLHDR(_T("Girder") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,3) << COLHDR(_T("Finished") << rptNewLine << _T("Grade") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,4) << COLHDR(_T("Profile") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable1)(0,5) << COLHDR(_T("Slab") << rptNewLine << _T("Thickness"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*pTable1)(0,6) << COLHDR(_T("Fillet"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*pTable1)(0,7) << COLHDR(_T("Excess") << rptNewLine << _T("Camber"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -192,7 +192,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       // one _T("A") dimension for whole bridge
       Float64 A = pBridgeDesc->GetSlabOffset();
       *pPara << Super(_T("**")) << _T(" includes the effects of camber and based on Slab Offset of ") << comp.SetValue(A) << _T(".") << rptNewLine;
-      *pPara << Super(_T("***")) << _T(" top of girder to top of slab based on Slab Offset of ") << comp.SetValue(A) << _T(". (Deck Elevation - Top Girder Elevation)") << rptNewLine;
+      *pPara << Super(_T("***")) << _T(" top of girder to top of slab based on Slab Offset of ") << comp.SetValue(A) << _T(". (Finished Grade Elevation - Top Girder Elevation)") << rptNewLine;
    }
    else
    {
@@ -204,7 +204,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(".") << rptNewLine;
 
       *pPara << Super(_T("***")) << _T(" actual depth from top of girder to top of slab based on Slab Offset at the start of the girder of ") << comp.SetValue(Astart);
-      *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(". (Top Slab Elevation - Top Girder Elevation)") << rptNewLine;
+      *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(". (Finished Grade Elevation - Top Girder Elevation)") << rptNewLine;
    }
 
    pPara = new rptParagraph;
@@ -215,10 +215,10 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
    *pPara << rptNewLine << rptNewLine;
 
-   *pPara << _T("Top Slab Elevation = Elevation of the roadway surface directly above the centerline of the girder.") << rptNewLine;
-   *pPara << _T("Girder Chord Elevation = Elevation of an imaginary chord paralleling the top of the undeformed girder that intersects the roadway surface above the point of bearing at the left end of the girder.") << rptNewLine;
+   *pPara << _T("Finished Grade Elevation = Elevation of the roadway surface directly above the centerline of the girder.") << rptNewLine;
+   *pPara << _T("Profile Chord Elevation = Elevation of an imaginary chord that intersects the roadway surface above the point of bearing at the both ends of the girder.") << rptNewLine;
 
-   *pPara << _T("Profile Effect = Deck Elevation - Girder Chord Elevation") << rptNewLine;
+   *pPara << _T("Profile Effect = Finished Grade Elevation - Profile Chord Elevation") << rptNewLine;
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ProfileEffect.gif"));
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GirderOrientationEffect.gif"))  << rptNewLine;
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GirderOrientationEffectEquation.png"))  << rptNewLine;

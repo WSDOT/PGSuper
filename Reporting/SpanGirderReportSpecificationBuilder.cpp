@@ -77,8 +77,6 @@ boost::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateD
    GET_IFACE(ISelection,pSelection);
    SpanIndexType spanIdx = pSelection->GetSpanIdx();
 
-   ATLASSERT( spanIdx != INVALID_INDEX );
-
    spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
    boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanReportSpecification(rptDesc.GetReportName(),m_pBroker,spanIdx) );
 

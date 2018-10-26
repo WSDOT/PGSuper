@@ -863,7 +863,7 @@ interface IGirder : IUnknown
 
    virtual Float64 GetOrientation(SpanIndexType span,GirderIndexType gdr) = 0;
 
-   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx) = 0;
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx) = 0;
 

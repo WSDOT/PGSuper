@@ -13883,7 +13883,7 @@ Float64 CBridgeAgentImp::GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi
    VALIDATE( BRIDGE );
 
    // top of girder reference chord elevation
-   Float64 yc = GetTopGirderReferenceChordElevation(poi);
+   Float64 yc = GetProfileChordElevation(poi);
 
    // get station and offset for poi
    Float64 station,offset;
@@ -15132,30 +15132,36 @@ Float64 CBridgeAgentImp::GetOrientation(SpanIndexType span,GirderIndexType gdr)
    return orientation;
 }
 
-Float64 CBridgeAgentImp::GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi)
+Float64 CBridgeAgentImp::GetProfileChordElevation(const pgsPointOfInterest& poi)
 {
-   // top of girder elevation at the poi, ignoring camber effects
-   // camber effects are ignored
+   // elevation of the top of girder reference chord
+   // the reference chord is a straight line that intersects the top of deck deck at the start and end CL bearings
+   // Profile effects are computed by finding the distance between the top of roadway surface and this chord line.
    VALIDATE( BRIDGE );
 
    SpanIndexType span = poi.GetSpan();
    GirderIndexType gdr  = poi.GetGirder();
 
+   CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
+   GetGirderEndPoints(span,gdr,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+
    Float64 end_size = GetGirderStartConnectionLength(span,gdr);
 
-   // get station at offset at start bearing
-   Float64 station, offset;
-   GetStationAndOffset(pgsPointOfInterest(span,gdr,end_size),&station,&offset);
+   Float64 startStation, startOffset;
+   GetStationAndOffset(pntBrg1,&startStation,&startOffset);
 
-   // the girder reference line passes through the deck at this station and offset
-   Float64 Y_girder_ref_line_left_bearing = GetElevation(station,offset);
+   Float64 endStation, endOffset;
+   GetStationAndOffset(pntBrg2,&endStation,&endOffset);
 
-   // slope of the girder in the plane of the girder
-   Float64 girder_slope = GetGirderSlope(span,gdr);
+   Float64 startElevation = GetElevation(startStation,startOffset);
+   Float64 endElevation   = GetElevation(endStation,  endOffset);
 
-   // top of girder elevation (ignoring camber effects)
+   Float64 length;
+   pntBrg1->DistanceEx(pntBrg2,&length);
+
    Float64 dist_from_left_bearing = poi.GetDistFromStart() - end_size;
-   Float64 yc = Y_girder_ref_line_left_bearing + dist_from_left_bearing*girder_slope;
+
+   Float64 yc = ::LinInterp(dist_from_left_bearing,startElevation,endElevation,length);
 
    return yc;
 }

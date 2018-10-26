@@ -93,12 +93,12 @@ public:
 // Operations
 public:
    CSelection GetSelection();
-   void SelectPier(PierIndexType pierIdx);
-   void SelectSpan(SpanIndexType spanIdx);
-   void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   void SelectDeck();
-   void SelectAlignment();
-   void ClearSelection();
+   void SelectPier(PierIndexType pierIdx,BOOL bNotify=TRUE);
+   void SelectSpan(SpanIndexType spanIdx,BOOL bNotify=TRUE);
+   void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,BOOL bNotify=TRUE);
+   void SelectDeck(BOOL bNotify=TRUE);
+   void SelectAlignment(BOOL bNotify=TRUE);
+   void ClearSelection(BOOL bNotify=TRUE);
 
    void OnLibMgrChanged(psgLibraryManager* pNewLibMgr);
 

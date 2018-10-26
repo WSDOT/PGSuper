@@ -1890,7 +1890,7 @@ void CPGSuperDoc::OnProjectEnvironment()
 void CPGSuperDoc::OnEffectiveFlangeWidth()
 {
    GET_IFACE(IEffectiveFlangeWidth,pEFW);
-   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are consider applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
+   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are considered applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
    CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
 
    int choice = pEFW->IgnoreEffectiveFlangeWidthLimits() ? 1 : 0;
@@ -2516,7 +2516,7 @@ CSelection CPGSuperDoc::GetSelection()
    return m_Selection;
 }
 
-void CPGSuperDoc::SelectPier(PierIndexType pierIdx)
+void CPGSuperDoc::SelectPier(PierIndexType pierIdx,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Pier && m_Selection.PierIdx == pierIdx )
       return; // the selection isn't changing
@@ -2527,10 +2527,13 @@ void CPGSuperDoc::SelectPier(PierIndexType pierIdx)
    m_Selection.PierIdx   = pierIdx;
 
    CSelection selection = m_Selection;
-   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   if ( bNotify )
+   {
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   }
 }
 
-void CPGSuperDoc::SelectSpan(SpanIndexType spanIdx)
+void CPGSuperDoc::SelectSpan(SpanIndexType spanIdx,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Span && m_Selection.SpanIdx == spanIdx )
       return; // the selection isn't changing
@@ -2541,10 +2544,13 @@ void CPGSuperDoc::SelectSpan(SpanIndexType spanIdx)
    m_Selection.PierIdx   = INVALID_INDEX;
 
    CSelection selection = m_Selection;
-   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   if ( bNotify )
+   {
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   }
 }
 
-void CPGSuperDoc::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+void CPGSuperDoc::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Girder && m_Selection.SpanIdx == spanIdx && m_Selection.GirderIdx == gdrIdx )
       return; // the selection isn't changing
@@ -2559,12 +2565,15 @@ void CPGSuperDoc::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
    {
       bProcessingSelectionChanged = true;
       CSelection selection = m_Selection;
-      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      if ( bNotify )
+      {
+         UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      }
       bProcessingSelectionChanged = false;
    }
 }
 
-void CPGSuperDoc::SelectDeck()
+void CPGSuperDoc::SelectDeck(BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Deck )
       return;
@@ -2575,10 +2584,13 @@ void CPGSuperDoc::SelectDeck()
    m_Selection.PierIdx   = INVALID_INDEX;
 
    CSelection selection = m_Selection;
-   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   if ( bNotify )
+   {
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   }
 }
 
-void CPGSuperDoc::SelectAlignment()
+void CPGSuperDoc::SelectAlignment(BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Alignment )
       return;
@@ -2589,10 +2601,14 @@ void CPGSuperDoc::SelectAlignment()
    m_Selection.PierIdx   = INVALID_INDEX;
 
    CSelection selection = m_Selection;
-   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+
+   if ( bNotify )
+   {
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   }
 }
 
-void CPGSuperDoc::ClearSelection()
+void CPGSuperDoc::ClearSelection(BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::None )
       return;
@@ -2607,7 +2623,10 @@ void CPGSuperDoc::ClearSelection()
    {
       bProcessingSelectionChanged = true;
       CSelection selection = m_Selection;
-      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      if ( bNotify )
+      {
+        UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      }
       bProcessingSelectionChanged = false;
    }
 }

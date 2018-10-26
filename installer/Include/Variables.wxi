@@ -2,9 +2,9 @@
 <Include>
    <?define PGSuperProductVersion = 2.9.2?>
   <!-- This defines the version number of the product release (must only use x.y.z to get removal of previous versions) -->
-   <?define PGSuperVersion    = 2.9.2.0?> <!-- also change this version number in the BuildPGSuperImagesFragment.js file -->
-   <?define BEToolboxVersion  = 2.2.2.0?>
-   <?define WBFLVersion       = 3.8.2.0?>
+   <?define PGSuperVersion    = 2.9.2.1?> <!-- also change this version number in the BuildPGSuperImagesFragment.js file -->
+   <?define BEToolboxVersion  = 2.2.2.1?>
+   <?define WBFLVersion       = 3.8.2.1?>
 
    <?if $(var.Platform) = "x64"?>
       <?define ProgramFilesDirectory = ProgramFiles64Folder?>

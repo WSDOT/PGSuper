@@ -387,7 +387,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                   {
                      // We have a unique bar
                      diamSet.insert(diam);
-                     REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetRebarDevelopmentLengthDetails(span, gdr, rebar, concType, fc, hasFct, Fct);
+                     REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetRebarDevelopmentLengthDetails(spanIdx, gdrIdx, rebar, concType, fc, hasFct, Fct);
 
                      CComBSTR barname;
                      rebar->get_Name(&barname);

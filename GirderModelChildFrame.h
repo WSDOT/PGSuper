@@ -92,6 +92,7 @@ public:
 				const RECT& rect = rectDefault,
 				CMDIFrameWnd* pParentWnd = NULL,
 				CCreateContext* pContext = NULL);
+   virtual BOOL OnCmdMsg(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
 	//}}AFX_VIRTUAL
 
 // Implementation

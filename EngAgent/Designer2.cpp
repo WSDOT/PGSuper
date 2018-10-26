@@ -381,7 +381,7 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
       z = IsZero(z) ? 0 : z;
 
       // top of girder elevation (ignoring camber effects)
-      Float64 yc = pGdr->GetTopGirderReferenceChordElevation(poi);
+      Float64 yc = pGdr->GetProfileChordElevation(poi);
 
       // top of alignment elevation above girder
       Float64 ya = pAlignment->GetElevation(x,z);
