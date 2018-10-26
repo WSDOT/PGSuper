@@ -23,34 +23,43 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "AnalysisResultsGraphController.h"
-#include "Hints.h"
 #include <Graphing\AnalysisResultsGraphBuilder.h>
 
-#include <EAF\EAFUtilities.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
-#include <IFace\Selection.h>
 
-#include <EAF\EAFGraphBuilderBase.h>
-#include <EAF\EAFGraphView.h>
-
-#include <PgsExt\BridgeDescription2.h>
+#include <Hints.h>
 
 IMPLEMENT_DYNCREATE(CAnalysisResultsGraphController,CGirderGraphControllerBase)
 
 CAnalysisResultsGraphController::CAnalysisResultsGraphController():
-CGirderGraphControllerBase(),
+CGirderGraphControllerBase(false/*exclude ALL_GROUPS*/),
+m_GraphMode(GRAPH_MODE_LOADING),
 m_ActionType(actionMoment),
 m_AnalysisType(pgsTypes::Simple)
 {
 }
 
+int CAnalysisResultsGraphController::GetGraphMode()
+{
+   return m_GraphMode;
+}
+
 BEGIN_MESSAGE_MAP(CAnalysisResultsGraphController, CGirderGraphControllerBase)
 	//{{AFX_MSG_MAP(CAnalysisResultsGraphController)
+   ON_CBN_SELCHANGE( IDC_MODE, OnModeChanged )
    ON_CBN_SELCHANGE( IDC_ACTION, OnActionChanged )
+   ON_CBN_SELCHANGE( IDC_DROP_LIST, OnDropDownChanged )
+   ON_LBN_SELCHANGE( IDC_SELECT_LIST, OnSelectListChanged )
 
-   ON_LBN_SELCHANGE( IDC_LOAD_CASE, OnLoadCaseChanged )
+   ON_BN_CLICKED(IDC_INCREMENTAL,OnPlotTypeClicked)
+   ON_BN_CLICKED(IDC_CUMULATIVE,OnPlotTypeClicked)
+
+   ON_BN_CLICKED(IDC_TOP_GIRDER, OnStress)
+   ON_BN_CLICKED(IDC_BOTTOM_GIRDER, OnStress)
+   ON_BN_CLICKED(IDC_TOP_DECK, OnStress)
+   ON_BN_CLICKED(IDC_BOTTOM_DECK, OnStress)
 
    ON_BN_CLICKED(IDC_SIMPLE,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_SIMPLE2,OnAnalysisTypeClicked)
@@ -62,14 +71,20 @@ BOOL CAnalysisResultsGraphController::OnInitDialog()
 {
    CGirderGraphControllerBase::OnInitDialog();
 
+   FillModeCtrl();
    FillActionTypeCtrl();
-   CComboBox* pcbAction = (CComboBox*)GetDlgItem(IDC_ACTION);
-   pcbAction->SetCurSel(0);
-   m_ActionType = actionMoment;
+   FillDropListCtrl(false);
+   FillSelectListCtrl(false);
 
-   FillLoadCaseList();
+   CheckRadioButton(IDC_INCREMENTAL,IDC_CUMULATIVE,IDC_CUMULATIVE);
+   CheckDlgButton(IDC_TOP_GIRDER,BST_CHECKED);
+   CheckDlgButton(IDC_BOTTOM_GIRDER,BST_CHECKED);
 
+   UpdateListInfo();
+   UpdateStressControls();
    UpdateAnalysisType();
+
+   OnModeChanged();
 
    return TRUE;
 }
@@ -79,6 +94,59 @@ ActionType CAnalysisResultsGraphController::GetActionType()
    return m_ActionType;
 }
 
+CombinationType CAnalysisResultsGraphController::GetCombinationType()
+{
+   return IsDlgButtonChecked(IDC_INCREMENTAL) == BST_CHECKED ? ctIncremental : ctCumulative;
+}
+
+bool CAnalysisResultsGraphController::PlotStresses(pgsTypes::StressLocation stressLocation)
+{
+   UINT nID[4] = {IDC_BOTTOM_GIRDER,IDC_TOP_GIRDER,IDC_BOTTOM_DECK,IDC_TOP_DECK};
+   return IsDlgButtonChecked(nID[stressLocation]) == BST_CHECKED ? true : false;
+}
+
+IntervalIndexType CAnalysisResultsGraphController::GetInterval()
+{
+   if ( m_GraphMode == GRAPH_MODE_INTERVAL )
+   {
+      return INVALID_INDEX; // graphing multiple intervals
+   }
+
+   CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
+   int curSel = pcbIntervals->GetCurSel();
+   IntervalIndexType intervalIdx = (IntervalIndexType)pcbIntervals->GetItemData(curSel);
+   return intervalIdx;
+}
+
+std::vector<IntervalIndexType> CAnalysisResultsGraphController::GetSelectedIntervals()
+{
+   std::vector<IntervalIndexType> vIntervals;
+
+   if (m_GraphMode == GRAPH_MODE_LOADING )
+   {
+      vIntervals.push_back(GetInterval());
+   }
+   else
+   {
+      CListBox* plbIntervals = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+
+      // capture the current selection
+      int selCount = plbIntervals->GetSelCount();
+      CArray<int,int> selItemIndices;
+      selItemIndices.SetSize(selCount);
+      plbIntervals->GetSelItems(selCount,selItemIndices.GetData());
+
+      int i;
+      for ( i = 0; i < selCount; i++ )
+      {
+         IntervalIndexType intervalIdx = (IntervalIndexType)plbIntervals->GetItemData(selItemIndices[i]);
+         vIntervals.push_back(intervalIdx);
+      }
+   }
+
+   return vIntervals;
+}
+
 pgsTypes::AnalysisType CAnalysisResultsGraphController::GetAnalysisType()
 {
    return m_AnalysisType;
@@ -86,26 +154,56 @@ pgsTypes::AnalysisType CAnalysisResultsGraphController::GetAnalysisType()
 
 IDType CAnalysisResultsGraphController::SelectedGraphIndexToGraphID(IndexType graphIdx)
 {
-   CListBox* plbLoadCases = (CListBox*)GetDlgItem(IDC_LOAD_CASE);
+   if (m_GraphMode == GRAPH_MODE_LOADING )
+   {
+      CListBox* plbLoading = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
 
-   CArray<int,int> array;
-   array.SetSize(graphIdx+1);
+      CArray<int,int> array;
+      array.SetSize(graphIdx+1);
 
-   plbLoadCases->GetSelItems((int)(graphIdx+1),(LPINT)array.GetData());
+      plbLoading->GetSelItems((int)(graphIdx+1),(LPINT)array.GetData());
 
-   int idx = array[graphIdx];
+      int idx = array[graphIdx];
 
-   IDType id = (IDType)plbLoadCases->GetItemData(idx);
+      IDType id = (IDType)plbLoading->GetItemData(idx);
 
-   return id;
+      return id;
+   }
+   else
+   {
+      CComboBox* pcbLoading = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
+      int curSel = pcbLoading->GetCurSel();
+      IDType id = (IDType)pcbLoading->GetItemData(curSel);
+      return id;
+   }
+}
+
+IndexType CAnalysisResultsGraphController::GetMaxGraphCount()
+{
+   CListBox* plbSelectList = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+   return (IndexType)(plbSelectList->GetCount());
 }
 
 IndexType CAnalysisResultsGraphController::GetGraphCount()
 {
-   CListBox* plbLoadCases = (CListBox*)GetDlgItem(IDC_LOAD_CASE);
-   IndexType count = plbLoadCases->GetSelCount();
+   CListBox* plbSelectList = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+   IndexType count = plbSelectList->GetSelCount();
 
    return count;
+}
+
+void CAnalysisResultsGraphController::OnModeChanged()
+{
+   CComboBox* pcbMode = (CComboBox*)GetDlgItem(IDC_MODE);
+   int curSel = pcbMode->GetCurSel();
+   if ( m_GraphMode != curSel )
+   {
+      m_GraphMode = curSel;
+      FillDropListCtrl(false);
+      FillSelectListCtrl(false);
+      UpdateListInfo();
+      UpdateGraph();
+   }
 }
 
 void CAnalysisResultsGraphController::OnActionChanged()
@@ -122,12 +220,47 @@ void CAnalysisResultsGraphController::OnActionChanged()
 
    m_ActionType = actionType;
 
-   FillLoadCaseList();
+   UpdateStressControls();
+
+   // the loads that are available to plot for a particular action depend on the
+   // current action type... update the loading list for this new action
+   if ( GetGraphMode() == GRAPH_MODE_LOADING )
+   {
+      FillSelectListCtrl(true);
+   }
+   else
+   {
+      FillDropListCtrl(true);
+   }
 
    UpdateGraph();
 }
 
-void CAnalysisResultsGraphController::OnLoadCaseChanged()
+void CAnalysisResultsGraphController::OnDropDownChanged()
+{
+   if ( GetGraphMode() == GRAPH_MODE_LOADING )
+   {
+      FillSelectListCtrl(true);
+   }
+   else
+   {
+      FillDropListCtrl(true);
+   }
+
+   UpdateGraph();
+}
+
+void CAnalysisResultsGraphController::OnSelectListChanged()
+{
+   UpdateGraph();
+}
+
+void CAnalysisResultsGraphController::OnPlotTypeClicked()
+{
+   UpdateGraph();
+}
+
+void CAnalysisResultsGraphController::OnStress()
 {
    UpdateGraph();
 }
@@ -174,92 +307,266 @@ void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, COb
       )
    {
       ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->UpdateGraphDefinitions();
-      FillLoadCaseList();
+      FillDropListCtrl(true);
+      FillSelectListCtrl(true);
       UpdateGraph();
    }
 }
 
-void CAnalysisResultsGraphController::OnGirderChanged()
+void CAnalysisResultsGraphController::FillModeCtrl()
 {
-   CGirderGraphControllerBase::OnGirderChanged();
-
-   // The available graphs depend on the specific girder selected
-   ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->UpdateGraphDefinitions();
-
-   FillLoadCaseList();
-}
-
-void CAnalysisResultsGraphController::OnIntervalChanged()
-{
-   CGirderGraphControllerBase::OnIntervalChanged();
-   FillLoadCaseList();
+   CComboBox* pcbMode = (CComboBox*)GetDlgItem(IDC_MODE);
+   pcbMode->AddString(_T("Plot by Interval"));
+   pcbMode->AddString(_T("Plot by Loading"));
+   pcbMode->SetCurSel(m_GraphMode);
 }
 
 void CAnalysisResultsGraphController::FillActionTypeCtrl()
 {
-   CComboBox* pcbGraphType = (CComboBox*)GetDlgItem(IDC_ACTION);
+   CComboBox* pcbAction = (CComboBox*)GetDlgItem(IDC_ACTION);
 
-   int curSel = pcbGraphType->GetCurSel();
+   int curSel = pcbAction->GetCurSel();
 
-   pcbGraphType->ResetContent();
+   pcbAction->ResetContent();
 
-   // this must match the order of the GT_ constants defined in the header file
-   pcbGraphType->AddString(_T("Moment"));
-   pcbGraphType->AddString(_T("Shear"));
-   pcbGraphType->AddString(_T("Displacement"));
-   pcbGraphType->AddString(_T("Stress"));
+   pcbAction->AddString(_T("Moment"));
+   pcbAction->AddString(_T("Shear"));
+   pcbAction->AddString(_T("Deflection"));
+   pcbAction->AddString(_T("Stress"));
 
-   if ( curSel == CB_ERR || pcbGraphType->GetCount() <= curSel)
-      pcbGraphType->SetCurSel(0);
+   if ( curSel == CB_ERR || pcbAction->GetCount() <= curSel)
+      pcbAction->SetCurSel(0);
    else
-      pcbGraphType->SetCurSel(curSel);
+      pcbAction->SetCurSel(curSel);
+
+   m_ActionType = (ActionType)pcbAction->GetCurSel();
 }
 
-void CAnalysisResultsGraphController::FillLoadCaseList()
+void CAnalysisResultsGraphController::FillDropListCtrl(bool bRetainSelection)
 {
-   CAnalysisResultsGraphBuilder* pGraphBuilder = (CAnalysisResultsGraphBuilder*)GetGraphBuilder();
-
-   CListBox* plbLoadCases = (CListBox*)GetDlgItem(IDC_LOAD_CASE);
-
-   // capture the current selection
-   int selCount = plbLoadCases->GetSelCount();
-   CArray<int,int> selItemIndices;
-   selItemIndices.SetSize(selCount);
-   plbLoadCases->GetSelItems(selCount,selItemIndices.GetData());
-
-   CStringArray selItems;
-   int i;
-   for ( i = 0; i < selCount; i++ )
+   // NOTE: the two calls in this method are supposed to look backwards
+   // in Interval mode, the drop down list contains loadings and visa-versa
+   if ( GetGraphMode() == GRAPH_MODE_INTERVAL )
    {
-      CString strItem;
-      plbLoadCases->GetText(selItemIndices[i],strItem);
-      selItems.Add( strItem );
+      FillDropListCtrl_Loadings(bRetainSelection);
+   }
+   else
+   {
+      FillDropListCtrl_Intervals(bRetainSelection);
+   }
+}
+
+void CAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRetainSelection)
+{
+   CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
+
+   int curSel = pcbIntervals->GetCurSel();
+
+   pcbIntervals->ResetContent();
+
+   CGirderKey girderKey(GetGirderKey());
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType firstIntervalIdx = GetFirstInterval();
+   IntervalIndexType lastIntervalIdx  = GetLastInterval();
+   for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
+   {
+      CString strInterval;
+      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+      int idx = pcbIntervals->AddString(strInterval);
+      pcbIntervals->SetItemData(idx,intervalIdx);
    }
 
-   // refill control
-   plbLoadCases->ResetContent();
-   
-   std::vector<std::pair<CString,IDType>> lcNames( pGraphBuilder->GetLoadCaseNames(GetInterval(),GetActionType()) );
+   if ( bRetainSelection )
+   {
+      curSel = pcbIntervals->SetCurSel(curSel);
+      if ( curSel == CB_ERR )
+      {
+         pcbIntervals->SetCurSel(0);
+      }
+   }
+   else
+   {
+      pcbIntervals->SetCurSel(0);
+   }
+}
 
-   std::vector< std::pair<CString,IDType> >::iterator iter(lcNames.begin());
-   std::vector< std::pair<CString,IDType> >::iterator end(lcNames.end());
+void CAnalysisResultsGraphController::FillDropListCtrl_Loadings(bool bRetainSelection)
+{
+   CComboBox* pcbLoadings = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
+
+   int curSel = pcbLoadings->GetCurSel();
+
+   pcbLoadings->ResetContent();
+
+   CAnalysisResultsGraphBuilder* pGraphBuilder = (CAnalysisResultsGraphBuilder*)GetGraphBuilder();
+   
+   std::vector<std::pair<CString,IDType>> vLoadings( pGraphBuilder->GetLoadings(INVALID_INDEX,GetActionType()) );
+   std::vector<std::pair<CString,IDType>>::iterator iter(vLoadings.begin());
+   std::vector<std::pair<CString,IDType>>::iterator end(vLoadings.end());
    for ( ; iter != end; iter++ )
    {
       CString& lcName( (*iter).first );
-      IDType  lcID   = (*iter).second;
+      IDType  graphID   = (*iter).second;
       
-      int idx = plbLoadCases->AddString(lcName);
-      plbLoadCases->SetItemData(idx,(DWORD_PTR)lcID);
+      int idx = pcbLoadings->AddString(lcName);
+      pcbLoadings->SetItemData(idx,(DWORD_PTR)graphID);
+   }
+
+   if ( bRetainSelection )
+   {
+      curSel = pcbLoadings->SetCurSel(curSel);
+      if ( curSel == CB_ERR )
+      {
+         pcbLoadings->SetCurSel(0);
+      }
+   }
+   else
+   {
+      pcbLoadings->SetCurSel(0);
+   }
+}
+
+void CAnalysisResultsGraphController::FillSelectListCtrl(bool bRetainSelection)
+{
+   if ( GetGraphMode() == GRAPH_MODE_INTERVAL )
+   {
+      GetDlgItem(IDC_SELECT_LIST_TITLE)->SetWindowText(_T("Interval"));
+      FillSelectListCtrl_Intervals(bRetainSelection);
+   }
+   else
+   {
+      GetDlgItem(IDC_SELECT_LIST_TITLE)->SetWindowText(_T("Loading"));
+      FillSelectListCtrl_Loadings(bRetainSelection);
+   }
+}
+
+void CAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool bRetainSelection)
+{
+   CListBox* plbIntervals = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+
+   // capture the current selection
+   int selCount = 0;
+   CStringArray selItems;
+   if ( bRetainSelection )
+   {
+      selCount = plbIntervals->GetSelCount();
+      CArray<int,int> selItemIndices;
+      selItemIndices.SetSize(selCount);
+      plbIntervals->GetSelItems(selCount,selItemIndices.GetData());
+
+      int i;
+      for ( i = 0; i < selCount; i++ )
+      {
+         CString strItem;
+         plbIntervals->GetText(selItemIndices[i],strItem);
+         selItems.Add( strItem );
+      }
+   }
+
+   // clear the control
+   plbIntervals->ResetContent();
+
+   CGirderKey girderKey(GetGirderKey());
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType firstIntervalIdx = GetFirstInterval();
+   IntervalIndexType lastIntervalIdx  = GetLastInterval();
+   for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
+   {
+      CString str;
+      str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+      int idx = plbIntervals->AddString(str);
+      plbIntervals->SetItemData(idx,intervalIdx);
    }
 
    // reselect anything that was previously selected
-   for ( i = 0; i < selCount; i++ )
+   if ( bRetainSelection )
    {
-      CString strItem = selItems[i];
-      int idx = plbLoadCases->FindStringExact(-1,strItem);
-      if ( idx != LB_ERR )
-         plbLoadCases->SetSel(idx);
+      for ( int i = 0; i < selCount; i++ )
+      {
+         CString strItem = selItems[i];
+         int idx = plbIntervals->FindStringExact(-1,strItem);
+         if ( idx != LB_ERR )
+         {
+            plbIntervals->SetSel(idx);
+         }
+      }
    }
+}
+
+void CAnalysisResultsGraphController::FillSelectListCtrl_Loadings(bool bRetainSelection)
+{
+   CListBox* plbLoadings = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+
+   // capture the current selection
+   int selCount = 0;
+   CStringArray selItems;
+   if ( bRetainSelection )
+   {
+      selCount = plbLoadings->GetSelCount();
+      CArray<int,int> selItemIndices;
+      selItemIndices.SetSize(selCount);
+      plbLoadings->GetSelItems(selCount,selItemIndices.GetData());
+
+      int i;
+      for ( i = 0; i < selCount; i++ )
+      {
+         CString strItem;
+         plbLoadings->GetText(selItemIndices[i],strItem);
+         selItems.Add( strItem );
+      }
+   }
+
+   // clear the control
+   plbLoadings->ResetContent();
+
+   CAnalysisResultsGraphBuilder* pGraphBuilder = (CAnalysisResultsGraphBuilder*)GetGraphBuilder();
+   
+   std::vector<std::pair<CString,IDType>> vLoadings( pGraphBuilder->GetLoadings(GetInterval(),GetActionType()) );
+
+   std::vector<std::pair<CString,IDType>>::iterator iter(vLoadings.begin());
+   std::vector<std::pair<CString,IDType>>::iterator end(vLoadings.end());
+   for ( ; iter != end; iter++ )
+   {
+      CString& lcName( (*iter).first );
+      IDType   graphID = (*iter).second;
+      
+      int idx = plbLoadings->AddString(lcName);
+      plbLoadings->SetItemData(idx,(DWORD_PTR)graphID);
+   }
+
+   if ( bRetainSelection )
+   {
+      // reselect anything that was previously selected
+      for ( int i = 0; i < selCount; i++ )
+      {
+         CString strItem = selItems[i];
+         int idx = plbLoadings->FindStringExact(-1,strItem);
+         if ( idx != LB_ERR )
+         {
+            plbLoadings->SetSel(idx);
+         }
+      }
+   }
+}
+
+void CAnalysisResultsGraphController::UpdateStressControls()
+{
+   // only show the stress check boxes if the action type is actionStress
+   int nCmdShow = (m_ActionType == actionStress ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_GIRDER   )->ShowWindow(nCmdShow);
+   GetDlgItem(IDC_BOTTOM_GIRDER)->ShowWindow(nCmdShow);
+   GetDlgItem(IDC_TOP_DECK     )->ShowWindow(nCmdShow);
+   GetDlgItem(IDC_BOTTOM_DECK  )->ShowWindow(nCmdShow);
+}
+
+void CAnalysisResultsGraphController::UpdateListInfo()
+{
+   CString strType(GetGraphMode() == GRAPH_MODE_INTERVAL ? _T("intervals") : _T("loadings"));
+   CString strHint;
+   strHint.Format(_T("Hold CTRL key to select multiple %s\nHold SHIFT key to select range of %s"),strType,strType);
+   GetDlgItem(IDC_LIST_INFO)->SetWindowText(strHint);
 }
 
 void CAnalysisResultsGraphController::UpdateAnalysisType()
@@ -308,6 +615,22 @@ void CAnalysisResultsGraphController::UpdateAnalysisType()
 
       CheckRadioButton(IDC_SIMPLE,IDC_SIMPLE3,idx );
    }
+}
+
+IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval()
+{
+   GET_IFACE(IIntervals,pIntervals);
+   CGirderKey girderKey(GetGirderKey());
+
+   // want the first segment release interval... which is one interval after strand stressing
+   return pIntervals->GetFirstStressStrandInterval(girderKey)+1;
+}
+
+IntervalIndexType CAnalysisResultsGraphController::GetLastInterval()
+{
+   GET_IFACE(IIntervals,pIntervals);
+   CGirderKey girderKey(GetGirderKey());
+   return pIntervals->GetIntervalCount(girderKey) - 1;
 }
 
 #ifdef _DEBUG

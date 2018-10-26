@@ -180,8 +180,12 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone || !(m_DesignOptions.doDesignSlabOffset) )
    {
       // if there is no deck, set the artifact value to the current value
-      m_pArtifact->SetSlabOffset( pgsTypes::metStart, pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metStart) );
-      m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metEnd)   );
+      PierIndexType startPierIdx, endPierIdx;
+      pBridge->GetGirderGroupPiers(m_SegmentKey.groupIndex,&startPierIdx,&endPierIdx);
+      ATLASSERT(endPierIdx == startPierIdx+1);
+
+      m_pArtifact->SetSlabOffset( pgsTypes::metStart, pBridge->GetSlabOffset(m_SegmentKey.groupIndex,startPierIdx,m_SegmentKey.girderIndex) );
+      m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   pBridge->GetSlabOffset(m_SegmentKey.groupIndex,endPierIdx,  m_SegmentKey.girderIndex) );
    }
    else
    {
@@ -776,7 +780,7 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
 #if defined _DEBUG
    GET_IFACE(ILosses,pILosses);
    GET_IFACE(IIntervals,pIntervals);
-   Float64 check_loss = pILosses->GetPrestressLoss(poi,pgsTypes::Permanent,guess,pIntervals->GetLiveLoadInterval(),pgsTypes::End);
+   Float64 check_loss = pILosses->GetPrestressLoss(poi,pgsTypes::Permanent,guess,pIntervals->GetLiveLoadInterval(m_SegmentKey),pgsTypes::End);
    ATLASSERT(IsEqual(loss,check_loss));
 #endif // _DEBUG
 
@@ -1326,13 +1330,13 @@ class DebondInfoSorter
 public:
    int operator() (const DEBONDCONFIG& db1,const DEBONDCONFIG& db2)
    {
-      if (db1.LeftDebondLength == db2.LeftDebondLength)
+      if (db1.DebondLength[pgsTypes::metStart] == db2.DebondLength[pgsTypes::metStart])
       {
          return db1.strandIdx < db2.strandIdx;
       }
       else
       {
-         return db1.LeftDebondLength < db2.LeftDebondLength;
+         return db1.DebondLength[pgsTypes::metStart] < db2.DebondLength[pgsTypes::metStart];
       }
    }
 };
@@ -1378,7 +1382,7 @@ void pgsStrandDesignTool::DumpDesignParameters()
       DebondConfigIterator it = dbinfo.begin();
       while(loop)
       {
-         Float64 curr_loc = it->LeftDebondLength;
+         Float64 curr_loc = it->DebondLength[pgsTypes::metStart];
          Float64 last_loc = curr_loc;
          std::_tostringstream os;
          os<<_T("    Strands Debonded at ")<< ::ConvertFromSysUnits(curr_loc, unitMeasure::Feet) << _T(" ft: ");
@@ -1395,7 +1399,7 @@ void pgsStrandDesignTool::DumpDesignParameters()
             else
             {
                last_loc = curr_loc;
-               curr_loc = it->LeftDebondLength;
+               curr_loc = it->DebondLength[pgsTypes::metStart];
             }
          }
 
@@ -1438,8 +1442,12 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
 
    m_pArtifact->SetReleaseStrength(pMaterial->GetSegmentFc(m_SegmentKey,releaseIntervalIdx));
 
-   m_pArtifact->SetSlabOffset(pgsTypes::metStart,pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metStart));
-   m_pArtifact->SetSlabOffset(pgsTypes::metEnd,  pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metEnd)  );
+   PierIndexType startPierIdx, endPierIdx;
+   pBridge->GetGirderGroupPiers(m_SegmentKey.groupIndex,&startPierIdx,&endPierIdx);
+   ATLASSERT(endPierIdx == startPierIdx+1);
+
+   m_pArtifact->SetSlabOffset(pgsTypes::metStart,pBridge->GetSlabOffset(m_SegmentKey.groupIndex,startPierIdx,m_SegmentKey.girderIndex));
+   m_pArtifact->SetSlabOffset(pgsTypes::metEnd,  pBridge->GetSlabOffset(m_SegmentKey.groupIndex,endPierIdx,  m_SegmentKey.girderIndex)  );
 
    GDRCONFIG config = pBridge->GetSegmentConfiguration(m_SegmentKey);
    m_pArtifact->SetStraightStrandDebondInfo( config.PrestressConfig.Debond[pgsTypes::Straight] );
@@ -4167,8 +4175,8 @@ bool pgsStrandDesignTool::LayoutDebonding(const std::vector<DebondLevelType>& rD
 
                DEBONDCONFIG debondInfo;
                debondInfo.strandIdx = strandIndex;
-               debondInfo.LeftDebondLength  = debond_location_from_left_end;
-               debondInfo.RightDebondLength = debond_location_from_left_end;
+               debondInfo.DebondLength[pgsTypes::metStart] = debond_location_from_left_end;
+               debondInfo.DebondLength[pgsTypes::metEnd]   = debond_location_from_left_end;
 
                LOG(_T("   Debond ") << strandIndex);
 

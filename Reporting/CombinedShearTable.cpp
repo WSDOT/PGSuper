@@ -84,7 +84,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    if ( liveLoadIntervalIdx <= intervalIdx )
    {
@@ -127,9 +127,9 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
 
    rptRcTable* p_table = 0;
 
@@ -149,7 +149,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
          continuityEventIndex = Min(continuityEventIndex,rightContinuityEventIdx);
       }
    }
-   IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);
+   IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(girderKey,continuityEventIndex);
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
@@ -210,15 +210,15 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             minDWRatinginc = maxDWRatinginc;
          }
 
-         maxDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCummulative, maxBAT );
+         maxDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCumulative, maxBAT );
          minDCcum = maxDCcum;
 
-         maxDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
+         maxDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCumulative, maxBAT );
          minDWcum = maxDWcum;
 
          if ( bRating )
          {
-            maxDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCummulative, maxBAT );
+            maxDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCumulative, maxBAT );
             minDWRatingcum = maxDWRatingcum;
          }
 
@@ -233,13 +233,13 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             maxPSinc = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctIncremental, maxBAT );
             minPSinc = maxPSinc;
 
-            maxCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCummulative, maxBAT );
+            maxCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCumulative, maxBAT );
             minCRcum = maxCRcum;
 
-            maxSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCummulative, maxBAT );
+            maxSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCumulative, maxBAT );
             minSHcum = maxSHcum;
 
-            maxPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCummulative, maxBAT );
+            maxPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCumulative, maxBAT );
             minPScum = minPScum;
          }
 
@@ -261,15 +261,15 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             minDWRatinginc = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctIncremental, minBAT );
          }
 
-         maxDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCummulative, maxBAT );
-         minDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCummulative, minBAT );
-         maxDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
-         minDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCummulative, minBAT );
+         maxDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCumulative, maxBAT );
+         minDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCumulative, minBAT );
+         maxDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCumulative, maxBAT );
+         minDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCumulative, minBAT );
 
          if(bRating)
          {
-            maxDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCummulative, maxBAT );
-            minDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCummulative, minBAT );
+            maxDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCumulative, maxBAT );
+            minDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCumulative, minBAT );
          }
 
          if ( bTimeStepMethod )
@@ -281,12 +281,12 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             maxPSinc = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctIncremental, maxBAT );
             minPSinc = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctIncremental, minBAT );
 
-            maxCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCummulative, maxBAT );
-            minCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCummulative, minBAT );
-            maxSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCummulative, maxBAT );
-            minSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCummulative, minBAT );
-            maxPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCummulative, maxBAT );
-            minPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCummulative, minBAT );
+            maxCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCumulative, maxBAT );
+            minCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCumulative, minBAT );
+            maxSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCumulative, maxBAT );
+            minSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCumulative, minBAT );
+            maxPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCumulative, maxBAT );
+            minPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCumulative, minBAT );
          }
 
          if ( intervalIdx < liveLoadIntervalIdx )
@@ -419,7 +419,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(); // always
+   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(girderKey); // always
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );

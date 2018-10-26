@@ -497,7 +497,6 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
                               bool bUnitsSI, bool areAnyTempStrands, bool areAllHarpedStrandsStraight, bool areAnyHarpedStrands)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    CollectionIndexType ng = endIdx-startIdx+1;
    rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(ng+1,_T("TxDOT Girder Schedule"));
@@ -520,6 +519,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       const CSegmentKey& segmentKey(segmentKeys[gdr_idx]);
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
       StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
       StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);

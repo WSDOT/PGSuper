@@ -57,14 +57,17 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,                 
                                  )
 {
    // use template methods
-   Float64 segmentLength = BuildModel(pBroker, intervalIdx, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
+   BuildModel(pBroker, intervalIdx, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
 
    ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
 
    ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
 }
 
-Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,
+void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,
                                           Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                           LoadCaseIDType lcidGirder,bool bIncludeCantilevers,
                                           const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
@@ -113,7 +116,6 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
 
    // layout the joints
    JointIDType jntID = 0;
-   Float64 end_loc = 0.0;
    CComPtr<IFem2dJointCollection> joints;
    (*ppModel)->get_Joints(&joints);
    std::vector<pgsPointOfInterest>::iterator jointIter(xsPOI.begin());
@@ -121,8 +123,8 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
    for ( ; jointIter < jointIterEnd; jointIter++ )
    {
       pgsPointOfInterest& poi( *jointIter );
-      Float64 poi_loc = poi.GetDistFromStart();
-      if ( !bIncludeCantilevers && (poi_loc < leftSupportLoc || rightSupportLoc < poi_loc) )
+      Float64 Xpoi = poi.GetDistFromStart();
+      if ( !bIncludeCantilevers && (Xpoi < leftSupportLoc || rightSupportLoc < Xpoi) )
       {
          // location is before or after the left/right support and we arn't modeling
          // the cantilevers... next joint
@@ -130,16 +132,16 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
       }
 
       CComPtr<IFem2dJoint> jnt;
-      joints->Create(jntID++,poi_loc,0,&jnt);
+      joints->Create(jntID++,Xpoi,0,&jnt);
 
       // set boundary conditions if this is a support joint
-      if ( IsEqual(poi_loc,leftSupportLoc) )
+      if ( IsEqual(Xpoi,leftSupportLoc) )
       {
          jnt->Support();
          jnt->ReleaseDof(jrtFx);
          jnt->ReleaseDof(jrtMz);
       }
-      else if ( IsEqual(poi_loc,rightSupportLoc) )
+      else if ( IsEqual(Xpoi,rightSupportLoc) )
       {
          jnt->Support();
          jnt->ReleaseDof(jrtMz);
@@ -149,12 +151,19 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
       {
          // jump over the right face
          jointIter++;
+
          if ( jointIter == jointIterEnd )
             break;
-      }
 
-      // capture last location, which is end of beam
-      end_loc = poi_loc;
+         if ( IsEqual(jointIter->GetDistFromStart(),rightSupportLoc) )
+         {
+            ATLASSERT(jointIter->HasAttribute(POI_SECTCHANGE_RIGHTFACE));
+            // the right face is at the support... that means this joint
+            // has to be the right support
+            jnt->Support();
+            jnt->ReleaseDof(jrtMz);
+         }
+      }
    }
 
    // create members
@@ -172,8 +181,8 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
    jointIterEnd = xsPOI.end();
    for ( ; jointIter < jointIterEnd; jointIter++, prevJointIter++, jntID++, prevJntID++ )
    {
-      pgsPointOfInterest prevPoi( *prevJointIter );
-      pgsPointOfInterest poi( *jointIter );
+      pgsPointOfInterest& prevPoi( *prevJointIter );
+      pgsPointOfInterest& poi( *jointIter );
 
       if ( !bIncludeCantilevers && (prevPoi.GetDistFromStart() < leftSupportLoc || rightSupportLoc < prevPoi.GetDistFromStart()) )
       {
@@ -204,9 +213,6 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
             break;
       }
    }
-
-
-   return end_loc;
 }
 
 void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
@@ -311,7 +317,7 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
             }
             else
             {
-               w1 = ::LinInterp(xMbrStart,wStart,wEnd,end-start);
+               w1 = ::LinInterp(xMbrStart-start,wStart,wEnd,end-start);
                x1 = 0; // start of member
             }
 
@@ -322,12 +328,16 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
             }
             else
             {
-               w2 = ::LinInterp(xMbrEnd,wStart,wEnd,end-start);
+               w2 = ::LinInterp(xMbrEnd-start,wStart,wEnd,end-start);
                x2 = Lmbr; // end of member
             }
 
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,w1,w2,lotMember,&distLoad);
+            if ( !IsEqual(x1,x2) )
+            {
+               // no need to add the laod if its length is 0
+               CComPtr<IFem2dDistributedLoad> distLoad;
+               distributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,w1,w2,lotMember,&distLoad);
+            }
          }
       }
    }

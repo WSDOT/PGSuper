@@ -21,7 +21,7 @@ void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeomet
 
 IMPLEMENT_DYNAMIC(CLinearDuctDlg, CDialog)
 
-CLinearDuctDlg::CLinearDuctDlg(CEditGirderlineDlg* pGdrDlg,CWnd* pParent /*=NULL*/)
+CLinearDuctDlg::CLinearDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent /*=NULL*/)
 	: CDialog(CLinearDuctDlg::IDD, pParent)
 {
    m_pGirderlineDlg = pGdrDlg;

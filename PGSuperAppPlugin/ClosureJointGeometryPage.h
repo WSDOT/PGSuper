@@ -23,6 +23,7 @@
 #pragma once
 
 #include <PsgLib\ConnectionLibraryEntry.h>
+#include <PgsExt\BoundaryConditionComboBox.h>
 
 // CClosureJointGeometryPage dialog
 
@@ -58,9 +59,12 @@ protected:
    void FillConnectionTypeComboBox();
    void FillBearingOffsetComboBox();
    void FillEndDistanceComboBox();
+   void FillBoundaryConditionComboBox();
    void FillEventList();
    CString GetImageName(pgsTypes::SegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
    CString GetImageName(pgsTypes::PierSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+
+   CBoundaryConditionComboBox m_cbBoundaryCondition;
 
    CMetaFileStatic m_ConnectionPicture;
    CBrush m_WhiteBrush;
@@ -73,7 +77,8 @@ protected:
    pgsTypes::TemporarySupportType m_tsSupportType;
 
    pgsTypes::SegmentConnectionType m_TSConnectionType;
-   pgsTypes::PierSegmentConnectionType m_PierConnectionType;
+   pgsTypes::PierSegmentConnectionType m_SegmentConnectionType;
+   pgsTypes::PierConnectionType m_PierConnectionType;
    Float64 m_EndDistance;
    Float64 m_BearingOffset;
    Float64 m_SupportWidth;

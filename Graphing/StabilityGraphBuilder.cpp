@@ -25,7 +25,8 @@
 #include <Graphing\StabilityGraphBuilder.h>
 #include "StabilityGraphController.h"
 
-#include <PGSuperColors.h>
+#include "GraphColor.h"
+
 #include <PgsExt\PhysicalConverter.h>
 #include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
@@ -115,23 +116,17 @@ CGraphBuilder* CStabilityGraphBuilder::Clone()
    return new CStabilityGraphBuilder(*this);
 }
 
-int CStabilityGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
+int CStabilityGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
 {
+   if ( CEAFAutoCalcGraphBuilder::InitializeGraphController(pParent,nID) < 0 )
+      return -1;
+
    EAFGetBroker(&m_pBroker);
-
-   // let the base class do its thing
-   CEAFAutoCalcGraphBuilder::CreateControls(pParent,nID);
-
-   // create our controls
-   if ( !m_pGraphController->CreateControls(pParent,nID) )
-   {
-      TRACE0("Failed to create control bar\n");
-      return -1; // failed to create
-   }
 
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
-   m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
+   m_Graph.SetGridPenStyle(GRAPH_GRID_PEN_STYLE, GRAPH_GRID_PEN_WEIGHT, GRAPH_GRID_COLOR);
+
    m_Graph.SetYAxisTitle(_T("Factor of Safety"));
 
    // x axis
@@ -154,9 +149,30 @@ int CStabilityGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
    // Show the grid by default... set the control to checked
    m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
    m_Graph.SetDoDrawGrid(); // show grid by default
-   m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
 
    return 0;
+}
+
+BOOL CStabilityGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
+{
+   if ( !m_pGraphController->CreateControls(pParent,nID) )
+   {
+      TRACE0("Failed to create control bar\n");
+      return FALSE; // failed to create
+   }
+
+   return TRUE;
+}
+
+void CStabilityGraphBuilder::UpdateXAxis()
+{
+   if ( m_pXFormat )
+      delete m_pXFormat;
+
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
+   m_pXFormat = new LengthTool(lengthUnit);
+   m_Graph.SetXAxisValueFormat(*m_pXFormat);
 }
 
 void CStabilityGraphBuilder::OnShowGrid()
@@ -171,6 +187,8 @@ bool CStabilityGraphBuilder::UpdateNow()
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
+
+   UpdateXAxis();
 
    CWaitCursor wait;
 

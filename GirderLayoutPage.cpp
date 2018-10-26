@@ -83,7 +83,6 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_NUMGDR_NOTE,         m_NumGirdersHyperLink);
    DDX_Control(pDX, IDC_GIRDER_SPACING_NOTE, m_GirderSpacingHyperLink);
    DDX_Control(pDX, IDC_GIRDERGRID_NOTE,     m_GirderTypeHyperLink);
-   DDX_Control(pDX, IDC_SLAB_OFFSET_NOTE,    m_SlabOffsetHyperLink);
 
    DDX_Text( pDX, IDC_NUMGDR, m_nGirders );
    DDV_MinMaxLongLong(pDX, m_nGirders, m_MinGirderCount, MAX_GIRDERS_PER_SPAN );
@@ -102,71 +101,6 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::metStart]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::metEnd]);
-
-   DDX_Tag(pDX, IDC_START_SLAB_OFFSET_UNIT, pDisplayUnits->GetComponentDimUnit() );
-   DDX_Tag(pDX, IDC_END_SLAB_OFFSET_UNIT,   pDisplayUnits->GetComponentDimUnit() );
-   if ( pParent->GetBridgeDescription()->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
-   {
-      CEAFDocument* pDoc = EAFGetDocument();
-      BOOL bExchange;
-      if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-      {
-         // for PGSuper, only take slab offset out of dialog box controls if
-         // the slab offset type is Group... that is, slab offset is defined span by span
-         bExchange = (m_SlabOffsetType == pgsTypes::sotGroup);
-      }
-      else
-      {
-         // for PGSplice, only take the slab offset out of dialog box controls if
-         // the slab offset typs is Group or Segment... For group, slab offset is defined at piers
-         // for Segment, slab offset is defined at the ends of all segments which would be the start
-         // and end pier of a girder, and at the closure joints
-         bExchange = (m_SlabOffsetType == pgsTypes::sotGroup || m_SlabOffsetType == pgsTypes::sotSegment);
-      }
-
-      if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && bExchange) )
-      {
-         DDX_UnitValueAndTag(pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit() );
-         DDX_UnitValueAndTag(pDX, IDC_END_SLAB_OFFSET,   IDC_END_SLAB_OFFSET_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit() );
-
-         // Validate slab offset
-         if ( pDX->m_bSaveAndValidate )
-         {
-            // Span index is group index for precast girder bridges
-            CSegmentKey segmentKey(pParent->m_pSpanData->GetIndex(),0,0);
-
-            GET_IFACE2(pBroker,IBridge,pBridge);
-            Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-            pgsPointOfInterest poiStart(segmentKey,0.0);
-            pgsPointOfInterest poiEnd(segmentKey,Lg);
-
-            Float64 grossDeckThicknessStart = pBridge->GetGrossSlabDepth(poiStart) + pBridge->GetFillet();
-            Float64 grossDeckThicknessEnd   = pBridge->GetGrossSlabDepth(poiEnd) + pBridge->GetFillet();
-            
-            m_SlabOffset[pgsTypes::metStart] = (IsEqual(m_SlabOffset[pgsTypes::metStart],grossDeckThicknessStart) ? grossDeckThicknessStart : m_SlabOffset[pgsTypes::metStart]);
-            m_SlabOffset[pgsTypes::metEnd]   = (IsEqual(m_SlabOffset[pgsTypes::metEnd],  grossDeckThicknessEnd  ) ? grossDeckThicknessEnd   : m_SlabOffset[pgsTypes::metEnd]);
-
-            if ( m_SlabOffset[pgsTypes::metStart] < grossDeckThicknessStart )
-            {
-               pDX->PrepareEditCtrl(IDC_START_SLAB_OFFSET);
-               CString msg;
-               msg.Format(_T("The slab offset at the start of the girder must be at equal to the slab + fillet depth of %s"),FormatDimension(grossDeckThicknessStart,pDisplayUnits->GetComponentDimUnit()));
-               AfxMessageBox(msg,MB_ICONEXCLAMATION);
-               pDX->Fail();
-            }
-
-            if ( m_SlabOffset[pgsTypes::metEnd] < grossDeckThicknessEnd )
-            {
-               pDX->PrepareEditCtrl(IDC_END_SLAB_OFFSET);
-               CString msg;
-               msg.Format(_T("The slab offset at the end of the girder must be at equal to the slab + fillet depth of %s"),FormatDimension(grossDeckThicknessEnd,pDisplayUnits->GetComponentDimUnit()));
-               AfxMessageBox(msg,MB_ICONEXCLAMATION);
-               pDX->Fail();
-            }
-         }
-      }
-   }
 
    // Now that all the data has been extracted from the controls, there are a few items that
    // are stored in class data members. Assign these items to the bridge model in the parent dialog
@@ -188,22 +122,6 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
          pSpacing->SetMeasurementType(mt);
          pSpacing->SetMeasurementLocation(ml);
       }
-
-      pParent->m_BridgeDesc.SetSlabOffsetType(m_SlabOffsetType);
-      if (m_SlabOffsetType == pgsTypes::sotBridge )
-      {
-         pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::metStart]);
-      }
-      else if ( m_SlabOffsetType == pgsTypes::sotGroup )
-      {
-         pParent->m_pGirderGroup->SetSlabOffset(pgsTypes::metStart,m_SlabOffset[pgsTypes::metStart]);
-         pParent->m_pGirderGroup->SetSlabOffset(pgsTypes::metEnd,  m_SlabOffset[pgsTypes::metEnd]);
-      }
-      else if ( m_SlabOffsetType == pgsTypes::sotSegment )
-      {
-         pParent->m_pGirderGroup->SetSlabOffset(0,pgsTypes::metStart,m_SlabOffset[pgsTypes::metStart]);
-         pParent->m_pGirderGroup->SetSlabOffset(0,pgsTypes::metEnd,  m_SlabOffset[pgsTypes::metEnd]);
-      }
    }
 }
 
@@ -219,7 +137,6 @@ BEGIN_MESSAGE_MAP(CSpanGirderLayoutPage, CPropertyPage)
    ON_REGISTERED_MESSAGE(MsgChangeSameNumberOfGirders,OnChangeSameNumberOfGirders)
    ON_REGISTERED_MESSAGE(MsgChangeSameGirderSpacing,OnChangeSameGirderSpacing)
    ON_REGISTERED_MESSAGE(MsgChangeSameGirderType,OnChangeSameGirderType)
-   ON_REGISTERED_MESSAGE(MsgChangeSlabOffset,OnChangeSlabOffset)
 	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -266,25 +183,6 @@ void CSpanGirderLayoutPage::Init(CSpanDetailsDlg* pParent)
    }
 
    m_nGirders = pParent->m_pGirderGroup->GetGirderCount();
-
-   // slab offset
-   m_SlabOffsetType = pParent->m_pSpanData->GetBridgeDescription()->GetSlabOffsetType();
-   if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotSegment )
-      m_SlabOffsetTypeCache = pgsTypes::sotGroup;
-   else
-      m_SlabOffsetTypeCache = pgsTypes::sotBridge;
-
-   if ( m_SlabOffsetType == pgsTypes::sotSegment )
-   {
-      // slab offset is unique for each girder... which one do we use??? For now, use girder 0
-      m_SlabOffset[pgsTypes::metStart] = pParent->m_pGirderGroup->GetSlabOffset(0,pgsTypes::metStart);
-      m_SlabOffset[pgsTypes::metEnd]   = pParent->m_pGirderGroup->GetSlabOffset(0,pgsTypes::metEnd);
-   }
-   else
-   {
-      m_SlabOffset[pgsTypes::metStart] = pParent->m_pGirderGroup->GetSlabOffset(INVALID_INDEX,pgsTypes::metStart);
-      m_SlabOffset[pgsTypes::metEnd]   = pParent->m_pGirderGroup->GetSlabOffset(INVALID_INDEX,pgsTypes::metEnd);
-   }
 }
 
 void CSpanGirderLayoutPage::GetPierSkewAngles(Float64& skew1,Float64& skew2)
@@ -342,9 +240,6 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    // Fill up combo boxes for locating the reference girder
    FillRefGirderComboBox(pgsTypes::metStart);
    FillRefGirderComboBox(pgsTypes::metEnd);
-   FillRefGirderOffsetTypeComboBox(pgsTypes::metStart);
-   FillRefGirderOffsetTypeComboBox(pgsTypes::metEnd);
-
 
    CPropertyPage::OnInitDialog();
 
@@ -539,7 +434,6 @@ HBRUSH CSpanGirderLayoutPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
    case IDC_NUMGDR_NOTE:
    case IDC_GIRDER_SPACING_NOTE:
    case IDC_GIRDERGRID_NOTE:
-   case IDC_SLAB_OFFSET_NOTE:
       pDC->SetTextColor(HYPERLINK_COLOR);
       break;
    };
@@ -863,91 +757,10 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderType(WPARAM wParam,LPARAM lPara
    return 0;
 }
 
-LRESULT CSpanGirderLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   if ( m_SlabOffsetTypeCache == pgsTypes::sotBridge )
-   {
-      Float64 slabOffset[2];
-      CDataExchange dx(this,TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,   slabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit());
-
-      Float64 slab_offset = slabOffset[pgsTypes::metStart];
-
-      if ( !IsEqual(slabOffset[pgsTypes::metStart],slabOffset[pgsTypes::metEnd]) )
-      {
-         // going to a single slab offset for the entire bridge, but the current start and end are different
-         // make the user choose one
-         CSelectItemDlg dlg;
-         dlg.m_ItemIdx = 0;
-         dlg.m_strTitle = _T("Select Slab Offset");
-         dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
-         
-         CString strItems;
-         strItems.Format(_T("Start of Span (%s)\nEnd of Span (%s)"),
-                         ::FormatDimension(slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit()),
-                         ::FormatDimension(slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit()));
-
-         dlg.m_strItems = strItems;
-         if ( dlg.DoModal() == IDOK )
-         {
-            if ( dlg.m_ItemIdx == 0 )
-               slab_offset = slabOffset[pgsTypes::metStart];
-            else
-               slab_offset = slabOffset[pgsTypes::metEnd];
-         }
-         else
-         {
-            return 0;
-         }
-      }
-
-      GetDlgItem(IDC_START_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
-      GetDlgItem(IDC_END_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
-
-      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
-      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
-   }
-   else if ( m_SlabOffsetTypeCache == pgsTypes::sotSegment )
-   {
-      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText( _T("") );
-      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText( _T("") );
-   }
-   else
-   {
-      // going to span by span slab offset
-      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
-      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
-   }
-
-   // swap slab offset type
-   pgsTypes::SlabOffsetType temp = m_SlabOffsetType;
-   m_SlabOffsetType = m_SlabOffsetTypeCache;
-   m_SlabOffsetTypeCache = temp;
-
-   UpdateChildWindowState();
-
-   return 0;
-}
-
 BOOL CSpanGirderLayoutPage::OnSetActive() 
 {
    UpdateChildWindowState();
 	BOOL bResult = CPropertyPage::OnSetActive();
-
-   GetDlgItem(IDC_START_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
-   GetDlgItem(IDC_END_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
-   if ( m_SlabOffsetType == pgsTypes::sotSegment )
-   {
-      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(_T(""));
-      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(_T(""));
-   }
 
    return bResult;
 }
@@ -957,26 +770,8 @@ void CSpanGirderLayoutPage::UpdateChildWindowState()
    UpdateGirderCountHyperLinkText();
    UpdateGirderTypeHyperLinkText();
    UpdateGirderSpacingHyperLinkText();
-   UpdateSlabOffsetHyperLinkText();
 
    UpdateGirderSpacingState();
-
-   // Update slab offset state
-   BOOL bEnable = FALSE;
-   if ( m_SlabOffsetType == pgsTypes::sotGroup )
-   {
-      bEnable = TRUE;
-   }
-
-   GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_START_SLAB_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END_SLAB_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
-
-   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   m_SlabOffsetHyperLink.EnableWindow( pParent->GetBridgeDescription()->GetDeckDescription()->DeckType == pgsTypes::sdtNone ? FALSE : TRUE );
 }
 
 void CSpanGirderLayoutPage::UpdateGirderCountHyperLinkText()
@@ -1078,29 +873,6 @@ void CSpanGirderLayoutPage::UpdateGirderSpacingHyperLinkText()
    }
 
    m_GirderSpacingHyperLink.EnableWindow(bEnable);
-}
-
-void CSpanGirderLayoutPage::UpdateSlabOffsetHyperLinkText()
-{
-   if (m_SlabOffsetType == pgsTypes::sotBridge )
-   {
-      m_SlabOffsetHyperLink.SetWindowText(_T("The same slab offset is used for the entire bridge"));
-      m_SlabOffsetHyperLink.SetURL(_T("Click to define slab offset span by span"));
-   }
-   else if ( m_SlabOffsetType == pgsTypes::sotSegment )
-   {
-      m_SlabOffsetHyperLink.SetWindowText(_T("A unique slab offset is used for every girder"));
-      m_SlabOffsetHyperLink.SetURL(_T("Click to define slab offset span by span"));
-   }
-   else
-   {
-      m_SlabOffsetHyperLink.SetWindowText(_T("Slab offset is defined span by span"));
-
-      if ( m_SlabOffsetTypeCache == pgsTypes::sotBridge )
-         m_SlabOffsetHyperLink.SetURL(_T("Click to use this slab offset for the entire bridge"));
-      else if ( m_SlabOffsetTypeCache == pgsTypes::sotSegment )
-         m_SlabOffsetHyperLink.SetURL(_T("Click to use this slab offset for every girder in this span"));
-   }
 }
 
 void CSpanGirderLayoutPage::OnHelp() 

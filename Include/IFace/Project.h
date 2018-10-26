@@ -34,6 +34,10 @@
 
 class CShearData;
 class CLongitudinalRebarData;
+class CGirderData;
+class CHandlingData;
+class CHandlingData;
+
 class CPointLoadData;
 class CDistributedLoadData;
 class CMomentLoadData;
@@ -755,6 +759,25 @@ interface IEvents : IUnknown
 
 /*****************************************************************************
 INTERFACE
+   IEventsSink
+
+   Interface to control events
+
+DESCRIPTION
+   Interface to control events
+*****************************************************************************/
+// {0538457E-9446-4a35-8B60-1263F4156763}
+DEFINE_GUID(IID_IEventsSink, 
+0x538457e, 0x9446, 0x4a35, 0x8b, 0x60, 0x12, 0x63, 0xf4, 0x15, 0x67, 0x63);
+interface IEventsSink : IUnknown
+{
+   virtual HRESULT OnHoldEvents() = 0;
+   virtual HRESULT OnFirePendingEvents() = 0;
+   virtual HRESULT OnCancelPendingEvents() = 0;
+};
+
+/*****************************************************************************
+INTERFACE
    IUIEvents
 
    Interface to control events in the user interface
@@ -768,6 +791,8 @@ interface IUIEvents : IUnknown
 {
    virtual void HoldEvents(bool bHold=true) = 0;
    virtual void FirePendingEvents() = 0;
+   virtual void CancelPendingEvents() = 0;
+   virtual void FireEvent(CView* pSender = NULL,LPARAM lHint = 0,boost::shared_ptr<CObject> pHint = boost::shared_ptr<CObject>()) = 0;
 };
 
 /*****************************************************************************
@@ -893,7 +918,7 @@ interface IBridgeDescription : IUnknown
    virtual void SetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType face,const CGirderSpacing2& spacing) = 0;
    virtual void SetGirderSpacingAtStartOfGroup(GroupIndexType grpIdx,const CGirderSpacing2& spacing) = 0;
    virtual void SetGirderSpacingAtEndOfGroup(GroupIndexType grpIdx,const CGirderSpacing2& spacing) = 0;
-   virtual void SetGirderName(const CSegmentKey& girderKey, LPCTSTR strGirderName) = 0;
+   virtual void SetGirderName(const CGirderKey& girderKey, LPCTSTR strGirderName) = 0;
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders) = 0;
    virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup) = 0;
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType) = 0;
@@ -927,13 +952,14 @@ interface IBridgeDescription : IUnknown
 
    // slab offset
    // chnages slab offset type to be sotBridge
+   virtual void SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType) = 0;
    virtual void SetSlabOffset( Float64 slabOffset) = 0;
-   // changes slab offset type to sotGroup
-   virtual void SetSlabOffset( GroupIndexType grpIdx, Float64 start, Float64 end) = 0;
-   // sets slab offset per girder... sets the slab offset type to sotSegment
-   virtual void SetSlabOffset( const CSegmentKey& segmentKey, Float64 start, Float64 end) = 0;
+   // changes slab offset type to sotPier
+   virtual void SetSlabOffset( GroupIndexType grpIdx, PierIndexType pierIdx, Float64 offset) = 0;
+   // sets slab offset per girder ... sets the slab offset type to sotGirder
+   virtual void SetSlabOffset( GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset) = 0;
+   virtual Float64 GetSlabOffset( GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx) = 0;
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() = 0;
-   virtual void GetSlabOffset( const CSegmentKey& segmentKey, Float64* pStart, Float64* pEnd) = 0;
 
    // Returns a vector of valid connection types
    virtual std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx) = 0;
@@ -950,10 +976,10 @@ interface IBridgeDescription : IUnknown
    virtual void SetEventByIndex(EventIndexType eventIdx,const CTimelineEvent& timelineEvent) = 0;
    virtual void SetEventByID(EventIDType eventID,const CTimelineEvent& timelineEvent) = 0;
 
-   virtual void SetSegmentConstructionEventByIndex(EventIndexType eventIdx) = 0;
-   virtual void SetSegmentConstructionEventByID(EventIDType eventID) = 0;
-   virtual EventIndexType GetSegmentConstructionEventIndex() = 0;
-   virtual EventIDType GetSegmentConstructionEventID() = 0;
+   virtual void SetSegmentConstructionEventByIndex(const CSegmentKey& segmentKey,EventIndexType eventIdx) = 0;
+   virtual void SetSegmentConstructionEventByID(const CSegmentKey& segmentKey,EventIDType eventID) = 0;
+   virtual EventIndexType GetSegmentConstructionEventIndex(const CSegmentKey& segmentKey) = 0;
+   virtual EventIDType GetSegmentConstructionEventID(const CSegmentKey& segmentKey) = 0;
 
    virtual void SetPierErectionEventByIndex(PierIndexType pierIdx,EventIndexType eventIdx) = 0;
    virtual void SetPierErectionEventByID(PierIndexType pierIdx,EventIDType eventID) = 0;
@@ -995,6 +1021,7 @@ interface IBridgeDescription : IUnknown
    virtual void SetLiveLoadEventByIndex(EventIndexType eventIdx) = 0;
    virtual void SetLiveLoadEventByID(EventIDType eventID) = 0;
 
+   virtual GroupIDType GetGroupID(GroupIndexType groupIdx) = 0;
    virtual GirderIDType GetGirderID(const CGirderKey& girderKey) = 0;
    virtual SegmentIDType GetSegmentID(const CSegmentKey& segmentKey) = 0;
 };

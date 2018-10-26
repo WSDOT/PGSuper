@@ -92,7 +92,8 @@ void CClosureJointGeometryPage::Init(const CPierData2* pPierData)
    pPierData->GetBearingOffset(pgsTypes::Ahead,&m_BearingOffset,&m_BearingOffsetMeasurementType);
    m_SupportWidth = pPierData->GetSupportWidth(pgsTypes::Ahead) + pPierData->GetSupportWidth(pgsTypes::Back);
 
-   m_PierConnectionType = pPierData->GetSegmentConnectionType();
+   m_SegmentConnectionType = pPierData->GetSegmentConnectionType();
+   m_PierConnectionType = pPierData->GetPierConnectionType();
 
    const CClosureJointData* pClosureJoint = pPierData->GetClosureJoint(0);
    if ( pClosureJoint )
@@ -117,6 +118,8 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
 
 	CPropertyPage::DoDataExchange(pDX);
 
+   DDX_Control(pDX,IDC_BOUNDARY_CONDITIONS,m_cbBoundaryCondition);
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
@@ -125,7 +128,7 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
    CString strImageName;
    if ( m_bIsPier )
    {
-      strImageName = GetImageName(m_PierConnectionType,m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
+      strImageName = GetImageName(m_SegmentConnectionType,m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
    }
    else
    {
@@ -146,8 +149,11 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
 
    if ( m_bIsPier )
    {
-      DDX_CBItemData(pDX,IDC_CONNECTION_TYPE,m_PierConnectionType);
-      if ( m_PierConnectionType == pgsTypes::psctContinousClosureJoint || m_PierConnectionType == pgsTypes::psctIntegralClosureJoint )
+      // Boundary Conditions
+      DDX_CBItemData(pDX,IDC_BOUNDARY_CONDITIONS,m_PierConnectionType);
+
+      DDX_CBItemData(pDX,IDC_CONNECTION_TYPE,m_SegmentConnectionType);
+      if ( m_SegmentConnectionType == pgsTypes::psctContinousClosureJoint || m_SegmentConnectionType == pgsTypes::psctIntegralClosureJoint )
       {
          DDX_CBItemData(pDX,IDC_EVENT,m_ClosureJointEventIndex);
 
@@ -181,11 +187,14 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
       if ( m_bIsPier )
       {
          CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-         pParent->m_pPierData->SetGirderEndDistance(pgsTypes::Ahead,m_EndDistance,m_EndDistanceMeasurementType);
-         pParent->m_pPierData->SetBearingOffset(pgsTypes::Ahead,m_BearingOffset,m_BearingOffsetMeasurementType);
-         pParent->m_pPierData->SetSupportWidth(pgsTypes::Ahead,m_SupportWidth/2);
-         pParent->m_pPierData->SetSupportWidth(pgsTypes::Back,m_SupportWidth/2);
-         pParent->m_pPierData->SetSegmentConnectionType(m_PierConnectionType,m_ClosureJointEventIndex);
+         pParent->m_pPier->SetGirderEndDistance(pgsTypes::Ahead,m_EndDistance,m_EndDistanceMeasurementType);
+         pParent->m_pPier->SetBearingOffset(pgsTypes::Ahead,m_BearingOffset,m_BearingOffsetMeasurementType);
+         pParent->m_pPier->SetGirderEndDistance(pgsTypes::Back,m_EndDistance,m_EndDistanceMeasurementType);
+         pParent->m_pPier->SetBearingOffset(pgsTypes::Back,m_BearingOffset,m_BearingOffsetMeasurementType);
+         pParent->m_pPier->SetSupportWidth(pgsTypes::Ahead,m_SupportWidth/2);
+         pParent->m_pPier->SetSupportWidth(pgsTypes::Back,m_SupportWidth/2);
+         pParent->m_pPier->SetSegmentConnectionType(m_SegmentConnectionType,m_ClosureJointEventIndex);
+         pParent->m_pPier->SetPierConnectionType(m_PierConnectionType);
       }
       else
       {
@@ -218,12 +227,23 @@ BOOL CClosureJointGeometryPage::OnInitDialog()
    FillConnectionTypeComboBox();
    FillBearingOffsetComboBox();
    FillEndDistanceComboBox();
+   FillBoundaryConditionComboBox();
 
    FillEventList();
 
    CPropertyPage::OnInitDialog();
 
    OnConnectionTypeChanged();
+
+   if ( m_bIsPier )
+   {
+      m_cbBoundaryCondition.SetPierType(PIERTYPE_INTERMEDIATE);
+   }
+   else
+   {
+      GetDlgItem(IDC_BOUNDARY_CONDITION_LABEL)->ShowWindow(SW_HIDE);
+      m_cbBoundaryCondition.ShowWindow(SW_HIDE);
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -362,6 +382,21 @@ void CClosureJointGeometryPage::FillEndDistanceComboBox()
    strLabel.Format(_T("Measured from and normal to %s Line"),m_strSupportLabel);
    idx = pCB->AddString(strLabel);
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
+}
+
+void CClosureJointGeometryPage::FillBoundaryConditionComboBox()
+{
+   if ( m_bIsPier )
+   {
+      CBoundaryConditionComboBox* pcbBoundaryConditions = (CBoundaryConditionComboBox*)GetDlgItem(IDC_BOUNDARY_CONDITIONS);
+
+      CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+      PierIndexType pierIdx = pParent->m_pPier->GetIndex();
+
+      std::vector<pgsTypes::PierConnectionType> connections( pParent->m_pPier->GetBridgeDescription()->GetPierConnectionTypes(pierIdx) );
+
+      pcbBoundaryConditions->Initialize(connections);
+   }
 }
 
 HBRUSH CClosureJointGeometryPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
@@ -507,12 +542,21 @@ void CClosureJointGeometryPage::FillEventList()
 {
    CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
 
-   int eventIdx = pcbEvent->GetCurSel();
+   int selIdx = pcbEvent->GetCurSel();
 
    pcbEvent->ResetContent();
 
-   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-   CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+   CTimelineManager* pTimelineMgr;
+   if ( m_bIsPier )
+   {
+      CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+      pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+   }
+   else
+   {
+      CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+      pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+   }
 
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
    for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
@@ -528,8 +572,8 @@ void CClosureJointGeometryPage::FillEventList()
    CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
    pcbEvent->SetItemData(pcbEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
-   if ( eventIdx != CB_ERR )
-      pcbEvent->SetCurSel(eventIdx);
+   if ( selIdx != CB_ERR )
+      pcbEvent->SetCurSel(selIdx);
 }
 
 
@@ -571,8 +615,17 @@ void CClosureJointGeometryPage::OnInstallationStageChanged()
 
 EventIndexType CClosureJointGeometryPage::CreateEvent()
 {
-   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-   CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+   CTimelineManager* pTimelineMgr;
+   if ( m_bIsPier )
+   {
+      CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+      pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+   }
+   else
+   {
+      CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+      pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+   }
 
    CTimelineEventDlg dlg(pTimelineMgr,FALSE);
    if ( dlg.DoModal() == IDOK )

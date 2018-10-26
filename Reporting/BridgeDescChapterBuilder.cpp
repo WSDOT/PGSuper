@@ -111,9 +111,9 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   write_alignment_data( pBroker, pDisplayUnits, pChapter, level);
-   write_profile_data( pBroker, pDisplayUnits, pChapter, level);
-   write_crown_data( pBroker, pDisplayUnits, pChapter, level);
+   //write_alignment_data( pBroker, pDisplayUnits, pChapter, level);
+   //write_profile_data( pBroker, pDisplayUnits, pChapter, level);
+   //write_crown_data( pBroker, pDisplayUnits, pChapter, level);
    write_bridge_data( pBroker, pDisplayUnits, pChapter, level);
    write_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level);
    write_pier_data( pBroker, pDisplayUnits, pChapter, level);
@@ -840,7 +840,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
             EventIndexType erectEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
 
             IntervalIndexType initialIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-            IntervalIndexType finalIntervalIdx   = pIntervals->GetInterval(erectEventIdx);
+            IntervalIndexType finalIntervalIdx   = pIntervals->GetInterval(thisSegmentKey,erectEventIdx);
 
             Float64 fci = pMaterials->GetSegmentFc(thisSegmentKey,initialIntervalIdx);
             Float64 fc  = pMaterials->GetSegmentFc(thisSegmentKey,finalIntervalIdx);
@@ -869,10 +869,10 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    if ( pDeck->DeckType != pgsTypes::sdtNone )
    {
-      IntervalIndexType intervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType intervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
 
-      Float64 fc = pMaterials->GetDeckFc(intervalIdx);
-      Float64 Ec = pMaterials->GetDeckEc(intervalIdx);
+      Float64 fc = pMaterials->GetDeckFc(girderKey,intervalIdx);
+      Float64 Ec = pMaterials->GetDeckEc(girderKey,intervalIdx);
 
       (*pTable)(row,0) << _T("Slab");
       write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,pDeck->Concrete,row);
@@ -1805,12 +1805,16 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,1) << pGroup->GetGirder(gdrIdx)->GetGirderName();
             row++;
 
+            PierIndexType startPierIdx, endPierIdx;
+            pBridge->GetGirderGroupPiers(grpIdx,&startPierIdx,&endPierIdx);
+            ATLASSERT(endPierIdx == startPierIdx+1);
+
             (*pTable)(row,0) << _T("Slab Offset at Start (\"A\" Dimension)");
-            (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey,pgsTypes::metStart));
+            (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey.groupIndex,startPierIdx,thisSegmentKey.girderIndex));
             row++;
 
             (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
-            (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey,pgsTypes::metEnd));
+            (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey.groupIndex,endPierIdx,thisSegmentKey.girderIndex));
             row++;
 
             CString strFillType;
@@ -2161,7 +2165,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          (*pTable)(row,1) << pBridgeDesc->GetGirderName();
          row++;
 
-         EventIndexType constructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex();
+         EventIndexType constructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segID);
          EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(segID);
 
          const CTimelineEvent* pConstructionEvent = pTimelineMgr->GetEventByIndex(constructionEventIdx);

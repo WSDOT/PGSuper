@@ -89,6 +89,8 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
 
 
    // Get the results
@@ -98,8 +100,6 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
-
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    PierIndexType startPier = pBridge->GetGirderGroupStartPier(startGroup);
    PierIndexType endPier   = pBridge->GetGirderGroupEndPier(endGroup);
@@ -112,7 +112,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
       // Get the intervals when temporary supports are removed for this group
-      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(grpIdx));
+      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(girderKey));
 
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
@@ -178,7 +178,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
          RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
-                                                                                               bPermit,false,analysisType,continuityIntervalIdx,
+                                                                                               bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
                                                                                                pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
          if ( bAreThereUserLoads )
@@ -215,41 +215,41 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
             else
                (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
          
-            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftGirder,    pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftDiaphragm, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftGirder,    pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
+            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftDiaphragm, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
 
             if ( bShearKey )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftShearKey, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftShearKey, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
             }
 
             if ( bConstruction )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftConstruction,   pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftConstruction,   pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
             }
 
-            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftSlab, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan  ) );
-            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftSlabPad, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan  ) );
+            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftSlab, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental  ) );
+            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftSlabPad, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental  ) );
 
             if ( bDeckPanels )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftSlabPanel,   pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftSlabPanel,   pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
             }
 
 
             if ( bSidewalk )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftSidewalk, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftSidewalk, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
             }
 
-            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftTrafficBarrier, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftOverlay,        pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftTrafficBarrier, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
+            (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftOverlay,        pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
 
             if ( bAreThereUserLoads )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftUserDC, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftUserDW, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftUserLLIM, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftUserDC, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftUserDW, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftUserLLIM, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, ctIncremental ) );
             }
 
             row++;

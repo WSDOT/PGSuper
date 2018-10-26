@@ -86,7 +86,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
@@ -193,27 +193,29 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
 
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    if ( m_bHasSidewalk )
    {
-      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pftSidewalk, poi, m_BAT ));
+      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pftSidewalk, poi, m_BAT, ctIncremental ));
    }
 
-   (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, poi, m_BAT ));
+   (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, poi, m_BAT, ctIncremental ));
 
    if ( m_bHasOverlay )
    {
-      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( overlayIntervalIdx, pftOverlay, poi, m_BAT ));
+      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( overlayIntervalIdx, pftOverlay, poi, m_BAT, ctIncremental ));
    }
 
    if ( m_bHasUserLoads )
    {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDC,      poi, m_BAT ) );
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDW,      poi, m_BAT ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDC,      poi, m_BAT, ctIncremental ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDW,      poi, m_BAT, ctIncremental ) );
    }
 
    (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetSidlMoment() );

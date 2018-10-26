@@ -35,10 +35,10 @@ static char THIS_FILE[] = __FILE__;
 ///////////// Functions for Strand Design...  ////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-// convert config fill to compacted DirectStrandFillCollection
-DirectStrandFillCollection ConvertConfigToDirectStrandFill(const ConfigStrandFillVector& rconfigfil)
+// convert config fill to compacted CDirectStrandFillCollection
+CDirectStrandFillCollection ConvertConfigToDirectStrandFill(const ConfigStrandFillVector& rconfigfil)
 {
-   DirectStrandFillCollection coll;
+   CDirectStrandFillCollection coll;
    ConfigStrandFillConstIterator it = rconfigfil.begin();
    ConfigStrandFillConstIterator itend = rconfigfil.end();
    StrandIndexType cnt(0);
@@ -60,14 +60,14 @@ DirectStrandFillCollection ConvertConfigToDirectStrandFill(const ConfigStrandFil
 }
 
 ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, 
-                                                        LPCTSTR strGirderName, const DirectStrandFillCollection& coll)
+                                                        LPCTSTR strGirderName, const CDirectStrandFillCollection& coll)
 {
    // start with unfilled grid (0 strands)
    ConfigStrandFillVector vec(pStrandGeometry->ComputeStrandFill(strGirderName, type, 0));
    GridIndexType gridsize = vec.size();
 
-   DirectStrandFillCollection::const_iterator it = coll.begin();
-   DirectStrandFillCollection::const_iterator itend = coll.end();
+   CDirectStrandFillCollection::const_iterator it = coll.begin();
+   CDirectStrandFillCollection::const_iterator itend = coll.end();
    while(it != itend)
    {
       GridIndexType idx = it->permStrandGridIdx;
@@ -86,14 +86,14 @@ ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometr
 
 ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, 
                                                         const CSegmentKey& segmentKey, 
-                                                        const DirectStrandFillCollection& coll)
+                                                        const CDirectStrandFillCollection& coll)
 {
    // start with unfilled grid (0 strands)
    ConfigStrandFillVector vec(pStrandGeometry->ComputeStrandFill(segmentKey, type, 0));
    StrandIndexType gridsize = vec.size();
 
-   DirectStrandFillCollection::const_iterator it = coll.begin();
-   DirectStrandFillCollection::const_iterator itend = coll.end();
+   CDirectStrandFillCollection::const_iterator it = coll.begin();
+   CDirectStrandFillCollection::const_iterator itend = coll.end();
    while(it != itend)
    {
       GridIndexType idx = it->permStrandGridIdx;

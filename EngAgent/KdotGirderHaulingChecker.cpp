@@ -419,7 +419,7 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
       LPCTSTR msg = _T("Hauling support overhang cannot exceed one-half of the span length");
-      pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,m_StatusGroupID,m_scidBunkPointLocation,msg);
+      pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,pgsTypes::metStart,m_StatusGroupID,m_scidBunkPointLocation,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::_tstring str(msg);
@@ -460,8 +460,8 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format(_T("Left bunk point is less than the absolute minimum value of %s"),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
-      pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
+      strMsg.Format(_T("Group %d Girder %s Segment %d: Left bunk point is less than the absolute minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
+      pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,pgsTypes::metStart,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
 
@@ -471,8 +471,8 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format(_T("Right bunk point is less than the absolute minimum value of %s"),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
-      pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
+      strMsg.Format(_T("Group %d Girder %s Segment %d: Right bunk point is less than the absolute minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
+      pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,pgsTypes::metEnd,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
 

@@ -69,19 +69,23 @@ void CTimelineEventDlg::DoDataExchange(CDataExchange* pDX)
       DDX_Text(pDX,IDC_DAY,day);
       m_TimelineEvent.SetDay(day);
 
-      // check for duplicate data if the event manager does not have a event with this ID (pTimelineEvent == NULL)
-      // and when there is a event with this ID and the day is changing... otherwise, a event with ID
-      // is already defined and it's day isn't changing so there wont be duplicates
-      const CTimelineEvent* pTimelineEvent = m_pTimelineMgr->GetEventByID(m_TimelineEvent.GetID());
-      bool bCheckDay = (pTimelineEvent == NULL ? true : (pTimelineEvent->GetDay() != day ? true : false));
-      if ( bCheckDay && m_pTimelineMgr->HasEvent(day) )
-      {
-         pDX->PrepareEditCtrl(IDC_DAY);
-         CString strMsg;
-         strMsg.Format(_T("An event is already defined at day %d"),(int)day);
-         AfxMessageBox(strMsg);
-         pDX->Fail();
-      }
+      // Multiple events on the same day are ok.
+      // This is typically done when erecting segments if we want to look at the step by step
+      // erection sequence.
+
+      //// check for duplicate data if the event manager does not have an event with this ID (pTimelineEvent == NULL)
+      //// and when there is a event with this ID and the day is changing... otherwise, a event with ID
+      //// is already defined and it's day isn't changing so there wont be duplicates
+      //const CTimelineEvent* pTimelineEvent = m_pTimelineMgr->GetEventByID(m_TimelineEvent.GetID());
+      //bool bCheckDay = (pTimelineEvent == NULL ? true : (pTimelineEvent->GetDay() != day ? true : false));
+      //if ( bCheckDay && m_pTimelineMgr->HasEvent(day) )
+      //{
+      //   pDX->PrepareEditCtrl(IDC_DAY);
+      //   CString strMsg;
+      //   strMsg.Format(_T("An event is already defined at day %d"),(int)day);
+      //   AfxMessageBox(strMsg);
+      //   pDX->Fail();
+      //}
 
 #pragma Reminder("UPDATE: event elapsed time validation")
       // if this is a new event, then pTimelineEvent is null. we need a way to validate the duration of this event
@@ -231,7 +235,7 @@ void CTimelineEventDlg::OnRemoveActivities()
 
 void CTimelineEventDlg::OnConstructSegments()
 {
-   CConstructSegmentsDlg dlg(m_pTimelineMgr);
+   CConstructSegmentsDlg dlg(m_pTimelineMgr,m_EventIndex);
    if ( dlg.DoModal() == IDOK )
    {
       m_TimelineEvent.SetConstructSegmentsActivity(dlg.m_ConstructSegments);

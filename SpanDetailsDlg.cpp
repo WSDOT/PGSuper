@@ -46,12 +46,34 @@ IMPLEMENT_DYNAMIC(CSpanDetailsDlg, CPropertySheet)
 CSpanDetailsDlg::CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
-   InitPages();
    Init(pBridgeDesc,spanIdx);
+   InitPages();
+}
+
+CSpanDetailsDlg::CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd, UINT iSelectPage)
+	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
+{
+   Init(pBridgeDesc,spanIdx);
+   InitPages(editBridgeExtensions);
 }
 
 CSpanDetailsDlg::~CSpanDetailsDlg()
 {
+   DestroyExtensionPages();
+}
+
+INT_PTR CSpanDetailsDlg::DoModal()
+{
+   INT_PTR result = CPropertySheet::DoModal();
+   if ( result == IDOK )
+   {
+      if ( 0 < m_BridgeExtensionPages.size() )
+         NotifyBridgeExtensionPages();
+      else
+         NotifyExtensionPages();
+   }
+
+   return result;
 }
 
 const CBridgeDescription2* CSpanDetailsDlg::GetBridgeDescription()
@@ -59,7 +81,7 @@ const CBridgeDescription2* CSpanDetailsDlg::GetBridgeDescription()
    return &m_BridgeDesc;
 }
 
-void CSpanDetailsDlg::InitPages()
+void CSpanDetailsDlg::CommonInitPages()
 {
    m_psh.dwFlags                       |= PSH_HASHELP | PSH_NOAPPLYNOW;
    m_SpanLayoutPage.m_psp.dwFlags      |= PSP_HASHELP;
@@ -81,6 +103,18 @@ void CSpanDetailsDlg::InitPages()
       m_GirderLayoutPage.m_psp.dwFlags |= PSP_HASHELP;
       AddPage(&m_GirderLayoutPage);
    }
+}
+
+void CSpanDetailsDlg::InitPages()
+{
+   CommonInitPages();
+   CreateExtensionPages();
+}
+
+void CSpanDetailsDlg::InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+{
+   CommonInitPages();
+   CreateExtensionPages(editBridgeExtensions);
 }
 
 void CSpanDetailsDlg::Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx)
@@ -135,7 +169,175 @@ BEGIN_MESSAGE_MAP(CSpanDetailsDlg, CPropertySheet)
 	//{{AFX_MSG_MAP(CSpanDetailsDlg)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_KICKIDLE,OnKickIdle)
 END_MESSAGE_MAP()
+
+LRESULT CSpanDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
+{
+   // The CPropertySheet::OnKickIdle method calls GetActivePage()
+   // which doesn't work with extension pages. Since GetActivePage
+   // is not virtual, we have to replace the implementation of
+   // OnKickIdle.
+   // The same problem exists with OnCommandHelp
+
+	ASSERT_VALID(this);
+
+	CPropertyPage* pPage = GetPage(GetActiveIndex());
+
+	/* Forward the message on to the active page of the property sheet */
+	if( pPage != NULL )
+	{
+		//ASSERT_VALID(pPage);
+		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
+	}
+	else
+		return 0;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg message handlers
+void CSpanDetailsDlg::CreateExtensionPages()
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   const std::map<IDType,IEditSpanCallback*>& callbacks = pDoc->GetEditSpanCallbacks();
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditSpanCallback* pCallback = callbackIter->second;
+      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
+      if ( pPage )
+      {
+         m_ExtensionPages.push_back( std::make_pair(pCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+}
+
+void CSpanDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   m_BridgeExtensionPages = editBridgeExtensions;
+
+   const std::map<IDType,IEditSpanCallback*>& callbacks = pDoc->GetEditSpanCallbacks();
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditSpanCallback* pEditSpanCallback = callbackIter->second;
+      IDType editBridgeCallbackID = pEditSpanCallback->GetEditBridgeCallbackID();
+      CPropertyPage* pPage = NULL;
+      if ( editBridgeCallbackID == INVALID_ID )
+      {
+         pPage = pEditSpanCallback->CreatePropertyPage(this);
+      }
+      else
+      {
+         EditBridgeExtension key;
+         key.callbackID = editBridgeCallbackID;
+         std::set<EditBridgeExtension>::const_iterator found(m_BridgeExtensionPages.find(key));
+         if ( found != m_BridgeExtensionPages.end() )
+         {
+            const EditBridgeExtension& extension = *found;
+            CPropertyPage* pBridgePage = extension.pPage;
+            pPage = pEditSpanCallback->CreatePropertyPage(this,pBridgePage);
+         }
+      }
+
+      if ( pPage )
+      {
+         m_ExtensionPages.push_back( std::make_pair(pEditSpanCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+}
+
+void CSpanDetailsDlg::DestroyExtensionPages()
+{
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      CPropertyPage* pPage = pageIter->second;
+      delete pPage;
+   }
+   m_ExtensionPages.clear();
+}
+
+txnTransaction* CSpanDetailsDlg::GetExtensionPageTransaction()
+{
+   if ( 0 < m_Macro.GetTxnCount() )
+      return m_Macro.CreateClone();
+   else
+      return NULL;
+}
+
+void CSpanDetailsDlg::NotifyExtensionPages()
+{
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      IEditSpanCallback* pCallback = pageIter->first;
+      CPropertyPage* pPage = pageIter->second;
+      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      if ( pTxn )
+      {
+         m_Macro.AddTransaction(pTxn);
+      }
+   }
+}
+
+void CSpanDetailsDlg::NotifyBridgeExtensionPages()
+{
+   // This gets called when this dialog is created from the framing grid and it is closed with IDOK
+   // It gives the bridge dialog extension pages to sync their data with whatever got changed in 
+   // the extension pages in this dialog
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
+
+   const std::map<IDType,IEditSpanCallback*>& callbacks = pDoc->GetEditSpanCallbacks();
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++, pageIter++ )
+   {
+      IEditSpanCallback* pCallback = callbackIter->second;
+      IDType editBridgeCallbackID = pCallback->GetEditBridgeCallbackID();
+      CPropertyPage* pSpanPage = pageIter->second;
+
+      if ( editBridgeCallbackID != INVALID_ID )
+      {
+         EditBridgeExtension key;
+         key.callbackID = editBridgeCallbackID;
+         std::set<EditBridgeExtension>::iterator found(m_BridgeExtensionPages.find(key));
+         if ( found != m_BridgeExtensionPages.end() )
+         {
+            EditBridgeExtension& extension = *found;
+            CPropertyPage* pBridgePage = extension.pPage;
+            extension.pCallback->EditSpan_OnOK(pBridgePage,pSpanPage);
+         }
+      }
+   }
+}
+
+
+pgsTypes::PierConnectionType CSpanDetailsDlg::GetConnectionType(pgsTypes::MemberEndType end)
+{
+   pgsTypes::PierConnectionType connectionType;
+   if ( end == pgsTypes::metStart )
+      connectionType = m_pPrevPier->GetPierConnectionType();
+   else
+      connectionType = m_pNextPier->GetPierConnectionType();
+
+   return connectionType;
+}
+
+GirderIndexType CSpanDetailsDlg::GetGirderCount()
+{
+   return m_pGirderGroup->GetGirderCount();
+}

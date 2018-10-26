@@ -73,6 +73,7 @@ interface IPretensionForce : IUnknown
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) = 0;
 
    virtual Float64 GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded) = 0;
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded) = 0;
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bDebonded) = 0;

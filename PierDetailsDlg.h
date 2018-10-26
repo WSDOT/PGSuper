@@ -36,26 +36,37 @@
 #include "PGSuperAppPlugin\GirderSegmentSpacingPage.h"
 #include <PgsExt\BridgeDescription2.h>
 #include "EditPier.h"
+#include <IFace\ExtendUI.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg
 
-class CPierDetailsDlg : public CPropertySheet
+class CPierDetailsDlg : public CPropertySheet, public IEditPierData
 {
 	DECLARE_DYNAMIC(CPierDetailsDlg)
 
 // Construction
 public:
 	CPierDetailsDlg(const CBridgeDescription2* pBridgeDesc,PierIndexType pierIdx,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CPierDetailsDlg(const CBridgeDescription2* pBridgeDesc,PierIndexType pierIdx,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 	virtual ~CPierDetailsDlg();
    
    CBridgeDescription2* GetBridgeDescription();
+
+// interface IEditPierData
+   virtual PierIndexType GetPierCount() { return m_BridgeDesc.GetPierCount(); }
+   virtual PierIndexType GetPier() { return m_pPier->GetIndex(); }
+   virtual pgsTypes::PierConnectionType GetConnectionType();
+   virtual GirderIndexType GetGirderCount(pgsTypes::PierFaceType face);
 
 // Attributes
 public:
 
 // Operations
 public:
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -64,6 +75,7 @@ public:
 
 // Implementation
 public:
+	virtual INT_PTR DoModal();
 
 	// Generated message map functions
 protected:
@@ -71,14 +83,21 @@ protected:
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 
+   void CommonInitPages();
    void InitPages();
+   void InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
    void Init(const CBridgeDescription2* pBridge,PierIndexType pierIdx);
 
+   void CreateExtensionPages();
+   void CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void DestroyExtensionPages();
+
    CBridgeDescription2 m_BridgeDesc; // this is the bridge we are operating on
-   CSpanData2* m_pPrevSpan; // pointers to objects within our private bridge model just to make life easier
-   CPierData2* m_pPierData;
-   CSpanData2* m_pNextSpan;
+   // pointers to objects within our private bridge model just to make life easier
+   CSpanData2* m_pSpan[2];
+   CPierData2* m_pPier;
 
 private:
    friend CPierLayoutPage;
@@ -96,6 +115,12 @@ private:
    // These two pages are used when the pier is interior to a girder group
    CClosureJointGeometryPage  m_ClosureJointGeometryPage;
    CGirderSegmentSpacingPage  m_GirderSegmentSpacingPage;
+
+   txnMacroTxn m_Macro;
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>> m_ExtensionPages;
+   std::set<EditBridgeExtension> m_BridgeExtensionPages;
+   void NotifyExtensionPages();
+   void NotifyBridgeExtensionPages();
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -80,7 +80,7 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
-   strTitle.Format(_T("Moment due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   strTitle.Format(_T("Moment due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
    rptRcTable* p_table = CreateUserLoadHeading<rptMomentUnitTag,unitmgtMomentData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
    if (girderKey.groupIndex == ALL_GROUPS)
@@ -117,14 +117,14 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
       std::vector<Float64> minLLIM, maxLLIM;
 
 
-      maxDC = pForces2->GetMoment( intervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC = pForces2->GetMoment( intervalIdx, pftUserDC, vPoi, minBAT );
+      maxDC = pForces2->GetMoment( intervalIdx, pftUserDC, vPoi, maxBAT, ctIncremental );
+      minDC = pForces2->GetMoment( intervalIdx, pftUserDC, vPoi, minBAT, ctIncremental );
 
-      maxDW = pForces2->GetMoment( intervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW = pForces2->GetMoment( intervalIdx, pftUserDW, vPoi, minBAT );
+      maxDW = pForces2->GetMoment( intervalIdx, pftUserDW, vPoi, maxBAT, ctIncremental );
+      minDW = pForces2->GetMoment( intervalIdx, pftUserDW, vPoi, minBAT, ctIncremental );
 
-      maxLLIM = pForces2->GetMoment( intervalIdx, pftUserLLIM, vPoi, maxBAT );
-      minLLIM = pForces2->GetMoment( intervalIdx, pftUserLLIM, vPoi, minBAT );
+      maxLLIM = pForces2->GetMoment( intervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental );
+      minLLIM = pForces2->GetMoment( intervalIdx, pftUserLLIM, vPoi, minBAT, ctIncremental );
 
       // Fill up the table
       IndexType index = 0;

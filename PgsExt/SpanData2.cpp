@@ -324,7 +324,7 @@ HRESULT CSpanData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit(); // span data details
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -493,7 +493,9 @@ std::vector<const CTemporarySupportData*> CSpanData2::GetTemporarySupports() con
       {
          const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
          if ( pTS->GetSpan() == this )
+         {
             vTS.push_back(pTS);
+         }
       }
    }
    return vTS;

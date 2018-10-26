@@ -88,9 +88,6 @@
 #define SELECTED_OBJECT_LINE_COLOR RED4
 #define SELECTED_OBJECT_FILL_COLOR BLUE
 
-#define GRAPH_BACKGROUND RGB(220,255,220)
-#define GRID_COLOR       RGB(0,150,0)
-
 // background color for metafiles that are displayed in dialogs
 #define METAFILE_BACKGROUND_COLOR WHITE
 

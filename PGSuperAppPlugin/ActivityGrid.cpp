@@ -233,7 +233,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    GetStyleRowCol(nRow,nCol,style);
    if ( (int)style.GetItemDataPtr() == CONSTRUCT_SEGMENTS )
    {
-      CConstructSegmentsDlg dlg(pParent->m_pTimelineMgr);
+      CConstructSegmentsDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
       dlg.m_ConstructSegments = pParent->m_TimelineEvent.GetConstructSegmentsActivity();
       if ( dlg.DoModal() == IDOK )
       {

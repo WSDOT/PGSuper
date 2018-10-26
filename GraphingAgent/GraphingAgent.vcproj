@@ -65,7 +65,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -174,7 +174,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -924,6 +924,10 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath="..\Include\Graphing\GraphingTypes.h"
+				>
+			</File>
 			<File
 				RelativePath=".\PGSpliceGrapherImp.h"
 				>

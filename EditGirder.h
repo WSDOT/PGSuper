@@ -32,6 +32,9 @@
 
 struct txnEditGirderData
 {
+   txnEditGirderData();
+   txnEditGirderData(const txnEditGirderData& rOther);
+
    // for sorting and lookup by girder key
    bool operator<(const txnEditGirderData& rOther) const { return m_GirderKey < rOther.m_GirderKey; }
 

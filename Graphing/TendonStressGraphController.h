@@ -25,17 +25,19 @@
 #include <Graphing\TendonStressGraphBuilder.h>
 #include <Graphing\GirderGraphControllerBase.h>
 
-class CTendonStressGraphController : public CGirderGraphControllerBase
+class CTendonStressGraphController : public CMultiIntervalGirderGraphControllerBase
 {
 public:
    CTendonStressGraphController();
    DECLARE_DYNCREATE(CTendonStressGraphController);
 
-   virtual IndexType GetGraphCount();
    DuctIndexType GetDuct();
+   bool IsStressGraph();
 
    // called by the framework when the view's OnUpdate method is called
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+
+   virtual IntervalIndexType GetFirstInterval();
 
 protected:
 
@@ -46,6 +48,7 @@ protected:
 
 	//{{AFX_MSG(CTendonStressGraphController)
    afx_msg void OnDuctChanged();
+   afx_msg void OnRadioButton(UINT nIDC);
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

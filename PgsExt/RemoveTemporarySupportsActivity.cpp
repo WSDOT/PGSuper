@@ -149,7 +149,7 @@ HRESULT CTemporarySupportActivityBase::Load(IStructuredLoad* pStrLoad,IProgress*
 
       pStrLoad->EndUnit();
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);

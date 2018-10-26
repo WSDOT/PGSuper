@@ -26,10 +26,12 @@
 #include "SupportDrawStrategy.h"
 #include <DManip\DManip.h>
 
+class CPierData2;
+
 class CSupportDrawStrategyImpl : public CCmdTarget
 {
 public:
-   CSupportDrawStrategyImpl();
+   CSupportDrawStrategyImpl(const CPierData2* pPier);
 
 
    DECLARE_INTERFACE_MAP()
@@ -46,12 +48,14 @@ public:
    END_INTERFACE_PART(DrawPointStrategy)
 
 private:
-//   CComPtr<ISupport>     m_Support;
-   long                  m_SupportID;
+   const CPierData2* m_pPier;
 
    CComPtr<IPoint2d> m_CachePoint;
 
    virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,IPoint2d* loc);
+   void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt);
+   void DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
+   void DrawRollerSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
    void GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64 *psy);
    void GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy);
 };

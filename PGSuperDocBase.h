@@ -36,6 +36,7 @@
 
 #include <IFace\ViewEvents.h> 
 #include <IFace\Selection.h> 
+#include <IFace\ExtendUI.h>
 
 #include <WBFLUnitServer.h>
 
@@ -43,6 +44,7 @@
 #include "PGSuperCommandLineInfo.h"
 #include "PGSuperPluginMgr.h"
 
+#include "CopyGirderPropertiesCallbacks.h"
 
 #define EPD_GENERAL        0
 #define EPD_CONNECTION     1
@@ -74,6 +76,9 @@ protected: // create from serialization only
 protected:
    virtual BOOL Init();
    virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit); 
+   virtual void OnChangedFavoriteReports(bool isFavorites);
+   virtual void OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName);
+   virtual void OnCustomReportHelp(custRepportHelpType helpType);
 
 // CEAFAutoCalcDocMixin over-rides
 public:
@@ -88,7 +93,7 @@ public:
    void SelectSpan(SpanIndexType spanIdx);
    void SelectGirder(const CGirderKey& girderKey);
    void SelectSegment(const CSegmentKey& segmentKey);
-   void SelectClosureJoint(const CSegmentKey& closureKey);
+   void SelectClosureJoint(const CClosureKey& closureKey);
    void SelectTemporarySupport(SupportIDType tsID);
    void SelectDeck();
    void SelectAlignment();
@@ -184,19 +189,53 @@ public:
 
    IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
    bool UnregisterBridgePlanViewCallback(IDType ID);
-   std::map<IDType,IBridgePlanViewEventCallback*> GetBridgePlanViewCallbacks();
+   const std::map<IDType,IBridgePlanViewEventCallback*>& GetBridgePlanViewCallbacks();
 
    IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
    bool UnregisterBridgeSectionViewCallback(IDType ID);
-   std::map<IDType,IBridgeSectionViewEventCallback*> GetBridgeSectionViewCallbacks();
+   const std::map<IDType,IBridgeSectionViewEventCallback*>& GetBridgeSectionViewCallbacks();
 
    IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
    bool UnregisterGirderElevationViewCallback(IDType ID);
-   std::map<IDType,IGirderElevationViewEventCallback*> GetGirderElevationViewCallbacks();
+   const std::map<IDType,IGirderElevationViewEventCallback*>& GetGirderElevationViewCallbacks();
 
    IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
    bool UnregisterGirderSectionViewCallback(IDType ID);
-   std::map<IDType,IGirderSectionViewEventCallback*> GetGirderSectionViewCallbacks();
+   const std::map<IDType,IGirderSectionViewEventCallback*>& GetGirderSectionViewCallbacks();
+
+   IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
+   bool UnregisterEditPierCallback(IDType ID);
+   const std::map<IDType,IEditPierCallback*>& GetEditPierCallbacks();
+
+   IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback);
+   bool UnregisterEditTemporarySupportCallback(IDType ID);
+   const std::map<IDType,IEditTemporarySupportCallback*>& GetEditTemporarySupportCallbacks();
+
+   IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
+   bool UnregisterEditSpanCallback(IDType ID);
+   const std::map<IDType,IEditSpanCallback*>& GetEditSpanCallbacks();
+
+   IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
+   bool UnregisterEditGirderCallback(IDType ID);
+   const std::map<IDType,IEditGirderCallback*>& GetEditGirderCallbacks();
+   const std::map<IDType,ICopyGirderPropertiesCallback*>& GetCopyGirderPropertiesCallbacks();
+
+   IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
+   bool UnregisterEditSplicedGirderCallback(IDType ID);
+   const std::map<IDType,IEditSplicedGirderCallback*>& GetEditSplicedGirderCallbacks();
+   const std::map<IDType,ICopyGirderPropertiesCallback*>& GetCopySplicedGirderPropertiesCallbacks();
+
+   IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback);
+   bool UnregisterEditSegmentCallback(IDType ID);
+   const std::map<IDType,IEditSegmentCallback*>& GetEditSegmentCallbacks();
+
+   IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback);
+   bool UnregisterEditClosureJointCallback(IDType ID);
+   const std::map<IDType,IEditClosureJointCallback*>& GetEditClosureJointCallbacks();
+
+   IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
+   bool UnregisterEditBridgeCallback(IDType ID);
+   const std::map<IDType,IEditBridgeCallback*>& GetEditBridgeCallbacks();
 
    virtual UINT GetStandardToolbarResourceID() = 0;
 
@@ -210,11 +249,32 @@ protected:
 
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 
-   IDType m_ViewCallbackID;
+   IDType m_CallbackID;
    std::map<IDType,IBridgePlanViewEventCallback*> m_BridgePlanViewCallbacks;
    std::map<IDType,IBridgeSectionViewEventCallback*> m_BridgeSectionViewCallbacks;
    std::map<IDType,IGirderElevationViewEventCallback*> m_GirderElevationViewCallbacks;
    std::map<IDType,IGirderSectionViewEventCallback*> m_GirderSectionViewCallbacks;
+
+   std::map<IDType,IEditPierCallback*> m_EditPierCallbacks;
+   std::map<IDType,IEditTemporarySupportCallback*> m_EditTemporarySupportCallbacks;
+   std::map<IDType,IEditSpanCallback*> m_EditSpanCallbacks;
+   std::map<IDType,IEditGirderCallback*> m_EditGirderCallbacks;
+   std::map<IDType,ICopyGirderPropertiesCallback*> m_CopyGirderPropertiesCallbacks;
+   std::map<IDType,IEditSplicedGirderCallback*> m_EditSplicedGirderCallbacks;
+   std::map<IDType,ICopyGirderPropertiesCallback*> m_CopySplicedGirderPropertiesCallbacks;
+   std::map<IDType,IEditSegmentCallback*> m_EditSegmentCallbacks;
+   std::map<IDType,IEditClosureJointCallback*> m_EditClosureJointCallbacks;
+   std::map<IDType,IEditBridgeCallback*> m_EditBridgeCallbacks;
+
+   // these are the standard copy girder callbacks
+   CCopyGirderType m_CopyGirderType;
+   CCopyGirderStirrups m_CopyGirderStirrups;
+   CCopyGirderPrestressing m_CopyGirderPrestressing;
+   CCopyGirderHandling m_CopyGirderHandling;
+   CCopyGirderMaterial m_CopyGirderMaterials;
+   CCopyGirderRebar m_CopyGirderRebar;
+   CCopyGirderSlabOffset m_CopyGirderSlabOffset;
+
 
    psgLibraryManager m_LibMgr;
 
@@ -233,8 +293,9 @@ protected:
 
    bool m_bDesignSlabOffset;
 
-   friend CCopyGirderDlg;
-   void OnApplyCopyGirder(const CGirderKey& fromGirder,const std::vector<CGirderKey>& toGirders,BOOL bGirder,BOOL bTransverse,BOOL bLongitudinalRebar,BOOL bPrestress,BOOL bHandling, BOOL bMaterial, BOOL bSlabOffset);
+   // callback IDs for any status callbacks we register
+   StatusCallbackIDType m_scidInformationalError;
+   StatusGroupIDType m_StatusGroupID;
 
    virtual void LoadToolbarState();
    virtual void SaveToolbarState();

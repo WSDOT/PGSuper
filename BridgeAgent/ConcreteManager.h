@@ -107,6 +107,7 @@ public:
    Float64 GetDeckShearFr(Float64 t);
    Float64 GetDeckFreeShrinkageStrain(Float64 t);
    Float64 GetDeckCreepCoefficient(Float64 t,Float64 tla);
+   matConcreteBase* GetDeckConcrete();
 
    Float64 GetSegmentCastingTime(const CSegmentKey& segmentKey);
    Float64 GetSegmentFc(const CSegmentKey& segmentKey,Float64 t);
@@ -115,20 +116,23 @@ public:
    Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla);
+   matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey);
 
-   Float64 GetClosureJointCastingTime(const CSegmentKey& closureKey);
-   Float64 GetClosureJointFc(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosureJointEc(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosureJointCreepCoefficient(const CSegmentKey& closureKey,Float64 t,Float64 tla);
+   Float64 GetClosureJointCastingTime(const CClosureKey& closureKey);
+   Float64 GetClosureJointFc(const CClosureKey& closureKey,Float64 t);
+   Float64 GetClosureJointEc(const CClosureKey& closureKey,Float64 t);
+   Float64 GetClosureJointFlexureFr(const CClosureKey& closureKey,Float64 t);
+   Float64 GetClosureJointShearFr(const CClosureKey& closureKey,Float64 t);
+   Float64 GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t);
+   Float64 GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla);
+   matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey);
 
    Float64 GetRailingSystemCastingTime(pgsTypes::TrafficBarrierOrientation orientation);
    Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla);
+   matConcreteBase* GetRailingSystemConcrete(pgsTypes::TrafficBarrierDistribution orientation);
 
 
 private:

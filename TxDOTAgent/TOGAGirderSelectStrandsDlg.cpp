@@ -131,7 +131,7 @@ BOOL CTOGAGirderSelectStrandsDlg::OnInitDialog()
 }
 
 void CTOGAGirderSelectStrandsDlg::InitializeData(SpanIndexType span, GirderIndexType girder,
-                     const DirectStrandFillCollection& directFilledStraightStrands,
+                     const CDirectStrandFillCollection& directFilledStraightStrands,
                      const std::vector<CDebondData>& straightDebond, 
                      const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, Float64 maxDebondLength)
 {
@@ -150,7 +150,7 @@ void CTOGAGirderSelectStrandsDlg::InitializeData(SpanIndexType span, GirderIndex
    m_MaxDebondLength = maxDebondLength;
 }
 
-bool CTOGAGirderSelectStrandsDlg::GetData(DirectStrandFillCollection& directFilledStraightStrands,
+bool CTOGAGirderSelectStrandsDlg::GetData(CDirectStrandFillCollection& directFilledStraightStrands,
                                           std::vector<CDebondData>& straightDebond)
 {
    directFilledStraightStrands = m_DirectFilledStraightStrands;

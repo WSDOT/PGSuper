@@ -153,7 +153,7 @@ void CSplicedUBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDTyp
    rect->QueryInterface(ppShape);
 }
 
-void CSplicedUBeamFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
+void CSplicedUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr)
 {
    CComPtr<ISplicedGirderSegment> segment;
    segment.CoCreateInstance(CLSID_USplicedGirderSegment);
@@ -218,22 +218,24 @@ void CSplicedUBeamFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType s
       closureMaterial[etEnd].CoCreateInstance(CLSID_Material);
    }
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       Float64 E = pMaterial->GetSegmentAgeAdjustedEc(segmentKey,intervalIdx);
       Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
 
-      segmentMaterial->put_E(intervalIdx,E);
-      segmentMaterial->put_Density(intervalIdx,D);
+      StageIndexType stageIdx = pStages->GetStage(segmentKey,intervalIdx);
+
+      segmentMaterial->put_E(stageIdx,E);
+      segmentMaterial->put_Density(stageIdx,D);
 
       if ( bHasClosure[etStart] )
       {
          CClosureKey closureKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
          E = pMaterial->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
          D = pMaterial->GetSegmentWeightDensity(closureKey,intervalIdx);
-         closureMaterial[etStart]->put_E(intervalIdx,E);
-         closureMaterial[etStart]->put_Density(intervalIdx,D);
+         closureMaterial[etStart]->put_E(stageIdx,E);
+         closureMaterial[etStart]->put_Density(stageIdx,D);
       }
 
       if ( bHasClosure[etEnd] )
@@ -241,8 +243,8 @@ void CSplicedUBeamFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType s
          CClosureKey closureKey(segmentKey);
          E = pMaterial->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
          D = pMaterial->GetSegmentWeightDensity(closureKey,intervalIdx);
-         closureMaterial[etEnd]->put_E(intervalIdx,E);
-         closureMaterial[etEnd]->put_Density(intervalIdx,D);
+         closureMaterial[etEnd]->put_E(stageIdx,E);
+         closureMaterial[etEnd]->put_Density(stageIdx,D);
       }
    }
 
@@ -840,7 +842,7 @@ HICON  CSplicedUBeamFactory::GetIcon()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_UBEAM) );
+   return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_SPLICED_UBEAM) );
 }
 
 void CSplicedUBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,

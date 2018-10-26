@@ -50,8 +50,6 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   void DoExecute(int i);
-
    void SetSegmentData(const CSegmentKey& segmentKey,const txnEditPrecastSegmentData& data);
 
    CSegmentKey m_SegmentKey;

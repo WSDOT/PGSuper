@@ -903,7 +903,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfPermanentStrands(IPrecastGirder* girde
    }
 }
 
-HRESULT CStrandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, const DirectStrandFillCollection* pCollection, IIndexArray** strandFill)
+HRESULT CStrandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill)
 {
    CComPtr<IIndexArray> maxarray;
    HRESULT hr = girder->get_StraightMaxStrandFill(&maxarray);
@@ -924,8 +924,8 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, const D
    m_TempArray->Assign(cnt, 0);
 
    // Next, fill strands
-   DirectStrandFillCollection::const_iterator  it = pCollection->begin();
-   DirectStrandFillCollection::const_iterator itend = pCollection->end();
+   CDirectStrandFillCollection::const_iterator  it = pCollection->begin();
+   CDirectStrandFillCollection::const_iterator itend = pCollection->end();
    while(it!=itend)
    {
       if (it->permStrandGridIdx < cnt)
@@ -955,7 +955,7 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, const D
    return m_TempArray.CopyTo(strandFill);
 }
 
-HRESULT CStrandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, const DirectStrandFillCollection* pCollection, IIndexArray** strandFill)
+HRESULT CStrandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill)
 {
    CComPtr<IIndexArray> maxarray;
    HRESULT hr = girder->get_HarpedMaxStrandFill(&maxarray);
@@ -976,8 +976,8 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, const Dir
    m_TempArray->Assign(cnt, 0);
 
    // Next, fill strands
-   DirectStrandFillCollection::const_iterator it = pCollection->begin();
-   DirectStrandFillCollection::const_iterator itend = pCollection->end();
+   CDirectStrandFillCollection::const_iterator it = pCollection->begin();
+   CDirectStrandFillCollection::const_iterator itend = pCollection->end();
    while(it!=itend)
    {
       if (it->permStrandGridIdx < cnt)
@@ -1007,7 +1007,7 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, const Dir
    return m_TempArray.CopyTo(strandFill);
 }
 
-HRESULT CStrandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, const DirectStrandFillCollection* pCollection, IIndexArray** strandFill)
+HRESULT CStrandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill)
 {
    CComPtr<IIndexArray> maxarray;
    HRESULT hr = girder->get_TemporaryMaxStrandFill(&maxarray);
@@ -1028,8 +1028,8 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, const 
    m_TempArray->Assign(cnt, 0);
 
    // Next, fill strands
-   DirectStrandFillCollection::const_iterator it = pCollection->begin();
-   DirectStrandFillCollection::const_iterator itend = pCollection->end();
+   CDirectStrandFillCollection::const_iterator it = pCollection->begin();
+   CDirectStrandFillCollection::const_iterator itend = pCollection->end();
    while(it!=itend)
    {
       if (it->permStrandGridIdx < cnt)
@@ -1059,7 +1059,7 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, const 
    return m_TempArray.CopyTo(strandFill);
 }
 
-HRESULT CStrandFiller::SetStraightDirectStrandFill(IPrecastGirder* girder,  const DirectStrandFillCollection* pCollection)
+HRESULT CStrandFiller::SetStraightDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection)
 {
    CComPtr<IIndexArray> fillArray;
    this->ComputeStraightStrandFill(girder, pCollection, &fillArray);
@@ -1067,7 +1067,7 @@ HRESULT CStrandFiller::SetStraightDirectStrandFill(IPrecastGirder* girder,  cons
    return girder->put_StraightStrandFill(fillArray);
 }
 
-HRESULT CStrandFiller::SetHarpedDirectStrandFill(IPrecastGirder* girder,  const DirectStrandFillCollection* pCollection)
+HRESULT CStrandFiller::SetHarpedDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection)
 {
    CComPtr<IIndexArray> fillArray;
    this->ComputeHarpedStrandFill(girder, pCollection, &fillArray);
@@ -1075,7 +1075,7 @@ HRESULT CStrandFiller::SetHarpedDirectStrandFill(IPrecastGirder* girder,  const 
    return girder->put_HarpedStrandFill(fillArray);
 }
 
-HRESULT CStrandFiller::SetTemporaryDirectStrandFill(IPrecastGirder* girder,  const DirectStrandFillCollection* pCollection)
+HRESULT CStrandFiller::SetTemporaryDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection)
 {
    CComPtr<IIndexArray> fillArray;
    this->ComputeTemporaryStrandFill(girder, pCollection, &fillArray);

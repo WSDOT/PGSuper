@@ -33,11 +33,14 @@
 #include <IFace\VersionInfo.h>
 #include <IFace\Views.h>
 #include <IFace\ViewEvents.h>
+#include <IFace\ExtendUI.h>
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include "PGSuperStatusBar.h"
 #include <EAF\EAFStatusBar.h>
+
+#include "CPPGSuperDocProxyAgent.h"
 
 class CPGSuperDocBase;
 struct IBroker;
@@ -72,6 +75,8 @@ LOG
 class CPGSuperDocProxyAgent :
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CPGSuperDocProxyAgent,&CLSID_PGSuperDocProxyAgent>,
+	public IConnectionPointContainerImpl<CPGSuperDocProxyAgent>,
+   public CProxyIExtendUIEventSink<CPGSuperDocProxyAgent>,
    public IAgentEx,
    public IAgentUIIntegration,
    public IBridgeDescriptionEventSink,
@@ -90,6 +95,8 @@ class CPGSuperDocProxyAgent :
    public IViews,
    public IVersionInfo,
    public IRegisterViewEvents,
+   public IExtendPGSuperUI,
+   public IExtendPGSpliceUI,
    public IDocumentType
 {
 public:
@@ -97,6 +104,7 @@ public:
    ~CPGSuperDocProxyAgent();
 
 BEGIN_COM_MAP(CPGSuperDocProxyAgent)
+	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
    COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
    COM_INTERFACE_ENTRY(IAgentUIIntegration)
@@ -117,13 +125,21 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IViews)
    COM_INTERFACE_ENTRY(IVersionInfo)
    COM_INTERFACE_ENTRY(IRegisterViewEvents)
+   COM_INTERFACE_ENTRY(IExtendPGSuperUI)
+   COM_INTERFACE_ENTRY(IExtendPGSpliceUI)
    COM_INTERFACE_ENTRY(IDocumentType)
 END_COM_MAP()
+
+BEGIN_CONNECTION_POINT_MAP(CPGSuperDocProxyAgent)
+   CONNECTION_POINT_ENTRY( IID_IExtendUIEventSink )
+END_CONNECTION_POINT_MAP()
 
 public:
    void SetDocument(CPGSuperDocBase* pDoc);
    void OnStatusChanged();
    long GetReportViewKey();
+
+   void OnResetHints();
 
 // IAgentEx
 public:
@@ -187,6 +203,8 @@ public:
 public:
    virtual void HoldEvents(bool bHold=true);
    virtual void FirePendingEvents();
+   virtual void CancelPendingEvents();
+   virtual void FireEvent(CView* pSender = NULL,LPARAM lHint = 0,boost::shared_ptr<CObject> pHint = boost::shared_ptr<CObject>());
 
 // IVersionInfo
 public:
@@ -271,6 +289,31 @@ public:
    virtual bool UnregisterGirderElevationViewCallback(IDType ID);
    virtual bool UnregisterGirderSectionViewCallback(IDType ID);
 
+// IExtendUI
+public:
+   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
+   virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
+   virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
+   virtual bool UnregisterEditPierCallback(IDType ID);
+   virtual bool UnregisterEditSpanCallback(IDType ID);
+   virtual bool UnregisterEditBridgeCallback(IDType ID);
+
+// IExtendPGSuperUI
+public:
+   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
+   virtual bool UnregisterEditGirderCallback(IDType ID);
+
+// IExtendPGSpliceUI
+public:
+   virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback);
+   virtual IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
+   virtual IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback);
+   virtual IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback);
+   virtual bool UnregisterEditTemporarySupportCallback(IDType ID);
+   virtual bool UnregisterEditSplicedGirderCallback(IDType ID);
+   virtual bool UnregisterEditSegmentCallback(IDType ID);
+   virtual bool UnregisterEditClosureJointCallback(IDType ID);
+
 // IDocumentType
 public:
    virtual bool IsPGSuperDocument();
@@ -291,7 +334,8 @@ private:
    DWORD m_dwLoadModiferCookie;
    DWORD m_dwLibraryConflictGuiCookie;
 
-   bool m_bHoldingEvents;
+   int m_EventHoldCount;
+   bool m_bFiringEvents;
    struct UIEvent
    {
       CView* pSender;
@@ -299,7 +343,6 @@ private:
       boost::shared_ptr<CObject> pHint;
    };
    std::vector<UIEvent> m_UIEvents;
-   void FireEvent(CView* pSender,LPARAM lHint,boost::shared_ptr<CObject> pHint);
 
 
    // look up keys for extra views associated with our document

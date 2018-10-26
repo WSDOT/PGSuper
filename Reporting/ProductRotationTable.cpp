@@ -82,6 +82,15 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    bool bFutureOverlay = pBridge->IsFutureOverlay();
    PierIndexType nPiers = pBridge->GetPierCount();
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(girderKey);
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(girderKey);
+   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    GroupIndexType startGroup, nGroups;
    IntervalIndexType continityIntervalIdx;
@@ -97,7 +106,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    PierIndexType endPier   = pBridge->GetGirderGroupEndPier(endGroup);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Rotations"));
-   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continityIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continityIntervalIdx,castDeckIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
 
    // get poi at start and end of each segment in the girder
@@ -118,14 +127,6 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    }
 
    GET_IFACE2(pBroker,IProductLoads,pLoads);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
 
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    std::auto_ptr<IProductReactionAdapter> pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
@@ -149,16 +150,16 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
       (*p_table)(row,col++) << reactionLocation.PierLabel;
 
-      ReactionDecider reactionDecider(BearingReactionsTable,reactionLocation,pBridge,pIntervals);
+      ReactionDecider reactionDecider(BearingReactionsTable,reactionLocation,girderKey,pBridge,pIntervals);
 
       pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx-startPierIdx];
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
-      (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation(erectSegmentIntervalIdx, pftGirder, poi, maxBAT) );
+      (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation(erectSegmentIntervalIdx, pftGirder, poi, maxBAT, ctIncremental) );
 
       if ( reactionDecider.DoReport(castDeckIntervalIdx) )
       {
-         (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation(castDeckIntervalIdx, pftDiaphragm, poi, maxBAT) );
+         (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation(castDeckIntervalIdx, pftDiaphragm, poi, maxBAT, ctIncremental) );
       }
       else
       {
@@ -171,8 +172,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( reactionDecider.DoReport(castDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftShearKey, poi, maxBAT ) );
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftShearKey, poi, minBAT ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftShearKey, poi, maxBAT, ctIncremental ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftShearKey, poi, minBAT, ctIncremental ) );
             }
             else
             {
@@ -184,7 +185,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( reactionDecider.DoReport(castDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftShearKey, poi, maxBAT ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftShearKey, poi, maxBAT, ctIncremental ) );
             }
             else
             {
@@ -200,8 +201,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( reactionDecider.DoReport(castDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftConstruction,   poi, maxBAT ) );
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftConstruction,   poi, minBAT ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftConstruction,   poi, maxBAT, ctIncremental ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftConstruction,   poi, minBAT, ctIncremental ) );
             }
             else
             {
@@ -213,7 +214,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( reactionDecider.DoReport(castDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftConstruction,   poi, maxBAT ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftConstruction,   poi, maxBAT, ctIncremental ) );
             }
             else
             {
@@ -226,11 +227,11 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( reactionDecider.DoReport(castDeckIntervalIdx) )
          {
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlab,  poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlab,  poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlab,  poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlab,  poi, minBAT, ctIncremental ) );
 
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPad,  poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPad,  poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPad,  poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPad,  poi, minBAT, ctIncremental ) );
          }
          else
          {
@@ -245,8 +246,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( reactionDecider.DoReport(castDeckIntervalIdx) )
          {
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlab,  poi, maxBAT  ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPad,  poi, maxBAT  ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlab,     poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPad,  poi, maxBAT, ctIncremental ) );
          }
          else
          {
@@ -261,8 +262,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( reactionDecider.DoReport(castDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPanel,   poi, maxBAT ) );
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPanel,   poi, minBAT ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPanel,   poi, maxBAT, ctIncremental ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPanel,   poi, minBAT, ctIncremental ) );
             }
             else
             {
@@ -274,7 +275,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( reactionDecider.DoReport(castDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPanel,   poi, maxBAT ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( castDeckIntervalIdx, pftSlabPanel,   poi, maxBAT, ctIncremental ) );
             }
             else
             {
@@ -289,8 +290,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
             {
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftSidewalk, poi, maxBAT ) );
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftSidewalk, poi, minBAT ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftSidewalk, poi, maxBAT, ctIncremental ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftSidewalk, poi, minBAT, ctIncremental ) );
             }
             else
             {
@@ -301,8 +302,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
          if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
          {
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftTrafficBarrier, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftTrafficBarrier, poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftTrafficBarrier, poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftTrafficBarrier, poi, minBAT, ctIncremental ) );
          }
          else
          {
@@ -312,8 +313,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
          if ( reactionDecider.DoReport(overlayIntervalIdx) )
          {
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, poi, minBAT, ctIncremental ) );
          }
          else
          {
@@ -332,7 +333,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                   pProductForces->GetLiveLoadRotation( pgsTypes::lltPedestrian, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, true, &min, &max );
                   (*p_table)(row,col++) << rotation.SetValue( max );
 
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPedestrian, liveLoadIntervalIdx, poi,  minBAT, bIncludeImpact, true,&min, &max );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPedestrian, liveLoadIntervalIdx, poi, minBAT, bIncludeImpact, true, &min, &max );
                   (*p_table)(row,col++) << rotation.SetValue( min );
                }
                else
@@ -571,7 +572,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
             {
-               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftSidewalk, poi, maxBAT ) );
+               (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftSidewalk, poi, maxBAT, ctIncremental ) );
             }
             else
             {
@@ -581,7 +582,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
          if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
          {
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftTrafficBarrier, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( railingSystemIntervalIdx, pftTrafficBarrier, poi, maxBAT, ctIncremental ) );
          }
          else
          {
@@ -590,7 +591,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
          if ( reactionDecider.DoReport(overlayIntervalIdx) )
          {
-            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, poi, maxBAT, ctIncremental ) );
          }
          else
          {

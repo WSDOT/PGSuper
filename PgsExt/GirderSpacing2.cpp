@@ -192,7 +192,7 @@ HRESULT CGirderSpacingData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
       hr = pStrLoad->EndUnit();
    }
-   catch(HRESULT)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -575,36 +575,6 @@ void CGirderSpacingData2::RemoveGirders(GirderIndexType nGirdersToRemove)
    }
 }
 
-//void CGirderSpacingData2::SetSpacingData(CGirderSpacing2* pGirderSpacing) const
-//{
-//   pGirderSpacing->SetMeasurementType(m_MeasurementType);
-//   pGirderSpacing->SetMeasurementLocation(m_MeasurementLocation);
-//
-//   pGirderSpacing->SetRefGirder(m_RefGirderIdx);
-//   pGirderSpacing->SetRefGirderOffsetType(m_RefGirderOffsetType);
-//   pGirderSpacing->SetRefGirderOffset(m_RefGirderOffset);
-//
-//   pGirderSpacing->ExpandAll();
-//   GroupIndexType grpIdx = 0;
-//   std::vector<Float64>::const_iterator spaceIter(m_GirderSpacing.begin());
-//   std::vector<Float64>::const_iterator spaceIterEnd(m_GirderSpacing.begin());
-//   for ( ; spaceIter != spaceIterEnd; spaceIter++ )
-//   {
-//      pGirderSpacing->SetGirderSpacing(grpIdx++,*spaceIter);
-//   }
-//
-//   std::vector<SpacingGroup>::const_iterator iter(m_SpacingGroups.begin());
-//   std::vector<SpacingGroup>::const_iterator iterEnd(m_SpacingGroups.end());
-//   for ( ; iter != iterEnd; iter++, grpIdx++ )
-//   {
-//      SpacingGroup spacingGroup = *iter;
-//      GirderIndexType firstGdrIdx = spacingGroup.first;
-//      GirderIndexType lastGdrIdx  = spacingGroup.second;
-//
-//      pGirderSpacing->Join(firstGdrIdx,lastGdrIdx,firstGdrIdx);
-//   }
-//}
-
 void CGirderSpacingData2::SetGirderCount(GirderIndexType nGirders)
 {
    if ( m_GirderSpacing.size() == 0 && nGirders == 1 )
@@ -895,6 +865,8 @@ Float64 CGirderSpacing2::GetGirderSpacing(SpacingIndexType spacingIdx) const
 void CGirderSpacing2::MakeCopy(const CGirderSpacing2& rOther)
 {
    CGirderSpacingData2::MakeCopy(rOther);
+   m_pPier = rOther.m_pPier;
+   m_pTempSupport = rOther.m_pTempSupport;
 }
 
 void CGirderSpacing2::MakeAssignment(const CGirderSpacing2& rOther)

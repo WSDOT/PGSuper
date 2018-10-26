@@ -435,7 +435,7 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
 
       //////////////////////// Debond Length - Left /////////////////
       SetStyleRange(CGXRange(row,FIRST_DEBOND_COL), CGXStyle()
-         .SetValue(FormatDimension(debond_info.Length1, pDisplayUnits->GetXSectionDimUnit(), false))
+         .SetValue(FormatDimension(debond_info.Length[pgsTypes::metStart], pDisplayUnits->GetXSectionDimUnit(), false))
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
          .SetInterior(::GetSysColor(COLOR_WINDOW))
@@ -444,7 +444,7 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
 
       //////////////////////// Debond Length - Right /////////////////
       SetStyleRange(CGXRange(row,LAST_DEBOND_COL), CGXStyle()
-         .SetValue(FormatDimension(debond_info.Length2, pDisplayUnits->GetXSectionDimUnit(), false))
+         .SetValue(FormatDimension(debond_info.Length[pgsTypes::metEnd], pDisplayUnits->GetXSectionDimUnit(), false))
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
          .SetInterior(::GetSysColor(COLOR_WINDOW))
@@ -535,17 +535,17 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
 
          ///////// Debond Length - Left ///////////////
          Float64 length = GetLeftDebondLength(row+1);
-         debond_info.Length1 = length;
+         debond_info.Length[pgsTypes::metStart] = length;
 
          ///////// Debond Length - Right ///////////////
          if ( m_bSymmetricDebond )
          {
-            debond_info.Length2 = debond_info.Length1;
+            debond_info.Length[pgsTypes::metEnd] = debond_info.Length[pgsTypes::metStart];
          }
          else
          {
             length = GetRightDebondLength(row+1);
-            debond_info.Length2 = length;
+            debond_info.Length[pgsTypes::metEnd] = length;
          }
 
          segment.Strands.Debond[pgsTypes::Straight].push_back(debond_info);

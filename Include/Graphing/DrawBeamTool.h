@@ -34,7 +34,7 @@ public:
    CDrawBeamTool();
    virtual ~CDrawBeamTool();
 
-   void DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPointMapper mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType intervalIdx,const CGirderKey& girderKey);
+   void DrawBeam(IBroker* pBroker,CDC* pDC,grlibPointMapper mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType intervalIdx,const CGirderKey& girderKey);
 
 protected:
    IBroker* m_pBroker;

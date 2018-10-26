@@ -77,10 +77,10 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
    if ( pTendonGeom->GetDuctCount(girderKey) == 0 )
       return pChapter;
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false);
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,        X,        pDisplayUnits->GetSpanLengthUnit(),  false);
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,        dist,     pDisplayUnits->GetSpanLengthUnit(),  false);
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        ecc,      pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE( rptStressUnitValue,        stress,   pDisplayUnits->GetStressUnit(), false);
 
@@ -92,7 +92,7 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       CString strTitle;
       strTitle.Format(_T("Tendon Geometry - Tendon %d"),LABEL_DUCT(ductIdx));
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9,strTitle);
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,strTitle);
       *pPara << pTable << rptNewLine;
 
       IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
@@ -101,7 +101,8 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(0,col++) << _T("POI");
       (*pTable)(0,col++) << COLHDR(_T("X"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       (*pTable)(0,col++) << COLHDR(_T("Y"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0,col++) << _T("Slope");
+      (*pTable)(0,col++) << _T("Slope X");
+      (*pTable)(0,col++) << _T("Slope Y");
       (*pTable)(0,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       (*pTable)(0,col++) << symbol(alpha) << rptNewLine << _T("(from Start)");
       (*pTable)(0,col++) << symbol(alpha) << rptNewLine << _T("(from End)");
@@ -123,13 +124,15 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
          const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
          const FRICTIONLOSSDETAILS& frDetails(pDetails->FrictionLossDetails[ductIdx]);
 
-         (*pTable)(row,col++) << X.SetValue( frDetails.X );
+         (*pTable)(row,col++) << dist.SetValue( frDetails.X );
          (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetDuctOffset(stressTendonIntervalIdx,poi,ductIdx));
 
          CComPtr<IVector3d> slope;
          pTendonGeom->GetTendonSlope(poi,ductIdx,&slope);
-         Float64 Y;
+         Float64 X, Y;
+         slope->get_X(&X);
          slope->get_Y(&Y);
+         (*pTable)(row,col++) << X;
          (*pTable)(row,col++) << Y;
 
          (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetEccentricity(stressTendonIntervalIdx,poi,ductIdx));
@@ -139,13 +142,13 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
          (*pTable)(row,col++) << stress.SetValue( frDetails.dfpA ); // anchor set
       }
 
-      X.ShowUnitTag(true);
+      dist.ShowUnitTag(true);
       Float64 Lset = pLosses->GetAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metStart);
-      *pPara << _T("Left End, ") << Sub2(_T("L"),_T("set")) << _T(" = ") << X.SetValue(Lset) << rptNewLine;
+      *pPara << _T("Left End, ") << Sub2(_T("L"),_T("set")) << _T(" = ") << dist.SetValue(Lset) << rptNewLine;
 
       Lset = pLosses->GetAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metEnd);
-      *pPara << _T("Right End, ") << Sub2(_T("L"),_T("set")) << _T(" = ") << X.SetValue(Lset) << rptNewLine;
-      X.ShowUnitTag(false);
+      *pPara << _T("Right End, ") << Sub2(_T("L"),_T("set")) << _T(" = ") << dist.SetValue(Lset) << rptNewLine;
+      dist.ShowUnitTag(false);
    }
 
 

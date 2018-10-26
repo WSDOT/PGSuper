@@ -104,18 +104,20 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    SpanIndexType span = girderKey.groupIndex;
    GirderIndexType girder = girderKey.girderIndex;
 
-   CSegmentKey segmentKey(girderKey,0);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
+
+   CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType finalIntervalIdx   = pIntervals->GetIntervalCount()-1;
+   IntervalIndexType finalIntervalIdx   = pIntervals->GetIntervalCount(segmentKey)-1;
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
-   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    const GirderLibraryEntry* pGdrLibEntry = pGirder->GetGirderLibraryEntry();
    CComPtr<IBeamFactory> factory;
    pGdrLibEntry->GetBeamFactory(&factory);
@@ -242,10 +244,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       else
       {
          (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearing End 1");
-         (*p_table)(row,  1) << gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metStart));
+         (*p_table)(row,  1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
 
          (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearing End 2");
-         (*p_table)(row,  1) << gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
+         (*p_table)(row,  1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
       }
    }
 
@@ -622,14 +624,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          (*p_table)(++row,0) << _T("H1 at End 1 (##)");
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poiStart);
-         Float64 H1 = pSegment->GetSlabOffset(pgsTypes::metStart) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         Float64 H1 = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
          (*p_table)(row,  1) << gdim.SetValue(H1);
 
          (*p_table)(++row,0) << _T("H1 at End 2 (##)");
          pgsPointOfInterest poiEnd(poiStart);
          poiEnd.SetDistFromStart(pBridge->GetSegmentLength(segmentKey));
          Hg = pSectProp->GetHg(releaseIntervalIdx,poiEnd);
-         H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         H1 = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
          (*p_table)(row,  1) << gdim.SetValue(H1);
       }
    }

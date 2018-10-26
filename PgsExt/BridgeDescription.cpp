@@ -362,7 +362,7 @@ HRESULT CBridgeDescription::Load(Float64 version,IStructuredLoad* pStrLoad,IProg
                IsBridgeSpacing(m_GirderSpacingType),
                m_SlabOffsetType == pgsTypes::sotBridge);
    }
-   catch(HRESULT)
+   catch (HRESULT)
    {
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
@@ -519,39 +519,39 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
 
    // Bridge Deck
    CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
-   pDeck->bInputAsDepthAndDensity = m_Deck.bInputAsDepthAndDensity;
-   pDeck->Condition               = m_Deck.Condition;
-   pDeck->ConditionFactor         = m_Deck.ConditionFactor;
-   pDeck->DeckEdgePoints          = m_Deck.DeckEdgePoints;
-   pDeck->DeckRebarData           = m_Deck.DeckRebarData;
-   pDeck->DeckType                = m_Deck.DeckType;
-   pDeck->Fillet                  = m_Deck.Fillet;
-   pDeck->GrossDepth              = m_Deck.GrossDepth;
-   pDeck->OverhangEdgeDepth       = m_Deck.OverhangEdgeDepth;
-   pDeck->OverhangTaper           = m_Deck.OverhangTaper;
-   pDeck->OverlayDensity          = m_Deck.OverlayDensity;
-   pDeck->OverlayDepth            = m_Deck.OverlayDepth;
-   pDeck->OverlayWeight           = m_Deck.OverlayWeight;
-   pDeck->PanelDepth              = m_Deck.PanelDepth;
-   pDeck->PanelSupport            = m_Deck.PanelSupport;
-   pDeck->SacrificialDepth        = m_Deck.SacrificialDepth;
-   pDeck->Concrete.Type           = m_Deck.SlabConcreteType;
-   pDeck->Concrete.CreepK1             = m_Deck.SlabCreepK1;
-   pDeck->Concrete.CreepK2             = m_Deck.SlabCreepK2;
-   pDeck->Concrete.Ec                  = m_Deck.SlabEc;
-   pDeck->Concrete.EcK1                = m_Deck.SlabEcK1;
-   pDeck->Concrete.EcK2                = m_Deck.SlabEcK2;
-   pDeck->Concrete.Fc                  = m_Deck.SlabFc;
-   pDeck->Concrete.Fct                 = m_Deck.SlabFct;
-   pDeck->Concrete.bHasFct             = m_Deck.SlabHasFct;
-   pDeck->Concrete.MaxAggregateSize    = m_Deck.SlabMaxAggregateSize;
-   pDeck->Concrete.ShrinkageK1         = m_Deck.SlabShrinkageK1;
-   pDeck->Concrete.ShrinkageK2         = m_Deck.SlabShrinkageK2;
-   pDeck->Concrete.StrengthDensity     = m_Deck.SlabStrengthDensity;
-   pDeck->Concrete.bUserEc             = m_Deck.SlabUserEc;
-   pDeck->Concrete.WeightDensity       = m_Deck.SlabWeightDensity;
-   pDeck->TransverseConnectivity       = m_Deck.TransverseConnectivity;
-   pDeck->WearingSurface               = m_Deck.WearingSurface;
+   pDeck->bInputAsDepthAndDensity   = m_Deck.bInputAsDepthAndDensity;
+   pDeck->Condition                 = m_Deck.Condition;
+   pDeck->ConditionFactor           = m_Deck.ConditionFactor;
+   pDeck->DeckEdgePoints            = m_Deck.DeckEdgePoints;
+   pDeck->DeckRebarData             = m_Deck.DeckRebarData;
+   pDeck->DeckType                  = m_Deck.DeckType;
+   pDeck->Fillet                    = m_Deck.Fillet;
+   pDeck->GrossDepth                = m_Deck.GrossDepth;
+   pDeck->OverhangEdgeDepth         = m_Deck.OverhangEdgeDepth;
+   pDeck->OverhangTaper             = m_Deck.OverhangTaper;
+   pDeck->OverlayDensity            = m_Deck.OverlayDensity;
+   pDeck->OverlayDepth              = m_Deck.OverlayDepth;
+   pDeck->OverlayWeight             = m_Deck.OverlayWeight;
+   pDeck->PanelDepth                = m_Deck.PanelDepth;
+   pDeck->PanelSupport              = m_Deck.PanelSupport;
+   pDeck->SacrificialDepth          = m_Deck.SacrificialDepth;
+   pDeck->Concrete.Type             = m_Deck.SlabConcreteType;
+   pDeck->Concrete.CreepK1          = m_Deck.SlabCreepK1;
+   pDeck->Concrete.CreepK2          = m_Deck.SlabCreepK2;
+   pDeck->Concrete.Ec               = m_Deck.SlabEc;
+   pDeck->Concrete.EcK1             = m_Deck.SlabEcK1;
+   pDeck->Concrete.EcK2             = m_Deck.SlabEcK2;
+   pDeck->Concrete.Fc               = m_Deck.SlabFc;
+   pDeck->Concrete.Fct              = m_Deck.SlabFct;
+   pDeck->Concrete.bHasFct          = m_Deck.SlabHasFct;
+   pDeck->Concrete.MaxAggregateSize = m_Deck.SlabMaxAggregateSize;
+   pDeck->Concrete.ShrinkageK1      = m_Deck.SlabShrinkageK1;
+   pDeck->Concrete.ShrinkageK2      = m_Deck.SlabShrinkageK2;
+   pDeck->Concrete.StrengthDensity  = m_Deck.SlabStrengthDensity;
+   pDeck->Concrete.bUserEc          = m_Deck.SlabUserEc;
+   pDeck->Concrete.WeightDensity    = m_Deck.SlabWeightDensity;
+   pDeck->TransverseConnectivity    = m_Deck.TransverseConnectivity;
+   pDeck->WearingSurface            = m_Deck.WearingSurface;
 
    // Railing systems
    *pBridgeDesc->GetLeftRailingSystem()  = m_LeftRailingSystem;
@@ -596,8 +596,8 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
       GirderIndexType nGirders = pOldSpan->GetGirderCount();
       pGroup->Initialize(nGirders);
 
-      pGroup->SetSlabOffset(pgsTypes::metStart,pOldSpan->GetSlabOffset(pgsTypes::metStart));
-      pGroup->SetSlabOffset(pgsTypes::metEnd,  pOldSpan->GetSlabOffset(pgsTypes::metEnd));
+      pGroup->SetSlabOffset(pNewSpan->GetPier(pgsTypes::metStart)->GetIndex(),pOldSpan->GetSlabOffset(pgsTypes::metStart));
+      pGroup->SetSlabOffset(pNewSpan->GetPier(pgsTypes::metEnd)->GetIndex()  ,pOldSpan->GetSlabOffset(pgsTypes::metEnd));
 
       // Copy over girder data
       const CGirderTypes* pGirderTypes = pOldSpan->GetGirderTypes();
@@ -634,8 +634,8 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
 
          pNewSegment->Strands = girderData.Strands;
 
-         pNewSegment->SetSlabOffset(pgsTypes::metStart,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart));
-         pNewSegment->SetSlabOffset(pgsTypes::metEnd,  pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd)  );
+         pGroup->SetSlabOffset(pgsTypes::metStart,gdrIdx,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart));
+         pGroup->SetSlabOffset(pgsTypes::metEnd,  gdrIdx,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd)  );
 
 
          // copy over distribution factor data

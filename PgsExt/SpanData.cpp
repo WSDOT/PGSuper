@@ -210,7 +210,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       if ( 2 <= version )
       {
          // added in version 2 of SpanDataDetails data block
-         if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGroup )
+         if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier )
          {
             var.vt = VT_R8;
             pStrLoad->get_Property(_T("SlabOffsetAtStart"),&var);
@@ -444,7 +444,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit(); // span data details
    }
-   catch(HRESULT)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -472,7 +472,7 @@ HRESULT CSpanData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 
    // added in version 2 of SpanDataDetails data block
-   if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGroup )
+   if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier )
    {
       pStrSave->put_Property(_T("SlabOffsetAtStart"),CComVariant(m_SlabOffset[pgsTypes::metStart]));
       pStrSave->put_Property(_T("SlabOffsetAtEnd"),  CComVariant(m_SlabOffset[pgsTypes::metEnd]));
@@ -768,7 +768,7 @@ void CSpanData::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset)
    {
       m_pBridgeDesc->SetSlabOffset(offset);
    }
-   else if ( slabOffsetType == pgsTypes::sotGroup )
+   else if ( slabOffsetType == pgsTypes::sotPier )
    {
       m_SlabOffset[end] = offset;
    }
@@ -786,7 +786,7 @@ Float64 CSpanData::GetSlabOffset(pgsTypes::MemberEndType end) const
    {
       return m_pBridgeDesc->GetSlabOffset();
    }
-   else if ( slabOffsetType == pgsTypes::sotGroup )
+   else if ( slabOffsetType == pgsTypes::sotPier )
    {
       if ( m_pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
          return 0;

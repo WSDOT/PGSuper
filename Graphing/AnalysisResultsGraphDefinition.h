@@ -25,6 +25,7 @@
 #pragma once
 
 #include <Graphing\AnalysisResultsGraphBuilder.h>
+#include <Graphing\GraphingTypes.h>
 
 #include <IFace\AnalysisResults.h>
 #include <set>
@@ -33,12 +34,12 @@
 #define ACTIONS_MOMENT_ONLY       0x0001
 #define ACTIONS_SHEAR_ONLY        0x0002
 #define ACTIONS_STRESS_ONLY       0x0004
-#define ACTIONS_DISPLACEMENT_ONLY 0x0008
+#define ACTIONS_DEFLECTION_ONLY   0x0008
 
 #define ACTIONS_MOMENT_SHEAR        ACTIONS_MOMENT_ONLY  | ACTIONS_SHEAR_ONLY
-#define ACTIONS_FORCE_DISPLACEMENT  ACTIONS_MOMENT_SHEAR | ACTIONS_DISPLACEMENT_ONLY
+#define ACTIONS_FORCE_DEFLECTION    ACTIONS_MOMENT_SHEAR | ACTIONS_DEFLECTION_ONLY
 #define ACTIONS_FORCE_STRESS        ACTIONS_MOMENT_SHEAR | ACTIONS_STRESS_ONLY
-#define ACTIONS_ALL                 ACTIONS_MOMENT_SHEAR | ACTIONS_STRESS_ONLY | ACTIONS_DISPLACEMENT_ONLY 
+#define ACTIONS_ALL                 ACTIONS_MOMENT_SHEAR | ACTIONS_STRESS_ONLY | ACTIONS_DEFLECTION_ONLY 
 
 class CAnalysisResultsGraphDefinition
 {
@@ -59,41 +60,40 @@ public:
    std::set<IntervalIndexType> m_IntervalApplicability; // intervals that this graph is applicable to
    int m_ApplicableActions; // 0 = all, 1 = Forces Only, 2 = Stress Only
    VehicleIndexType m_VehicleIndex;
-   COLORREF m_Color;
 
    CAnalysisResultsGraphDefinition();
    
    // constructor for limit states
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,
+   CAnalysisResultsGraphDefinition(IDType id,const CString& name,
                 pgsTypes::LimitState ls,
-                const std::vector<IntervalIndexType>& intervals,int actions,COLORREF c);
+                const std::vector<IntervalIndexType>& intervals,int actions);
    
    // constructor for combinations
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,
+   CAnalysisResultsGraphDefinition(IDType id,const CString& name,
                 LoadingCombination comb,
-                const std::vector<IntervalIndexType>& intervals,int actions,COLORREF c);
+                const std::vector<IntervalIndexType>& intervals,int actions);
    
    // constructor for product loads
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,
+   CAnalysisResultsGraphDefinition(IDType id,const CString& name,
                 ProductForceType type,
-                const std::vector<IntervalIndexType>& intervals,int actions,COLORREF c);
+                const std::vector<IntervalIndexType>& intervals,int actions);
    
    // constructor for live loads
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,
-                const std::vector<IntervalIndexType>& intervals,int actions,COLORREF c);
+   CAnalysisResultsGraphDefinition(IDType id,const CString& name,
+                const std::vector<IntervalIndexType>& intervals,int actions);
    
    // constructor for prestress
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,GraphType type,const std::vector<IntervalIndexType>& intervals,COLORREF c);
+   CAnalysisResultsGraphDefinition(IDType id,const CString& name,GraphType type,const std::vector<IntervalIndexType>& intervals);
    
    // constructor for demands
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals,COLORREF c);
+   CAnalysisResultsGraphDefinition(IDType id,const CString& name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals);
 
    // constructor for vehicular live loads
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<IntervalIndexType>& intervals,int apaction,COLORREF c);
+   CAnalysisResultsGraphDefinition(IDType id,const CString& name,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<IntervalIndexType>& intervals,int apaction);
 
    // constructor for ultimate forces
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals,int apaction,COLORREF c);
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,pgsTypes::LiveLoadType llType,const std::vector<IntervalIndexType>& intervals,int apaction,COLORREF c);
+   CAnalysisResultsGraphDefinition(IDType id,const CString& name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals,int apaction);
+   CAnalysisResultsGraphDefinition(IDType id,const CString& name,pgsTypes::LiveLoadType llType,const std::vector<IntervalIndexType>& intervals,int apaction);
 
    void AddIntervals(const std::vector<IntervalIndexType>& intervals);
 
@@ -111,11 +111,12 @@ public:
    void AddGraphDefinition(const CAnalysisResultsGraphDefinition& def);
    CAnalysisResultsGraphDefinition& GetGraphDefinition(IDType graphID);
    const CAnalysisResultsGraphDefinition& GetGraphDefinition(IDType graphID) const;
+   IndexType GetGraphIndex(IDType graphID) const;
    void RemoveGraphDefinition(IDType graphID);
 
    CString GetDefaultLoadCase(IntervalIndexType intervalIdx) const;
    
-   std::vector< std::pair<CString,IDType> > GetLoadCaseNames(IntervalIndexType intervalIdx, ActionType action) const;
+   std::vector< std::pair<CString,IDType> > GetLoadings(IntervalIndexType intervalIdx, ActionType action) const;
 
    void Clear();
 

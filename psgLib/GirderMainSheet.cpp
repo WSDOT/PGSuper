@@ -36,6 +36,8 @@
 #include <Lrfd\RebarPool.h>
 #include <IFace\BeamFactory.h>
 
+#include <Plugins\BeamFamilyCLSID.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -73,6 +75,39 @@ CGirderMainSheet::~CGirderMainSheet()
 {
 }
 
+void CGirderMainSheet::SetBeamFactory(IBeamFactory* pFactory)
+{
+   m_Entry.SetBeamFactory(pFactory);
+}
+
+void CGirderMainSheet::UpdatePropertyPages(CLSID clsidBeamFamily)
+{
+   // Certain pages don't apply to spliced girders
+   if ( clsidBeamFamily == CLSID_SplicedIBeamFamily || 
+        clsidBeamFamily == CLSID_SplicedUBeamFamily 
+      )
+   {
+      AddPage(&m_GirderDimensionsPage);
+      AddPage(&m_GirderDebondCriteriaPage);
+      AddPage(&m_LongSteelPage);
+      AddPage(&m_ShearSteelPage);
+      AddPage(&m_DiaphragmPage);
+      AddPage(&m_ShearDesignPage);
+   }
+   else
+   {
+      AddPage(&m_GirderDimensionsPage);
+      AddPage(&m_GirderHarpedStrandPage);   // straight and harped strands
+      AddPage(&m_GirderStraightStrandPage); // temporary strands
+      AddPage(&m_GirderDebondCriteriaPage);
+      AddPage(&m_HarpPointPage);
+      AddPage(&m_LongSteelPage);
+      AddPage(&m_ShearSteelPage);
+      AddPage(&m_DiaphragmPage);
+      AddPage(&m_ShearDesignPage);
+   }
+}
+
 
 BEGIN_MESSAGE_MAP(CGirderMainSheet, CPropertySheet)
 	//{{AFX_MSG_MAP(CGirderMainSheet)
@@ -96,15 +131,10 @@ void CGirderMainSheet::Init()
    m_GirderDebondCriteriaPage.m_psp.dwFlags |= PSP_HASHELP;
    m_ShearDesignPage.m_psp.dwFlags     |= PSP_HASHELP;
 
-   AddPage(&m_GirderDimensionsPage);
-   AddPage(&m_GirderHarpedStrandPage);   // straight and harped strands
-   AddPage(&m_GirderStraightStrandPage); // temporary strands
-   AddPage(&m_GirderDebondCriteriaPage);
-   AddPage(&m_HarpPointPage);
-   AddPage(&m_LongSteelPage);
-   AddPage(&m_ShearSteelPage);
-   AddPage(&m_DiaphragmPage);
-   AddPage(&m_ShearDesignPage);
+   CComPtr<IBeamFactory> factory;
+   m_Entry.GetBeamFactory(&factory);
+   CLSID clsidBeamFamily = factory->GetFamilyCLSID();
+   UpdatePropertyPages(clsidBeamFamily);
 }
 
 void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
@@ -205,7 +235,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 
       m_GirderDimensionsPage.GetDlgItem(IDC_NOTES)->SetWindowText(_T(""));
 
-      if ( splicedBeamFactory )
+      if ( splicedBeamFactory && splicedBeamFactory->SupportsVariableDepthSection() )
       {
          CString strNotes;
          CString strNote1;

@@ -24,38 +24,11 @@
 
 #include <Graphing\GraphingExp.h>
 #include <Graphing\GirderGraphBuilderBase.h>
-#include <GraphicsLib\GraphXY.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PointOfInterest.h>
+#include <Graphing\GraphingTypes.h>
 
-class CAnalysisResultsGraphController;
-class CAnalysisResultsGraphDefinition;
+class CAnalysisResultsGraphDefinition; // use a forward declaration here. We don't want to include the header file for a non-exported class
 class CAnalysisResultsGraphDefinitions;
-class arvPhysicalConverter;
-
-
-enum ActionType 
-{
-   actionMoment, 
-   actionShear, 
-   actionDisplacement, 
-   actionStress
-};
-
-enum GraphType 
-{ 
-   graphCombined, 
-   graphLiveLoad, 
-   graphVehicularLiveLoad,
-   graphLimitState, 
-   graphProduct,
-   graphPrestress, 
-   graphPostTension,
-   graphDemand, 
-   graphAllowable, 
-   graphCapacity,
-   graphMinCapacity
-};
+class CGraphColor;
 
 class GRAPHINGCLASS CAnalysisResultsGraphBuilder : public CGirderGraphBuilderBase
 {
@@ -64,39 +37,49 @@ public:
    CAnalysisResultsGraphBuilder(const CAnalysisResultsGraphBuilder& other);
    virtual ~CAnalysisResultsGraphBuilder();
 
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
+
    virtual CGraphBuilder* Clone();
 
    void UpdateGraphDefinitions();
-   std::vector<std::pair<CString,IDType>> GetLoadCaseNames(IntervalIndexType intervalIdx,ActionType actionType);
+   std::vector<std::pair<CString,IDType>> GetLoadings(IntervalIndexType intervalIdx,ActionType actionType);
 
    void DumpLBAM();
 
 protected:
+   std::auto_ptr<CGraphColor> m_pGraphColor;
+   std::set<IndexType> m_UsedDataLabels; // keeps track of the graph data labels that have already been used so we don't get duplicates in the legend
+
+   void Init();
+
    virtual CGirderGraphControllerBase* CreateGraphController();
-   virtual BOOL InitGraphController(CWnd* pParent,UINT nID);
    virtual bool UpdateNow();
 
-   CAnalysisResultsGraphDefinitions* m_pGraphDefinitions;
+   void UpdateYAxisUnits();
+   void UpdateXAxisTitle();
+   void UpdateGraphTitle();
+   void UpdateGraphData();
+
+   COLORREF GetGraphColor(IndexType graphIdx,IntervalIndexType intervalIdx);
+   CString GetDataLabel(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx);
+
+   void InitializeGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,ActionType actionType,IntervalIndexType intervalIdx,bool bIsFinalShear,IndexType* pDataSeriesID,pgsTypes::BridgeAnalysisType* pBAT,pgsTypes::StressLocation* pStressLocation,IndexType* pAnalysisTypeCount);
+
+   void ProductLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear);
+   void CombinedLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear);
+   void LimitStateLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear);
+
+   void LiveLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear);
+   void VehicularLiveLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear);
+
+   void CyStressCapacityGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
+
+   virtual IntervalIndexType GetBeamDrawInterval();
+
+   std::auto_ptr<CAnalysisResultsGraphDefinitions> m_pGraphDefinitions;
 
    DECLARE_MESSAGE_MAP()
 
    std::vector<IntervalIndexType> AddTSRemovalIntervals(IntervalIndexType loadingIntervalIdx,const std::vector<IntervalIndexType>& vIntervals,const std::vector<IntervalIndexType>& vTSRIntervals);
-
-   void UpdateYAxisUnits(ActionType actionType);
-   void UpdateXAxisTitle(IntervalIndexType intervalIdx);
-   void UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,ActionType actionType);
-   void UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,ActionType actionType);
-  
-   void InitializeGraph(const CAnalysisResultsGraphDefinition& graphDef,ActionType actionType,IntervalIndexType intervalIdx,bool bIsFinalShear,IndexType* pDataSeriesID,pgsTypes::BridgeAnalysisType* pBAT,IndexType* pAnalysisTypeCount);
-
-   void CombinedLoadGraph(const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,ActionType action,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
-   void LiveLoadGraph(const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,ActionType action,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
-   void VehicularLiveLoadGraph(const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,ActionType action,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
-   void ProductLoadGraph(const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,ActionType actionType,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
-   void PrestressLoadGraph(const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,ActionType action,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
-   void CyStressCapacityGraph(const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,ActionType action,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
-   void PostTensionLoadGraph(const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,ActionType action,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
-   void LimitStateLoadGraph(const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,ActionType action,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
-
    pgsTypes::AnalysisType GetAnalysisType();
 };

@@ -83,7 +83,7 @@ void CTogaDirectFillDlg::OnBnClickedSelectStrands()
    if ( dlg.DoModal() == IDOK )
    {
       // get data from dialog
-      DirectStrandFillCollection directFilledStraightStrands;
+      CDirectStrandFillCollection directFilledStraightStrands;
       std::vector<CDebondData> straightDebond;
       dlg.GetData(directFilledStraightStrands, straightDebond);
 

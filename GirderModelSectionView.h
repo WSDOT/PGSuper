@@ -73,7 +73,6 @@ protected:
 protected:
 	//{{AFX_MSG(CGirderModelSectionView)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnEditGirder();
 	afx_msg void OnEditPrestressing();
 	afx_msg void OnViewSettings();
 	afx_msg void OnEditStirrups();

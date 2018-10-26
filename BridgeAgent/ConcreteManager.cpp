@@ -128,7 +128,7 @@ void CConcreteManager::ValidateConcrete()
       // can't get deck properties until the model is build... and that is what we are doing here so there is recursion
 
       //Float64 vsDeck = pSectProp->GetTributaryDeckArea(poi)/pSectProp->GetTributaryFlangeWidth(poi);
-      Float64 vsDeck = 1.5;
+      Float64 vsDeck = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
       // *NOTE* Only the top portion of the Deck is exposed to drying
 
       // modulus of rupture coefficients
@@ -141,9 +141,8 @@ void CConcreteManager::ValidateConcrete()
    // Create railing concrete
    //
    //////////////////////////////////////////////////////////////////////////////
-   EventIndexType railingSystemEventIdx = m_pBridgeDesc->GetTimelineManager()->GetRailingSystemLoadEventIndex();
-   IntervalIndexType intervalIdx = pIntervals->GetInterval(railingSystemEventIdx);
-   Float64 time_at_casting = pIntervals->GetStart(intervalIdx);
+   EventIndexType railingSystemEventIdx = pTimelineMgr->GetRailingSystemLoadEventIndex();
+   Float64 time_at_casting        = pTimelineMgr->GetStart(railingSystemEventIdx);
    Float64 age_at_initial_loading = 0.0; // assume railing system load is at full strength immediately
    Float64 cure_time = 0.0;
    Float64 modE;
@@ -192,11 +191,6 @@ void CConcreteManager::ValidateConcrete()
    // Precast Segment and Closure Joint Concrete
    //
    //////////////////////////////////////////////////////////////////////////////
-   EventIndexType segConstructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex();
-   Float64 segment_casting_time        = pTimelineMgr->GetStart(segConstructEventIdx);
-   Float64 segment_age_at_release      = pTimelineMgr->GetEventByIndex(segConstructEventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
-   Float64 segment_cure_time = segment_age_at_release;
-
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -212,17 +206,23 @@ void CConcreteManager::ValidateConcrete()
 
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
+            SegmentIDType segmentID = pSegment->GetID();
+
+            EventIndexType segConstructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segmentID);
+            Float64 segment_casting_time        = pTimelineMgr->GetStart(segConstructEventIdx);
+            Float64 segment_age_at_release      = pTimelineMgr->GetEventByIndex(segConstructEventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
+            Float64 segment_cure_time = segment_age_at_release;
+
+
             // Time dependent concrete
             //Float64 vsSegment = pSectProp->GetVolume(segmentKey)/pSectProp->GetSurfaceArea(segmentKey);
 #pragma Reminder("UPDATE: using dummy value for segment V/S ratio")
-            Float64 vsSegment = 3.0;
+            Float64 vsSegment = ::ConvertToSysUnits(3.0,unitMeasure::Inch);
 
-            //SegmentIDType segmentID = pSegment->GetID();
-            //EventIndexType erectionEventIdx = m_pBridgeDesc->GetTimelineManager()->GetSegmentErectionEventIndex(segmentID);
-            //IntervalIndexType intervalIdx   = pIntervals->GetInterval(erectionEventIdx); // hauling is the first interval in the erect segment activity
-            //Float64 stepTime = pIntervals->GetMiddle(intervalIdx);
-            IntervalIndexType intervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey); // hauling is the first interval in the erect segment activity
-            Float64 stepTime = pIntervals->GetStart(intervalIdx);
+            // for the LRFD stepped f'c concrete model, assume the jump from f'ci to f'c occurs
+            // at hauling interval
+            IntervalIndexType intervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+            Float64 stepTime = pIntervals->GetStart(segmentKey,intervalIdx);
 
 
             matConcreteBase* pSegmentConcrete = CreateConcreteModel(_T("Segment Concrete"),pSegment->Material.Concrete,segment_casting_time,segment_cure_time,segment_age_at_release,stepTime,vsSegment);
@@ -1074,6 +1074,12 @@ Float64 CConcreteManager::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarr
    return m_pRailingConc[orientation]->GetCreepCoefficient(t,tla);
 }
 
+matConcreteBase* CConcreteManager::GetRailingSystemConcrete(pgsTypes::TrafficBarrierDistribution orientation)
+{
+   ValidateConcrete();
+   return m_pRailingConc[orientation].get();
+}
+
 Float64 CConcreteManager::GetNWCDensityLimit()
 {
    Float64 limit;
@@ -1204,6 +1210,12 @@ Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
       return 0;
 }
 
+matConcreteBase* CConcreteManager::GetDeckConcrete()
+{
+   ValidateConcrete();
+   return m_pDeckConc.get();
+}
+
 Float64 CConcreteManager::GetSegmentCastingTime(const CSegmentKey& segmentKey)
 {
    ValidateConcrete();
@@ -1246,46 +1258,58 @@ Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentK
    return m_pSegmentConcrete[segmentKey]->GetCreepCoefficient(t,tla);
 }
 
-Float64 CConcreteManager::GetClosureJointCastingTime(const CSegmentKey& closureKey)
+matConcreteBase* CConcreteManager::GetSegmentConcrete(const CSegmentKey& segmentKey)
+{
+   ValidateConcrete();
+   return m_pSegmentConcrete[segmentKey].get();
+}
+
+Float64 CConcreteManager::GetClosureJointCastingTime(const CClosureKey& closureKey)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetTimeAtCasting();
 }
 
-Float64 CConcreteManager::GetClosureJointFc(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointFc(const CClosureKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetFc(t);
 }
 
-Float64 CConcreteManager::GetClosureJointFlexureFr(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointFlexureFr(const CClosureKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetFlexureFr(t);
 }
 
-Float64 CConcreteManager::GetClosureJointShearFr(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointShearFr(const CClosureKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetShearFr(t);
 }
 
-Float64 CConcreteManager::GetClosureJointEc(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointEc(const CClosureKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetEc(t);
 }
 
-Float64 CConcreteManager::GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetFreeShrinkageStrain(t);
 }
 
-Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CSegmentKey& closureKey,Float64 t,Float64 tla)
+Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetCreepCoefficient(t,tla);
+}
+
+matConcreteBase* CConcreteManager::GetClosureJointConcrete(const CClosureKey& closureKey)
+{
+   ValidateConcrete();
+   return m_pClosureConcrete[closureKey].get();
 }
 
 matLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 stepTime)

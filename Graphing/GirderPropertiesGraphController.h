@@ -25,7 +25,7 @@
 #include <Graphing\GirderPropertiesGraphBuilder.h>
 #include <Graphing\GirderGraphControllerBase.h>
 
-class CGirderPropertiesGraphController : public CGirderGraphControllerBase
+class CGirderPropertiesGraphController : public CIntervalGirderGraphControllerBase
 {
 public:
    CGirderPropertiesGraphController();

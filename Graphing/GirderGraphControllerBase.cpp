@@ -25,6 +25,8 @@
 #include "GirderGraphControllerBase.h"
 #include <Graphing\GirderGraphBuilderBase.h>
 
+#include "Hints.h"
+
 #include <EAF\EAFUtilities.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
@@ -41,8 +43,7 @@ IMPLEMENT_DYNAMIC(CGirderGraphControllerBase,CEAFGraphControlWindow)
 CGirderGraphControllerBase::CGirderGraphControllerBase(bool bAllGroups):
 m_bAllGroups(bAllGroups),
 m_GroupIdx(0),
-m_GirderIdx(0),
-m_IntervalIdx(0)
+m_GirderIdx(0)
 {
 }
 
@@ -50,7 +51,6 @@ BEGIN_MESSAGE_MAP(CGirderGraphControllerBase, CEAFGraphControlWindow)
 	//{{AFX_MSG_MAP(CGirderGraphControllerBase)
    ON_CBN_SELCHANGE( IDC_GROUP,    CbnOnGroupChanged    )
    ON_CBN_SELCHANGE( IDC_GIRDER,   CbnOnGirderChanged   )
-   ON_CBN_SELCHANGE( IDC_INTERVAL, CbnOnIntervalChanged )
    ON_BN_CLICKED(IDC_GRID, OnShowGrid)
    ON_BN_CLICKED(IDC_BEAM, OnShowBeam)
    //}}AFX_MSG_MAP
@@ -92,21 +92,6 @@ BOOL CGirderGraphControllerBase::OnInitDialog()
       m_GirderIdx = INVALID_INDEX;
    }
 
-   // Fill the interval combo box
-   FillIntervalCtrl();
-
-   // Set initial value
-   CComboBox* pcbInterval = (CComboBox*)GetDlgItem(IDC_INTERVAL);
-   if ( pcbInterval )
-   {
-      pcbInterval->SetCurSel(0);
-      m_IntervalIdx = (IntervalIndexType)pcbInterval->GetItemData(pcbInterval->GetCurSel());
-   }
-   else
-   {
-      m_IntervalIdx = INVALID_INDEX;
-   }
-
    return TRUE;
 }
 
@@ -120,9 +105,26 @@ GirderIndexType CGirderGraphControllerBase::GetGirder()
    return m_GirderIdx;
 }
 
-IntervalIndexType CGirderGraphControllerBase::GetInterval()     
+CGirderKey CGirderGraphControllerBase::GetGirderKey()
 {
-   return m_IntervalIdx;
+   return CGirderKey(m_GroupIdx,m_GirderIdx);
+}
+
+void CGirderGraphControllerBase::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   CEAFGraphControlWindow::OnUpdate(pSender,lHint,pHint);
+   if ( lHint == HINT_UNITSCHANGED )
+   {
+      ((CGirderGraphBuilderBase*)GetGraphBuilder())->UpdateXAxis();
+      ((CGirderGraphBuilderBase*)GetGraphBuilder())->UpdateYAxis();
+   }
+
+   if ( lHint == HINT_BRIDGECHANGED )
+   {
+      // The bridge changed, so reset the controls
+      FillGroupCtrl();
+      FillGirderCtrl();
+   }
 }
 
 void CGirderGraphControllerBase::CbnOnGroupChanged()
@@ -169,37 +171,6 @@ void CGirderGraphControllerBase::CbnOnGirderChanged()
    UpdateGraph();
 }
 
-void CGirderGraphControllerBase::CbnOnIntervalChanged()
-{
-   IntervalIndexType interval;
-
-   CComboBox* pcbInterval = (CComboBox*)GetDlgItem(IDC_INTERVAL);
-   CListBox* plbLoadCase  = (CListBox*)GetDlgItem(IDC_LOAD_CASE);
-
-   int curSel = pcbInterval->GetCurSel();
-   if (curSel == CB_ERR) 
-   {
-      pcbInterval->SetCurSel(0);
-      interval = (IntervalIndexType)(pcbInterval->GetItemData(0));
-   }
-   else
-   {
-      interval = (IntervalIndexType)(pcbInterval->GetItemData(curSel));
-   }
-
-   if ( interval == m_IntervalIdx )
-   {
-      // The interval didn't actually change
-      return;
-   }
-
-   m_IntervalIdx = interval;
-
-   OnIntervalChanged();
-
-   UpdateGraph();
-}
-
 void CGirderGraphControllerBase::OnShowGrid()
 {
    BOOL bIsChecked = IsDlgButtonChecked(IDC_GRID);
@@ -217,10 +188,6 @@ void CGirderGraphControllerBase::OnGroupChanged()
 }
 
 void CGirderGraphControllerBase::OnGirderChanged()
-{
-}
-
-void CGirderGraphControllerBase::OnIntervalChanged()
 {
 }
 
@@ -292,41 +259,13 @@ void CGirderGraphControllerBase::FillGirderCtrl()
       pcbGirder->AddString(strGirder);
    }
 
-   if ( curSel != CB_ERR && curSel < nGirders)
+   if ( curSel != CB_ERR && curSel < (int)nGirders)
    {
       pcbGirder->SetCurSel(curSel);
    }
    else
    {
       pcbGirder->SetCurSel(0);
-   }
-}
-
-void CGirderGraphControllerBase::FillIntervalCtrl()
-{
-   CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
-   if ( pcbIntervals == NULL )
-      return; // not using an intervals list
-
-   int curSel = pcbIntervals->GetCurSel();
-
-   pcbIntervals->ResetContent();
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0));
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-   {
-      CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-      int idx = pcbIntervals->AddString(strInterval);
-      pcbIntervals->SetItemData(idx,intervalIdx);
-   }
-
-   curSel = pcbIntervals->SetCurSel(curSel);
-   if ( curSel == CB_ERR )
-   {
-      pcbIntervals->SetCurSel(0);
    }
 }
 
@@ -345,5 +284,273 @@ void CGirderGraphControllerBase::AssertValid() const
 void CGirderGraphControllerBase::Dump(CDumpContext& dc) const
 {
 	CEAFGraphControlWindow::Dump(dc);
+}
+#endif //_DEBUG
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+IMPLEMENT_DYNAMIC(CIntervalGirderGraphControllerBase,CGirderGraphControllerBase)
+
+CIntervalGirderGraphControllerBase::CIntervalGirderGraphControllerBase(bool bAllGroups):
+CGirderGraphControllerBase(bAllGroups),
+m_IntervalIdx(0)
+{
+}
+
+BEGIN_MESSAGE_MAP(CIntervalGirderGraphControllerBase, CGirderGraphControllerBase)
+	//{{AFX_MSG_MAP(CIntervalGirderGraphControllerBase)
+   ON_CBN_SELCHANGE( IDC_INTERVAL, CbnOnIntervalChanged )
+   //}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+BOOL CIntervalGirderGraphControllerBase::OnInitDialog()
+{
+   CGirderGraphControllerBase::OnInitDialog();
+
+   // Fill the interval combo box
+   FillIntervalCtrl();
+
+   // Set initial value
+   CComboBox* pcbInterval = (CComboBox*)GetDlgItem(IDC_INTERVAL);
+   if ( pcbInterval )
+   {
+      pcbInterval->SetCurSel(0);
+      m_IntervalIdx = (IntervalIndexType)pcbInterval->GetItemData(pcbInterval->GetCurSel());
+   }
+   else
+   {
+      m_IntervalIdx = INVALID_INDEX;
+   }
+
+   return TRUE;
+}
+
+void CIntervalGirderGraphControllerBase::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   CGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
+   if ( lHint == HINT_BRIDGECHANGED )
+   {
+      FillIntervalCtrl();
+   }
+}
+
+IntervalIndexType CIntervalGirderGraphControllerBase::GetInterval()     
+{
+   return m_IntervalIdx;
+}
+
+void CIntervalGirderGraphControllerBase::CbnOnIntervalChanged()
+{
+   IntervalIndexType interval;
+
+   CComboBox* pcbInterval = (CComboBox*)GetDlgItem(IDC_INTERVAL);
+
+   int curSel = pcbInterval->GetCurSel();
+   if (curSel == CB_ERR) 
+   {
+      pcbInterval->SetCurSel(0);
+      interval = (IntervalIndexType)(pcbInterval->GetItemData(0));
+   }
+   else
+   {
+      interval = (IntervalIndexType)(pcbInterval->GetItemData(curSel));
+   }
+
+   if ( interval == m_IntervalIdx )
+   {
+      // The interval didn't actually change
+      return;
+   }
+
+   m_IntervalIdx = interval;
+
+   OnIntervalChanged();
+
+   UpdateGraph();
+}
+
+void CIntervalGirderGraphControllerBase::OnIntervalChanged()
+{
+}
+
+void CIntervalGirderGraphControllerBase::FillIntervalCtrl()
+{
+   CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
+   if ( pcbIntervals == NULL )
+      return; // not using an intervals list
+
+   int curSel = pcbIntervals->GetCurSel();
+
+   pcbIntervals->ResetContent();
+
+   CGirderKey girderKey(GetGirderKey());
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,0));
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+   {
+      CString strInterval;
+      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+      int idx = pcbIntervals->AddString(strInterval);
+      pcbIntervals->SetItemData(idx,intervalIdx);
+   }
+
+   curSel = pcbIntervals->SetCurSel(curSel);
+   if ( curSel == CB_ERR )
+   {
+      pcbIntervals->SetCurSel(0);
+   }
+}
+
+#ifdef _DEBUG
+void CIntervalGirderGraphControllerBase::AssertValid() const
+{
+	CGirderGraphControllerBase::AssertValid();
+}
+
+void CIntervalGirderGraphControllerBase::Dump(CDumpContext& dc) const
+{
+	CGirderGraphControllerBase::Dump(dc);
+}
+#endif //_DEBUG
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+IMPLEMENT_DYNAMIC(CMultiIntervalGirderGraphControllerBase,CGirderGraphControllerBase)
+
+CMultiIntervalGirderGraphControllerBase::CMultiIntervalGirderGraphControllerBase(bool bAllGroups):
+CGirderGraphControllerBase(bAllGroups)
+{
+}
+
+BEGIN_MESSAGE_MAP(CMultiIntervalGirderGraphControllerBase, CGirderGraphControllerBase)
+	//{{AFX_MSG_MAP(CMultiIntervalGirderGraphControllerBase)
+   ON_LBN_SELCHANGE( IDC_INTERVALS, OnIntervalsChanged )
+   //}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+BOOL CMultiIntervalGirderGraphControllerBase::OnInitDialog()
+{
+   CGirderGraphControllerBase::OnInitDialog();
+   FillIntervalCtrl();
+   return TRUE;
+}
+
+void CMultiIntervalGirderGraphControllerBase::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   CGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
+   if ( lHint == HINT_BRIDGECHANGED )
+   {
+      FillIntervalCtrl();
+   }
+}
+
+std::vector<IntervalIndexType> CMultiIntervalGirderGraphControllerBase::GetSelectedIntervals()
+{
+   std::vector<IntervalIndexType> vIntervals;
+
+   CListBox* plbIntervals = (CListBox*)GetDlgItem(IDC_INTERVALS);
+
+   // capture the current selection
+   int selCount = plbIntervals->GetSelCount();
+   CArray<int,int> selItemIndices;
+   selItemIndices.SetSize(selCount);
+   plbIntervals->GetSelItems(selCount,selItemIndices.GetData());
+
+   int i;
+   for ( i = 0; i < selCount; i++ )
+   {
+      IntervalIndexType intervalIdx = (IntervalIndexType)plbIntervals->GetItemData(selItemIndices[i]);
+      vIntervals.push_back(intervalIdx);
+   }
+
+   return vIntervals;
+}
+
+IndexType CMultiIntervalGirderGraphControllerBase::GetGraphCount()
+{
+   CListBox* plbIntervals = (CListBox*)GetDlgItem(IDC_INTERVALS);
+   return plbIntervals->GetSelCount();
+}
+
+void CMultiIntervalGirderGraphControllerBase::OnIntervalsChanged()
+{
+   UpdateGraph();
+}
+
+void CMultiIntervalGirderGraphControllerBase::FillIntervalCtrl()
+{
+   CListBox* plbIntervals = (CListBox*)GetDlgItem(IDC_INTERVALS);
+
+   // capture the current selection
+   int selCount = plbIntervals->GetSelCount();
+   CArray<int,int> selItemIndices;
+   selItemIndices.SetSize(selCount);
+   plbIntervals->GetSelItems(selCount,selItemIndices.GetData());
+
+   CStringArray selItems;
+   int i;
+   for ( i = 0; i < selCount; i++ )
+   {
+      CString strItem;
+      plbIntervals->GetText(selItemIndices[i],strItem);
+      selItems.Add( strItem );
+   }
+
+   // refill control
+   plbIntervals->ResetContent();
+
+   CGirderKey girderKey(GetGirderKey());
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType firstIntervalIdx = GetFirstInterval();
+   IntervalIndexType lastIntervalIdx  = GetLastInterval();
+   for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
+   {
+      CString str;
+      str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+      int idx = plbIntervals->AddString(str);
+      plbIntervals->SetItemData(idx,intervalIdx);
+   }
+
+   // reselect anything that was previously selected
+   for ( i = 0; i < selCount; i++ )
+   {
+      CString strItem = selItems[i];
+      int idx = plbIntervals->FindStringExact(-1,strItem);
+      if ( idx != LB_ERR )
+         plbIntervals->SetSel(idx);
+   }
+}
+
+IntervalIndexType CMultiIntervalGirderGraphControllerBase::GetFirstInterval()
+{
+   return 0;
+}
+
+IntervalIndexType CMultiIntervalGirderGraphControllerBase::GetLastInterval()
+{
+   CGirderKey girderKey(GetGirderKey());
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   return nIntervals-1;
+}
+
+#ifdef _DEBUG
+void CMultiIntervalGirderGraphControllerBase::AssertValid() const
+{
+	CGirderGraphControllerBase::AssertValid();
+}
+
+void CMultiIntervalGirderGraphControllerBase::Dump(CDumpContext& dc) const
+{
+	CGirderGraphControllerBase::Dump(dc);
 }
 #endif //_DEBUG

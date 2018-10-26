@@ -71,6 +71,7 @@ class ATL_NO_VTABLE CProjectAgentImp :
    public CProxyIRatingSpecificationEventSink<CProjectAgentImp>,
    public CProxyILibraryConflictEventSink<CProjectAgentImp>,
    public CProxyILoadModifiersEventSink<CProjectAgentImp>,
+   public CProxyIEventsEventSink<CProjectAgentImp>,
    public IAgentEx,
    public IAgentPersist,
    public IProjectProperties,
@@ -141,9 +142,11 @@ BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
    CONNECTION_POINT_ENTRY( IID_IRatingSpecificationEventSink )
    CONNECTION_POINT_ENTRY( IID_ILibraryConflictEventSink )
    CONNECTION_POINT_ENTRY( IID_ILoadModifiersEventSink )
+   CONNECTION_POINT_ENTRY( IID_IEventsSink )
 END_CONNECTION_POINT_MAP()
 
    StatusCallbackIDType m_scidGirderDescriptionWarning;
+   StatusCallbackIDType m_scidBridgeDescriptionWarning;
    StatusCallbackIDType m_scidRebarStrengthWarning;
 
 
@@ -233,7 +236,7 @@ public:
    virtual void SetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType face,const CGirderSpacing2& spacing);
    virtual void SetGirderSpacingAtStartOfGroup(GroupIndexType groupIdx,const CGirderSpacing2& spacing);
    virtual void SetGirderSpacingAtEndOfGroup(GroupIndexType groupIdx,const CGirderSpacing2& spacing);
-   virtual void SetGirderName(const CSegmentKey& girderKey, LPCTSTR strGirderName);
+   virtual void SetGirderName(const CGirderKey& girderKey, LPCTSTR strGirderName);
    virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup);
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders);
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType);
@@ -258,11 +261,12 @@ public:
    virtual pgsTypes::MeasurementType GetMeasurementType();
    virtual void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
    virtual pgsTypes::MeasurementLocation GetMeasurementLocation();
-   virtual void SetSlabOffset( Float64 slabOffset);
-   virtual void SetSlabOffset( GroupIndexType grpIdx, Float64 start, Float64 end);
-   virtual void SetSlabOffset( const CSegmentKey& segmentKey, Float64 start, Float64 end);
+   virtual void SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType);
+   virtual void SetSlabOffset(Float64 slabOffset);
+   virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, Float64 offset);
+   virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset);
+   virtual Float64 GetSlabOffset(GroupIndexType grpidx, PierIndexType pierIdx, GirderIndexType gdrIdx);
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType();
-   virtual void GetSlabOffset( const CSegmentKey& segmentKey, Float64* pStart, Float64* pEnd);
    virtual std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx);
    virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx);
    virtual const CTimelineManager* GetTimelineManager();
@@ -273,10 +277,10 @@ public:
    virtual const CTimelineEvent* GetEventByID(EventIDType eventID);
    virtual void SetEventByIndex(EventIndexType eventIdx,const CTimelineEvent& stage);
    virtual void SetEventByID(EventIDType eventID,const CTimelineEvent& stage);
-   virtual void SetSegmentConstructionEventByIndex(EventIndexType eventIdx);
-   virtual void SetSegmentConstructionEventByID(EventIDType eventID);
-   virtual EventIndexType GetSegmentConstructionEventIndex();
-   virtual EventIDType GetSegmentConstructionEventID();
+   virtual void SetSegmentConstructionEventByIndex(const CSegmentKey& segmentKey,EventIndexType eventIdx);
+   virtual void SetSegmentConstructionEventByID(const CSegmentKey& segmentKey,EventIDType eventID);
+   virtual EventIndexType GetSegmentConstructionEventIndex(const CSegmentKey& segmentKey);
+   virtual EventIDType GetSegmentConstructionEventID(const CSegmentKey& segmentKey);
    virtual void SetPierErectionEventByIndex(PierIndexType pierIdx,EventIndexType eventIdx);
    virtual void SetPierErectionEventByID(PierIndexType pierIdx,IDType eventID);
    virtual void SetTempSupportEventsByIndex(SupportIndexType tsIdx,EventIndexType erectIdx,EventIndexType removeIdx);
@@ -309,6 +313,7 @@ public:
    virtual EventIDType GetLiveLoadEventID();
    virtual void SetLiveLoadEventByIndex(EventIndexType eventIdx);
    virtual void SetLiveLoadEventByID(EventIDType eventID);
+   virtual GroupIDType GetGroupID(GroupIndexType groupIdx);
    virtual GirderIDType GetGirderID(const CGirderKey& girderKey);
    virtual SegmentIDType GetSegmentID(const CSegmentKey& segmentKey);
 
@@ -756,7 +761,8 @@ private:
    HRESULT LoadMomentLoads(IStructuredLoad* pLoad);
 
    Uint32 m_PendingEvents;
-   bool m_bHoldingEvents;
+   int m_EventHoldCount;
+   bool m_bFiringEvents;
    std::map<CGirderKey,Uint32> m_PendingEventsHash; // girders that have pending events
    std::vector<CBridgeChangedHint*> m_PendingBridgeChangedHints;
 
@@ -819,6 +825,9 @@ private:
    void ReleaseGirderLibraryEntries();
 
    void VerifyRebarGrade();
+
+   void ValidateBridgeModel();
+   IDType m_BridgeStabilityStatusItemID;
 
    DECLARE_STRSTORAGEMAP(CProjectAgentImp)
 

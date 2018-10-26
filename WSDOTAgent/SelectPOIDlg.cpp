@@ -192,12 +192,12 @@ void CSelectPOIDlg::FillIntervalCtrl()
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0));
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(m_GirderKey,0));
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(m_GirderKey);
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(m_GirderKey,intervalIdx));
       int idx = pcbIntervals->AddString(strInterval);
       pcbIntervals->SetItemData(idx,intervalIdx);
    }

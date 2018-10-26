@@ -30,7 +30,7 @@
 #include <PgsExt\GirderData.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-class CGirderSelectStrandsDlg;
+class CGirderSelectStrandsPage;
 class CUserData;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ protected:
 
 public:
    // custom stuff for grid
-   void CustomInit(CGirderSelectStrandsDlg* pParent, const GirderLibraryEntry* pGdrEntry);
+   void CustomInit(CGirderSelectStrandsPage* pParent, const GirderLibraryEntry* pGdrEntry);
 
    // call this before getting data used by the grid
    bool UpdateData(bool doCheckData);
@@ -103,7 +103,7 @@ private:
 
    void UpdateParent();
 
-   CGirderSelectStrandsDlg* m_pParent;
+   CGirderSelectStrandsPage* m_pParent;
    const GirderLibraryEntry* m_pGdrEntry;
    CString m_strMaxDebondLength;
 };

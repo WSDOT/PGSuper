@@ -59,6 +59,8 @@ public:
       bool allowEditing,
       CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
+   void SetBeamFactory(IBeamFactory* pBeamFactory);
+
 // Attributes
 public:
    CGirderDimensionsPage     m_GirderDimensionsPage;
@@ -120,6 +122,7 @@ public:
 
 private:
    void Init();
+   void UpdatePropertyPages(CLSID clsidBeamFamily);
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -2262,27 +2262,26 @@ void CGirderDescPrestressPage::OnBnClickedEditStrandFill()
    Float64 maxDebondLength = pBridge->GetSegmentLength(pParent->m_SegmentKey)/2.0;
 
    CGirderSelectStrandsDlg dlg;
-   dlg.InitializeData(pParent->m_SegmentKey, pParent->m_Segment.Strands, pSpecEntry, pGdrEntry,
+   dlg.m_SelectStrandsPage.InitializeData(pParent->m_SegmentKey, &pParent->m_Segment.Strands, pSpecEntry, pGdrEntry,
                       m_AllowEndAdjustment, m_AllowHpAdjustment, endMeasureType, hpMeasureType, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
 
    if ( dlg.DoModal() == IDOK )
    {
-      // get data from dialog
-      dlg.GetData( pParent->m_Segment.Strands );
+      UpdateData(FALSE);
 
-      // put harped strand offsets into controls
-      CDataExchange DX(this, FALSE);
-      if (m_AllowEndAdjustment)
-      {
-         Float64 offset = pParent->m_Segment.Strands.HpOffsetAtEnd;
-         DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
-      }
+      //// put harped strand offsets into controls
+      //CDataExchange DX(this, FALSE);
+      //if (m_AllowEndAdjustment)
+      //{
+      //   Float64 offset = pParent->m_Segment.Strands.HpOffsetAtEnd;
+      //   DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
+      //}
 
-      if (m_AllowHpAdjustment)
-      {
-         Float64 offset = pParent->m_Segment.Strands.HpOffsetAtHp;
-         DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
-      }
+      //if (m_AllowHpAdjustment)
+      //{
+      //   Float64 offset = pParent->m_Segment.Strands.HpOffsetAtHp;
+      //   DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
+      //}
 
       // update pjack and display elements
       ShowHideNumStrandControls(m_CurrNumPermStrandsType);

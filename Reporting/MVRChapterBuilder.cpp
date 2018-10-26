@@ -101,11 +101,10 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
    IntervalIndexType lastIntervalIdx = nIntervals-1;
-   IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0)); // release interval is the same for all segments
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    rptParagraph* p = 0;
 
@@ -301,12 +300,12 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          }
       }
 
-      // Product Displacements
+      // Product Deflections
       if ( bDesign )
       {
          p = new rptParagraph;
          *pChapter << p;
-         *p << CProductDisplacementsTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+         *p << CProductDeflectionsTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
          if ( bPedestrian )
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
@@ -325,12 +324,12 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
                if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
                {
-                  *p << CUserDisplacementsTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+                  *p << CUserDeflectionsTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
                }
             }
          }
 
-         CTSRemovalDisplacementsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
+         CTSRemovalDeflectionsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
 
          // Product Rotations
          p = new rptParagraph;
@@ -363,11 +362,11 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
          if (pSpecEntry->GetDoEvaluateLLDeflection())
          {
-            // Optional Live Load Displacements
+            // Optional Live Load Deflections
             p = new rptParagraph;
-            p->SetName(_T("Live Load Displacements"));
+            p->SetName(_T("Live Load Deflections"));
             *pChapter << p;
-            *p << CProductDisplacementsTable().BuildLiveLoadTable(pBroker,thisGirderKey,pDisplayUnits) << rptNewLine;
+            *p << CProductDeflectionsTable().BuildLiveLoadTable(pBroker,thisGirderKey,pDisplayUnits) << rptNewLine;
             *p << _T("D1 = LRFD Design truck without lane load and including impact")<< rptNewLine;
             *p << _T("D2 = 0.25*(Design truck) + lane load, including impact")<< rptNewLine;
             *p << _T("D(Controlling) = Max(D1, D2)")<< rptNewLine;
@@ -390,7 +389,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << p;
          CString strName;
-         strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(thisGirderKey,intervalIdx));
          p->SetName(strName);
          *p << p->GetName() << rptNewLine;
 

@@ -35,14 +35,14 @@
 static const int NUM_TYPES = 4;
 
 // Static data to deal with strand types in controls
-struct StrandType
+struct TxDOTStrandType
 {
    CString            Name;
    matPsStrand::Type  Type;
    matPsStrand::Grade Grade;
 };
 
-static StrandType StrandTypeList[NUM_TYPES] = { {_T("Grade 250, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1725},
+static TxDOTStrandType StrandTypeList[NUM_TYPES] = { {_T("Grade 250, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1725},
                                                 {_T("Grade 250, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1725},
                                                 {_T("Grade 270, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1860},
                                                 {_T("Grade 270, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1860} };
@@ -51,7 +51,7 @@ static int GetStrandTypeIndex(matPsStrand::Type type, matPsStrand::Grade grade)
 {
    for(int i=0; i<NUM_TYPES; i++)
    {
-      StrandType& st = StrandTypeList[i];
+      TxDOTStrandType& st = StrandTypeList[i];
       if (type==st.Type && grade==st.Grade)
          return i;
    }

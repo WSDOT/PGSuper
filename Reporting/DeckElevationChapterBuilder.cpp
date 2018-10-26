@@ -70,6 +70,14 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   CGirderReportSpecification* pSGRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+
+   CGirderKey girderKey;
+   if ( pSGRptSpec )
+   {
+      girderKey = pSGRptSpec->GetGirderKey();
+   }
+
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pPara << _T("Deck Elevations over Girder Webs") << rptNewLine;
    (*pChapter) << pPara;
@@ -94,8 +102,12 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    GET_IFACE2(pBroker, IGirder, pGirder );
 
    RowIndexType row_step = 4; // number of rows reported for each web
+
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
+
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       std::_tostringstream os;
       os << _T("Group ") << LABEL_GROUP(grpIdx) << std::endl;
@@ -132,7 +144,10 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
       col = 0;
 
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      GirderIndexType startGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType endGirderIdx   = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : startGirderIdx);
+
+      for ( GirderIndexType gdrIdx = startGirderIdx; gdrIdx <= endGirderIdx; gdrIdx++ )
       {
 #pragma Reminder("UPDATE: assuming precast girder bridge")
          // either report elevations at 10th points for all segments or need to get

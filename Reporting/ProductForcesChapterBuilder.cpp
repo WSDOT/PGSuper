@@ -87,7 +87,7 @@ rptChapter* CProductForcesChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   IntervalIndexType startIntervalIdx = pIntervals->GetFirstErectedSegmentInterval();
+   IntervalIndexType startIntervalIdx = pIntervals->GetFirstSegmentErectionInterval();
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {

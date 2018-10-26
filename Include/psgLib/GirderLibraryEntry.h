@@ -331,11 +331,18 @@ public:
 
    typedef std::vector<GirderEntryDataError> GirderEntryDataErrorVec;
 
+   enum CreateType
+   {
+      DEFAULT,
+      PRECAST,
+      SPLICED
+   };
+
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
    // Default constructor
-   GirderLibraryEntry();
+   GirderLibraryEntry(CreateType createType=DEFAULT);
 
    //------------------------------------------------------------------------
    // Copy constructor

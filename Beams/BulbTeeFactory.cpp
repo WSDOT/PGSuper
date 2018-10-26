@@ -224,7 +224,7 @@ void CBulbTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusItemIDType stat
    polyShape->QueryInterface(ppShape);
 }
 
-void CBulbTeeFactory::LayoutGirderLine(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
+void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr)
 {
    CComPtr<ISegment> segment;
 
@@ -258,14 +258,16 @@ void CBulbTeeFactory::LayoutGirderLine(IBroker* pBroker,StatusItemIDType statusI
    CComPtr<IMaterial> material;
    material.CoCreateInstance(CLSID_Material);
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       Float64 E = pMaterial->GetSegmentAgeAdjustedEc(segmentKey,intervalIdx);
       Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
 
-      material->put_E(intervalIdx,E);
-      material->put_Density(intervalIdx,D);
+      StageIndexType stageIdx = pStages->GetStage(segmentKey,intervalIdx);
+
+      material->put_E(stageIdx,E);
+      material->put_Density(stageIdx,D);
    }
 
 

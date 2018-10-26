@@ -36,6 +36,7 @@
 #include <Graphing\GirderPropertiesGraphBuilder.h>
 #include <Graphing\ConcretePropertyGraphBuilder.h>
 #include <Graphing\InfluenceLineGraphBuilder.h>
+#include <Graphing\DeflectionHistoryGraphBuilder.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -64,6 +65,7 @@ HRESULT CPGSpliceGrapherImp::InitGraphBuilders()
    pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CConcretePropertyGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
    //pGraphMgr->AddGraphBuilder(new CInfluenceLineGraphBuilder);
 
    return S_OK;

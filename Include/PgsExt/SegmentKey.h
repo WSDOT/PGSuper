@@ -22,7 +22,6 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PGSuperTypes.h>
 #include <WBFLCore.h>
 
 // A key to identify a girder.
@@ -30,169 +29,42 @@
 class PGSEXTCLASS CGirderKey
 {
 public:
-   CGirderKey(GroupIndexType grpIdx,GirderIndexType gdrIdx) : groupIndex(grpIdx), girderIndex(gdrIdx) {}
-   CGirderKey() : groupIndex(INVALID_INDEX), girderIndex(INVALID_INDEX) {}
-   CGirderKey(const CGirderKey& other) : groupIndex(other.groupIndex), girderIndex(other.girderIndex) {}
-   CGirderKey& operator=(const CGirderKey& other) { groupIndex = other.groupIndex; girderIndex = other.girderIndex; return *this;}
+   CGirderKey(GroupIndexType grpIdx,GirderIndexType gdrIdx);
+   CGirderKey();
+   CGirderKey(const CGirderKey& other);
+   CGirderKey& operator=(const CGirderKey& other);
 
-   bool IsEqual(const CGirderKey& other) const
-   {
-      if ( (groupIndex   == other.groupIndex)  && 
-           (girderIndex  == other.girderIndex) )
-      {
-         return true;
-      }
-
-      return false;
-   }
-
-   bool operator==(const CGirderKey& other) const
-   {
-      if ( (groupIndex   == other.groupIndex   || groupIndex   == ALL_GROUPS)  && 
-           (girderIndex  == other.girderIndex  || girderIndex  == ALL_GIRDERS) )
-      {
-         return true;
-      }
-
-      return false;
-   }
-
-   bool operator!=(const CGirderKey& other) const
-   {
-      return !operator==(other);
-   }
-
-   bool operator<(const CGirderKey& other) const
-   {
-      if ( groupIndex < other.groupIndex )
-         return true;
-
-      if ( other.groupIndex < groupIndex )
-         return false;
-
-      return girderIndex < other.girderIndex;
-   }
+   bool IsEqual(const CGirderKey& other) const;
+   bool operator==(const CGirderKey& other) const;
+   bool operator!=(const CGirderKey& other) const;
+   bool operator<(const CGirderKey& other) const;
 
    GroupIndexType   groupIndex;   // identifies a group of girders
    GirderIndexType  girderIndex;  // identifies a girder within a group
 
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress)
-   {
-      pStrSave->BeginUnit(_T("GirderKey"),1.0);
-      pStrSave->put_Property(_T("GroupIndex"),CComVariant(groupIndex));
-      pStrSave->put_Property(_T("GirderIndex"),CComVariant(girderIndex));
-      pStrSave->EndUnit();
-
-      return S_OK;
-   }
-
-	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
-   {
-      CComVariant var;
-      var.vt = VT_I8;
-      pStrLoad->BeginUnit(_T("GirderKey"));
-      
-      pStrLoad->get_Property(_T("GroupIndex"),&var);
-      groupIndex = var.iVal;
-      
-      pStrLoad->get_Property(_T("GirderIndex"),&var);
-      girderIndex = var.iVal;
-
-      pStrLoad->EndUnit();
-
-      return S_OK;
-   }
+	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 };
 
 // Key to identify a precast segment or a closure joint segment
 class PGSEXTCLASS CSegmentKey : public CGirderKey
 {
 public:
-   CSegmentKey(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx) : CGirderKey(grpIdx,gdrIdx), segmentIndex(segIdx) {}
-   CSegmentKey() : segmentIndex(INVALID_INDEX) {}
-   CSegmentKey(const CSegmentKey& other) : CGirderKey(other), segmentIndex(other.segmentIndex) {}
-   CSegmentKey(const CGirderKey& other,SegmentIndexType segIdx) : CGirderKey(other), segmentIndex(segIdx) {}
-   CSegmentKey& operator=(const CSegmentKey& other) { groupIndex = other.groupIndex; girderIndex = other.girderIndex; segmentIndex = other.segmentIndex; return *this;}
+   CSegmentKey(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx);
+   CSegmentKey();
+   CSegmentKey(const CSegmentKey& other);
+   CSegmentKey(const CGirderKey& other,SegmentIndexType segIdx);
+   CSegmentKey& operator=(const CSegmentKey& other);
 
-   bool IsEqual(const CSegmentKey& other) const
-   {
-      if ( (groupIndex   == other.groupIndex)  && 
-           (girderIndex  == other.girderIndex) && 
-           (segmentIndex == other.segmentIndex) )
-      {
-         return true;
-      }
-
-      return false;
-   }
-
-   bool operator==(const CSegmentKey& other) const
-   {
-      if ( (groupIndex   == other.groupIndex   || groupIndex   == ALL_GROUPS)  && 
-           (girderIndex  == other.girderIndex  || girderIndex  == ALL_GIRDERS) && 
-           (segmentIndex == other.segmentIndex || segmentIndex == ALL_SEGMENTS) )
-      {
-         return true;
-      }
-
-      return false;
-   }
-
-   bool operator!=(const CSegmentKey& other) const
-   {
-      return !operator==(other);
-   }
-
-   bool operator<(const CSegmentKey& other) const
-   {
-      if ( groupIndex < other.groupIndex )
-         return true;
-
-      if ( other.groupIndex < groupIndex )
-         return false;
-
-      if ( girderIndex < other.girderIndex )
-         return true;
-
-      if ( other.girderIndex < girderIndex )
-         return false;
-
-      return segmentIndex < other.segmentIndex;
-   }
+   bool IsEqual(const CSegmentKey& other) const;
+   bool operator==(const CSegmentKey& other) const;
+   bool operator!=(const CSegmentKey& other) const;
+   bool operator<(const CSegmentKey& other) const;
 
    SegmentIndexType segmentIndex; // identifies a segment within a girder
 
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress)
-   {
-      pStrSave->BeginUnit(_T("SegmentKey"),1.0);
-      pStrSave->put_Property(_T("GroupIndex"),CComVariant(groupIndex));
-      pStrSave->put_Property(_T("GirderIndex"),CComVariant(girderIndex));
-      pStrSave->put_Property(_T("SegmentIndex"),CComVariant(segmentIndex));
-      pStrSave->EndUnit();
-
-      return S_OK;
-   }
-
-	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
-   {
-      CComVariant var;
-      var.vt = VT_I8;
-      pStrLoad->BeginUnit(_T("SegmentKey"));
-      
-      pStrLoad->get_Property(_T("GroupIndex"),&var);
-      groupIndex = var.iVal;
-      
-      pStrLoad->get_Property(_T("GirderIndex"),&var);
-      girderIndex = var.iVal;
-      
-      pStrLoad->get_Property(_T("SegmentIndex"),&var);
-      segmentIndex = var.iVal;
-
-      pStrLoad->EndUnit();
-
-      return S_OK;
-   }
-
+	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 };
 
 typedef CSegmentKey CClosureKey;
@@ -200,78 +72,37 @@ typedef CSegmentKey CClosureKey;
 class PGSEXTCLASS CSpanGirderKey
 {
 public:
-   CSpanGirderKey(SpanIndexType spanIdx,GirderIndexType gdrIdx) : spanIndex(spanIdx), girderIndex(gdrIdx) {}
-   CSpanGirderKey() : spanIndex(INVALID_INDEX), girderIndex(INVALID_INDEX) {}
-   CSpanGirderKey(const CSpanGirderKey& other) : spanIndex(other.spanIndex), girderIndex(other.girderIndex) {}
+   CSpanGirderKey(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   CSpanGirderKey();
+   CSpanGirderKey(const CSpanGirderKey& other);
    
-   CSpanGirderKey& operator=(const CSpanGirderKey& other) 
-   { spanIndex = other.spanIndex; girderIndex = other.girderIndex; return *this;}
-
-   bool IsEqual(const CSpanGirderKey& other) const
-   {
-      if ( (spanIndex    == other.spanIndex)  && 
-           (girderIndex  == other.girderIndex) )
-      {
-         return true;
-      }
-
-      return false;
-   }
-
-   bool operator==(const CSpanGirderKey& other) const
-   {
-      if ( (spanIndex    == other.spanIndex    || spanIndex    == ALL_SPANS)  && 
-           (girderIndex  == other.girderIndex  || girderIndex  == ALL_GIRDERS) )
-      {
-         return true;
-      }
-
-      return false;
-   }
-
-   bool operator!=(const CSpanGirderKey& other) const
-   {
-      return !operator==(other);
-   }
-
-   bool operator<(const CSpanGirderKey& other) const
-   {
-      if ( spanIndex < other.spanIndex )
-         return true;
-
-      if ( other.spanIndex < spanIndex )
-         return false;
-
-      return girderIndex < other.girderIndex;
-   }
+   CSpanGirderKey& operator=(const CSpanGirderKey& other);
+   bool IsEqual(const CSpanGirderKey& other) const;
+   bool operator==(const CSpanGirderKey& other) const;
+   bool operator!=(const CSpanGirderKey& other) const;
+   bool operator<(const CSpanGirderKey& other) const;
 
    SpanIndexType    spanIndex;    // identifies a span
    GirderIndexType  girderIndex;  // identifies a girder in the span
 
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress)
-   {
-      pStrSave->BeginUnit(_T("SpanGirderKey"),1.0);
-      pStrSave->put_Property(_T("SpanIndex"),CComVariant(spanIndex));
-      pStrSave->put_Property(_T("GirderIndex"),CComVariant(girderIndex));
-      pStrSave->EndUnit();
-
-      return S_OK;
-   }
-
-	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
-   {
-      CComVariant var;
-      var.vt = VT_I8;
-      pStrLoad->BeginUnit(_T("SpanGirderKey"));
-      
-      pStrLoad->get_Property(_T("SpanIndex"),&var);
-      spanIndex = var.iVal;
-      
-      pStrLoad->get_Property(_T("GirderIndex"),&var);
-      girderIndex = var.iVal;
-
-      pStrLoad->EndUnit();
-
-      return S_OK;
-   }
+	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 };
+
+class PGSEXTCLASS CTendonKey
+{
+public:
+   CTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   CTendonKey(const CTendonKey& other);
+   bool operator==(const CTendonKey& other) const;
+   bool operator<(const CTendonKey& other) const;
+
+   CGirderKey girderKey;
+   DuctIndexType ductIdx;
+};
+
+
+#define ASSERT_GIRDER_KEY(_g_) ATLASSERT(_g_.groupIndex != ALL_GROUPS && _g_.girderIndex != ALL_GIRDERS)
+#define ASSERT_SEGMENT_KEY(_s_) ATLASSERT(_s_.groupIndex != ALL_GROUPS && _s_.girderIndex != ALL_GIRDERS && _s_.segmentIndex != ALL_SEGMENTS)
+#define ASSERT_CLOSURE_KEY(_c_) ASSERT_SEGMENT_KEY(_c_)
+#define ASSERT_SPAN_GIRDER_KEY(_k_) ATLASSERT(_k_.spanIndex != ALL_SPANS && _k_.girderIndex != ALL_GIRDERS)

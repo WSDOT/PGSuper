@@ -81,7 +81,7 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
-   strTitle.Format(_T("Shears due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   strTitle.Format(_T("Shears due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
    rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
@@ -118,14 +118,14 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
       std::vector<sysSectionValue> minLLIM, maxLLIM;
 
 
-      maxDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, minBAT );
+      maxDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, maxBAT, ctIncremental );
+      minDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, minBAT, ctIncremental );
 
-      maxDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, minBAT );
+      maxDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, maxBAT, ctIncremental );
+      minDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, minBAT, ctIncremental );
 
-      maxLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, maxBAT );
-      minLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, minBAT );
+      maxLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental );
+      minLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, minBAT, ctIncremental );
 
       // Fill up the table
       IndexType index = 0;

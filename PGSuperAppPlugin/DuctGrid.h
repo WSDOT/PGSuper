@@ -44,6 +44,9 @@ public:
    void AddDuct(EventIndexType stressingEvent);
    void DeleteDuct();
 
+   void UpdatePTData();
+   void FillGrid();
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CDuctGrid)
@@ -55,9 +58,6 @@ public:
 
    void OnStrandChanged(); // called by parent when strand type changes
 
-   void SetPTData(const CPTData& ptData);
-   const CPTData& GetPTData();
-
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CDuctGrid)
@@ -65,7 +65,7 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   CPTData m_PTData;
+   CPTData* m_pPTData;
    EventIndexType m_CreateEventIndex;
 
    void AddDuct(const CDuctData& duct,EventIndexType stressingEvent);

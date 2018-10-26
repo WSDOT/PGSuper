@@ -20,8 +20,6 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSUPERALL_H_
-#define INCLUDED_PGSUPERALL_H_
 #pragma once
 
 #ifndef STRICT
@@ -64,5 +62,3 @@ using namespace ATL;
 #include <PGSuperTypes.h>
 #include <PGSuperDebug.h>
 #include <PGSuperUnits.h>
-
-#endif // INCLUDED_PGSUPERDEBUG_H_

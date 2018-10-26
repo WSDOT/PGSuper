@@ -98,11 +98,8 @@ protected:
 
 template <class M,class T>
 RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bIsFutureOverlay,
-                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,IntervalIndexType continuityInterval,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,IntervalIndexType continuityInterval,IntervalIndexType castDeckIntervalIdx,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-
    p_table->SetNumberOfHeaderRows(2);
 
    //
@@ -128,7 +125,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
 
    if ( bShearKey )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityInterval == castDeckIntervalIdx )
+      if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
       {
          p_table->SetColumnSpan(0,row1col,2);
          (*p_table)(0,row1col++) << _T("Shear Key");
@@ -145,7 +142,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
 
    if ( bConstruction )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityInterval == castDeckIntervalIdx )
+      if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
       {
          p_table->SetColumnSpan(0,row1col,2);
          (*p_table)(0,row1col++) << _T("Construction");
@@ -160,7 +157,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       }
    }
 
-   if ( analysisType == pgsTypes::Envelope && continuityInterval == castDeckIntervalIdx )
+   if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
    {
       p_table->SetColumnSpan(0,row1col,2);
       (*p_table)(0,row1col++) << _T("Slab");
@@ -192,7 +189,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
 
    if ( bDeckPanels )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityInterval == castDeckIntervalIdx )
+      if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
       {
          p_table->SetColumnSpan(0,row1col,2);
          (*p_table)(0,row1col++) << _T("Deck Panel");

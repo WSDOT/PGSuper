@@ -192,7 +192,7 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
       CDisplayView* pView = pDispMgr->GetView();
       CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
 
-      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
 
       // the alignment doesn't have its own context menu, so if there aren't callbacks to add anything
       // then just return
@@ -200,11 +200,12 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
          return false;
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IBridgePlanViewEventCallback* callback = iter->second;
-         callback->OnAlignmentContextMenu(pMenu);
+         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnAlignmentContextMenu(pMenu);
       }
 
       bool bResult = false;

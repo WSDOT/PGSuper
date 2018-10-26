@@ -50,9 +50,10 @@ public:
 
    // Add a tendon to the list of tendons that are stressed during this event
    void AddTendon(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   void AddTendon(const CTendonKey& tendonKey);
 
    // Add multiple tendons to the list of tendons that are stressed during this event
-   void AddTendons(const std::vector<std::pair<CGirderKey,DuctIndexType>>& tendons);
+   void AddTendons(const std::set<CTendonKey>& tendons);
 
    // Removes a tendon from the stressing list
    void RemoveTendon(const CGirderKey& girderKey,DuctIndexType ductIdx);
@@ -65,7 +66,7 @@ public:
 
    // Returns the tendons that are stressed in this activity
    // the second data member holds a duct index
-   const std::vector<std::pair<CGirderKey,DuctIndexType>>& GetTendons() const;
+   const std::set<CTendonKey>& GetTendons() const;
 
    // Returns the number of tendons in this activity
    IndexType GetTendonCount() const;
@@ -78,5 +79,5 @@ protected:
    virtual void MakeAssignment(const CStressTendonActivity& rOther);
    bool m_bEnabled;
 
-   std::vector<std::pair<CGirderKey,DuctIndexType>> m_Tendons;
+   std::set<CTendonKey> m_Tendons;
 };

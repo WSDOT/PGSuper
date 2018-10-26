@@ -103,9 +103,9 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   IntervalIndexType lastIntervalIdx     = pIntervals->GetIntervalCount()-1;
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType lastIntervalIdx     = pIntervals->GetIntervalCount(girderKey)-1;
 
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
 
@@ -245,10 +245,10 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    CTSRemovalReactionTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,PierReactionsTable,pDisplayUnits);
 
-   // Product Displacements
+   // Product Deflections
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductDisplacementsTable().Build(pBroker,girderKey,m_AnalysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+   *p << CProductDeflectionsTable().Build(pBroker,girderKey,m_AnalysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
    if ( bPedestrian )
       *p << _T("$ Pedestrian values are per girder") << rptNewLine;
@@ -266,12 +266,12 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
          IntervalIndexType intervalIdx = *iter;
          if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
          {
-            *p << CUserDisplacementsTable().Build(pBroker,girderKey,m_AnalysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+            *p << CUserDeflectionsTable().Build(pBroker,girderKey,m_AnalysisType,intervalIdx,pDisplayUnits) << rptNewLine;
          }
       }
    }
 
-   CTSRemovalDisplacementsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
+   CTSRemovalDeflectionsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
 
    // Product Rotations
    p = new rptParagraph;
@@ -430,7 +430,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       CString strName;
-      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
       p->SetName(strName);
       *p << p->GetName();
 

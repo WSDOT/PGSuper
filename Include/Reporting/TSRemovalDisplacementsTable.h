@@ -33,7 +33,7 @@ interface IRatingSpecification;
 
 /*****************************************************************************
 CLASS 
-   CTSRemovalDisplacementsTable
+   CTSRemovalDeflectionsTable
 
    Encapsulates the construction of the temporary support removal forces table.
 
@@ -51,18 +51,18 @@ LOG
    rab : 12.18.2012 : Created file
 *****************************************************************************/
 
-class REPORTINGCLASS CTSRemovalDisplacementsTable
+class REPORTINGCLASS CTSRemovalDeflectionsTable
 {
 public:
-   CTSRemovalDisplacementsTable();
-   CTSRemovalDisplacementsTable(const CTSRemovalDisplacementsTable& rOther);
-   virtual ~CTSRemovalDisplacementsTable();
+   CTSRemovalDeflectionsTable();
+   CTSRemovalDeflectionsTable(const CTSRemovalDeflectionsTable& rOther);
+   virtual ~CTSRemovalDeflectionsTable();
 
-   CTSRemovalDisplacementsTable& operator = (const CTSRemovalDisplacementsTable& rOther);
+   CTSRemovalDeflectionsTable& operator = (const CTSRemovalDeflectionsTable& rOther);
 
    void Build(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IEAFDisplayUnits* pDisplayUnits) const;
 
 protected:
-   void MakeCopy(const CTSRemovalDisplacementsTable& rOther);
-   virtual void MakeAssignment(const CTSRemovalDisplacementsTable& rOther);
+   void MakeCopy(const CTSRemovalDeflectionsTable& rOther);
+   virtual void MakeAssignment(const CTSRemovalDeflectionsTable& rOther);
 };

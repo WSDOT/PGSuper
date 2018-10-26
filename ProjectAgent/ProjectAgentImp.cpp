@@ -121,9 +121,9 @@ void release_library_entry( pgsLibraryEntryObserver* pObserver, EntryType* pEntr
 }
 
 // pre-declare some needed functions
-static bool IsValidStraightStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
-static bool IsValidHarpedStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
-static bool IsValidTemporaryStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
+static bool IsValidStraightStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
+static bool IsValidHarpedStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
+static bool IsValidTemporaryStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -182,7 +182,8 @@ CProjectAgentImp::CProjectAgentImp()
    m_LibObserver.SetAgent( this );
 
    m_PendingEvents = 0;
-   m_bHoldingEvents = false;
+   m_EventHoldCount = 0;
+   m_bFiringEvents = false;
 
    // Default live loads is HL-93 for design, nothing for permit
    LiveLoadSelection selection;
@@ -380,6 +381,9 @@ CProjectAgentImp::CProjectAgentImp()
    m_Dset_TTS                = ::ConvertToSysUnits(0.375,unitMeasure::Inch);
    m_WobbleFriction_TTS      = ::ConvertToSysUnits(0.0002,unitMeasure::PerFeet);
    m_FrictionCoefficient_TTS = 0.25;
+
+
+   m_BridgeStabilityStatusItemID = INVALID_ID;
 }
 
 CProjectAgentImp::~CProjectAgentImp()
@@ -3592,6 +3596,7 @@ STDMETHODIMP CProjectAgentImp::Init()
    //HRESULT hr = S_OK;
 
    m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidBridgeDescriptionWarning = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
 
    return S_OK;
 }
@@ -3937,6 +3942,23 @@ void CProjectAgentImp::VerifyRebarGrade()
    }
 }
 
+void CProjectAgentImp::ValidateBridgeModel()
+{
+   // Gets called from Fire_BridgeChanged so that every time the bridge gets changed we check the valid status
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   if ( m_BridgeStabilityStatusItemID != INVALID_ID )
+   {
+      pStatusCenter->RemoveByID(m_BridgeStabilityStatusItemID);
+      m_BridgeStabilityStatusItemID = INVALID_ID;
+   }
+
+   if ( !m_BridgeDescription.IsStable() )
+   {
+      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::General,_T("Bridge model has geometric instabilities. Modify the boundary conditions."));
+      m_BridgeStabilityStatusItemID = pStatusCenter->Add(pStatusItem);
+   }
+}
+
 STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 {
    HRESULT hr = S_OK;
@@ -4243,6 +4265,8 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    SpecificationChanged(false);  
    RatingSpecificationChanged(false);
 
+   ValidateBridgeModel();
+
    ASSERTVALID;
 
    return hr;
@@ -4284,6 +4308,12 @@ STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
 
 void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSegmentData* pSegment,bool fromLibrary)
 {
+   if ( pSegment->Strands.NumPermStrandsType == CStrandData::npsUser )
+   {
+      // user defined strands don't use strand information from the library
+      return;
+   }
+
    const GirderLibraryEntry* pGirderEntry = pSegment->GetGirder()->GetGirderLibraryEntry();
 
    GET_IFACE(IDocumentType,pDocType);
@@ -4426,7 +4456,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
       }
       else
       {
-         ATLASSERT(0);
+         ATLASSERT(false); // should never get here
       }
 
       // Temporary Strands
@@ -4732,7 +4762,7 @@ const CBridgeDescription2* CProjectAgentImp::GetBridgeDescription()
 
 void CProjectAgentImp::SetBridgeDescription(const CBridgeDescription2& desc)
 {
-   if ( desc != m_BridgeDescription )
+   if ( m_BridgeDescription != desc )
    {
       ReleaseBridgeLibraryEntries();
 
@@ -4993,7 +5023,7 @@ void CProjectAgentImp::SetMeasurementLocation(PierIndexType pierIdx,pgsTypes::Pi
    }
 }
 
-void CProjectAgentImp::SetSlabOffset( Float64 slabOffset)
+void CProjectAgentImp::SetSlabOffset(Float64 slabOffset)
 {
    if ( m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotBridge ||
         !IsEqual(slabOffset,m_BridgeDescription.GetSlabOffset()) )
@@ -5005,59 +5035,48 @@ void CProjectAgentImp::SetSlabOffset( Float64 slabOffset)
    }
 }
 
-void CProjectAgentImp::SetSlabOffset( GroupIndexType grpIdx, Float64 start, Float64 end)
+void CProjectAgentImp::SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType)
 {
-   // Changing slab offset type to group
-   CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
-
-   if ( m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotGroup ||
-       (!IsEqual(start,pGroup->GetSlabOffset(0,pgsTypes::metStart)) ||
-        !IsEqual(end,  pGroup->GetSlabOffset(0,pgsTypes::metEnd)) )
-      )
+   if ( m_BridgeDescription.GetSlabOffsetType() != offsetType )
    {
-      m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotGroup);
-      pGroup->SetSlabOffset(pgsTypes::metStart,start);
-      pGroup->SetSlabOffset(pgsTypes::metEnd,  end);
+      m_BridgeDescription.SetSlabOffsetType(offsetType);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx, Float64 offset)
+{
+   // Changing slab offset type to pier
+   CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+   if ( !IsEqual(pGroup->GetSlabOffset(pierIdx,0),offset) )
+   {
+      m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotPier);
+      pGroup->SetSlabOffset(pierIdx,offset);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset)
+{
+   CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+   if ( m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotGirder || !IsEqual(pGroup->GetSlabOffset(pierIdx,gdrIdx),offset) )
+   {
+      m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotGirder);
+      pGroup->SetSlabOffset(pierIdx,gdrIdx,offset);
 
       Fire_BridgeChanged();
    }
 }
 
-void CProjectAgentImp::SetSlabOffset( const CSegmentKey& segmentKey, Float64 start, Float64 end)
+Float64 CProjectAgentImp::GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx, GirderIndexType gdrIdx)
 {
-   CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex);
-   CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
-   CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-
-   // slab offset type is changing... are slab offsets values changing
-   if ( m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotSegment || // offset type changed
-       ( m_BridgeDescription.GetSlabOffsetType() == pgsTypes::sotSegment && // offset type same
-         (!IsEqual(pSegment->GetSlabOffset(pgsTypes::metStart),start) || // and offset changed
-          !IsEqual(pSegment->GetSlabOffset(pgsTypes::metEnd),end))
-        )
-      )
-   {
-      // slab offset values are changing too
-      m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotSegment);
-      pSegment->SetSlabOffset(pgsTypes::metStart,start);
-      pSegment->SetSlabOffset(pgsTypes::metEnd,  end);
-      Fire_BridgeChanged();
-   }
+   const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+   return pGroup->GetSlabOffset(pierIdx,gdrIdx);
 }
 
 pgsTypes::SlabOffsetType CProjectAgentImp::GetSlabOffsetType()
 {
    return m_BridgeDescription.GetSlabOffsetType();
-}
-
-void CProjectAgentImp::GetSlabOffset( const CSegmentKey& segmentKey, Float64* pStart, Float64* pEnd)
-{
-   CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex);
-   CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
-   CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-
-   *pStart = pSegment->GetSlabOffset(pgsTypes::metStart);
-   *pEnd   = pSegment->GetSlabOffset(pgsTypes::metEnd);
 }
 
 std::vector<pgsTypes::PierConnectionType> CProjectAgentImp::GetPierConnectionTypes(PierIndexType pierIdx)
@@ -5129,32 +5148,42 @@ void CProjectAgentImp::SetEventByID(EventIDType eventID,const CTimelineEvent& ti
    }
 }
 
-void CProjectAgentImp::SetSegmentConstructionEventByIndex(EventIndexType eventIdx)
+void CProjectAgentImp::SetSegmentConstructionEventByIndex(const CSegmentKey& segmentKey,EventIndexType eventIdx)
 {
-   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventIndex() )
+   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
+   SegmentIDType segmentID = pSegment->GetID();
+
+   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventIndex(segmentID) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetSegmentConstructionEventByIndex(eventIdx);
+      m_BridgeDescription.GetTimelineManager()->SetSegmentConstructionEventByIndex(segmentID,eventIdx);
       Fire_BridgeChanged();
    }
 }
 
-void CProjectAgentImp::SetSegmentConstructionEventByID(EventIDType eventID)
+void CProjectAgentImp::SetSegmentConstructionEventByID(const CSegmentKey& segmentKey,EventIDType eventID)
 {
-   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventID() )
+   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
+   SegmentIDType segmentID = pSegment->GetID();
+
+   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventID(segmentID) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetSegmentConstructionEventByID(eventID);
+      m_BridgeDescription.GetTimelineManager()->SetSegmentConstructionEventByID(segmentID,eventID);
       Fire_BridgeChanged();
    }
 }
 
-EventIndexType CProjectAgentImp::GetSegmentConstructionEventIndex()
+EventIndexType CProjectAgentImp::GetSegmentConstructionEventIndex(const CSegmentKey& segmentKey)
 {
-   return m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventIndex();
+   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
+   SegmentIDType segmentID = pSegment->GetID();
+   return m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventIndex(segmentID);
 }
 
-EventIDType CProjectAgentImp::GetSegmentConstructionEventID()
+EventIDType CProjectAgentImp::GetSegmentConstructionEventID(const CSegmentKey& segmentKey)
 {
-   return m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventID();
+   const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
+   SegmentIDType segmentID = pSegment->GetID();
+   return m_BridgeDescription.GetTimelineManager()->GetSegmentConstructionEventID(segmentID);
 }
 
 void CProjectAgentImp::SetPierErectionEventByIndex(PierIndexType pierIdx,EventIndexType eventIdx)
@@ -5203,11 +5232,11 @@ void CProjectAgentImp::SetTempSupportEventsByID(SupportIDType tsID,EventIndexTyp
 void CProjectAgentImp::SetSegmentErectionEventByIndex(const CSegmentKey& segmentKey,EventIndexType eventIdx)
 {
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
-   SegmentIDType segID = pSegment->GetID();
+   SegmentIDType segmentID = pSegment->GetID();
 
-   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventIndex(segID) )
+   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventIndex(segmentID) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetSegmentErectionEventByIndex(segID,eventIdx);
+      m_BridgeDescription.GetTimelineManager()->SetSegmentErectionEventByIndex(segmentID,eventIdx);
       Fire_BridgeChanged();
    }
 }
@@ -5215,11 +5244,11 @@ void CProjectAgentImp::SetSegmentErectionEventByIndex(const CSegmentKey& segment
 void CProjectAgentImp::SetSegmentErectionEventByID(const CSegmentKey& segmentKey,EventIDType eventID)
 {
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
-   SegmentIDType segID = pSegment->GetID();
+   SegmentIDType segmentID = pSegment->GetID();
 
-   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventID(segID) )
+   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventID(segmentID) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetSegmentErectionEventByID(segID,eventID);
+      m_BridgeDescription.GetTimelineManager()->SetSegmentErectionEventByID(segmentID,eventID);
       Fire_BridgeChanged();
    }
 }
@@ -5227,46 +5256,46 @@ void CProjectAgentImp::SetSegmentErectionEventByID(const CSegmentKey& segmentKey
 EventIndexType CProjectAgentImp::GetSegmentErectionEventIndex(const CSegmentKey& segmentKey)
 {
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
-   SegmentIDType segID = pSegment->GetID();
+   SegmentIDType segmentID = pSegment->GetID();
 
-   return m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventIndex(segID);
+   return m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventIndex(segmentID);
 }
 
 EventIDType CProjectAgentImp::GetSegmentErectionEventID(const CSegmentKey& segmentKey)
 {
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
-   SegmentIDType segID = pSegment->GetID();
+   SegmentIDType segmentID = pSegment->GetID();
 
-   return m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventID(segID);
+   return m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventID(segmentID);
 }
 
 EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx)
 {
 #pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
-   SegmentIDType segID = pSegment->GetID();
+   SegmentIDType segmentID = pSegment->GetID();
 
-   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(segID);
+   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(segmentID);
 }
 
 EventIDType CProjectAgentImp::GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx)
 {
 #pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
-   SegmentIDType segID = pSegment->GetID();
+   SegmentIDType segmentID = pSegment->GetID();
 
-   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(segID);
+   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(segmentID);
 }
 
 void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx)
 {
 #pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
-   SegmentIDType segID = pSegment->GetID();
+   SegmentIDType segmentID = pSegment->GetID();
 
-   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(segID) )
+   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(segmentID) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByIndex(segID,eventIdx);
+      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByIndex(segmentID,eventIdx);
       Fire_BridgeChanged();
    }
 }
@@ -5275,11 +5304,11 @@ void CProjectAgentImp::SetCastClosureJointEventByID(GroupIndexType grpIdx,Collec
 {
 #pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
-   SegmentIDType segID = pSegment->GetID();
+   SegmentIDType segmentID = pSegment->GetID();
 
-   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(segID) )
+   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(segmentID) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByID(segID,eventID);
+      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByID(segmentID,eventID);
       Fire_BridgeChanged();
    }
 }
@@ -5431,6 +5460,15 @@ void CProjectAgentImp::SetLiveLoadEventByID(EventIDType eventID)
    }
 }
 
+GroupIDType CProjectAgentImp::GetGroupID(GroupIndexType groupIdx)
+{
+   const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(groupIdx);
+   if ( pGroup == NULL )
+      return INVALID_ID;
+
+   return pGroup->GetID();
+}
+
 GirderIDType CProjectAgentImp::GetGirderID(const CGirderKey& girderKey)
 {
    const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(girderKey.groupIndex);
@@ -5489,7 +5527,7 @@ void CProjectAgentImp::SetGirderSpacingAtEndOfGroup(GroupIndexType grpIdx,const 
    SetGirderSpacing(pierIdx,pgsTypes::Back,spacing);
 }
 
-void CProjectAgentImp::SetGirderName(const CSegmentKey& girderKey, LPCTSTR strGirderName)
+void CProjectAgentImp::SetGirderName(const CGirderKey& girderKey, LPCTSTR strGirderName)
 {
    ATLASSERT( !m_BridgeDescription.UseSameGirderForEntireBridge() );
    CSplicedGirderData* pGirder = m_BridgeDescription.GetGirderGroup(girderKey.groupIndex)->GetGirder(girderKey.girderIndex);
@@ -6720,7 +6758,7 @@ Float64 CProjectAgentImp::GetAllowableTension(pgsTypes::LoadRatingType ratingTyp
                      // not to do calculations
    // Remove include for Intervals.h from this file and ProjectAgent.cpp
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 fc = pMaterial->GetSegmentFc(segmentKey,liveLoadIntervalIdx);
@@ -7814,7 +7852,10 @@ HRESULT CProjectAgentImp::LoadMomentLoads(IStructuredLoad* pLoad)
 // IEvents
 void CProjectAgentImp::HoldEvents()
 {
-   m_bHoldingEvents = true;
+   m_EventHoldCount++;
+
+
+   Fire_OnHoldEvents();
 
    GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->HoldEvents(true);
@@ -7822,77 +7863,108 @@ void CProjectAgentImp::HoldEvents()
 
 void CProjectAgentImp::FirePendingEvents()
 {
-   if ( !m_bHoldingEvents )
-      return;
-
-   m_bHoldingEvents = false;
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_PROJECTPROPERTIES) )
-      Fire_ProjectPropertiesChanged();
-
-   //if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_UNITS) )
-   //   Fire_UnitsChanged(m_Units);
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_ANALYSISTYPE) )
-      Fire_AnalysisTypeChanged();
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_EXPOSURECONDITION) )
-      Fire_ExposureConditionChanged();
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_RELHUMIDITY) )
-      Fire_RelHumidityChanged();
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY))
-      Fire_BridgeChanged(NULL);
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_BRIDGE) )
+   if ( m_EventHoldCount == 1 )
    {
-      std::vector<CBridgeChangedHint*>::iterator iter(m_PendingBridgeChangedHints.begin());
-      std::vector<CBridgeChangedHint*>::iterator end(m_PendingBridgeChangedHints.end());
-      for ( ; iter != end; iter++ )
-      {
-         CBridgeChangedHint* pHint = *iter;
-         Fire_BridgeChanged(pHint);
-      }
+      m_EventHoldCount--;
+      m_bFiringEvents = true;
+	
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_PROJECTPROPERTIES) )
+	      Fire_ProjectPropertiesChanged();
+	
+	   //if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_UNITS) )
+	   //   Fire_UnitsChanged(m_Units);
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_ANALYSISTYPE) )
+	      Fire_AnalysisTypeChanged();
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_EXPOSURECONDITION) )
+	      Fire_ExposureConditionChanged();
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_RELHUMIDITY) )
+	      Fire_RelHumidityChanged();
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY))
+	      Fire_BridgeChanged(NULL);
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_BRIDGE) )
+	   {
+	      std::vector<CBridgeChangedHint*>::iterator iter(m_PendingBridgeChangedHints.begin());
+	      std::vector<CBridgeChangedHint*>::iterator end(m_PendingBridgeChangedHints.end());
+	      for ( ; iter != end; iter++ )
+	      {
+	         CBridgeChangedHint* pHint = *iter;
+	         Fire_BridgeChanged(pHint);
+	
+	
+	
+	
+	
+	
+	
+	      }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	      m_PendingBridgeChangedHints.clear();
+	   }
+	//
+	// pretty much all the event handers do the same thing when the bridge or girder family changes
+	// no sence firing two events
+	//   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY) )
+	//      Fire_GirderFamilyChanged();
+	
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_SPECIFICATION) )
+	      SpecificationChanged(true);
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_RATING_SPECIFICATION) )
+	      RatingSpecificationChanged(true);
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LIBRARYCONFLICT) )
+	      Fire_OnLibraryConflictResolved();
+	
+	
+	
+	
+	
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LOADMODIFIER) )
+	      Fire_LoadModifiersChanged();
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_CONSTRUCTIONLOAD) )
+	      Fire_ConstructionLoadChanged();
+	
+	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LIVELOAD) )
+	      Fire_LiveLoadChanged();
+	
+	   std::map<CGirderKey,Uint32>::iterator iter(m_PendingEventsHash.begin());
+	   std::map<CGirderKey,Uint32>::iterator iterEnd(m_PendingEventsHash.end());
+	   for ( ; iter != iterEnd; iter++ )
+	   {
+	      const CGirderKey& girderKey( (*iter).first );
+	      Uint32 lHint = (*iter).second;
+	
+	      Fire_GirderChanged(girderKey,lHint);
+	   }
+	
+	   m_PendingEventsHash.clear();
+	   m_PendingEvents = 0;
+	
+	   Fire_OnFirePendingEvents();
 
-      m_PendingBridgeChangedHints.clear();
+      m_bFiringEvents = false;
    }
-//
-// pretty much all the event handers do the same thing when the bridge or girder family changes
-// no sence firing two events
-//   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY) )
-//      Fire_GirderFamilyChanged();
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_SPECIFICATION) )
-      SpecificationChanged(true);
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_RATING_SPECIFICATION) )
-      RatingSpecificationChanged(true);
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LIBRARYCONFLICT) )
-      Fire_OnLibraryConflictResolved();
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LOADMODIFIER) )
-      Fire_LoadModifiersChanged();
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_CONSTRUCTIONLOAD) )
-      Fire_ConstructionLoadChanged();
-
-   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LIVELOAD) )
-      Fire_LiveLoadChanged();
-
-   std::map<CGirderKey,Uint32>::iterator iter(m_PendingEventsHash.begin());
-   std::map<CGirderKey,Uint32>::iterator iterEnd(m_PendingEventsHash.end());
-   for ( ; iter != iterEnd; iter++ )
+   else
    {
-      const CGirderKey& girderKey( (*iter).first );
-      Uint32 lHint = (*iter).second;
-
-      Fire_GirderChanged(girderKey,lHint);
+      m_EventHoldCount--;
    }
-
-   m_PendingEventsHash.clear();
-   m_PendingEvents = 0;
 
    GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->FirePendingEvents();
@@ -7900,9 +7972,18 @@ void CProjectAgentImp::FirePendingEvents()
 
 void CProjectAgentImp::CancelPendingEvents()
 {
-   m_bHoldingEvents = false;
-   m_PendingEventsHash.clear();
-   m_PendingEvents = 0;
+   m_EventHoldCount--;
+   if ( m_EventHoldCount <= 0 && !m_bFiringEvents )
+   {
+      m_EventHoldCount = 0;
+      m_PendingEventsHash.clear();
+      m_PendingEvents = 0;
+
+      Fire_OnCancelPendingEvents();
+   }
+
+   GET_IFACE(IUIEvents,pUIEvents);
+   pUIEvents->CancelPendingEvents();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -8741,12 +8822,16 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 
             if (min_xfer < xfer_length)
             {
-               GET_IFACE(IDocumentType,pDocType);
                std::_tostringstream os;
-               if ( pDocType->IsPGSuperDocument() )
-                  os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(": The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
-               else
+               SegmentIndexType nSegments = pGirder->GetSegmentCount();
+               if ( 1 < nSegments )
+               {
                   os << _T("Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(": The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
+               }
+               else
+               {
+                  os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(": The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
+               }
                AddSegmentStatusItem(segmentKey, os.str() );
             }
          } // segment loop
@@ -9045,6 +9130,28 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    CTimelineManager* pTimelineManager = m_BridgeDescription.GetTimelineManager();
 
+   // get a list off all the segment IDs. it is needed in a couple locations below
+   std::set<SegmentIDType> segmentIDs;
+   GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+            SegmentIDType segmentID = pSegment->GetID();
+            std::pair<std::set<SegmentIDType>::iterator,bool> result = segmentIDs.insert(segmentID);
+            ATLASSERT(result.second == true);
+         }
+      }
+   }
+
+
    // Casting yard stage... starts at day 0 when strands are stressed
    // The activities in this stage includes prestress release, lifting and storage
    CTimelineEvent* pTimelineEvent = new CTimelineEvent;
@@ -9053,6 +9160,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
    pTimelineEvent->GetConstructSegmentsActivity().SetAgeAtRelease(  ::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().AddSegments(segmentIDs);
 
    pTimelineEvent->GetErectPiersActivity().Enable();
    PierIndexType nPiers = m_BridgeDescription.GetPierCount();
@@ -9074,23 +9182,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDay( ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration1Max(),unitMeasure::Day) ); // ??? D40, D120 ???
    pTimelineEvent->SetDescription(_T("Temporary Strand Removal"));
    pTimelineEvent->GetErectSegmentsActivity().Enable();
-   GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-   {
-      const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-      {
-         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         SegmentIndexType nSegments = pGirder->GetSegmentCount();
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-         {
-            const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-            SegmentIDType segID = pSegment->GetID();
-            pTimelineEvent->GetErectSegmentsActivity().AddSegment(segID);
-         }
-      }
-   }
+   pTimelineEvent->GetErectSegmentsActivity().AddSegments(segmentIDs);
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
    // Cast deck
@@ -9127,12 +9219,12 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 }
 
 // Static functions for checking direct strand fills
-bool IsValidStraightStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry)
+bool IsValidStraightStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry)
 {
     StrandIndexType ns =  pGirderEntry->GetNumStraightStrandCoordinates();
 
-    DirectStrandFillCollection::const_iterator it    = pFill->begin();
-    DirectStrandFillCollection::const_iterator itend = pFill->end();
+    CDirectStrandFillCollection::const_iterator it    = pFill->begin();
+    CDirectStrandFillCollection::const_iterator itend = pFill->end();
 
     while(it != itend)
     {
@@ -9161,12 +9253,12 @@ bool IsValidStraightStrandFill(const DirectStrandFillCollection* pFill, const Gi
     return true;
 }
 
-bool IsValidHarpedStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry)
+bool IsValidHarpedStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry)
 {
     StrandIndexType ns =  pGirderEntry->GetNumHarpedStrandCoordinates();
 
-    DirectStrandFillCollection::const_iterator it    = pFill->begin();
-    DirectStrandFillCollection::const_iterator itend = pFill->end();
+    CDirectStrandFillCollection::const_iterator it    = pFill->begin();
+    CDirectStrandFillCollection::const_iterator itend = pFill->end();
 
     while(it != itend)
     {
@@ -9194,12 +9286,12 @@ bool IsValidHarpedStrandFill(const DirectStrandFillCollection* pFill, const Gird
     return true;
 }
 
-bool IsValidTemporaryStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry)
+bool IsValidTemporaryStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry)
 {
     StrandIndexType ns =  pGirderEntry->GetNumTemporaryStrandCoordinates();
 
-    DirectStrandFillCollection::const_iterator it    = pFill->begin();
-    DirectStrandFillCollection::const_iterator itend = pFill->end();
+    CDirectStrandFillCollection::const_iterator it    = pFill->begin();
+    CDirectStrandFillCollection::const_iterator itend = pFill->end();
 
     while(it != itend)
     {

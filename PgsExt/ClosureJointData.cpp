@@ -34,11 +34,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-Float64 gs_DefaultSlabOffset2 = ::ConvertToSysUnits(10.0,unitMeasure::Inch);
-
-CClosureJointData::CClosureJointData()
+CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder)
 {
-   m_pGirder        = NULL;
+   m_pGirder        = pGirder;
    m_pTempSupport   = NULL;
    m_pPier          = NULL;
    m_pLeftSegment   = NULL;
@@ -46,12 +44,9 @@ CClosureJointData::CClosureJointData()
 
    m_TempSupportID  = INVALID_ID;
    m_PierID         = INVALID_ID;
-   m_Index          = INVALID_INDEX;
-
-   m_SlabOffset = gs_DefaultSlabOffset2;
 }
 
-CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,const CTemporarySupportData* pTempSupport)
+CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,CTemporarySupportData* pTempSupport)
 {
    m_pGirder        = pGirder;
    m_pTempSupport   = pTempSupport;
@@ -61,12 +56,9 @@ CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,const CTemporar
 
    m_TempSupportID  = INVALID_ID;
    m_PierID         = INVALID_ID;
-   m_Index          = INVALID_INDEX;
-
-   m_SlabOffset = gs_DefaultSlabOffset2;
 }  
 
-CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,const CPierData2* pPier)
+CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,CPierData2* pPier)
 {
    m_pGirder        = pGirder;
    m_pTempSupport   = NULL;
@@ -76,14 +68,11 @@ CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,const CPierData
 
    m_TempSupportID  = INVALID_ID;
    m_PierID         = INVALID_ID;
-   m_Index          = INVALID_INDEX;
-
-   m_SlabOffset = gs_DefaultSlabOffset2;
 }  
 
-CClosureJointData::CClosureJointData(const CClosureJointData& rOther)
+CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder,const CClosureJointData& rOther)
 {
-   m_pGirder        = NULL;
+   m_pGirder        = pGirder;
    m_pTempSupport   = NULL;
    m_pPier          = NULL;
    m_pLeftSegment   = NULL;
@@ -91,9 +80,6 @@ CClosureJointData::CClosureJointData(const CClosureJointData& rOther)
 
    m_TempSupportID  = INVALID_ID;
    m_PierID         = INVALID_ID;
-   m_Index          = INVALID_INDEX;
-
-   m_SlabOffset = gs_DefaultSlabOffset2;
 
    MakeCopy(rOther,true /*copy only data*/);
 }
@@ -115,14 +101,10 @@ CClosureJointData& CClosureJointData::operator= (const CClosureJointData& rOther
 void CClosureJointData::CopyClosureJointData(const CClosureJointData* pClosure)
 {
    MakeCopy(*pClosure,true/*copy only data*/);
-   ResolveReferences();
 }
 
 bool CClosureJointData::operator==(const CClosureJointData& rOther) const
 {
-   if ( !IsEqual(m_SlabOffset,rOther.m_SlabOffset) )
-      return false;
-
    if ( m_Concrete != rOther.m_Concrete )
       return false;
 
@@ -158,7 +140,7 @@ bool CClosureJointData::operator<(const CClosureJointData& rOther) const
 
 CollectionIndexType CClosureJointData::GetIndex() const
 {
-   return m_Index;
+   return GetLeftSegment()->GetIndex();
 }
 
 IDType CClosureJointData::GetID() const
@@ -173,7 +155,7 @@ CClosureKey CClosureJointData::GetClosureKey() const
    {
       closureKey.groupIndex   = m_pGirder->GetGirderGroupIndex();
       closureKey.girderIndex  = m_pGirder->GetIndex();
-      closureKey.segmentIndex = m_Index;
+      closureKey.segmentIndex = GetIndex();
    }
    return closureKey;
 }
@@ -194,7 +176,7 @@ const CSplicedGirderData* CClosureJointData::GetGirder() const
    return m_pGirder;
 }
 
-void CClosureJointData::SetTemporarySupport(const CTemporarySupportData* pTS)
+void CClosureJointData::SetTemporarySupport(CTemporarySupportData* pTS)
 {
    ATLASSERT(m_pPier == NULL);
    m_pTempSupport = pTS;
@@ -202,6 +184,12 @@ void CClosureJointData::SetTemporarySupport(const CTemporarySupportData* pTS)
 }
 
 const CTemporarySupportData* CClosureJointData::GetTemporarySupport() const
+{
+   ATLASSERT( !(m_pPier == NULL && m_pTempSupport == NULL) ); // can't have both
+   return m_pTempSupport;
+}
+
+CTemporarySupportData* CClosureJointData::GetTemporarySupport()
 {
    ATLASSERT( !(m_pPier == NULL && m_pTempSupport == NULL) ); // can't have both
    return m_pTempSupport;
@@ -223,7 +211,7 @@ SupportIDType CClosureJointData::GetTemporarySupportID() const
    return INVALID_ID;
 }
 
-void CClosureJointData::SetPier(const CPierData2* pPier)
+void CClosureJointData::SetPier(CPierData2* pPier)
 {
    ATLASSERT(m_pTempSupport == NULL);
    m_pPier = pPier;
@@ -231,6 +219,12 @@ void CClosureJointData::SetPier(const CPierData2* pPier)
 }
 
 const CPierData2* CClosureJointData::GetPier() const
+{
+   ATLASSERT( !(m_pPier == NULL && m_pTempSupport == NULL) ); // can't have both
+   return m_pPier;
+}
+
+CPierData2* CClosureJointData::GetPier()
 {
    ATLASSERT( !(m_pPier == NULL && m_pTempSupport == NULL) ); // can't have both
    return m_pPier;
@@ -280,35 +274,6 @@ const CPrecastSegmentData* CClosureJointData::GetRightSegment() const
 CPrecastSegmentData* CClosureJointData::GetRightSegment()
 {
    return m_pRightSegment;
-}
-
-void CClosureJointData::SetSlabOffset(Float64 offset)
-{
-   m_SlabOffset = offset;
-}
-
-Float64 CClosureJointData::GetSlabOffset() const
-{
-   pgsTypes::SlabOffsetType offsetType = m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSlabOffsetType();
-   if ( offsetType == pgsTypes::sotBridge )
-   {
-      return m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSlabOffset();
-   }
-   else if ( offsetType == pgsTypes::sotGroup )
-   {
-#pragma Reminder("UPDATE: if slab offset is different at each end of the group, what is it at a closure joint?")
-      // does it need to be interpolated???
-      return m_pGirder->GetGirderGroup()->GetSlabOffset(m_pGirder->GetIndex(),pgsTypes::metStart);
-   }
-   else
-   {
-      if ( m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
-         return 0;
-
-      return m_SlabOffset;
-   }
-
-   ATLASSERT(false); // should never get here
 }
 
 void CClosureJointData::SetConcrete(const CConcreteMaterial& concrete)
@@ -373,44 +338,49 @@ void CClosureJointData::CopyTransverseReinforcementFrom(const CClosureJointData&
 
 void CClosureJointData::MakeCopy(const CClosureJointData& rOther,bool bCopyDataOnly)
 {
-   if ( rOther.m_pTempSupport )
+   if ( !bCopyDataOnly )
    {
-      // other has a temporary support that is resolved
-      m_pTempSupport  = NULL; // NULL because this will be resolved later
-      m_TempSupportID = rOther.m_pTempSupport->GetID(); // capture ID for later resolution of m_pTempSupport
-      m_pPier         = NULL; // No pier
-      m_PierID        = INVALID_ID; // No pier
-   }
-   else if ( rOther.m_TempSupportID != INVALID_ID )
-   {
-      // other has a temporary support that is not resolved
-      m_pTempSupport  = NULL; // NULL because this will be resolved later
-      m_TempSupportID = rOther.m_TempSupportID; // capture ID for later resolution of m_pTempSupport
-      m_pPier         = NULL; // No pier
-      m_PierID        = INVALID_ID; // No pier
-   }
-   else if ( rOther.m_pPier )
-   {
-      // other has a pier that is resolved
-      m_pTempSupport  = NULL; // No temp support
-      m_TempSupportID = INVALID_ID; // No temp support 
-      m_pPier         = NULL; // NULL because this will be resolved later
-      m_PierID        = rOther.m_pPier->GetID(); // capture index for later resolution of m_pPier
-   }
-   else
-   {
-      // other has a pier that is not resolved
-      m_pTempSupport  = NULL; // No temp support 
-      m_TempSupportID = INVALID_ID; // No temp support 
-      m_pPier         = NULL; // NULL because this will be resolved later
-      m_PierID        = rOther.m_PierID; // capture index for later resolution of m_pPier
+      if ( rOther.m_pTempSupport )
+      {
+         // other has a temporary support that is resolved
+         m_pTempSupport  = NULL; // NULL because this will be resolved later
+         m_TempSupportID = rOther.m_pTempSupport->GetID(); // capture ID for later resolution of m_pTempSupport
+         m_pPier         = NULL; // No pier
+         m_PierID        = INVALID_ID; // No pier
+      }
+      else if ( rOther.m_TempSupportID != INVALID_ID )
+      {
+         // other has a temporary support that is not resolved
+         m_pTempSupport  = NULL; // NULL because this will be resolved later
+         m_TempSupportID = rOther.m_TempSupportID; // capture ID for later resolution of m_pTempSupport
+         m_pPier         = NULL; // No pier
+         m_PierID        = INVALID_ID; // No pier
+      }
+      else if ( rOther.m_pPier )
+      {
+         // other has a pier that is resolved
+         m_pTempSupport  = NULL; // No temp support
+         m_TempSupportID = INVALID_ID; // No temp support 
+         m_pPier         = NULL; // NULL because this will be resolved later
+         m_PierID        = rOther.m_pPier->GetID(); // capture index for later resolution of m_pPier
+      }
+      else
+      {
+         // other has a pier that is not resolved
+         m_pTempSupport  = NULL; // No temp support 
+         m_TempSupportID = INVALID_ID; // No temp support 
+         m_pPier         = NULL; // NULL because this will be resolved later
+         m_PierID        = rOther.m_PierID; // capture index for later resolution of m_pPier
+      }
    }
 
    CopyMaterialFrom(rOther);
    CopyTransverseReinforcementFrom(rOther);
    CopyLongitudinalReinforcementFrom(rOther);
 
-   m_SlabOffset = rOther.m_SlabOffset;
+   ResolveReferences();
+
+   ASSERT_VALID;
 }
 
 
@@ -422,11 +392,6 @@ void CClosureJointData::MakeAssignment(const CClosureJointData& rOther)
 HRESULT CClosureJointData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    pStrSave->BeginUnit(_T("ClosurePour"),1.0);
-
-   if ( m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
-   {
-      pStrSave->put_Property(_T("SlabOffset"),CComVariant(m_SlabOffset));
-   }
 
    if ( m_pPier )
    {
@@ -458,13 +423,6 @@ HRESULT CClosureJointData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->BeginUnit(_T("ClosurePour"));
 
       CComVariant var;
-      var.vt = VT_R8;
-
-      if ( m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
-      {
-         hr = pStrLoad->get_Property(_T("SlabOffset"),&var);
-         m_SlabOffset = var.dblVal;
-      }
 
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("SupportType"),&var);
@@ -514,7 +472,7 @@ HRESULT CClosureJointData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = m_Rebar.Load(pStrLoad,pProgress);
       hr = pStrLoad->EndUnit(); // ClosureJoint
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -529,11 +487,11 @@ void CClosureJointData::ResolveReferences()
    // associated pier or temporary support. The ID of the associated object is stored and now
    // it is time to resolve that reference.
 
-   const CGirderGroupData* pGirderGroup = m_pGirder->GetGirderGroup();
+   CGirderGroupData* pGirderGroup = m_pGirder->GetGirderGroup();
    if ( pGirderGroup == NULL )
       return; // can't resolve it
 
-   const CBridgeDescription2* pBridge = pGirderGroup->GetBridgeDescription();
+   CBridgeDescription2* pBridge = pGirderGroup->GetBridgeDescription();
    if ( pBridge == NULL )
       return; // can't resolve it
 
@@ -558,9 +516,12 @@ void CClosureJointData::ResolveReferences()
 #if defined _DEBUG
 void CClosureJointData::AssertValid()
 {
-   if ( m_PierID == INVALID_ID && m_TempSupportID == INVALID_ID )
+   if ( m_pGirder != NULL )
    {
-      _ASSERT(m_pPier != NULL || m_pTempSupport != NULL);
+      if ( m_PierID == INVALID_ID && m_TempSupportID == INVALID_ID )
+      {
+         _ASSERT(m_pPier != NULL || m_pTempSupport != NULL);
+      }
    }
 }
 #endif

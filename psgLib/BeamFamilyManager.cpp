@@ -26,8 +26,9 @@
 #include <initguid.h>
 #include <PsgLib\BeamFamilyManager.h>
 
+#include <EAF\EAFUtilities.h>
+
 CBeamFamilyManager::FamilyContainer CBeamFamilyManager::m_Families;
-std::vector<CString> CBeamFamilyManager::m_Names;
 
 HRESULT CBeamFamilyManager::Init(CATID catid)
 {
@@ -56,6 +57,16 @@ HRESULT CBeamFamilyManager::Init(CATID catid)
 
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
 
+   FamilyContainer::iterator found(m_Families.find(catid));
+   if ( found == m_Families.end() )
+   {
+      BeamContainer beams;
+      m_Families.insert(std::make_pair(catid,beams));
+      found = m_Families.find(catid);
+   }
+
+   BeamContainer& beams = found->second;
+
    CLSID clsid[1];
    while ( pIEnumCLSID->Next(1,clsid,NULL) != S_FALSE )
    {
@@ -63,46 +74,99 @@ HRESULT CBeamFamilyManager::Init(CATID catid)
       OleRegGetUserType(clsid[0],USERCLASSTYPE_SHORT,&pszUserType);
       CString str(pszUserType);
 
-      m_Families.insert( std::make_pair(str,clsid[0]) );
-      m_Names.push_back(str);
+      beams.insert( std::make_pair(str,clsid[0]) );
    }
 
    return S_OK;
 }
 
-const std::vector<CString>& CBeamFamilyManager::GetBeamFamilyNames()
+std::vector<CString> CBeamFamilyManager::GetBeamFamilyNames()
 {
-   return m_Names;
+   std::vector<CString> vNames;
+   FamilyContainer::iterator familyIter(m_Families.begin());
+   FamilyContainer::iterator familyIterEnd(m_Families.end());
+   for ( ; familyIter != familyIterEnd; familyIter++ )
+   {
+      BeamContainer& beams = familyIter->second;
+      BeamContainer::iterator beamIter(beams.begin());
+      BeamContainer::iterator beamIterEnd(beams.end());
+      for ( ; beamIter != beamIterEnd; beamIter++ )
+      {
+         const CString& strName = beamIter->first;
+         vNames.push_back(strName);
+      }
+   }
+
+   std::sort(vNames.begin(),vNames.end());
+   return vNames;
+}
+
+std::vector<CString> CBeamFamilyManager::GetBeamFamilyNames(CATID catid)
+{
+   std::vector<CString> vNames;
+   FamilyContainer::iterator found(m_Families.find(catid));
+   if ( found == m_Families.end() )
+      return vNames;
+
+   BeamContainer& beams = found->second;
+   BeamContainer::iterator beamIter(beams.begin());
+   BeamContainer::iterator beamIterEnd(beams.end());
+   for ( ; beamIter != beamIterEnd; beamIter++ )
+   {
+      const CString& strName = beamIter->first;
+      vNames.push_back(strName);
+   }
+
+   std::sort(vNames.begin(),vNames.end());
+   return vNames;
 }
 
 HRESULT CBeamFamilyManager::GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily)
 {
-   FamilyContainer::iterator found = m_Families.find(CString(strName));
-   if ( found == m_Families.end() )
-      return E_FAIL;
+   FamilyContainer::iterator familyIter(m_Families.begin());
+   FamilyContainer::iterator familyIterEnd(m_Families.end());
+   for ( ; familyIter != familyIterEnd; familyIter++ )
+   {
+      BeamContainer& beams = familyIter->second;
 
-   CLSID clsid = found->second;
-   IBeamFamily* pFamily;
-   HRESULT hr = ::CoCreateInstance(clsid,NULL,CLSCTX_ALL,IID_IBeamFamily,(void**)&pFamily);
-   if ( FAILED(hr) )
-      return hr;
+      BeamContainer::iterator found = beams.find(CString(strName));
+      if ( found != beams.end() )
+      {
+         CLSID clsid = found->second;
+         IBeamFamily* pFamily;
+         HRESULT hr = ::CoCreateInstance(clsid,NULL,CLSCTX_ALL,IID_IBeamFamily,(void**)&pFamily);
+         if ( FAILED(hr) )
+            return hr;
 
-   (*ppFamily) = pFamily;
+         (*ppFamily) = pFamily;
+         return S_OK;
+      }
+   }
 
-   return S_OK;
+   // if we got this far, the name wasn't found
+   return E_FAIL;
 }
 
 CLSID CBeamFamilyManager::GetBeamFamilyCLSID(LPCTSTR strName)
 {
-   FamilyContainer::iterator found = m_Families.find(CString(strName));
-   if ( found == m_Families.end() )
-      return CLSID_NULL;
+   FamilyContainer::iterator familyIter(m_Families.begin());
+   FamilyContainer::iterator familyIterEnd(m_Families.end());
+   for ( ; familyIter != familyIterEnd; familyIter++ )
+   {
+      BeamContainer& beams = familyIter->second;
 
-   return found->second;
+      BeamContainer::iterator found = beams.find(CString(strName));
+      if ( found != beams.end() )
+      {
+         return found->second;
+      }
+   }
+
+   // if we got this far, the name wasn't found
+   return CLSID_NULL;
 }
 
 void CBeamFamilyManager::Reset()
 {
    m_Families.clear();
-   m_Names.clear();
 }

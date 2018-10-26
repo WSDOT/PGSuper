@@ -77,7 +77,8 @@ CLASS
 CPGSuperDocProxyAgent::CPGSuperDocProxyAgent()
 {
    m_pMyDocument = NULL;
-   m_bHoldingEvents = false;
+   m_EventHoldCount = 0;
+   m_bFiringEvents = false;
    m_StdToolBarID = -1;
    m_LibToolBarID = -1;
    m_HelpToolBarID = -1;
@@ -414,6 +415,11 @@ long CPGSuperDocProxyAgent::GetReportViewKey()
    return m_ReportViewKey;
 }
 
+void CPGSuperDocProxyAgent::OnResetHints()
+{
+   Fire_OnHintsReset();
+}
+
 //////////////////////////////////////////////////////////
 // IAgentEx
 STDMETHODIMP CPGSuperDocProxyAgent::SetBroker(IBroker* pBroker)
@@ -434,6 +440,9 @@ STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
    pBrokerInit->RegInterface( IID_IUpdateTemplates,    this );
    pBrokerInit->RegInterface( IID_IVersionInfo,        this );
    pBrokerInit->RegInterface( IID_IRegisterViewEvents, this );
+   pBrokerInit->RegInterface( IID_IExtendUI,           this );
+   pBrokerInit->RegInterface( IID_IExtendPGSuperUI,    this );
+   pBrokerInit->RegInterface( IID_IExtendPGSpliceUI,   this );
    pBrokerInit->RegInterface( IID_IDocumentType,       this );
    return S_OK;
 }
@@ -875,23 +884,50 @@ bool CPGSuperDocProxyAgent::UpdatingTemplates()
 void CPGSuperDocProxyAgent::HoldEvents(bool bHold)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_bHoldingEvents = bHold;
-   if ( !m_bHoldingEvents )
+   if ( bHold )
+      m_EventHoldCount++;
+   else
+      m_EventHoldCount--;
+
+   if ( m_EventHoldCount <= 0 && !m_bFiringEvents )
+   {
+      m_EventHoldCount = 0;
       m_UIEvents.clear();
+   }
 }
 
 void CPGSuperDocProxyAgent::FirePendingEvents()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   if ( m_bHoldingEvents )
+   if ( 1 == m_EventHoldCount )
    {
-      m_bHoldingEvents = false;
-      std::vector<UIEvent>::iterator iter;
-      for ( iter = m_UIEvents.begin(); iter != m_UIEvents.end(); iter++ )
+      m_EventHoldCount--;
+
+      m_bFiringEvents = true;
+
+      std::vector<UIEvent>::iterator iter(m_UIEvents.begin());
+      std::vector<UIEvent>::iterator iterEnd(m_UIEvents.end());
+      for ( ; iter != iterEnd; iter++ )
       {
          UIEvent event = *iter;
          m_pMyDocument->UpdateAllViews(event.pSender,event.lHint,event.pHint.get());
       }
+
+      m_bFiringEvents = false;
+      m_UIEvents.clear();
+   }
+   else
+   {
+      m_EventHoldCount--;
+   }
+}
+
+void CPGSuperDocProxyAgent::CancelPendingEvents()
+{
+   m_EventHoldCount--;
+   if ( m_EventHoldCount <= 0 && !m_bFiringEvents )
+   {
+      m_EventHoldCount = 0;
       m_UIEvents.clear();
    }
 }
@@ -899,7 +935,7 @@ void CPGSuperDocProxyAgent::FirePendingEvents()
 void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_ptr<CObject> pHint)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   if ( m_bHoldingEvents )
+   if ( 0 < m_EventHoldCount )
    {
       UIEvent event;
       event.pSender = pSender;
@@ -909,8 +945,9 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_
       // skip all but one result hint - firing multiple result hints 
       // causes the UI to unnecessarilly update multiple times
       bool skip = false;
-      std::vector<UIEvent>::iterator iter;
-      for ( iter = m_UIEvents.begin(); iter != m_UIEvents.end(); iter++ )
+      std::vector<UIEvent>::iterator iter(m_UIEvents.begin());
+      std::vector<UIEvent>::iterator iterEnd(m_UIEvents.end());
+      for ( ; iter != iterEnd; iter++ )
       {
          UIEvent e = *iter;
          if ( MIN_RESULTS_HINT <= e.lHint && e.lHint <= MAX_RESULTS_HINT )
@@ -922,6 +959,7 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_
 
       if (!skip)
       {
+         ATLASSERT( !m_bFiringEvents ); // don't add to the container while we are iterating through it
          m_UIEvents.push_back(event);
       }
    }
@@ -1141,6 +1179,86 @@ bool CPGSuperDocProxyAgent::UnregisterGirderElevationViewCallback(IDType ID)
 bool CPGSuperDocProxyAgent::UnregisterGirderSectionViewCallback(IDType ID)
 {
    return m_pMyDocument->UnregisterGirderSectionViewCallback(ID);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditPierCallback(IEditPierCallback* pCallback)
+{
+   return m_pMyDocument->RegisterEditPierCallback(pCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback)
+{
+   return m_pMyDocument->RegisterEditTemporarySupportCallback(pCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditSpanCallback(IEditSpanCallback* pCallback)
+{
+   return m_pMyDocument->RegisterEditSpanCallback(pCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback)
+{
+   return m_pMyDocument->RegisterEditGirderCallback(pCallback,pCopyCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback)
+{
+   return m_pMyDocument->RegisterEditSplicedGirderCallback(pCallback,pCopyCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditSegmentCallback(IEditSegmentCallback* pCallback)
+{
+   return m_pMyDocument->RegisterEditSegmentCallback(pCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback)
+{
+   return m_pMyDocument->RegisterEditClosureJointCallback(pCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditBridgeCallback(IEditBridgeCallback* pCallback)
+{
+   return m_pMyDocument->RegisterEditBridgeCallback(pCallback);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditPierCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditPierCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditTemporarySupportCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditTemporarySupportCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditSpanCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditSpanCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditGirderCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditGirderCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditSplicedGirderCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditSplicedGirderCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditSegmentCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditSegmentCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditClosureJointCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditClosureJointCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditBridgeCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditBridgeCallback(ID);
 }
 
 bool CPGSuperDocProxyAgent::IsPGSuperDocument()

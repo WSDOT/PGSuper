@@ -519,7 +519,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
 
       hr = pStrLoad->EndUnit();
    }
-   catch(HRESULT)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pLoad);

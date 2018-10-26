@@ -158,4 +158,7 @@
 #define IDH_FILL_DISTRIBUTION_FACTORS                             3921
 #define IDH_GIRDER_DIRECT_STRAND_FILL                             3922
 
+#define IDH_CUSTOM_REPORT                                         3923
+#define IDH_FAVORITE_REPORT                                       3924
+
 #endif // INCLUDED_HELPTOPICS_HH_

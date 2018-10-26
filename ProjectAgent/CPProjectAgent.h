@@ -53,7 +53,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_PROJECTPROPERTIES);
          return S_OK;
@@ -89,7 +89,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_EXPOSURECONDITION);
          return S_OK;
@@ -114,7 +114,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_RELHUMIDITY);
          return S_OK;
@@ -150,7 +150,9 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      pT->ValidateBridgeModel();
+
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_BRIDGE);
          pT->m_PendingBridgeChangedHints.push_back(pHint);
@@ -183,7 +185,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_GIRDERFAMILY);
          return S_OK;
@@ -209,7 +211,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          std::map<CGirderKey,Uint32>::iterator found( pT->m_PendingEventsHash.find(girderKey) );
          if ( found != pT->m_PendingEventsHash.end() )
@@ -247,7 +249,7 @@ public:
    {
 		T* pT = (T*)this;
       
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_CONSTRUCTIONLOAD);
          return S_OK;
@@ -273,7 +275,7 @@ public:
 	{
 		T* pT = (T*)this;
       
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOAD);
          return S_OK;
@@ -300,7 +302,7 @@ public:
 	{
 		T* pT = (T*)this;
       
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOADNAME);
          return S_OK;
@@ -337,14 +339,11 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_SPECIFICATION);
          return S_OK;
       }
-
-      if ( pT->m_bHoldingEvents )
-         return S_OK;
 
 		pT->Lock();
 		HRESULT ret;
@@ -366,7 +365,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_ANALYSISTYPE);
          return S_OK;
@@ -404,14 +403,11 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_RATING_SPECIFICATION);
          return S_OK;
       }
-
-      if ( pT->m_bHoldingEvents )
-         return S_OK;
 
 		pT->Lock();
 		HRESULT ret;
@@ -443,7 +439,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIBRARYCONFLICT);
          return S_OK;
@@ -479,7 +475,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LOADMODIFIER);
          return S_OK;
@@ -494,6 +490,76 @@ public:
 			{
 				ILoadModifiersEventSink* pEventSink = reinterpret_cast<ILoadModifiersEventSink*>(*pp);
 				ret = pEventSink->OnLoadModifiersChanged();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// CProxyIEventsEventSink
+template <class T>
+class CProxyIEventsEventSink : public IConnectionPointImpl<T, &IID_IEventsSink, CComDynamicUnkArray>
+{
+public:
+
+//IEventsSink : IUnknown
+public:
+	HRESULT Fire_OnHoldEvents()
+	{
+		T* pT = (T*)this;
+
+      pT->Lock();
+		HRESULT ret;
+		IUnknown** pp = m_vec.begin();
+		while (pp < m_vec.end())
+		{
+			if (*pp != NULL)
+			{
+				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
+				ret = pEventSink->OnHoldEvents();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+	}
+
+	HRESULT Fire_OnFirePendingEvents()
+	{
+		T* pT = (T*)this;
+
+      pT->Lock();
+		HRESULT ret;
+		IUnknown** pp = m_vec.begin();
+		while (pp < m_vec.end())
+		{
+			if (*pp != NULL)
+			{
+				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
+				ret = pEventSink->OnFirePendingEvents();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+	}
+
+	HRESULT Fire_OnCancelPendingEvents()
+	{
+		T* pT = (T*)this;
+
+      pT->Lock();
+		HRESULT ret;
+		IUnknown** pp = m_vec.begin();
+		while (pp < m_vec.end())
+		{
+			if (*pp != NULL)
+			{
+				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
+				ret = pEventSink->OnCancelPendingEvents();
 			}
 			pp++;
 		}

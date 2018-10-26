@@ -28,7 +28,7 @@ void CStressTendonDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
    if ( pDX->m_bSaveAndValidate )
    {
-      std::vector<std::pair<CGirderKey,DuctIndexType>> tendons;
+      std::set<CTendonKey> tendons;
 
       std::vector<std::pair<CGirderKey,DuctIndexType>>::const_iterator iter(m_TargetTendons.begin()); 
       std::vector<std::pair<CGirderKey,DuctIndexType>>::const_iterator iterEnd(m_TargetTendons.end()); 
@@ -37,7 +37,7 @@ void CStressTendonDlg::DoDataExchange(CDataExchange* pDX)
          const CGirderKey& girderKey = iter->first;
          DuctIndexType ductIdx = iter->second;
 
-         tendons.push_back( std::make_pair(girderKey,ductIdx) );
+         tendons.insert( CTendonKey(girderKey,ductIdx) );
       }
 
       m_StressTendonActivity.Clear();
@@ -194,15 +194,15 @@ void CStressTendonDlg::FillTargetList()
    CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
    m_TargetTendons.clear();
 
-   std::vector<std::pair<CGirderKey,DuctIndexType>> tendons = m_StressTendonActivity.GetTendons();
-   std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator iter(tendons.begin());
-   std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator iterEnd(tendons.end());
+   const std::set<CTendonKey>& tendons = m_StressTendonActivity.GetTendons();
+   std::set<CTendonKey>::const_iterator iter(tendons.begin());
+   std::set<CTendonKey>::const_iterator iterEnd(tendons.end());
 
    for ( ; iter != iterEnd; iter++ )
    {
-      std::pair<CGirderKey,DuctIndexType> p = *iter;
-      const CGirderKey& girderKey(p.first);
-      DuctIndexType ductIdx = p.second;
+      const CTendonKey& key(*iter);
+      const CGirderKey& girderKey(key.girderKey);
+      DuctIndexType ductIdx = key.ductIdx;
 
       CString label;
       label.Format(_T("Group %d, Girder %s, Duct %d"),LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex),LABEL_DUCT(ductIdx));

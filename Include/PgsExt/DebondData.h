@@ -24,17 +24,15 @@
 
 #include <PgsExt\PgsExtExp.h>
 class CProjectAgentImp; // Only one privy to private conversion data
+class CStrandData;
 
 class PGSEXTCLASS CDebondData
 {
 public:
    GridIndexType strandTypeGridIdx; // Index of debonded strand in GirderLibraryEntry strand grid
-   Float64 Length1; // debond length at left end of girder
-   Float64 Length2; // debond length at right end of girder
+   Float64 Length[2]; // debond length (use pgsTypes::MemberEndType to access this array)
 
-   CDebondData():
-      strandTypeGridIdx(INVALID_INDEX), Length1(0.0), Length2(0.0)
-   {;}
+   CDebondData();
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
@@ -43,6 +41,7 @@ public:
    bool operator!=(const CDebondData& rOther) const;
 
 friend CProjectAgentImp; // Only one privy to private conversion data
+friend CStrandData;
 private:
    bool needsConversion; // Previous versions had two indices for strand data this can only be converted
                          // after we have access to the girder library

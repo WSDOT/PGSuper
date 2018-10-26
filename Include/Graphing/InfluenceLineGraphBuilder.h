@@ -44,7 +44,8 @@ public:
    CInfluenceLineGraphBuilder(const CInfluenceLineGraphBuilder& other);
    virtual ~CInfluenceLineGraphBuilder();
 
-   virtual int CreateControls(CWnd* pParent,UINT nID);
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
    virtual CGraphBuilder* Clone();
 
 protected:
@@ -57,4 +58,6 @@ protected:
    void UpdateYAxisUnits(CInfluenceLineGraphBuilder::GraphType graphType);
    void UpdateGraphTitle(GirderIndexType gdrIdx,CInfluenceLineGraphBuilder::GraphType graphType);
    void UpdateGraphData(GirderIndexType gdrIdx,CInfluenceLineGraphBuilder::GraphType graphType);
+
+   virtual IntervalIndexType GetBeamDrawInterval();
 };

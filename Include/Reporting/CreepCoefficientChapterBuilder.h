@@ -88,13 +88,6 @@ private:
    CCreepCoefficientChapterBuilder(const CCreepCoefficientChapterBuilder&);
    CCreepCoefficientChapterBuilder& operator=(const CCreepCoefficientChapterBuilder&);
 
-   rptParagraph* Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptParagraph* Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptParagraph* Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptParagraph* Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptParagraph* Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptParagraph* Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    // GROUP: ACCESS

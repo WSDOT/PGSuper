@@ -61,6 +61,8 @@ CTemporarySupportData::CTemporarySupportData()
 
    m_SupportWidth                 = gs_DefaultSupportWidth2;
 
+   m_ElevationAdjustment = 0.0;
+
    m_Spacing.SetTemporarySupport(this);
 }
 
@@ -145,6 +147,9 @@ bool CTemporarySupportData::operator==(const CTemporarySupportData& rOther) cons
    if ( !IsEqual(m_SupportWidth,rOther.m_SupportWidth) )
       return false;
 
+   if ( !IsEqual(m_ElevationAdjustment,rOther.m_ElevationAdjustment) )
+      return false;
+
    if ( m_Spacing != rOther.m_Spacing )
       return false;
 
@@ -167,89 +172,106 @@ bool CTemporarySupportData::operator<(const CTemporarySupportData& rOther) const
 HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,CBridgeDescription2* pBridgeDesc)
 {
    USES_CONVERSION;
-   HRESULT hr = S_OK;
+   CHRException hr;
 
-   CComVariant var;
-   pStrLoad->BeginUnit(_T("TemporarySupportData"));
+   try
+   {
+      CComVariant var;
+      hr = pStrLoad->BeginUnit(_T("TemporarySupportData"));
 
-   Float64 version;
-   pStrLoad->get_Version(&version);
+      Float64 version;
+      hr = pStrLoad->get_Version(&version);
 
-   var.vt = VT_ID;
-   pStrLoad->get_Property(_T("ID"),&var);
-   m_ID = VARIANT2ID(var);
+      var.vt = VT_ID;
+      hr = pStrLoad->get_Property(_T("ID"),&var);
+      m_ID = VARIANT2ID(var);
 
-   var.vt = VT_BSTR;
-   pStrLoad->get_Property(_T("Type"),&var);
-   CString strType = OLE2T(var.bstrVal);
-   if ( strType == CString(_T("ErectionTower")) )
-      m_SupportType = pgsTypes::ErectionTower;
-   else if (strType == CString(_T("StrongBack")) )
-      m_SupportType = pgsTypes::StrongBack;
-   else
-      ATLASSERT(false);
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property(_T("Type"),&var);
+      CString strType = OLE2T(var.bstrVal);
+      if ( strType == CString(_T("ErectionTower")) )
+         m_SupportType = pgsTypes::ErectionTower;
+      else if (strType == CString(_T("StrongBack")) )
+         m_SupportType = pgsTypes::StrongBack;
+      else
+         ATLASSERT(false);
 
-   pStrLoad->get_Property(_T("ConnectionType"),&var);
-   CString strConnectionType = OLE2T(var.bstrVal);
-   if ( strConnectionType == CString(_T("ClosurePour")) )
-      m_ConnectionType = pgsTypes::sctClosureJoint;
-   else if ( strConnectionType == CString(_T("ContinuousSegment")) )
-      m_ConnectionType = pgsTypes::sctContinuousSegment;
-   else
-      ATLASSERT(false);
+      hr = pStrLoad->get_Property(_T("ConnectionType"),&var);
+      CString strConnectionType = OLE2T(var.bstrVal);
+      if ( strConnectionType == CString(_T("ClosurePour")) )
+         m_ConnectionType = pgsTypes::sctClosureJoint;
+      else if ( strConnectionType == CString(_T("ContinuousSegment")) )
+         m_ConnectionType = pgsTypes::sctContinuousSegment;
+      else
+         ATLASSERT(false);
 
 #if defined _DEBUG
-   if (m_SupportType == pgsTypes::StrongBack )
-   {
-      // can't be continuous if strong back
-      ATLASSERT(m_ConnectionType != pgsTypes::sctContinuousSegment);
-   }
+      if (m_SupportType == pgsTypes::StrongBack )
+      {
+         // can't be continuous if strong back
+         ATLASSERT(m_ConnectionType != pgsTypes::sctContinuousSegment);
+      }
 #endif
 
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("Station"),&var);
-   m_Station = var.dblVal;
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("Station"),&var);
+      m_Station = var.dblVal;
 
-   var.vt = VT_BSTR;
-   pStrLoad->get_Property(_T("Orientation"),&var);
-   m_strOrientation = OLE2T(var.bstrVal);
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property(_T("Orientation"),&var);
+      m_strOrientation = OLE2T(var.bstrVal);
 
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("GirderEndDistance"),&var);
-   m_GirderEndDistance = var.dblVal;
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("GirderEndDistance"),&var);
+      m_GirderEndDistance = var.dblVal;
 
-   var.vt = VT_BSTR;
-   pStrLoad->get_Property(_T("EndDistanceMeasurementType"),&var);
-   m_EndDistanceMeasurementType = ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property(_T("EndDistanceMeasurementType"),&var);
+      m_EndDistanceMeasurementType = ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
 
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("GirderBearingOffset"),&var);
-   m_GirderBearingOffset = var.dblVal;
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("GirderBearingOffset"),&var);
+      m_GirderBearingOffset = var.dblVal;
 
-   var.vt = VT_BSTR;
-   pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var);
-   m_BearingOffsetMeasurementType = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var);
+      m_BearingOffsetMeasurementType = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
 
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("SupportWidth"),&var);
-   m_SupportWidth = var.dblVal;
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("SupportWidth"),&var);
+      m_SupportWidth = var.dblVal;
 
-   if ( version < 2 )
-   {
-      if ( m_ConnectionType != pgsTypes::sctContinuousSegment )
+      if ( 2 < version )
       {
-         m_Spacing.Load(pStrLoad,pProgress);
+         if ( m_SupportType == pgsTypes::ErectionTower )
+         {
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("ElevationAdjustment"), &var );
+            m_ElevationAdjustment = var.dblVal;
+         }
       }
-   }
-   else
-   {
-      if ( m_ConnectionType != pgsTypes::sctContinuousSegment && !::IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
-      {
-         m_Spacing.Load(pStrLoad,pProgress);
-      }
-   }
 
-   pStrLoad->EndUnit();
+      if ( version < 2 )
+      {
+         if ( m_ConnectionType != pgsTypes::sctContinuousSegment )
+         {
+            m_Spacing.Load(pStrLoad,pProgress);
+         }
+      }
+      else
+      {
+         if ( m_ConnectionType != pgsTypes::sctContinuousSegment && !::IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
+         {
+            m_Spacing.Load(pStrLoad,pProgress);
+         }
+      }
+
+      hr = pStrLoad->EndUnit();
+   }
+   catch(...)
+   {
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
+   }
 
    return hr;
 }
@@ -258,7 +280,7 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("TemporarySupportData"),2.0);
+   pStrSave->BeginUnit(_T("TemporarySupportData"),3.0);
    pStrSave->put_Property(_T("ID"),CComVariant(m_ID));
 
    switch( m_SupportType )
@@ -297,6 +319,13 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType).c_str()) );
    pStrSave->put_Property(_T("SupportWidth"),                CComVariant(m_SupportWidth));
 
+   // added in version 3
+   if ( m_SupportType == pgsTypes::ErectionTower )
+   {
+      pStrSave->put_Property(_T("ElevationAdjustment"), CComVariant(m_ElevationAdjustment));
+   }
+
+
    // add check for IsBridgeSpacing in version 2
    if ( m_ConnectionType != pgsTypes::sctContinuousSegment && !::IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()))
    {
@@ -325,11 +354,13 @@ void CTemporarySupportData::MakeCopy(const CTemporarySupportData& rOther,bool bC
    m_GirderEndDistance            = rOther.m_GirderEndDistance;
    m_GirderBearingOffset          = rOther.m_GirderBearingOffset;
    m_SupportWidth                 = rOther.m_SupportWidth;
+   m_ElevationAdjustment          = rOther.m_ElevationAdjustment;
    m_EndDistanceMeasurementType   = rOther.m_EndDistanceMeasurementType;
    m_BearingOffsetMeasurementType = rOther.m_BearingOffsetMeasurementType;
 
 
    m_Spacing                      = rOther.m_Spacing;
+   m_Spacing.SetTemporarySupport(this);
 
    ASSERT_VALID;
 }
@@ -540,6 +571,16 @@ void CTemporarySupportData::SetSupportWidth(Float64 w)
 Float64 CTemporarySupportData::GetSupportWidth() const
 {
    return m_SupportWidth;
+}
+
+void CTemporarySupportData::SetElevationAdjustment(Float64 elevAdj)
+{
+   m_ElevationAdjustment = elevAdj;
+}
+
+Float64 CTemporarySupportData::GetElevationAdjustment() const
+{
+   return m_ElevationAdjustment;
 }
 
 void CTemporarySupportData::SetSegmentSpacing(const CGirderSpacing2& spacing)

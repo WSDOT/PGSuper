@@ -181,35 +181,6 @@ void CBridgeDescFramingGrid::SetSpanLengths(const std::vector<Float64>& spanLeng
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingGrid message handlers
-int CBridgeDescFramingGrid::GetColWidth(ROWCOL nCol)
-{
-	CRect rect;
-   GetClientRect(&rect);
-
-   int grid_width = rect.Width();
-   int A = 28; // abut/pier/span column
-   int B = 28; // station
-   int C = 28; // orientation
-   int W = 160;
-
-   switch (nCol)
-   {
-   //case 0: // abut/pier column
-   //   return A*grid_width/W;
-
-   //case 1: // station
-   //   return B*grid_width/W;
-
-   //case 2: // orientation
-   //   return C*grid_width/W;
-
-   //case 3: // button
-   //   return (W-(A+B+C))*grid_width/W;
-
-   default:
-      return CGXGridWnd::GetColWidth(nCol);
-   }
-}
 
 BOOL CBridgeDescFramingGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
 {
@@ -276,7 +247,7 @@ void CBridgeDescFramingGrid::OnAddTemporarySupport()
       sel_rows.Add(GetRowCount());
    }
 
-   CTemporarySupportDlg dlg(&pDlg->m_BridgeDesc,INVALID_INDEX,this);
+   CTemporarySupportDlg dlg(&pDlg->m_BridgeDesc,INVALID_INDEX,pDlg->GetExtensionPages(),this);
    if ( dlg.DoModal() == IDOK )
    {
       pDlg->m_BridgeDesc = *dlg.GetBridgeDescription();
@@ -1238,7 +1209,7 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
    // This dialog makes a copy of the bridge model because it changes it.
    // If the user presses the Cancel button, we don't have to figure out
    // what got changed.
-   CPierDetailsDlg dlg(&pDlg->m_BridgeDesc,pierIdx);
+   CPierDetailsDlg dlg(&pDlg->m_BridgeDesc,pierIdx,pDlg->GetExtensionPages());
    if ( dlg.DoModal() == IDOK )
    {
       pDlg->m_BridgeDesc = *dlg.GetBridgeDescription();
@@ -1259,7 +1230,7 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
    // This dialog makes a copy of the bridge model because it changes it.
    // If the user presses the Cancel button, we don't have to figure out
    // what got changed.
-   CSpanDetailsDlg dlg(&pDlg->m_BridgeDesc,spanIdx);
+   CSpanDetailsDlg dlg(&pDlg->m_BridgeDesc,spanIdx,pDlg->GetExtensionPages());
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -1279,7 +1250,7 @@ void CBridgeDescFramingGrid::EditTemporarySupport(SupportIndexType tsIdx)
    ASSERT( pDlg->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg) ) );
 
 
-   CTemporarySupportDlg dlg(&pDlg->m_BridgeDesc,tsIdx,this);
+   CTemporarySupportDlg dlg(&pDlg->m_BridgeDesc,tsIdx,pDlg->GetExtensionPages(),this);
    if ( dlg.DoModal() == IDOK )
    {
       pDlg->m_BridgeDesc = *dlg.GetBridgeDescription();

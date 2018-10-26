@@ -80,7 +80,7 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          bool bDesign,bool bRating) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
 
@@ -121,9 +121,9 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
 
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -149,7 +149,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
          continuityEventIndex = Min(continuityEventIndex,rightContinuityEventIdx);
       }
    }
-   IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);
+   IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(girderKey,continuityEventIndex);
 
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -203,29 +203,29 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
       minDWinc = pForces2->GetMoment( lcDW, intervalIdx, vPoi, ctIncremental, minBAT );
       maxDWRatinginc = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctIncremental, maxBAT );
       minDWRatinginc = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctIncremental, minBAT );
-      maxDCcum = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctCummulative, maxBAT );
-      minDCcum = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctCummulative, minBAT );
-      maxDWcum = pForces2->GetMoment( lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
-      minDWcum = pForces2->GetMoment( lcDW, intervalIdx, vPoi, ctCummulative, minBAT );
-      maxDWRatingcum = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctCummulative, maxBAT );
-      minDWRatingcum = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctCummulative, minBAT );
+      maxDCcum = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctCumulative, maxBAT );
+      minDCcum = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctCumulative, minBAT );
+      maxDWcum = pForces2->GetMoment( lcDW, intervalIdx, vPoi, ctCumulative, maxBAT );
+      minDWcum = pForces2->GetMoment( lcDW, intervalIdx, vPoi, ctCumulative, minBAT );
+      maxDWRatingcum = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctCumulative, maxBAT );
+      minDWRatingcum = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctCumulative, minBAT );
 
       if ( bTimeStepMethod )
       {
          maxCRinc = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctIncremental, maxBAT );
          minCRinc = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctIncremental, minBAT );
-         maxCRcum = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctCummulative, maxBAT );
-         minCRcum = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctCummulative, minBAT );
+         maxCRcum = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctCumulative, maxBAT );
+         minCRcum = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctCumulative, minBAT );
 
          maxSHinc = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctIncremental, maxBAT );
          minSHinc = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctIncremental, minBAT );
-         maxSHcum = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctCummulative, maxBAT );
-         minSHcum = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctCummulative, minBAT );
+         maxSHcum = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctCumulative, maxBAT );
+         minSHcum = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctCumulative, minBAT );
 
          maxPSinc = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctIncremental, maxBAT );
          minPSinc = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctIncremental, minBAT );
-         maxPScum = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctCummulative, maxBAT );
-         minPScum = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctCummulative, minBAT );
+         maxPScum = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctCumulative, maxBAT );
+         minPScum = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctCumulative, minBAT );
       }
 
       if ( intervalIdx < liveLoadIntervalIdx )
@@ -355,7 +355,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(); // always
+   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(girderKey); // always
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );

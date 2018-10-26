@@ -81,15 +81,15 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
       for (std::vector<CDebondData>::iterator iter = pParent->m_Segment.Strands.Debond[pgsTypes::Straight].begin(); iter != pParent->m_Segment.Strands.Debond[pgsTypes::Straight].end(); iter++ )
       {
          CDebondData& debond_info = *iter;
-         if (debond_info.Length1 >= gdr_length2 || debond_info.Length2 >= gdr_length2)
+         if (gdr_length2 <= debond_info.Length[pgsTypes::metStart] || gdr_length2 <= debond_info.Length[pgsTypes::metEnd])
          {
             HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
 	         AfxMessageBox( _T("Debond length cannot exceed one half of girder length."), MB_ICONEXCLAMATION);
 	         pDX->Fail();
          }
 
-         if (debond_info.Length1 <= 0.0 || 
-            (!pParent->m_Segment.Strands.bSymmetricDebond && debond_info.Length2 <= 0.0) )
+         if (debond_info.Length[pgsTypes::metStart] <= 0.0 || 
+            (!pParent->m_Segment.Strands.bSymmetricDebond && debond_info.Length[pgsTypes::metEnd] <= 0.0) )
          {
             HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
 	         AfxMessageBox( _T("Debond lengths must be greater than zero."), MB_ICONEXCLAMATION);

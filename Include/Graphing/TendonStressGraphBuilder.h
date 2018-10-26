@@ -34,16 +34,22 @@ public:
    CTendonStressGraphBuilder(const CTendonStressGraphBuilder& other);
    virtual ~CTendonStressGraphBuilder();
 
-   virtual int CreateControls(CWnd* pParent,UINT nID);
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
    virtual CGraphBuilder* Clone();
+
+   virtual void UpdateXAxis();
+   virtual void UpdateYAxis();
 
 protected:
    virtual CGirderGraphControllerBase* CreateGraphController();
-   virtual BOOL InitGraphController(CWnd* pParent,UINT nID);
    virtual bool UpdateNow();
 
    DECLARE_MESSAGE_MAP()
 
-   void UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx,IntervalIndexType intervalIdx);
-   void UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx,IntervalIndexType intervalIdx);
+   void UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx);
+   void UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx);
+   void UpdatePosttensionGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx);
+   void UpdatePretensionGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx);
+
+   virtual IntervalIndexType GetBeamDrawInterval();
 };

@@ -310,13 +310,13 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgs
       {
          const DEBONDCONFIG& debond_info = *iter;
 
-         Float64 right_db_from_left = gdr_length - debond_info.RightDebondLength;
+         Float64 right_db_from_left = gdr_length - debond_info.DebondLength[pgsTypes::metEnd];
 
          // see if bonding occurs at all here
-         if ( debond_info.LeftDebondLength<dist_from_left_end && dist_from_left_end<right_db_from_left)
+         if ( debond_info.DebondLength[pgsTypes::metStart]<dist_from_left_end && dist_from_left_end<right_db_from_left)
          {
             // compute minimum bonded length from poi
-            Float64 left_len = dist_from_left_end - debond_info.LeftDebondLength;
+            Float64 left_len = dist_from_left_end - debond_info.DebondLength[pgsTypes::metStart];
             Float64 rgt_len  = right_db_from_left - dist_from_left_end;
             Float64 min_db_len = Min(left_len, rgt_len);
 
@@ -423,13 +423,13 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,
       {
          const DEBONDCONFIG& debond_info = *iter;
 
-         Float64 right_db_from_left = gdr_length - debond_info.RightDebondLength;
+         Float64 right_db_from_left = gdr_length - debond_info.DebondLength[pgsTypes::metEnd];
 
          // see if bonding occurs at all here
-         if ( debond_info.LeftDebondLength<dist_from_left_end && dist_from_left_end<right_db_from_left)
+         if ( debond_info.DebondLength[pgsTypes::metStart]<dist_from_left_end && dist_from_left_end<right_db_from_left)
          {
             // compute minimum bonded length from poi
-            Float64 left_len = dist_from_left_end - debond_info.LeftDebondLength;
+            Float64 left_len = dist_from_left_end - debond_info.DebondLength[pgsTypes::metStart];
             Float64 rgt_len  = right_db_from_left - dist_from_left_end;
             Float64 min_db_len = Min(left_len, rgt_len);
 
@@ -490,7 +490,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
    IntervalIndexType intervalIdx = nIntervals-1;
 
    GET_IFACE(ISegmentData,pSegmentData);
@@ -543,7 +543,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
    IntervalIndexType intervalIdx = nIntervals-1;
 
    GET_IFACE(ISegmentData,pSegmentData);
@@ -821,16 +821,90 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   // Get the prestressing input information
+   GET_IFACE(IStrandGeometry,pStrandGeom);
+
+#pragma Reminder("UPDATE: possible problem")
+   // the code between START and END below was added because the rest of the method didn't
+   // work property for time step analysis. It should have because several calls below
+   // the time step analysis is taken into account. This needs to be reviewed and
+   // the possible bug fixed
+   /////////////// START ///////////////
    GET_IFACE(ILosses,pLosses);
+   const LOSSDETAILS* pDetails;
+   if ( pConfig )
+      pDetails = pLosses->GetLossDetails(poi,*pConfig);
+   else
+      pDetails = pLosses->GetLossDetails(poi);
+
+   if ( pDetails->LossMethod == pgsTypes::TIME_STEP )
+   {
+      if ( strandType == pgsTypes::Permanent )
+      {
+         Float64 fpe_Straight = GetEffectivePrestress(poi,pgsTypes::Straight,intervalIdx,intervalTime);
+         Float64 fpe_Harped   = GetEffectivePrestress(poi,pgsTypes::Harped,intervalIdx,intervalTime);
+
+         Float64 Aps_Straight = pStrandGeom->GetStrandArea(segmentKey,intervalIdx,pgsTypes::Straight);
+         Float64 Aps_Harped   = pStrandGeom->GetStrandArea(segmentKey,intervalIdx,pgsTypes::Harped);
+         Float64 Aps = Aps_Straight + Aps_Harped;
+
+         Float64 fpe = IsZero(Aps) ? 0 : (Aps_Straight*fpe_Straight + Aps_Harped*fpe_Harped)/Aps;
+         return fpe;
+      }
+      else
+      {
+         if ( intervalTime == pgsTypes::Start )
+         {
+            // effective prestress at the start of the interval is equal to the effective prestress at the end of the interval
+            // minus the change that occured during the interval
+#if defined LUMP_STRANDS
+            return pDetails->TimeStepDetails[intervalIdx].Strands[strandType].fpe - pDetails->TimeStepDetails[intervalIdx].Strands[strandType].dFps;
+#else
+            Float64 Aps = 0;
+            Float64 Apsfpe = 0;
+            StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
+            for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+            {
+               const TIME_STEP_STRAND& strand = pDetails->TimeStepDetails[intervalIdx].Strands[strandType][strandIdx];
+               Aps += strand.As;
+               Apsfpe += strand.As*(strand.fpe - strand.dFps);
+            }
+
+            Float64 fpe = IsZero(Aps) ? 0 : Apsfpe/Aps;
+            return fpe;
+#endif
+         }
+         else
+         {
+#if defined LUMP_STRANDS
+            return pDetails->TimeStepDetails[intervalIdx].Strands[strandType].fpe;
+#else
+            Float64 Aps = 0;
+            Float64 Apsfpe = 0;
+            StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
+            for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+            {
+               const TIME_STEP_STRAND& strand = pDetails->TimeStepDetails[intervalIdx].Strands[strandType][strandIdx];
+               Aps += strand.As;
+               Apsfpe += strand.As*strand.fpe;
+            }
+
+            Float64 fpe = IsZero(Aps) ? 0 : Apsfpe/Aps;
+            return fpe;
+#endif
+         }
+      }
+   }
+   /////////////// END ///////////////
+
+   // not doing time step
+
+   // Get the prestressing input information
    GET_IFACE(ISegmentData,pSegmentData );
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx      = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-
-   GET_IFACE(IStrandGeometry,pStrandGeom);
 
    Float64 Pj;
    StrandIndexType N;
@@ -1017,6 +1091,7 @@ Float64 pgsPsForceEng::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::
 
 Float64 pgsPsForceEng::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const LOSSDETAILS* pDetails)
 {
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
 #pragma Reminder("UPDATE: BUG: take section analysis type into account") // make the note below true!
 
    // NOTE: If we are using transformed section analysis, loss is due only to time-dependent effects. Losses do not include elastic gains/losses.
@@ -1042,9 +1117,12 @@ Float64 pgsPsForceEng::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::
          break; // do nothing... theIntervalIdx is correct
       }
 
+      GET_IFACE(IStrandGeometry,pStrandGeom);
+
       // loss = total loss - Pr/As (remove the elastic part)
       if ( strandType == pgsTypes::Permanent) 
       {
+#if defined LUMP_STRANDS
          Float64 Elastic[2];
          Elastic[pgsTypes::Straight] = 0;
          Elastic[pgsTypes::Harped]   = 0;
@@ -1056,17 +1134,73 @@ Float64 pgsPsForceEng::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::
 
          return pDetails->TimeStepDetails[theIntervalIdx].Strands[pgsTypes::Straight].loss + Elastic[pgsTypes::Straight] +
                 pDetails->TimeStepDetails[theIntervalIdx].Strands[pgsTypes::Harped].loss   + Elastic[pgsTypes::Harped];
+#else
+         Float64 Aps[2];
+         Float64 Aps_dFps[2];
+         Float64 Aps_Loss[2];
+         for ( int i = 0; i < 2; i++ )
+         {
+            Aps[i]      = 0;
+            Aps_dFps[i] = 0;
+            Aps_Loss[i] = 0;
+         }
+
+         for ( IntervalIndexType i = 0; i <= theIntervalIdx; i++ )
+         {
+            for ( int j = 0; j < 2; j++ )
+            {
+               pgsTypes::StrandType st = (pgsTypes::StrandType)j;
+               StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,st);
+               for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+               {
+                  const TIME_STEP_STRAND& strand = pDetails->TimeStepDetails[i].Strands[st][strandIdx];
+                  Aps_dFps[st] += strand.As*strand.dFps;
+                  if ( i == theIntervalIdx )
+                  {
+                     Aps[st]     += strand.As;
+                     Aps_Loss[st] += strand.As*strand.loss;
+                  }
+               }
+            }
+         }
+
+         Float64 ss_Loss = IsZero(Aps[pgsTypes::Straight]) ? 0 : Aps_Loss[pgsTypes::Straight]/Aps[pgsTypes::Straight];
+         Float64 hs_Loss = IsZero(Aps[pgsTypes::Harped])   ? 0 : Aps_Loss[pgsTypes::Harped]/Aps[pgsTypes::Harped];
+
+         Float64 ss_dFps = IsZero(Aps[pgsTypes::Straight]) ? 0 : Aps_dFps[pgsTypes::Straight]/Aps[pgsTypes::Straight];
+         Float64 hs_dFps = IsZero(Aps[pgsTypes::Harped])   ? 0 : Aps_dFps[pgsTypes::Harped]  /Aps[pgsTypes::Harped];
+
+         return ss_Loss + ss_dFps +
+                hs_Loss + hs_dFps;
+#endif
       }
       else
       {
+#if defined LUMP_STRANDS
          Float64 Elastic = pDetails->TimeStepDetails[theIntervalIdx].Strands[strandType].dFps;
          return pDetails->TimeStepDetails[theIntervalIdx].Strands[strandType].loss + Elastic;
+#else
+         StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
+         Float64 Aps = 0;
+         Float64 Aps_dFps = 0;
+         Float64 Aps_loss = 0;
+         for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+         {
+            const TIME_STEP_STRAND& strand(pDetails->TimeStepDetails[theIntervalIdx].Strands[strandType][strandIdx]);
+            Aps += strand.As;
+            Aps_dFps += strand.As*strand.dFps;
+            Aps_loss += strand.As*strand.loss;
+         }
+
+         Float64 Elastic = IsZero(Aps) ? 0 : Aps_dFps/Aps;
+         Float64 loss = IsZero(Aps) ? 0 : Aps_loss/Aps;
+         return loss + Elastic;
+#endif
       }
    }
 
 
    // some method other than Time Step
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType stressStrandIntervalIdx  = pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -1076,10 +1210,10 @@ Float64 pgsPsForceEng::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
 
    GET_IFACE(IBridge,pBridge);
    bool bIsFutureOverlay = pBridge->IsFutureOverlay();
@@ -1214,17 +1348,53 @@ Float64 pgsPsForceEng::GetPrestressLossWithLiveLoad(const pgsPointOfInterest& po
       // applied in this interval and all intervals that follow... which interval do
       // you want losses for?
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+
+      GET_IFACE(IStrandGeometry,pStrandGeom);
 
       // time step losses use service III limit state for elastic live load effects
       if ( strandType == pgsTypes::Permanent )
       {
+#if defined LUMP_STRANDS
          return pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[pgsTypes::Straight].loss + 
                 pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[pgsTypes::Harped].loss;
+#else
+         Float64 Aps[2] = {0,0};
+         Float64 Aps_Loss[2] = {0,0};
+         Float64 Loss[2] = {0,0};
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+            StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
+            for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+            {
+               const TIME_STEP_STRAND& strand(pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[strandType][strandIdx]);
+               Aps[strandType] += strand.As;
+               Aps_Loss[strandType] += strand.As*strand.loss;
+            }
+            Loss[strandType] = IsZero(Aps[strandType]) ? 0 : Aps_Loss[strandType]/Aps[strandType];
+         }
+         return Loss[pgsTypes::Straight] + Loss[pgsTypes::Harped];
+#endif
       }
       else
       {
+#if defined LUMP_STRANDS
          return pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[strandType].loss;
+#else
+         Float64 Aps = 0;
+         Float64 Aps_Loss = 0;
+
+         StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
+         for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+         {
+            const TIME_STEP_STRAND& strand(pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[strandType][strandIdx]);
+            Aps += strand.As;
+            Aps_Loss += strand.As*strand.loss;
+         }
+         Float64 Loss = IsZero(Aps) ? 0 : Aps_Loss/Aps;
+         return Loss;
+#endif
       }
    }
 

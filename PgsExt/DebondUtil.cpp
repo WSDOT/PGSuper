@@ -49,18 +49,18 @@ DebondSectionComputer::DebondSectionComputer(const std::vector<DEBONDCONFIG>& rD
       const DEBONDCONFIG& rinfo = *it;
 
       // Left side
-      if(rinfo.LeftDebondLength > 0.0)
+      if(rinfo.DebondLength[pgsTypes::metStart] > 0.0)
       {
          DbSection bogus_sec;
-         bogus_sec.m_Location = rinfo.LeftDebondLength;
+         bogus_sec.m_Location = rinfo.DebondLength[pgsTypes::metStart];
 
          std::set<DbSection>::iterator sec_it = m_LeftSections.find( bogus_sec );
          if (sec_it == m_LeftSections.end())
          {
             // not found, make a new section
             DbSection section;
-            ATLASSERT(girderLength/2.0 > rinfo.LeftDebondLength);
-            section.m_Location = rinfo.LeftDebondLength;
+            ATLASSERT(girderLength/2.0 > rinfo.DebondLength[pgsTypes::metStart]);
+            section.m_Location = rinfo.DebondLength[pgsTypes::metStart];
             section.m_NumDebonds = 1;
 
             m_LeftSections.insert(section);
@@ -74,11 +74,11 @@ DebondSectionComputer::DebondSectionComputer(const std::vector<DEBONDCONFIG>& rD
       }
 
       // Right side
-      if(rinfo.RightDebondLength > 0.0)
+      if(rinfo.DebondLength[pgsTypes::metEnd] > 0.0)
       {
          DbSection bogus_sec;
-         ATLASSERT(girderLength/2.0 > rinfo.RightDebondLength);
-         Float64 loc = girderLength - rinfo.RightDebondLength;
+         ATLASSERT(girderLength/2.0 > rinfo.DebondLength[pgsTypes::metEnd]);
+         Float64 loc = girderLength - rinfo.DebondLength[pgsTypes::metEnd];
          bogus_sec.m_Location = loc;
 
          std::set<DbSection>::iterator sec_it = m_RightSections.find( bogus_sec );

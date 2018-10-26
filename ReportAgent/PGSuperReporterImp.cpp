@@ -123,13 +123,13 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    // that is passed to all the chapter builders
 
    // this report spec builder prompts for span #, girder # and chapter list
-   boost::shared_ptr<CReportSpecificationBuilder> pBrokerRptSpecBuilder(     new CBrokerReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pSpanRptSpecBuilder(       new CSpanReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pBridgeAnalysisRptSpecBuilder ( new CBridgeAnalysisReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pLoadRatingRptSpecBuilder( new CLoadRatingReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder( new CMultiGirderReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(  new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
+   boost::shared_ptr<CReportSpecificationBuilder> pBrokerRptSpecBuilder(         new CBrokerReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pSpanRptSpecBuilder(           new CSpanReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pBridgeAnalysisRptSpecBuilder( new CBridgeAnalysisReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pLoadRatingRptSpecBuilder(     new CLoadRatingReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder(    new CMultiGirderReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(      new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(         new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
 
 #if defined _DEBUG
    // Test Report
@@ -160,6 +160,8 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    pRptBuilder = new CReportBuilder(_T("Details Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder) );
@@ -183,12 +185,15 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLongReinfShearCheckChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSplittingZoneDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorSummaryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CCreepCoefficientChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CCamberChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CADimChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBearingDesignParametersChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiftingCheckDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CHaulingCheckDetailsChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new COptimizedFabricationChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Bearing Design Report
@@ -219,7 +224,9 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    pRptBuilder->SetReportSpecificationBuilder( pLoadRatingRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingDetailsChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder(true)) );
+   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CMVRChapterBuilder(false,true,false)) );
@@ -230,6 +237,7 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(false,true,true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(false,true,true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDevLengthDetailsChapterBuilder(false)) ); 
+   //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLossesChapterBuilder(false)) ); 
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CFinalLossesChapterBuilder(false)) ); 
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CMomentCapacityDetailsChapterBuilder(false,false)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(false,true,false)) );

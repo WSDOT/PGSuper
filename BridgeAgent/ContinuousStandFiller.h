@@ -88,17 +88,17 @@ class CDirectStrandFiller
 {
 public:
    // Set direct fill strands to girder
-   virtual HRESULT SetStraightDirectStrandFill(IPrecastGirder* girder,  const DirectStrandFillCollection* pCollection) = 0;
-   virtual HRESULT SetHarpedDirectStrandFill(IPrecastGirder* girder,  const DirectStrandFillCollection* pCollection) = 0;
-   virtual HRESULT SetTemporaryDirectStrandFill(IPrecastGirder* girder,  const DirectStrandFillCollection* pCollection) = 0;
+   virtual HRESULT SetStraightDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection) = 0;
+   virtual HRESULT SetHarpedDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection) = 0;
+   virtual HRESULT SetTemporaryDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection) = 0;
 
-   // Compute a WBFL-type fill array for a given DirectStrandFillCollection
+   // Compute a WBFL-type fill array for a given CDirectStrandFillCollection
    // NOTE: The strandFill array is for temporary use only - 
    //       do not change it - clone it if you want to hang on to it.
    //       And, it becomes invalid after subsequent calls into this class
-   virtual HRESULT ComputeStraightStrandFill(IPrecastGirder* girder, const DirectStrandFillCollection* pCollection, IIndexArray** strandFill) = 0;
-   virtual HRESULT ComputeHarpedStrandFill(IPrecastGirder* girder, const DirectStrandFillCollection* pCollection, IIndexArray** strandFill) = 0;
-   virtual HRESULT ComputeTemporaryStrandFill(IPrecastGirder* girder, const DirectStrandFillCollection* pCollection, IIndexArray** strandFill) = 0;
+   virtual HRESULT ComputeStraightStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill) = 0;
+   virtual HRESULT ComputeHarpedStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill) = 0;
+   virtual HRESULT ComputeTemporaryStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill) = 0;
 };
 
 class CStrandFiller : public CContinuousStrandFiller, public CDirectStrandFiller
@@ -155,13 +155,13 @@ public:
    // NOTE: The strandFill array is for temporary use only - 
    //       do not change it - clone it if you want to hang on to it.
    //       And, it becomes invalid after subsequent calls into this class
-   HRESULT ComputeStraightStrandFill(IPrecastGirder* girder, const DirectStrandFillCollection* pCollection, IIndexArray** strandFill);
-   HRESULT ComputeHarpedStrandFill(IPrecastGirder* girder, const DirectStrandFillCollection* pCollection, IIndexArray** strandFill);
-   HRESULT ComputeTemporaryStrandFill(IPrecastGirder* girder, const DirectStrandFillCollection* pCollection, IIndexArray** strandFill);
+   HRESULT ComputeStraightStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill);
+   HRESULT ComputeHarpedStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill);
+   HRESULT ComputeTemporaryStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill);
 
-   HRESULT SetStraightDirectStrandFill(IPrecastGirder* girder,  const DirectStrandFillCollection* pCollection);
-   HRESULT SetHarpedDirectStrandFill(IPrecastGirder* girder,  const DirectStrandFillCollection* pCollection);
-   HRESULT SetTemporaryDirectStrandFill(IPrecastGirder* girder,  const DirectStrandFillCollection* pCollection);
+   HRESULT SetStraightDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection);
+   HRESULT SetHarpedDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection);
+   HRESULT SetTemporaryDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection);
 
 private:
 

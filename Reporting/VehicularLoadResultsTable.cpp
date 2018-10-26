@@ -77,14 +77,14 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, span_location, pDisplayUnits->GetSpanLengthUnit(), false );
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval() : pIntervals->GetLiveLoadInterval() );
+   IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval(girderKey) : pIntervals->GetLiveLoadInterval(girderKey) );
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -141,18 +141,18 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
       (*p_table)(0,col++) << _T("Shear") << rptNewLine << _T("Min") << rptNewLine << _T("Config"); // for max moment
    }
    
-   (*p_table)(0,col++) << COLHDR(_T("Displacement") << rptNewLine << _T("Max"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Deflection") << rptNewLine << _T("Max"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << _T("Displacement") << rptNewLine << _T("Max") << rptNewLine << _T("Config"); // for max moment
+      (*p_table)(0,col++) << _T("Deflection") << rptNewLine << _T("Max") << rptNewLine << _T("Config"); // for max moment
    }
 
-   (*p_table)(0,col++) << COLHDR(_T("Displacement") << rptNewLine << _T("Min"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Deflection") << rptNewLine << _T("Min"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << _T("Displacement") << rptNewLine << _T("Min") << rptNewLine << _T("Config"); // for max moment
+      (*p_table)(0,col++) << _T("Deflection") << rptNewLine << _T("Min") << rptNewLine << _T("Config"); // for max moment
    }
 
    // Get the interface pointers we need
@@ -198,8 +198,8 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
             bReportTruckConfig ? &dummyConfig  : NULL,
             bReportTruckConfig ? &dummyConfig  : NULL  );
 
-         pForces2->GetVehicularLiveLoadDisplacement( llType, vehicleIndex, intervalIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Dmax, bReportTruckConfig ? &dummyConfig  : NULL, bReportTruckConfig ? &DmaxConfig   : NULL );
-         pForces2->GetVehicularLiveLoadDisplacement( llType, vehicleIndex, intervalIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Dmin, &dummy, bReportTruckConfig ? &DminConfig   : NULL, bReportTruckConfig ? &dummyConfig  : NULL );
+         pForces2->GetVehicularLiveLoadDeflection( llType, vehicleIndex, intervalIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &Dmax, bReportTruckConfig ? &dummyConfig  : NULL, bReportTruckConfig ? &DmaxConfig   : NULL );
+         pForces2->GetVehicularLiveLoadDeflection( llType, vehicleIndex, intervalIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Dmin, &dummy, bReportTruckConfig ? &DminConfig   : NULL, bReportTruckConfig ? &dummyConfig  : NULL );
       }
       else
       {
@@ -209,7 +209,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
                                               bReportTruckConfig ? &VminRightConfig : NULL, 
                                               bReportTruckConfig ? &VmaxLeftConfig  : NULL,
                                               bReportTruckConfig ? &VmaxRightConfig : NULL );
-         pForces2->GetVehicularLiveLoadDisplacement( llType, vehicleIndex, intervalIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Dmin, &Dmax, bReportTruckConfig ? &DminConfig : NULL, bReportTruckConfig ? &DmaxConfig : NULL );
+         pForces2->GetVehicularLiveLoadDeflection( llType, vehicleIndex, intervalIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Dmin, &Dmax, bReportTruckConfig ? &DminConfig : NULL, bReportTruckConfig ? &DmaxConfig : NULL );
       }
 
       // Fill up the table
@@ -271,13 +271,13 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
             col++;
          }
 
-         (*p_table)(row,col++) << displacement.SetValue( Dmax[index] );
+         (*p_table)(row,col++) << deflection.SetValue( Dmax[index] );
          if ( bReportTruckConfig )
          {
             ReportTruckConfiguration(DmaxConfig[index],p_table,row,col++,pDisplayUnits);
          }
 
-         (*p_table)(row,col++) << displacement.SetValue( Dmin[index] );
+         (*p_table)(row,col++) << deflection.SetValue( Dmin[index] );
          if ( bReportTruckConfig )
          {
             ReportTruckConfiguration(DminConfig[index],p_table,row,col++,pDisplayUnits);

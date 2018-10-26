@@ -452,7 +452,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
    plldf->A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
@@ -469,7 +469,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    {
       plldf->ts = pBridge->GetStructuralSlabDepth(poi);
 
-      Float64 EcDeck    = pMaterials->GetDeckEc(llIntervalIdx);
+      Float64 EcDeck    = pMaterials->GetDeckEc(segmentKey,llIntervalIdx);
    
       // use release interval for girder properties because we want the non-composite gross properties. we know it is non-composite at release
       if ( fcgdr < 0 )

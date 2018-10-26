@@ -131,10 +131,10 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
       const pgsPointOfInterest& poi = *i;
 
       (*p_table)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
-      (*p_table)(row,1) << moment.SetValue( pForces->GetMoment( releaseIntervalIdx, pftGirder, poi, bat ) );
-      (*p_table)(row,2) << shear.SetValue(  pForces->GetShear(  releaseIntervalIdx, pftGirder, poi, bat ) );
-      (*p_table)(row,3) << moment.SetValue( pForces->GetMoment( storageIntervalIdx, pftGirder, poi, bat ) );
-      (*p_table)(row,4) << shear.SetValue(  pForces->GetShear(  storageIntervalIdx, pftGirder, poi, bat ) );
+      (*p_table)(row,1) << moment.SetValue( pForces->GetMoment( releaseIntervalIdx, pftGirder, poi, bat, ctIncremental ) );
+      (*p_table)(row,2) << shear.SetValue(  pForces->GetShear(  releaseIntervalIdx, pftGirder, poi, bat, ctIncremental ) );
+      (*p_table)(row,3) << moment.SetValue( pForces->GetMoment( storageIntervalIdx, pftGirder, poi, bat, ctIncremental ) );
+      (*p_table)(row,4) << shear.SetValue(  pForces->GetShear(  storageIntervalIdx, pftGirder, poi, bat, ctIncremental ) );
 
       row++;
    }

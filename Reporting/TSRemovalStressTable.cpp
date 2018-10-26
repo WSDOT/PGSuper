@@ -91,6 +91,9 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType overlayIntervalIdx  = pIntervals->GetOverlayInterval(girderKey);
 
 
    // Get the results
@@ -101,26 +104,24 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
       // Get the intervals when temporary supports are removed for this group
-      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(grpIdx));
+      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(girderKey));
 
       // if we are writing out stresses in the deck, don't report on any interval
       // that occurs before the deck is composite
       if ( !bGirderStresses )
       {
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
          tsrIntervals.erase(std::remove_if(tsrIntervals.begin(),tsrIntervals.end(),std::bind2nd(std::less<IntervalIndexType>(),compositeDeckIntervalIdx)),tsrIntervals.end());
       }
 
 
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
       if ( tsrIntervals.size() == 0 )
          continue; // next group
@@ -169,7 +170,7 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
          }
 
          RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
-                                                                                                 bPermit,false,analysisType,continuityIntervalIdx,
+                                                                                                 bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
                                                                                                  pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
@@ -196,64 +197,64 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
          // Get the results for this span (it is faster to get them as a vector rather than individually)
          std::vector<Float64> fTopGirder, fBotGirder;
          std::vector<Float64> fTopDiaphragm, fBotDiaphragm;
-         pForces2->GetStress(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, topLocation, botLocation, &fTopGirder, &fBotGirder);
-         pForces2->GetStress(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
+         pForces2->GetStress(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopGirder, &fBotGirder);
+         pForces2->GetStress(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
 
          std::vector<Float64> fTopMaxSlab, fTopMinSlab, fBotMaxSlab, fBotMinSlab;
-         pForces2->GetStress( tsrIntervalIdx, pftSlab, vPoi, maxBAT, topLocation, botLocation, &fTopMaxSlab, &fBotMaxSlab );
-         pForces2->GetStress( tsrIntervalIdx, pftSlab, vPoi, minBAT, topLocation, botLocation, &fTopMinSlab, &fBotMinSlab );
+         pForces2->GetStress( tsrIntervalIdx, pftSlab, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxSlab, &fBotMaxSlab );
+         pForces2->GetStress( tsrIntervalIdx, pftSlab, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinSlab, &fBotMinSlab );
 
          std::vector<Float64> fTopMaxSlabPad, fTopMinSlabPad, fBotMaxSlabPad, fBotMinSlabPad;
-         pForces2->GetStress( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, topLocation, botLocation, &fTopMaxSlabPad, &fBotMaxSlabPad );
-         pForces2->GetStress( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, topLocation, botLocation, &fTopMinSlabPad, &fBotMinSlabPad );
+         pForces2->GetStress( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxSlabPad, &fBotMaxSlabPad );
+         pForces2->GetStress( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinSlabPad, &fBotMinSlabPad );
 
          std::vector<Float64> fTopMaxSlabPanel, fTopMinSlabPanel, fBotMaxSlabPanel, fBotMinSlabPanel;
          if ( bDeckPanels )
          {
-            pForces2->GetStress( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, topLocation, botLocation, &fTopMaxSlabPanel, &fBotMaxSlabPanel );
-            pForces2->GetStress( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, topLocation, botLocation, &fTopMinSlabPanel, &fBotMinSlabPanel );
+            pForces2->GetStress( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxSlabPanel, &fBotMaxSlabPanel );
+            pForces2->GetStress( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinSlabPanel, &fBotMinSlabPanel );
          }
 
          std::vector<Float64> fTopMaxConstruction, fTopMinConstruction, fBotMaxConstruction, fBotMinConstruction;
          if ( bConstruction )
          {
-            pForces2->GetStress( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, topLocation, botLocation, &fTopMaxConstruction, &fBotMaxConstruction );
-            pForces2->GetStress( tsrIntervalIdx, pftConstruction, vPoi, minBAT, topLocation, botLocation, &fTopMinConstruction, &fBotMinConstruction );
+            pForces2->GetStress( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxConstruction, &fBotMaxConstruction );
+            pForces2->GetStress( tsrIntervalIdx, pftConstruction, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinConstruction, &fBotMinConstruction );
          }
 
          std::vector<Float64> fTopMaxSidewalk, fTopMinSidewalk, fBotMaxSidewalk, fBotMinSidewalk;
          if ( bSidewalk )
          {
-            pForces2->GetStress( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, topLocation, botLocation, &fTopMaxSidewalk, &fBotMaxSidewalk );
-            pForces2->GetStress( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, topLocation, botLocation, &fTopMinSidewalk, &fBotMinSidewalk );
+            pForces2->GetStress( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxSidewalk, &fBotMaxSidewalk );
+            pForces2->GetStress( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinSidewalk, &fBotMinSidewalk );
          }
 
          std::vector<Float64> fTopMaxShearKey, fTopMinShearKey, fBotMaxShearKey, fBotMinShearKey;
          if ( bShearKey )
          {
-            pForces2->GetStress( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, topLocation, botLocation, &fTopMaxShearKey, &fBotMaxShearKey );
-            pForces2->GetStress( tsrIntervalIdx, pftShearKey, vPoi, minBAT, topLocation, botLocation, &fTopMinShearKey, &fBotMinShearKey );
+            pForces2->GetStress( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxShearKey, &fBotMaxShearKey );
+            pForces2->GetStress( tsrIntervalIdx, pftShearKey, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinShearKey, &fBotMinShearKey );
          }
 
 
          std::vector<Float64> fTopMaxTrafficBarrier, fTopMinTrafficBarrier, fBotMaxTrafficBarrier, fBotMinTrafficBarrier;
-         pForces2->GetStress( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, topLocation, botLocation, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier );
-         pForces2->GetStress( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, topLocation, botLocation, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier );
+         pForces2->GetStress( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier );
+         pForces2->GetStress( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier );
 
          std::vector<Float64> fTopMaxOverlay, fTopMinOverlay, fBotMaxOverlay, fBotMinOverlay;
          if ( overlayIntervalIdx != INVALID_INDEX )
          {
-            pForces2->GetStress( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, topLocation, botLocation, &fTopMaxOverlay, &fBotMaxOverlay );
-            pForces2->GetStress( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, topLocation, botLocation, &fTopMinOverlay, &fBotMinOverlay );
+            pForces2->GetStress( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopMaxOverlay, &fBotMaxOverlay );
+            pForces2->GetStress( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, ctIncremental, topLocation, botLocation, &fTopMinOverlay, &fBotMinOverlay );
          }
 
          std::vector<Float64> fTopUserDC, fTopUserDW, fTopUserLLIM;
          std::vector<Float64> fBotUserDC, fBotUserDW, fBotUserLLIM;
          if ( bAreThereUserLoads )
          {
-            pForces2->GetStress( tsrIntervalIdx, pftUserDC, vPoi, maxBAT, topLocation, botLocation, &fTopUserDC, &fBotUserDC );
-            pForces2->GetStress( tsrIntervalIdx, pftUserDW, vPoi, maxBAT, topLocation, botLocation, &fTopUserDW, &fBotUserDW );
-            pForces2->GetStress( tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, topLocation, botLocation, &fTopUserLLIM, &fBotUserLLIM );
+            pForces2->GetStress( tsrIntervalIdx, pftUserDC, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopUserDC, &fBotUserDC );
+            pForces2->GetStress( tsrIntervalIdx, pftUserDW, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopUserDW, &fBotUserDW );
+            pForces2->GetStress( tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental, topLocation, botLocation, &fTopUserLLIM, &fBotUserLLIM );
          }
 
          // write out the results

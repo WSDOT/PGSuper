@@ -164,6 +164,12 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
 
+   ASSERT_SPAN_GIRDER_KEY(spanGirderKey);
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanGirderKey.spanIndex);
+   CGirderKey girderKey(grpIdx,spanGirderKey.girderIndex);
+   ASSERT_GIRDER_KEY(girderKey);
+
+
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
@@ -184,10 +190,10 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
+      EventIndexType eventIdx = pIntervals->GetStartEvent(girderKey,intervalIdx);
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
@@ -251,6 +257,11 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
 
+   ASSERT_SPAN_GIRDER_KEY(spanGirderKey);
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanGirderKey.spanIndex);
+   CGirderKey girderKey(grpIdx,spanGirderKey.girderIndex);
+   ASSERT_GIRDER_KEY(girderKey);
+
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
@@ -271,10 +282,10 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
+      EventIndexType eventIdx = pIntervals->GetStartEvent(girderKey,intervalIdx);
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
@@ -340,6 +351,11 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
 
+   ASSERT_SPAN_GIRDER_KEY(spanGirderKey);
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanGirderKey.spanIndex);
+   CGirderKey girderKey(grpIdx,spanGirderKey.girderIndex);
+   ASSERT_GIRDER_KEY(girderKey);
+
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
@@ -358,10 +374,10 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
+      EventIndexType eventIdx = pIntervals->GetStartEvent(girderKey,intervalIdx);
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 

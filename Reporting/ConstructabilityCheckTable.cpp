@@ -161,14 +161,16 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
 
             if ( pArtifact->CheckStirrupLength() )
             {
+#pragma Reminder("REVIEW: A DIMENSIONS STIRRUP LENGTH CHECK")
+               // this may be ok for PGSuper, but not sure about PGSplice
                GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
                HAUNCHDETAILS haunch_details;
                pGdrHaunch->GetHaunchDetails(segmentKey,&haunch_details);
 
-            if ( 0 < haunch_details.HaunchDiff )
-               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
-            else
-               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the ends of the girder exceeds the depth at the middle by ") << dim2.SetValue(-haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+               if ( 0 < haunch_details.HaunchDiff )
+                  (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+               else
+                  (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the ends of the girder exceeds the depth at the middle by ") << dim2.SetValue(-haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
             }
             else
             {

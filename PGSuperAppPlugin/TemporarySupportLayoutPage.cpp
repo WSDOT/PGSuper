@@ -49,6 +49,7 @@ CTemporarySupportLayoutPage::CTemporarySupportLayoutPage()
    m_Type = pgsTypes::ErectionTower;
    m_ErectionEventIndex = 0;
    m_RemovalEventIndex  = 0;
+   m_ElevAdjustment = 0;
 }
 
 CTemporarySupportLayoutPage::~CTemporarySupportLayoutPage()
@@ -60,6 +61,7 @@ void CTemporarySupportLayoutPage::Init(const CTemporarySupportData* pTS)
    m_Station        = pTS->GetStation();
    m_strOrientation = pTS->GetOrientation();
    m_Type           = pTS->GetSupportType();
+   m_ElevAdjustment = pTS->GetElevationAdjustment();
 
    SupportIDType tsID = pTS->GetID();
 
@@ -86,6 +88,8 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBItemData(pDX,IDC_ERECTION_EVENT,m_ErectionEventIndex);
    DDX_CBItemData(pDX,IDC_REMOVAL_EVENT,m_RemovalEventIndex);
+
+   DDX_UnitValueAndTag(pDX,IDC_ADJUSTMENT,IDC_ADJUSTMENT_UNIT,m_ElevAdjustment,pDisplayUnits->GetComponentDimUnit());
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -151,10 +155,17 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       pParent->m_pTS->SetSupportType(m_Type);
       pBridgeDesc->GetTimelineManager()->SetTempSupportEvents(pParent->m_pTS->GetID(),m_ErectionEventIndex,m_RemovalEventIndex);
 
+      pParent->m_pTS->SetElevationAdjustment(m_ElevAdjustment);
+
       // don't use pParent->m_pTS->SetStation().... we have to move the TS within the bridge model
       if ( !IsEqual(pParent->m_pTS->GetStation(),m_Station) )
       {
-         pBridgeDesc->MoveTemporarySupport(pParent->m_pTS->GetIndex(),m_Station);
+         // this deletes the temporary support so pParent->m_pTS becomes invalid
+         // the index of the "new" temporary support is returned
+         SupportIndexType tsIdx = pBridgeDesc->MoveTemporarySupport(pParent->m_pTS->GetIndex(),m_Station);
+
+         pParent->m_pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
+         ATLASSERT(pParent->m_pTS != NULL);
       }
    }
 }
@@ -185,6 +196,8 @@ BOOL CTemporarySupportLayoutPage::OnInitDialog()
    fmt.LoadString( IDS_DLG_ORIENTATIONFMT );
    GetDlgItem(IDC_ORIENTATION_FORMAT)->SetWindowText( fmt );
 
+   OnSupportTypeChanged();
+
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -198,6 +211,16 @@ void CTemporarySupportLayoutPage::OnSupportTypeChanged()
       return;
 
    pgsTypes::TemporarySupportType type = (pgsTypes::TemporarySupportType)pCB->GetItemData(cursel);
+
+   // Hide the support elevation adjustment input if this is a strongback
+   UINT showWnd = SW_SHOW;
+   if ( type == pgsTypes::StrongBack )
+   {
+      showWnd = SW_HIDE;
+   }
+   GetDlgItem(IDC_ADJUSTMENT_LABEL)->ShowWindow(showWnd);
+   GetDlgItem(IDC_ADJUSTMENT)->ShowWindow(showWnd);
+   GetDlgItem(IDC_ADJUSTMENT_UNIT)->ShowWindow(showWnd);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
    if ( type == pgsTypes::StrongBack && pParent->m_pTS->GetConnectionType() == pgsTypes::sctContinuousSegment )

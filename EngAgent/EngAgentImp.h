@@ -140,6 +140,7 @@ public:
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands);
 
    virtual Float64 GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
+   virtual Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded);
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded);
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bDebonded);
@@ -247,8 +248,8 @@ public:
 
 // IGirderHaunch
 public:
-   virtual Float64 GetRequiredSlabOffset(const CSegmentKey& segmentKey);
-   virtual void GetHaunchDetails(const CSegmentKey& segmentKey,HAUNCHDETAILS* pDetails);
+   virtual Float64 GetRequiredSlabOffset(const CGirderKey& girderKey);
+   virtual void GetHaunchDetails(const CGirderKey& girderKey,HAUNCHDETAILS* pDetails);
 
 // IFabricationOptimization
 public:
@@ -399,7 +400,7 @@ private:
    std::vector<CRITSECTDETAILS> CalculateShearCritSection(pgsTypes::LimitState limitState,const CGirderKey& girderKey,bool bUseConfig,const GDRCONFIG& config);
    void InvalidateShearCritSection();
 
-   std::map<CSegmentKey,HAUNCHDETAILS> m_HaunchDetails;
+   std::map<CGirderKey,HAUNCHDETAILS> m_HaunchDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
    std::map<CSegmentKey, std::map<Float64,pgsLiftingAnalysisArtifact,Float64_less> > m_LiftingArtifacts;

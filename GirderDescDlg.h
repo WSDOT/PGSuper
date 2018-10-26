@@ -36,6 +36,7 @@
 #include "BridgeDescGirderMaterialsPage.h"
 
 #include <PgsExt\PrecastSegmentData.h>
+#include <IFace\ExtendUI.h>
 
 // handy functions
 
@@ -89,13 +90,16 @@ inline bool ReconcileExtendedStrands(const ConfigStrandFillVector& fillvec, std:
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
 
-class CGirderDescDlg : public CPropertySheet
+class CGirderDescDlg : public CPropertySheet, public IEditGirderData
 {
 	DECLARE_DYNAMIC(CGirderDescDlg)
 
 // Construction
 public:
 	CGirderDescDlg(const CSegmentKey& segmentKey,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+
+   // IEditGirderData
+   const CSegmentKey& GetSegmentKey() { return m_SegmentKey; }
 
 // Attributes
 public:
@@ -133,6 +137,12 @@ public:
 // Implementation
 public:
 	virtual ~CGirderDescDlg();
+	virtual INT_PTR DoModal();
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
+
    void DoUpdate();
 
    void OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebonding);
@@ -140,12 +150,20 @@ public:
 
 protected:
    void Init();
+   void CreateExtensionPages();
+   void DestroyExtensionPages();
+
    StrandIndexType GetStraightStrandCount();
    StrandIndexType GetHarpedStrandCount();
    void SetDebondTabName();
    ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 
    void AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool bIsDebonding);
+
+
+   txnMacroTxn m_Macro;
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>> m_ExtensionPages;
+   void NotifyExtensionPages();
 
 
    friend CGirderDescGeneralPage;
@@ -160,6 +178,7 @@ protected:
 		// NOTE - the ClassWizard will add and remove member functions here.
    afx_msg BOOL OnOK();
 	//}}AFX_MSG
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
 
    CPrecastSegmentData m_Segment;

@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_CAMBERCHAPTERBUILDER_H_
-#define INCLUDED_CAMBERCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
@@ -30,82 +29,17 @@
 
 interface IEAFDisplayUnits;
 
-
-/*****************************************************************************
-CLASS 
-   CCamberChapterBuilder
-
-   Camber Chapter Builder.
-
-
-DESCRIPTION
-   Camber Chapter Builder. Reports the camber and the equations used to 
-   computer camber.
-
-COPYRIGHT
-   Copyright © 1997-1999
-   Washington State Department Of Transportation
-   All Rights Reserved
-
-LOG
-   rab : 03.17.1999 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CCamberChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CCamberChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
-
-   //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   void Build_CIP_TempStrands(   rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   void Build_CIP(               rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   void Build_SIP_TempStrands(   rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   void Build_SIP(               rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   void Build_NoDeck_TempStrands(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   void Build_NoDeck(            rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-
    // Prevent accidental copying and assignment
    CCamberChapterBuilder(const CCamberChapterBuilder&);
    CCamberChapterBuilder& operator=(const CCamberChapterBuilder&);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_CAMBERCHAPTERBUILDER_H_

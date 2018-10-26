@@ -91,7 +91,6 @@ protected:
 	afx_msg void OnRightEnd();
 	afx_msg void OnUserCut();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-   afx_msg void OnEditGirder();
 	afx_msg void OnEditPrestressing();
 	afx_msg void OnViewSettings();
 	afx_msg void OnEditStirrups();

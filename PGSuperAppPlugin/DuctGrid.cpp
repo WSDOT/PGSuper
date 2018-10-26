@@ -25,7 +25,7 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "DuctGrid.h"
-#include "EditGirderlineDlg.h"
+#include "SplicedGirderDescDlg.h"
 #include "GirderDescDlg.h"
 
 #include "LinearDuctDlg.h"
@@ -101,7 +101,7 @@ int CDuctGrid::GetColWidth(ROWCOL nCol)
 
 void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
 {
-   m_PTData.SetGirder(pGirder);
+   m_pPTData = pGirder->GetPostTensioning();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -246,8 +246,8 @@ void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
 
 void CDuctGrid::AddDuct(EventIndexType stressingEvent)
 {
-   CDuctData duct(m_PTData.GetGirder());
-   m_PTData.AddDuct(duct);
+   CDuctData duct;
+   m_pPTData->AddDuct(duct,stressingEvent);
    AddDuct(duct,stressingEvent);
 }
 
@@ -277,9 +277,9 @@ void CDuctGrid::DeleteDuct()
 
       for ( ROWCOL row = range.bottom; range.top <= row; row-- )
       {
-         if ( m_PTData.CanRemoveDuct(DuctIndexType(row-1)) )
+         if ( m_pPTData->CanRemoveDuct(DuctIndexType(row-1)) )
          {
-            m_PTData.RemoveDuct(DuctIndexType(row-1));
+            m_pPTData->RemoveDuct(DuctIndexType(row-1));
             CGXGridWnd::RemoveRows(row,row);
          }
       }
@@ -425,14 +425,14 @@ void CDuctGrid::OnCalcPjack(ROWCOL nRow)
 
 void CDuctGrid::OnDuctTypeChanged(ROWCOL nRow)
 {
-   CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
+   CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
    pParent->Invalidate();
    pParent->UpdateWindow();
 }
 
 void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
 {
-   CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
+   CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
 
 #pragma Reminder("UPDATE: add other duct geometry types") // commented out for alpha release to TxDOT
 //   CDuctGeometry::GeometryType geomType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(nRow,nDuctGeomTypeCol));
@@ -441,10 +441,10 @@ void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
    if ( geomType == CDuctGeometry::Linear )
    {
       CLinearDuctDlg dlg(pParent);
-      dlg.m_DuctGeometry = m_PTData.GetDuct(ductIdx)->LinearDuctGeometry;
+      dlg.m_DuctGeometry = m_pPTData->GetDuct(ductIdx)->LinearDuctGeometry;
       if ( dlg.DoModal() == IDOK )
       {
-         m_PTData.GetDuct(ductIdx)->LinearDuctGeometry = dlg.m_DuctGeometry;
+         m_pPTData->GetDuct(ductIdx)->LinearDuctGeometry = dlg.m_DuctGeometry;
          pParent->Invalidate();
          pParent->UpdateWindow();
       }
@@ -452,10 +452,10 @@ void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
    else if ( geomType == CDuctGeometry::Parabolic )
    {
       CParabolicDuctDlg dlg(pParent);
-      dlg.m_DuctGeometry = m_PTData.GetDuct(ductIdx)->ParabolicDuctGeometry;
+      dlg.m_DuctGeometry = m_pPTData->GetDuct(ductIdx)->ParabolicDuctGeometry;
       if ( dlg.DoModal() == IDOK )
       {
-         m_PTData.GetDuct(ductIdx)->ParabolicDuctGeometry = dlg.m_DuctGeometry;
+         m_pPTData->GetDuct(ductIdx)->ParabolicDuctGeometry = dlg.m_DuctGeometry;
          pParent->Invalidate();
          pParent->UpdateWindow();
       }
@@ -463,10 +463,10 @@ void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
    else if ( geomType == CDuctGeometry::Offset )
    {
       COffsetDuctDlg dlg(pParent);
-      dlg.m_DuctGeometry = m_PTData.GetDuct(ductIdx)->OffsetDuctGeometry;
+      dlg.m_DuctGeometry = m_pPTData->GetDuct(ductIdx)->OffsetDuctGeometry;
       if ( dlg.DoModal() == IDOK )
       {
-         m_PTData.GetDuct(ductIdx)->OffsetDuctGeometry = dlg.m_DuctGeometry;
+         m_pPTData->GetDuct(ductIdx)->OffsetDuctGeometry = dlg.m_DuctGeometry;
          pParent->Invalidate();
          pParent->UpdateWindow();
       }
@@ -501,8 +501,9 @@ CString CDuctGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 
 void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
 {
-   CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
-   std::_tstring strGirderName = pParent->m_Girder.GetGirderName();
+   CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(pParentPage->GetParent());
+   std::_tstring strGirderName = pParent->m_pGirder->GetGirderName();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -581,10 +582,11 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
    StrandIndexType nStrands = (StrandIndexType)_tstol(GetCellValue(nRow,nNumStrandCol));
    Uint32 ductSize = _tstol(GetCellValue(nRow,nDuctSizeCol));
 
-   CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
+   CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(pParentPage->GetParent());
 
    StrandIndexType maxStrands;
-   const matPsStrand* pStrand = pParent->m_Girder.GetPostTensioning()->pStrand;
+   const matPsStrand* pStrand = pParent->m_pGirder->GetPostTensioning()->pStrand;
    switch ( pStrand->GetSize() )
    {
    case matPsStrand::D1270: // 0.5"
@@ -620,7 +622,7 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
 void CDuctGrid::UpdateMaxPjack(ROWCOL nRow)
 {
    StrandIndexType nStrands = (StrandIndexType)_tstoi(GetCellValue(nRow,nNumStrandCol));
-   CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
+   CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
    const matPsStrand* pStrand = pParent->GetStrand();
 
    Float64 Pjack = lrfdPsStrand::GetPjackPT(*pStrand,nStrands);
@@ -687,35 +689,39 @@ void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stre
    GetParam()->SetLockReadOnly(TRUE);
 }
 
-void CDuctGrid::SetPTData(const CPTData& ptData)
+void CDuctGrid::FillGrid()
 {
-   CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
+   CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
 
-   m_PTData = ptData;
+   // clear out the grid before filling it up.
+   ROWCOL nRows = GetRowCount();
+   if ( 0 < nRows )
+   {
+      RemoveRows(1,nRows);
+   }
+
    ROWCOL row = 1;
-   DuctIndexType nDucts = m_PTData.GetDuctCount();
+   DuctIndexType nDucts = m_pPTData->GetDuctCount();
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      const CDuctData* pDuct = m_PTData.GetDuct(ductIdx);
+      const CDuctData* pDuct = m_pPTData->GetDuct(ductIdx);
       EventIndexType eventIdx = pParent->m_TendonStressingEvent[ductIdx];
       AddDuct(*pDuct,eventIdx);
    }
 }
 
-const CPTData& CDuctGrid::GetPTData()
+void CDuctGrid::UpdatePTData()
 {
-   CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
+   CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
    ROWCOL nRows = GetRowCount();
    for ( ROWCOL row = 0; row < nRows; row++ )
    {
-      CDuctData* pDuctData = m_PTData.GetDuct((DuctIndexType)row);
+      CDuctData* pDuctData = m_pPTData->GetDuct((DuctIndexType)row);
       EventIndexType eventIdx;
       DuctIndexType ductIdx = (DuctIndexType)row;
       GetDuctData(row+1,*pDuctData,eventIdx);
       pParent->m_TendonStressingEvent[ductIdx] = eventIdx;
    }
-
-   return m_PTData;
 }
 
 void CDuctGrid::OnChangedSelection(const CGXRange* changedRect,BOOL bIsDragging,BOOL bKey)
@@ -725,7 +731,7 @@ void CDuctGrid::OnChangedSelection(const CGXRange* changedRect,BOOL bIsDragging,
    {
       for ( ROWCOL row = changedRect->top; row <= changedRect->bottom; row++ )
       {
-         if ( !m_PTData.CanRemoveDuct(DuctIndexType(row-1)) )
+         if ( !m_pPTData->CanRemoveDuct(DuctIndexType(row-1)) )
          {
             bEnable = FALSE;
             break;
@@ -767,7 +773,7 @@ BOOL CDuctGrid::CanActivateGrid(BOOL bActivate)
       for ( ROWCOL row = 0; row < nRows; row++ )
       {
          // Verify all ducts have a stressing event defined
-         CDuctData* pDuctData = m_PTData.GetDuct((DuctIndexType)row);
+         CDuctData* pDuctData = m_pPTData->GetDuct((DuctIndexType)row);
          EventIndexType eventIdx;
          DuctIndexType ductIdx = (DuctIndexType)row;
          GetDuctData(row+1,*pDuctData,eventIdx);

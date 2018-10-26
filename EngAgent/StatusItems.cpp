@@ -59,8 +59,8 @@ void pgsLiveLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey)
+pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey), m_End(end)
 {
 }
 
@@ -70,7 +70,7 @@ bool pgsLiftingSupportLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (m_SegmentKey == other->m_SegmentKey);
+   return (m_SegmentKey == other->m_SegmentKey) && (m_End == other->m_End);
 }
 
 //////////////////////////////////////////////////////////
@@ -136,8 +136,8 @@ void pgsTruckStiffnessStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsBunkPointLocationStatusItem::pgsBunkPointLocationStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey)
+pgsBunkPointLocationStatusItem::pgsBunkPointLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey), m_End(end)
 {
 }
 
@@ -147,7 +147,7 @@ bool pgsBunkPointLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (m_SegmentKey == other->m_SegmentKey);
+   return (m_SegmentKey == other->m_SegmentKey) && (m_End == other->m_End);
 }
 
 //////////////////////////////////////////////////////////

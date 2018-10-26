@@ -30,6 +30,8 @@
 
 #include <LRFD\RebarPool.h>
 
+#include "PGSuperDocBase.h"
+
 
 #define IDC_CHECKBOX 100
 
@@ -37,38 +39,52 @@
 
 IMPLEMENT_DYNAMIC(CClosureJointDlg, CPropertySheet)
 
-CClosureJointDlg::CClosureJointDlg(UINT nIDCaption, const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint,EventIndexType eventIdx,bool bEditingInGirder,CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage),
+CClosureJointDlg::CClosureJointDlg(const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,CWnd* pParentWnd, UINT iSelectPage)
+	:CPropertySheet(_T("Closure Joint"), pParentWnd, iSelectPage),
    m_EventIndex(eventIdx),
    m_ClosureJoint(*pClosureJoint),
-   m_ClosureKey(closureKey),
-   m_bEditingInGirder(bEditingInGirder)
+   m_ClosureKey(closureKey)
 {
    Init();
 }
 
-CClosureJointDlg::CClosureJointDlg(LPCTSTR pszCaption, const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx, bool bEditingInGirder,CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(pszCaption, pParentWnd, iSelectPage),
+CClosureJointDlg::CClosureJointDlg(const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd, UINT iSelectPage)
+	:CPropertySheet(_T("Closure Joint"), pParentWnd, iSelectPage),
    m_EventIndex(eventIdx),
    m_ClosureJoint(*pClosureJoint),
-   m_ClosureKey(closureKey),
-   m_bEditingInGirder(bEditingInGirder)
+   m_ClosureKey(closureKey)
 {
-   Init();
+   Init(editSplicedGirderExtensions);
 }
 
 CClosureJointDlg::~CClosureJointDlg()
 {
+   DestroyExtensionPages();
 }
 
 
+INT_PTR CClosureJointDlg::DoModal()
+{
+   INT_PTR result = CPropertySheet::DoModal();
+   if ( result == IDOK )
+   {
+      if ( 0 < m_SplicedGirderExtensionPages.size() )
+         NotifySplicedGirderExtensionPages();
+      else
+         NotifyExtensionPages();
+   }
+
+   return result;
+}
+
 BEGIN_MESSAGE_MAP(CClosureJointDlg, CPropertySheet)
-      WBFL_ON_PROPSHEET_OK
+   WBFL_ON_PROPSHEET_OK
+	ON_MESSAGE(WM_KICKIDLE,OnKickIdle)
 END_MESSAGE_MAP()
 
 
 // CClosureJointDlg message handlers
-void CClosureJointDlg::Init()
+void CClosureJointDlg::CommonInit()
 {
    m_bCopyToAllClosureJoints = false;
 
@@ -80,6 +96,148 @@ void CClosureJointDlg::Init()
    AddPage(&m_General);
    AddPage(&m_Longitudinal);
    AddPage(&m_Stirrups);
+}
+
+void CClosureJointDlg::Init()
+{
+   CommonInit();
+   CreateExtensionPages();
+}
+
+void CClosureJointDlg::Init(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
+{
+   CommonInit();
+   CreateExtensionPages(editSplicedGirderExtensions);
+}
+
+void CClosureJointDlg::CreateExtensionPages()
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   std::map<IDType,IEditClosureJointCallback*> callbacks = pDoc->GetEditClosureJointCallbacks();
+   std::map<IDType,IEditClosureJointCallback*>::iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditClosureJointCallback*>::iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditClosureJointCallback* pCallback = callbackIter->second;
+      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
+      if ( pPage )
+      {
+         m_ExtensionPages.push_back( std::make_pair(pCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+}
+
+void CClosureJointDlg::CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   m_SplicedGirderExtensionPages = editSplicedGirderExtensions;
+
+
+   std::map<IDType,IEditClosureJointCallback*> callbacks = pDoc->GetEditClosureJointCallbacks();
+   std::map<IDType,IEditClosureJointCallback*>::iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditClosureJointCallback*>::iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditClosureJointCallback* pEditClosureJointCallback = callbackIter->second;
+      IDType editSplicedGirderCallbackID = pEditClosureJointCallback->GetEditSplicedGirderCallbackID();
+      CPropertyPage* pPage = NULL;
+      if ( editSplicedGirderCallbackID == INVALID_ID )
+      {
+         pPage = pEditClosureJointCallback->CreatePropertyPage(this);
+      }
+      else
+      {
+         EditSplicedGirderExtension key;
+         key.callbackID = editSplicedGirderCallbackID;
+         std::set<EditSplicedGirderExtension>::const_iterator found(m_SplicedGirderExtensionPages.find(key));
+         if ( found != m_SplicedGirderExtensionPages.end() )
+         {
+            const EditSplicedGirderExtension& extension = *found;
+            CPropertyPage* pSplicedGirderPage = extension.pPage;
+            pPage = pEditClosureJointCallback->CreatePropertyPage(this,pSplicedGirderPage);
+         }
+      }
+
+      if ( pPage )
+      {
+         m_ExtensionPages.push_back( std::make_pair(pEditClosureJointCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+}
+
+void CClosureJointDlg::DestroyExtensionPages()
+{
+   std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      CPropertyPage* pPage = pageIter->second;
+      delete pPage;
+   }
+   m_ExtensionPages.clear();
+}
+
+txnTransaction* CClosureJointDlg::GetExtensionPageTransaction()
+{
+   if ( 0 < m_Macro.GetTxnCount() )
+      return m_Macro.CreateClone();
+   else
+      return NULL;
+}
+
+void CClosureJointDlg::NotifySplicedGirderExtensionPages()
+{
+   // This gets called when this dialog is created from the spliced girder grid and it is closed with IDOK
+   // It gives the spliced girder dialog extension pages to sync their data with whatever got changed in 
+   // the extension pages in this dialog
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   std::map<IDType,IEditClosureJointCallback*> callbacks = pDoc->GetEditClosureJointCallbacks();
+   std::map<IDType,IEditClosureJointCallback*>::iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditClosureJointCallback*>::iterator callbackIterEnd(callbacks.end());
+   std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++, pageIter++ )
+   {
+      IEditClosureJointCallback* pCallback = callbackIter->second;
+      IDType editSplicedGirderCallbackID = pCallback->GetEditSplicedGirderCallbackID();
+      CPropertyPage* pClosureJointPage = pageIter->second;
+
+      if ( editSplicedGirderCallbackID != INVALID_ID )
+      {
+         EditSplicedGirderExtension key;
+         key.callbackID = editSplicedGirderCallbackID;
+         std::set<EditSplicedGirderExtension>::iterator found(m_SplicedGirderExtensionPages.find(key));
+         if ( found != m_SplicedGirderExtensionPages.end() )
+         {
+            EditSplicedGirderExtension& extension = *found;
+            CPropertyPage* pSplicedGirderPage = extension.pPage;
+            extension.pCallback->EditClosureJoint_OnOK(pSplicedGirderPage,pClosureJointPage);
+         }
+      }
+   }
+}
+
+void CClosureJointDlg::NotifyExtensionPages()
+{
+   std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      IEditClosureJointCallback* pCallback = pageIter->first;
+      CPropertyPage* pPage = pageIter->second;
+      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      if ( pTxn )
+      {
+         m_Macro.AddTransaction(pTxn);
+      }
+   }
 }
 
 BOOL CClosureJointDlg::OnInitDialog()
@@ -101,7 +259,7 @@ BOOL CClosureJointDlg::OnInitDialog()
    rect.bottom = rOK.bottom;
    rect.right = rOK.left - 7;
    ScreenToClient(&rect);
-   CString strTxt(m_bEditingInGirder ? _T("Copy to all closure joints in this girder") : _T("Copy to all closure joints at this support"));
+   CString strTxt(m_SplicedGirderExtensionPages.size() != 0 ? _T("Copy to all closure joints in this girder") : _T("Copy to all closure joints at this support"));
    m_CheckBox.Create(strTxt,WS_CHILD | WS_VISIBLE | BS_LEFTTEXT | BS_RIGHT | BS_AUTOCHECKBOX,rect,this,IDC_CHECKBOX);
    m_CheckBox.SetFont(GetFont());
 
@@ -120,4 +278,26 @@ BOOL CClosureJointDlg::OnOK()
 {
    UpdateData(TRUE);
    return FALSE; // MUST RETURN FALSE
+}
+
+LRESULT CClosureJointDlg::OnKickIdle(WPARAM wp, LPARAM lp)
+{
+   // The CPropertySheet::OnKickIdle method calls GetActivePage()
+   // which doesn't work with extension pages. Since GetActivePage
+   // is not virtual, we have to replace the implementation of
+   // OnKickIdle.
+   // The same problem exists with OnCommandHelp
+
+	ASSERT_VALID(this);
+
+	CPropertyPage* pPage = GetPage(GetActiveIndex());
+
+	/* Forward the message on to the active page of the property sheet */
+	if( pPage != NULL )
+	{
+		//ASSERT_VALID(pPage);
+		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
+	}
+	else
+		return 0;
 }

@@ -28,7 +28,7 @@
 #include "PierDetailsDlg.h"
 #include <PgsExt\BridgeDescription2.h>
 
-#include "PGSuperDoc.h"
+#include "PGSuperDocBase.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,8 +48,30 @@ CPierDetailsDlg::CPierDetailsDlg(const CBridgeDescription2* pBridge,PierIndexTyp
    InitPages();
 }
 
+CPierDetailsDlg::CPierDetailsDlg(const CBridgeDescription2* pBridge,PierIndexType pierIdx,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd, UINT iSelectPage)
+	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
+{
+   Init(pBridge,pierIdx);
+   InitPages(editBridgeExtensions);
+}
+
 CPierDetailsDlg::~CPierDetailsDlg()
 {
+   DestroyExtensionPages();
+}
+
+INT_PTR CPierDetailsDlg::DoModal()
+{
+   INT_PTR result = CPropertySheet::DoModal();
+   if ( result == IDOK )
+   {
+      if ( 0 < m_BridgeExtensionPages.size() )
+         NotifyBridgeExtensionPages();
+      else
+         NotifyExtensionPages();
+   }
+
+   return result;
 }
 
 CBridgeDescription2* CPierDetailsDlg::GetBridgeDescription()
@@ -57,7 +79,7 @@ CBridgeDescription2* CPierDetailsDlg::GetBridgeDescription()
    return &m_BridgeDesc;
 }
 
-void CPierDetailsDlg::InitPages()
+void CPierDetailsDlg::CommonInitPages()
 {
    m_psh.dwFlags                            |= PSH_HASHELP | PSH_NOAPPLYNOW;
    m_PierLayoutPage.m_psp.dwFlags           |= PSP_HASHELP;
@@ -69,7 +91,7 @@ void CPierDetailsDlg::InitPages()
 
    AddPage(&m_PierLayoutPage);
 
-   if ( m_pPierData->IsBoundaryPier() )
+   if ( m_pPier->IsBoundaryPier() )
    {
       AddPage(&m_PierConnectionsPage);
       AddPage(&m_PierGirderSpacingPage);
@@ -81,30 +103,42 @@ void CPierDetailsDlg::InitPages()
    }
 }
 
+void CPierDetailsDlg::InitPages()
+{
+   CommonInitPages();
+   CreateExtensionPages();
+}
+
+void CPierDetailsDlg::InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+{
+   CommonInitPages();
+   CreateExtensionPages(editBridgeExtensions);
+}
+
 void CPierDetailsDlg::Init(const CBridgeDescription2* pBridge,PierIndexType pierIdx)
 {
    m_BridgeDesc = *pBridge;
-   m_pPierData  = m_BridgeDesc.GetPier(pierIdx);
-   m_pPrevSpan  = m_pPierData->GetPrevSpan();
-   m_pNextSpan  = m_pPierData->GetNextSpan();
+   m_pPier  = m_BridgeDesc.GetPier(pierIdx);
+   m_pSpan[pgsTypes::Back]  = m_pPier->GetSpan(pgsTypes::Back);
+   m_pSpan[pgsTypes::Ahead] = m_pPier->GetSpan(pgsTypes::Ahead);
 
-   m_PierLayoutPage.Init(m_pPierData);
+   m_PierLayoutPage.Init(m_pPier);
 
-   if ( m_pPierData->IsBoundaryPier() )
+   if ( m_pPier->IsBoundaryPier() )
    {
-      m_PierConnectionsPage.Init(m_pPierData);
+      m_PierConnectionsPage.Init(m_pPier);
       m_PierGirderSpacingPage.Init(this);
    }
    else
    {
-      m_ClosureJointGeometryPage.Init(m_pPierData);
-      m_GirderSegmentSpacingPage.Init(m_pPierData);
+      m_ClosureJointGeometryPage.Init(m_pPier);
+      m_GirderSegmentSpacingPage.Init(m_pPier);
    }
 
    // Set dialog title
    CString strTitle;
    strTitle.Format(_T("%s %d Details"),
-      m_pPierData->IsAbutment() ? _T("Abutment") : _T("Pier"),
+      m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"),
       LABEL_PIER(pierIdx));
    
    SetTitle(strTitle);
@@ -114,7 +148,172 @@ BEGIN_MESSAGE_MAP(CPierDetailsDlg, CPropertySheet)
 	//{{AFX_MSG_MAP(CPierDetailsDlg)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_KICKIDLE,OnKickIdle)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg message handlers
+
+LRESULT CPierDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
+{
+   // The CPropertySheet::OnKickIdle method calls GetActivePage()
+   // which doesn't work with extension pages. Since GetActivePage
+   // is not virtual, we have to replace the implementation of
+   // OnKickIdle.
+   // The same problem exists with OnCommandHelp
+
+	ASSERT_VALID(this);
+
+	CPropertyPage* pPage = GetPage(GetActiveIndex());
+
+	/* Forward the message on to the active page of the property sheet */
+	if( pPage != NULL )
+	{
+		//ASSERT_VALID(pPage);
+		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
+	}
+	else
+		return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CPierDetailsDlg message handlers
+void CPierDetailsDlg::CreateExtensionPages()
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   const std::map<IDType,IEditPierCallback*>& callbacks = pDoc->GetEditPierCallbacks();
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditPierCallback* pEditPierCallback = callbackIter->second;
+      CPropertyPage* pPage = pEditPierCallback->CreatePropertyPage(this);
+      if ( pPage )
+      {
+         m_ExtensionPages.push_back( std::make_pair(pEditPierCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+}
+
+void CPierDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   m_BridgeExtensionPages = editBridgeExtensions;
+
+
+   const std::map<IDType,IEditPierCallback*>& callbacks = pDoc->GetEditPierCallbacks();
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditPierCallback* pEditPierCallback = callbackIter->second;
+      IDType editBridgeCallbackID = pEditPierCallback->GetEditBridgeCallbackID();
+      CPropertyPage* pPage = NULL;
+      if ( editBridgeCallbackID == INVALID_ID )
+      {
+         pPage = pEditPierCallback->CreatePropertyPage(this);
+      }
+      else
+      {
+         EditBridgeExtension key;
+         key.callbackID = editBridgeCallbackID;
+         std::set<EditBridgeExtension>::const_iterator found(m_BridgeExtensionPages.find(key));
+         if ( found != m_BridgeExtensionPages.end() )
+         {
+            const EditBridgeExtension& extension = *found;
+            CPropertyPage* pBridgePage = extension.pPage;
+            pPage = pEditPierCallback->CreatePropertyPage(this,pBridgePage);
+         }
+      }
+
+      if ( pPage )
+      {
+         m_ExtensionPages.push_back( std::make_pair(pEditPierCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+}
+
+void CPierDetailsDlg::DestroyExtensionPages()
+{
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      CPropertyPage* pPage = pageIter->second;
+      delete pPage;
+   }
+   m_ExtensionPages.clear();
+}
+
+txnTransaction* CPierDetailsDlg::GetExtensionPageTransaction()
+{
+   if ( 0 < m_Macro.GetTxnCount() )
+      return m_Macro.CreateClone();
+   else
+      return NULL;
+}
+
+void CPierDetailsDlg::NotifyExtensionPages()
+{
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      IEditPierCallback* pCallback = pageIter->first;
+      CPropertyPage* pPage = pageIter->second;
+      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      if ( pTxn )
+      {
+         m_Macro.AddTransaction(pTxn);
+      }
+   }
+}
+
+void CPierDetailsDlg::NotifyBridgeExtensionPages()
+{
+   // This gets called when this dialog is created from the framing grid and it is closed with IDOK
+   // It gives the bridge dialog extension pages to sync their data with whatever got changed in 
+   // the extension pages in this dialog
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   const std::map<IDType,IEditPierCallback*>& callbacks = pDoc->GetEditPierCallbacks();
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++, pageIter++ )
+   {
+      IEditPierCallback* pCallback = callbackIter->second;
+      IDType editBridgeCallbackID = pCallback->GetEditBridgeCallbackID();
+      CPropertyPage* pPierPage = pageIter->second;
+
+      if ( editBridgeCallbackID != INVALID_ID )
+      {
+         EditBridgeExtension key;
+         key.callbackID = editBridgeCallbackID;
+         std::set<EditBridgeExtension>::iterator found(m_BridgeExtensionPages.find(key));
+         if ( found != m_BridgeExtensionPages.end() )
+         {
+            EditBridgeExtension& extension = *found;
+            CPropertyPage* pBridgePage = extension.pPage;
+            extension.pCallback->EditPier_OnOK(pBridgePage,pPierPage);
+         }
+      }
+   }
+}
+
+pgsTypes::PierConnectionType CPierDetailsDlg::GetConnectionType()
+{
+   return m_pPier->GetPierConnectionType();
+}
+
+GirderIndexType CPierDetailsDlg::GetGirderCount(pgsTypes::PierFaceType pierFace)
+{
+   return (m_pSpan[pierFace] ? m_pSpan[pierFace]->GetGirderCount() : 0);
+}

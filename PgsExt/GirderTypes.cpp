@@ -86,7 +86,7 @@ bool CGirderTypes::operator == (const CGirderTypes& rOther) const
    if ( m_GirderData != rOther.m_GirderData )
       return false;
 
-   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
+   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotGirder )
    {
       if ( m_SlabOffset[pgsTypes::metStart] != rOther.m_SlabOffset[pgsTypes::metStart] )
          return false;
@@ -256,7 +256,7 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          pStrLoad->EndUnit(); // added in GirderTypes version 3
 
       // added in version 2
-      if ( 2 <= version && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
+      if ( 2 <= version && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotGirder )
       {
          pStrLoad->BeginUnit(_T("SlabOffset"));
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -288,7 +288,7 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit();
    }
-   catch(HRESULT)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -343,7 +343,7 @@ HRESULT CGirderTypes::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->EndUnit(); // added in version 3 of GirderTypes
 
    // added in version 2
-   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
+   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotGirder )
    {
       pStrSave->BeginUnit(_T("SlabOffset"),1.0);
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -877,7 +877,7 @@ void CGirderTypes::SetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType 
 
 Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end)
 {
-   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotSegment )
+   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotGirder )
    {
       return m_pSpan->GetSlabOffset(end);
    }
@@ -890,7 +890,7 @@ Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndTy
 
 Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const
 {
-   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotSegment )
+   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotGirder )
    {
       return m_pSpan->GetSlabOffset(end);
    }

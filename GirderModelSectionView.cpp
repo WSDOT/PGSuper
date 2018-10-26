@@ -88,7 +88,6 @@ CGirderModelSectionView::~CGirderModelSectionView()
 BEGIN_MESSAGE_MAP(CGirderModelSectionView, CDisplayView)
 	//{{AFX_MSG_MAP(CGirderModelSectionView)
 	ON_WM_CREATE()
-	ON_COMMAND(ID_EDIT_GIRDER, OnEditGirder)
 	ON_COMMAND(ID_EDIT_PRESTRESSING, OnEditPrestressing)
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
 	ON_COMMAND(ID_EDIT_STIRRUPS, OnEditStirrups)
@@ -278,6 +277,8 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,I
    ATLASSERT(pDL);
    pDL->Clear();
 
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
@@ -286,7 +287,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,I
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
-   IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
 
    CComPtr<iPointDisplayObject> doPnt;
    ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
@@ -551,18 +552,20 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSuperDocBase* pDoc,IBroke
    ATLASSERT(pDL);
    pDL->Clear();
 
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    // nothing to draw if poi is in a closure joint
    // (poi object won't necessarily have the POI_CLOSURE attribute so just check to see
    // if it is beyond the end of the segment)
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 segment_length = pBridge->GetSegmentLength(poi.GetSegmentKey());
+   Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    if ( segment_length < poi.GetDistFromStart() )
       return;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    EventIndexType eventIdx = m_pFrame->GetEvent();
-   IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    if ( intervalIdx < releaseIntervalIdx )
       intervalIdx = releaseIntervalIdx;
 
@@ -716,7 +719,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
-   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(m_pFrame->GetEvent()), pIntervals->GetPrestressReleaseInterval(segmentKey) );
+   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(segmentKey,m_pFrame->GetEvent()), pIntervals->GetPrestressReleaseInterval(segmentKey) );
 
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
 
@@ -831,21 +834,6 @@ int CGirderModelSectionView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    ASSERT( m_pFrame->IsKindOf( RUNTIME_CLASS( CGirderModelChildFrame ) ) );
 
 	return 0;
-}
-
-void CGirderModelSectionView::OnEditGirder() 
-{
-   if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      pgsPointOfInterest poi(m_pFrame->GetCutLocation());
-      ((CPGSuperDoc*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),EGD_GENERAL);
-   }
-   else
-   {
-
-      CGirderKey girderKey = GetGirderKey();
-      ((CPGSpliceDoc*)GetDocument())->EditGirderDescription(girderKey,EGS_GENERAL);
-   }
 }
 
 void CGirderModelSectionView::OnEditPrestressing() 

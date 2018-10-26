@@ -48,6 +48,7 @@ protected:
    pgsTypes::TemporarySupportType m_Type;
    EventIndexType m_ErectionEventIndex;
    EventIndexType m_RemovalEventIndex;
+   Float64 m_ElevAdjustment;
 
    int m_PrevErectionEventIdx;
    int m_PrevRemovalEventIdx;

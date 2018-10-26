@@ -114,7 +114,7 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, tableType, bDesign, bRating);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    if ( liveLoadIntervalIdx <= intervalIdx )
    {
@@ -142,7 +142,7 @@ void CCombinedReactionTable::BuildForBearingDesign(IBroker* pBroker, rptChapter*
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, tableType, true, false);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
    if (liveLoadIntervalIdx <= intervalIdx)
    {
       // first no impact
@@ -173,9 +173,9 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -209,7 +209,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
          continuityEventIndex = Min(continuityEventIndex,rightContinuityEventIdx);
       }
    }
-   IntervalIndexType continuityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);
+   IntervalIndexType continuityIntervalIdx = pIntervals->GetInterval(girderKey,continuityEventIndex);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -258,25 +258,25 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, reactionLocation, ctIncremental, minBAT ) );
          }
 
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCummulative, minBAT ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCummulative, minBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCumulative, minBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCumulative, minBAT ) );
 
          if ( bRating )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDWRating, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDWRating, intervalIdx, reactionLocation, ctCummulative, minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDWRating, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDWRating, intervalIdx, reactionLocation, ctCumulative, minBAT ) );
          }
 
          if ( bTimeStepMethod )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, reactionLocation, ctCummulative, minBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, reactionLocation, ctCummulative, minBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, reactionLocation, ctCummulative, minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, reactionLocation, ctCumulative, minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, reactionLocation, ctCumulative, minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, reactionLocation, ctCumulative, minBAT ) );
          }
 
          if ( intervalIdx < liveLoadIntervalIdx )
@@ -305,19 +305,19 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, reactionLocation, ctIncremental, maxBAT ) );
          }
 
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
 
          if ( bRating )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDWRating, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDWRating, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
          }
 
          if ( bTimeStepMethod )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, reactionLocation, ctCummulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, reactionLocation, ctCumulative, maxBAT ) );
          }
 
          if ( intervalIdx < liveLoadIntervalIdx )
@@ -340,7 +340,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );

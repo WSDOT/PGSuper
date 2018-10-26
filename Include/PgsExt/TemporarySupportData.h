@@ -101,6 +101,9 @@ public:
    void SetSupportWidth(Float64 w);
    Float64 GetSupportWidth() const;
 
+   void SetElevationAdjustment(Float64 elevAdj);
+   Float64 GetElevationAdjustment() const;
+
    // Defines the segment spacing measured at the centerline of this temporary support.
    // Spacing is invalid (not used) if the connection type is sctContinuousSegment.
    // Spacing can only be defined at the ends of precast segments.
@@ -140,6 +143,7 @@ private:
    Float64 m_GirderBearingOffset;
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
    Float64 m_SupportWidth;
+   Float64 m_ElevationAdjustment;
 
    // Spacing at the centerline of this temporary support
    // This member is invalid if the connection type is sctContinuousSegment

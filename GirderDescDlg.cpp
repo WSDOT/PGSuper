@@ -25,7 +25,7 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\Resource.h"
-#include "PGSuperDoc.h"
+#include "PGSuperDocBase.h"
 #include "GirderDescDlg.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -62,6 +62,18 @@ CGirderDescDlg::CGirderDescDlg(const CSegmentKey& segmentKey,CWnd* pParentWnd, U
 
 CGirderDescDlg::~CGirderDescDlg()
 {
+   DestroyExtensionPages();
+}
+
+INT_PTR CGirderDescDlg::DoModal()
+{
+   INT_PTR result = CPropertySheet::DoModal();
+   if ( result == IDOK )
+   {
+      NotifyExtensionPages();
+   }
+
+   return result;
 }
 
 void CGirderDescDlg::Init()
@@ -88,6 +100,64 @@ void CGirderDescDlg::Init()
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    AddAdditionalPropertyPages( pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey,pgsTypes::Straight) );
+
+   CreateExtensionPages();
+}
+
+void CGirderDescDlg::CreateExtensionPages()
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   const std::map<IDType,IEditGirderCallback*>& callbacks = pDoc->GetEditGirderCallbacks();
+   std::map<IDType,IEditGirderCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditGirderCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditGirderCallback* pCallback = callbackIter->second;
+      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
+      if ( pPage )
+      {
+         m_ExtensionPages.push_back( std::make_pair(pCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+}
+
+void CGirderDescDlg::DestroyExtensionPages()
+{
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      CPropertyPage* pPage = pageIter->second;
+      delete pPage;
+   }
+   m_ExtensionPages.clear();
+}
+
+txnTransaction* CGirderDescDlg::GetExtensionPageTransaction()
+{
+   if ( 0 < m_Macro.GetTxnCount() )
+      return m_Macro.CreateClone();
+   else
+      return NULL;
+}
+
+void CGirderDescDlg::NotifyExtensionPages()
+{
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      IEditGirderCallback* pCallback = pageIter->first;
+      CPropertyPage* pPage = pageIter->second;
+      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      if ( pTxn )
+      {
+         m_Macro.AddTransaction(pTxn);
+      }
+   }
 }
 
 BEGIN_MESSAGE_MAP(CGirderDescDlg, CPropertySheet)
@@ -95,7 +165,30 @@ BEGIN_MESSAGE_MAP(CGirderDescDlg, CPropertySheet)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
       WBFL_ON_PROPSHEET_OK
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_KICKIDLE,OnKickIdle)
 END_MESSAGE_MAP()
+
+LRESULT CGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
+{
+   // The CPropertySheet::OnKickIdle method calls GetActivePage()
+   // which doesn't work with extension pages. Since GetActivePage
+   // is not virtual, we have to replace the implementation of
+   // OnKickIdle.
+   // The same problem exists with OnCommandHelp
+
+	ASSERT_VALID(this);
+
+	CPropertyPage* pPage = GetPage(GetActiveIndex());
+
+	/* Forward the message on to the active page of the property sheet */
+	if( pPage != NULL )
+	{
+		//ASSERT_VALID(pPage);
+		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
+	}
+	else
+		return 0;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg message handlers
@@ -125,7 +218,8 @@ void CGirderDescDlg::DoUpdate()
    // Setup girder data for our pages
    m_General.m_bUseSameGirderType = pBridgeDesc->UseSameGirderForEntireBridge();
    m_General.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   pIBridgeDesc->GetSlabOffset(m_SegmentKey,&m_General.m_SlabOffset[pgsTypes::metStart],&m_General.m_SlabOffset[pgsTypes::metEnd]);
+   m_General.m_SlabOffset[pgsTypes::metStart] = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),m_SegmentKey.girderIndex);
+   m_General.m_SlabOffset[pgsTypes::metEnd]   = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  m_SegmentKey.girderIndex);
 
    // shear page
    m_Shear.m_CurGrdName = pGirder->GetGirderName();
@@ -256,7 +350,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    if (m_Segment.Strands.NumPermStrandsType == CStrandData::npsDirectSelection)
    {
       // first get in girderdata format
-      const DirectStrandFillCollection* pDirectFillData(NULL);
+      const CDirectStrandFillCollection* pDirectFillData(NULL);
       if (type==pgsTypes::Straight)
       {
          pDirectFillData = m_Segment.Strands.GetDirectStrandFillStraight();
@@ -277,8 +371,8 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
 
       if(pDirectFillData!=NULL)
       {
-         DirectStrandFillCollection::const_iterator it = pDirectFillData->begin();
-         DirectStrandFillCollection::const_iterator itend = pDirectFillData->end();
+         CDirectStrandFillCollection::const_iterator it = pDirectFillData->begin();
+         CDirectStrandFillCollection::const_iterator itend = pDirectFillData->end();
          while(it != itend)
          {
             StrandIndexType idx = it->permStrandGridIdx;

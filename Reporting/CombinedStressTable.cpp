@@ -79,13 +79,13 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval(girderKey);
 
 #if defined _DEBUG
    if ( !bGirderStresses )
    {
       // only report deck stresses after the deck is composite
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
       ATLASSERT(compositeDeckIntervalIdx <= intervalIdx);
    }
 #endif
@@ -131,8 +131,8 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -156,7 +156,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
          continuityEventIndex = Min(continuityEventIndex,rightContinuityEventIdx);
       }
    }
-   IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);
+   IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(girderKey,continuityEventIndex);
 
    ColumnIndexType col  = 0;
    ColumnIndexType col1 = 0;
@@ -237,21 +237,21 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       {
          pForces2->GetStress( lcDWRating, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopDWRatinginc, &fBotDWRatinginc);
       }
-      pForces2->GetStress( lcDC, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopDCcum, &fBotDCcum);
-      pForces2->GetStress( lcDW, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopDWcum, &fBotDWcum);
+      pForces2->GetStress( lcDC, intervalIdx, vPoi, ctCumulative, bat, topLocation, botLocation, &fTopDCcum, &fBotDCcum);
+      pForces2->GetStress( lcDW, intervalIdx, vPoi, ctCumulative, bat, topLocation, botLocation, &fTopDWcum, &fBotDWcum);
       if ( bRating )
       {
-         pForces2->GetStress( lcDWRating, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopDWRatingcum, &fBotDWRatingcum);
+         pForces2->GetStress( lcDWRating, intervalIdx, vPoi, ctCumulative, bat, topLocation, botLocation, &fTopDWRatingcum, &fBotDWRatingcum);
       }
 
       if ( bTimeStepMethod )
       {
          pForces2->GetStress( lcCR, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopCRinc, &fBotCRinc);
-         pForces2->GetStress( lcCR, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopCRcum, &fBotCRcum);
+         pForces2->GetStress( lcCR, intervalIdx, vPoi, ctCumulative, bat, topLocation, botLocation, &fTopCRcum, &fBotCRcum);
          pForces2->GetStress( lcSH, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopSHinc, &fBotSHinc);
-         pForces2->GetStress( lcSH, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopSHcum, &fBotSHcum);
+         pForces2->GetStress( lcSH, intervalIdx, vPoi, ctCumulative, bat, topLocation, botLocation, &fTopSHcum, &fBotSHcum);
          pForces2->GetStress( lcPS, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopPSinc, &fBotPSinc);
-         pForces2->GetStress( lcPS, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopPScum, &fBotPScum);
+         pForces2->GetStress( lcPS, intervalIdx, vPoi, ctCumulative, bat, topLocation, botLocation, &fTopPScum, &fBotPScum);
       }
 
       pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, topLocation, false, bat, &fTopMinServiceI,&fTopMaxServiceI);
@@ -345,7 +345,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(); // always
+   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(girderKey); // always
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );

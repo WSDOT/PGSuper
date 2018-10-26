@@ -123,10 +123,10 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
 
    // Use workerbee class to do actual writing of data
    bool is_test_output = (format== tcxTest) ? true : false;
@@ -387,20 +387,20 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
-      value = pProductForces->GetDisplacement(castDeckIntervalIdx, pftSlab,      pmid[0], bat )
-            + pProductForces->GetDisplacement(castDeckIntervalIdx, pftDiaphragm, pmid[0], bat )
-            + pProductForces->GetDisplacement(castDeckIntervalIdx, pftShearKey,  pmid[0], bat );
+      value = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab,      pmid[0], bat, ctIncremental )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, pmid[0], bat, ctIncremental )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pftShearKey,  pmid[0], bat, ctIncremental );
 
       Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 20. DEFLECTION (OVERLAY)  */
-      value = pProductForces->GetDisplacement(overlayIntervalIdx, pftOverlay, pmid[0], bat );
+      value = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, pmid[0], bat, ctIncremental );
 
       Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 21. DEFLECTION (OTHER)  */
-      value =  pProductForces->GetDisplacement(railingSystemIntervalIdx, pftTrafficBarrier, pmid[0], bat );
-      value += pProductForces->GetDisplacement(railingSystemIntervalIdx, pftSidewalk,       pmid[0], bat );
+      value =  pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, pmid[0], bat, ctIncremental );
+      value += pProductForces->GetDeflection(railingSystemIntervalIdx, pftSidewalk,       pmid[0], bat, ctIncremental );
 
       Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 

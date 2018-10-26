@@ -235,9 +235,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
 
-            SegmentIDType segID = pSplicedGirder->GetSegment(segIdx)->GetID();
-
-            EventIndexType constructionEventIdx = pIBridgeDesc->GetSegmentConstructionEventIndex();
+            EventIndexType constructionEventIdx = pIBridgeDesc->GetSegmentConstructionEventIndex(thisSegmentKey);
             EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
 
             if (!m_SimplifiedVersion)
@@ -273,12 +271,14 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(constructionEventIdx,thisSegmentKey);
             bool bIsPrismatic_Final       = pGirder->IsPrismatic(liveLoadEventIdx,thisSegmentKey);
 
-         // a little fake out here... if we have a no deck bridge and there is a sacrifical depth to
-         // be worn off the girder themselves, the bridge site stage 3 properties are different from
-         // the rest of the properties. This is the same as if there is a composite deck and the bridge
-         // site stage 3 properties are different because there is a composite deck in the section
-         if ( pBridge->GetDeckType() == pgsTypes::sdtNone && 0 < pBridge->GetSacrificalDepth() )
-            bComposite = true;
+            // a little fake out here... if we have a no deck bridge and there is a sacrifical depth to
+            // be worn off the girder themselves, the bridge site stage 3 properties are different from
+            // the rest of the properties. This is the same as if there is a composite deck and the bridge
+            // site stage 3 properties are different because there is a composite deck in the section
+            if ( pBridge->GetDeckType() == pgsTypes::sdtNone && 0 < pBridge->GetSacrificalDepth() )
+            {
+               bComposite = true;
+            }
 
 
             if ( bIsPrismatic_CastingYard && bIsPrismatic_Final )
@@ -296,14 +296,14 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                if ( bComposite )
                {
                   // there is a deck so we have composite, non-prismatic results
-                  IntervalIndexType intervalIdx = pIntervals->GetInterval(liveLoadEventIdx);
+                  IntervalIndexType intervalIdx = pIntervals->GetInterval(thisSegmentKey,liveLoadEventIdx);
                   pTable = CSectionPropertiesTable2().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
                   *pPara << pTable << rptNewLine;
                }
             }
             else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
             {
-               IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+               IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
                IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
                for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
                {

@@ -100,9 +100,10 @@ private:
 typedef ScalarFormatTool<unitmgtScalar>        ScalarTool;
 typedef PhysicalFormatTool<unitmgtLengthData>  LengthTool;
 typedef PhysicalFormatTool<unitmgtMomentData>  MomentTool;
-typedef PhysicalFormatTool<unitmgtLengthData>  DisplacementTool;
+typedef PhysicalFormatTool<unitmgtLengthData>  DeflectionTool;
 typedef PhysicalFormatTool<unitmgtStressData>  StressTool;
 typedef PhysicalFormatTool<unitmgtForceData>   ShearTool;
+typedef PhysicalFormatTool<unitmgtForceData>   ForceTool;
 typedef PhysicalFormatTool<unitmgtTimeData>    TimeTool;
 typedef PhysicalFormatTool<unitmgtLength2Data> AreaTool;
 typedef PhysicalFormatTool<unitmgtLength3Data> SectionModulusTool;

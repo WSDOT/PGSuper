@@ -549,18 +549,10 @@ bool pgsDesignArtifact::ConcreteStrengthDesignState::GetRequiredAdditionalRebar(
    return m_RequiredAdditionalRebar;
 }
 
-LPCTSTR IntervalString(IntervalIndexType intervalIdx)
-{
-   USES_CONVERSION;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   CComBSTR bstrDescription(pIntervals->GetDescription(intervalIdx));
-   return OLE2T(bstrDescription);
-}
-
 inline LPCTSTR LimitStateString(pgsTypes::LimitState limitState)
 {
+#pragma Reminder("REVIEW: I think this is a duplicate of what's on the IStageMap interface")
+   // review the need for this method and eliminate if it is unnecessary
    switch(limitState)
    {
    case pgsTypes::ServiceI:

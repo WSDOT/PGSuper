@@ -441,6 +441,7 @@ public:
 
    void Init(const CSplicedGirderData* pGirder);
    void SetGirder(const CSplicedGirderData* pGirder);
+   const CSplicedGirderData* GetGirder() const;
    void InsertSpan(SpanIndexType newSpanIndex);
 
    // removes a span from the duct data. spanIdx and pierIdx are
@@ -494,7 +495,7 @@ public:
    CSplicedGirderData* GetGirder();
    const CSplicedGirderData* GetGirder() const;
 
-   void AddDuct(CDuctData& duct);
+   void AddDuct(CDuctData& duct,EventIndexType stressTendonEventIdx);
    DuctIndexType GetDuctCount() const;
    const CDuctData* GetDuct(DuctIndexType idx) const;
    CDuctData* GetDuct(DuctIndexType idx);
@@ -527,5 +528,9 @@ private:
    CSplicedGirderData* m_pGirder; // weak reference
 
    CTimelineManager* GetTimelineManager();
-   void RemoveFromTimeline();
+   void RemoveFromTimeline(); // removes all the PT data for this girder from the timeline
+
+   void AddToTimeline(DuctIndexType ductIdx,EventIndexType stressTendonEventIdx);
+   void RemoveFromTimeline(DuctIndexType ductIdx);
+   void UpdateTimeline(const CDuctData& otherDuct,DuctIndexType ductIdx);
 };

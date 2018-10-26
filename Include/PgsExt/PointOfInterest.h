@@ -40,7 +40,7 @@ typedef Uint64 PoiAttributeType;
 
 // NOTE: PGSuper Version 3.0
 // POI_TABULAR, POI_GRAPHICAL, and POI_ALLOUTPUT have been removed... we always report and graph all POIs
-// POI_FLEXURESTRESS, POI_FLEXURECAPACITY, POI_SHEAR, POI_DISPLACEMENT, and POI_ALLACTIONS have been removed... we always analyze all effects at all POI
+// POI_FLEXURESTRESS, POI_FLEXURECAPACITY, POI_SHEAR, POI_DEFLECTION, and POI_ALLACTIONS have been removed... we always analyze all effects at all POI
 
 // Start at bit 64 and work backwards
 
@@ -75,11 +75,11 @@ typedef Uint64 PoiAttributeType;
 #define POI_SECTCHANGE_LEFTFACE    0x0000004000000000
 #define POI_SECTCHANGE POI_SECTCHANGE_LEFTFACE | POI_SECTCHANGE_RIGHTFACE | POI_SECTCHANGE_TRANSITION
 // intermediate pier and temporary supports
-#define POI_TEMPSUPPORT            0x0000002000000000
-#define POI_INTERMEDIATE_PIER      0x0000001000000000 // POI at a pier that occurs between the ends of a segment
-#define POI_BOUNDARY_PIER          0x0000000800000000 // POI at a pier that occurs between groups
-#define POI_ABUTMENT               0x0000000400000000 // POI at CL Bearing at start/end abutment
-#define POI_STIRRUP_ZONE           0x0000000200000000 // Stirrup Zone Boundary
+#define POI_INTERMEDIATE_TEMPSUPPORT 0x0000002000000000 // POI at a temporary support that occurs between the ends of a segment
+#define POI_INTERMEDIATE_PIER        0x0000001000000000 // POI at a pier that occurs between the ends of a segment
+#define POI_BOUNDARY_PIER            0x0000000800000000 // POI at a pier that occurs between groups
+#define POI_ABUTMENT                 0x0000000400000000 // POI at CL Bearing at start/end abutment
+#define POI_STIRRUP_ZONE             0x0000000200000000 // Stirrup Zone Boundary
 
 // The following POI attributes are undefined/unused.
 // If a new attribute is needed, take it from this list
@@ -124,7 +124,7 @@ typedef Uint64 PoiAttributeType;
 
 #define POI_ALLSPECIAL        POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD | \
                               POI_MIDSPAN | POI_H | POI_15H | POI_PSXFER | POI_PSDEV | POI_DEBOND |  \
-                              POI_BARCUTOFF | POI_FACEOFSUPPORT | POI_SECTCHANGE | POI_INTERMEDIATE_PIER | POI_BOUNDARY_PIER | POI_TEMPSUPPORT
+                              POI_BARCUTOFF | POI_FACEOFSUPPORT | POI_SECTCHANGE | POI_INTERMEDIATE_PIER | POI_BOUNDARY_PIER | POI_INTERMEDIATE_TEMPSUPPORT
                              // note PICKPOINT and BUNKPOINT skipped on purpose
 
 

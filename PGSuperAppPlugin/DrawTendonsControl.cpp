@@ -1,3 +1,25 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2014  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 // DrawTendonsControl.cpp : implementation file
 //
 
@@ -80,11 +102,24 @@ void CDrawTendonsControl::OnPaint()
    // Create a poly line for each tendon. 
    std::vector<CComPtr<IPoint2dCollection>> ducts;
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeometry);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    CollectionIndexType nDucts = pGirder->GetPostTensioning()->GetDuctCount();
    for ( CollectionIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       CComPtr<IPoint2dCollection> ductPoints;
       pTendonGeometry->GetDuctCenterline(girderKey,ductIdx,pGirder,&ductPoints);
+
+      IndexType nPoints;
+      ductPoints->get_Count(&nPoints);
+      for ( IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+      {
+         CComPtr<IPoint2d> pnt;
+         ductPoints->get_Item(pntIdx,&pnt);
+         Float64 X;
+         pnt->get_X(&X);
+         X = pIPoi->ConvertGirderCoordinateToGirderPathCoordinate(girderKey,X);
+         pnt->put_X(X);
+      }
 
       ducts.push_back(ductPoints);
    }

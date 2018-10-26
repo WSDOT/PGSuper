@@ -679,8 +679,8 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
 #endif
       }
 
-      cdbi.Length1    = rdbrinfo.LeftDebondLength;
-      cdbi.Length2    = rdbrinfo.RightDebondLength;
+      cdbi.Length[pgsTypes::metStart] = rdbrinfo.DebondLength[pgsTypes::metStart];
+      cdbi.Length[pgsTypes::metEnd]   = rdbrinfo.DebondLength[pgsTypes::metEnd];
 
       strands.Debond[pgsTypes::Straight].push_back(cdbi);
    }
@@ -697,8 +697,8 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    CBridgeDescription2 bridgeDesc = *pIBridgeDesc->GetBridgeDescription();
    CGirderGroupData* pGroup = bridgeDesc.GetGirderGroup(segmentKey.groupIndex);
-   pGroup->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex)->SetSlabOffset(pgsTypes::metStart,pArtifact->GetSlabOffset(pgsTypes::metStart));
-   pGroup->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex)->SetSlabOffset(pgsTypes::metEnd,  pArtifact->GetSlabOffset(pgsTypes::metEnd));
+   pGroup->SetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex,pArtifact->GetSlabOffset(pgsTypes::metStart));
+   pGroup->SetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  segmentKey.girderIndex,pArtifact->GetSlabOffset(pgsTypes::metEnd));
    pIBridgeDesc->SetBridgeDescription(bridgeDesc);
 
    GET_IFACE(IGirderLifting,pLifting);

@@ -30,11 +30,12 @@ public:
    CGirderGraphControllerBase(bool bAllGroups=true);
    DECLARE_DYNCREATE(CGirderGraphControllerBase);
 
-   virtual IndexType GetGraphCount() = 0;
-
    GroupIndexType GetGirderGroup();
    GirderIndexType GetGirder();
-   IntervalIndexType GetInterval();
+   CGirderKey GetGirderKey();
+
+   // called by the framework when the view's OnUpdate method is called
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
 protected:
 
@@ -43,7 +44,6 @@ protected:
 	//{{AFX_MSG(CGirderGraphControllerBase)
    afx_msg void CbnOnGroupChanged();
    afx_msg void CbnOnGirderChanged();
-   afx_msg void CbnOnIntervalChanged();
    afx_msg void OnShowGrid();
    afx_msg void OnShowBeam();
    //}}AFX_MSG
@@ -51,7 +51,6 @@ protected:
    // Called from CbnOnXXXChanged just before UpdateGraph is called
    virtual void OnGroupChanged();
    virtual void OnGirderChanged();
-   virtual void OnIntervalChanged();
 
 
 	DECLARE_MESSAGE_MAP()
@@ -60,7 +59,6 @@ protected:
 
    void FillGroupCtrl();
    void FillGirderCtrl();
-   void FillIntervalCtrl();
 
    void UpdateGraph();
 
@@ -69,7 +67,76 @@ protected:
    // control variables
    GroupIndexType         m_GroupIdx;
    GirderIndexType        m_GirderIdx;
+ 
+#ifdef _DEBUG
+public:
+   void AssertValid() const;
+   void Dump(CDumpContext& dc) const;
+#endif //_DEBUG
+};
+
+class CIntervalGirderGraphControllerBase : public CGirderGraphControllerBase
+{
+public:
+   CIntervalGirderGraphControllerBase(bool bAllGroups=true);
+   DECLARE_DYNCREATE(CIntervalGirderGraphControllerBase);
+
+   IntervalIndexType GetInterval();
+
+   // called by the framework when the view's OnUpdate method is called
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+
+protected:
+
+   virtual BOOL OnInitDialog();
+
+	//{{AFX_MSG(CIntervalGirderGraphControllerBase)
+   afx_msg void CbnOnIntervalChanged();
+   //}}AFX_MSG
+
+   // Called from CbnOnXXXChanged just before UpdateGraph is called
+   virtual void OnIntervalChanged();
+
+	DECLARE_MESSAGE_MAP()
+
+   void FillIntervalCtrl();
+
+   // control variables
    IntervalIndexType      m_IntervalIdx;
+ 
+#ifdef _DEBUG
+public:
+   void AssertValid() const;
+   void Dump(CDumpContext& dc) const;
+#endif //_DEBUG
+};
+
+class CMultiIntervalGirderGraphControllerBase : public CGirderGraphControllerBase
+{
+public:
+   CMultiIntervalGirderGraphControllerBase(bool bAllGroups=true);
+   DECLARE_DYNCREATE(CMultiIntervalGirderGraphControllerBase);
+
+   std::vector<IntervalIndexType> GetSelectedIntervals();
+   IndexType GetGraphCount();
+
+   // called by the framework when the view's OnUpdate method is called
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+
+   virtual IntervalIndexType GetFirstInterval();
+   virtual IntervalIndexType GetLastInterval();
+
+protected:
+
+   virtual BOOL OnInitDialog();
+
+	//{{AFX_MSG(CMultiIntervalGirderGraphControllerBase)
+   afx_msg void OnIntervalsChanged();
+   //}}AFX_MSG
+
+	DECLARE_MESSAGE_MAP()
+
+   void FillIntervalCtrl();
  
 #ifdef _DEBUG
 public:

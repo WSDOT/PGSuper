@@ -2066,6 +2066,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\MacroTxn.cpp"
+				>
+			</File>
+			<File
 				RelativePath="main.cpp"
 				>
 				<FileConfiguration
@@ -2687,6 +2691,10 @@
 			</File>
 			<File
 				RelativePath=".\SegmentArtifact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentKey.cpp"
 				>
 			</File>
 			<File
@@ -3350,6 +3358,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\LongRebarInstance.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\MacroTxn.h"
 				>
 			</File>
 			<File

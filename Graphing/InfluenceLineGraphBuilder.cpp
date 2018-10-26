@@ -26,7 +26,7 @@
 #include <Graphing\DrawBeamTool.h>
 #include "InfluencelineGraphController.h"
 
-#include <PGSuperColors.h>
+#include "GraphColor.h"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -74,9 +74,10 @@ CGraphBuilder* CInfluenceLineGraphBuilder::Clone()
    return new CInfluenceLineGraphBuilder(*this);
 }
 
-int CInfluenceLineGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
+int CInfluenceLineGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
 {
-   CGirderGraphBuilderBase::CreateControls(pParent,nID);
+   if ( CGirderGraphBuilderBase::InitializeGraphController(pParent,nID) < 0 )
+      return -1;
 
    m_Graph.SetXAxisTitle(_T("Distance From Left End of Girder (")+m_pXFormat->UnitTag()+_T(")"));
 #pragma Reminder("UPDATE: need to update Y axis label based on graph type") // see analysis results graph
@@ -84,6 +85,11 @@ int CInfluenceLineGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
    m_Graph.SetPinYAxisAtZero(true);
 
    return 0;
+}
+
+BOOL CInfluenceLineGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
+{
+   return TRUE;
 }
 
 CGirderGraphControllerBase* CInfluenceLineGraphBuilder::CreateGraphController()
@@ -180,10 +186,15 @@ void CInfluenceLineGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInfluen
    // Need a data series for each POI we are plotting influence lines for
    IndexType dataSeries = m_Graph.CreateDataSeries(_T("POI"),PS_SOLID,1,RED);
 
-   IntervalIndexType intervalIdx = m_pGraphController->GetInterval();
+   IntervalIndexType intervalIdx = ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
 
    GET_IFACE(IInfluenceResults,pInfluenceResults);
    std::vector<Float64> inflValues( pInfluenceResults->GetUnitLoadMoment(vPoi,unitLoadPOI,bat,intervalIdx) );
 
    AddGraphPoints(dataSeries,xVals,inflValues);
+}
+
+IntervalIndexType CInfluenceLineGraphBuilder::GetBeamDrawInterval()
+{
+   return ((CInfluenceLineGraphController*)m_pGraphController)->GetInterval();
 }

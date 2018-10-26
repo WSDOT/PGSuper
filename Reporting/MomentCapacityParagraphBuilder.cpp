@@ -79,7 +79,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
 
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
    rptParagraph* p = new rptParagraph;

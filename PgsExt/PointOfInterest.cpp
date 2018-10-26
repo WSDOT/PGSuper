@@ -194,7 +194,6 @@ void pgsPointOfInterest::SetDistFromStart(Float64 distFromStart)
 
 void pgsPointOfInterest::SetSegmentCoordinate(Float64 Xs)
 {
-   ATLASSERT(0 <= Xs);
    m_bHasSegmentCoordinate = true;
    m_Xs = Xs;
 }
@@ -212,7 +211,6 @@ bool pgsPointOfInterest::HasSegmentCoordinate() const
 
 void pgsPointOfInterest::SetGirderCoordinate(Float64 Xg)
 {
-   ATLASSERT(0 <= Xg);
    m_bHasGirderCoordinate = true;
    m_Xg = Xg;
 }
@@ -230,7 +228,6 @@ bool pgsPointOfInterest::HasGirderCoordinate() const
 
 void pgsPointOfInterest::SetGirderPathCoordinate(Float64 Xgp)
 {
-   ATLASSERT(0 <= Xgp);
    m_bHasGirderPathCoordinate = true;
    m_Xgp = Xgp;
 }
@@ -666,7 +663,7 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
       nAttributes++;
    }
 
-   if ( HasAttribute(POI_TEMPSUPPORT) )
+   if ( HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) )
    {
       if ( 0 < nAttributes )
          strAttrib += _T(", ");
@@ -861,8 +858,8 @@ void pgsPointOfInterest::UpdateAttributeString()
    if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_SECTCHANGE_LEFTFACE) )
       os << _T("POI_SECTCHANGE_LEFTFACE | ");
 
-   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_TEMPSUPPORT) )
-      os << _T("POI_TEMPSUPPORT | ");
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_INTERMEDIATE_TEMPSUPPORT) )
+      os << _T("POI_INTERMEDIATE_TEMPSUPPORT | ");
 
    if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_INTERMEDIATE_PIER) )
       os << _T("POI_INTERMEDIATE_PIER | ");

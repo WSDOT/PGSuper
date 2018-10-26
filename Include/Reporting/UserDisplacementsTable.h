@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_USERDISPLACEMENTSTABLE_H_
-#define INCLUDED_USERDISPLACEMENTSTABLE_H_
+#ifndef INCLUDED_USERDeflectionSTABLE_H_
+#define INCLUDED_USERDeflectionSTABLE_H_
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
@@ -30,13 +30,13 @@ interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
-   CUserDisplacementsTable
+   CUserDeflectionsTable
 
-   Encapsulates the construction of the User displacements table.
+   Encapsulates the construction of the User Deflections table.
 
 
 DESCRIPTION
-   Encapsulates the construction of the User displacements table.
+   Encapsulates the construction of the User Deflections table.
 
 
 COPYRIGHT
@@ -48,32 +48,32 @@ LOG
    rab : 11.05.1998 : Created file
 *****************************************************************************/
 
-class REPORTINGCLASS CUserDisplacementsTable
+class REPORTINGCLASS CUserDeflectionsTable
 {
 public:
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
    // Default constructor
-   CUserDisplacementsTable();
+   CUserDeflectionsTable();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   CUserDisplacementsTable(const CUserDisplacementsTable& rOther);
+   CUserDeflectionsTable(const CUserDeflectionsTable& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~CUserDisplacementsTable();
+   virtual ~CUserDeflectionsTable();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   CUserDisplacementsTable& operator = (const CUserDisplacementsTable& rOther);
+   CUserDeflectionsTable& operator = (const CUserDeflectionsTable& rOther);
 
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   // Builds the typical displacements  table.
+   // Builds the typical Deflections  table.
    virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
                              IEAFDisplayUnits* pDisplayUnits) const;
 
@@ -86,10 +86,10 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const CUserDisplacementsTable& rOther);
+   void MakeCopy(const CUserDeflectionsTable& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CUserDisplacementsTable& rOther);
+   virtual void MakeAssignment(const CUserDeflectionsTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -128,4 +128,4 @@ public:
 // EXTERNAL REFERENCES
 //
 
-#endif // INCLUDED_PRODUCTDISPLACEMENTSTABLE_H_
+#endif // INCLUDED_PRODUCTDeflectionSTABLE_H_

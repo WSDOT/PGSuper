@@ -75,7 +75,7 @@ bool txnEditPrecastSegment::Execute()
 
       SegmentIDType segID = pSegment->GetID();
 
-      oldSegmentData.m_ConstructionEventIdx = pIBridgeDesc->GetTimelineManager()->GetSegmentConstructionEventIndex();
+      oldSegmentData.m_ConstructionEventIdx = pIBridgeDesc->GetTimelineManager()->GetSegmentConstructionEventIndex(segID);
       oldSegmentData.m_ErectionEventIdx     = pIBridgeDesc->GetTimelineManager()->GetSegmentErectionEventIndex(segID);
 
       m_OldSegmentData.insert(oldSegmentData);
@@ -141,7 +141,7 @@ void txnEditPrecastSegment::SetSegmentData(const CSegmentKey& segmentKey,const t
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetPrecastSegmentData(segmentKey,data.m_SegmentData);
 
-   pIBridgeDesc->SetSegmentConstructionEventByIndex(data.m_ConstructionEventIdx);
+   pIBridgeDesc->SetSegmentConstructionEventByIndex(segmentKey,data.m_ConstructionEventIdx);
    pIBridgeDesc->SetSegmentErectionEventByIndex(segmentKey,data.m_ErectionEventIdx);
 
    pEvents->FirePendingEvents();

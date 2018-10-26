@@ -590,6 +590,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DeflectionHistoryGraphBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DeflectionHistoryGraphController.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DrawBeamTool.cpp"
 				>
 			</File>
@@ -607,6 +615,10 @@
 			</File>
 			<File
 				RelativePath=".\GirderPropertiesGraphController.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GraphColor.cpp"
 				>
 			</File>
 			<File
@@ -712,7 +724,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Graphing\AnalysisResultsGraphBuilder1.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Graphing\AnalysisResultsGraphBuilder2.h"
+				>
+			</File>
+			<File
 				RelativePath=".\AnalysisResultsGraphController.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AnalysisResultsGraphController1.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AnalysisResultsGraphController2.h"
 				>
 			</File>
 			<File
@@ -729,6 +757,14 @@
 			</File>
 			<File
 				RelativePath=".\ConcretePropertyGraphController.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Graphing\DeflectionHistoryGraphBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DeflectionHistoryGraphController.h"
 				>
 			</File>
 			<File
@@ -749,6 +785,10 @@
 			</File>
 			<File
 				RelativePath=".\GirderPropertiesGraphController.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GraphColor.h"
 				>
 			</File>
 			<File

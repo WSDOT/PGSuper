@@ -678,7 +678,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
    GET_IFACE(IShearCapacity,pShearCap);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
 
    IndexType numpois = m_DesignPois.size();
    ATLASSERT(numpois>0);
@@ -978,7 +978,7 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand()
    GET_IFACE(IShearCapacity,pShearCap);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
 
    IndexType numpois = m_DesignPois.size();
    ATLASSERT(numpois>0);
@@ -2131,7 +2131,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    GDRCONFIG config = this->GetSegmentConfiguration(); // current design
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
 
    GET_IFACE(IShearCapacity, pShearCapacity);
    GET_IFACE(IBridge, pBridge);
@@ -2271,7 +2271,7 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 // RDP made some changes but I could not figure out how to merge them and/or if my re-coding
 // of this method is just a different way to resolve the issue he was resolving
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
 
    // Get max allowable spacing from spec check, then check if we are in confinement zone
    const pgsPointOfInterest& poi = m_DesignPois[PoiIdx];

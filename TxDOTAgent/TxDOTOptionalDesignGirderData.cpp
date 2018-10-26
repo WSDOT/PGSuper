@@ -205,7 +205,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       pStrSave->BeginUnit(_T("DirectSelectStrandFill"), 1.0);
       pStrSave->BeginUnit(_T("StraightStrands"), 1.0);
       pStrSave->put_Property(_T("NumStraightFill"), CComVariant( StrandIndexType(m_DirectFilledStraightStrands.size())));
-      for (DirectStrandFillCollection::const_iterator its=m_DirectFilledStraightStrands.begin(); its!=m_DirectFilledStraightStrands.end(); its++)
+      for (CDirectStrandFillCollection::const_iterator its=m_DirectFilledStraightStrands.begin(); its!=m_DirectFilledStraightStrands.end(); its++)
       {
          its->Save(pStrSave);
       }
@@ -445,7 +445,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
 
       hr = pStrLoad->EndUnit(); // TxDOTOptionalGirderData
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pLoad);
@@ -991,12 +991,12 @@ CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer CTxDOTOptionalDes
 
 // Data for direct manip fill
 // ===========================
-const DirectStrandFillCollection& CTxDOTOptionalDesignGirderData::GetDirectFilledStraightStrands() const
+const CDirectStrandFillCollection& CTxDOTOptionalDesignGirderData::GetDirectFilledStraightStrands() const
 {
    return m_DirectFilledStraightStrands;
 }
 
-void CTxDOTOptionalDesignGirderData::SetDirectFilledStraightStrands(const DirectStrandFillCollection& coll)
+void CTxDOTOptionalDesignGirderData::SetDirectFilledStraightStrands(const CDirectStrandFillCollection& coll)
 {
    if (coll != m_DirectFilledStraightStrands)
    {

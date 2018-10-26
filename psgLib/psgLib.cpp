@@ -34,7 +34,9 @@
 #include <WBFLGeometry_i.c>
 #include <WBFLCore_i.c>
 #include <IFace\BeamFamily.h>
+#include <IFace\BeamFactory.h>
 #include <IFace\Project.h>
+#include <Plugins\BeamFamilyCLSID.h>
 #include "PGSuperLibrary_i.h"
 #include "LibraryAppPlugin.h"
 
@@ -43,6 +45,7 @@
 #include "PGSuperLibraryMgrCATID.h"
 #include <PGSuperCatCom.h>
 #include <PGSpliceCatCom.h>
+
 
 #include "dllmain.h"
 

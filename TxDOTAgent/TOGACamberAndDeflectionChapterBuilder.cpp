@@ -124,7 +124,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    pTable->SetColumnSpan(0,4,-1);
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDisplacementUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDeflectionUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    // Get the interfaces we need
@@ -137,15 +137,15 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    GET_IFACE2( pBroker, ISpecification, pSpec );
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-
    CSegmentKey origSegmentKey(TOGA_SPAN,TOGA_ORIG_GDR,0);
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(origSegmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(origSegmentKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(origSegmentKey);
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(origSegmentKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(origSegmentKey);
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -176,35 +176,35 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   delta_dl_orig = pProductForces->GetDisplacement(castDeckIntervalIdx, pftSlab, poi_orig, bat )
-                 + pProductForces->GetDisplacement(castDeckIntervalIdx, pftDiaphragm, poi_orig, bat );
+   delta_dl_orig = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab, poi_orig, bat, ctIncremental )
+                 + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, poi_orig, bat, ctIncremental );
 
-   delta_dl_fabr = pProductForces->GetDisplacement(castDeckIntervalIdx, pftSlab, poi_fabr, bat )
-                 + pProductForces->GetDisplacement(castDeckIntervalIdx, pftDiaphragm, poi_fabr, bat );
+   delta_dl_fabr = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab, poi_fabr, bat, ctIncremental )
+                 + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, poi_fabr, bat, ctIncremental );
 
-   delta_ol_orig = pProductForces->GetDisplacement(overlayIntervalIdx, pftOverlay, poi_orig, bat );
-   delta_ol_fabr = pProductForces->GetDisplacement(overlayIntervalIdx, pftOverlay, poi_fabr, bat );
+   delta_ol_orig = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, poi_orig, bat, ctIncremental );
+   delta_ol_fabr = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, poi_fabr, bat, ctIncremental );
 
-   delta_tb_orig = pProductForces->GetDisplacement(railingSystemIntervalIdx, pftTrafficBarrier, poi_orig, bat );
-   delta_tb_fabr = pProductForces->GetDisplacement(railingSystemIntervalIdx, pftTrafficBarrier, poi_fabr, bat );
+   delta_tb_orig = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi_orig, bat, ctIncremental );
+   delta_tb_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi_fabr, bat, ctIncremental );
 
-   Float64 delta_dcu_orig = pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDC, poi_orig, bat);
-   delta_dcu_orig        += pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDC, poi_orig, bat);
+   Float64 delta_dcu_orig = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDC, poi_orig, bat, ctIncremental);
+   delta_dcu_orig        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDC, poi_orig, bat, ctIncremental);
 
-   Float64 delta_dcu_fabr = pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDC, poi_fabr, bat);
-   delta_dcu_fabr        += pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDC, poi_fabr, bat);
+   Float64 delta_dcu_fabr = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDC, poi_fabr, bat, ctIncremental);
+   delta_dcu_fabr        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDC, poi_fabr, bat, ctIncremental);
 
-   Float64 delta_dwu_orig = pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDW, poi_orig, bat);
-   delta_dwu_orig        += pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDW, poi_orig, bat);
+   Float64 delta_dwu_orig = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDW, poi_orig, bat, ctIncremental);
+   delta_dwu_orig        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDW, poi_orig, bat, ctIncremental);
 
-   Float64 delta_dwu_fabr = pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDW, poi_fabr, bat);
-   delta_dwu_fabr        += pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDW, poi_fabr, bat);
+   Float64 delta_dwu_fabr = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDW, poi_fabr, bat, ctIncremental);
+   delta_dwu_fabr        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDW, poi_fabr, bat, ctIncremental);
 
-   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, liveLoadIntervalIdx, poi_orig, bat, true, false, &delta_ll_orig, &temp );
-   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, liveLoadIntervalIdx, poi_fabr, bat, true, false, &delta_ll_fabr, &temp );
+   pProductForces->GetLiveLoadDeflection(pgsTypes::lltDesign, liveLoadIntervalIdx, poi_orig, bat, true, false, &delta_ll_orig, &temp );
+   pProductForces->GetLiveLoadDeflection(pgsTypes::lltDesign, liveLoadIntervalIdx, poi_fabr, bat, true, false, &delta_ll_fabr, &temp );
 
-   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi_orig, bat, &delta_oll_orig, &temp );
-   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi_fabr, bat, &delta_oll_fabr, &temp );
+   pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi_orig, bat, &delta_oll_orig, &temp );
+   pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi_fabr, bat, &delta_oll_fabr, &temp );
 
    // get # of days for creep
    Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);

@@ -56,12 +56,19 @@
 
 DECLARE_LIBRARY( ConcreteLibrary,        ConcreteLibraryEntry,   0 )
 DECLARE_LIBRARY( ConnectionLibrary,      ConnectionLibraryEntry, 1 )
-DECLARE_LIBRARY( GirderLibrary,          GirderLibraryEntry,     1 )
+DECLARE_LIBRARY( GirderLibraryBase,      GirderLibraryEntry,     1 )
 DECLARE_LIBRARY( DiaphragmLayoutLibrary, DiaphragmLayoutEntry,   0 )
 DECLARE_LIBRARY( TrafficBarrierLibrary,  TrafficBarrierEntry,    1 )
 DECLARE_LIBRARY( SpecLibrary,            SpecLibraryEntry,       1 )
 DECLARE_LIBRARY( RatingLibrary,          RatingLibraryEntry,     1 )
 DECLARE_LIBRARY( LiveLoadLibrary,        LiveLoadLibraryEntry,   0 )
+
+class GirderLibrary : public GirderLibraryBase
+{
+public:
+   GirderLibrary(LPCTSTR idName, LPCTSTR displayName, bool bIsDepreciated = false);
+   virtual bool NewEntry(LPCTSTR key);
+};
 
 
 /*****************************************************************************

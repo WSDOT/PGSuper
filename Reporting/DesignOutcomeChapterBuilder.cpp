@@ -574,19 +574,19 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
             // slab offset is for the entire bridge... the start value contains this parameter
             (*pTable)(row,0) << _T("Slab Offset (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
-            (*pTable)(row,2) << length.SetValue( pSegment->GetSlabOffset(pgsTypes::metStart) );
+            (*pTable)(row,2) << length.SetValue( pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
             row++;
          }
          else
          {
             (*pTable)(row,0) << _T("Slab Offset at Start (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
-            (*pTable)(row,2) << length.SetValue( pSegment->GetSlabOffset(pgsTypes::metStart) );
+            (*pTable)(row,2) << length.SetValue( pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
             row++;
 
             (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metEnd) );
-            (*pTable)(row,2) << length.SetValue( pSegment->GetSlabOffset(pgsTypes::metEnd) );
+            (*pTable)(row,2) << length.SetValue( pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
             row++;
          }
       }

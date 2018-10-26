@@ -214,7 +214,7 @@ HRESULT CApplyLoadActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       pStrLoad->EndUnit();
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);

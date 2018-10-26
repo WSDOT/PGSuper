@@ -278,13 +278,13 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
          }
       }
 
-      // Let plug-ins add to the context menu
-      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-      std::map<IDType,IBridgePlanViewEventCallback*>::iterator cbiter;
-      for ( cbiter = callbacks.begin(); cbiter != callbacks.end(); cbiter++ )
+      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IBridgePlanViewEventCallback* callback = cbiter->second;
-         callback->OnPierContextMenu(pThis->m_PierIdx,pMenu);
+         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnPierContextMenu(pThis->m_PierIdx,pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);

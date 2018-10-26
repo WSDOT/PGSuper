@@ -28,17 +28,21 @@
 #include "GirderSegmentStirrupsPage.h"
 #include "..\BridgeDescLiftingPage.h"
 
+#include <IFace\ExtendUI.h>
 #include <PgsExt\SplicedGirderData.h>
 
 // CGirderSegmentDlg
 
-class CGirderSegmentDlg : public CPropertySheet
+class CGirderSegmentDlg : public CPropertySheet, public IEditSegmentData
 {
 	DECLARE_DYNAMIC(CGirderSegmentDlg)
 
 public:
-	CGirderSegmentDlg(bool bEditingInGirder,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	virtual ~CGirderSegmentDlg();
+	CGirderSegmentDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CGirderSegmentDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+
+   // IEditSegmentData
+   virtual const CSegmentKey& GetSegmentKey() { return m_SegmentKey; }
 
    CSplicedGirderData m_Girder; // copy of the girder we are editing (contains the segment we are editing)
    CSegmentKey m_SegmentKey; // key to the segment we are editing
@@ -47,28 +51,46 @@ public:
    EventIndexType m_ConstructionEventIdx;
    EventIndexType m_ErectionEventIdx;
 
-   //void RestoreTransverseReinfocementToLibraryDefaults();
-   //void RestoreLongitudinalReinfocementToLibraryDefaults();
-
-   CGirderSegmentStirrupsPage m_Stirrups;
+   CGirderSegmentStirrupsPage m_StirrupsPage;
 
    bool m_bCopyToAll; // if true, the data from this dialog is applied to all segments at this position in this group
+
+public:
+	virtual ~CGirderSegmentDlg();
+	virtual INT_PTR DoModal();
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
 
 protected:
 	DECLARE_MESSAGE_MAP()
 
-   bool m_bEditingInGirder; // true if editing from within the girder (Check box is for copying to all segments in this girder)
-                            // false if editing as an individual element (Check box is for copy to all segments at this position in the group)
+   void CommonInit(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey);
+   void Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey);
+   void Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
+   void CreateExtensionPages();
+   void CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
+   void DestroyExtensionPages();
 
-   void Init();
+   bool m_bEditingInGirder;
+
+   txnMacroTxn m_Macro;
+   std::vector<std::pair<IEditSegmentCallback*,CPropertyPage*>> m_ExtensionPages;
+   std::set<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
+   void NotifyExtensionPages();
+   void NotifySplicedGirderExtensionPages();
+
    ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 
-   CGirderSegmentGeneralPage m_General;
-   CGirderSegmentStrandsPage m_Strands;
-   CGirderSegmentLongitudinalRebarPage m_Rebar;
-   CGirderDescLiftingPage m_Lifting;
+   CGirderSegmentGeneralPage m_GeneralPage;
+   CGirderSegmentStrandsPage m_StrandsPage;
+   CGirderSegmentLongitudinalRebarPage m_RebarPage;
+   CGirderDescLiftingPage m_LiftingPage;
 
    afx_msg BOOL OnOK();
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
+
    CButton m_CheckBox;
 
    friend CGirderSegmentStrandsPage;

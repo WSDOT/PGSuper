@@ -64,7 +64,6 @@ public:
    CSameNumberOfGirdersHyperLink m_NumGirdersHyperLink;
    CSameGirderSpacingHyperLink   m_GirderSpacingHyperLink;
    CSameGirderTypeHyperLink      m_GirderTypeHyperLink;
-   CSameSlabOffsetHyperLink      m_SlabOffsetHyperLink;
 
 
 // Overrides
@@ -88,11 +87,6 @@ private:
    Float64 m_RefGirderOffset[2];
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType[2];
 
-   pgsTypes::SlabOffsetType m_SlabOffsetType;
-   pgsTypes::SlabOffsetType m_SlabOffsetTypeCache;
-   Float64 m_SlabOffset[2];
-   CString m_strSlabOffsetCache[2];
-
 // Implementation
 protected:
 
@@ -112,7 +106,6 @@ protected:
    afx_msg LRESULT OnChangeSameNumberOfGirders(WPARAM wParam,LPARAM lParam);
    afx_msg LRESULT OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam);
    afx_msg LRESULT OnChangeSameGirderType(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
    void GetPierSkewAngles(Float64& skew1,Float64& skew2);
@@ -139,7 +132,6 @@ protected:
    void UpdateGirderCountHyperLinkText();
    void UpdateGirderTypeHyperLinkText();
    void UpdateGirderSpacingHyperLinkText();
-   void UpdateSlabOffsetHyperLinkText();
 
    bool IsAbutment(pgsTypes::MemberEndType end);
 };

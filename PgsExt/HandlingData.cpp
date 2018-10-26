@@ -131,7 +131,7 @@ HRESULT CHandlingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit(); // HandlingData
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pStrLoad);

@@ -279,8 +279,8 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    m_LossMethod = pSpecEntry->GetLossMethod();
 
-   if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotGroup )
-      m_SlabOffsetTypeCache = pgsTypes::sotSegment;
+   if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotPier )
+      m_SlabOffsetTypeCache = pgsTypes::sotGirder;
    else
       m_SlabOffsetTypeCache = pgsTypes::sotBridge;
 
@@ -300,9 +300,13 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
+      CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+      SegmentIDType segmentID = pParent->m_Segment.GetID();
+      ATLASSERT(segmentID != INVALID_ID);
+
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-      EventIndexType eventIdx = pTimelineMgr->GetSegmentConstructionEventIndex();
+      EventIndexType eventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segmentID);
       m_AgeAtRelease = pTimelineMgr->GetEventByIndex(eventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
 
       // hide regular text label
@@ -948,7 +952,7 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
 
    CWnd* pwndStart = GetDlgItem(IDC_ADIM_START);
    CWnd* pwndEnd   = GetDlgItem(IDC_ADIM_END);
-   if ( m_SlabOffsetType == pgsTypes::sotSegment )
+   if ( m_SlabOffsetType == pgsTypes::sotGirder )
    {
       // going into girder by girder slab offset mode
       CString strTempStart = m_strSlabOffsetCache[pgsTypes::metStart];
@@ -960,7 +964,7 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
       pwndStart->SetWindowText(strTempStart);
       pwndEnd->SetWindowText(strTempEnd);
    }
-   else if ( m_SlabOffsetType == pgsTypes::sotGroup )
+   else if ( m_SlabOffsetType == pgsTypes::sotPier )
    {
       //pwndStart->SetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
       //pwndEnd->SetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
@@ -1019,7 +1023,7 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
 void CGirderDescGeneralPage::UpdateSlabOffsetControls()
 {
    // Enable/Disable Slab Offset controls
-   BOOL bEnable = (m_SlabOffsetType == pgsTypes::sotSegment ? TRUE : FALSE);
+   BOOL bEnable = (m_SlabOffsetType == pgsTypes::sotGirder ? TRUE : FALSE);
 
    GetDlgItem(IDC_ADIM_START_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_ADIM_START)->EnableWindow(bEnable);
@@ -1047,7 +1051,7 @@ void CGirderDescGeneralPage::UpdateGirderTypeHyperLink()
 
 void CGirderDescGeneralPage::UpdateSlabOffsetHyperLink()
 {
-   if ( m_SlabOffsetType == pgsTypes::sotSegment )
+   if ( m_SlabOffsetType == pgsTypes::sotGirder )
    {
       // slab offset is by girder
       m_SlabOffsetHyperLink.SetWindowText(_T("Slab Offsets are defined girder by girder"));

@@ -321,7 +321,7 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit();
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pStrLoad);

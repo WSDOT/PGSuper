@@ -184,11 +184,11 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(limitState));
 
    std::_tostringstream os;
-   os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << pIntervals->GetDescription(intervalIdx) << std::endl;
+   os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << pIntervals->GetDescription(girderKey,intervalIdx) << std::endl;
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
-   bool bCompression = pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression);
-   bool bTension     = pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension);
+   bool bCompression = pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression);
+   bool bTension     = pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension);
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -273,9 +273,9 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -1009,7 +1009,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    GET_IFACE2(pBroker,IMaterials,pMaterials);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   Float64 fc = pMaterials->GetDeckFc(intervalIdx);
+   Float64 fc = pMaterials->GetDeckFc(girderKey,intervalIdx);
    *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
    // using a dummy location to get information... all location should be the same
@@ -1019,7 +1019,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    //
    // Compression
    //
-   if ( pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression) )
+   if ( pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression) )
    {
       const pgsFlexuralStressArtifact* pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Compression,0);
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
@@ -1034,7 +1034,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    // Tension
    //
 
-   if ( pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension) )
+   if ( pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension) )
    {
       const pgsFlexuralStressArtifact* pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,0);
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
@@ -1123,7 +1123,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    const CSegmentKey& segmentKey(pSegmentArtifact->GetSegmentKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    const pgsFlexuralStressArtifact* pArtifact;
 
@@ -1132,7 +1132,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    //
    // Compression
    //
-   if ( pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression) )
+   if ( pAllowable->IsStressCheckApplicable(segmentKey,intervalIdx,limitState,pgsTypes::Compression) )
    {
       ATLASSERT( 0 < pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Compression));
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Compression,artifactIdx);
@@ -1159,7 +1159,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    //
    // Tension
    //
-   if ( pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension) )
+   if ( pAllowable->IsStressCheckApplicable(segmentKey,intervalIdx,limitState,pgsTypes::Tension) )
    {
       ATLASSERT( 0 < pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension));
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,artifactIdx);
@@ -1268,7 +1268,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
    const CSegmentKey& segmentKey(pSegmentArtifact->GetSegmentKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    const pgsFlexuralStressArtifact* pArtifact;
 
@@ -1277,7 +1277,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
    //
    // Compression
    //
-   if ( pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression) )
+   if ( pAllowable->IsStressCheckApplicable(segmentKey,intervalIdx,limitState,pgsTypes::Compression) )
    {
       ATLASSERT( 0 < pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Compression));
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Compression,artifactIdx);
@@ -1304,7 +1304,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
    //
    // Tension
    //
-   if ( pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension) )
+   if ( pAllowable->IsStressCheckApplicable(segmentKey,intervalIdx,limitState,pgsTypes::Tension) )
    {
       ATLASSERT( 0 < pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension));
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,artifactIdx);

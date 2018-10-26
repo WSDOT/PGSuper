@@ -36,7 +36,8 @@ public:
    CStabilityGraphBuilder(const CStabilityGraphBuilder& other);
    virtual ~CStabilityGraphBuilder();
 
-   virtual int CreateControls(CWnd* pParent,UINT nID);
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
    virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC);
    virtual CGraphBuilder* Clone();
 
@@ -57,6 +58,8 @@ protected:
 
    std::_tstring m_PrintSubtitle;
 
+
+   void UpdateXAxis();
 
    virtual bool UpdateNow();
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);

@@ -27,7 +27,7 @@
 
 #include "GirderGraphControllerBase.h"
 
-#include <PGSuperColors.h>
+#include "GraphColor.h"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -64,7 +64,6 @@ CEAFAutoCalcGraphBuilder(),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pXFormat(0),
 m_pYFormat(0),
-m_GraphStartOffset(0),
 m_pGraphController(0),
 m_bShowBeam(true)
 {
@@ -75,7 +74,6 @@ CEAFAutoCalcGraphBuilder(other),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pXFormat(0),
 m_pYFormat(0),
-m_GraphStartOffset(0),
 m_pGraphController(0),
 m_bShowBeam(other.m_bShowBeam)
 {
@@ -105,23 +103,50 @@ CGirderGraphBuilderBase::~CGirderGraphBuilderBase()
 
 CEAFGraphControlWindow* CGirderGraphBuilderBase::GetGraphControlWindow()
 {
-   if ( m_pGraphController == NULL )
-      m_pGraphController = CreateGraphController();
-
+   ATLASSERT(m_pGraphController != NULL);
    return m_pGraphController;
 }
 
-int CGirderGraphBuilderBase::CreateControls(CWnd* pParent,UINT nID)
+int CGirderGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
 {
-   // let the base class do its thing
-   CEAFAutoCalcGraphBuilder::CreateControls(pParent,nID);
-
    EAFGetBroker(&m_pBroker);
+
+   m_pGraphController = CreateGraphController();
+
+   if ( CEAFAutoCalcGraphBuilder::InitializeGraphController(pParent,nID) < 0 )
+      return -1;
 
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
+   m_Graph.SetGridPenStyle(GRAPH_GRID_PEN_STYLE, GRAPH_GRID_PEN_WEIGHT, GRAPH_GRID_COLOR);
 
    // x axis
+   UpdateXAxis();
+
+   // y axis
+   UpdateYAxis();
+
+   // Show the grid by default... set the control to checked
+   m_Graph.SetDoDrawGrid(); // show grid by default
+
+   // show the beam by default
+   m_bShowBeam = true;
+
+   // Default settings for graph controller
+   m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
+   m_pGraphController->CheckDlgButton(IDC_BEAM,BST_CHECKED);
+
+   return 0;
+}
+
+void CGirderGraphBuilderBase::UpdateXAxis()
+{
+   if ( m_pXFormat )
+   {
+      delete m_pXFormat;
+      m_pXFormat = NULL;
+   }
+
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
    m_pXFormat = new LengthTool(lengthUnit);
@@ -129,34 +154,23 @@ int CGirderGraphBuilderBase::CreateControls(CWnd* pParent,UINT nID)
    m_Graph.SetXAxisNumberOfMinorTics(0);
    m_Graph.SetXAxisNiceRange(false);
    m_Graph.SetXAxisNumberOfMajorTics(11);
+}
 
-   // y axis
+void CGirderGraphBuilderBase::UpdateYAxis()
+{
+   if ( m_pYFormat )
+   {
+      delete m_pYFormat;
+      m_pYFormat = NULL;
+   }
+
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
    m_Graph.SetYAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);
-
-   // Show the grid by default... set the control to checked
-   m_Graph.SetDoDrawGrid(); // show grid by default
-   m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
-
-   // show the beam by default
-   m_bShowBeam = true;
-
-   // create our controls
-   if ( !InitGraphController(pParent,nID) )
-   {
-      TRACE0("Failed to create control bar\n");
-      return -1; // failed to create
-   }
-
-   // Default settings for graph controller
-   m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
-   m_pGraphController->CheckDlgButton(IDC_BEAM,BST_CHECKED);
-
-   return 0;
 }
 
 void CGirderGraphBuilderBase::ShowGrid(bool bShow)
@@ -173,45 +187,6 @@ void CGirderGraphBuilderBase::ShowBeam(bool bShow)
 
 bool CGirderGraphBuilderBase::UpdateNow()
 {
-   // Update graph properties
-   GroupIndexType    grpIdx      = m_pGraphController->GetGirderGroup();
-   GirderIndexType   gdrIdx      = m_pGraphController->GetGirder();
-   IntervalIndexType intervalIdx = m_pGraphController->GetInterval();
-
-   CSegmentKey segmentKey((grpIdx == ALL_GROUPS ? 0 : grpIdx),gdrIdx,0);
-
-   // When graphing analysis results, X = 0 is located at the CL Bearing
-   // of the first segment for which results are plotted. In this case,
-   // CL Bearing means the location of the bearing point for the analysis
-   // and not necessarily the CL Bearing in the bridge product model.
-   // In the casting yard, the CL Bearing is at the end of the segment.
-   // In storage, the CL Bearing is at the storage location.
-
-   GET_IFACE(IBridge,pBridge);
-   Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
-   Float64 end_dist  = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 start_offset = brgOffset - end_dist;
-
-   // m_GraphStartOffset is added to the poi coordinate, converted to Girder Path Coordiantes,
-   // to get the graph coordinate.
-
-   GET_IFACE(IIntervals,pIntervals);
-   if ( intervalIdx == pIntervals->GetPrestressReleaseInterval(segmentKey) )
-   {
-      m_GraphStartOffset = 0;
-   }
-   else if ( intervalIdx == pIntervals->GetStorageInterval(segmentKey) )
-   {
-      Float64 start_support_location, end_support_location;
-      GET_IFACE(IGirder,pGirder);
-      pGirder->GetSegmentStorageSupportLocations(segmentKey,&start_support_location,&end_support_location);
-      m_GraphStartOffset = -(start_offset + start_support_location);
-   }
-   else
-   {
-      m_GraphStartOffset = -end_dist;
-   }
-
    return true;
 }
 
@@ -229,8 +204,7 @@ void CGirderGraphBuilderBase::GetXValues(const std::vector<pgsPointOfInterest>& 
       const pgsPointOfInterest& poi(*poiIter);
 
       Float64 Xg = pPoi->ConvertPoiToGirderlineCoordinate(poi);
-      Float64 x = Xg + m_GraphStartOffset;
-      xVals.push_back(x);
+      xVals.push_back(Xg);
    }
 }
 
@@ -290,13 +264,13 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
    // superimpose beam on graph
    // do it before the graph so the graph draws on top of it
-   if ( m_bShowBeam && 0 < m_pGraphController->GetGraphCount() )
+   if ( m_bShowBeam && 0 < m_Graph.GetDataSeriesCount() )
    {
       CGirderKey girderKey(m_pGraphController->GetGirderGroup(),m_pGraphController->GetGirder());
-      IntervalIndexType intervalIdx = m_pGraphController->GetInterval();
+      IntervalIndexType intervalIdx = GetBeamDrawInterval();
       grlibPointMapper mapper( m_Graph.GetClientAreaPointMapper(pDC->GetSafeHdc()) );
       CDrawBeamTool drawBeam;
-      drawBeam.DrawBeam(m_pBroker,pDC,m_GraphStartOffset,mapper,m_pXFormat,intervalIdx,girderKey);
+      drawBeam.DrawBeam(m_pBroker,pDC,mapper,m_pXFormat,intervalIdx,girderKey);
    }
 
    m_Graph.DrawDataSeries(pDC->GetSafeHdc());

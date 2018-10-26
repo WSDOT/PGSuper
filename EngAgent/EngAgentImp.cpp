@@ -349,8 +349,10 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(IntervalIndex
    std::map<PoiIDKey,MINMOMENTCAPDETAILS>::iterator found;
    std::map<PoiIDKey,MINMOMENTCAPDETAILS>* pMap;
 
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    if ( poi.GetID() != INVALID_ID )
    {
@@ -377,8 +379,10 @@ const CRACKINGMOMENTDETAILS* CEngAgentImp::ValidateCrackingMoments(IntervalIndex
                                                                    const pgsPointOfInterest& poi,
                                                                    bool bPositiveMoment)
 {
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    std::map<PoiIDKey,CRACKINGMOMENTDETAILS>::iterator found;
    std::map<PoiIDKey,CRACKINGMOMENTDETAILS>* pMap;
@@ -408,10 +412,12 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::ValidateMomentCapacity(IntervalIndexT
                                                                   const pgsPointOfInterest& poi,
                                                                   bool bPositiveMoment)
 {
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    MOMENTCAPACITYDETAILS mcd = ComputeMomentCapacity(intervalIdx,poi,bPositiveMoment);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    return StoreMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,mcd,intervalIdx < compositeDeckIntervalIdx ? m_NonCompositeMomentCapacity[bPositiveMoment] : m_CompositeMomentCapacity[bPositiveMoment]);
 }
@@ -422,10 +428,12 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::ValidateMomentCapacity(IntervalIndexT
                                                                   const GDRCONFIG& config,
                                                                   bool bPositiveMoment)
 {
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    MOMENTCAPACITYDETAILS mcd = ComputeMomentCapacity(intervalIdx,poi,config,bPositiveMoment);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    return StoreMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,mcd,intervalIdx < compositeDeckIntervalIdx ? m_TempNonCompositeMomentCapacity[bPositiveMoment] : m_TempCompositeMomentCapacity[bPositiveMoment]);
 }
@@ -467,8 +475,10 @@ pgsPointOfInterest CEngAgentImp::GetEquivalentPointOfInterest(IntervalIndexType 
 //-----------------------------------------------------------------------------
 const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment)
 {
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    return GetCachedMomentCapacity(intervalIdx,poi,bPositiveMoment,intervalIdx < compositeDeckIntervalIdx ? m_NonCompositeMomentCapacity[bPositiveMoment] : m_CompositeMomentCapacity[bPositiveMoment]);
 }
@@ -476,6 +486,8 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(IntervalIndex
 //-----------------------------------------------------------------------------
 const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment)
 {
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    // if the stored config is not equal to the requesting config, flush all the cached results
    if ( !config.IsFlexuralDataEqual(m_TempGirderConfig) )
    {
@@ -491,7 +503,7 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(IntervalIndex
    }
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    return GetCachedMomentCapacity(intervalIdx,poi,bPositiveMoment,intervalIdx < compositeDeckIntervalIdx ? m_TempNonCompositeMomentCapacity[bPositiveMoment] : m_TempCompositeMomentCapacity[bPositiveMoment]);
 }
@@ -751,7 +763,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    bool bThirdEdition = ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    // Determine how many critical sections the girder will have.
    // Number of critical sections is equal to the number of face of supports
@@ -1403,6 +1415,11 @@ Float64 CEngAgentImp::GetXferLength(const CSegmentKey& segmentKey,pgsTypes::Stra
    return m_PsForceEngineer.GetXferLength(segmentKey,strandType);
 }
 
+Float64 CEngAgentImp::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
+{
+   return m_PsForceEngineer.GetXferLengthAdjustment(poi,strandType);
+}
+
 //-----------------------------------------------------------------------------
 Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded)
 {
@@ -1592,8 +1609,8 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
    for ( iter = config.PrestressConfig.Debond[strandType].begin(); iter != config.PrestressConfig.Debond[strandType].end(); iter++ )
    {
       const DEBONDCONFIG& debond_info = *iter;
-      if ( InRange(0.0,poi.GetDistFromStart(),debond_info.LeftDebondLength) ||
-           InRange(gdr_length - debond_info.RightDebondLength, poi.GetDistFromStart(), gdr_length) )
+      if ( InRange(0.0,poi.GetDistFromStart(),debond_info.DebondLength[pgsTypes::metStart]) ||
+           InRange(gdr_length - debond_info.DebondLength[pgsTypes::metEnd], poi.GetDistFromStart(), gdr_length) )
       {
          nStrands--;
       }
@@ -1618,8 +1635,8 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,c
    for ( iter = config.PrestressConfig.Debond[strandType].begin(); iter != config.PrestressConfig.Debond[strandType].end(); iter++ )
    {
       const DEBONDCONFIG& debond_info = *iter;
-      if ( InRange(0.0,poi.GetDistFromStart(),debond_info.LeftDebondLength) ||
-           InRange(gdr_length - debond_info.RightDebondLength, poi.GetDistFromStart(), gdr_length) )
+      if ( InRange(0.0,poi.GetDistFromStart(),debond_info.DebondLength[pgsTypes::metStart]) ||
+           InRange(gdr_length - debond_info.DebondLength[pgsTypes::metEnd], poi.GetDistFromStart(), gdr_length) )
       {
          nStrands--;
       }
@@ -1732,7 +1749,7 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
 #if defined _DEBUG
    else
    {
-      ATLASSERT(pIntervals->GetDuration(intervalIdx) == 0);
+      ATLASSERT(pIntervals->GetDuration(girderKey,intervalIdx) == 0);
    }
 #endif
 
@@ -1953,7 +1970,7 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    // look at non-composite moment of inertia
    // we want girders that are basically the same
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType intervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
   
    GET_IFACE(ISectionProperties,pSectProp);
    Float64 Imin = pSectProp->GetIx(intervalIdx,poi);
@@ -3040,7 +3057,7 @@ void CEngAgentImp::GetRawShearCapacityDetails(pgsTypes::LimitState ls, IntervalI
 {
 #if defined _DEBUG
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(poi.GetSegmentKey());
    ATLASSERT( liveLoadIntervalIdx <= intervalIdx ); // shear is only evaluted when live load is present
 #endif
 
@@ -3071,7 +3088,7 @@ void CEngAgentImp::GetRawShearCapacityDetails(pgsTypes::LimitState ls, IntervalI
    // Capacity is only computed in this stage and load case
 #if defined _DEBUG
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(poi.GetSegmentKey());
    ATLASSERT( intervalIdx == liveLoadIntervalIdx ); // shear is only computed in the stage when live load is applied
 #pragma Reminder("REVIEW") // may need to evalate shear in other stages for spliced girders
 #endif
@@ -3213,10 +3230,10 @@ std::vector<SHEARCAPACITYDETAILS> CEngAgentImp::GetShearCapacityDetails(pgsTypes
 
 /////////////////////////////////////////////////////////////////////////////
 // IGirderHaunch
-Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey)
+Float64 CEngAgentImp::GetRequiredSlabOffset(const CGirderKey& girderKey)
 {
    HAUNCHDETAILS details;
-   GetHaunchDetails(segmentKey,&details);
+   GetHaunchDetails(girderKey,&details);
 
    Float64 slab_offset = details.RequiredSlabOffset;
 
@@ -3231,18 +3248,18 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey)
    return slab_offset;
 }
 
-void CEngAgentImp::GetHaunchDetails(const CSegmentKey& segmentKey,HAUNCHDETAILS* pDetails)
+void CEngAgentImp::GetHaunchDetails(const CGirderKey& girderKey,HAUNCHDETAILS* pDetails)
 {
-   std::map<CSegmentKey,HAUNCHDETAILS>::iterator found;
-   found = m_HaunchDetails.find(segmentKey);
+   std::map<CGirderKey,HAUNCHDETAILS>::iterator found;
+   found = m_HaunchDetails.find(girderKey);
 
    if ( found == m_HaunchDetails.end() )
    {
       // not found
-      m_Designer.GetHaunchDetails(segmentKey,pDetails);
+      m_Designer.GetHaunchDetails(girderKey,pDetails);
 
-      std::pair<std::map<CSegmentKey,HAUNCHDETAILS>::iterator,bool> result;
-      result = m_HaunchDetails.insert( std::make_pair(segmentKey,*pDetails) );
+      std::pair<std::map<CGirderKey,HAUNCHDETAILS>::iterator,bool> result;
+      result = m_HaunchDetails.insert( std::make_pair(girderKey,*pDetails) );
       ATLASSERT(result.second == true);
       return;
    }

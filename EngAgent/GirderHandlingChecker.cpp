@@ -170,7 +170,7 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
       const pgsPointOfInterest& poi = *poiIter;
       Float64 fx,fy,mz;
       PoiIDType femPoiID = poiMap.GetModelPoi(poi);
-      HRESULT hr = results->ComputePOIForces(0,femPoiID,mftLeft,lotMember,&fx,&fy,&mz);
+      HRESULT hr = results->ComputePOIForces(lcid,femPoiID,mftLeft,lotMember,&fx,&fy,&mz);
       ATLASSERT(SUCCEEDED(hr));
       pmomVec->push_back(mz);
 
@@ -181,7 +181,7 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
          // poi should be at the half-way point between the supports
          ATLASSERT( IsEqual(poi.GetDistFromStart(),leftOH + (glen-leftOH-rightOH)/2) );
 
-         hr = results->ComputePOIDisplacements(lcid,femPoiID,lotMember,&dx,&dy,&rz);
+         hr = results->ComputePOIDeflections(lcid,femPoiID,lotMember,&dx,&dy,&rz);
          ATLASSERT(SUCCEEDED(hr));
 
          *pMidSpanDeflection = dy;
@@ -485,7 +485,10 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 
                   Float64 x,y;
                   location->get_X(&x);
-                  location->get_Y(&y);
+                  location->get_Y(&y); // measured from top of girder in Girder Section Coordinates
+                  // need y to be measured from bottom of girder
+                  y += H;
+
                   // Add bar if it's on right side of NA
                   if ( stressLoc == slTopTens && Yna < y)
                   {

@@ -30,7 +30,8 @@
 #include <MathEx.h>
 #include <vector>
 
-static long g_Ncopies = 0;
+#include <PgsExt\SegmentKey.h> // goes with GDRCONFIG
+static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is copied
 
 class dbgDumpContext;
 #include <Material\Rebar.h>
@@ -337,8 +338,8 @@ struct pgsTypes
    typedef enum SlabOffsetType
    {
       sotBridge,  // a single slab offset is used for the entire bridge
-      sotGroup,   // the slab offset is defined for all girders and segments in a group
-      sotSegment, // the slab offset is defined at ends of each segment (common ends share an offset)
+      sotPier,    // the slab offset is at each abutment, pier, and temporary support and applies to all segments supported by that element
+      sotGirder,  // the slab offset is defined at each permanent pier supporting the girder
    } SlabOffsetType;
 
    // Define connectivity (per AASHTO jargon) of adjacent beams.
@@ -706,8 +707,7 @@ public:
 struct DEBONDCONFIG
 {
    StrandIndexType strandIdx; // index of strand that is debonded (indexed by total # of filled strand locations)
-   Float64 LeftDebondLength;   // length of debond at left end of the girder
-   Float64 RightDebondLength;  // length of debond at right end of the girder
+   Float64 DebondLength[2];   // length of debond at left end of the girder
 
    bool operator<(const DEBONDCONFIG& other) const
    {
@@ -718,8 +718,8 @@ struct DEBONDCONFIG
    {
       bool bEqual = true;
       bEqual &= (strandIdx == other.strandIdx);
-      bEqual &= IsEqual(LeftDebondLength,other.LeftDebondLength);
-      bEqual &= IsEqual(RightDebondLength,other.RightDebondLength);
+      bEqual &= IsEqual(DebondLength[pgsTypes::metStart],other.DebondLength[pgsTypes::metStart]);
+      bEqual &= IsEqual(DebondLength[pgsTypes::metEnd],other.DebondLength[pgsTypes::metEnd]);
       return bEqual;
    }
 };
@@ -922,6 +922,8 @@ inline void PRESTRESSCONFIG::MakeCopy( const PRESTRESSCONFIG& other )
 // Girder configuration
 struct GDRCONFIG
 {
+   CSegmentKey SegmentKey;
+
    PRESTRESSCONFIG PrestressConfig; // all prestressing information
 
    Float64 Fc;        // 28 day concrete strength
@@ -994,6 +996,8 @@ private:
 void MakeCopy( const GDRCONFIG& rOther )
 {
    g_Ncopies++;
+
+   SegmentKey = rOther.SegmentKey;
 
    PrestressConfig = rOther.PrestressConfig;
 
@@ -1259,6 +1263,15 @@ inline bool IsFatigueLimitState(pgsTypes::LimitState ls)
 inline bool IsServiceLimitState(pgsTypes::LimitState ls)
 {
    return !IsStrengthLimitState(ls) && !IsFatigueLimitState(ls);
+}
+
+inline bool IsServiceIIILimitState(pgsTypes::LimitState ls)
+{
+   return (ls == pgsTypes::ServiceIII ||
+           ls == pgsTypes::ServiceIII_Inventory ||
+           ls == pgsTypes::ServiceIII_Operating ||
+           ls == pgsTypes::ServiceIII_LegalRoutine ||
+           ls == pgsTypes::ServiceIII_LegalSpecial) ? true : false;
 }
 
 inline bool IsRatingLiveLoad(pgsTypes::LiveLoadType llType)

@@ -406,7 +406,7 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
       // 
       //hr = pStrLoad->EndUnit(); // end TxDOTOptionalGirderData
    }
-   catch(HRESULT)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pLoad);

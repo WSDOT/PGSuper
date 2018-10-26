@@ -53,6 +53,15 @@ DESCRIPTION
 class PGSEXTCLASS CPrecastSegmentData
 {
 public:
+   CPrecastSegmentData();
+   CPrecastSegmentData(CSplicedGirderData* pGirder);
+   CPrecastSegmentData(const CPrecastSegmentData& rOther); // copies only data, not ID or Index
+   ~CPrecastSegmentData();
+
+   // assigns all segment data including ID and Index
+   CPrecastSegmentData& operator=(const CPrecastSegmentData& rOther);
+
+
    CStrandData Strands;      // number of strands, debonding and strand data
    CGirderMaterial Material; // concrete
    CShearData2 ShearData;    // stirrups
@@ -78,14 +87,6 @@ public:
    Float64 EndBlockLength[2];
    Float64 EndBlockTransitionLength[2];
    Float64 EndBlockWidth[2];
-
-   CPrecastSegmentData();
-   CPrecastSegmentData(CSplicedGirderData* pGirder);
-   CPrecastSegmentData(const CPrecastSegmentData& rOther); // copies only data, not ID or Index
-   ~CPrecastSegmentData();
-
-   // assigns all segment data including ID and Index
-   CPrecastSegmentData& operator=(const CPrecastSegmentData& rOther);
 
    // Copies only segment definition data. Does not copy ID or Index
    void CopySegmentData(const CPrecastSegmentData* pSegment);
@@ -114,20 +115,26 @@ public:
    // Returns the support at the start of the segment. The support could be a
    // pier or a temporary support. The support pointer is not NULL, the other pointer is NULL
    void GetStartSupport(const CPierData2** ppPier,const CTemporarySupportData** ppTS) const;
+   void GetStartSupport(CPierData2** ppPier,CTemporarySupportData** ppTS);
    void GetEndSupport(const CPierData2** ppPier,const CTemporarySupportData** ppTS) const;
+   void GetEndSupport(CPierData2** ppPier,CTemporarySupportData** ppTS);
    void GetStations(Float64* pStartStation,Float64* pEndStation) const;
 
    void GetSpacing(const CGirderSpacing2** ppStartSpacing,const CGirderSpacing2** ppEndSpacing) const;
 
-   void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
-   Float64 GetSlabOffset(pgsTypes::MemberEndType end) const;
-
    SegmentIndexType GetIndex() const;
    SegmentIDType GetID() const;
+   CSegmentKey GetSegmentKey() const;
 
+   // Returns a vector of all the piers that support this segment
+   std::vector<const CPierData2*> GetPiers() const;
+
+   // Returns a vector of all the temporary supports that support this segment
    std::vector<const CTemporarySupportData*> GetTemporarySupports() const;
 
-   CSegmentKey GetSegmentKey() const;
+   // Returns true if the segment is a drop-in segment
+   bool IsDropIn() const;
+
 
    //------------------------------------------------------------------------
    // specialized function to copy only material data or only prestressing data

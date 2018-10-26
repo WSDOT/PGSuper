@@ -25,7 +25,3 @@
 //	stdafx.obj will contain the pre-compiled type information
 
 #include "stdafx.h"
-
-#include <initguid.h>
-#include <IFace\BeamFactory.h>
-#include "PGSuperCatCom.h"

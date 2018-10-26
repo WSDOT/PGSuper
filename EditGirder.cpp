@@ -32,6 +32,24 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+txnEditGirderData::txnEditGirderData()
+{
+}
+
+txnEditGirderData::txnEditGirderData(const txnEditGirderData& rOther)
+{
+   m_GirderKey = rOther.m_GirderKey;
+   m_bUseSameGirder = rOther.m_bUseSameGirder;
+   m_strGirderName = rOther.m_strGirderName;
+
+   m_Girder = rOther.m_Girder;
+
+   m_SlabOffsetType = rOther.m_SlabOffsetType;
+   m_SlabOffset[pgsTypes::metStart] = rOther.m_SlabOffset[pgsTypes::metStart];
+   m_SlabOffset[pgsTypes::metEnd] = rOther.m_SlabOffset[pgsTypes::metEnd];
+}
+
+/////////////////////////////////////////////////////////////
 txnEditGirder::txnEditGirder(const CGirderKey& girderKey,const txnEditGirderData& newGirderData)
 {
    m_GirderKey = girderKey;
@@ -74,10 +92,8 @@ bool txnEditGirder::Execute()
       oldGirderData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
 
       // this is a precast girder (only one segment per girder)
-      CSegmentKey segmentKey(m_GirderKey.groupIndex,gdrIdx,0);
-      pIBridgeDesc->GetSlabOffset(segmentKey,
-                                  &oldGirderData.m_SlabOffset[pgsTypes::metStart],
-                                  &oldGirderData.m_SlabOffset[pgsTypes::metEnd]);
+      oldGirderData.m_SlabOffset[pgsTypes::metStart] = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,pGroup->GetPierIndex(pgsTypes::metStart),gdrIdx);
+      oldGirderData.m_SlabOffset[pgsTypes::metEnd]   = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,pGroup->GetPierIndex(pgsTypes::metEnd),  gdrIdx);
 
       oldGirderData.m_Girder = *pGroup->GetGirder(gdrIdx);
 
@@ -146,19 +162,29 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
    pIBridgeDesc->UseSameGirderForEntireBridge( gdrData.m_bUseSameGirder );
 
    // set the slab offset
+   pIBridgeDesc->SetSlabOffsetType( gdrData.m_SlabOffsetType );
    if ( gdrData.m_SlabOffsetType == pgsTypes::sotBridge )
    {
       // for the entire bridge
       pIBridgeDesc->SetSlabOffset( gdrData.m_SlabOffset[pgsTypes::metStart] );
    }
-   else if ( gdrData.m_SlabOffsetType == pgsTypes::sotGroup )
+   else if ( gdrData.m_SlabOffsetType == pgsTypes::sotPier )
    {
       // for this span
-      pIBridgeDesc->SetSlabOffset(girderKey.groupIndex,gdrData.m_SlabOffset[pgsTypes::metStart], gdrData.m_SlabOffset[pgsTypes::metEnd] );
+      const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+      PierIndexType startPierIdx = pGroup->GetPier(pgsTypes::metStart)->GetIndex();
+      PierIndexType endPierIdx   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
+
+      pIBridgeDesc->SetSlabOffset(girderKey.groupIndex, startPierIdx, gdrData.m_SlabOffset[pgsTypes::metStart]);
+      pIBridgeDesc->SetSlabOffset(girderKey.groupIndex, endPierIdx,   gdrData.m_SlabOffset[pgsTypes::metEnd]);
    }
    else
    {
       // by girder
+      const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+      PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+      PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
+
       if ( !bUndo && gdrData.m_SlabOffsetType != m_NewGirderData.m_SlabOffsetType )
       {
          // we are changing the slab offset type from something to "by girder"
@@ -167,20 +193,21 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
          // the current value is the value for this girder
 
          // get the current value of the slab offset
-         Float64 start, end;
-         pIBridgeDesc->GetSlabOffset(segmentKey,&start,&end);
+         Float64 start = pGroup->GetSlabOffset(startPierIdx,segmentKey.girderIndex);
+         Float64 end   = pGroup->GetSlabOffset(endPierIdx,  segmentKey.girderIndex);
 
          // set the value for each girder to this current value
          GirderIndexType nGirders = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(girderKey.groupIndex)->GetGirderCount();
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
-            CSegmentKey thisSegmentKey(girderKey.groupIndex,gdrIdx,0);
-            pIBridgeDesc->SetSlabOffset( thisSegmentKey, start, end );
+            pIBridgeDesc->SetSlabOffset(girderKey.groupIndex,startPierIdx,gdrIdx,start);
+            pIBridgeDesc->SetSlabOffset(girderKey.groupIndex,endPierIdx,  gdrIdx,end);
          }
       }
       
       // change the girder that was edited
-      pIBridgeDesc->SetSlabOffset( girderKey.groupIndex, gdrData.m_SlabOffset[pgsTypes::metStart], gdrData.m_SlabOffset[pgsTypes::metEnd] );
+      pIBridgeDesc->SetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex, gdrData.m_SlabOffset[pgsTypes::metStart]);
+      pIBridgeDesc->SetSlabOffset(segmentKey.groupIndex, endPierIdx,   segmentKey.girderIndex, gdrData.m_SlabOffset[pgsTypes::metEnd]  );
    }
 
    if ( !gdrData.m_bUseSameGirder )

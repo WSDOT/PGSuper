@@ -59,7 +59,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    bool bHasDeckPanel = pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
 
    ColumnIndexType numColumns = 9;
 
@@ -187,23 +187,25 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
 void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
-   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlab,      poi, m_BAT ) );
+   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlab,      poi, m_BAT, ctIncremental ) );
    if ( m_bHasDeckPanel )
    {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPanel,      poi, m_BAT ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPanel,      poi, m_BAT, ctIncremental ) );
    }
-   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPad,   poi, m_BAT ) );
-   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftDiaphragm, poi, m_BAT ) + 
-                                          pProdForces->GetMoment( castDeckIntervalIdx, pftShearKey,  poi, m_BAT ));
+   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPad,   poi, m_BAT, ctIncremental ) );
+   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftDiaphragm, poi, m_BAT, ctIncremental ) + 
+                                          pProdForces->GetMoment( castDeckIntervalIdx, pftShearKey,  poi, m_BAT, ctIncremental ));
    if ( m_bHasUserLoads )
    {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftUserDC, poi, m_BAT ) );
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftUserDW, poi, m_BAT ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftUserDC, poi, m_BAT, ctIncremental ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftUserDW, poi, m_BAT, ctIncremental ) );
    }
 
    (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetAddlGdrMoment() );

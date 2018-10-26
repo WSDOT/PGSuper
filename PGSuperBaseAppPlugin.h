@@ -24,6 +24,7 @@
 
 #include "PGSuperCatalogServers.h"
 #include <EAF\EAFApp.h>
+#include <EAF\EAFCustomReport.h>
 
 #include "PGSuperCommandLineInfo.h"
 
@@ -65,6 +66,18 @@ public:
 
    virtual BOOL UpdateProgramSettings(BOOL bFirstRun);
 
+   // Determine whether to display favorite reports or all reports in menu dropdowns
+   bool GetDoDisplayFavoriteReports() const;
+   void SetDoDisplayFavoriteReports(bool doDisplay);
+
+   // Current list of favorite reports
+   std::vector<std::_tstring> GetFavoriteReports() const;
+   void SetFavoriteReports( std::vector<std::_tstring> reports);
+
+   // Custom, user-defined reports
+   CEAFCustomReports GetCustomReports() const;
+   void SetCustomReports(const CEAFCustomReports& reports);
+
 protected:
    SharedResourceType   m_SharedResourceType;     // method for using shared resources (Master lib and Workgroup templates)
    CacheUpdateFrequency m_CacheUpdateFrequency;
@@ -81,6 +94,11 @@ protected:
 
    CString m_EngineerName;
    CString m_CompanyName;
+
+   BOOL m_DisplayFavoriteReports;
+   std::vector<std::_tstring> m_FavoriteReports;
+
+   CEAFCustomReports m_CustomReports;
 
    void RegistryConvert(); // Convert any old registry settings for current program (move into app plugin class)
    void LoadRegistryValues();

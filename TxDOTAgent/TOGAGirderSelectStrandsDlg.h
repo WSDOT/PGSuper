@@ -64,15 +64,15 @@ public:
 
    // intialize and retreive data before/after domodal
    void InitializeData(SpanIndexType span, GirderIndexType girder, 
-                       const DirectStrandFillCollection& directFilledStraightStrands,
+                       const CDirectStrandFillCollection& directFilledStraightStrands,
                        const std::vector<CDebondData>& straightDebond,
                        const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, Float64 maxDebondLength);
 
-   bool GetData(DirectStrandFillCollection& directFilledStraightStrands,
+   bool GetData(CDirectStrandFillCollection& directFilledStraightStrands,
                 std::vector<CDebondData>& straightDebond); // return true if data changed
 
 private:
-   DirectStrandFillCollection m_DirectFilledStraightStrands;
+   CDirectStrandFillCollection m_DirectFilledStraightStrands;
 
    // data for dialog resizing
    int m_BottomOffset; // distance from bottom of picture to bottom of dialog

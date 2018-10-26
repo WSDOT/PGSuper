@@ -2626,11 +2626,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType erectIntervalIdx         = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
    
    // eccentricity of the permanent strands at release
    *pepermRelease = pStrandGeom->GetEccentricity( releaseIntervalIdx,  poi, config, false, &nStrandsEffective);
@@ -2708,7 +2708,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    *pFci    = config.Fci;
    *pFc     = config.Fc;
-   *pFcSlab = pMaterial->GetDeckFc(compositeDeckIntervalIdx);
+   *pFcSlab = pMaterial->GetDeckFc(segmentKey,compositeDeckIntervalIdx);
 
    if ( config.bUserEci )
       *pEci = config.Eci;
@@ -2723,7 +2723,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    if (pDeck->Concrete.bUserEc)
       *pEcSlab = pDeck->Concrete.Ec;
    else
-      *pEcSlab = pMaterial->GetDeckEc(compositeDeckIntervalIdx);
+      *pEcSlab = pMaterial->GetDeckEc(segmentKey,compositeDeckIntervalIdx);
 
    if ( IsZero(*pApsPerm) )
    {
@@ -2741,7 +2741,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
-   *pMdlg  = pProdForces->GetMoment( releaseIntervalIdx, pftGirder, poi, bat);
+   *pMdlg  = pProdForces->GetMoment( releaseIntervalIdx, pftGirder, poi, bat, ctIncremental);
 
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
 
@@ -2783,16 +2783,16 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    }
    else
    {
-      *pMadlg = K_slab    * pProdForces->GetMoment( castDeckIntervalIdx, pftSlab,      poi, bat ) +
-                K_slabpad * pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPad,   poi, bat ) + 
-                K_dia     *(pProdForces->GetMoment( castDeckIntervalIdx, pftDiaphragm, poi, bat ) + 
-                            pProdForces->GetMoment( castDeckIntervalIdx, pftShearKey,  poi, bat )) + 
-                K_userdc1 * pProdForces->GetMoment( castDeckIntervalIdx, pftUserDC,    poi, bat ) +
-                K_userdw1 * pProdForces->GetMoment( castDeckIntervalIdx, pftUserDW,    poi, bat );
+      *pMadlg = K_slab    * pProdForces->GetMoment( castDeckIntervalIdx, pftSlab,      poi, bat, ctIncremental ) +
+                K_slabpad * pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPad,   poi, bat, ctIncremental ) + 
+                K_dia     *(pProdForces->GetMoment( castDeckIntervalIdx, pftDiaphragm, poi, bat, ctIncremental ) + 
+                            pProdForces->GetMoment( castDeckIntervalIdx, pftShearKey,  poi, bat, ctIncremental )) + 
+                K_userdc1 * pProdForces->GetMoment( castDeckIntervalIdx, pftUserDC,    poi, bat, ctIncremental ) +
+                K_userdw1 * pProdForces->GetMoment( castDeckIntervalIdx, pftUserDW,    poi, bat, ctIncremental );
 
       if ( pDeck->DeckType == pgsTypes::sdtCompositeSIP )
       {
-         *pMadlg += K_slab * pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPanel, poi, bat );
+         *pMadlg += K_slab * pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPanel, poi, bat, ctIncremental );
       }
    }
 
@@ -2803,15 +2803,15 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       *pMadlg += K_slabpad*M;
    }
 
-   *pMsidl = K_railing * (pProdForces->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, poi, bat ) +
-                          pProdForces->GetMoment( railingSystemIntervalIdx, pftSidewalk,       poi, bat )) +
-             K_userdc2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDC,         poi, bat ) +
-             K_userdw2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDW,         poi, bat );
+   *pMsidl = K_railing * (pProdForces->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, ctIncremental ) +
+                          pProdForces->GetMoment( railingSystemIntervalIdx, pftSidewalk,       poi, bat, ctIncremental )) +
+             K_userdc2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDC,         poi, bat, ctIncremental ) +
+             K_userdw2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDW,         poi, bat, ctIncremental );
 
    // only include overlay load if it is not a future overlay
    if ( !pBridge->IsFutureOverlay() )
    {
-      *pMsidl += K_overlay*pProdForces->GetMoment( overlayIntervalIdx, pftOverlay, poi, bat );
+      *pMsidl += K_overlay*pProdForces->GetMoment( overlayIntervalIdx, pftOverlay, poi, bat, ctIncremental );
    }
 
    

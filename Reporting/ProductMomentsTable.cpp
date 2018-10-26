@@ -223,7 +223,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
          continuityEventIdx = Min(continuityEventIdx,right_event_index);
       }
    }
-   *pContinuityInterval = pIntervals->GetInterval(continuityEventIdx);
+   *pContinuityInterval = pIntervals->GetInterval(girderKey,continuityEventIdx);
 
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
 
@@ -357,6 +357,14 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(girderKey);
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(girderKey);
+   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_interval,&startGroup,&nGroups);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Moments"));
@@ -370,7 +378,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,
-                                                                                           bPermit,bRating,analysisType,continuity_interval,
+                                                                                           bPermit,bRating,analysisType,continuity_interval,castDeckIntervalIdx,
                                                                                            pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    // Get the results
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -381,14 +389,6 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
-
    for ( GroupIndexType grpIdx = startGroup; grpIdx < nGroups; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
@@ -398,29 +398,29 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
-      std::vector<Float64> girder    = pForces2->GetMoment(erectSegmentIntervalIdx, pftGirder,    vPoi, maxBAT);
-      std::vector<Float64> diaphragm = pForces2->GetMoment(castDeckIntervalIdx,     pftDiaphragm, vPoi, maxBAT);
+      std::vector<Float64> girder    = pForces2->GetMoment(erectSegmentIntervalIdx, pftGirder,    vPoi, maxBAT, ctIncremental);
+      std::vector<Float64> diaphragm = pForces2->GetMoment(castDeckIntervalIdx,     pftDiaphragm, vPoi, maxBAT, ctIncremental);
 
       std::vector<Float64> minSlab, maxSlab;
       std::vector<Float64> minSlabPad, maxSlabPad;
-      maxSlab = pForces2->GetMoment( castDeckIntervalIdx, pftSlab, vPoi, maxBAT );
-      minSlab = pForces2->GetMoment( castDeckIntervalIdx, pftSlab, vPoi, minBAT );
+      maxSlab = pForces2->GetMoment( castDeckIntervalIdx, pftSlab, vPoi, maxBAT, ctIncremental );
+      minSlab = pForces2->GetMoment( castDeckIntervalIdx, pftSlab, vPoi, minBAT, ctIncremental );
 
-      maxSlabPad = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT );
-      minSlabPad = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT );
+      maxSlabPad = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT, ctIncremental );
+      minSlabPad = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT, ctIncremental );
 
       std::vector<Float64> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
       {
-         maxDeckPanel = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT );
-         minDeckPanel = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT );
+         maxDeckPanel = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT, ctIncremental );
+         minDeckPanel = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT, ctIncremental );
       }
 
       std::vector<Float64> minConstruction, maxConstruction;
       if ( bConstruction )
       {
-         maxConstruction = pForces2->GetMoment( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT );
-         minConstruction = pForces2->GetMoment( castDeckIntervalIdx, pftConstruction, vPoi, minBAT );
+         maxConstruction = pForces2->GetMoment( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT, ctIncremental );
+         minConstruction = pForces2->GetMoment( castDeckIntervalIdx, pftConstruction, vPoi, minBAT, ctIncremental );
       }
 
       std::vector<Float64> dummy;
@@ -455,22 +455,22 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
 
       if ( bSidewalk )
       {
-         maxSidewalk = pForces2->GetMoment( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT );
-         minSidewalk = pForces2->GetMoment( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT );
+         maxSidewalk = pForces2->GetMoment( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT, ctIncremental );
+         minSidewalk = pForces2->GetMoment( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT, ctIncremental );
       }
 
       if ( bShearKey )
       {
-         maxShearKey = pForces2->GetMoment( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT );
-         minShearKey = pForces2->GetMoment( castDeckIntervalIdx, pftShearKey, vPoi, minBAT );
+         maxShearKey = pForces2->GetMoment( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT, ctIncremental );
+         minShearKey = pForces2->GetMoment( castDeckIntervalIdx, pftShearKey, vPoi, minBAT, ctIncremental );
       }
 
-      maxTrafficBarrier = pForces2->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT );
-      minTrafficBarrier = pForces2->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT );
+      maxTrafficBarrier = pForces2->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, ctIncremental );
+      minTrafficBarrier = pForces2->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, ctIncremental );
       if ( overlayIntervalIdx != INVALID_INDEX )
       {
-         maxOverlay = pForces2->GetMoment( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT );
-         minOverlay = pForces2->GetMoment( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT );
+         maxOverlay = pForces2->GetMoment( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, ctIncremental );
+         minOverlay = pForces2->GetMoment( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, ctIncremental );
       }
 
       if ( bPedLoading )

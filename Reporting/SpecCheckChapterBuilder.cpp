@@ -126,7 +126,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(CSegmentKey(girderKey,0));
    IntervalIndexType liftingIntervalIdx       = pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,0));
    IntervalIndexType haulingIntervalIdx       = pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,0));
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
@@ -210,8 +210,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       for ( ; lsIter != lsIterEnd; lsIter++ )
       {
          pgsTypes::LimitState limitState = *lsIter;
-         if ( pAllowableConcreteStress->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression) ||
-              pAllowableConcreteStress->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension)
+         if ( pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression) ||
+              pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension)
             )
          {
             CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState,true/*girder stresses*/);
@@ -259,8 +259,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
          for ( ; lsIter != lsIterEnd; lsIter++ )
          {
             pgsTypes::LimitState limitState = *lsIter;
-            if ( pAllowableConcreteStress->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression) ||
-                 pAllowableConcreteStress->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension)
+            if ( pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression) ||
+                 pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension)
                )
             {
                CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState,false/*deck stresses*/);

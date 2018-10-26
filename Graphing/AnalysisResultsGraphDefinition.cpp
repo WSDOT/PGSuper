@@ -35,11 +35,10 @@ CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition()
 
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString name,
+const CString& name,
 pgsTypes::LimitState ls,
 const std::vector<IntervalIndexType>& intervals,
-int actions,
-COLORREF c
+int actions
 ): m_ID(id),m_Name(name)
 {
    m_GraphType = graphLimitState;
@@ -47,17 +46,15 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = actions;
-   m_Color = c;
 }
 
 // constructor for combinations
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString name,
+const CString& name,
 LoadingCombination comb,
 const std::vector<IntervalIndexType>& intervals,
-int actions,
-COLORREF c
+int actions
 ): m_ID(id),m_Name(name)
 {
    m_GraphType = graphCombined;
@@ -65,17 +62,15 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = actions;
-   m_Color = c;
 }
 
 // constructor for product loads
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString name,
+const CString& name,
 ProductForceType type,
 const std::vector<IntervalIndexType>& intervals,
-int actions,
-COLORREF c
+int actions
 ): m_ID(id),m_Name(name)
 {
    m_GraphType = graphProduct;
@@ -84,33 +79,29 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
    
    m_ApplicableActions = actions;
-   m_Color = c;
 }
 
 // constructor for live loads
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString name,
+const CString& name,
 const std::vector<IntervalIndexType>& intervals,
-int actions,
-COLORREF c
+int actions
 ): m_ID(id),m_Name(name)
 {
    m_GraphType = graphLiveLoad;
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = actions;
-   m_Color = c;
 }
 
 // constructor for prestress
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString name,
+const CString& name,
 GraphType type,
-const std::vector<IntervalIndexType>& intervals,
-COLORREF c
-): m_ID(id),m_Name(name),m_GraphType(type),m_Color(c)
+const std::vector<IntervalIndexType>& intervals
+): m_ID(id),m_Name(name),m_GraphType(type),m_ApplicableActions(ACTIONS_STRESS_ONLY | ACTIONS_DEFLECTION_ONLY)
 {
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 }
@@ -118,11 +109,10 @@ COLORREF c
 // constructor for demands
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString name,
+const CString& name,
 pgsTypes::LimitState lstype,
 GraphType grtype,
-const std::vector<IntervalIndexType>& intervals,
-COLORREF c
+const std::vector<IntervalIndexType>& intervals
 ): m_ID(id),m_Name(name)
 {
    m_GraphType = grtype;
@@ -130,18 +120,16 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = ACTIONS_STRESS_ONLY;
-   m_Color = c;
 }
 
 // constructor for vehicular live loads
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString name,
+const CString& name,
 pgsTypes::LiveLoadType llType,
 VehicleIndexType vehicleIndex,
 const std::vector<IntervalIndexType>& intervals,
-int apaction,
-COLORREF c
+int apaction
 ): m_ID(id),m_Name(name)
 {
    m_GraphType = graphVehicularLiveLoad;
@@ -149,19 +137,17 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = apaction;
-   m_Color = c;
    m_VehicleIndex = vehicleIndex;
 }
 
 // constructor for ultimate forces
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString name,
+const CString& name,
 pgsTypes::LimitState lstype,
 GraphType grtype,
 const std::vector<IntervalIndexType>& intervals,
-int apaction,
-COLORREF c
+int apaction
 ): m_ID(id),m_Name(name)
 {
    m_GraphType = grtype;
@@ -169,16 +155,14 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = apaction;
-   m_Color = c;
 }
 
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
-const CString name,
+const CString& name,
 pgsTypes::LiveLoadType llType,
 const std::vector<IntervalIndexType>& intervals,
-int apaction,
-COLORREF c
+int apaction
 ): m_ID(id),m_Name(name)
 {
    m_GraphType = graphLiveLoad;
@@ -186,7 +170,6 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = apaction;
-   m_Color = c;
    m_VehicleIndex = INVALID_INDEX; // not a specific vehicle, but rather an envelope
 }
 
@@ -224,6 +207,24 @@ const CAnalysisResultsGraphDefinition& CAnalysisResultsGraphDefinitions::GetGrap
    return *found;
 }
 
+IndexType CAnalysisResultsGraphDefinitions::GetGraphIndex(IDType graphID) const
+{
+   IndexType index = 0;
+   ConstGraphDefinitionIterator iter(m_Definitions.begin());
+   ConstGraphDefinitionIterator end(m_Definitions.end());
+   for ( ; iter != end; iter++, index++ )
+   {
+      const CAnalysisResultsGraphDefinition& def = *iter;
+      if ( def.m_ID == graphID )
+      {
+         return index;
+      }
+   }
+
+   ATLASSERT(false); // graphID not found
+   return INVALID_INDEX;
+}
+
 void CAnalysisResultsGraphDefinitions::RemoveGraphDefinition(IDType graphID)
 {
    CAnalysisResultsGraphDefinition key;
@@ -249,12 +250,13 @@ CString CAnalysisResultsGraphDefinitions::GetDefaultLoadCase(IntervalIndexType i
    return "DC";
 }
    
-std::vector< std::pair<CString,IDType> > CAnalysisResultsGraphDefinitions::GetLoadCaseNames(IntervalIndexType intervalIdx, ActionType action) const
+std::vector< std::pair<CString,IDType> > CAnalysisResultsGraphDefinitions::GetLoadings(IntervalIndexType intervalIdx, ActionType action) const
 {
    std::vector< std::pair<CString,IDType> > lcNames;
 
-   ConstGraphDefinitionIterator iter;
-   for ( iter = m_Definitions.begin(); iter != m_Definitions.end(); iter++ )
+   ConstGraphDefinitionIterator iter(m_Definitions.begin());
+   ConstGraphDefinitionIterator iterEnd(m_Definitions.end());
+   for ( ; iter != iterEnd; iter++ )
    {
       const CAnalysisResultsGraphDefinition& def = *iter;
 
@@ -269,8 +271,8 @@ std::vector< std::pair<CString,IDType> > CAnalysisResultsGraphDefinitions::GetLo
             bApplicableAction = def.m_ApplicableActions & ACTIONS_SHEAR_ONLY ? true : false;
             break;
 
-         case actionDisplacement:
-            bApplicableAction = def.m_ApplicableActions & ACTIONS_DISPLACEMENT_ONLY ? true : false;
+         case actionDeflection:
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_DEFLECTION_ONLY ? true : false;
             break;
 
          case actionStress:
@@ -282,10 +284,17 @@ std::vector< std::pair<CString,IDType> > CAnalysisResultsGraphDefinitions::GetLo
             break;
       }
 
-      std::set<IntervalIndexType>::const_iterator found = def.m_IntervalApplicability.find(intervalIdx);
-      if (found != def.m_IntervalApplicability.end() && bApplicableAction)
+      if ( intervalIdx == INVALID_INDEX && bApplicableAction )
       {
          lcNames.push_back( std::make_pair( def.m_Name, def.m_ID ) );
+      }
+      else
+      {
+         std::set<IntervalIndexType>::const_iterator found = def.m_IntervalApplicability.find(intervalIdx);
+         if (found != def.m_IntervalApplicability.end() && bApplicableAction)
+         {
+            lcNames.push_back( std::make_pair( def.m_Name, def.m_ID ) );
+         }
       }
    }
    return lcNames;

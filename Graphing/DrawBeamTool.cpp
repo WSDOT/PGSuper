@@ -47,7 +47,7 @@ CDrawBeamTool::~CDrawBeamTool()
 {
 }
 
-void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPointMapper mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType intervalIdx,const CGirderKey& girderKey)
+void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,grlibPointMapper mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType intervalIdx,const CGirderKey& girderKey)
 {
    m_pBroker = pBroker;
    m_pUnitConverter = pUnitConverter;
@@ -126,8 +126,8 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPo
    else
       m_SupportSize = CSize(5,5);
 
-   EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
-
+   // when drawing only a sub-set of all the girder groups (e.g. a single span or single group)
+   // we have to shift the beam so it lines up correctly on the X-axis of the graph
    Float64 groupShift = 0;
    for ( GroupIndexType grpIdx = 0; grpIdx < startGroupIdx; grpIdx++ )
    {
@@ -141,6 +141,9 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPo
       groupShift += girder_layout_length;
    }
 
+   //
+   // Draw the girder
+   //
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       // deal with girder index when there are different number of girders in each group
@@ -166,7 +169,7 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPo
          // Get segment profile, don't include shape in the closure joint region.
          // Coordinates are in the girder path coordinate system.
          CComPtr<IShape> shape;
-         pIGirder->GetSegmentProfile(segmentKey,false,&shape);
+         pIGirder->GetSegmentProfile(segmentKey,false/*exclude closure joint*/,&shape);
 
          // map the points into the logical space of the graph
          CComPtr<IPoint2dCollection> points;
@@ -184,13 +187,17 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPo
             Float64 x,y;
             pnt->Location(&x,&y);
 
-            Float64 X = m_pUnitConverter->Convert(x+beamShift+groupShift);
+            Float64 Xgl = pPoi->ConvertGirderPathCoordinateToGirderlineCoordinate(segmentKey,x);
+
+            Float64 X = m_pUnitConverter->Convert(Xgl+groupShift);
             Float64 Y = m_pUnitConverter->Convert(y); // use the X-converter so the height of the beam is scaled the same as the length
 
             mapper.WPtoDP(X,Y,&pnts[idx].x,&pnts[idx].y);
          }
 
-         if ( pTimelineMgr->IsSegmentErected(segID,eventIdx) )
+         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+
+         if ( erectionIntervalIdx <= intervalIdx )
          {
             pDC->SelectObject( &segment_brush );
          }
@@ -208,8 +215,10 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPo
          //
          if ( segIdx < nSegments-1 && pIntervals->GetCastClosureJointInterval(segmentKey) <= intervalIdx )
          {
+            CClosureKey closureKey(segmentKey);
+
             CComPtr<IShape> shape;
-            pBridge->GetClosureJointProfile(segmentKey,&shape);
+            pBridge->GetClosureJointProfile(closureKey,&shape);
 
             CComPtr<IPoint2dCollection> points;
             shape->get_PolyPoints(&points); // these points are in girder path coordinates
@@ -226,13 +235,17 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPo
                Float64 x,y;
                pnt->Location(&x,&y);
 
-               Float64 X = m_pUnitConverter->Convert(x+beamShift);
+               Float64 Xgl = pPoi->ConvertGirderPathCoordinateToGirderlineCoordinate(segmentKey,x);
+
+               Float64 X = m_pUnitConverter->Convert(Xgl+groupShift);
                Float64 Y = m_pUnitConverter->Convert(y); // use the X-converter so the height of the beam is scaled the same as the length
 
                mapper.WPtoDP(X,Y,&pnts[idx].x,&pnts[idx].y);
             }
 
-            if ( pTimelineMgr->GetCastClosureJointEventIndex(segID) <= eventIdx )
+            IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
+
+            if ( compositeClosureIntervalIdx <= intervalIdx )
             {
                pDC->SelectObject( &closure_brush );
             }
@@ -249,13 +262,13 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPo
          //
          // Draw Supports
          //
-         DrawSegmentEndSupport(beamShift+groupShift,pSegment,pgsTypes::metStart,intervalIdx,pTimelineMgr,mapper,pDC);
-         DrawSegmentEndSupport(beamShift+groupShift,pSegment,pgsTypes::metEnd,intervalIdx,pTimelineMgr,mapper,pDC);
-         DrawIntermediatePier(beamShift+groupShift,pSegment,intervalIdx,pTimelineMgr,mapper,pDC);
-         DrawIntermediateTemporarySupport(beamShift+groupShift,pSegment,intervalIdx,pTimelineMgr,mapper,pDC);
+         DrawSegmentEndSupport(groupShift,pSegment,pgsTypes::metStart,intervalIdx,pTimelineMgr,mapper,pDC);
+         DrawSegmentEndSupport(groupShift,pSegment,pgsTypes::metEnd,intervalIdx,pTimelineMgr,mapper,pDC);
+         DrawIntermediatePier(groupShift,pSegment,intervalIdx,pTimelineMgr,mapper,pDC);
+         DrawIntermediateTemporarySupport(groupShift,pSegment,intervalIdx,pTimelineMgr,mapper,pDC);
       } // end of segment loop
 
-      DrawTendons(beamShift,girderKey,intervalIdx,pTimelineMgr,mapper,pDC);
+      DrawTendons(groupShift,girderKey,intervalIdx,pTimelineMgr,mapper,pDC);
 
       Float64 girder_layout_length = pBridge->GetGirderLayoutLength(girderKey);
       groupShift += girder_layout_length;
@@ -265,14 +278,14 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPo
    pDC->SelectObject(pOldPen);
 }
 
-void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC)
+void CDrawBeamTool::DrawSegmentEndSupport(Float64 groupShift,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC)
 {
    // Draws the support icon at one end of a segment
 
-   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
-
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(IPointOfInterest,pIPoi);
+
+   CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
    const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetLeftClosure() : pSegment->GetRightClosure());
    const CPierData2* pPier = NULL;
@@ -289,7 +302,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
       pPier = (endType == pgsTypes::metStart ? pSpan->GetPrevPier() : pSpan->GetNextPier());
    }
 
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(m_GirderKey);
    SegmentIndexType nSegments = pSegment->GetGirder()->GetSegmentCount();
 
    // Check to see if this segment ends at a pier and a new group starts
@@ -330,11 +343,11 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
       bool bResult = pBridge->GetPierLocation(pierIdx,segmentKey,&Xs);
       ATLASSERT(bResult == true);
 
-      Float64 Xg = pIPoi->ConvertSegmentCoordinateToGirderCoordinate(segmentKey,Xs);
+      Float64 Xgl = pIPoi->ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey,Xs);
 
       // Bridge is continuous in this interval so draw pier symbol at CL Pier
       CPoint p;
-      Float64 X = m_pUnitConverter->Convert(Xg+beamShift);
+      Float64 X = m_pUnitConverter->Convert(Xgl+groupShift);
       Float64 H = m_pUnitConverter->Convert(sectionHeight);
       mapper.WPtoDP(X,-H,&p.x,&p.y);
 
@@ -427,7 +440,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiCLBrg(vPoi.front());
 
-   Float64 Xg = pIPoi->ConvertPoiToGirderCoordinate(poiCLBrg);
+   Float64 Xg = pIPoi->ConvertPoiToGirderlineCoordinate(poiCLBrg);
 
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    if ( intervalIdx == storageIntervalIdx )
@@ -439,7 +452,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
       Xg += (endType == pgsTypes::metStart ? left_support : -right_support);
    }
 
-   Float64 X = m_pUnitConverter->Convert(Xg+beamShift);
+   Float64 X = m_pUnitConverter->Convert(Xg+groupShift);
 
    GET_IFACE(ISectionProperties,pSectProp);
    Float64 sectionHeight = pSectProp->GetHg(pIntervals->GetPrestressReleaseInterval(segmentKey),poiCLBrg);
@@ -458,10 +471,12 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
    }
 }
 
-void CDrawBeamTool::DrawIntermediatePier(Float64 beamShift,const CPrecastSegmentData* pSegment,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC)
+void CDrawBeamTool::DrawIntermediatePier(Float64 groupShift,const CPrecastSegmentData* pSegment,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC)
 {
+   const CSegmentKey& segmentKey( pSegment->GetSegmentKey() );
+
    GET_IFACE(IIntervals,pIntervals);
-   if ( intervalIdx < pIntervals->GetFirstErectedSegmentInterval() )
+   if ( intervalIdx < pIntervals->GetFirstSegmentErectionInterval(segmentKey) )
       return; 
 
    const CSpanData2* pStartSpan = pSegment->GetSpan(pgsTypes::metStart);
@@ -474,8 +489,6 @@ void CDrawBeamTool::DrawIntermediatePier(Float64 beamShift,const CPrecastSegment
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IGirder,pGirder);
    GET_IFACE(IPointOfInterest,pIPoi);
-
-   const CSegmentKey& segmentKey( pSegment->GetSegmentKey() );
 
    CBrush pier_brush(PIER_FILL_COLOR);
    CPen pier_pen(PS_SOLID,1,PIER_BORDER_COLOR);
@@ -490,7 +503,7 @@ void CDrawBeamTool::DrawIntermediatePier(Float64 beamShift,const CPrecastSegment
       PierIndexType pierIdx = pPier->GetIndex();
 
       EventIndexType erectionEventIdx = pTimelineMgr->GetPierErectionEventIndex(pierIdx);
-      IntervalIndexType erectionIntervalIdx = pIntervals->GetInterval(erectionEventIdx);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetInterval(m_GirderKey,erectionEventIdx);
 
       if ( intervalIdx < erectionIntervalIdx )
       {
@@ -503,11 +516,11 @@ void CDrawBeamTool::DrawIntermediatePier(Float64 beamShift,const CPrecastSegment
       Float64 sectionHeight = pSectProp->GetSegmentHeightAtPier(segmentKey,pierIdx);
 
       Float64 Xgp = pBridge->GetPierLocation(pierIdx,segmentKey.girderIndex);
-      Float64 Xg = pIPoi->ConvertGirderPathCoordinateToGirderCoordinate(segmentKey,Xgp);
+      Float64 Xgl = pIPoi->ConvertGirderPathCoordinateToGirderlineCoordinate(segmentKey,Xgp);
 
       // Bridge is continuous in this interval so draw pier symbol at CL Pier
       CPoint p;
-      Float64 X = m_pUnitConverter->Convert(Xg + beamShift);
+      Float64 X = m_pUnitConverter->Convert(Xgl + groupShift);
       Float64 H = m_pUnitConverter->Convert(sectionHeight);
       mapper.WPtoDP(X,-H,&p.x,&p.y);
 
@@ -520,7 +533,7 @@ void CDrawBeamTool::DrawIntermediatePier(Float64 beamShift,const CPrecastSegment
    pDC->SelectObject(pOldBrush);
 }
 
-void CDrawBeamTool::DrawIntermediateTemporarySupport(Float64 beamShift,const CPrecastSegmentData* pSegment,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC)
+void CDrawBeamTool::DrawIntermediateTemporarySupport(Float64 groupShift,const CPrecastSegmentData* pSegment,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC)
 {
    const CSpanData2* pStartSpan = pSegment->GetSpan(pgsTypes::metStart);
    const CSpanData2* pEndSpan   = pSegment->GetSpan(pgsTypes::metEnd);
@@ -531,6 +544,8 @@ void CDrawBeamTool::DrawIntermediateTemporarySupport(Float64 beamShift,const CPr
 
    if ( tempSupports.size() == 0 )
       return; // no temporary supports
+
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(IBridge,pBridge);
@@ -552,7 +567,7 @@ void CDrawBeamTool::DrawIntermediateTemporarySupport(Float64 beamShift,const CPr
       {
          EventIndexType erectionEventIdx, removalEventIdx;
          pTimelineMgr->GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removalEventIdx);
-         IntervalIndexType removalIntervalIdx = pIntervals->GetInterval(removalEventIdx);
+         IntervalIndexType removalIntervalIdx = pIntervals->GetInterval(m_GirderKey,removalEventIdx);
          if ( removalIntervalIdx <= intervalIdx )
             return; // don't draw temporary support if it has been removed
 
@@ -561,12 +576,12 @@ void CDrawBeamTool::DrawIntermediateTemporarySupport(Float64 beamShift,const CPr
                                 pSegment->GetIndex());
 
          Float64 Xgp = pBridge->GetTemporarySupportLocation(pTS->GetIndex(),segmentKey.girderIndex);
-         Float64 Xg = pPoi->ConvertGirderPathCoordinateToGirderCoordinate(segmentKey,Xgp);
+         Float64 Xgl = pPoi->ConvertGirderPathCoordinateToGirderlineCoordinate(segmentKey,Xgp);
 
          Float64 sectionHeight = pSectProp->GetSegmentHeightAtTemporarySupport(segmentKey,pTS->GetIndex());
 
          CPoint p;
-         Float64 X = m_pUnitConverter->Convert(Xg + beamShift);
+         Float64 X = m_pUnitConverter->Convert(Xgl + groupShift);
          Float64 H = m_pUnitConverter->Convert(sectionHeight);
          mapper.WPtoDP(X,-H,&p.x,&p.y);
 
@@ -588,15 +603,15 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
       pgsTypes::PierConnectionType connectionType = pPier->GetPierConnectionType();
       PierIndexType pierIdx = pPier->GetIndex();
 
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-      IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstErectedSegmentInterval();
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(m_GirderKey);
+      IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(m_GirderKey);
 
       GET_IFACE(IBridge,pBridge);
       EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
       pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
 
-      IntervalIndexType leftContinuityIntervalIdx  = pIntervals->GetInterval(leftContinuityEventIdx);
-      IntervalIndexType rightContinuityIntervalIdx = pIntervals->GetInterval(rightContinuityEventIdx);
+      IntervalIndexType leftContinuityIntervalIdx  = pIntervals->GetInterval(m_GirderKey,leftContinuityEventIdx);
+      IntervalIndexType rightContinuityIntervalIdx = pIntervals->GetInterval(m_GirderKey,rightContinuityEventIdx);
 
       if ( intervalIdx == erectFirstSegmentIntervalIdx )
       {
@@ -674,12 +689,20 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
    }
    else
    {
-      pgsTypes::PierSegmentConnectionType connectionType = pPier->GetSegmentConnectionType();
-      if ( connectionType == pgsTypes::psctContinuousSegment )
+      pgsTypes::PierSegmentConnectionType segmentConnectionType = pPier->GetSegmentConnectionType();
+      if ( segmentConnectionType == pgsTypes::psctContinuousSegment )
       {
-         DrawContinuous(p,pDC);
+         if ( pPier->GetPierConnectionType() == pgsTypes::Hinge )
+         {
+            DrawHinge(p,pDC);
+         }
+         else
+         {
+            ATLASSERT(pPier->GetPierConnectionType() == pgsTypes::Roller);
+            DrawRoller(p,pDC);
+         }
       }
-      else if ( connectionType == pgsTypes::psctIntegralSegment )
+      else if ( segmentConnectionType == pgsTypes::psctIntegralSegment )
       {
          DrawIntegral(p,pDC);
       }
@@ -688,21 +711,33 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
          const CClosureJointData* pClosureJoint = pPier->GetClosureJoint(0); // use gdrIdx = 0 because closure is the same for all girders
          ATLASSERT(pClosureJoint);
          CClosureKey closureKey(pClosureJoint->GetClosureKey());
-         IntervalIndexType ClosureJointIntervalIdx = pIntervals->GetCastClosureJointInterval(closureKey);
+         IntervalIndexType castClosureJointIntervalIdx = pIntervals->GetCastClosureJointInterval(closureKey);
 
-         if ( connectionType == pgsTypes::psctContinousClosureJoint )
+         if ( segmentConnectionType == pgsTypes::psctContinousClosureJoint )
          {
-            if ( ClosureJointIntervalIdx < intervalIdx )
-               DrawContinuous(p,pDC);
+            if ( castClosureJointIntervalIdx < intervalIdx )
+            {
+               if ( pPier->GetPierConnectionType() == pgsTypes::Hinge )
+               {
+                  DrawHinge(p,pDC);
+               }
+               else
+               {
+                  ATLASSERT(pPier->GetPierConnectionType() == pgsTypes::Roller);
+                  DrawRoller(p,pDC);
+               }
+            }
             else
-               DrawHinge(p,pDC);
+            {
+               DrawRoller(p,pDC);
+            }
          }
-         else if ( connectionType == pgsTypes::psctIntegralClosureJoint )
+         else if ( segmentConnectionType == pgsTypes::psctIntegralClosureJoint )
          {
-            if ( ClosureJointIntervalIdx < intervalIdx )
+            if ( castClosureJointIntervalIdx < intervalIdx )
                DrawIntegral(p,pDC);
             else
-               DrawHinge(p,pDC);
+               DrawRoller(p,pDC);
          }
          else
          {
@@ -721,13 +756,13 @@ void CDrawBeamTool::DrawTemporarySupport(IntervalIndexType intervalIdx,const CTe
    pTimelineMgr->GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removalEventIdx);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType erectionIntervalIdx = pIntervals->GetInterval(erectionEventIdx);
-   IntervalIndexType removalIntervalIdx  = pIntervals->GetInterval(removalEventIdx);
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetInterval(m_GirderKey,erectionEventIdx);
+   IntervalIndexType removalIntervalIdx  = pIntervals->GetInterval(m_GirderKey,removalEventIdx);
 
    if ( removalIntervalIdx <= intervalIdx )
       return; // temporary support has been removed
 
-   IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstErectedSegmentInterval();
+   IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(m_GirderKey);
 
    if ( pTS->GetConnectionType() == pgsTypes::sctContinuousSegment && intervalIdx < erectFirstSegmentIntervalIdx )
    {

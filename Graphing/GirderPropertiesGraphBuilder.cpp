@@ -26,7 +26,7 @@
 #include <Graphing\DrawBeamTool.h>
 #include "GirderPropertiesGraphController.h"
 
-#include <PGSuperColors.h>
+#include "GraphColor.h"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -67,6 +67,25 @@ CGirderPropertiesGraphBuilder::~CGirderPropertiesGraphBuilder()
 {
 }
 
+int CGirderPropertiesGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
+{
+   if ( !CGirderGraphBuilderBase::InitializeGraphController(pParent,nID) )
+      return FALSE;
+
+   m_Graph.SetPinYAxisAtZero(true);
+
+   m_pGraphController->CheckRadioButton(IDC_TRANSFORMED,IDC_GROSS,IDC_TRANSFORMED);
+
+   return 0;
+}
+
+BOOL CGirderPropertiesGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   ATLASSERT(m_pGraphController != NULL);
+   return m_pGraphController->Create(pParent,IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER, CBRS_LEFT, nID);
+}
+
 CGraphBuilder* CGirderPropertiesGraphBuilder::Clone()
 {
    // set the module state or the commands wont route to the
@@ -75,30 +94,16 @@ CGraphBuilder* CGirderPropertiesGraphBuilder::Clone()
    return new CGirderPropertiesGraphBuilder(*this);
 }
 
-int CGirderPropertiesGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
+void CGirderPropertiesGraphBuilder::UpdateXAxis()
 {
-   CGirderGraphBuilderBase::CreateControls(pParent,nID);
-
+   CGirderGraphBuilderBase::UpdateXAxis();
    m_Graph.SetXAxisTitle(_T("Distance From CL Bearing at Left End of Girder (")+m_pXFormat->UnitTag()+_T(")"));
-   m_Graph.SetYAxisTitle(_T("Stress (")+m_pYFormat->UnitTag()+_T(")"));
-   m_Graph.SetPinYAxisAtZero(true);
-
-   m_pGraphController->CheckRadioButton(IDC_TRANSFORMED,IDC_GROSS,IDC_TRANSFORMED);
-
-   return 0;
 }
 
 CGirderGraphControllerBase* CGirderPropertiesGraphBuilder::CreateGraphController()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return new CGirderPropertiesGraphController;
-}
-
-BOOL CGirderPropertiesGraphBuilder::InitGraphController(CWnd* pParent,UINT nID)
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   ATLASSERT(m_pGraphController != NULL);
-   return m_pGraphController->Create(pParent,IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER, CBRS_LEFT, nID);
 }
 
 bool CGirderPropertiesGraphBuilder::UpdateNow()
@@ -115,7 +120,7 @@ bool CGirderPropertiesGraphBuilder::UpdateNow()
    // Update graph properties
    GroupIndexType    grpIdx      = m_pGraphController->GetGirderGroup();
    GirderIndexType   gdrIdx      = m_pGraphController->GetGirder();
-   IntervalIndexType intervalIdx = m_pGraphController->GetInterval();
+   IntervalIndexType intervalIdx = ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
    PropertyType propertyType = ((CGirderPropertiesGraphController*)m_pGraphController)->GetPropertyType();
    pgsTypes::SectionPropertyType sectionPropertyType = ((CGirderPropertiesGraphController*)m_pGraphController)->GetSectionPropertyType();
 
@@ -238,6 +243,16 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       break;
       }
 
+   case Ec:
+      {
+      const unitmgtStressData& stressUnit = pDisplayUnits->GetModEUnit();
+      m_pYFormat = new StressTool(stressUnit);
+      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      std::_tstring strYAxisTitle = _T("Ec (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
+      m_Graph.SetYAxisTitle(strYAxisTitle);
+      break;
+      }
+
    default:
       ASSERT(false); 
    }
@@ -246,7 +261,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
 void CGirderPropertiesGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,PropertyType propertyType)
 {
    GET_IFACE(IIntervals,pIntervals);
-   CString strInterval( pIntervals->GetDescription(intervalIdx) );
+   CString strInterval( pIntervals->GetDescription(CGirderKey(grpIdx,gdrIdx),intervalIdx) );
 
    CString strGraphTitle;
    if ( grpIdx == ALL_GROUPS )
@@ -280,7 +295,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
    }
 
    IndexType dataSeries1, dataSeries2;
-   InitializeGraph(propertyType,&dataSeries1,&dataSeries2);
+   InitializeGraph(propertyType,CGirderKey(grpIdx,gdrIdx),intervalIdx,&dataSeries1,&dataSeries2);
 
    GET_IFACE(ISectionProperties,pSectProps);
    GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -317,8 +332,8 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
          break;
 
       case SectionModulus:
-         value1 = fabs(pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopDeck));
-         value2 = fabs(pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder));
+         value1 = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
+         value2 = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder);
          break;
 
       case KernPoint:
@@ -335,7 +350,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
          break;
 
       case EffectiveFlangeWidth:
-         if ( intervalIdx < pIntervals->GetCompositeDeckInterval() )
+         if ( intervalIdx < pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
             value1 = 0;
          else
             value1 = pSectProps->GetEffectiveFlangeWidth(poi);
@@ -346,6 +361,23 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
             value1 = pMaterials->GetClosureJointFc(poi.GetSegmentKey(),intervalIdx);
          else
             value1 = pMaterials->GetSegmentFc(poi.GetSegmentKey(),intervalIdx);
+
+         if ( pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
+         {
+            value2 = pMaterials->GetDeckFc(poi.GetSegmentKey(),intervalIdx);
+         }
+         break;
+
+      case Ec:
+         if ( poi.HasAttribute(POI_CLOSURE) )
+            value1 = pMaterials->GetClosureJointEc(poi.GetSegmentKey(),intervalIdx);
+         else
+            value1 = pMaterials->GetSegmentEc(poi.GetSegmentKey(),intervalIdx);
+
+         if ( pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
+         {
+            value2 = pMaterials->GetDeckEc(poi.GetSegmentKey(),intervalIdx);
+         }
          break;
 
       default:
@@ -381,7 +413,7 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
    GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx+1);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
 
    GET_IFACE(ITendonGeometry,pTendonGeom);
@@ -466,6 +498,10 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
       return _T("f'c");
       break;
 
+   case Ec:
+      return _T("Ec");
+      break;
+
    default:
       ATLASSERT(false);
    }
@@ -473,10 +509,12 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
    return _T("");
 }
 
-void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,IndexType* pGraph1,IndexType* pGraph2)
+void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,IndexType* pGraph1,IndexType* pGraph2)
 {
    *pGraph1 = INVALID_INDEX;
    *pGraph2 = INVALID_INDEX;
+
+   GET_IFACE(IIntervals,pIntervals);
 
    std::_tstring strPropertyLabel1( GetPropertyLabel(propertyType) );
    std::_tstring strPropertyLabel2(strPropertyLabel1);
@@ -489,8 +527,27 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,In
    case TendonEccentricity:
    case TendonProfile:
    case EffectiveFlangeWidth:
-   case Fc:
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
+      break;
+
+   case Fc:
+      strPropertyLabel1 += _T(" Girder");
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
+      if ( pIntervals->GetCompositeDeckInterval(girderKey) <= intervalIdx )
+      {
+         strPropertyLabel2 += _T(" Deck");
+         *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,1,BLUE);
+      }
+      break;
+
+   case Ec:
+      strPropertyLabel1 += _T(" Girder");
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
+      if ( pIntervals->GetCompositeDeckInterval(girderKey) <= intervalIdx )
+      {
+         strPropertyLabel2 += _T(" Deck");
+         *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,1,BLUE);
+      }
       break;
 
    case Centroid:
@@ -511,4 +568,9 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,In
    default:
       ATLASSERT(false);
    }
+}
+
+IntervalIndexType CGirderPropertiesGraphBuilder::GetBeamDrawInterval()
+{
+   return ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
 }

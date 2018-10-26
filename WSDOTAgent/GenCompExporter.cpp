@@ -113,7 +113,7 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
       else
          EcGdr = pMaterials->GetSegmentEc(dlg.GetPOI().GetSegmentKey(),intervalIdx);
 
-      Float64 EcDeck = pMaterials->GetDeckEc(intervalIdx);
+      Float64 EcDeck = pMaterials->GetDeckEc(dlg.GetPOI().GetSegmentKey(),intervalIdx);
 
       std::auto_ptr<GenComp> genCompXML( CreateGenCompModel() );
       ShapeType& primaryShapeXML(genCompXML->PrimaryShape());

@@ -155,45 +155,44 @@ bool CPierData2::operator==(const CPierData2& rOther) const
    if ( m_strOrientation != rOther.m_strOrientation )
       return false;
 
+   if ( m_PierConnectionType != rOther.m_PierConnectionType )
+      return false;
+
    if ( IsInteriorPier() )
    {
       if ( m_SegmentConnectionType != rOther.m_SegmentConnectionType )
          return false;
    }
-   else
-   {
-      if ( m_PierConnectionType != rOther.m_PierConnectionType )
-         return false;
-   }
 
    for ( int i = 0; i < 2; i++ )
    {
-      if ( !IsEqual(m_GirderEndDistance[i], rOther.m_GirderEndDistance[i]) )
+      pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
+
+      if ( !IsEqual(m_GirderEndDistance[face], rOther.m_GirderEndDistance[face]) )
          return false;
 
-      if ( m_EndDistanceMeasurementType[i] != rOther.m_EndDistanceMeasurementType[i] )
+      if ( m_EndDistanceMeasurementType[face] != rOther.m_EndDistanceMeasurementType[face] )
          return false;
 
-      if ( !IsEqual(m_GirderBearingOffset[i], rOther.m_GirderBearingOffset[i]) )
+      if ( !IsEqual(m_GirderBearingOffset[face], rOther.m_GirderBearingOffset[face]) )
          return false;
 
-      if ( m_BearingOffsetMeasurementType[i] != rOther.m_BearingOffsetMeasurementType[i] )
+      if ( m_BearingOffsetMeasurementType[face] != rOther.m_BearingOffsetMeasurementType[face] )
          return false;
 
-      if ( !IsEqual(m_SupportWidth[i], rOther.m_SupportWidth[i]) )
+      if ( !IsEqual(m_SupportWidth[face], rOther.m_SupportWidth[face]) )
          return false;
 
-
-      if ( !IsEqual(m_DiaphragmHeight[i], rOther.m_DiaphragmHeight[i]) )
+      if ( !IsEqual(m_DiaphragmHeight[face], rOther.m_DiaphragmHeight[face]) )
          return false;
       
-      if ( !IsEqual(m_DiaphragmWidth[i], rOther.m_DiaphragmWidth[i]) )
+      if ( !IsEqual(m_DiaphragmWidth[face], rOther.m_DiaphragmWidth[face]) )
          return false;
 
-      if ( m_DiaphragmLoadType[i] != rOther.m_DiaphragmLoadType[i] )
+      if ( m_DiaphragmLoadType[face] != rOther.m_DiaphragmLoadType[face] )
          return false;
 
-      if ( !IsEqual(m_DiaphragmLoadLocation[i], rOther.m_DiaphragmLoadLocation[i]) )
+      if ( !IsEqual(m_DiaphragmLoadLocation[face], rOther.m_DiaphragmLoadLocation[face]) )
          return false;
    }
 
@@ -351,7 +350,20 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          vbIsBoundaryPier = var.boolVal;
       }
 
-      if ( 10 < version )
+      if ( 11 < version )
+      {
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("PierConnectionType"),&var);
+         m_PierConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+
+         if ( vbIsBoundaryPier == VARIANT_FALSE )
+         {
+            var.vt = VT_I4;
+            hr = pStrLoad->get_Property(_T("SegmentConnectionType"),&var);
+            m_SegmentConnectionType = (pgsTypes::PierSegmentConnectionType)var.lVal;
+         }
+      }
+      else if ( 10 < version && version < 12 )
       {
          if ( vbIsBoundaryPier == VARIANT_TRUE )
          {
@@ -686,7 +698,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit(); // PierDataDetails
    }
-   catch(HRESULT)
+   catch (HRESULT)
    {
       ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -701,7 +713,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierDataDetails"),11.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),12.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -709,12 +721,8 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("Orientation"),     CComVariant( CComBSTR(m_strOrientation.c_str()) ) );
    pStrSave->put_Property(_T("IsBoundaryPier"),  CComVariant( IsBoundaryPier() ? VARIANT_TRUE : VARIANT_FALSE) ); // added in version 11
 
-   // prior to version 11 both of these values were stored
-   if ( IsBoundaryPier() )
-   {
-      pStrSave->put_Property(_T("PierConnectionType"),  CComVariant( m_PierConnectionType ) ); // changed from left and right to a single value in version 7
-   }
-   else
+   pStrSave->put_Property(_T("PierConnectionType"),  CComVariant( m_PierConnectionType ) ); // changed from left and right to a single value in version 7
+   if ( IsInteriorPier() )
    {
       pStrSave->put_Property(_T("SegmentConnectionType"),  CComVariant( m_SegmentConnectionType ) );
    }
@@ -764,7 +772,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Ahead]));
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Ahead]).c_str()) );
    pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Ahead]));
-   
+
    // added IsBoundaryPier() requirement in version 2
    if ( IsBoundaryPier() && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
    {
@@ -847,6 +855,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
       m_SupportWidth[i]                 = rOther.m_SupportWidth[i];
 
       m_GirderSpacing[i] = rOther.m_GirderSpacing[i];
+      m_GirderSpacing[i].SetPier(this);
 
       m_DiaphragmHeight[i]       = rOther.m_DiaphragmHeight[i];       
       m_DiaphragmWidth[i]        = rOther.m_DiaphragmWidth[i];

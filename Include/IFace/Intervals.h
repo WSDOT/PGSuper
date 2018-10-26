@@ -39,31 +39,39 @@ DEFINE_GUID(IID_IIntervals,
 interface IIntervals : IUnknown
 {
    // returns the number of time-step intervals
-   virtual IntervalIndexType GetIntervalCount() = 0;
+   virtual IntervalIndexType GetIntervalCount(const CGirderKey& girderKey) = 0;
 
    // returns the timeline event index at the start of the interval
-   virtual EventIndexType GetStartEvent(IntervalIndexType idx) = 0; 
+   virtual EventIndexType GetStartEvent(const CGirderKey& girderKey,IntervalIndexType idx) = 0; 
 
    // returns the timeline event index at the end of the interval
-   virtual EventIndexType GetEndEvent(IntervalIndexType idx) = 0; 
+   virtual EventIndexType GetEndEvent(const CGirderKey& girderKey,IntervalIndexType idx) = 0; 
 
    // returns the time at the start of the interval
-   virtual Float64 GetStart(IntervalIndexType idx) = 0;
+   virtual Float64 GetStart(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
 
    // returns the time at the middle of the interval
-   virtual Float64 GetMiddle(IntervalIndexType idx) = 0;
+   virtual Float64 GetMiddle(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
 
    // returns the time at the end of the interval
-   virtual Float64 GetEnd(IntervalIndexType idx) = 0;
+   virtual Float64 GetEnd(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
 
    // returns the duration of the interval
-   virtual Float64 GetDuration(IntervalIndexType idx) = 0;
+   virtual Float64 GetDuration(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
 
    // returns the interval description
-   virtual LPCTSTR GetDescription(IntervalIndexType idx) = 0;
+   virtual LPCTSTR GetDescription(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
 
    // returns the index of the first interval that starts with the specified event index
-   virtual IntervalIndexType GetInterval(EventIndexType eventIdx) = 0;
+   virtual IntervalIndexType GetInterval(const CGirderKey& girderKey,EventIndexType eventIdx) = 0;
+
+   // returns the index of the interval when the prestressing strands are stressed for the first segment 
+   // that is constructed for this girder
+   virtual IntervalIndexType GetFirstStressStrandInterval(const CGirderKey& girderKey) = 0;
+
+   // returns the index of the interval when the prestressing strands are stressed for the last segment 
+   // that is constructed for this girder
+   virtual IntervalIndexType GetLastStressStrandInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when the prestressing strands are stressed
    virtual IntervalIndexType GetStressStrandInterval(const CSegmentKey& segmentKey) = 0;
@@ -82,13 +90,17 @@ interface IIntervals : IUnknown
    // returns the index of the interval when a segment is hauled to the bridge site
    virtual IntervalIndexType GetHaulSegmentInterval(const CSegmentKey& segmentKey) = 0;
 
-   // returns the index of the interval when the first precast segment
-   // is erected
-   // this is the replacement for pgsTypes::GirderPlacement
-   virtual IntervalIndexType GetFirstErectedSegmentInterval() = 0;
+   // returns the index of the interval when the first precast segment for a specified girder is erected
+   virtual IntervalIndexType GetFirstSegmentErectionInterval(const CGirderKey& girderKey) = 0;
+
+   // returns the index of the interval when the last precast segment for a specified girder is erected
+   virtual IntervalIndexType GetLastSegmentErectionInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when a specific segment is erected
    virtual IntervalIndexType GetErectSegmentInterval(const CSegmentKey& segmentKey) = 0;
+
+   // returns true if a segment is erected in the specified interval
+   virtual bool IsSegmentErectionInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
 
    // returns the index of the interval when temporary strands are installed in a specific segment
    virtual IntervalIndexType GetTemporaryStrandInstallationInterval(const CSegmentKey& segmentKey) = 0;
@@ -103,35 +115,35 @@ interface IIntervals : IUnknown
    virtual IntervalIndexType GetCompositeClosureJointInterval(const CClosureKey& closureKey) = 0;
 
    // returns the interval when continuity occurs at a pier
-   virtual void GetContinuityInterval(PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead) = 0;
+   virtual void GetContinuityInterval(const CGirderKey& girderKey,PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead) = 0;
 
    // returns the index of the interval when the deck and diaphragms are cast
    // this is the replacement for pgsTypes::BridgeSite1
-   virtual IntervalIndexType GetCastDeckInterval() = 0;
+   virtual IntervalIndexType GetCastDeckInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when the deck becomes composite
    // this is the replacement for pgsTypes::BridgeSite2 (also see GetOverlayInterval and GetInstallRailingSystemInterval)
-   virtual IntervalIndexType GetCompositeDeckInterval() = 0;
+   virtual IntervalIndexType GetCompositeDeckInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when live load is first
    // applied to the structure. it is assumed that live
    // load can be applied to the structure at this interval and all
    // intervals thereafter
    // this is the replacement for pgsTypes::BridgeSite3
-   virtual IntervalIndexType GetLiveLoadInterval() = 0;
+   virtual IntervalIndexType GetLiveLoadInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when load rating calculations are performed
-   virtual IntervalIndexType GetLoadRatingInterval() = 0;
+   virtual IntervalIndexType GetLoadRatingInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when the overlay is
    // installed. 
    // this is a replacement for pgsTypes::BridgeSite2 or pgsTypes::BridgeSite3,
    // depending on when the overlay is installed (normal or future)
-   virtual IntervalIndexType GetOverlayInterval() = 0;
+   virtual IntervalIndexType GetOverlayInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when the railing system is constructed
    // this is the same as pgsTypes::BridgeSite2 for pre version 3.0 PGSuper projects
-   virtual IntervalIndexType GetInstallRailingSystemInterval() = 0;
+   virtual IntervalIndexType GetInstallRailingSystemInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the first interval when tendon stressin occors
    // note that this tendon in all girders in the group are assumed to be stressed at the same time
@@ -149,10 +161,13 @@ interface IIntervals : IUnknown
    virtual bool IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
 
    // returns the interval index when a temporary support is removed
-   virtual IntervalIndexType GetTemporarySupportRemovalInterval(SupportIDType tsID) = 0;
+   virtual IntervalIndexType GetTemporarySupportRemovalInterval(const CGirderKey& girderKey,SupportIDType tsID) = 0;
 
    // returns a vector of removal intervals for all the temporary supports in the specified group
-   virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(GroupIndexType grpIdx) = 0;
+   virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(const CGirderKey& girderKey) = 0;
+
+   // returns a vector of intervals when user defined loads are applied to this girder
+   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CGirderKey& girderKey) = 0;
 
    // returns a vector of intervals that should be spec checked
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey) = 0;

@@ -29,7 +29,7 @@
 
 // Dialogs
 #include "SelectGirderDlg.h"
-#include "PGSuperAppPlugin\EditGirderlineDlg.h"
+#include "SplicedGirderDescDlg.h"
 #include "PGSuperAppPlugin\SelectGirderSegmentDlg.h"
 #include "PGSuperAppPlugin\SelectClosureJointDlg.h"
 #include "PGSuperAppPlugin\GirderSegmentDlg.h"
@@ -442,7 +442,18 @@ void CPGSpliceDoc::OnInsertTemporarySupport()
    CTemporarySupportDlg dlg(pBridgeDesc,INVALID_INDEX,EAFGetMainFrame());
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertTemporarySupport* pTxn = new txnInsertTemporarySupport(dlg.GetTempSupportIndex(),*pBridgeDesc,*dlg.GetBridgeDescription());
+      txnTransaction* pTxn = new txnInsertTemporarySupport(dlg.GetTemporarySupport(),*pBridgeDesc,*dlg.GetBridgeDescription());
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn != NULL )
+      {
+         txnMacroTxn* pMacro = new txnMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
+
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -484,36 +495,29 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CGirderSegmentDlg dlg(false,EAFGetMainFrame(),nPage);
-
-
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
-   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-   dlg.m_Girder = *pGirder;
-   dlg.m_SegmentKey = segmentKey;
-   dlg.m_SegmentID = pSegment->GetID();
+   CGirderSegmentDlg dlg(pBridgeDesc,segmentKey,EAFGetMainFrame(),nPage);
 
 
 #pragma Reminder("UPDATE: Clean up handling of shear data")
    // Shear data is kind of messy. It is the only data on the segment that we have to
    // set on the dialog and then get it for the transaction. This has to do with
-   // the way RDP wrote the class for the new shear designer. Updated the dialog
+   // the way RDP wrote the class for the new shear designer. Update the dialog
    // so it works seamlessly for all cases
-   dlg.m_Stirrups.m_ShearData = pSegment->ShearData;
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   dlg.m_StirrupsPage.m_ShearData = pSegment->ShearData;
 
    SegmentIDType segID = pSegment->GetID();
 
-   dlg.m_ConstructionEventIdx = pIBridgeDesc->GetTimelineManager()->GetSegmentConstructionEventIndex();
+   dlg.m_ConstructionEventIdx = pIBridgeDesc->GetTimelineManager()->GetSegmentConstructionEventIndex(segID);
    dlg.m_ErectionEventIdx     = pIBridgeDesc->GetTimelineManager()->GetSegmentErectionEventIndex(segID);
 
    if ( dlg.DoModal() == IDOK )
    {
       CPrecastSegmentData* pNewSegment = dlg.m_Girder.GetSegment(segmentKey.segmentIndex);
 #pragma Reminder("UPDATE: why do we have to get the stirrup data after we get the segment")
-      pNewSegment->ShearData = dlg.m_Stirrups.m_ShearData;
+      pNewSegment->ShearData = dlg.m_StirrupsPage.m_ShearData;
 
       txnEditPrecastSegmentData newData;
       newData.m_SegmentKey           = segmentKey;
@@ -553,7 +557,7 @@ bool CPGSpliceDoc::EditClosureJointDescription(const CClosureJointData* pClosure
    EventIndexType closureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(closureKey.groupIndex,closureKey.segmentIndex);
 
    CClosureJointData ClosureJoint(*pClosure);
-   CClosureJointDlg dlg(_T("Closure Joint"),closureKey,pClosure,closureEventIdx,false/*editing as an indepenent object*/);
+   CClosureJointDlg dlg(closureKey,pClosure,closureEventIdx);
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -580,23 +584,24 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CEditGirderlineDlg dlg(girderKey);
+   CSplicedGirderDescDlg dlg(girderKey);
 
    if ( dlg.DoModal() == IDOK )
    {
-      CGirderKey thisGirderKey(girderKey);
-      if( dlg.m_bCopyToAll )
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+      txnTransaction* pTxn = new txnEditGirderline(girderKey,dlg.m_bApplyToAll,*pBridgeDesc,dlg.m_BridgeDescription);
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
       {
-         thisGirderKey.girderIndex = ALL_GIRDERS;
+         txnMacroTxn* pMacro = new txnMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
       }
-
-      txnEditGirderlineData newData;
-      newData.m_GirderKey      = girderKey;
-      newData.m_Girder         = dlg.m_Girder;
-      newData.m_StressingEvent = dlg.m_TendonStressingEvent;
-      newData.m_ClosureEvent   = dlg.m_CastClosureEvent;
-
-      txnEditGirderline* pTxn = new txnEditGirderline(thisGirderKey,newData);
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
@@ -623,6 +628,10 @@ void CPGSpliceDoc::DeleteTemporarySupport(SupportIDType tsID)
 
 bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
 {
+#pragma Reminder("UPDATE: move temporary support editing to the base document class")
+   // We want to be able to eventually handle temporary shoring towers in PGSuper
+   // so the editing needs to be at that level
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -635,7 +644,18 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
    dlg.SetActivePage(nPage);
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditTemporarySupport* pTxn = new txnEditTemporarySupport(tsIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
+      txnTransaction* pTxn = new txnEditTemporarySupport(tsIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn != NULL )
+      {
+         txnMacroTxn* pMacro = new txnMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
+
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }

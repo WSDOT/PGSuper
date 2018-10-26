@@ -138,7 +138,11 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
    CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
 
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+#pragma Reminder("BUG: context menu items incorrect")
+   // the need different context menu for PGSuper and PGSplice to get Edit Girder to work correctly
+   // PGSuper needs ID_EDIT_GIRDER and PGSPlice needs IDC_EDIT_GIRDERLINE
    pMenu->LoadMenu(IDR_GIRDER_CTX,NULL);
+
 #pragma Reminder("BUG: context menu items incorrect")
    // The context menu IDR_GIRDER_CTX has the section cut stuff as a sub-menu but
    // the end up within the main context menu.
@@ -173,22 +177,24 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
 
    if ( pThis->m_bGirderElevation )
    {
-      std::map<IDType,IGirderElevationViewEventCallback*> callbacks = pDoc->GetGirderElevationViewCallbacks();
-      std::map<IDType,IGirderElevationViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      const std::map<IDType,IGirderElevationViewEventCallback*>& callbacks = pDoc->GetGirderElevationViewCallbacks();
+      std::map<IDType,IGirderElevationViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IGirderElevationViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IGirderElevationViewEventCallback* callback = iter->second;
-         callback->OnBackgroundContextMenu(pMenu);
+         IGirderElevationViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnBackgroundContextMenu(pMenu);
       }
    }
    else
    {
-      std::map<IDType,IGirderSectionViewEventCallback*> callbacks = pDoc->GetGirderSectionViewCallbacks();
-      std::map<IDType,IGirderSectionViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      const std::map<IDType,IGirderSectionViewEventCallback*>& callbacks = pDoc->GetGirderSectionViewCallbacks();
+      std::map<IDType,IGirderSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IGirderSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IGirderSectionViewEventCallback* callback = iter->second;
-         callback->OnBackgroundContextMenu(pMenu);
+         IGirderSectionViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnBackgroundContextMenu(pMenu);
       }
    }
 

@@ -30,6 +30,7 @@
 #include "..\htmlhelp\HelpTopics.hh"
 #include "ComCat.h"
 #include "PGSuperCatCom.h"
+#include "PGSpliceCatCom.h"
 #include "SectionViewDialog.h"
 #include <PsgLib\BeamFamilyManager.h>
 #include <IFace\BeamFactory.h>
@@ -122,7 +123,12 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    }
 
    // Fill the beam family combo box
-   std::vector<CString> familyNames = CBeamFamilyManager::GetBeamFamilyNames();
+   std::vector<CString> familyNames;
+   if ( splicedBeamFactory )
+      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
+   else
+      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
+
    std::vector<CString>::iterator familyIter(familyNames.begin());
    std::vector<CString>::iterator familyIterEnd(familyNames.end());
    for ( ; familyIter != familyIterEnd; familyIter++ )
@@ -198,12 +204,12 @@ void CGirderDimensionsPage::OnBeamTypeChanged()
       return;
    }
 
-   CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
-   pDad->m_Entry.SetBeamFactory(pFactory);
-
    m_Grid.ResetGrid();
    UpdateData(FALSE);
 	m_Grid.ResizeRowHeightsToFit(CGXRange(0,0,0,m_Grid.GetColCount()));
+
+   CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
+   pDad->SetBeamFactory(pFactory);
 }
 
 void CGirderDimensionsPage::OnViewSection()

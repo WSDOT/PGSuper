@@ -48,8 +48,10 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-void write_load_modifiers(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
-void write_environmental_conditions(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
+void write_load_modifiers(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
+void write_environmental_conditions(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
+void write_structural_analysis(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
+
 void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
 void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
 void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
@@ -63,7 +65,6 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
-void write_structural_analysis(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
 void write_deflections(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_rating_criteria(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const RatingLibraryEntry* pRatingEntry);
 void write_load_factors(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,LPCTSTR lpszName,const CLiveLoadFactorModel& model);
@@ -167,10 +168,24 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
    else
       *pPara << Bold(_T("Section Properties: ")) << _T("Transformed") << rptNewLine;
 
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmLRFD )
+      *pPara << Bold(_T("Effective Flange Width computed in accordance with LRFD 4.6.2.6")) << rptNewLine;
+   else
+      *pPara << Bold(_T("Effective Flange Width computed using tributary width")) << rptNewLine;
 
-   write_load_modifiers(          pChapter, pBroker, pDisplayUnits);
-   write_environmental_conditions(pChapter, pBroker, pDisplayUnits);
-   write_structural_analysis(     pChapter, pBroker, pDisplayUnits);
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateTableNoHeading(3);
+   *pPara << pLayoutTable << rptNewLine;
+   pLayoutTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
+   pLayoutTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
+
+   write_load_modifiers(          &(*pLayoutTable)(0,0), pBroker, pDisplayUnits);
+   write_environmental_conditions(&(*pLayoutTable)(0,1), pBroker, pDisplayUnits);
+   write_structural_analysis(     &(*pLayoutTable)(0,2), pBroker, pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -256,11 +271,8 @@ CChapterBuilder* CProjectCriteriaChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void write_load_modifiers(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
+void write_load_modifiers(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
 {
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
-
    rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Load Modifiers"));
    *pPara << p_table;
 
@@ -276,12 +288,9 @@ void write_load_modifiers(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    (*p_table)(2,1) <<  pLoadModifiers->GetRedundancyFactor();
 }
 
-void write_environmental_conditions(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
+void write_environmental_conditions(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
 {
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
-
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Environmental Conditions"));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Environmental"));
    *pPara << p_table;
 
    GET_IFACE2(pBroker,IEnvironment,pEnvironment);
@@ -297,30 +306,25 @@ void write_environmental_conditions(rptChapter* pChapter,IBroker* pBroker, IEAFD
    (*p_table)(1,1) <<  pEnvironment->GetRelHumidity()<<_T("%");
 }
 
-void write_structural_analysis(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
+void write_structural_analysis(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << pPara;
-
-   *pPara << _T("Structural Analysis Method") << rptNewLine;
-
-   pPara = new rptParagraph;
-   *pChapter << pPara;
+   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(1,_T("Structural Analysis"));
+   *pPara << p_table;
 
    GET_IFACE2( pBroker, ISpecification, pSpec );
 
    switch( pSpec->GetAnalysisType() )
    {
    case pgsTypes::Simple:
-      *pPara << _T("Simple Span Analysis") << rptNewLine;
+      (*p_table)(0,0) << _T("Simple Span");
       break;
 
    case pgsTypes::Continuous:
-      *pPara << _T("Continuous Span Analysis") << rptNewLine;
+      (*p_table)(0,0) << _T("Simple Spans Made Continuous");
       break;
 
    case pgsTypes::Envelope:
-      *pPara << _T("Envelope of Simple and Continuous Span Analyses") << rptNewLine;
+      (*p_table)(0,0) << _T("Envelope of Simple Span and Simple Spans Made Continuous");
       break;
    }
 }
@@ -602,7 +606,7 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
 void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -657,7 +661,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    pgsPointOfInterest poi(segmentKey,0.0);
    Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, compositeDeckIntervalIdx,pgsTypes::ServiceI);
@@ -688,7 +692,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -747,7 +751,7 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -777,7 +781,7 @@ void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUni
 void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;

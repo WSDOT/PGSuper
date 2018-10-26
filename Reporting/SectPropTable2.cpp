@@ -62,11 +62,11 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(segmentKey);
 
    std::_tostringstream os;
-   os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(intervalIdx);
+   os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(segmentKey,intervalIdx);
 
    bool bIsCompositeDeck = pBridge->IsCompositeDeck();
 
@@ -185,8 +185,8 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       {
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetY(intervalIdx,poi,pgsTypes::TopGirder));
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder));
-         (*xs_table)(row,col++) << l3.SetValue(fabs(pSectProp->GetS(intervalIdx,poi,pgsTypes::TopGirder)));
-         (*xs_table)(row,col++) << l3.SetValue(fabs(pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomGirder)));
+         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(intervalIdx,poi,pgsTypes::TopGirder));
+         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomGirder));
       }
       else
       {
@@ -198,12 +198,12 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
             (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomDeck));
          }
 
-         (*xs_table)(row,col++) << l3.SetValue(fabs(pSectProp->GetS(intervalIdx,poi,pgsTypes::TopGirder)));
-         (*xs_table)(row,col++) << l3.SetValue(fabs(pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomGirder)));
+         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(intervalIdx,poi,pgsTypes::TopGirder));
+         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomGirder));
          if ( bIsCompositeDeck )
          {
-            (*xs_table)(row,col++) << l3.SetValue(fabs(pSectProp->GetS(intervalIdx,poi,pgsTypes::TopDeck)));
-            (*xs_table)(row,col++) << l3.SetValue(fabs(pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomDeck)));
+            (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(intervalIdx,poi,pgsTypes::TopDeck));
+            (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomDeck));
          }
       }
 
@@ -211,8 +211,8 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
            (lastTendonStressingIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
          )
       {
-         (*xs_table)(row,col++) << l1.SetValue(fabs(pSectProp->GetKt(intervalIdx,poi)));
-         (*xs_table)(row,col++) << l1.SetValue(fabs(pSectProp->GetKb(intervalIdx,poi)));
+         (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetKt(intervalIdx,poi));
+         (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetKb(intervalIdx,poi));
       }
 
       if ( compositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck )

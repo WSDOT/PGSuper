@@ -208,7 +208,41 @@ void CPrecastSegmentData::GetStartSupport(const CPierData2** ppPier,const CTempo
    }
 }
 
+void CPrecastSegmentData::GetStartSupport(CPierData2** ppPier,CTemporarySupportData** ppTS)
+{
+   *ppPier = NULL;
+   *ppTS = NULL;
+   if ( m_pLeftClosure )
+   {
+      if ( m_pLeftClosure->GetPier() )
+         *ppPier = m_pLeftClosure->GetPier();
+      else
+         *ppTS = m_pLeftClosure->GetTemporarySupport();
+   }
+   else
+   {
+      *ppPier = m_pGirder->GetPier(pgsTypes::metStart);
+   }
+}
+
 void CPrecastSegmentData::GetEndSupport(const CPierData2** ppPier,const CTemporarySupportData** ppTS) const
+{
+   *ppPier = NULL;
+   *ppTS = NULL;
+   if ( m_pRightClosure )
+   {
+      if ( m_pRightClosure->GetPier() )
+         *ppPier = m_pRightClosure->GetPier();
+      else
+         *ppTS = m_pRightClosure->GetTemporarySupport();
+   }
+   else
+   {
+      *ppPier = m_pGirder->GetPier(pgsTypes::metEnd);
+   }
+}
+
+void CPrecastSegmentData::GetEndSupport(CPierData2** ppPier,CTemporarySupportData** ppTS)
 {
    *ppPier = NULL;
    *ppTS = NULL;
@@ -267,34 +301,6 @@ void CPrecastSegmentData::GetSpacing(const CGirderSpacing2** ppStartSpacing,cons
    else
    {
       *ppEndSpacing = m_pGirder->GetPier(pgsTypes::metEnd)->GetGirderSpacing(pgsTypes::Back);
-   }
-}
-
-void CPrecastSegmentData::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset)
-{
-   CClosureJointData* pClosure = (end == pgsTypes::metStart ? m_pLeftClosure : m_pRightClosure);
-   if ( pClosure )
-   {
-      pClosure->SetSlabOffset(offset);
-   }
-   else
-   {
-      CGirderGroupData* pGroup = m_pGirder->GetGirderGroup();
-      return pGroup->SetSlabOffset(m_pGirder->GetIndex(),end,offset);
-   }
-}
-
-Float64 CPrecastSegmentData::GetSlabOffset(pgsTypes::MemberEndType end) const
-{
-   CClosureJointData* pClosure = (end == pgsTypes::metStart ? m_pLeftClosure : m_pRightClosure);
-   if ( pClosure )
-   {
-      return pClosure->GetSlabOffset();
-   }
-   else
-   {
-      const CGirderGroupData* pGroup = m_pGirder->GetGirderGroup();
-      return pGroup->GetSlabOffset(m_pGirder->GetIndex(),end);
    }
 }
 
@@ -391,6 +397,52 @@ SegmentIDType CPrecastSegmentData::GetID() const
    return m_SegmentID;
 }
 
+std::vector<const CPierData2*> CPrecastSegmentData::GetPiers() const
+{
+   std::vector<const CPierData2*> vPiers;
+
+   // get pier at start of segment (if there is one)
+   if ( m_pLeftClosure && m_pLeftClosure->GetPier() )
+   {
+      vPiers.push_back( m_pLeftClosure->GetPier() );
+   }
+   else if ( m_SegmentIndex == 0 )
+   {
+      vPiers.push_back( m_pGirder->GetPier(pgsTypes::metStart) );
+   }
+
+   // get intermediate piers
+   Float64 startStation,endStation;
+   GetStations(&startStation,&endStation);
+
+   const CSpanData2* pSpan = GetSpan(pgsTypes::metStart);
+   const CSpanData2* pEndSpan = GetSpan(pgsTypes::metEnd);
+
+   do
+   {
+      const CPierData2* pPier = pSpan->GetNextPier();
+      if ( startStation < pPier->GetStation() && pPier->GetStation() < endStation )
+      {
+         vPiers.push_back(pPier);
+      }
+
+      pSpan = pSpan->GetNextPier()->GetNextSpan();
+   } while ( pSpan && pSpan->GetIndex() <= pEndSpan->GetIndex() );
+
+
+   // get pier at end of segment (if there is one)
+   if ( m_pRightClosure && m_pRightClosure->GetPier() )
+   {
+      vPiers.push_back( m_pRightClosure->GetPier() );
+   }
+   else if ( m_SegmentIndex == m_pGirder->GetSegmentCount()-1 )
+   {
+      vPiers.push_back( m_pGirder->GetPier(pgsTypes::metEnd) );
+   }
+
+   return vPiers;
+}
+
 std::vector<const CTemporarySupportData*> CPrecastSegmentData::GetTemporarySupports() const
 {
    std::vector<const CTemporarySupportData*> tempSupports;
@@ -432,6 +484,28 @@ std::vector<const CTemporarySupportData*> CPrecastSegmentData::GetTemporarySuppo
    return tempSupports;
 }
 
+bool CPrecastSegmentData::IsDropIn() const
+{
+   std::vector<const CPierData2*> vPiers(GetPiers());
+   std::vector<const CTemporarySupportData*> vTS(GetTemporarySupports());
+   if ( vPiers.size() == 0 && vTS.size() == 2 )
+   {
+      // segment is supported by exactly 2 temporary supports... there is a chance it 
+      // could be a drop-in segment
+
+      const CTemporarySupportData* pLeftTS = vTS.front();
+      const CTemporarySupportData* pRightTS = vTS.back();
+
+      if ( pLeftTS->GetSupportType() == pgsTypes::StrongBack && pRightTS->GetSupportType() == pgsTypes::StrongBack )
+      {
+         // the temporary supports are both strong backs... segment is a drop-in
+         return true;
+      }
+   }
+
+   return false;
+}
+
 CSegmentKey CPrecastSegmentData::GetSegmentKey() const
 {
    CSegmentKey segmentKey(INVALID_INDEX,INVALID_INDEX,GetIndex());
@@ -439,11 +513,7 @@ CSegmentKey CPrecastSegmentData::GetSegmentKey() const
    if ( m_pGirder )
    {
       segmentKey.girderIndex = m_pGirder->GetIndex();
-
-      if ( m_pGirder->GetGirderGroup() )
-      {
-         segmentKey.groupIndex = m_pGirder->GetGirderGroup()->GetIndex();
-      }
+      segmentKey.groupIndex  = m_pGirder->GetGirderGroupIndex();
    }
 
    return segmentKey;
@@ -536,13 +606,13 @@ bool CPrecastSegmentData::operator==(const CPrecastSegmentData& rOther) const
 
    for ( int j = 0; j < 2; j++ )
    {
-      if ( EndBlockLength[j] != rOther.EndBlockLength[j] )
+      if ( !IsEqual(EndBlockLength[j],rOther.EndBlockLength[j]) )
          return false;
 
-      if ( EndBlockTransitionLength[j] != rOther.EndBlockTransitionLength[j] )
+      if ( !IsEqual(EndBlockTransitionLength[j],rOther.EndBlockTransitionLength[j]) )
          return false;
 
-      if ( EndBlockWidth[j] != rOther.EndBlockWidth[j] )
+      if ( !IsEqual(EndBlockWidth[j],rOther.EndBlockWidth[j]) )
          return false;
    }
 
@@ -882,6 +952,8 @@ void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyD
    CopyVariationFrom(rOther);
 
    ResolveReferences();
+
+   ASSERT_VALID;
 }
 
 void CPrecastSegmentData::MakeAssignment(const CPrecastSegmentData& rOther)
@@ -914,6 +986,7 @@ Float64 CPrecastSegmentData::GetSegmentHeight(bool bSegmentHeight) const
 
 void CPrecastSegmentData::AdjustAdjacentSegment()
 {
+   // Force the ends of this segment and the adjacent segments to match in height
    CPrecastSegmentData* pPrevSegment = NULL;
    CPrecastSegmentData* pNextSegment = NULL;
    if ( m_pLeftClosure )
@@ -926,7 +999,6 @@ void CPrecastSegmentData::AdjustAdjacentSegment()
       pNextSegment = m_pRightClosure->GetRightSegment();
    }
 
-   // Force the end of this segment and the adjacent segments to match in height
    if ( pPrevSegment )
    {
       // the right end of the previous segment must match the left end of this segment

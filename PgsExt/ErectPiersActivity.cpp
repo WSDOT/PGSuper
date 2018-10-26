@@ -206,7 +206,7 @@ HRESULT CSupportActivityBase::Load(IStructuredLoad* pStrLoad,IProgress* pProgres
 
       hr = pStrLoad->EndUnit();
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);

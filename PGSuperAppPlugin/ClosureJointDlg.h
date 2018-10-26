@@ -28,16 +28,20 @@
 #include "ClosureJointLongitudinalReinforcementPage.h"
 #include "ClosureJointStirrupsPage.h"
 
+#include <IFace\ExtendUI.h>
+
 // CClosureJointDlg
 
-class CClosureJointDlg : public CPropertySheet
+class CClosureJointDlg : public CPropertySheet, public IEditClosureJointData
 {
 	DECLARE_DYNAMIC(CClosureJointDlg)
 
 public:
-	CClosureJointDlg(UINT nIDCaption, const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,bool bEditingInGirder,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CClosureJointDlg(LPCTSTR pszCaption, const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,bool bEditingInGirder,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	virtual ~CClosureJointDlg();
+	CClosureJointDlg(const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CClosureJointDlg(const CSegmentKey& closureKey,const CClosureJointData* pClosureJoint, EventIndexType eventIdx,const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+
+   // IEditClosureJointData
+   virtual const CClosureKey& GetClosureKey() { return m_ClosureKey; }
 
    EventIndexType m_EventIndex; // cast closure joint stage
    CClosureJointData m_ClosureJoint; // does not have association with temporary support, segments, or spliced girder
@@ -45,18 +49,38 @@ public:
 
    bool m_bCopyToAllClosureJoints; // if true, the data from this dialog is applied to all closure joints at this support
 
+public:
+	virtual ~CClosureJointDlg();
+	virtual INT_PTR DoModal();
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
+
 protected:
 	DECLARE_MESSAGE_MAP()
 
-   bool m_bEditingInGirder; // true if editing from within the girder (Check box is for copying to all closures in this girder)
-                            // false if editing as an individual element (Check box is for copy to all closures at this support)
-
+   void CommonInit();
    void Init();
+   void Init(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
+   void CreateExtensionPages();
+   void CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions);
+   void DestroyExtensionPages();
+
+
+   txnMacroTxn m_Macro;
+   std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>> m_ExtensionPages;
+   std::set<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
+   void NotifyExtensionPages();
+   void NotifySplicedGirderExtensionPages();
+
    CClosureJointGeneralPage m_General;
    CClosureJointLongitudinalReinforcementPage m_Longitudinal;
    CClosureJointStirrupsPage m_Stirrups;
 
    afx_msg BOOL OnOK();
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
+
    CButton m_CheckBox;
 
 public:

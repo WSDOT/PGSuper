@@ -26,6 +26,8 @@
 #include "SupportDrawStrategyImpl.h"
 #include "mfcdual.h"
 
+#include <PgsExt\PierData2.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -36,8 +38,9 @@ static char THIS_FILE[] = __FILE__;
 static const long SSIZE = 1440 * 1/4; // (twips)
 
 
-CSupportDrawStrategyImpl::CSupportDrawStrategyImpl()
+CSupportDrawStrategyImpl::CSupportDrawStrategyImpl(const CPierData2* pPier)
 {
+   m_pPier = pPier;
    m_CachePoint.CoCreateInstance(CLSID_Point2d);
 }
 
@@ -154,7 +157,7 @@ void CSupportDrawStrategyImpl::GetLSymbolSize(iCoordinateMap* pMap, long* psx, l
 }
 
 
-void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt)
+void CSupportDrawStrategyImpl::DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt)
 {
    // base
    pDC->MoveTo(cx-wid,cy);
@@ -176,28 +179,41 @@ void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt)
 }
 
 
-void DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt)
+void CSupportDrawStrategyImpl::DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt)
 {
-      // pinned support
-      DrawGround(pDC, cx, cy+hgt, wid, hgt);
+   // pinned support
+   DrawGround(pDC, cx, cy+hgt, wid, hgt);
 
-      // triangle
-      POINT points[4];
-      points[0].x = cx;
-      points[0].y = cy;
-      points[1].x = cx-wid/2; 
-      points[1].y = cy+hgt;
-      points[2].x = cx+wid/2;
-      points[2].y = cy+hgt;
-      points[3].x = cx;
-      points[3].y = cy;
-      pDC->Polygon(points,4);
+   // triangle
+   POINT points[4];
+   points[0].x = cx;
+   points[0].y = cy;
+   points[1].x = cx-wid/2; 
+   points[1].y = cy+hgt;
+   points[2].x = cx+wid/2;
+   points[2].y = cy+hgt;
+   points[3].x = cx;
+   points[3].y = cy;
+   pDC->Polygon(points,4);
 
-      //// tip circle
-      //long es=wid/5;
-      //pDC->Ellipse(cx-es, cy-es, cx+es, cy+es);
+   //// top circle
+   //long es=wid/5;
+   //pDC->Ellipse(cx-es, cy-es, cx+es, cy+es);
 }
 
+void CSupportDrawStrategyImpl::DrawRollerSupport(CDC* pDC, long cx, long cy, long wid, long hgt)
+{
+   // pinned support
+   DrawGround(pDC, cx, cy+hgt, wid, hgt);
+
+   // circle
+   RECT rect;
+   rect.top = cy;
+   rect.bottom = cy+hgt;
+   rect.left = cx-wid/2;
+   rect.right = cx+wid/2;
+   pDC->Ellipse(&rect);
+}
 
 void CSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,IPoint2d* loc)
 {
@@ -222,7 +238,17 @@ void CSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF o
    CBrush brush(fill_color);
    CBrush* pOldBrush = pDC->SelectObject(&brush);
 
-   DrawPinnedSupport( pDC, topx, topy, wid, hgt);
+   if ( m_pPier->IsInteriorPier() )
+   {
+      DrawPinnedSupport(pDC, topx, topy, wid, hgt);
+   }
+   else
+   {
+      if ( m_pPier->GetPierConnectionType() == pgsTypes::Roller )
+         DrawRollerSupport(pDC, topx, topy, wid, hgt);
+      else
+         DrawPinnedSupport(pDC, topx, topy, wid, hgt);
+   }
 
    pDC->SelectObject(pOldPen);
    pDC->SelectObject(pOldBrush);

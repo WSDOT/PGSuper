@@ -54,7 +54,6 @@ void CErectSegmentsDlg::DoDataExchange(CDataExchange* pDX)
          SegmentIDType segID = (SegmentIDType)pTargetList->GetItemData(itemIdx);
          const CPrecastSegmentData* pSegment = m_pBridgeDesc->FindSegment(segID);
          const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
-         ATLASSERT(segmentKey.girderIndex == 0);
 
          // add the segment at segmentKey.segmentIndex for all girders in this group
          const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -107,10 +106,9 @@ void CErectSegmentsDlg::OnMoveRight()
       SegmentIDType segID = (SegmentIDType)pSourceList->GetItemData(sel);
       const CPrecastSegmentData* pSegment = m_pBridgeDesc->FindSegment(segID);
       const CSegmentKey& sourceSegment(pSegment->GetSegmentKey());
-      ATLASSERT(sourceSegment.girderIndex == 0);
 
       CString label;
-      label.Format(_T("Group %d, Segment %d"),LABEL_GROUP(sourceSegment.groupIndex),LABEL_SEGMENT(sourceSegment.segmentIndex));
+      label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(sourceSegment.groupIndex),LABEL_GIRDER(sourceSegment.girderIndex),LABEL_SEGMENT(sourceSegment.segmentIndex));
       int idx = pTargetList->AddString(label);
       pTargetList->SetItemData(idx,segID);
    }
@@ -139,10 +137,9 @@ void CErectSegmentsDlg::OnMoveLeft()
 
       const CPrecastSegmentData* pSegment = m_pBridgeDesc->FindSegment(segID);
       const CSegmentKey& targetSegment(pSegment->GetSegmentKey());
-      ATLASSERT(targetSegment.girderIndex == 0);
 
       CString label;
-      label.Format(_T("Group %d, Segment %d"),LABEL_GROUP(targetSegment.groupIndex),LABEL_SEGMENT(targetSegment.segmentIndex));
+      label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(targetSegment.groupIndex),LABEL_GIRDER(targetSegment.girderIndex),LABEL_SEGMENT(targetSegment.segmentIndex));
 
       int idx = pSourceList->AddString(label);
       pSourceList->SetItemData(idx,segID);
@@ -164,28 +161,32 @@ void CErectSegmentsDlg::FillSourceList()
    {
       const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(grpIdx);
 
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
-      SegmentIndexType nSegments = pGirder->GetSegmentCount();
-      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
-         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-         SegmentIDType segID = pSegment->GetID();
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+            SegmentIDType segID = pSegment->GetID();
 
-         bool bIsSegmentErected = m_pTimelineMgr->IsSegmentErected(segID);
-         EventIndexType erectionEventIdx = m_pTimelineMgr->GetSegmentErectionEventIndex(segID);
-         if ( bIsSegmentErected && erectionEventIdx == m_EventIndex )
-         {
-            if ( !m_ErectSegments.HasSegment(segID) )
-               bIsSegmentErected = false;
-         }
-         if ( !bIsSegmentErected )
-         {
-            CString label;
-            label.Format(_T("Group %d, Segment %d"),LABEL_GROUP(grpIdx),LABEL_SEGMENT(segIdx));
-            int idx = pSourceList->AddString(label);
-            pSourceList->SetItemData(idx,segID);
-         }
-      } // segment loop
+            bool bIsSegmentErected = m_pTimelineMgr->IsSegmentErected(segID);
+            EventIndexType erectionEventIdx = m_pTimelineMgr->GetSegmentErectionEventIndex(segID);
+            if ( bIsSegmentErected && erectionEventIdx == m_EventIndex )
+            {
+               if ( !m_ErectSegments.HasSegment(segID) )
+                  bIsSegmentErected = false;
+            }
+            if ( !bIsSegmentErected )
+            {
+               CString label;
+               label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
+               int idx = pSourceList->AddString(label);
+               pSourceList->SetItemData(idx,segID);
+            }
+         } // segment loop
+      } // girder loop
    } // group loop
 }
 
@@ -203,12 +204,11 @@ void CErectSegmentsDlg::FillTargetList()
       const CPrecastSegmentData* pSegment = m_pBridgeDesc->FindSegment(segID);
       CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
-      segmentKey.girderIndex = 0; // using girder 0 to represent all girders in this group
       std::pair<std::set<CSegmentKey>::iterator,bool> result( targets.insert(segmentKey) );
       if (result.second) // is true if inserted, false if the set already contains this segment key
       {
          CString label;
-         label.Format(_T("Group %d, Segment %d"),LABEL_GROUP(segmentKey.groupIndex),LABEL_SEGMENT(segmentKey.segmentIndex));
+         label.Format(_T("Group %d, Girder %s, Segment %d"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex));
          int idx = pTargetList->AddString(label);
          pTargetList->SetItemData(idx,segID);
       }

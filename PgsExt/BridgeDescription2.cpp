@@ -181,6 +181,16 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
          return false;
    }
 
+   if ( m_GirderGroups.size() != rOther.m_GirderGroups.size() )
+      return false;
+
+   GroupIndexType nGroups = m_GirderGroups.size();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      if ( *m_GirderGroups[grpIdx] != *rOther.m_GirderGroups[grpIdx] )
+         return false;
+   }
+
    if ( m_Piers.size() != rOther.m_Piers.size() )
       return false;
 
@@ -455,7 +465,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
                IsBridgeSpacing(m_GirderSpacingType),
                m_SlabOffsetType == pgsTypes::sotBridge);
    }
-   catch(HRESULT)
+   catch (HRESULT)
    {
       ATLASSERT(0);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -501,9 +511,10 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
 
    hr = pStrSave->put_Property(_T("SlabOffsetType"),CComVariant(m_SlabOffsetType));
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
+   {
       hr = pStrSave->put_Property(_T("SlabOffset"),CComVariant(m_SlabOffset));
+   }
    
-
    m_TimelineManager.Save(pStrSave,pProgress);
 
    pStrSave->BeginUnit(_T("Piers"),1.0);
@@ -650,8 +661,11 @@ void CBridgeDescription2::SetSlabOffset(Float64 slabOffset)
    m_SlabOffset = slabOffset;
 }
 
-Float64 CBridgeDescription2::GetSlabOffset() const
+Float64 CBridgeDescription2::GetSlabOffset(bool bGetRawValue) const
 {
+   if ( bGetRawValue )
+      return m_SlabOffset;
+
    if ( m_Deck.DeckType == pgsTypes::sdtNone )
       return 0;
 
@@ -669,19 +683,15 @@ Float64 CBridgeDescription2::GetMaxSlabOffset() const
    for ( ; grpIter != grpIterEnd; grpIter++ )
    {
       CGirderGroupData* pGroup = *grpIter;
+      PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+      PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
-         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         SegmentIndexType nSegments = pGirder->GetSegmentCount();
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
          {
-            CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-            
-            Float64 startSlabOffset = pSegment->GetSlabOffset(pgsTypes::metStart);
-            Float64 endSlabOffset   = pSegment->GetSlabOffset(pgsTypes::metEnd);
-
-            maxSlabOffset = ::Max(maxSlabOffset,startSlabOffset,endSlabOffset);
+            Float64 slabOffset = pGroup->GetSlabOffset(pierIdx,gdrIdx);
+            maxSlabOffset = Max(maxSlabOffset,slabOffset);
          }
       }
    }
@@ -1075,6 +1085,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
          const CPrecastSegmentData* pRefSegment = pRefGirder->GetSegment(0);
          SegmentIDType refSegID = pRefSegment->GetID();
 
+         EventIndexType constructionEventIdx = m_TimelineManager.GetSegmentConstructionEventIndex(refSegID);
          EventIndexType erectionEventIdx = m_TimelineManager.GetSegmentErectionEventIndex(refSegID);
 
          SegmentIndexType nSegments = pNewGirder->GetSegmentCount();
@@ -1083,6 +1094,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
             CPrecastSegmentData* pNewSegment = pNewGirder->GetSegment(segIdx);
             SegmentIDType newSegID = pNewSegment->GetID();
 
+            m_TimelineManager.SetSegmentConstructionEventByIndex( newSegID, constructionEventIdx );
             m_TimelineManager.SetSegmentErectionEventByIndex( newSegID, erectionEventIdx );
          }
       }
@@ -1843,37 +1855,27 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexTyp
    ATLASSERT( 0 <= tsIdx && tsIdx < (SupportIndexType)m_TemporarySupports.size() );
 
    CTemporarySupportData* pTS = m_TemporarySupports[tsIdx];
-   SupportIDType tsID = pTS->GetID();
-
-   return SetTemporarySupportByID(tsID,tsData);
-}
-
-SupportIndexType CBridgeDescription2::SetTemporarySupportByID(SupportIDType tsID,const CTemporarySupportData& tsData)
-{
-   // find the new index of the temp support
-   CTemporarySupportData* pTS = NULL;
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
-   {
-      pTS = *tsIter;
-      if ( pTS->GetID() == tsID )
-      {
-         break;
-      }
-      pTS = NULL;
-   }
-
-   ATLASSERT(pTS != NULL); // if fires, why wasn't TS found? invalid ID?
+   ATLASSERT(pTS->GetIndex() == tsIdx);
 
    if ( !IsEqual(pTS->GetStation(),tsData.GetStation()) )
    {
+#pragma Reminder("UPDATE: consider a new implementation for supports that simply move")
+      // if the move is such that the supported segment(s) don't change 
+      // we don't have to remove and re-insert. Removing the temporary support,
+      // if it occurs at a closure joint, causes the right hand segment to be
+      // deleted and the left hand segment extended. If the segments are tapered
+      // it will modify the shape of the segment. In this case, the temporary support
+      // index is the only thing that changes.
+      //
+      // if the move is such that the temporary support goes from one segment to another
+      // remove and re-insert seems to be the only viable option.
+
       // temporary support has moved... remove it and re-insert it at the new location
       CTemporarySupportData* pNewTS = new CTemporarySupportData(tsData);
       pNewTS->SetID(pTS->GetID()); // maintain its ID
 
       EventIndexType erectionEventIdx, removeEventIdx;
-      m_TimelineManager.GetTempSupportEvents(tsID,&erectionEventIdx,&removeEventIdx);
+      m_TimelineManager.GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removeEventIdx);
 
       EventIndexType castClosureJointEventIdx = INVALID_INDEX;
       CClosureJointData* pClosure = pTS->GetClosureJoint(0);
@@ -1882,7 +1884,7 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByID(SupportIDType tsID
          castClosureJointEventIdx = m_TimelineManager.GetCastClosureJointEventIndex(pClosure->GetID());
       }
 
-      RemoveTemporarySupportByID(tsID);
+      RemoveTemporarySupportByIndex(tsIdx);
 
       // LEAVE THE FUNCTION HERE
       AddTemporarySupport(pNewTS,erectionEventIdx,removeEventIdx,castClosureJointEventIdx);
@@ -1904,13 +1906,13 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByID(SupportIDType tsID
          if ( tsData.GetConnectionType() == pgsTypes::sctContinuousSegment )
          {
             // segment is becoming continuous over this temporary support. need to join segments into one
-            pGirder->JoinSegmentsAtTemporarySupport( pTS->GetIndex() );
+            pGirder->JoinSegmentsAtTemporarySupport( tsIdx );
          }
          else
          {
             // segment needs to be broken into two segments at this temporary support
             // because the connection type is now closure joint
-            pGirder->SplitSegmentsAtTemporarySupport( pTS->GetIndex() );
+            pGirder->SplitSegmentsAtTemporarySupport( tsIdx );
          }
       }
 
@@ -1923,7 +1925,27 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByID(SupportIDType tsID
    pTS->CopyTemporarySupportData(&tsData); // copies data, but does not change the ID
 
    UpdateTemporarySupports();
+
+   ASSERT_VALID;
+
    return pTS->GetIndex();
+}
+
+SupportIndexType CBridgeDescription2::SetTemporarySupportByID(SupportIDType tsID,const CTemporarySupportData& tsData)
+{
+   std::vector<CTemporarySupportData*>::const_iterator tsIter(m_TemporarySupports.begin());
+   std::vector<CTemporarySupportData*>::const_iterator tsIterEnd(m_TemporarySupports.end());
+   for ( ; tsIter != tsIterEnd; tsIter++ )
+   {
+      const CTemporarySupportData* pTS = *tsIter;
+      if ( pTS->GetID() == tsID )
+      {
+         SupportIndexType tsIdx = pTS->GetIndex();
+         return SetTemporarySupportByIndex(tsIdx,tsData);
+      }
+   }
+   ATLASSERT(false); // should never get here if tsID is valid
+   return INVALID_INDEX;
 }
 
 void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
@@ -1931,7 +1953,7 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
    ATLASSERT( 0 <= tsIdx && tsIdx < (SupportIndexType)m_TemporarySupports.size() );
 
    CTemporarySupportData* pTS = m_TemporarySupports[tsIdx];
-   SupportIDType tsID = pTS->GetID();
+   ATLASSERT(pTS->GetIndex() == tsIdx);
 
    // Remove the temporary support from the spliced girders before it is actually gone
    if ( pTS->GetConnectionType() == pgsTypes::sctClosureJoint )
@@ -1945,6 +1967,14 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
          pGirder->JoinSegmentsAtTemporarySupport(tsIdx);
       }
    }
+
+   // remove temporary support from the timeline
+   // (note that the closure joint was removed from the timeline when the segments were joined)
+   SupportIDType tsID = pTS->GetID();
+   EventIndexType erectEventIdx, removeEventIdx;
+   m_TimelineManager.GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
+   m_TimelineManager.GetEventByIndex(erectEventIdx)->GetErectPiersActivity().RemoveTempSupport(tsID);
+   m_TimelineManager.GetEventByIndex(removeEventIdx)->GetRemoveTempSupportsActivity().RemoveTempSupport(tsID);
 
    delete pTS;
    m_TemporarySupports.erase(m_TemporarySupports.begin()+tsIdx);
@@ -2671,18 +2701,14 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
 
       if ( bSlabOffset )
       {
-         pGroup->SetSlabOffset(pgsTypes::metStart,m_SlabOffset);
-         pGroup->SetSlabOffset(pgsTypes::metEnd,  m_SlabOffset);
+         PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+         PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
          GirderIndexType nGirders = pGroup->GetGirderCount();
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
-            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-            SegmentIndexType nSegments = pGirder->GetSegmentCount();
-            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
             {
-               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-               pSegment->SetSlabOffset(pgsTypes::metStart,m_SlabOffset);
-               pSegment->SetSlabOffset(pgsTypes::metEnd,  m_SlabOffset);
+               pGroup->SetSlabOffset(pierIdx,gdrIdx,m_SlabOffset);
             }
          }
       }
@@ -2878,25 +2904,32 @@ std::vector<pgsTypes::PierConnectionType> CBridgeDescription2::GetPierConnection
    std::vector<pgsTypes::PierConnectionType> connectionTypes;
 
    const CPierData2* pPier = GetPier(pierIdx);
-   ATLASSERT(pPier->IsBoundaryPier()); // this must be a boundary pier
 
-   // This pier is on a group boundary (two groups frame into this pier).
-   // All connection types are valid except for continuous segment.
-   connectionTypes.push_back(pgsTypes::Hinge);
-   connectionTypes.push_back(pgsTypes::Roller);
-   connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
-   connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
-
-   if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
+   if ( pPier->IsBoundaryPier() )
    {
-      // all these connection types require that there is a span on 
-      // both sides of this pier
-      connectionTypes.push_back(pgsTypes::ContinuousAfterDeck);
-      connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
-      connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeBack);
-      connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeBack);
-      connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeAhead);
-      connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeAhead);
+      // This pier is on a group boundary (two groups frame into this pier).
+      // All connection types are valid
+      connectionTypes.push_back(pgsTypes::Hinge);
+      connectionTypes.push_back(pgsTypes::Roller);
+      connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
+      connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
+
+      if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
+      {
+         // all these connection types require that there is a span on 
+         // both sides of this pier
+         connectionTypes.push_back(pgsTypes::ContinuousAfterDeck);
+         connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
+         connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeBack);
+         connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeBack);
+         connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeAhead);
+         connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeAhead);
+      }
+   }
+   else
+   {
+      connectionTypes.push_back(pgsTypes::Hinge);
+      connectionTypes.push_back(pgsTypes::Roller);
    }
 
    return connectionTypes;
@@ -2938,7 +2971,7 @@ IndexType CBridgeDescription2::GetClosureJointCount() const
    return nClosures;
 }
 
-CClosureJointData* CBridgeDescription2::GetClosureJoint(const CSegmentKey& closureKey)
+CClosureJointData* CBridgeDescription2::GetClosureJoint(const CClosureKey& closureKey)
 {
    CGirderGroupData* pGroup = GetGirderGroup(closureKey.groupIndex);
    CSplicedGirderData* pGirder = pGroup->GetGirder(closureKey.girderIndex);
@@ -2946,12 +2979,168 @@ CClosureJointData* CBridgeDescription2::GetClosureJoint(const CSegmentKey& closu
    return pClosure;
 }
 
-const CClosureJointData* CBridgeDescription2::GetClosureJoint(const CSegmentKey& closureKey) const
+const CClosureJointData* CBridgeDescription2::GetClosureJoint(const CClosureKey& closureKey) const
 {
    const CGirderGroupData* pGroup = GetGirderGroup(closureKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(closureKey.girderIndex);
    const CClosureJointData* pClosure = pGirder->GetClosureJoint(closureKey.segmentIndex);
    return pClosure;
+}
+
+CPrecastSegmentData* CBridgeDescription2::GetSegment(const CSegmentKey& segmentKey)
+{
+   CGirderGroupData* pGroup = GetGirderGroup(segmentKey.groupIndex);
+   CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+   return pSegment;
+}
+
+const CPrecastSegmentData* CBridgeDescription2::GetSegment(const CSegmentKey& segmentKey) const
+{
+   const CGirderGroupData* pGroup = GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+   return pSegment;
+}
+
+bool CBridgeDescription2::IsStable() const
+{
+   // Number of Equations, Ne = 3j+c
+   // Number of Unknowns,  Nu = 3m+r
+   // Ne < Nu : statically indeterminant and stable
+   // Ne = Nu : statically determinant and stable
+   // Ne > Nu : unstable
+   //
+   // m = number of members (number of supports - 1)
+   // j = number of joints (number of permanent piers and temporary supports)
+   // r = number of reactions (number of permanent piers and erection towers + 1... assume all vertical reactions and only a single horizontal reaction) 
+   // c = number of internal hinges (number of strongback connections)
+
+   // NOTE: number of reactions isn't exactly correct. We are discounting moment reactions at integral supports and horizontal reactions at all but
+   //       on hinge reaction. If there are multiple horizontal reactions, the system could be indeterminate in the X direction. However, we don't have
+   //       horizontal loads so that is irrelivent. What we really want to know is if spliced girders are in a configuration that form a mechanism
+   //       or a linkage that permits rigid body movement. Conventional precast girder bridges (PGSuper) are always stable
+
+   PierIndexType nPiers = GetPierCount();
+   SupportIndexType nTS = GetTemporarySupportCount();
+
+   IndexType nReactions = nPiers; // all piers provide a reaction in the Y direction. We will add number of erection towers in the loop below
+   nReactions++; // assume there is at least on pier that provides a reaction in the X direction.
+
+   IndexType nHinges    = 0; // will add number of strong backs in the loop below
+
+   for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
+   {
+      const CTemporarySupportData* pTS = GetTemporarySupport(tsIdx);
+      if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
+      {
+         nReactions++; // erection tower provide a reaction in the Y direction
+
+         if ( pTS->GetConnectionType() == pgsTypes::sctClosureJoint )
+         {
+            nHinges++; // closure joints are internal hinges prior to becoming composite
+         }
+      }
+      else if ( pTS->GetSupportType() == pgsTypes::StrongBack )
+      {
+         nHinges++; // closure joints are internal hinges prior to becoming composite
+      }
+      else
+      {
+         ATLASSERT(false);
+      }
+   }
+
+   IndexType nJoints = nPiers + nTS;
+   IndexType nMembers = nJoints - 1;
+
+   IndexType Ne = 3*nJoints+nHinges;
+   IndexType Nu = 3*nMembers+nReactions;
+
+   return (Nu < Ne ? false : true);
+}
+
+bool CBridgeDescription2::IsSegmentOverconstrained(const CSegmentKey& segmentKey) const
+{
+   const CPrecastSegmentData* pSegment = GetSegment(segmentKey);
+
+   std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
+   std::vector<const CTemporarySupportData*> vTS = pSegment->GetTemporarySupports();
+
+   IndexType nSupports = vPiers.size() + vTS.size();
+
+   if ( 2 < nSupports )
+   {
+      // need to make sure support elevation adjustments are on a straight line
+      bool bStraightLine = true;
+
+      std::map<Float64,Float64> offsets; // key = station, value is offset
+
+      const CGirderGroupData* pGroup = GetGirderGroup(segmentKey.groupIndex);
+      std::vector<const CPierData2*>::const_iterator pierIter(vPiers.begin());
+      std::vector<const CPierData2*>::const_iterator pierIterEnd(vPiers.end());
+      for ( ; pierIter != pierIterEnd; pierIter++ )
+      {
+         Float64 slab_offset_first_pier = pGroup->GetSlabOffset(vPiers.front()->GetIndex(),segmentKey.girderIndex);
+
+         const CPierData2* pPier = *pierIter;
+         Float64 slab_offset_this_pier = pGroup->GetSlabOffset(pPier->GetIndex(),segmentKey.girderIndex);
+
+         Float64 elev_adjustment = slab_offset_this_pier - slab_offset_first_pier;
+         Float64 station = pPier->GetStation();
+
+         offsets.insert(std::make_pair(station,elev_adjustment));
+      }
+
+      std::vector<const CTemporarySupportData*>::const_iterator tsIter(vTS.begin());
+      std::vector<const CTemporarySupportData*>::const_iterator tsIterEnd(vTS.end());
+      for ( ; tsIter != tsIterEnd; tsIter++ )
+      {
+         const CTemporarySupportData* pTS = *tsIter;
+         if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
+         {
+            Float64 station = pTS->GetStation();
+            Float64 elev_adjustment = pTS->GetElevationAdjustment();
+            offsets.insert(std::make_pair(station,elev_adjustment));
+         }
+      }
+
+      if ( 2 < offsets.size() )
+      {
+         std::map<Float64,Float64>::iterator offsetIter(offsets.begin());
+         std::map<Float64,Float64>::iterator offsetIterEnd(offsets.end());
+         Float64 station1 = offsetIter->first;
+         Float64 elevAdj1 = offsetIter->second;
+         offsetIter++;
+         Float64 station2 = offsetIter->first;
+         Float64 elevAdj2 = offsetIter->second;
+         offsetIter++;
+         Float64 dx = station2 - station1;
+         Float64 dy = elevAdj2 - elevAdj1;
+         Float64 slope1 = dy/dx;
+         for ( ; offsetIter != offsetIterEnd; offsetIter++ )
+         {
+            station2 = offsetIter->first;
+            elevAdj2 = offsetIter->second;
+
+            dx = station2 - station1;
+            dy = elevAdj2 - elevAdj1;
+            Float64 slope2 = dy/dx;
+
+            if ( !IsEqual(slope1,slope2) )
+            {
+               bStraightLine = false;
+               break;
+            }
+
+            station1 = station2;
+            elevAdj1 = elevAdj2;
+         }
+         return ( bStraightLine ? false : true );
+      }
+   }
+
+   return false;
 }
 
 bool CBridgeDescription2::MoveBridge(PierIndexType pierIdx,Float64 newStation)
@@ -3109,6 +3298,9 @@ bool CBridgeDescription2::MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Fl
 
    // since the overall length of the bridge doesn't change, there is no need to adjust
    // the location of the temporary supports
+#pragma Reminder("REVIEW/UPDATE: pier could move such that the temporary support effective change spans")
+   // if this happens the span/temp support referencing would get messed up (I think). review this case
+   // and update as needed.
 
    return true;
 }
@@ -3201,8 +3393,15 @@ void CBridgeDescription2::UpdateTemporarySupports()
             pSpan = pNextPier->GetNextSpan();
             ATLASSERT(pSpan != NULL); // ran out of spans before temporary supports
 
-            pPrevPier = pSpan->GetPrevPier();
-            pNextPier = pSpan->GetNextPier();
+            if ( pSpan == NULL )
+            {
+               bDone = true;
+            }
+            else
+            {
+               pPrevPier = pSpan->GetPrevPier();
+               pNextPier = pSpan->GetNextPier();
+            }
          }
       } while (!bDone );
    }

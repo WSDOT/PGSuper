@@ -118,8 +118,8 @@ public:
 
    // Data for direct manip fill
    // ===========================
-   const DirectStrandFillCollection& GetDirectFilledStraightStrands() const;
-   void SetDirectFilledStraightStrands(const DirectStrandFillCollection& coll) ;
+   const CDirectStrandFillCollection& GetDirectFilledStraightStrands() const;
+   void SetDirectFilledStraightStrands(const CDirectStrandFillCollection& coll) ;
 
    const std::vector<CDebondData>& GetDirectFilledStraightDebond() const;
    void SetDirectFilledStraightDebond(const std::vector<CDebondData>& info);
@@ -319,7 +319,7 @@ private:
 
    // Data for direct manip fill
    // ===========================
-   DirectStrandFillCollection m_DirectFilledStraightStrands;
+   CDirectStrandFillCollection m_DirectFilledStraightStrands;
    std::vector<CDebondData>   m_DirectFilledStraightDebond;
 
    // our parent

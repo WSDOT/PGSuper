@@ -163,6 +163,9 @@ BOOL CGirderSegmentSpacingPage::OnInitDialog()
 {
    FillGirderSpacingMeasurementComboBox();
 
+   CGirderSpacing2* pSpacing = GetSpacing();
+   m_SpacingGrid.InitializeGridData(pSpacing);
+
    m_SpacingGrid.SubclassDlgItem(IDC_SPACING_GRID,this);
    m_SpacingGrid.CustomInit();
    m_SpacingGrid.SetSkewAngle(GetSkewAngle());
@@ -247,6 +250,10 @@ HBRUSH CGirderSegmentSpacingPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColo
 BOOL CGirderSegmentSpacingPage::OnSetActive() 
 {
    UpdateChildWindowState();
+
+   CGirderSpacing2* pSpacing = GetSpacing();
+   m_SpacingGrid.InitializeGridData(pSpacing);
+
 	BOOL bResult = CPropertyPage::OnSetActive();
 
    // if the connection type is continuous segment, the spacing is not defined at this
@@ -504,7 +511,7 @@ bool CGirderSegmentSpacingPage::IsContinuousSegment()
    if ( m_bIsPier )
    {
       CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-      pgsTypes::PierSegmentConnectionType connection = pParent->m_pPierData->GetSegmentConnectionType();
+      pgsTypes::PierSegmentConnectionType connection = pParent->m_pPier->GetSegmentConnectionType();
       return (connection == pgsTypes::psctContinuousSegment || connection == pgsTypes::psctIntegralSegment);
    }
    else
@@ -533,7 +540,7 @@ CGirderSpacing2* CGirderSegmentSpacingPage::GetSpacing()
    if ( m_bIsPier )
    {
       CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-      return pParent->m_pPierData->GetGirderSpacing(pgsTypes::Back);
+      return pParent->m_pPier->GetGirderSpacing(pgsTypes::Back);
    }
    else
    {
@@ -547,7 +554,7 @@ void CGirderSegmentSpacingPage::SetSpacing(CGirderSpacing2* pSpacing)
    if ( m_bIsPier )
    {
       CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-      pParent->m_pPierData->SetGirderSpacing(pgsTypes::Back,*pSpacing);
+      pParent->m_pPier->SetGirderSpacing(pgsTypes::Back,*pSpacing);
    }
    else
    {
@@ -561,7 +568,7 @@ Float64 CGirderSegmentSpacingPage::GetStation()
    if ( m_bIsPier )
    {
       CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-      return pParent->m_pPierData->GetStation();
+      return pParent->m_pPier->GetStation();
    }
    else
    {
@@ -575,7 +582,7 @@ LPCTSTR CGirderSegmentSpacingPage::GetOrientation()
    if ( m_bIsPier )
    {
       CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-      return pParent->m_pPierData->GetOrientation();
+      return pParent->m_pPier->GetOrientation();
    }
    else
    {

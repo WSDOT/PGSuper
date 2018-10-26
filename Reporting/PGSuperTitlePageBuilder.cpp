@@ -75,14 +75,26 @@ static bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, CollectionIndex
 }
 
 CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
+CTitlePageBuilder(strTitle),
 m_pBroker(pBroker),
-m_Title(strTitle),
 m_bFullVersion(bFullVersion)
+{
+}
+
+CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(const CPGSuperTitlePageBuilder& other) :
+CTitlePageBuilder(other),
+m_pBroker(other.m_pBroker),
+m_bFullVersion(other.m_bFullVersion)
 {
 }
 
 CPGSuperTitlePageBuilder::~CPGSuperTitlePageBuilder(void)
 {
+}
+
+CTitlePageBuilder* CPGSuperTitlePageBuilder::Clone() const
+{
+   return new CPGSuperTitlePageBuilder(*this);
 }
 
 bool CPGSuperTitlePageBuilder::NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec)
@@ -100,7 +112,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
    *pTitlePage << pPara;
 
-   *pPara << m_Title.c_str();
+   std::_tstring title = GetReportTitle();
+
+   *pPara << title.c_str();
 
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportSubtitleStyle());

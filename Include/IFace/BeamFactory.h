@@ -51,6 +51,11 @@ struct ISuperstructureMember;
 struct IGirderSection;
 struct IStrandMover;
 
+interface IStages
+{
+   virtual StageIndexType GetStage(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const = 0;
+};
+
 /*****************************************************************************
 INTERFACE
    IBeamFactory
@@ -60,6 +65,10 @@ INTERFACE
 DESCRIPTION
    Interface for creating generic precast beams and related objects.      
 *****************************************************************************/
+#pragma Reminder("REVIEW: should this interface work with CGirderKey instead of CSegmentKey?")
+// Technically the model is a multi-segment girder is it would be more correct to the design
+// of the software, however, this is only used for conventional precast bridges so segment key is sufficient
+
 // {D3810B3E-91D6-4aed-A748-8ABEB87FCF44}
 DEFINE_GUID(IID_IBeamFactory, 
 0xd3810b3e, 0x91d6, 0x4aed, 0xa7, 0x48, 0x8a, 0xbe, 0xb8, 0x7f, 0xcf, 0x44);
@@ -84,7 +93,7 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Lays out the girder along the given superstructure member. This function must
    // create the segments that describe the girder line
-   virtual void LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr) = 0;
+   virtual void CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr) = 0;
 
    //---------------------------------------------------------------------------------
    // Adds Points of interest at all cross section changes.

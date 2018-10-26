@@ -30,7 +30,6 @@
 
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
 
 #ifdef _DEBUG
@@ -38,6 +37,29 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+// NOTE: On of the original ideas for this class was to have adjacent segments be merged together
+// when a temporary support or pier was removed from the model. The hope was to retain the girder
+// profile geometry after editing. The geometry is kept intact when a closure joint is added
+// to the girder, but it cannot be maintained when a closure is removed.
+// 
+// Some of the issues that were encountered were:
+// 1) We don't have support for a general girder profile (this can be added in the future).
+//    The general profile would be basically distance from left end and height parameters
+//    that define the profile of the bottom of the girder (could use linear segments or curve fitting
+//    to connect the points). An example of a case when a general layout is needed is merging
+//    adjacent segments that are both double variation (double linear/double parabolic). The merged
+//    segment would have four transition regions and the basic segment layout doesn't support this.
+//
+// 2) Merging of segments with a single variation with segments with a double variation can result
+//    in segments that need a general segment profile. In special cases the variations would merge
+//    together nicely, however the overall length of the segment must be known to compute the length 
+//    of the merged prismatic or tapered length sections. The overall segment length is not known
+//    at this level of the model.
+//
+// My suspicion is that users will generally layout the overall framing with prismatic girders and then
+// modify the depth of the section as needed to accomodate the stress and strength requirements. The
+// weirdness that will come from not merging adjacent segments should be minimal.
 
 CSplicedGirderData::CSplicedGirderData()
 {
@@ -58,6 +80,8 @@ CSplicedGirderData::CSplicedGirderData()
    m_ConditionFactorType = pgsTypes::cfGood;
 
    Resize(1); 
+
+   m_bCreatingNewGirder = false;
 }
 
 CSplicedGirderData::CSplicedGirderData(const CSplicedGirderData& rOther)
@@ -72,13 +96,37 @@ CSplicedGirderData::CSplicedGirderData(const CSplicedGirderData& rOther)
    m_PTData.SetGirder(this);
 
    m_pGirderGroup = NULL;
-
+   
    m_pGirderLibraryEntry = NULL;
 
    m_ConditionFactor = 1.0;
    m_ConditionFactorType = pgsTypes::cfGood;
 
-   MakeCopy(rOther,true /* copy only data*/ );
+   m_bCreatingNewGirder = false;
+   MakeCopy(rOther,true);
+}
+
+CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup,GirderIndexType gdrIdx,GirderIDType gdrID,const CSplicedGirderData& rOther)
+{
+   m_GirderIndex                   = gdrIdx;
+   m_GirderID                      = gdrID;
+
+   m_GirderGroupIndex              = INVALID_INDEX;
+   m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
+   m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
+
+   m_PTData.SetGirder(this);
+
+   m_pGirderGroup = pGirderGroup;
+   
+   m_pGirderLibraryEntry = NULL;
+
+   m_ConditionFactor = 1.0;
+   m_ConditionFactorType = pgsTypes::cfGood;
+
+   m_bCreatingNewGirder = true;
+   MakeCopy(rOther,true);
+   m_bCreatingNewGirder = false;
 }
 
 CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup)
@@ -100,6 +148,7 @@ CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup)
    m_ConditionFactorType = pgsTypes::cfGood;
 
    Resize(1);
+   m_bCreatingNewGirder = false;
 }  
 
 CSplicedGirderData::~CSplicedGirderData()
@@ -279,13 +328,24 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
       {
          const CClosureJointData* pOtherClosure = rOther.m_Closures[segIdx];
 
-         if ( bCopyDataOnly )
+         if ( m_bCreatingNewGirder )
          {
-            m_Closures[segIdx]->CopyClosureJointData(pOtherClosure);
+            // we are creating a new girder that is a copy of an existing girder
+            // in this case, we ignore the bCopyDataOnly flag for closure joints
+            // and do a full copy. we want to copy the data and the connection pointers
+            // at the closure.
+            *m_Closures[segIdx] = *pOtherClosure;
          }
          else
          {
-            *m_Closures[segIdx] = *pOtherClosure;
+            if ( bCopyDataOnly )
+            {
+               m_Closures[segIdx]->CopyClosureJointData(pOtherClosure);
+            }
+            else
+            {
+               *m_Closures[segIdx] = *pOtherClosure;
+            }
          }
       }
    }
@@ -387,9 +447,7 @@ HRESULT CSplicedGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          m_Segments.push_back(pSegment);
          if ( segIdx < nSegments-1 )
          {
-            CClosureJointData* pClosure = new CClosureJointData;
-            pClosure->SetGirder(this);
-            pClosure->SetIndex(segIdx);
+            CClosureJointData* pClosure = new CClosureJointData(this);
 
             pSegment->SetRightClosure(pClosure);
             pClosure->SetLeftSegment(pSegment);
@@ -410,7 +468,7 @@ HRESULT CSplicedGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit();
    }
-   catch(HRESULT)
+   catch (HRESULT)
    {
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
@@ -483,6 +541,14 @@ const CPierData2* CSplicedGirderData::GetPier(pgsTypes::MemberEndType end) const
       return NULL;
 }
 
+CPierData2* CSplicedGirderData::GetPier(pgsTypes::MemberEndType end)
+{
+   if ( m_pGirderGroup )
+      return m_pGirderGroup->GetPier(end);
+   else
+      return NULL;
+}
+
 PierIndexType CSplicedGirderData::GetPierIndex(pgsTypes::MemberEndType end) const
 {
    if ( m_pGirderGroup )
@@ -528,9 +594,7 @@ void CSplicedGirderData::UpdateLinks()
 
       if ( segIdx < nSegments-1 )
       {
-         m_Closures[segIdx]->SetIndex(segIdx);
          m_Closures[segIdx]->SetGirder(this);
-
          m_Closures[segIdx]->SetLeftSegment(m_Segments[segIdx]);
          m_Closures[segIdx]->SetRightSegment(m_Segments[segIdx+1]);
       }
@@ -903,9 +967,7 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          CPrecastSegmentData* pLeftSegment  = pClosure->GetLeftSegment();
          CPrecastSegmentData* pRightSegment = pClosure->GetRightSegment();
 
-         // the right hand segment is going away, so merge its geometry
-         // with the segment to its left
-         MergeSegmentsLeft(pLeftSegment,pRightSegment);
+         // the right hand segment is going away (the segments cannot be merged)
 
          pLeftSegment->SetRightClosure( pRightSegment->GetRightClosure() );
          pLeftSegment->SetSpan(pgsTypes::metEnd,pRightSegment->GetSpan(pgsTypes::metEnd));
@@ -993,12 +1055,11 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 
          UpdateLinks();
 
-         CTimelineManager* pTimelineMgr = GetTimelineManager();
-         ATLASSERT(pTimelineMgr);
-         EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
-         pTimelineMgr->SetSegmentErectionEventByIndex(pNewSegment->GetID(),erectionEventIdx);
+         AddSegmentToTimelineManager(pSegment,pNewSegment);
 
          // Find the timeline event where the closure joint activity includes the temporary support where the segments are split
+         CTimelineManager* pTimelineMgr = GetTimelineManager();
+         ATLASSERT(pTimelineMgr);
          EventIndexType nEvents = pTimelineMgr->GetEventCount();
          EventIndexType eventIdx;
          for ( eventIdx = 0; eventIdx < nEvents; eventIdx++ )
@@ -1015,6 +1076,7 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          if ( nEvents <= eventIdx )
          {
             // event wasn't found so just use the segment erection event
+            EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
             pTimelineMgr->SetCastClosureJointEventByIndex(pNewSegment->GetID(),erectionEventIdx);
          }
 
@@ -1061,9 +1123,7 @@ void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
 
          RemoveClosureJointFromTimelineManager(pClosure);
 
-         // the right hand segment is going away, so merge its geometry
-         // with the segment to its left
-         MergeSegmentsLeft(pLeftSegment,pRightSegment);
+         // the right hand segment is going away (the segments cannot be merged)
 
          pLeftSegment->SetRightClosure( pRightSegment->GetRightClosure() );
          
@@ -1104,7 +1164,7 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
    //      Segment      pierIdx      Segment                   Segment
 
 
-   const CPierData2* pPier = m_pGirderGroup->GetBridgeDescription()->GetPier(pierIdx);
+   CPierData2* pPier = m_pGirderGroup->GetBridgeDescription()->GetPier(pierIdx);
    Float64 pierStation = pPier->GetStation();
 
    // Search for segment that needs to be split
@@ -1153,10 +1213,10 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
          m_Closures.insert(closureIter,pNewClosure);
 
 
+         AddSegmentToTimelineManager(pSegment,pNewSegment);
+
          CTimelineManager* pTimelineMgr = GetTimelineManager();
          ATLASSERT(pTimelineMgr);
-         EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
-         pTimelineMgr->SetSegmentErectionEventByIndex(pNewSegment->GetID(),erectionEventIdx);
 
          // Find the evnet where the closure joint activity includes the temporary support where the segments are split
          EventIndexType nEvents = pTimelineMgr->GetEventCount();
@@ -1175,6 +1235,7 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
          if ( nEvents <= eventIdx )
          {
             // event wasn't found so just use the segment erection event
+            EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
             pTimelineMgr->SetCastClosureJointEventByIndex(pNewSegment->GetID(),erectionEventIdx);
          }
 
@@ -1183,154 +1244,6 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
    }
 
    UpdateLinks();
-}
-
-void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,const CPrecastSegmentData* pRightSegment)
-{
-   // incorporate the shape of pRightSegment into pLeftSegment
-   pgsTypes::SegmentVariationType leftVariation  = pLeftSegment->GetVariationType();
-   pgsTypes::SegmentVariationType rightVariation = pRightSegment->GetVariationType();
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   const CSplicedGirderData* pGirder = pLeftSegment->GetGirder();
-   const CGirderGroupData* pGroup = pGirder->GetGirderGroup();
-
-   GroupIndexType grpIdx   = pGroup->GetIndex();
-   GirderIndexType gdrIdx  = pGirder->GetIndex();
-   SegmentIndexType segIdx = pLeftSegment->GetIndex();
-   CSegmentKey leftSegmentKey(grpIdx,gdrIdx,segIdx);
-
-   Float64 leftSegmentLength = pBridge->GetSegmentLayoutLength(leftSegmentKey);
-
-   pGirder = pRightSegment->GetGirder();
-   pGroup = pGirder->GetGirderGroup();
-   gdrIdx = pGirder->GetIndex();
-   segIdx = pRightSegment->GetIndex();
-   CSegmentKey rightSegmentKey(grpIdx,gdrIdx,segIdx);
-   Float64 rightSegmentLength = pBridge->GetSegmentLayoutLength(rightSegmentKey);
-
-   Float64 leftZoneLength[4];
-   Float64 leftZoneHeight[4];
-   Float64 leftZoneBottomFlangeDepth[4];
-
-   Float64 rightZoneLength[4];
-   Float64 rightZoneHeight[4];
-   Float64 rightZoneBottomFlangeDepth[4];
-
-   for ( int i = 0; i < 4; i++ )
-   {
-      pgsTypes::SegmentZoneType zone = pgsTypes::SegmentZoneType(i);
-      pLeftSegment->GetVariationParameters(zone,true,&leftZoneLength[i],&leftZoneHeight[i],&leftZoneBottomFlangeDepth[i]);
-      pRightSegment->GetVariationParameters(zone,true,&rightZoneLength[i],&rightZoneHeight[i],&rightZoneBottomFlangeDepth[i]);
-   }
-
-   if ( leftVariation == pgsTypes::svtLinear || leftVariation == pgsTypes::svtParabolic )
-   {
-      if ( rightVariation == pgsTypes::svtLinear || rightVariation == pgsTypes::svtParabolic )
-      {
-         if ( leftVariation != rightVariation )
-         {
-#pragma Reminder("UPDATE: need to complete this")
-            ATLASSERT(false); // not supported... need to merge into a general variation
-         }
-         else
-         {
-            if ( (leftZoneHeight[pgsTypes::sztLeftPrismatic] < leftZoneHeight[pgsTypes::sztRightPrismatic]) &&
-                 (rightZoneHeight[pgsTypes::sztLeftPrismatic] > rightZoneHeight[pgsTypes::sztRightPrismatic]) )
-            {
-               // variation will be a Float64-type
-               pLeftSegment->SetVariationType( leftVariation == pgsTypes::svtLinear ? pgsTypes::svtDoubleLinear : pgsTypes::svtDoubleParabolic );
-
-               Float64 leftTaperLength = leftSegmentLength-leftZoneLength[pgsTypes::sztLeftPrismatic]-leftZoneLength[pgsTypes::sztRightPrismatic];
-               pLeftSegment->SetVariationParameters(pgsTypes::sztLeftTapered,leftTaperLength,leftZoneHeight[pgsTypes::sztRightPrismatic],leftZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
-
-               Float64 rightTaperLength = rightSegmentLength - rightZoneLength[pgsTypes::sztLeftPrismatic] - rightZoneLength[pgsTypes::sztRightPrismatic];
-               pLeftSegment->SetVariationParameters(pgsTypes::sztRightTapered,rightTaperLength,rightZoneHeight[pgsTypes::sztLeftPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztLeftPrismatic]);
-               pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightZoneLength[pgsTypes::sztRightPrismatic],rightZoneHeight[pgsTypes::sztRightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
-            }
-            else if ( IsZero(leftZoneLength[pgsTypes::sztRightPrismatic]) && IsZero(rightZoneLength[pgsTypes::sztLeftPrismatic]) )
-            {
-               // prismatic zone at the common boundary between the left and right segment has zero length... 
-               // variation will be single type
-               pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightZoneLength[pgsTypes::sztRightPrismatic],rightZoneHeight[pgsTypes::sztRightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
-            }
-            else
-            {
-#pragma Reminder("UPDATE: need to complete this")
-               ATLASSERT(false); // not supported... need to merge into a general variation
-            }
-         }
-      }
-      else if ( rightVariation == pgsTypes::svtDoubleLinear || rightVariation == pgsTypes::svtDoubleParabolic )
-      {
-         if ( (leftVariation == pgsTypes::svtLinear    && rightVariation != pgsTypes::svtDoubleLinear) ||
-              (leftVariation == pgsTypes::svtParabolic && rightVariation != pgsTypes::svtDoubleParabolic)
-            )
-         {
-#pragma Reminder("UPDATE: need to complete this")
-            ATLASSERT(false); // not supported... need to merge into a general variation
-         }
-         else
-         {
-            pLeftSegment->SetVariationType(rightVariation);
-
-            Float64 taperLength = leftSegmentLength + rightZoneLength[pgsTypes::sztLeftTapered] - leftZoneLength[pgsTypes::sztLeftPrismatic];
-            // need to do the opposite of commonHeight and commonBottomFlangeDepth
-            pLeftSegment->SetVariationParameters(pgsTypes::sztLeftTapered,taperLength,rightZoneHeight[pgsTypes::sztLeftTapered],rightZoneBottomFlangeDepth[pgsTypes::sztLeftTapered]);
-            pLeftSegment->SetVariationParameters(pgsTypes::sztRightTapered,rightZoneLength[pgsTypes::sztRightTapered],rightZoneHeight[pgsTypes::sztRightTapered],rightZoneBottomFlangeDepth[pgsTypes::sztRightTapered]);
-            pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightZoneLength[pgsTypes::sztRightPrismatic],rightZoneHeight[pgsTypes::sztRightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
-         }
-      }
-      else
-      {
-#pragma Reminder("UPDATE: need to complete this")
-         ATLASSERT(false); // not supported... need to merge into a general variation
-      }
-   }
-   else if ( leftVariation == pgsTypes::svtDoubleLinear || leftVariation == pgsTypes::svtDoubleParabolic )
-   {
-      if ( rightVariation == pgsTypes::svtLinear || rightVariation == pgsTypes::svtParabolic )
-      {
-         if ( (leftVariation == pgsTypes::svtDoubleLinear    && rightVariation != pgsTypes::svtLinear) ||
-              (leftVariation == pgsTypes::svtDoubleParabolic && rightVariation != pgsTypes::svtParabolic)
-            )
-         {
-#pragma Reminder("UPDATE: need to complete this")
-            ATLASSERT(false); // not supported... need to merge into a general variation
-         }
-         else
-         {
-            Float64 taperedLength = leftZoneLength[pgsTypes::sztRightTapered] + rightSegmentLength - rightZoneLength[pgsTypes::sztLeftPrismatic];
-            pLeftSegment->SetVariationParameters(pgsTypes::sztRightTapered,taperedLength,leftZoneHeight[pgsTypes::sztRightTapered],leftZoneBottomFlangeDepth[pgsTypes::sztRightTapered]);
-            pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightZoneLength[pgsTypes::sztRightPrismatic],rightZoneHeight[pgsTypes::sztRightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
-         }
-      }
-      else
-      {
-#pragma Reminder("UPDATE: need to complete this")
-         ATLASSERT(false); // not supported... need to merge into a general variation
-      }
-   }
-   else if ( leftVariation == pgsTypes::svtNone )
-   {
-      if ( rightVariation != pgsTypes::svtNone )
-      {
-         // NOTE: Not 100% sure if a variation of None can't be merged with a right
-         // segment with other variations... think this through
-#pragma Reminder("UPDATE: need to complete this")
-         ATLASSERT(false); // not supported... need to merge into a general variation
-      }
-   }
-   else
-   {
-#pragma Reminder("UPDATE: need to complete this") // this is general segment variation
-      ATLASSERT(false); // should not get here. unknown variation type
-   }
-
-   ASSERT_VALID;
 }
 
 void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPrecastSegmentData* pRightSegment,Float64 splitStation)
@@ -1536,6 +1449,9 @@ void CSplicedGirderData::AddSegmentToTimelineManager(const CPrecastSegmentData* 
    CTimelineManager* pTimelineMgr = GetTimelineManager();
    ATLASSERT(pTimelineMgr);
 
+   EventIndexType constructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(pSegment->GetID());
+   pTimelineMgr->SetSegmentConstructionEventByIndex(pNewSegment->GetID(),constructionEventIdx);
+
    EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
    pTimelineMgr->SetSegmentErectionEventByIndex(pNewSegment->GetID(),erectionEventIdx);
 }
@@ -1546,9 +1462,15 @@ void CSplicedGirderData::RemoveSegmentFromTimelineManager(const CPrecastSegmentD
    if ( pTimelineMgr )
    {
       SegmentIDType segID = pSegment->GetID();
+
+      EventIndexType constructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex( segID );
+      if ( constructEventIdx != INVALID_INDEX )
+      {
+         CTimelineEvent* pConstructionEvent = pTimelineMgr->GetEventByIndex(constructEventIdx);
+         pConstructionEvent->GetConstructSegmentsActivity().RemoveSegment( segID );
+      }
       
       EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex( segID );
-
       if ( erectionEventIdx != INVALID_INDEX )
       {
          CTimelineEvent* pErectionEvent = pTimelineMgr->GetEventByIndex(erectionEventIdx);
@@ -1683,14 +1605,16 @@ void CSplicedGirderData::AssertValid()
       _ASSERT( pSegment->GetSpanIndex(pgsTypes::metStart) <= pSegment->GetSpanIndex(pgsTypes::metEnd) );
 
       // start location of segment must be same as or after the start location of the segment's start span
+      // and end location of segment must be same as or before the end location of the segment's end span
       if ( m_pGirderGroup->GetBridgeDescription() != NULL )
       {
          Float64 segStartLoc, segEndLoc;
          pSegment->GetStations(&segStartLoc,&segEndLoc);
-         if (pStartSpan)
+         if ( pStartSpan )
          {
             _ASSERT( ::IsLE(pStartSpan->GetPrevPier()->GetStation(),segStartLoc) );
          }
+
          if ( pEndSpan )
          {
             _ASSERT( ::IsGE(segEndLoc,pEndSpan->GetNextPier()->GetStation()) );

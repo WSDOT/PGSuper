@@ -27,7 +27,7 @@
 #include "PGSuperDoc.h"
 #include "PGSuperAppPlugin\resource.h"
 #include "StrandFillGrid.h"
-#include "GirderSelectStrandsDlg.h"
+#include "GirderSelectStrandsPage.h"
 #include "PGSuperUnits.h"
 
 #include <system\tokenizer.h>
@@ -119,7 +119,7 @@ void CStrandFillGrid::InsertRow()
    SetRowStyle(nRow);
 }
 
-void CStrandFillGrid::CustomInit(CGirderSelectStrandsDlg* pParent, const GirderLibraryEntry* pGdrEntry)
+void CStrandFillGrid::CustomInit(CGirderSelectStrandsPage* pParent, const GirderLibraryEntry* pGdrEntry)
 {
    // We get our data from dad
    m_pParent = pParent;
@@ -190,7 +190,7 @@ void CStrandFillGrid::CustomInit(CGirderSelectStrandsDlg* pParent, const GirderL
 			.SetValue(_T("Debond"))
 		);
 
-   if (m_pParent->m_CanDebondStrands)
+   if (m_pParent->m_bCanDebondStrands)
    {
       // Name of this header will be set in SymmetricDebond()
 	   SetStyleRange(CGXRange(0,FIRST_DEBOND_COL), CGXStyle()
@@ -233,7 +233,7 @@ void CStrandFillGrid::CustomInit(CGirderSelectStrandsDlg* pParent, const GirderL
 
    SymmetricDebond(m_pParent->m_bSymmetricDebond);
 
-   HideCols(DEBOND_CHECK_COL,LAST_DEBOND_COL,(m_pParent->m_CanDebondStrands ? FALSE : TRUE));
+   HideCols(DEBOND_CHECK_COL,LAST_DEBOND_COL,(m_pParent->m_bCanDebondStrands ? FALSE : TRUE));
    HideCols(FIRST_EXTEND_COL,LAST_EXTEND_COL,(m_pParent->m_bCanExtendStrands ? FALSE : TRUE));
 
    // make text fit correctly in header row
@@ -724,12 +724,13 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
 
          if (doCheckData)
          {
-            if (leftDebond<=0.0 || rightDebond<=0.0)
+            if (leftDebond <= 0.0 || rightDebond <= 0.0)
             {
                AfxMessageBox( _T("Debond lengths must be greater than zero."), MB_ICONEXCLAMATION);
                return false;
             }
-            else if (leftDebond>m_pParent->m_MaxDebondLength || rightDebond>m_pParent->m_MaxDebondLength)
+            else if (m_pParent->m_MaxDebondLength < leftDebond || 
+                     m_pParent->m_MaxDebondLength < rightDebond)
             {
                AfxMessageBox( _T("Debond lengths must less than half of girder length."), MB_ICONEXCLAMATION);
                return false;
@@ -741,8 +742,8 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
          {
             CDebondData dbinfo;
             dbinfo.strandTypeGridIdx = userData.strandTypeGridIdx;
-            dbinfo.Length1 = leftDebond;
-            dbinfo.Length2 = rightDebond;
+            dbinfo.Length[pgsTypes::metStart] = leftDebond;
+            dbinfo.Length[pgsTypes::metEnd]   = rightDebond;
 
             m_pParent->m_StraightDebond.push_back(dbinfo);
          }
@@ -934,8 +935,7 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
 
 void CStrandFillGrid::UpdateParent()
 {
-   CGirderSelectStrandsDlg* pdlg = (CGirderSelectStrandsDlg*)GetParent();
-   pdlg->OnNumStrandsChanged();
+   m_pParent->OnNumStrandsChanged();
 }
 
 void CStrandFillGrid::SymmetricDebond(BOOL bSymmetricDebond)
@@ -970,11 +970,11 @@ bool CStrandFillGrid::IsPermStrandFilled(GirderLibraryEntry::psStrandType strand
 {
    if (strandType==GirderLibraryEntry::stStraight)
    {
-      return m_pParent->m_DirectFilledStraightStrands.IsStrandFilled(idxStrandGrid);
+      return m_pParent->m_pStrands->GetDirectStrandFillStraight()->IsStrandFilled(idxStrandGrid);
    }
    if (strandType==GirderLibraryEntry::stHarped)
    {
-      return m_pParent->m_DirectFilledHarpedStrands.IsStrandFilled(idxStrandGrid);
+      return m_pParent->m_pStrands->GetDirectStrandFillHarped()->IsStrandFilled(idxStrandGrid);
    }
    else
    {
@@ -985,25 +985,33 @@ bool CStrandFillGrid::IsPermStrandFilled(GirderLibraryEntry::psStrandType strand
 
 bool CStrandFillGrid::IsTempStrandFilled(StrandIndexType idxStrandGrid)
 {
-   return m_pParent->m_DirectFilledTemporaryStrands.IsStrandFilled(idxStrandGrid);
+   return m_pParent->m_pStrands->GetDirectStrandFillTemporary()->IsStrandFilled(idxStrandGrid);
 }
 
 void CStrandFillGrid::RemoveStrandFill(const CUserData* pUserData)
 {
    if (pUserData->strandType == pgsTypes::Straight)
    {
-      m_pParent->m_DirectFilledStraightStrands.RemoveFill(pUserData->strandTypeGridIdx);
+      CDirectStrandFillCollection collection = *m_pParent->m_pStrands->GetDirectStrandFillStraight();
+      collection.RemoveFill(pUserData->strandTypeGridIdx);
+      m_pParent->m_pStrands->SetDirectStrandFillStraight(collection);
    }
    else if (pUserData->strandType == pgsTypes::Harped)
    {
-      m_pParent->m_DirectFilledHarpedStrands.RemoveFill(pUserData->strandTypeGridIdx);
+      CDirectStrandFillCollection collection = *m_pParent->m_pStrands->GetDirectStrandFillHarped();
+      collection.RemoveFill(pUserData->strandTypeGridIdx);
+      m_pParent->m_pStrands->SetDirectStrandFillHarped(collection);
    }
    else if (pUserData->strandType == pgsTypes::Temporary)
    {
-      m_pParent->m_DirectFilledTemporaryStrands.RemoveFill(pUserData->strandTypeGridIdx);
+      CDirectStrandFillCollection collection = *m_pParent->m_pStrands->GetDirectStrandFillTemporary();
+      collection.RemoveFill(pUserData->strandTypeGridIdx);
+      m_pParent->m_pStrands->SetDirectStrandFillTemporary(collection);
    }
    else
+   {
       ATLASSERT(0);
+   }
 }
 
 void CStrandFillGrid::AddStrandFill(const CUserData* pUserData)
@@ -1012,15 +1020,21 @@ void CStrandFillGrid::AddStrandFill(const CUserData* pUserData)
 
    if (pUserData->strandType == pgsTypes::Straight)
    {
-      m_pParent->m_DirectFilledStraightStrands.AddFill(fillinf);
+      CDirectStrandFillCollection collection = *m_pParent->m_pStrands->GetDirectStrandFillStraight();
+      collection.AddFill(fillinf);
+      m_pParent->m_pStrands->SetDirectStrandFillStraight(collection);
    }
    else if (pUserData->strandType == pgsTypes::Harped)
    {
-      m_pParent->m_DirectFilledHarpedStrands.AddFill(fillinf);
+      CDirectStrandFillCollection collection = *m_pParent->m_pStrands->GetDirectStrandFillHarped();
+      collection.AddFill(fillinf);
+      m_pParent->m_pStrands->SetDirectStrandFillHarped(collection);
    }
    else if (pUserData->strandType == pgsTypes::Temporary)
    {
-      m_pParent->m_DirectFilledTemporaryStrands.AddFill(fillinf);
+      CDirectStrandFillCollection collection = *m_pParent->m_pStrands->GetDirectStrandFillTemporary();
+      collection.AddFill(fillinf);
+      m_pParent->m_pStrands->SetDirectStrandFillTemporary(collection);
    }
    else
       ATLASSERT(0);
@@ -1049,8 +1063,8 @@ bool CStrandFillGrid::GetDebondInfo(StrandIndexType straightStrandGridIdx, Float
       if (it->strandTypeGridIdx == straightStrandGridIdx)
       {
          // found our strand
-         *pleftDebond  = it->Length1;
-         *prightDebond = it->Length2!=-1.0 ? it->Length2 : it->Length1;
+         *pleftDebond  = it->Length[pgsTypes::metStart];
+         *prightDebond = it->Length[pgsTypes::metEnd] != -1.0 ? it->Length[pgsTypes::metEnd] : it->Length[pgsTypes::metStart];
          return true; // strand is debonded
       }
 

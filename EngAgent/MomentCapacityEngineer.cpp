@@ -692,7 +692,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             {
                b     = pProps->GetEffectiveFlangeWidth(poi);
                hf    = pBridge->GetStructuralSlabDepth(poi);
-               fc    = pMaterial->GetDeckFc(intervalIdx);
+               fc    = pMaterial->GetDeckFc(segmentKey,intervalIdx);
                Beta1 = lrfdConcreteUtil::Beta1(fc);
             }
          }
@@ -1131,26 +1131,26 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx     = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx     = pIntervals->GetCastDeckInterval(segmentKey);
 
    if ( bPositiveMoment )
    {
       // Girder moment
-      Mdnc += pProductForces->GetMoment(erectSegmentIntervalIdx,pftGirder,poi, bat);
+      Mdnc += pProductForces->GetMoment(erectSegmentIntervalIdx,pftGirder,poi, bat, ctIncremental);
 
       // Slab moment
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,   poi, bat);
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPad,poi, bat);
+      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,   poi, bat, ctIncremental);
+      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPad,poi, bat, ctIncremental);
 
       // Diaphragm moment
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,poi, bat);
+      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,poi, bat, ctIncremental);
 
       // Shear Key moment
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,poi, bat);
+      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,poi, bat, ctIncremental);
 
       // User DC and User DW
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,poi, bat);
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,poi, bat);
+      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,poi, bat, ctIncremental);
+      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,poi, bat, ctIncremental);
    }
 
    return Mdnc;
@@ -1177,7 +1177,7 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       }
       else
       {
-         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+         fr = pMaterial->GetDeckFlexureFr(segmentKey,intervalIdx);
       }
    }
 
@@ -1205,7 +1205,7 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       }
       else
       {
-         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+         fr = pMaterial->GetDeckFlexureFr(config.SegmentKey,intervalIdx);
       }
    }
 
@@ -1230,7 +1230,7 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
       else
       {
          GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(poi.GetSegmentKey());
          Sb  = pSectProp->GetS(castDeckIntervalIdx,poi,pgsTypes::BottomGirder);
       }
    }
@@ -1255,7 +1255,7 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    if ( bPositiveMoment )
    {
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(poi.GetSegmentKey());
       Sb  = pSectProp->GetS(castDeckIntervalIdx,poi,pgsTypes::BottomGirder,config.Fc);
       Sbc = pSectProp->GetS(intervalIdx,        poi,pgsTypes::BottomGirder,config.Fc);
    }
@@ -1317,7 +1317,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    e_initial_tendons.insert(e_initial_tendons.begin(),nDucts,0);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
    BuildCapacityProblem(liveLoadIntervalIdx,poi,NULL,e_initial_strands,e_initial_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
 
    // determine neutral axis angle
@@ -1477,8 +1477,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IIntervals,pIntervals);
-   ATLASSERT( pIntervals->GetLiveLoadInterval() <= intervalIdx );
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   ATLASSERT( pIntervals->GetLiveLoadInterval(segmentKey) <= intervalIdx );
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
@@ -1535,7 +1535,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    // slab concrete
    CComPtr<IUnconfinedConcrete> matSlab;
    matSlab.CoCreateInstance(CLSID_UnconfinedConcrete);
-   matSlab->put_fc( pMaterial->GetDeckFc(intervalIdx) );
+   matSlab->put_fc( pMaterial->GetDeckFc(segmentKey,intervalIdx) );
    CComQIPtr<IStressStrain> ssSlab(matSlab);
 
    // girder rebar
@@ -2254,7 +2254,7 @@ bool pgsMomentCapacityEngineer::pgsBondTool::IsDebonded(StrandIndexType strandId
       const DEBONDCONFIG& di = *iter;
 
       if ( di.strandIdx == strandIdx &&
-          ((m_DistFromStart < di.LeftDebondLength) || ((m_GirderLength - di.RightDebondLength) < m_DistFromStart)) )
+          ((m_DistFromStart < di.DebondLength[pgsTypes::metStart]) || ((m_GirderLength - di.DebondLength[pgsTypes::metEnd]) < m_DistFromStart)) )
       {
          // this strand is debonded at this POI... next strand
          bDebonded = true;

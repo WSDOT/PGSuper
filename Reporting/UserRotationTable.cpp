@@ -79,7 +79,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
-   strTitle.Format(_T("Rotations due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   strTitle.Format(_T("Rotations due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
    rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>(strTitle.GetBuffer(),true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -97,10 +97,10 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
 
    // get poi at start and end of each segment in the girder
    std::vector<pgsPointOfInterest> vPoi;
@@ -138,19 +138,19 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
       // Use reaction decider tool to determine when to report stages
-      ReactionDecider rctdr(BearingReactionsTable, reactionLocation, pBridge, pIntervals);
+      ReactionDecider reactionDecider(BearingReactionsTable, reactionLocation, girderKey, pBridge, pIntervals);
 
 
       if ( analysisType == pgsTypes::Envelope )
       {
-         if (rctdr.DoReport(intervalIdx))
+         if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, minBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, minBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, minBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, minBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, minBAT, ctIncremental ) );
          }
          else
          {
@@ -164,11 +164,11 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       }
       else
       {
-         if (rctdr.DoReport(intervalIdx))
+         if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, maxBAT, ctIncremental ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, ctIncremental ) );
          }
          else
          {

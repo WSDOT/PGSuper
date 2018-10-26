@@ -40,7 +40,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 50.0
+#define CURRENT_VERSION 50.0 // jumped to version 50 for PGSplice development... this leaves a gap
+// between version 44 (PGSuper head branch, version 2.9) and PGSplice 
 
 
 /****************************************************************************
@@ -408,7 +409,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    else
       ASSERT(0);
 
-   pSave->Property(_T("SectionPropertyType"),m_SectionPropertyMode); // added version 44
+   pSave->Property(_T("SectionPropertyType"),m_SectionPropertyMode); // added version 50
 
    pSave->Property(_T("DoCheckStrandSlope"), m_DoCheckStrandSlope);
    pSave->Property(_T("DoDesignStrandSlope"), m_DoDesignStrandSlope);
@@ -613,19 +614,19 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("TotalCreepDuration"),m_TotalCreepDuration);
 
    pSave->Property(_T("LossMethod"),(Int16)m_LossMethod);
-   pSave->Property(_T("TimeDependentModel"),(Int16)m_TimeDependentModel); // added in version 43
-   //pSave->Property(_T("FinalLosses"),m_FinalLosses); // removed version 44
+   pSave->Property(_T("TimeDependentModel"),(Int16)m_TimeDependentModel); // added in version 50
+   //pSave->Property(_T("FinalLosses"),m_FinalLosses); // removed version 50
    pSave->Property(_T("ShippingLosses"),m_ShippingLosses);
-   //pSave->Property(_T("BeforeXferLosses"),m_BeforeXferLosses);// removed version 44
-   //pSave->Property(_T("AfterXferLosses"),m_AfterXferLosses);// removed version 44
+   //pSave->Property(_T("BeforeXferLosses"),m_BeforeXferLosses);// removed version 50
+   //pSave->Property(_T("AfterXferLosses"),m_AfterXferLosses);// removed version 50
    pSave->Property(_T("ShippingTime"),m_ShippingTime);
 
    // added in version 22
-   //pSave->Property(_T("LiftingLosses"),m_LiftingLosses);// removed version 44
-   //pSave->Property(_T("BeforeTempStrandRemovalLosses"),m_BeforeTempStrandRemovalLosses);// removed version 44
-   //pSave->Property(_T("AfterTempStrandRemovalLosses"),m_AfterTempStrandRemovalLosses);// removed version 44
-   //pSave->Property(_T("AfterDeckPlacementLosses"),m_AfterDeckPlacementLosses);// removed version 44
-   //pSave->Property(_T("AfterSIDLLosses"),m_AfterSIDLLosses); // added in version 38// removed version 44
+   //pSave->Property(_T("LiftingLosses"),m_LiftingLosses);// removed version 50
+   //pSave->Property(_T("BeforeTempStrandRemovalLosses"),m_BeforeTempStrandRemovalLosses);// removed version 50
+   //pSave->Property(_T("AfterTempStrandRemovalLosses"),m_AfterTempStrandRemovalLosses);// removed version 50
+   //pSave->Property(_T("AfterDeckPlacementLosses"),m_AfterDeckPlacementLosses);// removed version 50
+   //pSave->Property(_T("AfterSIDLLosses"),m_AfterSIDLLosses); // added in version 38// removed version 50
 
 
    pSave->Property(_T("CuringMethodFactor"),m_CuringMethodTimeAdjustmentFactor);
@@ -647,7 +648,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]);
    pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
 
-   // added in version 45
+   // added in version 50
    pSave->Property(_T("CheckTendonStressAtJacking"),m_bCheckTendonStressAtJacking);
    pSave->Property(_T("CheckTendonStressPriorToSeating"),m_bCheckTendonStressPriorToSeating);
    pSave->Property(_T("Coeff_AtJacking_StressRel"),m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]);
@@ -662,7 +663,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
    
 
-   // added in version 23, removed version 4
+   // added in version 23, removed version 50
    //pSave->Property(_T("AnchorSet"),m_Dset);
    //pSave->Property(_T("WobbleFriction"),m_WobbleFriction);
    //pSave->Property(_T("CoefficientOfFriction"),m_FrictionCoefficient);
@@ -899,9 +900,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( 43 < version )
+      if ( 50 <= version )
       {
-         // added in version 44
+         // added in version 50
          int value;
          if (!pLoad->Property(_T("SectionPropertyType"),&value))
          {
@@ -911,7 +912,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
 
       if(!pLoad->Property(_T("DoCheckStrandSlope"), &m_DoCheckStrandSlope))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if (version<15)
       {
@@ -1879,9 +1882,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       m_LossMethod = temp;
 
-      if ( 43 < version )
+      if ( 50 <= version )
       {
-         // added in version 44
+         // added in version 50
          if ( !pLoad->Property(_T("TimeDependentModel"),&temp) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1897,7 +1900,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       Float64 AfterDeckPlacementLosses;
       Float64 AfterSIDLLosses;
       Float64 FinalLosses;
-      if ( 43 < version )
+      if ( 50 <= version )
       {
          if ( !pLoad->Property(_T("ShippingLosses"),&m_ShippingLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad );
@@ -2099,9 +2102,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( 22 < version && version < 44)
+      if ( 22 < version && version < 50)
       {
-         // added in version 23 and removed in version 44
+         // added in version 23 and removed in version 50
          Float64 Dset, WobbleFriction, FrictionCoefficient;
          if ( !pLoad->Property(_T("AnchorSet"),&Dset) )
             THROW_LOAD(InvalidFileFormat,pLoad);

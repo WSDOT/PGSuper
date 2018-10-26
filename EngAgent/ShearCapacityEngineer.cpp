@@ -122,14 +122,14 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
                                                            const pgsPointOfInterest& poi,
                                                            SHEARCAPACITYDETAILS* pscd)
 {
-#if defined _DEBUG
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   ATLASSERT( liveLoadIntervalIdx <= intervalIdx );
-#endif
-
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    CGirderKey girderKey(segmentKey);
+
+#if defined _DEBUG
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   ATLASSERT( liveLoadIntervalIdx <= intervalIdx );
+#endif
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -303,9 +303,9 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount(girderKey) - 1;
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
 
    Float64 neff;
    Float64 eps, Pps;
@@ -354,8 +354,8 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
 
 
    GET_IFACE(ICombinedForces,pCombinedForces);
-   Float64 Mg = pCombinedForces->GetMoment(lcDC, castDeckIntervalIdx, poi, ctCummulative, bat);
-   Mg        += pCombinedForces->GetMoment(lcDW, castDeckIntervalIdx, poi, ctCummulative, bat);
+   Float64 Mg = pCombinedForces->GetMoment(lcDC, castDeckIntervalIdx, poi, ctCumulative, bat);
+   Mg        += pCombinedForces->GetMoment(lcDW, castDeckIntervalIdx, poi, ctCumulative, bat);
 
    Float64 fpc = -(Pps+Ppt)/A - (Pps*eps+Ppt*ept)*c/I + Mg*c/I;
    fpc *= -1.0; // Need to make the compressive stress a positive value
@@ -480,10 +480,10 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, In
       Vu_min = Vmin;
       Vi_min = Vimin;
 
-      Vd_min =  pCombinedForces->GetShear(lcDC,intervalIdx,poi,ctCummulative,pgsTypes::MaxSimpleContinuousEnvelope);
-      Vd_min += pCombinedForces->GetShear(lcDW,intervalIdx,poi,ctCummulative,pgsTypes::MaxSimpleContinuousEnvelope);
-      Vd_max =  pCombinedForces->GetShear(lcDC,intervalIdx,poi,ctCummulative,pgsTypes::MinSimpleContinuousEnvelope);
-      Vd_max += pCombinedForces->GetShear(lcDW,intervalIdx,poi,ctCummulative,pgsTypes::MinSimpleContinuousEnvelope);
+      Vd_min =  pCombinedForces->GetShear(lcDC,intervalIdx,poi,ctCumulative,pgsTypes::MaxSimpleContinuousEnvelope);
+      Vd_min += pCombinedForces->GetShear(lcDW,intervalIdx,poi,ctCumulative,pgsTypes::MaxSimpleContinuousEnvelope);
+      Vd_max =  pCombinedForces->GetShear(lcDC,intervalIdx,poi,ctCumulative,pgsTypes::MinSimpleContinuousEnvelope);
+      Vd_max += pCombinedForces->GetShear(lcDW,intervalIdx,poi,ctCumulative,pgsTypes::MinSimpleContinuousEnvelope);
    }
    else
    {
@@ -492,8 +492,8 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, In
       pLsForces->GetShear(  ls, intervalIdx, poi, bat, &Vu_min, &Vu_max );
       pLsForces->GetConcurrentShear(  ls, intervalIdx, poi, bat, &Vi_min, &Vi_max );
 
-      Vd_min =  pCombinedForces->GetShear(lcDC,intervalIdx,poi,ctCummulative,bat);
-      Vd_min += pCombinedForces->GetShear(lcDW,intervalIdx,poi,ctCummulative,bat);
+      Vd_min =  pCombinedForces->GetShear(lcDC,intervalIdx,poi,ctCumulative,bat);
+      Vd_min += pCombinedForces->GetShear(lcDW,intervalIdx,poi,ctCumulative,bat);
       Vd_max = Vd_min;
    }
 
@@ -812,9 +812,13 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, IntervalI
 
    pscd->McrDetails = mcr_details;
    if ( (pscd->bTensionBottom ? true : false) )
+   {
       pscd->McrDetails.fr = pMaterial->GetSegmentShearFr(segmentKey,intervalIdx);
+   }
    else
-      pscd->McrDetails.fr = pMaterial->GetDeckShearFr(intervalIdx);
+   {
+      pscd->McrDetails.fr = pMaterial->GetDeckShearFr(segmentKey,intervalIdx);
+   }
 
    pscd->McrDetails.Mcr = pscd->McrDetails.Sbc*(pscd->McrDetails.fr + pscd->McrDetails.fcpe - pscd->McrDetails.Mdnc/pscd->McrDetails.Sb);
 

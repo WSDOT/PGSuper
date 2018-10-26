@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OffsetDuctGrid.h"
-#include "EditGirderlineDlg.h"
+#include "PGSuperAppPlugin\SplicedGirderGeneralPage.h"
 
 // COffsetDuctDlg dialog
 
@@ -10,7 +10,7 @@ class COffsetDuctDlg : public CDialog, public COffsetDuctGridCallback
 	DECLARE_DYNAMIC(COffsetDuctDlg)
 
 public:
-	COffsetDuctDlg(CEditGirderlineDlg* pGdrDlg,CWnd* pParent = NULL);   // standard constructor
+	COffsetDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent = NULL);   // standard constructor
 	virtual ~COffsetDuctDlg();
 
    void EnableDeleteBtn(BOOL bEnable);
@@ -23,7 +23,7 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-   CEditGirderlineDlg* m_pGirderlineDlg;
+   CSplicedGirderGeneralPage* m_pGirderlineDlg;
 
    DuctIndexType RefDuctIdx;
 

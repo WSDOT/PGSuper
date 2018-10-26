@@ -552,8 +552,8 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
          {
             CDebondData dbinfo;
             dbinfo.strandTypeGridIdx = userData.strandTypeGridIdx;
-            dbinfo.Length1 = leftDebond;
-            dbinfo.Length2 = rightDebond;
+            dbinfo.Length[pgsTypes::metStart] = leftDebond;
+            dbinfo.Length[pgsTypes::metEnd]   = rightDebond;
 
             m_pParent->m_StraightDebond.push_back(dbinfo);
          }
@@ -707,8 +707,8 @@ bool CTOGAStrandFillGrid::GetDebondInfo(StrandIndexType straightStrandGridIdx, F
       if (it->strandTypeGridIdx == straightStrandGridIdx)
       {
          // found our strand
-         *pleftDebond  = it->Length1;
-         *prightDebond = it->Length2!=-1.0 ? it->Length2 : it->Length1;
+         *pleftDebond  = it->Length[pgsTypes::metStart];
+         *prightDebond = it->Length[pgsTypes::metEnd] != -1.0 ? it->Length[pgsTypes::metEnd] : it->Length[pgsTypes::metStart];
          return true; // strand is debonded
       }
 

@@ -152,7 +152,7 @@ void CDrawPrecastSegmentControl::CreateSegmentShape(const CSegmentKey& segmentKe
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IGirder,pGirder);
    pGirder->GetSegmentProfile(segmentKey,pSplicedGirder,true,ppShape);
-   pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,ppPoints);
+   pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,true,ppPoints);
 }
 
 void CDrawPrecastSegmentControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape)

@@ -194,11 +194,15 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    InitBottomFlangeDepthControls();
    InitEndBlockControls();
 
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+
+#pragma Reminder("REVIEW: should the time mgr be coming from the parent propery sheet dialog?")
+   // I think so!
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-   EventIndexType eventIdx = pTimelineMgr->GetSegmentConstructionEventIndex();
+   EventIndexType eventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(pParent->m_SegmentID);
    m_AgeAtRelease = pTimelineMgr->GetEventByIndex(eventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
 
    if ( m_strUserEc == _T("") )
@@ -816,10 +820,11 @@ void CGirderSegmentGeneralPage::OnVariationTypeChanged()
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-      Float64 height = pSegment->GetBasicSegmentHeight();
-      height = ::ConvertFromSysUnits(height,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic].SetDefaultValue(height);
-      m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].SetDefaultValue(height);
+      Float64 value = pSegment->GetBasicSegmentHeight();
+      Float64 height = ::ConvertFromSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      CString strHeight = ::FormatDimension(value,pDisplayUnits->GetSpanLengthUnit(),false);
+      m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic].SetDefaultValue(height,strHeight);
+      m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].SetDefaultValue(height,strHeight);
    }
 
    UpdateSegmentVariationParameters(variationType);
@@ -1082,7 +1087,23 @@ Float64 CGirderSegmentGeneralPage::GetSegmentLength()
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
 
    CSegmentKey segmentKey(pParent->m_SegmentKey.groupIndex,pParent->m_Girder.GetIndex(),pParent->m_SegmentKey.segmentIndex);
-   return pBridge->GetSegmentLayoutLength(segmentKey);
+   Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(segmentKey);
+
+   if ( segmentKey.segmentIndex == 0 )
+   {
+      Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+      Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
+      segment_layout_length -= (brgOffset - endDist);
+   }
+   
+   if ( segmentKey.segmentIndex == pParent->m_Girder.GetSegmentCount()-1 )
+   {
+      Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(segmentKey);
+      Float64 endDist   = pBridge->GetSegmentEndEndDistance(segmentKey);
+      segment_layout_length -= (brgOffset - endDist);
+   }
+
+   return segment_layout_length;
 }
 
 pgsTypes::SegmentVariationType CGirderSegmentGeneralPage::GetSegmentVariation()

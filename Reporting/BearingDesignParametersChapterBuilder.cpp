@@ -76,7 +76,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    // we want the final configuration... that would be in the last interval
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

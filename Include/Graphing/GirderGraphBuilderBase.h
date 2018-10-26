@@ -40,10 +40,13 @@ public:
    CGirderGraphBuilderBase(const CGirderGraphBuilderBase& other);
    virtual ~CGirderGraphBuilderBase();
 
-   virtual int CreateControls(CWnd* pParent,UINT nID);
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
    virtual CEAFGraphControlWindow* GetGraphControlWindow();
    
    virtual bool UpdateNow() = 0;
+
+   virtual void UpdateXAxis();
+   virtual void UpdateYAxis();
 
    void ShowGrid(bool bShow);
    void ShowBeam(bool bShow);
@@ -53,8 +56,6 @@ protected:
 
    // implement this method to create the graph controller object (the C++ object, not the Windows object)
    virtual CGirderGraphControllerBase* CreateGraphController() = 0;
-   // implement this method to create the Windows object
-   virtual BOOL InitGraphController(CWnd* pParent,UINT nID) = 0;
 
    DECLARE_MESSAGE_MAP()
 
@@ -66,12 +67,12 @@ protected:
 
    bool m_bShowBeam;
 
-   Float64 m_GraphStartOffset; // distance from (0,0) on the graph to the start of the origin of the girder coordinate system
-                               // for the first segment in the girder being drawn
-
    void GetXValues(const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>& xVals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
    void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC);
+
+   // returns the interval for when the beam is drawn
+   virtual IntervalIndexType GetBeamDrawInterval() = 0;
 };

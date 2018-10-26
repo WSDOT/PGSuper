@@ -605,10 +605,12 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
                                                IntervalIndexType continuityIntervalIdx,pgsTypes::AnalysisType analysisType,
                                                IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
+   ASSERT_GIRDER_KEY(girderKey);
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);

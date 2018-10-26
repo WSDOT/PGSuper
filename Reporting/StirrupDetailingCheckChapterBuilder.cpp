@@ -75,7 +75,7 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(CReportSpecification* pR
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
 
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);

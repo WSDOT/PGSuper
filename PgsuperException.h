@@ -38,19 +38,16 @@
 // described in the LRFD specification
 #define XREASON_REFINEDANALYSISREQUIRED      0x0008
 
-// The bridge must be entirely within the limits of the horizontal curve
-#define XREASON_NOTINHCURVE                  0x0010
-
-// The bridge must be entirely within the limits of the vertical curve
-#define XREASON_NOTINVCURVE                  0x0020
-
 // Cant have negative length girders
-#define XREASON_NEGATIVE_GIRDER_LENGTH       0x0040
+#define XREASON_NEGATIVE_GIRDER_LENGTH       0x0010
 
 // Error creating COM component
-#define XREASON_COMCREATE_ERROR              0x0080
+#define XREASON_COMCREATE_ERROR              0x0020
 
 // The calculation, analysis method, or other requires a different version of the LRFD than is currently selected
-#define XREASON_LRFD_VERSION                 0x0100
+#define XREASON_LRFD_VERSION                 0x0040
+
+// The bridge does not have a stable geometric configuration
+#define XREASON_UNSTABLE                     0x0080
 
 #endif // INCLUDED_PGSUPEREXCEPTION_H_

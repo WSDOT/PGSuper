@@ -45,22 +45,22 @@ static char THIS_FILE[] = __FILE__;
 
 /****************************************************************************
 CLASS
-   CTSRemovalDisplacementsTable
+   CTSRemovalDeflectionsTable
 ****************************************************************************/
-CTSRemovalDisplacementsTable::CTSRemovalDisplacementsTable()
+CTSRemovalDeflectionsTable::CTSRemovalDeflectionsTable()
 {
 }
 
-CTSRemovalDisplacementsTable::CTSRemovalDisplacementsTable(const CTSRemovalDisplacementsTable& rOther)
+CTSRemovalDeflectionsTable::CTSRemovalDeflectionsTable(const CTSRemovalDeflectionsTable& rOther)
 {
    MakeCopy(rOther);
 }
 
-CTSRemovalDisplacementsTable::~CTSRemovalDisplacementsTable()
+CTSRemovalDeflectionsTable::~CTSRemovalDeflectionsTable()
 {
 }
 
-CTSRemovalDisplacementsTable& CTSRemovalDisplacementsTable::operator= (const CTSRemovalDisplacementsTable& rOther)
+CTSRemovalDeflectionsTable& CTSRemovalDeflectionsTable::operator= (const CTSRemovalDeflectionsTable& rOther)
 {
    if( this != &rOther )
    {
@@ -71,11 +71,11 @@ CTSRemovalDisplacementsTable& CTSRemovalDisplacementsTable::operator= (const CTS
 }
 
 
-void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IEAFDisplayUnits* pDisplayUnits) const
+void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    IntervalIndexType continuityIntervalIdx;
@@ -89,6 +89,8 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
 
    // Get the results
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -98,14 +100,10 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
       // Get the intervals when temporary supports are removed for this group
-      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(grpIdx));
+      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(girderKey));
 
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
@@ -113,11 +111,14 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
       if ( tsrIntervals.size() == 0 )
          continue; // next group
 
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(thisGirderKey);
+      IntervalIndexType overlayIntervalIdx  = pIntervals->GetOverlayInterval(thisGirderKey);
 
       // determine if any user defined loads where applied before the first temporary
       // support removal interval
       bool bAreThereUserLoads = false;
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(grpIdx,gdrIdx,0));
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(thisGirderKey,0));
       for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < tsrIntervals.front(); intervalIdx++ )
       {
          if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
@@ -144,7 +145,7 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
          }
 
          CString strLabel;
-         strLabel.Format(_T("Displacements due to removal of temporary supports in Interval %d"),LABEL_INTERVAL(tsrIntervalIdx));
+         strLabel.Format(_T("Deflections due to removal of temporary supports in Interval %d"),LABEL_INTERVAL(tsrIntervalIdx));
          rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
 
          rptParagraph* p = new rptParagraph;
@@ -160,8 +161,8 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
          RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
-                                                                                                 bPermit,false,analysisType,continuityIntervalIdx,
-                                                                                                 pRatingSpec,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
+                                                                                                 bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
+                                                                                                 pRatingSpec,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
 
 
          if ( bAreThereUserLoads )
@@ -170,44 +171,44 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
             p_table->SetNumberOfColumns(nCols);
             p_table->SetRowSpan(0,nCols-3,2);
             p_table->SetRowSpan(1,nCols-3,SKIP_CELL);
-            (*p_table)(0,nCols-3) << COLHDR(_T("User DC"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+            (*p_table)(0,nCols-3) << COLHDR(_T("User DC"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
             p_table->SetRowSpan(0,nCols-2,2);
             p_table->SetRowSpan(1,nCols-2,SKIP_CELL);
-            (*p_table)(0,nCols-2) << COLHDR(_T("User DW"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+            (*p_table)(0,nCols-2) << COLHDR(_T("User DW"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
             p_table->SetRowSpan(0,nCols-1,2);
             p_table->SetRowSpan(1,nCols-1,SKIP_CELL);
-            (*p_table)(0,nCols-1) << COLHDR(_T("User LLIM"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+            (*p_table)(0,nCols-1) << COLHDR(_T("User LLIM"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
          }
 
          CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
          std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );
 
          // Get the results for this span (it is faster to get them as a vector rather than individually)
-         std::vector<Float64> girder    = pForces2->GetDisplacement(tsrIntervalIdx, pftGirder,    vPoi, maxBAT);
-         std::vector<Float64> diaphragm = pForces2->GetDisplacement(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT);
+         std::vector<Float64> girder    = pForces2->GetDeflection(tsrIntervalIdx, pftGirder,    vPoi, maxBAT, ctIncremental);
+         std::vector<Float64> diaphragm = pForces2->GetDeflection(tsrIntervalIdx, pftDiaphragm, vPoi, maxBAT, ctIncremental);
 
          std::vector<Float64> minSlab, maxSlab;
          std::vector<Float64> minSlabPad, maxSlabPad;
-         maxSlab = pForces2->GetDisplacement( tsrIntervalIdx, pftSlab, vPoi, maxBAT );
-         minSlab = pForces2->GetDisplacement( tsrIntervalIdx, pftSlab, vPoi, minBAT );
+         maxSlab = pForces2->GetDeflection( tsrIntervalIdx, pftSlab, vPoi, maxBAT, ctIncremental );
+         minSlab = pForces2->GetDeflection( tsrIntervalIdx, pftSlab, vPoi, minBAT, ctIncremental );
 
-         maxSlabPad = pForces2->GetDisplacement( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT );
-         minSlabPad = pForces2->GetDisplacement( tsrIntervalIdx, pftSlabPad, vPoi, minBAT );
+         maxSlabPad = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT, ctIncremental );
+         minSlabPad = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPad, vPoi, minBAT, ctIncremental );
 
          std::vector<Float64> minDeckPanel, maxDeckPanel;
          if ( bDeckPanels )
          {
-            maxDeckPanel = pForces2->GetDisplacement( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT );
-            minDeckPanel = pForces2->GetDisplacement( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT );
+            maxDeckPanel = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT, ctIncremental );
+            minDeckPanel = pForces2->GetDeflection( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT, ctIncremental );
          }
 
          std::vector<Float64> minConstruction, maxConstruction;
          if ( bConstruction )
          {
-            maxConstruction = pForces2->GetDisplacement( tsrIntervalIdx, pftConstruction, vPoi, maxBAT );
-            minConstruction = pForces2->GetDisplacement( tsrIntervalIdx, pftConstruction, vPoi, minBAT );
+            maxConstruction = pForces2->GetDeflection( tsrIntervalIdx, pftConstruction, vPoi, maxBAT, ctIncremental );
+            minConstruction = pForces2->GetDeflection( tsrIntervalIdx, pftConstruction, vPoi, minBAT, ctIncremental );
          }
 
          std::vector<Float64> minOverlay, maxOverlay;
@@ -217,30 +218,30 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
 
          if ( bSidewalk )
          {
-            maxSidewalk = pForces2->GetDisplacement( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT );
-            minSidewalk = pForces2->GetDisplacement( tsrIntervalIdx, pftSidewalk, vPoi, minBAT );
+            maxSidewalk = pForces2->GetDeflection( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT, ctIncremental );
+            minSidewalk = pForces2->GetDeflection( tsrIntervalIdx, pftSidewalk, vPoi, minBAT, ctIncremental );
          }
 
          if ( bShearKey )
          {
-            maxShearKey = pForces2->GetDisplacement( tsrIntervalIdx, pftShearKey, vPoi, maxBAT );
-            minShearKey = pForces2->GetDisplacement( tsrIntervalIdx, pftShearKey, vPoi, minBAT );
+            maxShearKey = pForces2->GetDeflection( tsrIntervalIdx, pftShearKey, vPoi, maxBAT, ctIncremental );
+            minShearKey = pForces2->GetDeflection( tsrIntervalIdx, pftShearKey, vPoi, minBAT, ctIncremental );
          }
 
-         maxTrafficBarrier = pForces2->GetDisplacement( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT );
-         minTrafficBarrier = pForces2->GetDisplacement( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT );
+         maxTrafficBarrier = pForces2->GetDeflection( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, ctIncremental );
+         minTrafficBarrier = pForces2->GetDeflection( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, ctIncremental );
          if ( overlayIntervalIdx != INVALID_INDEX )
          {
-            maxOverlay = pForces2->GetDisplacement( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT );
-            minOverlay = pForces2->GetDisplacement( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT );
+            maxOverlay = pForces2->GetDeflection( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, ctIncremental );
+            minOverlay = pForces2->GetDeflection( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, ctIncremental );
          }
 
          std::vector<Float64> userDC, userDW, userLLIM;
          if ( bAreThereUserLoads )
          {
-            userDC   = pForces2->GetDisplacement(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT);
-            userDW   = pForces2->GetDisplacement(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT);
-            userLLIM = pForces2->GetDisplacement(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT);
+            userDC   = pForces2->GetDeflection(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT, ctIncremental);
+            userDW   = pForces2->GetDeflection(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT, ctIncremental);
+            userLLIM = pForces2->GetDeflection(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental);
          }
 
          // write out the results
@@ -257,19 +258,19 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
             Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
             (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
-            (*p_table)(row,col++) << displacement.SetValue( girder[index] );
-            (*p_table)(row,col++) << displacement.SetValue( diaphragm[index] );
+            (*p_table)(row,col++) << deflection.SetValue( girder[index] );
+            (*p_table)(row,col++) << deflection.SetValue( diaphragm[index] );
 
             if ( bShearKey )
             {
                if ( analysisType == pgsTypes::Envelope )
                {
-                  (*p_table)(row,col++) << displacement.SetValue( maxShearKey[index] );
-                  (*p_table)(row,col++) << displacement.SetValue( minShearKey[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( maxShearKey[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( minShearKey[index] );
                }
                else
                {
-                  (*p_table)(row,col++) << displacement.SetValue( maxShearKey[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( maxShearKey[index] );
                }
             }
 
@@ -277,40 +278,40 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
             {
                if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
                {
-                  (*p_table)(row,col++) << displacement.SetValue( maxConstruction[index] );
-                  (*p_table)(row,col++) << displacement.SetValue( minConstruction[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( maxConstruction[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( minConstruction[index] );
                }
                else
                {
-                  (*p_table)(row,col++) << displacement.SetValue( maxConstruction[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( maxConstruction[index] );
                }
             }
 
             if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
             {
-               (*p_table)(row,col++) << displacement.SetValue( maxSlab[index] );
-               (*p_table)(row,col++) << displacement.SetValue( minSlab[index] );
+               (*p_table)(row,col++) << deflection.SetValue( maxSlab[index] );
+               (*p_table)(row,col++) << deflection.SetValue( minSlab[index] );
 
-               (*p_table)(row,col++) << displacement.SetValue( maxSlabPad[index] );
-               (*p_table)(row,col++) << displacement.SetValue( minSlabPad[index] );
+               (*p_table)(row,col++) << deflection.SetValue( maxSlabPad[index] );
+               (*p_table)(row,col++) << deflection.SetValue( minSlabPad[index] );
             }
             else
             {
-               (*p_table)(row,col++) << displacement.SetValue( maxSlab[index] );
+               (*p_table)(row,col++) << deflection.SetValue( maxSlab[index] );
 
-               (*p_table)(row,col++) << displacement.SetValue( maxSlabPad[index] );
+               (*p_table)(row,col++) << deflection.SetValue( maxSlabPad[index] );
             }
 
             if ( bDeckPanels )
             {
                if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
                {
-                  (*p_table)(row,col++) << displacement.SetValue( maxDeckPanel[index] );
-                  (*p_table)(row,col++) << displacement.SetValue( minDeckPanel[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( maxDeckPanel[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( minDeckPanel[index] );
                }
                else
                {
-                  (*p_table)(row,col++) << displacement.SetValue( maxDeckPanel[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( maxDeckPanel[index] );
                }
             }
 
@@ -318,33 +319,33 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
             {
                if ( bSidewalk )
                {
-                  (*p_table)(row,col++) << displacement.SetValue( maxSidewalk[index] );
-                  (*p_table)(row,col++) << displacement.SetValue( minSidewalk[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( maxSidewalk[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( minSidewalk[index] );
                }
 
-               (*p_table)(row,col++) << displacement.SetValue( maxTrafficBarrier[index] );
-               (*p_table)(row,col++) << displacement.SetValue( minTrafficBarrier[index] );
+               (*p_table)(row,col++) << deflection.SetValue( maxTrafficBarrier[index] );
+               (*p_table)(row,col++) << deflection.SetValue( minTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << displacement.SetValue( maxOverlay[index] );
-               (*p_table)(row,col++) << displacement.SetValue( minOverlay[index] );
+               (*p_table)(row,col++) << deflection.SetValue( maxOverlay[index] );
+               (*p_table)(row,col++) << deflection.SetValue( minOverlay[index] );
             }
             else
             {
                if ( bSidewalk )
                {
-                  (*p_table)(row,col++) << displacement.SetValue( maxSidewalk[index] );
+                  (*p_table)(row,col++) << deflection.SetValue( maxSidewalk[index] );
                }
 
-               (*p_table)(row,col++) << displacement.SetValue( maxTrafficBarrier[index] );
+               (*p_table)(row,col++) << deflection.SetValue( maxTrafficBarrier[index] );
 
-               (*p_table)(row,col++) << displacement.SetValue( maxOverlay[index] );
+               (*p_table)(row,col++) << deflection.SetValue( maxOverlay[index] );
             }
 
             if ( bAreThereUserLoads )
             {
-               (*p_table)(row,col++) << displacement.SetValue( userDC[index] );
-               (*p_table)(row,col++) << displacement.SetValue( userDW[index] );
-               (*p_table)(row,col++) << displacement.SetValue( userLLIM[index] );
+               (*p_table)(row,col++) << deflection.SetValue( userDC[index] );
+               (*p_table)(row,col++) << deflection.SetValue( userDW[index] );
+               (*p_table)(row,col++) << deflection.SetValue( userLLIM[index] );
             }
 
             row++;
@@ -353,12 +354,12 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
    } // next group
 }
 
-void CTSRemovalDisplacementsTable::MakeCopy(const CTSRemovalDisplacementsTable& rOther)
+void CTSRemovalDeflectionsTable::MakeCopy(const CTSRemovalDeflectionsTable& rOther)
 {
    // Add copy code here...
 }
 
-void CTSRemovalDisplacementsTable::MakeAssignment(const CTSRemovalDisplacementsTable& rOther)
+void CTSRemovalDeflectionsTable::MakeAssignment(const CTSRemovalDeflectionsTable& rOther)
 {
    MakeCopy( rOther );
 }

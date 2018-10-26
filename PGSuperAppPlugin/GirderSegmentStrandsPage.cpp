@@ -1,3 +1,25 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2014  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 // GirderSegmentStrandsPage.cpp : implementation file
 //
 
@@ -30,8 +52,6 @@ IMPLEMENT_DYNAMIC(CGirderSegmentStrandsPage, CPropertyPage)
 CGirderSegmentStrandsPage::CGirderSegmentStrandsPage()
 	: CPropertyPage(CGirderSegmentStrandsPage::IDD)
 {
-	m_bSymmetricDebond = FALSE;
-
 }
 
 CGirderSegmentStrandsPage::~CGirderSegmentStrandsPage()
@@ -42,42 +62,41 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
 	CPropertyPage::DoDataExchange(pDX);
+
+   m_Grid.UpdateStrandData(pDX,&(pSegment->Strands));
+
 	//{{AFX_DATA_MAP(CGirderDescPrestressPage)
 	//}}AFX_DATA_MAP
 
-   bool bPjackUserInput[2];
+   bool bPjackUserInput[3]; // this has to be 3 because we are using the constants for straight and temporary (0 and 2)
    if ( !pDX->m_bSaveAndValidate )
    {
-      bPjackUserInput[pgsTypes::Harped]   = !pSegment->Strands.bPjackCalculated[pgsTypes::Harped];
-      bPjackUserInput[pgsTypes::Straight] = !pSegment->Strands.bPjackCalculated[pgsTypes::Straight];
+      bPjackUserInput[pgsTypes::Straight]  = !pSegment->Strands.bPjackCalculated[pgsTypes::Straight];
+      bPjackUserInput[pgsTypes::Temporary] = !pSegment->Strands.bPjackCalculated[pgsTypes::Temporary];
    }
 
-   DDX_Text(pDX, IDC_NUM_HS, pSegment->Strands.Nstrands[pgsTypes::Harped]);
-   DDX_Check_Bool(pDX, IDC_HS_JACK, bPjackUserInput[pgsTypes::Harped]);
-
-   DDX_Text(pDX, IDC_NUM_SS, pSegment->Strands.Nstrands[pgsTypes::Straight]);
    DDX_Check_Bool(pDX, IDC_SS_JACK, bPjackUserInput[pgsTypes::Straight]);
+   DDX_Check_Bool(pDX, IDC_HS_JACK, bPjackUserInput[pgsTypes::Temporary]);
 
    if ( pDX->m_bSaveAndValidate )
    {
-      pSegment->Strands.bPjackCalculated[pgsTypes::Harped]   = !bPjackUserInput[pgsTypes::Harped];
-      pSegment->Strands.bPjackCalculated[pgsTypes::Straight] = !bPjackUserInput[pgsTypes::Straight];
+      pSegment->Strands.bPjackCalculated[pgsTypes::Straight]  = !bPjackUserInput[pgsTypes::Straight];
+      pSegment->Strands.bPjackCalculated[pgsTypes::Temporary] = !bPjackUserInput[pgsTypes::Temporary];
    }
 
-   if (pDX->m_bSaveAndValidate && pSegment->Strands.bPjackCalculated[pgsTypes::Harped])
+   if (pDX->m_bSaveAndValidate && pSegment->Strands.bPjackCalculated[pgsTypes::Temporary])
    {
-      pSegment->Strands.Pjack[pgsTypes::Harped] = GetMaxPjack( pSegment->Strands.Nstrands[pgsTypes::Harped] );
+      pSegment->Strands.Pjack[pgsTypes::Temporary] = GetMaxPjack( pSegment->Strands.Nstrands[pgsTypes::Temporary] );
    }
    else
    {
-      DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pSegment->Strands.Pjack[pgsTypes::Harped], pDisplayUnits->GetGeneralForceUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pSegment->Strands.Pjack[pgsTypes::Temporary], pDisplayUnits->GetGeneralForceUnit() );
    }
 
    if (pDX->m_bSaveAndValidate && pSegment->Strands.bPjackCalculated[pgsTypes::Straight])
@@ -89,38 +108,8 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
       DDX_UnitValueAndTag( pDX, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, pSegment->Strands.Pjack[pgsTypes::Straight], pDisplayUnits->GetGeneralForceUnit() );
    }
 
-   DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, pSegment->Strands.Pjack[pgsTypes::Straight], GetUltPjack( pSegment->Strands.Nstrands[pgsTypes::Straight] ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
-   DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, pSegment->Strands.Pjack[pgsTypes::Harped],   GetUltPjack( pSegment->Strands.Nstrands[pgsTypes::Harped] ),   pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
-   UpdateStrandControls();
-
-   if (pDX->m_bSaveAndValidate)
-   {
-      ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-      ReconcileDebonding(strtvec, pSegment->Strands.Debond[pgsTypes::Straight]); 
-   }
-
-   if ( pDX->m_bSaveAndValidate )
-   {
-      GET_IFACE2(pBroker, IBridge,pBridge);
-      Float64 gdr_length2 = pBridge->GetSegmentLength(pParent->m_SegmentKey)/2.0;
-
-      m_Grid.GetData(*pSegment);
-
-      std::vector<CDebondData>::iterator iter(pSegment->Strands.Debond[pgsTypes::metStart].begin());
-      std::vector<CDebondData>::iterator end(pSegment->Strands.Debond[pgsTypes::metStart].end());
-      for ( ; iter != end; iter++ )
-      {
-         CDebondData& debond_info = *iter;
-         if (debond_info.Length1 >= gdr_length2 || debond_info.Length2 >= gdr_length2)
-         {
-            HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
-	         AfxMessageBox( _T("Debond length cannot exceed one half of segment length."), MB_ICONEXCLAMATION);
-	         pDX->Fail();
-         }
-      }
-
-      pSegment->Strands.bSymmetricDebond           = m_bSymmetricDebond ? TRUE : FALSE;
-   }
+   DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, pSegment->Strands.Pjack[pgsTypes::Straight],  GetUltPjack( pSegment->Strands.Nstrands[pgsTypes::Straight] ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
+   DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, pSegment->Strands.Pjack[pgsTypes::Temporary], GetUltPjack( pSegment->Strands.Nstrands[pgsTypes::Harped] ),   pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
 
 	DDX_CBIndex(pDX, IDC_STRAND_SIZE, m_StrandSizeIdx);
 
@@ -130,28 +119,24 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
       CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
       Int32 key = (Int32)pList->GetItemData( m_StrandSizeIdx );
-      pSegment->Strands.StrandMaterial[pgsTypes::Straight] = pPool->GetStrand( key );
-      pSegment->Strands.StrandMaterial[pgsTypes::Harped]   = pPool->GetStrand( key );
+      pSegment->Strands.StrandMaterial[pgsTypes::Straight]  = pPool->GetStrand( key );
+      pSegment->Strands.StrandMaterial[pgsTypes::Temporary] = pPool->GetStrand( key );
+
+      // Update controls and UI elements
+      UpdateStrandControls();
    }
-
-
-	DDX_Check(pDX, IDC_SYMMETRIC_DEBOND, m_bSymmetricDebond);
-
 }
 
 
 BEGIN_MESSAGE_MAP(CGirderSegmentStrandsPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderSegmentStrandsPage)
-	ON_NOTIFY(UDN_DELTAPOS, IDC_NUM_SS_SPIN, OnNumStraightStrandsChanged)
-	ON_NOTIFY(UDN_DELTAPOS, IDC_NUM_HS_SPIN, OnNumHarpedStrandsChanged)
 	ON_BN_CLICKED(IDC_SS_JACK, OnUpdateStraightStrandPjEdit)
-	ON_BN_CLICKED(IDC_HS_JACK, OnUpdateHarpedStrandPjEdit)
+	ON_BN_CLICKED(IDC_HS_JACK, OnUpdateTemporaryStrandPjEdit)
 	ON_COMMAND(ID_HELP, OnHelp)
 	ON_CBN_SELCHANGE(IDC_STRAND_SIZE, OnStrandTypeChanged)
-	ON_BN_CLICKED(IDC_SYMMETRIC_DEBOND, OnSymmetricDebond)
-	ON_WM_PAINT()
-   ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
+   ON_BN_CLICKED(IDC_ADD, &CGirderSegmentStrandsPage::OnBnClickedAdd)
+   ON_BN_CLICKED(IDC_REMOVE, &CGirderSegmentStrandsPage::OnBnClickedRemove)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -159,48 +144,14 @@ END_MESSAGE_MAP()
 
 BOOL CGirderSegmentStrandsPage::OnInitDialog() 
 {
-	m_Grid.SubclassDlgItem(IDC_DEBOND_GRID, this);
-   m_Grid.CustomInit(m_bSymmetricDebond ? TRUE : FALSE);
-
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   m_Grid.SubclassDlgItem(IDC_GRID, this);
+   m_Grid.CustomInit(pSegment);
 
-   // Get key segment dimensions
-   IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
-
-   std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_RELEASED_SEGMENT | POI_0L);
-   ATLASSERT(vPoi.size() == 1);
-   pgsPointOfInterest poiStart(vPoi.front());
-
-   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_RELEASED_SEGMENT | POI_10L);
-   ATLASSERT(vPoi.size() == 1);
-   pgsPointOfInterest poiEnd(vPoi.front());
-
-   m_HgStart = pSectProp->GetHg(intervalIdx,poiStart);
-   m_HgEnd   = pSectProp->GetHg(intervalIdx,poiEnd);
-
-   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_HARPINGPOINT);
-   ATLASSERT( 0 <= vPoi.size() && vPoi.size() <= 2 );
-   if ( 0 < vPoi.size() )
-   {
-      pgsPointOfInterest poiHp1(vPoi.front());
-      pgsPointOfInterest poiHp2(vPoi.back());
-      m_HgHp1 = pSectProp->GetHg(intervalIdx,poiHp1);
-      m_HgHp2 = pSectProp->GetHg(intervalIdx,poiHp2);
-   }
-   else
-   {
-      m_HgHp1 = m_HgStart;
-      m_HgHp2 = m_HgEnd;
-   }
-
+   m_DrawStrands.SubclassDlgItem(IDC_DRAW_STRANDS,this);
+   m_DrawStrands.CustomInit(pSegment);
 
    // Fill the strand size combo box.
    UpdateStrandList(IDC_STRAND_SIZE);
@@ -230,99 +181,12 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    CPropertyPage::OnInitDialog();
 
    EnableToolTips(TRUE);
+   EnableRemoveButton(FALSE); // start off with the button disabled... it will get enabled when a row in the grid is selected
 
    OnChange();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-StrandIndexType CGirderSegmentStrandsPage::StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd )
-{
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-
-   StrandIndexType nextnum;
-   if ( bAdd )
-   {
-      nextnum = pStrands->GetNextNumStrands(pParent->m_SegmentKey, type, currNum);
-
-      if (nextnum == INVALID_INDEX)
-         nextnum = currNum; // no increment if we hit the top
-   }
-   else
-   {
-      nextnum = pStrands->GetPrevNumStrands(pParent->m_SegmentKey, type, currNum);
-
-      if (nextnum == INVALID_INDEX)
-         nextnum = currNum; // no increment if we hit the bottom
-   }
-
-   StrandIndexType increment = nextnum - currNum;
-
-   return increment;
-}
-
-StrandIndexType CGirderSegmentStrandsPage::OnNumStrandsChanged(UINT nCheck,UINT nEdit,UINT nUnit,pgsTypes::StrandType strandType,int iPos,int& iDelta) 
-{
-   // NOTE: iDelta must be by reference because it is changed in this method. The change value has to get back to the operating system
-   // Usually iDelta is set to 2 or 0 to indicate that we must step by 2 or not roll over
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   StrandIndexType inc = StrandSpinnerInc( pStrandGeom, strandType, iPos, iDelta > 0 );
-
-   iDelta = (int)inc;
-
-   StrandIndexType nStrands = StrandIndexType(iPos + iDelta);
-   BOOL bUserPjack = IsDlgButtonChecked( nCheck );
-   CWnd* pWnd = GetDlgItem( nEdit );
-   pWnd->EnableWindow( nStrands == 0 ? FALSE : (bUserPjack ? TRUE : FALSE) );
-
-   Float64 Pjack;
-   if ( !bUserPjack || nStrands == 0 )
-   {
-      Pjack = GetMaxPjack( nStrands );
-      CDataExchange dx(this,FALSE);
-      DDX_UnitValueAndTag( &dx, nEdit, nUnit, Pjack, pDisplayUnits->GetGeneralForceUnit() );
-   }
-
-   return nStrands;
-}
-
-void CGirderSegmentStrandsPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT* pResult) 
-{
-	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
-   StrandIndexType nStrands = OnNumStrandsChanged(IDC_HS_JACK,IDC_HS_JACK_FORCE,IDC_HS_JACK_FORCE_UNIT,pgsTypes::Harped,pNMUpDown->iPos,pNMUpDown->iDelta);
-	*pResult = 0;
-
-
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-   pSegment->Strands.Nstrands[pgsTypes::Harped] = nStrands;
-}
-
-void CGirderSegmentStrandsPage::OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESULT* pResult) 
-{
-	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
-   StrandIndexType nStrands = OnNumStrandsChanged(IDC_SS_JACK,IDC_SS_JACK_FORCE,IDC_SS_JACK_FORCE_UNIT,pgsTypes::Straight,pNMUpDown->iPos,pNMUpDown->iDelta);
-	*pResult = 0;
-
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-   pSegment->Strands.Nstrands[pgsTypes::Straight] = nStrands;
-
-   OnChange();
-   UpdateGrid();
-
-
-   CWnd* pPicture = GetDlgItem(IDC_PICTURE);
-   CRect rect;
-   pPicture->GetWindowRect(rect);
-   ScreenToClient(&rect);
-   InvalidateRect(rect);
-   UpdateWindow();
 }
 
 Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
@@ -333,7 +197,6 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-
 
    // TRICKY CODE
    // If strand stresses are limited immediate prior to transfer, prestress losses must be computed between jacking and prestress transfer in 
@@ -380,27 +243,29 @@ Float64 CGirderSegmentStrandsPage::GetUltPjack(StrandIndexType nStrands)
    return nStrands*area*ult;
 }
 
-void CGirderSegmentStrandsPage::OnUpdateHarpedStrandPjEdit()
+void CGirderSegmentStrandsPage::OnUpdateTemporaryStrandPjEdit()
 {
-   OnUpdateStrandPjEdit(IDC_HS_JACK,IDC_NUM_HS,IDC_HS_JACK_FORCE,IDC_HS_JACK_FORCE_UNIT,pgsTypes::Harped);
+   OnUpdateStrandPjEdit(IDC_HS_JACK,IDC_HS_JACK_FORCE,IDC_HS_JACK_FORCE_UNIT,pgsTypes::Temporary);
 }
 
 void CGirderSegmentStrandsPage::OnUpdateStraightStrandPjEdit()
 {
-   OnUpdateStrandPjEdit(IDC_SS_JACK,IDC_NUM_SS,IDC_SS_JACK_FORCE,IDC_SS_JACK_FORCE_UNIT,pgsTypes::Straight);
+   OnUpdateStrandPjEdit(IDC_SS_JACK,IDC_SS_JACK_FORCE,IDC_SS_JACK_FORCE_UNIT,pgsTypes::Straight);
 }
 
-void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nStrandEdit,UINT nForceEdit,UINT nUnit,pgsTypes::StrandType strandType)
+void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit,UINT nUnit,pgsTypes::StrandType strandType)
 {
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
+   m_Grid.UpdateStrandData(NULL,&(pSegment->Strands));
+
+   StrandIndexType nStrands = pSegment->Strands.GetNstrands(strandType);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    BOOL bEnable = IsDlgButtonChecked( nCheck ) ? TRUE : FALSE; // user defined value if checked
-   Uint16 nStrands = GetDlgItemInt( nStrandEdit );
    if (  nStrands == 0 )
       bEnable = FALSE; // don't enable if the number of strands is zero
 
@@ -427,47 +292,15 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nStrandEdi
       pSegment->Strands.LastUserPjack[strandType] = Pjack;
       Pjack = GetMaxPjack(nStrands);
    }
+
    CDataExchange dx(this,FALSE);
    DDX_UnitValueAndTag( &dx, nForceEdit, nUnit, Pjack, pDisplayUnits->GetGeneralForceUnit() );
 }
 
 void CGirderSegmentStrandsPage::UpdateStrandControls() 
 {
-	// Each time this page is activated, we need to make sure the valid range for # of
-   // strands is correct (i.e. in sync with the selected girder type on the Superstructure
-   // page).
-   //
-   // If the current number of strands exceeds the max number of strands,  set the current
-   // number of strands to the max number of strands and recompute the jacking forces.
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-
-   CSpinButtonCtrl* pSpin;
-   UDACCEL uda;
-   StrandIndexType nStrandsMax;
-
-   // Harped Strands
-   nStrandsMax = pStrandGeom->GetMaxStrands(pParent->m_Girder.GetGirderName(), pgsTypes::Harped);
-
-   pSpin = (CSpinButtonCtrl*)GetDlgItem( IDC_NUM_HS_SPIN );
-   uda;
-   uda.nSec=0;
-   uda.nInc=1;
-   pSpin->SetAccel(1,&uda);
-   pSpin->SetRange( 0, short(nStrandsMax) );
-
-   // Straight
-   nStrandsMax = pStrandGeom->GetMaxStrands(pParent->m_Girder.GetGirderName(), pgsTypes::Straight);
-
-   pSpin = (CSpinButtonCtrl*)GetDlgItem( IDC_NUM_SS_SPIN );
-   uda;
-   uda.nSec=0;
-   uda.nInc=1;
-   pSpin->SetAccel(1,&uda);
-   pSpin->SetRange( 0, short(nStrandsMax) );
+   m_DrawStrands.Invalidate();
+   m_DrawStrands.UpdateWindow();
 
    InitPjackEdits();
 }
@@ -566,19 +399,20 @@ void CGirderSegmentStrandsPage::OnStrandTypeChanged()
 
 void CGirderSegmentStrandsPage::InitPjackEdits()
 {
-   InitPjackEdits(IDC_HS_JACK,IDC_NUM_HS,IDC_HS_JACK_FORCE,IDC_HS_JACK_FORCE_UNIT,pgsTypes::Harped);
    InitPjackEdits(IDC_SS_JACK,IDC_NUM_SS,IDC_SS_JACK_FORCE,IDC_SS_JACK_FORCE_UNIT,pgsTypes::Straight);
+   InitPjackEdits(IDC_HS_JACK,IDC_NUM_HS,IDC_HS_JACK_FORCE,IDC_HS_JACK_FORCE_UNIT,pgsTypes::Temporary);
 }
 
 void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nNumStrands,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType)
 {
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
+   m_Grid.UpdateStrandData(NULL,&(pSegment->Strands));
+
+   StrandIndexType nStrands = pSegment->Strands.GetNstrands(strandType);
 
    CButton* chkbox = (CButton*)GetDlgItem(nCalcPjack);
    BOOL bEnable = FALSE; // true is user input model
-   
-   Uint16 nStrands = GetDlgItemInt( nNumStrands );
 
    if (  0 < nStrands )
       bEnable = (chkbox->GetCheck() == BST_CHECKED);
@@ -602,489 +436,56 @@ void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nNumStrands,
    }
 }
 
-
-void CGirderSegmentStrandsPage::OnSymmetricDebond() 
-{
-   UINT checked = IsDlgButtonChecked(IDC_SYMMETRIC_DEBOND);
-   m_Grid.CanDebond(true, checked != 0 );
-}
-
-void CGirderSegmentStrandsPage::OnPaint() 
-{
-	CPaintDC dc(this); // device context for painting
-	
-	// TODO: Add your message handler code here
-	
-	// Do not call CProperyPage::OnPaint() for painting messages
-
-   // Draw the girder cross section and label the strand locations
-   // The basic logic from this code is take from
-   // Programming Microsoft Visual C++, Fifth Edition
-   // Kruglinski, Shepherd, and Wingo
-   // Page 129
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-
-   CWnd* pWnd = GetDlgItem(IDC_PICTURE);
-   CRect redit;
-   pWnd->GetClientRect(&redit);
-   CRgn rgn;
-   VERIFY(rgn.CreateRectRgn(redit.left,redit.top,redit.right,redit.bottom));
-   CDC* pDC = pWnd->GetDC();
-   pDC->SelectClipRgn(&rgn);
-   pWnd->Invalidate();
-   pWnd->UpdateWindow();
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IShapes,pShapes);
-   CComPtr<IShape> shape;
-
-   pgsPointOfInterest poi(pParent->m_SegmentKey,0.00);
-
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
-   pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
-
-#pragma Reminder("UPDATE: review this code... it seems out of place")
-   // Top center is already at (0,0), why move it?
-   CComQIPtr<IXYPosition> position(shape);
-   CComPtr<IPoint2d> lp;
-   position->get_LocatorPoint(lpBottomCenter,&lp);
-   lp->Move(0,0);
-   position->put_LocatorPoint(lpBottomCenter,lp);
-
-
-   // WORLD EXTENTS ARE THE FULL HEIGHT OF THE SEGMENT
-   //// Get the world height to be equal to the height of the area 
-   //// occupied by the strands
-   //GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   //Float64 y_min =  DBL_MAX;
-   //Float64 y_max = -DBL_MAX;
-   //StrandIndexType nStrands = pSegment->Strands.Nstrands[pgsTypes::Straight];
-
-   //ConfigStrandFillVector fillvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-   //PRESTRESSCONFIG config;
-   //config.SetStrandFill(pgsTypes::Straight, fillvec);
-
-   //CComPtr<IPoint2dCollection> points;
-   //pStrandGeometry->GetStrandPositionsEx(pParent->m_Girder.GetGirderName(),config,pgsTypes::Straight,pgsTypes::metStart,&points);
-   //for ( StrandIndexType strIdx = 0; strIdx < nStrands; strIdx++ )
-   //{
-   //   CComPtr<IPoint2d> point;
-   //   points->get_Item(strIdx,&point);
-   //   Float64 y;
-   //   point->get_Y(&y);
-   //   y_min = Min(y,y_min);
-   //   y_max = Max(y,y_max);
-   //}
-   gpSize2d size;
-   
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   size.Dx() = pGirder->GetBottomWidth(poi);
-   size.Dy() = pGirder->GetHeight(poi);
-
-   //size.Dy() = (y_max - y_min);
-   //if ( IsZero(size.Dy()) )
-   //   size.Dy() = size.Dx()/2;
-
-   CSize csize = redit.Size();
-
-   CComPtr<IRect2d> box;
-   shape->get_BoundingBox(&box);
-
-   CComPtr<IPoint2d> objOrg;
-   box->get_BottomCenter(&objOrg);
-
-   gpPoint2d org;
-   Float64 x,y;
-   objOrg->get_X(&x);
-   objOrg->get_Y(&y);
-   org.X() = x;
-   org.Y() = y;
-
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
-   mapper.SetWorldExt(size);
-   mapper.SetWorldOrg(org);
-   mapper.SetDeviceExt(csize.cx-10,csize.cy);
-   mapper.SetDeviceOrg(csize.cx/2,csize.cy-5);
-
-   CPen solid_pen(PS_SOLID,1,SEGMENT_BORDER_COLOR);
-   CBrush solid_brush(SEGMENT_FILL_COLOR);
-
-   CPen void_pen(PS_SOLID,1,VOID_BORDER_COLOR);
-   CBrush void_brush(GetSysColor(COLOR_WINDOW));
-
-   CPen* pOldPen     = pDC->SelectObject(&solid_pen);
-   CBrush* pOldBrush = pDC->SelectObject(&solid_brush);
-
-   CComQIPtr<ICompositeShape> compshape(shape);
-   if ( compshape )
-   {
-      CollectionIndexType nShapes;
-      compshape->get_Count(&nShapes);
-      for ( CollectionIndexType idx = 0; idx < nShapes; idx++ )
-      {
-         CComPtr<ICompositeShapeItem> item;
-         compshape->get_Item(idx,&item);
-
-         CComPtr<IShape> s;
-         item->get_Shape(&s);
-
-         VARIANT_BOOL bVoid;
-         item->get_Void(&bVoid);
-
-         if ( bVoid )
-         {
-            pDC->SelectObject(&void_pen);
-            pDC->SelectObject(&void_brush);
-         }
-         else
-         {
-            pDC->SelectObject(&solid_pen);
-            pDC->SelectObject(&solid_brush);
-         }
-
-         DrawShape(pDC,s,mapper);
-      }
-   }
-   else
-   {
-      DrawShape(pDC,shape,mapper);
-   }
-
-   DrawStrands(pDC,mapper);
-
-   pDC->SelectObject(pOldBrush);
-   pDC->SelectObject(pOldPen);
-
-   pWnd->ReleaseDC(pDC);
-}
-
-void CGirderSegmentStrandsPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper)
-{
-   CComPtr<IPoint2dCollection> objPoints;
-   shape->get_PolyPoints(&objPoints);
-
-   CollectionIndexType nPoints;
-   objPoints->get_Count(&nPoints);
-
-   CPoint* points = new CPoint[nPoints];
-
-   CComPtr<IPoint2d> point;
-   long dx,dy;
-
-   long i = 0;
-   CComPtr<IEnumPoint2d> enumPoints;
-   objPoints->get__Enum(&enumPoints);
-   while ( enumPoints->Next(1,&point,NULL) != S_FALSE )
-   {
-      mapper.WPtoDP(point,&dx,&dy);
-
-      points[i] = CPoint(dx,dy);
-
-      point.Release();
-      i++;
-   }
-
-   pDC->Polygon(points,(int)nPoints);
-
-   delete[] points;
-}
-
-void CGirderSegmentStrandsPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
-{
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-
-   CPen strand_pen(PS_SOLID,1,STRAND_BORDER_COLOR);
-   CPen no_debond_pen(PS_SOLID,1,NO_DEBOND_FILL_COLOR);
-   CPen debond_pen(PS_SOLID,1,DEBOND_FILL_COLOR);
-   CPen extended_pen(PS_SOLID,1,EXTENDED_FILL_COLOR);
-   CPen* old_pen = (CPen*)pDC->SelectObject(&strand_pen);
-
-   CBrush strand_brush(STRAND_FILL_COLOR);
-   CBrush no_debond_brush(NO_DEBOND_FILL_COLOR);
-   CBrush debond_brush(DEBOND_FILL_COLOR);
-   CBrush extended_brush(EXTENDED_FILL_COLOR);
-   CBrush* old_brush = (CBrush*)pDC->SelectObject(&strand_brush);
-
-   pDC->SetTextAlign(TA_CENTER);
-   CFont font;
-   font.CreatePointFont(80,_T("Arial"),pDC);
-   CFont* old_font = pDC->SelectObject(&font);
-   pDC->SetBkMode(TRANSPARENT);
-
-   // Draw all the strands bonded
-   StrandIndexType nStrands = pSegment->Strands.Nstrands[pgsTypes::Straight];
-
-   ConfigStrandFillVector  straightStrandFill = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-   PRESTRESSCONFIG config;
-   config.SetStrandFill(pgsTypes::Straight, straightStrandFill);
-
-   CComPtr<IPoint2dCollection> points;
-   pStrandGeometry->GetStrandPositionsEx(pParent->m_Girder.GetGirderName(),m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,config,pgsTypes::Straight,pgsTypes::metStart,&points);
-
-   CComPtr<IIndexArray> debondables;
-   pStrandGeometry->ListDebondableStrands(pParent->m_Girder.GetGirderName(), straightStrandFill,pgsTypes::Straight, &debondables); 
-
-   const int strand_size = 2;
-   for ( StrandIndexType strIdx = 0; strIdx < nStrands; strIdx++ )
-   {
-      CComPtr<IPoint2d> point;
-      points->get_Item(strIdx,&point);
-
-      StrandIndexType is_debondable = 0;
-      debondables->get_Item(strIdx, &is_debondable);
-
-      LONG dx,dy;
-      mapper.WPtoDP(point,&dx,&dy);
-
-      CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
-
-      if (is_debondable)
-      {
-         pDC->SelectObject(&strand_pen);
-         pDC->SelectObject(&strand_brush);
-      }
-      else
-      {
-         pDC->SelectObject(&no_debond_pen);
-         pDC->SelectObject(&no_debond_brush);
-      }
-
-      pDC->Ellipse(&rect);
-
-      CString strLabel;
-      strLabel.Format(_T("%d"),strIdx+1);
-      pDC->TextOut(dx,dy,strLabel);
-   }
-
-   // Redraw the debonded strands
-   pDC->SelectObject(&debond_pen);
-   pDC->SelectObject(&debond_brush);
-
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_Girder.GetGirderName());
-
-   m_Grid.GetData(*pSegment);
-   std::vector<CDebondData>::iterator debond_iter(pSegment->Strands.Debond[pgsTypes::Straight].begin());
-   std::vector<CDebondData>::iterator debond_iter_end(pSegment->Strands.Debond[pgsTypes::Straight].end());
-   for ( ; debond_iter != debond_iter_end; debond_iter++ )
-   {
-      CDebondData& debond_info = *debond_iter;
-
-      if ( debond_info.strandTypeGridIdx == INVALID_INDEX )
-      {
-         ATLASSERT(0); // we should be protecting against this
-         continue;
-      }
-
-      // Library entry uses grid indexing (same as debonding)
-      Float64 xs, xe, ys, ye;
-      bool candb;
-      pGdrEntry->GetStraightStrandCoordinates( debond_info.strandTypeGridIdx, &xs, &ys, &xe, &ye, &candb);
-
-      long dx,dy;
-      mapper.WPtoDP(xs, ys, &dx,&dy);
-
-      CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
-
-      pDC->Ellipse(&rect);
-
-      if ( xs > 0.0 )
-      {
-         mapper.WPtoDP(-xs, ys, &dx,&dy);
-
-         CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
-
-         pDC->Ellipse(&rect);
-      }
-   }
-
-
-   // Redraw the extended strands
-   pDC->SelectObject(&extended_pen);
-   pDC->SelectObject(&extended_brush);
-
-   for ( int i = 0; i < 2; i++ )
-   {
-      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
-      const std::vector<GridIndexType>& extStrandsStart(pSegment->Strands.GetExtendedStrands(pgsTypes::Straight,endType));
-      std::vector<GridIndexType>::const_iterator ext_iter(extStrandsStart.begin());
-      std::vector<GridIndexType>::const_iterator ext_iter_end(extStrandsStart.end());
-      for ( ; ext_iter != ext_iter_end; ext_iter++ )
-      {
-         GridIndexType gridIdx = *ext_iter;
-
-         // Library entry uses grid indexing (same as debonding)
-         Float64 xs, xe, ys, ye;
-         bool candb;
-         pGdrEntry->GetStraightStrandCoordinates( gridIdx, &xs, &ys, &xe, &ye, &candb);
-
-         long dx,dy;
-         mapper.WPtoDP(xs, ys, &dx,&dy);
-
-         CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
-
-         pDC->Ellipse(&rect);
-
-         if ( xs > 0.0 )
-         {
-            mapper.WPtoDP(-xs, ys, &dx,&dy);
-
-            CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
-
-            pDC->Ellipse(&rect);
-         }
-      }
-   }
-
-   pDC->SelectObject(old_pen);
-   pDC->SelectObject(old_brush);
-   pDC->SelectObject(old_font);
-}
-
-LPCTSTR CGirderSegmentStrandsPage::GetGirderName()
-{
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   return pParent->m_Girder.GetGirderName();
-}
-
-void CGirderSegmentStrandsPage::OnChange() 
-{
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-
-   StrandIndexType nStrands = pSegment->Strands.Nstrands[pgsTypes::Straight];
-   StrandIndexType ndbs = m_Grid.GetNumDebondedStrands();
-   Float64 percent = 0.0;
-   if (0 < nStrands)
-      percent = 100.0 * (Float64)ndbs/(Float64)nStrands;
-
-   CString str;
-   str.Format(_T("Straight=%d"), nStrands);
-   CWnd* pNs = GetDlgItem(IDC_NUMSTRAIGHT);
-   pNs->SetWindowText(str);
-
-   str.Format(_T("Debonded=%d (%.1f%%)"), ndbs,percent);
-   CWnd* pNdb = GetDlgItem(IDC_NUM_DEBONDED);
-   pNdb->SetWindowText(str);
-
-   StrandIndexType nExtStrands = m_Grid.GetNumExtendedStrands(pgsTypes::metStart);
-   str.Format(_T("Extended Left=%d"),nExtStrands);
-   CWnd* pNExt = GetDlgItem(IDC_NUM_EXTENDED_LEFT);
-   pNExt->SetWindowText(str);
-
-   nExtStrands = m_Grid.GetNumExtendedStrands(pgsTypes::metEnd);
-   str.Format(_T("Extended Right=%d"),nExtStrands);
-   pNExt = GetDlgItem(IDC_NUM_EXTENDED_RIGHT);
-   pNExt->SetWindowText(str);
-
-   CWnd* pPicture = GetDlgItem(IDC_PICTURE);
-   CRect rect;
-   pPicture->GetWindowRect(rect);
-   ScreenToClient(&rect);
-   InvalidateRect(rect);
-   UpdateWindow();
-}
-
-const CSegmentKey& CGirderSegmentStrandsPage::GetSegmentKey()
-{
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   return pParent->m_SegmentKey;
-}
-
-ConfigStrandFillVector CGirderSegmentStrandsPage::ComputeStrandFillVector(pgsTypes::StrandType type)
-{
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   return pParent->ComputeStrandFillVector(type);
-}
-
 BOOL CGirderSegmentStrandsPage::OnSetActive() 
 {
-   // make sure we don't have more debonded strands than total strands
+   // make sure segment geometry is up to date with what ever has been changed during
+   // this editing session
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-
-   // Completely retarded that this has to happen here instead of DoDataExchange
-   // But the call order is undefined, so we don't know if there is an active grid or not
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-
-   StrandIndexType nStrands = pSegment->Strands.Nstrands[pgsTypes::Straight];
-   ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-
-   m_Debondables.Release();
-   pStrandGeometry->ListDebondableStrands(pParent->m_Girder.GetGirderName(), strtvec, pgsTypes::Straight, &m_Debondables);
-
-   // Get rid of any debonded strands that aren't filled
-   ReconcileDebonding(strtvec, pSegment->Strands.Debond[pgsTypes::Straight]); 
-
-   for ( int i = 0; i < 2; i++ )
-   {
-      std::vector<GridIndexType> extStrands = pSegment->Strands.GetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i);
-      bool bChanged = ReconcileExtendedStrands(strtvec, extStrands);
-
-      if ( bChanged )
-         pSegment->Strands.SetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i,extStrands);
-   }
-
-   BOOL enab = nStrands>0 ? TRUE:FALSE;
-   GetDlgItem(IDC_SYMMETRIC_DEBOND)->EnableWindow(enab);
+   m_DrawStrands.CustomInit(pSegment);
 
    OnChange();
-   UpdateGrid();
-
-   CString note;
-   note.Format(_T("Note: Straight strands shown in %s cannot be debonded"),NO_DEBOND_FILL_COLOR_NAME);
-   GetDlgItem(IDC_NOTE)->SetWindowText(note);
 
    return CPropertyPage::OnSetActive();
-	
 }
 
 BOOL CGirderSegmentStrandsPage::OnKillActive()
 {
-   this->SetFocus();  // prevents artifacts from grid list controls (not sure why)
+   //this->SetFocus();  // prevents artifacts from grid list controls (not sure why)
 
    return CPropertyPage::OnKillActive();
 }
 
-void CGirderSegmentStrandsPage::UpdateGrid()
+void CGirderSegmentStrandsPage::OnBnClickedAdd()
+{
+   m_Grid.OnAddRow();
+}
+
+void CGirderSegmentStrandsPage::OnBnClickedRemove()
+{
+   m_Grid.OnRemoveSelectedRows();
+}
+
+void CGirderSegmentStrandsPage::EnableRemoveButton(BOOL bEnable)
+{
+   GetDlgItem(IDC_REMOVE)->EnableWindow(bEnable);
+}
+
+void CGirderSegmentStrandsPage::OnChange()
 {
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
+   m_Grid.UpdateStrandData(NULL,&(pSegment->Strands));
 
-   m_Grid.FillGrid(*pSegment);
-   m_Grid.SelectRange(CGXRange().SetTable(), FALSE);
-}
+   CString strLabel;
+   strLabel.Format(_T("Permanent Strands (%d)"),pSegment->Strands.GetNstrands(pgsTypes::Straight));
+   GetDlgItem(IDC_SS_LABEL)->SetWindowText(strLabel);
 
-HBRUSH CGirderSegmentStrandsPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
-{
-   HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
-   int ID = pWnd->GetDlgCtrlID();
-   switch( ID )
-   {
-   case IDC_NUMSTRAIGHT:
-      pDC->SetTextColor(STRAIGHT_FILL_COLOR);
-      break;
+   strLabel.Format(_T("Temporary Strands (%d)"),pSegment->Strands.GetNstrands(pgsTypes::Temporary));
+   GetDlgItem(IDC_HS_LABEL)->SetWindowText(strLabel);
 
-   case IDC_NUM_DEBONDED:
-      pDC->SetTextColor(DEBOND_FILL_COLOR);
-      break;
+   m_DrawStrands.Invalidate();
+   m_DrawStrands.UpdateWindow();
 
-   case IDC_NUM_EXTENDED_LEFT:
-   case IDC_NUM_EXTENDED_RIGHT:
-      pDC->SetTextColor(EXTENDED_FILL_COLOR);
-      break;
-   }
-
-   return hbr;
+   UpdateStrandControls();
 }

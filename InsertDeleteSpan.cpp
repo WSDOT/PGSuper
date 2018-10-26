@@ -96,6 +96,9 @@ void txnInsertSpan::DoExecute(int i)
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+#pragma Reminder("UPDATE: use the IBridgeDescription::InsertSpan command")
+   // this just replaces the bridge and it doesn't fire events related to a span
+   // being added (or removed in the case of undo)... same comment for txnDeleteSpan below
 
    pIBridgeDesc->SetBridgeDescription(m_BridgeDescription[i]);
 

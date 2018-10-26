@@ -41,6 +41,8 @@ struct SECTIONHAUNCH
    Float64 CrownSlope;
    Float64 GirderOrientation;
    Float64 Wtop;
+   Float64 C;
+   Float64 D;
    Float64 CamberEffect;
    Float64 GirderOrientationEffect;
    Float64 ProfileEffect;
@@ -341,9 +343,9 @@ struct TIME_STEP_CONCRETE
 
    // Net Section Properties of concrete part
    Float64 An;  // Area
-   Float64 Ytn; // Centroid measured from top of girder
-   Float64 Ybn; // Centroid measured from bottom of girder
+   Float64 Yn;  // Centroid measured in Girder Section Coordinates
    Float64 In;  // Moment of inertia
+   Float64 H;   // Height of concrete part
 
    // Creep Strains during this interval due to loads applied in previous intervals
    struct CREEP_STRAIN
@@ -383,8 +385,8 @@ struct TIME_STEP_CONCRETE
    //
 
    // Force on this concrete part due to elastic effects during this interval
-   Float64 dP[18]; // index is one of the ProductForceType enum values
-   Float64 dM[18];
+   Float64 dP[19]; // index is one of the ProductForceType enum values
+   Float64 dM[19];
 
 
    // Force on this concrete part at the end of this interval
@@ -393,7 +395,7 @@ struct TIME_STEP_CONCRETE
 
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
    // where y is the depth from the top of the concrete part
-   Float64 f[2][18][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the ProductForceType enum values
+   Float64 f[2][19][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the ProductForceType enum values
                         // third index is one of the CombinationType enum values
 
    // Stress in this due to live load
@@ -403,9 +405,9 @@ struct TIME_STEP_CONCRETE
    TIME_STEP_CONCRETE()
    {
       An = 0;
-      Ytn = 0;
-      Ybn = 0;
+      Yn = 0;
       In = 0;
+      H  = 0;
 
       esi = 0;
       e = 0;
@@ -419,7 +421,7 @@ struct TIME_STEP_CONCRETE
       P = 0;
       M = 0;
 
-      for ( int i = 0; i < 18 ; i++ )
+      for ( int i = 0; i < 19 ; i++ )
       {
          dP[i] = 0;
          dM[i] = 0;
@@ -452,7 +454,7 @@ struct TIME_STEP_STRAND
 
    // Geometric Properties
    Float64 As;
-   Float64 Ys; // centroid of strand, measured from top of girder
+   Float64 Ys; // centroid of strand, measured in Girder Section Coordinates
 
    // Relaxation
    Float64 fr; // prestress loss due to relaxation during this interval
@@ -528,7 +530,7 @@ struct TIME_STEP_REBAR
 
    // Geometric Properties
    Float64 As;
-   Float64 Ys; // centroid of rebar, measured from top of girder
+   Float64 Ys; // centroid of rebar, measured in Girder Section Coordinates
 
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
@@ -558,20 +560,25 @@ struct TIME_STEP_DETAILS
    Float64 tStart, tMiddle, tEnd; // time at start, middle, end of interval
 
    // Transformed Section Properties for this interval (based on age adjusted modulus of the girder)
-   // Ytr is measured from the top of the girder
+   // Section Properties are taken about the centroid of the transformed section
+   // The centroid, Ytr, is in Girder Section Coordinate (measured from top of girder, up is positive)
    Float64 Atr, Ytr, Itr;
 
    // Change in total loading on the section due to externally applied loads during this interval
    // Array index is one of the ProductForceType enum values
-   // upto and including pftTotalPostTensioning
-   Float64 dP[18], dM[18];
+   // upto and including pftRelaxation
+   Float64 dP[19], dM[19];
 
    // Time step parameters for girder and deck
    TIME_STEP_CONCRETE Girder;
    TIME_STEP_CONCRETE Deck;
 
    // Time step parameters for strands and tendons
+#if defined LUMP_STRANDS
    TIME_STEP_STRAND Strands[3]; // pgsTypes::StrandType (Straight, Harped, Temporary)
+#else
+   std::vector<TIME_STEP_STRAND> Strands[3]; // pgsTypes::StrandType (Straight, Harped, Temporary)
+#endif
    std::vector<TIME_STEP_STRAND> Tendons; // one per duct
 
    // Time step parameters for rebar (access array with pgsTypes::DeckRebarMatType)
@@ -592,12 +599,24 @@ struct TIME_STEP_DETAILS
    Float64 Mre[3];
 
    // Deformation due to externally applied loads and restraining forces in this interval
-   Float64 der[18]; // axial strain
-   Float64 drr[18]; // curvature
+   Float64 der[19]; // axial strain
+   Float64 drr[19]; // curvature
 
    // Total deformation due to externally applied loads and restraining forces
-   Float64 er[18]; // axial strain
-   Float64 rr[18]; // curvature
+   Float64 er[19]; // axial strain
+   Float64 rr[19]; // curvature
+
+   // Vertical due to externally applied loads and restaining forces during this interval
+   Float64 dD[19];
+
+   // Total vertical deflection due to externally applied loads and restraining forces
+   Float64 D[19];
+
+   // Sum of vertical deflections due to externally applied loads and restraining forces during this interval
+   Float64 dY;
+
+   // Sume of vertical deflections due to externally applied loads and restraining forces
+   Float64 Y;
 
    // Check equilibrium
    Float64 dPext, dPint;
@@ -616,7 +635,7 @@ struct TIME_STEP_DETAILS
       Ytr = 0;
       Itr = 0;
 
-      for ( int i = 0; i < 18; i++ )
+      for ( int i = 0; i < 19; i++ )
       {
          dP[i] = 0;
          dM[i] = 0;
@@ -626,6 +645,9 @@ struct TIME_STEP_DETAILS
 
          er[i] = 0;
          rr[i] = 0;
+
+         dD[i] = 0;
+         D[i] = 0;
       }
 
       for (int i = 0; i < 3; i++)
@@ -641,6 +663,9 @@ struct TIME_STEP_DETAILS
          Pre[i] = 0;
          Mre[i] = 0;
       }
+
+      dY = 0;
+      Y  = 0;
 
       dPext = 0;
       dPint = 0;
@@ -725,6 +750,10 @@ struct LOSSDETAILS
 
       TimeStepDetails = other.TimeStepDetails;
 
+#if defined _DEBUG
+      POI = other.POI;
+#endif
+
       return *this;
    }
 
@@ -753,6 +782,10 @@ struct LOSSDETAILS
 
    // vector index in an interval index
    std::vector<TIME_STEP_DETAILS> TimeStepDetails;
+
+#if defined _DEBUG
+   pgsPointOfInterest POI; // this is the POI what this loss details applies to
+#endif
 };
 
 struct STRANDDEVLENGTHDETAILS

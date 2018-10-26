@@ -266,7 +266,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
@@ -370,7 +370,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
@@ -844,6 +844,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CopyGirderPropertiesCallbacks.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\CrownSlopeGrid.cpp"
 				>
 			</File>
@@ -942,6 +946,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DrawStrandControl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DrawTendonsControl.cpp"
 				>
 			</File>
@@ -951,10 +959,6 @@
 			</File>
 			<File
 				RelativePath="..\EditDistributedLoadDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\EditGirderlineDlg.cpp"
 				>
 			</File>
 			<File
@@ -1071,6 +1075,10 @@
 			</File>
 			<File
 				RelativePath="..\GirderSelectStrandsDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GirderSelectStrandsPage.cpp"
 				>
 			</File>
 			<File
@@ -1532,6 +1540,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SlabOffsetGrid.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\SlabOffsetHyperLink.cpp"
 				>
 			</File>
@@ -1557,6 +1569,14 @@
 			</File>
 			<File
 				RelativePath="..\SpecDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\SplicedGirderDescDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedGirderGeneralPage.cpp"
 				>
 			</File>
 			<File
@@ -1621,6 +1641,10 @@
 			</File>
 			<File
 				RelativePath="..\StrandFillGrid.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\StrandGrid.cpp"
 				>
 			</File>
 			<File
@@ -1874,6 +1898,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CopyGirderPropertiesCallbacks.h"
+				>
+			</File>
+			<File
+				RelativePath="..\CPPGSuperDocProxyAgent.h"
+				>
+			</File>
+			<File
 				RelativePath="..\CrownSlopeGrid.h"
 				>
 			</File>
@@ -1926,6 +1958,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DrawStrandControl.h"
+				>
+			</File>
+			<File
 				RelativePath=".\DrawTendonsControl.h"
 				>
 			</File>
@@ -1935,10 +1971,6 @@
 			</File>
 			<File
 				RelativePath="..\EditDistributedLoadDlg.h"
-				>
-			</File>
-			<File
-				RelativePath=".\EditGirderlineDlg.h"
 				>
 			</File>
 			<File
@@ -2063,6 +2095,10 @@
 			</File>
 			<File
 				RelativePath="..\GirderSelectStrandsDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\GirderSelectStrandsPage.h"
 				>
 			</File>
 			<File
@@ -2482,6 +2518,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SlabOffsetGrid.h"
+				>
+			</File>
+			<File
 				RelativePath="..\SlabOffsetHyperLink.h"
 				>
 			</File>
@@ -2510,6 +2550,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\SplicedGirderDescDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedGirderGeneralPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\SplitChildFrm.h"
 				>
 			</File>
@@ -2523,6 +2571,10 @@
 			</File>
 			<File
 				RelativePath="..\StrandFillGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StrandGrid.h"
 				>
 			</File>
 			<File
@@ -2596,11 +2648,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
@@ -2776,11 +2828,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -2876,11 +2928,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\PGSuper.ico"
+				RelativePath=".\res\PGSuper.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\PGSuper.ico"
+				RelativePath="..\res\PGSuper.ico"
 				>
 			</File>
 			<File
@@ -2980,11 +3032,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -2992,11 +3044,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>
@@ -3073,10 +3125,6 @@
 			<Filter
 				Name="Header Files"
 				>
-				<File
-					RelativePath="..\CopyGirder.h"
-					>
-				</File>
 				<File
 					RelativePath="..\DesignGirder.h"
 					>
@@ -3189,10 +3237,6 @@
 			<Filter
 				Name="Source Files"
 				>
-				<File
-					RelativePath="..\CopyGirder.cpp"
-					>
-				</File>
 				<File
 					RelativePath="..\DesignGirder.cpp"
 					>
@@ -3324,6 +3368,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\IFace\EditByUI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\ExtendUI.h"
 				>
 			</File>
 			<File

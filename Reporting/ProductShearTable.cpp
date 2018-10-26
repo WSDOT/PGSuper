@@ -83,6 +83,9 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
+
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    GroupIndexType startGroup, nGroups;
    IntervalIndexType continuityIntervalIdx;
@@ -102,7 +105,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,castDeckIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IProductForces,pForces);
@@ -112,47 +115,47 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
-
    for ( GroupIndexType grpIdx = startGroup; grpIdx < nGroups; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
+      IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstSegmentErectionInterval(thisGirderKey);
+
       CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
-      std::vector<sysSectionValue> girder    = pForces2->GetShear(erectSegmentIntervalIdx, pftGirder,   vPoi,maxBAT);
-      std::vector<sysSectionValue> diaphragm = pForces2->GetShear(castDeckIntervalIdx,     pftDiaphragm,vPoi,maxBAT);
+      std::vector<sysSectionValue> girder    = pForces2->GetShear(erectSegmentIntervalIdx, pftGirder,   vPoi,maxBAT, ctIncremental);
+      std::vector<sysSectionValue> diaphragm = pForces2->GetShear(castDeckIntervalIdx,     pftDiaphragm,vPoi,maxBAT, ctIncremental);
 
       std::vector<sysSectionValue> minSlab, maxSlab;
       std::vector<sysSectionValue> minSlabPad, maxSlabPad;
-      maxSlab = pForces2->GetShear( castDeckIntervalIdx, pftSlab, vPoi, maxBAT );
-      minSlab = pForces2->GetShear( castDeckIntervalIdx, pftSlab, vPoi, minBAT );
+      maxSlab = pForces2->GetShear( castDeckIntervalIdx, pftSlab, vPoi, maxBAT, ctIncremental );
+      minSlab = pForces2->GetShear( castDeckIntervalIdx, pftSlab, vPoi, minBAT, ctIncremental );
 
-      maxSlabPad = pForces2->GetShear( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT );
-      minSlabPad = pForces2->GetShear( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT );
+      maxSlabPad = pForces2->GetShear( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT, ctIncremental );
+      minSlabPad = pForces2->GetShear( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT, ctIncremental );
 
       std::vector<sysSectionValue> minConstruction, maxConstruction;
       if ( bConstruction )
       {
-         maxConstruction = pForces2->GetShear( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT );
-         minConstruction = pForces2->GetShear( castDeckIntervalIdx, pftConstruction, vPoi, minBAT );
+         maxConstruction = pForces2->GetShear( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT, ctIncremental );
+         minConstruction = pForces2->GetShear( castDeckIntervalIdx, pftConstruction, vPoi, minBAT, ctIncremental );
       }
 
       std::vector<sysSectionValue> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
       {
-         maxDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT );
-         minDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT );
+         maxDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT, ctIncremental );
+         minDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT, ctIncremental );
       }
 
       std::vector<sysSectionValue> dummy;
@@ -187,20 +190,20 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       
       if ( bSidewalk )
       {
-         maxSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT );
-         minSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT );
+         maxSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT, ctIncremental );
+         minSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT, ctIncremental );
       }
 
       if ( bShearKey )
       {
-         maxShearKey = pForces2->GetShear( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT );
-         minShearKey = pForces2->GetShear( castDeckIntervalIdx, pftShearKey, vPoi, minBAT );
+         maxShearKey = pForces2->GetShear( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT, ctIncremental );
+         minShearKey = pForces2->GetShear( castDeckIntervalIdx, pftShearKey, vPoi, minBAT, ctIncremental );
       }
 
-      maxTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT );
-      minTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT );
-      maxOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT );
-      minOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT );
+      maxTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, ctIncremental );
+      minTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, ctIncremental );
+      maxOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, ctIncremental );
+      minOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, ctIncremental );
 
       if ( bPedLoading )
       {

@@ -125,8 +125,8 @@ public:
 
    pgsDesignArtifact Design(const CGirderKey& girderKey,arDesignOptions options);
 
-   void GetHaunchDetails(const CSegmentKey& segmentKey,HAUNCHDETAILS* pHaunchDetails);
-   void GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
+   void GetHaunchDetails(const CGirderKey& girderKey,HAUNCHDETAILS* pHaunchDetails);
+   void GetHaunchDetails(const CGirderKey& girderKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
 
    // Returns a girder check artifact if the girder was already checked, otherwise returns NULL
    const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey);
@@ -145,7 +145,7 @@ protected:
    virtual void MakeAssignment(const pgsDesigner2& rOther);
 
 private:
-   std::map<CGirderKey,pgsGirderArtifact> m_CheckArtifacts;
+   std::map<CGirderKey,boost::shared_ptr<pgsGirderArtifact>> m_CheckArtifacts;
    std::map<CSegmentKey,pgsLiftingAnalysisArtifact> m_LiftingAnalysisArtifacts;
    std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*> m_HaulingAnalysisArtifacts;
 
@@ -220,7 +220,7 @@ private:
 
    void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact);
 
-   void GetHaunchDetails(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
+   void GetHaunchDetails(const CGirderKey& girderKey,bool bUseConfig,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
 
    // Initialize the design artifact with a first guess of the design
    // variables

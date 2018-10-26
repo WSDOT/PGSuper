@@ -46,7 +46,8 @@ class PGSEXTCLASS CSplicedGirderData
 {
 public:
    CSplicedGirderData();
-   CSplicedGirderData(const CSplicedGirderData& rOther); // copies only data, not ID or Index
+   CSplicedGirderData(const CSplicedGirderData& rOther); // makes an exact copy
+   CSplicedGirderData(CGirderGroupData* pGirderGroup,GirderIndexType gdrIdx,GirderIDType gdrID,const CSplicedGirderData& rOther); // copies only data, not ID or Index
    CSplicedGirderData(CGirderGroupData* pGirderGroup);
    ~CSplicedGirderData();
    
@@ -83,6 +84,7 @@ public:
 
    // returns the pier object at one end of this girder
    const CPierData2* GetPier(pgsTypes::MemberEndType end) const;
+   CPierData2* GetPier(pgsTypes::MemberEndType end);
 
    // returns the index of the pier at one end of this girder
    PierIndexType GetPierIndex(pgsTypes::MemberEndType end) const;
@@ -148,7 +150,6 @@ protected:
    void SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx);
    void JoinSegmentsAtPier(PierIndexType pierIdx);
    void SplitSegmentsAtPier(PierIndexType pierIdx);
-   void MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,const CPrecastSegmentData* pRightSegment);
    void SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPrecastSegmentData* pRightSegment,Float64 splitStation);
 
    void UpdateLinks();
@@ -203,6 +204,11 @@ protected:
    GirderIDType m_GirderID;
 
    PierIndexType m_PierIndex[2];
+
+   // this is a special flag that is set to true when we are creating a new girder
+   // that is a copy of an existing girder. it tells MakeCopy to ignore the
+   // bCopyOnlyData flag and always copy all data for closures
+   bool m_bCreatingNewGirder;
 
    friend CBridgeDescription2;
    friend CGirderGroupData;

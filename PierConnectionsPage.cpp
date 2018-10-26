@@ -352,35 +352,21 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
 
    GetDlgItem(IDC_COPY)->EnableWindow(bEnable);
 
-   //if ( connectionType == pgsTypes::ContinuousSegment )
-   //{
-   //   m_SupportWidthEdit[pgsTypes::Back].EnableWindow(TRUE);
-   //   GetDlgItem(IDC_LEFT_SUPPORT_WIDTH_T)->EnableWindow(TRUE);
-
-   //   m_DiaphragmHeightEdit[pgsTypes::Ahead].EnableWindow(FALSE);
-   //   GetDlgItem(IDC_AHEAD_DIAPHRAGM_HEIGHT_T)->EnableWindow(FALSE);
-   //   m_DiaphragmWidthEdit[pgsTypes::Ahead].EnableWindow(FALSE);
-   //   GetDlgItem(IDC_AHEAD_DIAPHRAGM_WIDTH_T)->EnableWindow(FALSE);
-   //}
-   //else
+   if ( m_pPier->GetPrevSpan() )
    {
-      if ( m_pPier->GetPrevSpan() )
-      {
-         m_DiaphragmHeightEdit[pgsTypes::Back].EnableWindow(TRUE);
-         GetDlgItem(IDC_BACK_DIAPHRAGM_HEIGHT_T)->EnableWindow(TRUE);
-         m_DiaphragmWidthEdit[pgsTypes::Back].EnableWindow(TRUE);
-         GetDlgItem(IDC_BACK_DIAPHRAGM_WIDTH_T)->EnableWindow(TRUE);
-      }
-
-      if ( m_pPier->GetNextSpan() )
-      {
-         m_DiaphragmHeightEdit[pgsTypes::Ahead].EnableWindow(TRUE);
-         GetDlgItem(IDC_AHEAD_DIAPHRAGM_HEIGHT_T)->EnableWindow(TRUE);
-         m_DiaphragmWidthEdit[pgsTypes::Ahead].EnableWindow(TRUE);
-         GetDlgItem(IDC_AHEAD_DIAPHRAGM_WIDTH_T)->EnableWindow(TRUE);
-      }
+      m_DiaphragmHeightEdit[pgsTypes::Back].EnableWindow(TRUE);
+      GetDlgItem(IDC_BACK_DIAPHRAGM_HEIGHT_T)->EnableWindow(TRUE);
+      m_DiaphragmWidthEdit[pgsTypes::Back].EnableWindow(TRUE);
+      GetDlgItem(IDC_BACK_DIAPHRAGM_WIDTH_T)->EnableWindow(TRUE);
    }
 
+   if ( m_pPier->GetNextSpan() )
+   {
+      m_DiaphragmHeightEdit[pgsTypes::Ahead].EnableWindow(TRUE);
+      GetDlgItem(IDC_AHEAD_DIAPHRAGM_HEIGHT_T)->EnableWindow(TRUE);
+      m_DiaphragmWidthEdit[pgsTypes::Ahead].EnableWindow(TRUE);
+      GetDlgItem(IDC_AHEAD_DIAPHRAGM_WIDTH_T)->EnableWindow(TRUE);
+   }
 
    GetDlgItem(IDC_BEARING_OFFSET_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_END_DISTANCE_LABEL)->EnableWindow(bEnable);

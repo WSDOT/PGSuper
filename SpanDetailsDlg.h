@@ -34,18 +34,26 @@
 #include "GirderLayoutPage.h"
 #include "PierConnectionsPage.h"
 #include "EditSpan.h"
+#include <IFace\ExtendUI.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg
 
-class CSpanDetailsDlg : public CPropertySheet
+class CSpanDetailsDlg : public CPropertySheet, public IEditSpanData
 {
 	DECLARE_DYNAMIC(CSpanDetailsDlg)
 
 // Construction
 public:
 	CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 	virtual ~CSpanDetailsDlg();
+
+   // IEditSpanData
+   virtual SpanIndexType GetSpanCount() { return m_BridgeDesc.GetSpanCount(); }
+   virtual SpanIndexType GetSpan() { return m_pSpanData->GetIndex(); }
+   virtual pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
+   virtual GirderIndexType GetGirderCount();
 
 // Attributes
 public:
@@ -60,7 +68,12 @@ public:
 
 // Implementation
 public:
+	virtual INT_PTR DoModal();
 
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
 
    // Generated message map functions
 protected:
@@ -69,8 +82,15 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
+
+   void CommonInitPages();
    void InitPages();
+   void InitPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
    void Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx);
+   void CreateExtensionPages();
+   void CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
+   void DestroyExtensionPages();
 
    CBridgeDescription2 m_BridgeDesc; // this is the bridge we are operating on
    CPierData2* m_pPrevPier; // points to elements inside our private bridge model to make life easier
@@ -91,6 +111,12 @@ protected:
    CPierConnectionsPage m_StartPierPage;
    CPierConnectionsPage m_EndPierPage;
    CSpanGirderLayoutPage m_GirderLayoutPage;
+
+   txnMacroTxn m_Macro;
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>> m_ExtensionPages;
+   std::set<EditBridgeExtension> m_BridgeExtensionPages;
+   void NotifyExtensionPages();
+   void NotifyBridgeExtensionPages();
 
    CString m_strStartPierTitle;
    CString m_strEndPierTitle;

@@ -169,6 +169,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CPierData2* pPrevPier = pGroup->GetPier(pgsTypes::metStart);
    const CPierData2* pNextPier = pGroup->GetPier(pgsTypes::metEnd);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
 
    rptLengthUnitValue* pUnitValue = (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) ? &glength : &spacing);
 
@@ -370,10 +372,10 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row++,1) << component.SetValue(pBridge->GetGrossSlabDepth( poi ));
 
    (*pTable)(row,0) << _T("\"A\" Dimension at Start");
-   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(segmentKey.girderIndex,pgsTypes::metStart));
+   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
 
    (*pTable)(row,0) << _T("\"A\" Dimension at End");
-   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(segmentKey.girderIndex,pgsTypes::metEnd));
+   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
 
    (*pTable)(row,0) << _T("Overlay");
    (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
@@ -450,7 +452,7 @@ void concrete(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKe
 
    GET_IFACE2( pBroker, IIntervals, pIntervals );
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
    
    // Get the interfaces
    GET_IFACE2( pBroker, IMaterials, pMaterial );
@@ -463,7 +465,7 @@ void concrete(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKe
    (*pTable)(1,1) << stress.SetValue( pMaterial->GetSegmentFc(segmentKey,releaseIntervalIdx) );
 
    (*pTable)(2,0) << _T("Slab");
-   (*pTable)(2,1) << stress.SetValue( pMaterial->GetDeckFc(liveLoadIntervalIdx) );
+   (*pTable)(2,1) << stress.SetValue( pMaterial->GetDeckFc(segmentKey,liveLoadIntervalIdx) );
 }
 
 void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)

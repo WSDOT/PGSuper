@@ -88,45 +88,45 @@ void CStressTendonActivity::Clear()
 
 void CStressTendonActivity::AddTendon(const CGirderKey& girderKey,DuctIndexType ductIdx)
 {
-   m_Tendons.push_back(std::make_pair(girderKey,ductIdx));
-   std::sort(m_Tendons.begin(),m_Tendons.end());
+   m_Tendons.insert(CTendonKey(girderKey,ductIdx));
 }
 
-void CStressTendonActivity::AddTendons(const std::vector<std::pair<CGirderKey,DuctIndexType>>& tendons)
+void CStressTendonActivity::AddTendon(const CTendonKey& tendonKey)
 {
-   m_Tendons.insert(m_Tendons.end(),tendons.begin(),tendons.end());
-   std::sort(m_Tendons.begin(),m_Tendons.end());
+   m_Tendons.insert(tendonKey);
+}
+
+void CStressTendonActivity::AddTendons(const std::set<CTendonKey>& tendons)
+{
+   m_Tendons.insert(tendons.begin(),tendons.end());
 }
 
 void CStressTendonActivity::RemoveTendon(const CGirderKey& girderKey,DuctIndexType ductIdx)
 {
-   std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator iter(m_Tendons.begin());
-   std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator iterEnd(m_Tendons.end());
-   for ( ; iter != iterEnd; iter++ )
+   CTendonKey key(girderKey,ductIdx);
+   std::set<CTendonKey>::iterator found(m_Tendons.find(key));
+   if ( found != m_Tendons.end() )
    {
-      std::pair<CGirderKey,DuctIndexType> p = *iter;
-      if ( p.first == girderKey && p.second == ductIdx )
-      {
-         m_Tendons.erase(iter);
-         break;
-      }
+      m_Tendons.erase(found);
+   }
+   else
+   {
+      ATLASSERT(false); // not found???
    }
 }
 
 bool CStressTendonActivity::IsTendonStressed(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
-   std::vector<std::pair<CGirderKey,DuctIndexType>>::const_iterator iter(m_Tendons.begin());
-   std::vector<std::pair<CGirderKey,DuctIndexType>>::const_iterator iterEnd(m_Tendons.end());
-   for ( ; iter != iterEnd; iter++ )
+   CTendonKey key(girderKey,ductIdx);
+   std::set<CTendonKey>::const_iterator found(m_Tendons.find(key));
+   if ( found == m_Tendons.end() )
    {
-      std::pair<CGirderKey,DuctIndexType> p = *iter;
-      if ( p.first == girderKey && p.second == ductIdx )
-      {
-         return true;
-      }
+      return false;
    }
-
-   return false;
+   else
+   {
+      return true;
+   }
 }
 
 bool CStressTendonActivity::IsTendonStressed() const
@@ -134,7 +134,7 @@ bool CStressTendonActivity::IsTendonStressed() const
    return (m_Tendons.size() != 0 ? true : false);
 }
 
-const std::vector<std::pair<CGirderKey,DuctIndexType>>& CStressTendonActivity::GetTendons() const
+const std::set<CTendonKey>& CStressTendonActivity::GetTendons() const
 {
    return m_Tendons;
 }
@@ -165,8 +165,6 @@ HRESULT CStressTendonActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
          nTendons = VARIANT2INDEX(var);
          m_Tendons.clear();
 
-         m_Tendons.resize(nTendons);
-
          for ( CollectionIndexType i = 0; i < nTendons; i++ )
          {
             pStrLoad->BeginUnit(_T("Tendon"));
@@ -177,7 +175,7 @@ HRESULT CStressTendonActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
             pStrLoad->get_Property(_T("DuctIndex"),&var);
             DuctIndexType ductIdx = VARIANT2INDEX(var);
 
-            m_Tendons[i] = std::make_pair(girderKey,ductIdx);
+            m_Tendons.insert(CTendonKey(girderKey,ductIdx));
 
             pStrLoad->EndUnit(); // Tendon
          }
@@ -185,7 +183,7 @@ HRESULT CStressTendonActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
 
       pStrLoad->EndUnit();
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -203,14 +201,14 @@ HRESULT CStressTendonActivity::Save(IStructuredSave* pStrSave,IProgress* pProgre
    {
       pStrSave->put_Property(_T("Count"),CComVariant(m_Tendons.size()));
 
-      std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator iter(m_Tendons.begin());
-      std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator iterEnd(m_Tendons.end());
+      std::set<CTendonKey>::iterator iter(m_Tendons.begin());
+      std::set<CTendonKey>::iterator iterEnd(m_Tendons.end());
       for ( ; iter != iterEnd; iter++ )
       {
-         std::pair<CGirderKey,DuctIndexType> p = *iter;
+         CTendonKey& key = *iter;
          pStrSave->BeginUnit(_T("Tendon"),1.0);
-         p.first.Save(pStrSave,pProgress);
-         pStrSave->put_Property(_T("DuctIndex"),CComVariant(p.second));
+         key.girderKey.Save(pStrSave,pProgress);
+         pStrSave->put_Property(_T("DuctIndex"),CComVariant(key.ductIdx));
          pStrSave->EndUnit(); // Tendon
       }
    }

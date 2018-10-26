@@ -1195,8 +1195,8 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    pDeck->GrossDepth = slab_thick;
    pDeck->SacrificialDepth = 0.0;
    pDeck->OverhangEdgeDepth = slab_thick;
-   pGroup->SetSlabOffset(pgsTypes::metStart, slab_thick);
-   pGroup->SetSlabOffset(pgsTypes::metEnd, slab_thick);
+   pLftPier->GetGirderGroup(pgsTypes::Ahead)->SetSlabOffset(pgsTypes::Ahead, slab_thick);
+   pRgtPier->GetGirderGroup(pgsTypes::Back )->SetSlabOffset(pgsTypes::Back,  slab_thick);
 
    // Slab material properties
    pDeck->Concrete.Ec = m_ProjectData.GetEcSlab();

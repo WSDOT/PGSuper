@@ -225,12 +225,24 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
       }
    }
 
+
    if ( pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
    {
-      CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(GetSegmentConstructionEventIndex());
-      if ( pOtherTimelineEvent ) 
+      std::set<SegmentIDType> segmentIDs = pTimelineEvent->GetConstructSegmentsActivity().GetSegments();
+      std::set<SegmentIDType>::iterator segmentIDIter(segmentIDs.begin());
+      std::set<SegmentIDType>::iterator segmentIDIterEnd(segmentIDs.end());
+      for ( ; segmentIDIter != segmentIDIterEnd; segmentIDIter++ )
       {
-         pOtherTimelineEvent->GetConstructSegmentsActivity().Enable(false);
+         SegmentIDType segmentID = *segmentIDIter;
+         EventIndexType nEvents = GetEventCount();
+         for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+         {
+            CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
+            {
+               pOtherTimelineEvent->GetConstructSegmentsActivity().RemoveSegment(segmentID);
+            }
+         }
       }
    }
 
@@ -313,13 +325,14 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
 
    if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() )
    {
-      std::vector<std::pair<CGirderKey,DuctIndexType>> vTendons = pTimelineEvent->GetStressTendonActivity().GetTendons();
-      std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator iter(vTendons.begin());
-      std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator end(vTendons.end());
+      std::set<CTendonKey> vTendons = pTimelineEvent->GetStressTendonActivity().GetTendons();
+      std::set<CTendonKey>::iterator iter(vTendons.begin());
+      std::set<CTendonKey>::iterator end(vTendons.end());
       for ( ; iter != end; iter++ )
       {
-         CGirderKey girderKey = iter->first;
-         DuctIndexType ductIdx = iter->second;
+         CTendonKey& key = *iter;
+         CGirderKey girderKey = key.girderKey;
+         DuctIndexType ductIdx = key.ductIdx;
          EventIndexType nEvents = GetEventCount();
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
@@ -832,7 +845,7 @@ bool CTimelineManager::IsRailingSystemInstalled() const
 
 bool CTimelineManager::IsSegmentConstructed(SegmentIDType segmentID) const
 {
-   return GetSegmentConstructionEventIndex() != INVALID_INDEX;
+   return GetSegmentConstructionEventIndex(segmentID) != INVALID_INDEX;
 }
 
 bool CTimelineManager::IsClosureJointCast(ClosureIDType closureID) const
@@ -1154,7 +1167,7 @@ void CTimelineManager::GetTempSupportEvents(SupportIDType tsID,EventIndexType* p
    }
 }
 
-EventIndexType CTimelineManager::GetSegmentConstructionEventIndex() const
+EventIndexType CTimelineManager::GetSegmentConstructionEventIndex(SegmentIDType segmentID) const
 {
    ASSERT_VALID;
 
@@ -1165,7 +1178,7 @@ EventIndexType CTimelineManager::GetSegmentConstructionEventIndex() const
    for ( ; iter != end; iter++ )
    {
       const CTimelineEvent* pTimelineEvent = *iter;
-      if ( pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
+      if ( pTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
          return idx;
 
       idx++;
@@ -1174,7 +1187,7 @@ EventIndexType CTimelineManager::GetSegmentConstructionEventIndex() const
    return INVALID_INDEX;
 }
 
-EventIDType CTimelineManager::GetSegmentConstructionEventID() const
+EventIDType CTimelineManager::GetSegmentConstructionEventID(SegmentIDType segmentID) const
 {
    ASSERT_VALID;
 
@@ -1183,37 +1196,37 @@ EventIDType CTimelineManager::GetSegmentConstructionEventID() const
    for ( ; iter != end; iter++ )
    {
       const CTimelineEvent* pTimelineEvent = *iter;
-      if ( pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
+      if ( pTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
          return pTimelineEvent->GetID();
    }
 
    return INVALID_ID;
 }
 
-void CTimelineManager::SetSegmentConstructionEventByIndex(EventIndexType eventIdx)
+void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentID,EventIndexType eventIdx)
 {
-   if ( eventIdx == INVALID_INDEX )
-      return;
-
-   // first current event and disable the activity
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
    {
       CTimelineEvent* pTimelineEvent = *iter;
-      if ( pTimelineEvent->GetConstructSegmentsActivity().IsEnabled()  )
+      if ( pTimelineEvent->GetConstructSegmentsActivity().HasSegment(segmentID) )
       {
-         pTimelineEvent->GetConstructSegmentsActivity().Enable(false);
+         pTimelineEvent->GetConstructSegmentsActivity().RemoveSegment(segmentID);
          break;
       }
    }
 
-   m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().Enable(true);
+   if ( eventIdx != INVALID_INDEX )
+   {
+      m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().Enable(true);
+      m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().AddSegment(segmentID);
+   }
 
    ASSERT_VALID;
 }
 
-void CTimelineManager::SetSegmentConstructionEventByID(EventIDType ID)
+void CTimelineManager::SetSegmentConstructionEventByID(SegmentIDType segmentID,EventIDType ID)
 {
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
@@ -1222,7 +1235,7 @@ void CTimelineManager::SetSegmentConstructionEventByID(EventIDType ID)
       CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetID() == ID )
       {
-         SetSegmentConstructionEventByIndex(iter - m_TimelineEvents.begin());
+         SetSegmentConstructionEventByIndex(segmentID,iter - m_TimelineEvents.begin());
          break;
       }
    }
@@ -2028,7 +2041,7 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       pStrLoad->EndUnit();
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);

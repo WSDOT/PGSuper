@@ -24,6 +24,12 @@
 
 #include <Graphing\AnalysisResultsGraphBuilder.h>
 #include "GirderGraphControllerBase.h"
+#include <Graphing\GraphingTypes.h>
+
+#include <IFace\AnalysisResults.h>
+
+#define GRAPH_MODE_INTERVAL  0
+#define GRAPH_MODE_LOADING   1
 
 class CAnalysisResultsGraphController : public CGirderGraphControllerBase
 {
@@ -31,10 +37,20 @@ public:
    CAnalysisResultsGraphController();
    DECLARE_DYNCREATE(CAnalysisResultsGraphController);
 
+   // returns one of the GRAPH_MODE_xxx constants
+   int GetGraphMode();
+
    ActionType GetActionType();
+   CombinationType GetCombinationType();
+   bool PlotStresses(pgsTypes::StressLocation stressLocation);
+
+   IntervalIndexType GetInterval();
+   std::vector<IntervalIndexType> GetSelectedIntervals();
+
    pgsTypes::AnalysisType GetAnalysisType();
 
-   virtual IndexType GetGraphCount();
+   IndexType GetMaxGraphCount();
+   IndexType GetGraphCount();
 
    IDType SelectedGraphIndexToGraphID(IndexType graphIdx);
 
@@ -43,22 +59,37 @@ protected:
    virtual BOOL OnInitDialog();
 
 	//{{AFX_MSG(CAnalysisResultsGraphController)
+   afx_msg void OnModeChanged();
    afx_msg void OnActionChanged();
-   afx_msg void OnLoadCaseChanged();
+   afx_msg void OnDropDownChanged();
+   afx_msg void OnSelectListChanged();
+   afx_msg void OnPlotTypeClicked();
+   afx_msg void OnStress();
    afx_msg void OnAnalysisTypeClicked();
    //}}AFX_MSG
 
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-   virtual void OnGirderChanged();
-   virtual void OnIntervalChanged();
 
 	DECLARE_MESSAGE_MAP()
 
+   void FillModeCtrl();
    void FillActionTypeCtrl();
-   void FillLoadCaseList();
+   void FillDropListCtrl(bool bRetainSelection);
+   void FillDropListCtrl_Intervals(bool bRetainSelection);
+   void FillDropListCtrl_Loadings(bool bRetainSelection);
+   void FillSelectListCtrl(bool bRetainSelection);
+   void FillSelectListCtrl_Intervals(bool bRetainSelection);
+   void FillSelectListCtrl_Loadings(bool bRetainSelection);
+
+   void UpdateStressControls();
    void UpdateAnalysisType();
+   void UpdateListInfo();
+
+   IntervalIndexType GetFirstInterval();
+   IntervalIndexType GetLastInterval();
 
    // conotrl variables
+   int                    m_GraphMode;
    ActionType             m_ActionType;
    pgsTypes::AnalysisType m_AnalysisType;
 

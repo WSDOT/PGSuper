@@ -81,6 +81,8 @@ public:
 
    CPierData2* GetPier(pgsTypes::MemberEndType end);
    const CPierData2* GetPier(pgsTypes::MemberEndType end) const;
+   CPierData2* GetPier(PierIndexType pierIdx);
+   const CPierData2* GetPier(PierIndexType pierIdx) const;
    PierIndexType GetPierIndex(pgsTypes::MemberEndType end) const;
 
    CGirderGroupData* GetPrevGirderGroup();
@@ -116,17 +118,22 @@ public:
 
 
    // =================================================================================
-   // Slab Offset (Haunch) Used only when the parent bridge's SlabOffsetType is sotGroup or sotsegment
+   // Slab Offset (Haunch) Used only when the parent bridge's SlabOffsetType is sotPier or sotGirder
    // =================================================================================
 
-   // Set the slab offset at the ends of the girder group (same offset for all segments)
-   // Use when slab offset type is pgsTypes::sotGroup
-   void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
+   // Set the slab offset at a pier within this girder group (same offset for all segments)
+   // Use when slab offset type is pgsTypes::sotPier
+   // The slab offset is applied to the ahead/back side of the first/pier of the group
+   // or both sides if the pier is interior to the group
+   void SetSlabOffset(PierIndexType pierIdx,Float64 offset);
 
-   // Set/Get the slab offset at the ends of the segments in a girder
-   // Use when slab offset type is pgsTypes::sotSegment
-   void SetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end,Float64 offset);
-   Float64 GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const;
+   // Set/Get the slab offset at a pier for a specific girder within the group
+   // Use when slab offset type is pgsTypes::sotGirder
+   void SetSlabOffset(PierIndexType pierIdx,GirderIndexType gdrIdx,Float64 offset);
+   Float64 GetSlabOffset(PierIndexType pierIdx,GirderIndexType gdrIdx,bool bGetRawValue = false) const;
+
+   // Copies girder-by-girder slab offset data from one girder to another
+   void CopySlabOffset(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx);
 
 
    // =================================================================================
@@ -171,6 +178,9 @@ public:
    // =================================================================================
    bool IsExteriorGirder(GirderIndexType gdrIdx) const;
    bool IsInteriorGirder(GirderIndexType gdrIdx) const;
+
+   // returns the number of piers in this group
+   PierIndexType GetPierCount() const;
    
    // returns the length of the girder measured between the end pier stations
    Float64 GetLength() const;
@@ -188,10 +198,10 @@ private:
    GroupIDType m_GroupID;
 
    CBridgeDescription2* m_pBridge;
-   CPierData2* m_pPier[2];
-   PierIndexType m_PierIndex[2];
+   CPierData2* m_pPier[2]; // pier at the start of the group
+   PierIndexType m_PierIndex[2]; // pier index at the start of the group (INVALID_INDEX if m_pPier points to an actual pier)
 
-   std::vector<Float64> m_SlabOffset[2]; // slab offset is defined by segment
+   std::vector<std::vector<Float64>> m_SlabOffsets; // outer vector, one entry per pier... inner vector, one entry per girder
 
    std::vector<CSplicedGirderData*> m_Girders;
 

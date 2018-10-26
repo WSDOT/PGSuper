@@ -122,7 +122,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
             *pChapter << pPara;
-            *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
+            *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(closureKey,intervalIdx) << rptNewLine;
 
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -135,7 +135,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    // Report for Deck
    // need to report for all intervals when post-tensioning occurs after the
    // deck is composite
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    std::set<IntervalIndexType> vIntervals;
@@ -162,7 +162,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
          pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
          *pChapter << pPara;
-         *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
+         *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(girderKey,intervalIdx) << rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -306,7 +306,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    // allowable tension stresses are check in the Service I limit state before live load is applied and in the
    // Service III limit state after live load is applied

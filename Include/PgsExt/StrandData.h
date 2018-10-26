@@ -57,7 +57,7 @@ public:
 // Container class to hold and process strand fill data.
 // This container holds fill data in a compacted format (only filled strands are in it).
 // It is also sorted by StrandIndex
-class PGSEXTCLASS DirectStrandFillCollection 
+class PGSEXTCLASS CDirectStrandFillCollection 
 {
 public:
    StrandIndexType GetFilledStrandCount() const; // total number of filled strands
@@ -77,10 +77,10 @@ public:
    void reserve(CollectionIndexType size) {
       m_StrandFill.reserve(size); }
 
-   bool operator == (const DirectStrandFillCollection& rOther) const {
+   bool operator == (const CDirectStrandFillCollection& rOther) const {
       return m_StrandFill == rOther.m_StrandFill; }
 
-   bool operator != (const DirectStrandFillCollection& rOther) const {
+   bool operator != (const CDirectStrandFillCollection& rOther) const {
       return m_StrandFill != rOther.m_StrandFill; }
 
    // allow const iteration
@@ -95,6 +95,36 @@ public:
 private: 
    std::vector<CDirectStrandFillInfo> m_StrandFill;
 };
+
+class PGSEXTCLASS CStrandRow
+{
+public:
+   CStrandRow();
+
+   bool operator==(const CStrandRow& other) const;
+   bool operator!=(const CStrandRow& other) const;
+
+   // use the pgsTypes::MemberEndType constant to access the arrays in this class
+
+   Float64 m_InnerSpacing; // spacing between strands that are on either side of the CL Beam
+   Float64 m_Spacing; // spacing between all other strands
+   StrandIndexType m_nStrands; // total number of strands in the row. If an odd number, the center strand is on the CL of the beam and m_InnerSpacing is ignored
+
+   // Location of the strand measured from the top or bottom of the girder
+   Float64 m_Y[2];
+   pgsTypes::FaceType m_Face[2];
+
+   // Extended strand data
+   bool m_bIsTemporaryStrand;
+   bool m_bIsExtendedStrand[2];
+   bool m_bIsDebonded[2];
+   Float64 m_DebondLength[2];
+
+	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+   HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
+};
+
+typedef std::vector<CStrandRow> CStrandRowCollection;
 
 
 /*****************************************************************************
@@ -112,9 +142,18 @@ DESCRIPTION
 class PGSEXTCLASS CStrandData
 {
 public:
-   enum PermanentStrandType { npsTotal, npsStraightHarped, npsDirectSelection };
+   enum PermanentStrandType { 
+      npsTotal, // input is total number of permanent strands
+      npsStraightHarped, // input is number of harped and number of straight strands
+      npsDirectSelection, // input is a fill array of strand positions in the girder strand grid
+      npsUser // input is user defined rows of straight strands. the strand grid in the girder library is ignored
+   };
+
+#pragma Reminder("UPDATE: consider making this data private")
+   // This data can't be access directly so I'm not sure why it is public
+
    PermanentStrandType NumPermStrandsType; // one of PermanentStrandType enum values
-   // Note that the arrays with size 3 and4 below are indexed using pgsTypes::StrandType.
+   // Note that the arrays with size 3 and 4 below are indexed using pgsTypes::StrandType.
    // The pgsTypes::Permanent position is used when NumPermStrandsType==npsTotal.
    // When this is the case, values must be divided proportionally to straight and harped strands into 
    // the pgsTypes::Harped and pgsTypes::Straight strand locations because these are the values
@@ -143,10 +182,11 @@ public:
    friend CProjectAgentImp;
 
    // Strand fill when direct selection (npsDirectSelection) is used
-   DirectStrandFillCollection m_StraightStrandFill;
-   DirectStrandFillCollection m_HarpedStrandFill;
-   DirectStrandFillCollection m_TemporaryStrandFill;
+   CDirectStrandFillCollection m_StraightStrandFill;
+   CDirectStrandFillCollection m_HarpedStrandFill;
+   CDirectStrandFillCollection m_TemporaryStrandFill;
 
+public:
    CStrandData();
    CStrandData(const CStrandData& rOther);
    ~CStrandData();
@@ -170,16 +210,22 @@ public:
 
    // Functions to fill selected strands directly (CStrandData::npsDirectSelection)
    // Filling indexes into library fill order
-   void SetDirectStrandFillStraight(const DirectStrandFillCollection& rCollection);
-   const DirectStrandFillCollection* GetDirectStrandFillStraight() const;
-   void SetDirectStrandFillHarped(const DirectStrandFillCollection& rCollection);
-   const DirectStrandFillCollection* GetDirectStrandFillHarped() const;
-   void SetDirectStrandFillTemporary(const DirectStrandFillCollection& rCollection);
-   const DirectStrandFillCollection* GetDirectStrandFillTemporary() const;
+   void SetDirectStrandFillStraight(const CDirectStrandFillCollection& rCollection);
+   const CDirectStrandFillCollection* GetDirectStrandFillStraight() const;
+   void SetDirectStrandFillHarped(const CDirectStrandFillCollection& rCollection);
+   const CDirectStrandFillCollection* GetDirectStrandFillHarped() const;
+   void SetDirectStrandFillTemporary(const CDirectStrandFillCollection& rCollection);
+   const CDirectStrandFillCollection* GetDirectStrandFillTemporary() const;
+
+   void AddStrandRow(const CStrandRow& strandRow);
+   void AddStrandRows(const CStrandRowCollection& strandRows); // adds this collection to the current collection
+   void SetStrandRows(const CStrandRowCollection& strandRows); // replaces the current collection this collection
+   const CStrandRowCollection& GetStrandRows() const;
 
    // Get number of strands for any fill type
    StrandIndexType GetNstrands(pgsTypes::StrandType type) const;
 
+   // Strand extension paramaters (not used if using CStrandData::npsUser)
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
    void SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<GridIndexType>& extStrands);
@@ -200,5 +246,10 @@ protected:
    void MakeCopy(const CStrandData& rOther);
    virtual void MakeAssignment(const CStrandData& rOther);
 
-   StrandIndexType ProcessDirectFillData(const DirectStrandFillCollection& rInCollection, DirectStrandFillCollection& rLocalCollection);
+   StrandIndexType ProcessDirectFillData(const CDirectStrandFillCollection& rInCollection, CDirectStrandFillCollection& rLocalCollection);
+
+   // Strand information when user defined strands (npsUser) is used
+   CStrandRowCollection m_StrandRows;
+
+   void ProcessStrandRowData();
 };

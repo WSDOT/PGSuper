@@ -36,16 +36,16 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-IMPLEMENT_DYNCREATE(CGirderPropertiesGraphController,CGirderGraphControllerBase)
+IMPLEMENT_DYNCREATE(CGirderPropertiesGraphController,CIntervalGirderGraphControllerBase)
 
 CGirderPropertiesGraphController::CGirderPropertiesGraphController():
-CGirderGraphControllerBase(),
+CIntervalGirderGraphControllerBase(false),
 m_PropertyType(CGirderPropertiesGraphBuilder::Height),
 m_SectionPropertyType(pgsTypes::sptTransformed)
 {
 }
 
-BEGIN_MESSAGE_MAP(CGirderPropertiesGraphController, CGirderGraphControllerBase)
+BEGIN_MESSAGE_MAP(CGirderPropertiesGraphController, CIntervalGirderGraphControllerBase)
 	//{{AFX_MSG_MAP(CGirderPropertiesGraphController)
    ON_CBN_SELCHANGE( IDC_PROPERTY, OnPropertyChanged )
    ON_BN_CLICKED(IDC_TRANSFORMED, OnSectionPropertiesChanged)
@@ -55,7 +55,7 @@ END_MESSAGE_MAP()
 
 BOOL CGirderPropertiesGraphController::OnInitDialog()
 {
-   CGirderGraphControllerBase::OnInitDialog();
+   CIntervalGirderGraphControllerBase::OnInitDialog();
 
    FillPropertyCtrl();
 
@@ -150,11 +150,11 @@ void CGirderPropertiesGraphController::UpdateSectionPropertyTypeControls()
 #ifdef _DEBUG
 void CGirderPropertiesGraphController::AssertValid() const
 {
-	CGirderGraphControllerBase::AssertValid();
+	CIntervalGirderGraphControllerBase::AssertValid();
 }
 
 void CGirderPropertiesGraphController::Dump(CDumpContext& dc) const
 {
-	CGirderGraphControllerBase::Dump(dc);
+	CIntervalGirderGraphControllerBase::Dump(dc);
 }
 #endif //_DEBUG

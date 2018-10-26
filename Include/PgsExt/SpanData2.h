@@ -97,6 +97,9 @@ public:
    const CPierData2* GetNextPier() const;
    const CPierData2* GetPier(pgsTypes::MemberEndType end) const;
 
+   // Returns the number of girders in this span
+   GirderIndexType GetGirderCount() const;
+
    // Returns the length of this span measured between the stations of the prev/next piers
    Float64 GetSpanLength() const;
 
@@ -133,8 +136,6 @@ private:
    CBridgeDescription2* m_pBridgeDesc;
    CPierData2* m_pPrevPier;
    CPierData2* m_pNextPier;
-
-   GirderIndexType GetGirderCount() const;
 
 
    // LLDF

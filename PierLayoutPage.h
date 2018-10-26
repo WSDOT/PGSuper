@@ -29,6 +29,8 @@
 // PierLayoutPage.h : header file
 //
 #include "PGSuperAppPlugin\resource.h"
+#include "SameSlabOffsetHyperLink.h"
+#include <MFCTools\CacheEdit.h>
 
 class CPierData2;
 
@@ -78,6 +80,7 @@ protected:
    afx_msg void OnErectionStageChanging();
    afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
 	//}}AFX_MSG
+   afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
    CComPtr<IStation> m_objStation;
@@ -96,6 +99,19 @@ protected:
    BOOL IsValidStation(Float64* pStation);
 
    int m_PrevEventIdx;
+
+
+   int m_PierFaceCount;
+
+   Float64 m_SlabOffset[2]; // access with pgsTypes::PierFaceType
+
+   CCacheEdit m_ctrlBackSlabOffset;
+   CCacheEdit m_ctrlAheadSlabOffset;
+
+   CSameSlabOffsetHyperLink      m_SlabOffsetHyperLink;
+   pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
+   void UpdateSlabOffsetHyperLinkText();
+   void UpdateSlabOffsetWindowState();
 };
 
 //{{AFX_INSERT_LOCATION}}

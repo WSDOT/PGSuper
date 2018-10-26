@@ -1,9 +1,32 @@
-// EditGirderlineDlg.cpp : implementation file
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2014  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// SplicedGirderGeneralPage.cpp : implementation file
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin.h"
-#include "EditGirderlineDlg.h"
+#include "SplicedGirderGeneralPage.h"
+#include "..\SplicedGirderDescDlg.h"
 #include <LRFD\StrandPool.h>
 #include <EAF\EAFDisplayUnits.h>
 
@@ -12,7 +35,7 @@
 #include <PgsExt\ClosureJointData.h>
 #include <IFace\Project.h>
 
-// CEditGirderlineDlg dialog
+// CSplicedGirderGeneralPage dialog
 
 
 void DDX_Strand(CDataExchange* pDX,UINT nIDC,const matPsStrand** ppStrand)
@@ -48,7 +71,7 @@ void DDX_PTData(CDataExchange* pDX,INT nIDC,CPTData* ptData)
    CDuctGrid* pGrid = (CDuctGrid*)pDX->m_pDlgWnd->GetDlgItem(nIDC);
    if ( pDX->m_bSaveAndValidate )
    {
-      *ptData = pGrid->GetPTData();
+      pGrid->UpdatePTData();
 
       // If Pjack is defined with a user-input force, the value of Pj
       // becomes the last Pj input by the user. Update the data structure here.
@@ -64,81 +87,75 @@ void DDX_PTData(CDataExchange* pDX,INT nIDC,CPTData* ptData)
    }
    else
    {
-      pGrid->SetPTData(*ptData);
+      pGrid->FillGrid();
    }
 }
 
-IMPLEMENT_DYNAMIC(CEditGirderlineDlg, CDialog)
-
-CEditGirderlineDlg::CEditGirderlineDlg(const CGirderKey& girderKey,CWnd* pParent /*=NULL*/)
-	: CDialog(CEditGirderlineDlg::IDD, pParent)
+void DDX_SlabOffsetGrid(CDataExchange* pDX,INT nIDC)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   m_BridgeDescription = *pBridgeDesc;
-   m_Girder = *m_BridgeDescription.GetGirderGroup(girderKey.groupIndex)->GetGirder(girderKey.girderIndex);
-   m_GirderKey = girderKey;
-   m_GirderID = m_Girder.GetID();
-
-   const CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-
-   DuctIndexType nDucts = m_Girder.GetPostTensioning()->GetDuctCount();
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   CSlabOffsetGrid* pGrid = (CSlabOffsetGrid*)pDX->m_pDlgWnd->GetDlgItem(nIDC);
+   if ( pDX->m_bSaveAndValidate )
    {
-      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(m_GirderKey,ductIdx);
-      m_TendonStressingEvent.push_back(eventIdx);
+      pGrid->UpdateSlabOffsetData();
    }
-
-   IndexType nClosureJoints = m_Girder.GetClosureJointCount();
-   for ( IndexType idx = 0; idx < nClosureJoints; idx++ )
+   else
    {
-      const CPrecastSegmentData* pSegment = m_Girder.GetSegment(idx);
-      SegmentIDType segID = pSegment->GetID();
-      EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(segID);
-      m_CastClosureEvent.push_back(eventIdx);
+      pGrid->FillGrid();
    }
 }
 
-CEditGirderlineDlg::~CEditGirderlineDlg()
+IMPLEMENT_DYNAMIC(CSplicedGirderGeneralPage, CPropertyPage)
+
+CSplicedGirderGeneralPage::CSplicedGirderGeneralPage()
+	: CPropertyPage(CSplicedGirderGeneralPage::IDD)
 {
 }
 
-void CEditGirderlineDlg::DoDataExchange(CDataExchange* pDX)
+CSplicedGirderGeneralPage::~CSplicedGirderGeneralPage()
 {
-	CDialog::DoDataExchange(pDX);
+}
+
+void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
+{
+	CPropertyPage::DoDataExchange(pDX);
+
+   DDX_Control(pDX, IDC_HYPERLINK, m_ctrlSlabOffsetHyperLink);
+
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   std::_tstring strGirderName = m_Girder.GetGirderName();
+   std::_tstring strGirderName = pParent->m_pGirder->GetGirderName();
    DDX_CBStringExactCase(pDX,IDC_GIRDER_NAME,strGirderName);
    if ( pDX->m_bSaveAndValidate )
-      m_Girder.SetGirderName(strGirderName.c_str());
+   {
+      pParent->m_pGirder->SetGirderName(strGirderName.c_str());
+   }
 
-   DDX_Strand(pDX,IDC_STRAND,&m_Girder.GetPostTensioning()->pStrand);
+   DDX_Strand(pDX,IDC_STRAND,&pParent->m_pGirder->GetPostTensioning()->pStrand);
 
    DDV_GXGridWnd(pDX,&m_DuctGrid);
-   DDX_PTData(pDX,IDC_DUCT_GRID,m_Girder.GetPostTensioning());
+   DDX_PTData(pDX,IDC_DUCT_GRID,pParent->m_pGirder->GetPostTensioning());
+
+   DDX_SlabOffsetGrid(pDX,IDC_SLABOFFSET_GRID);
 
    // Validate the timeline
    if ( pDX->m_bSaveAndValidate )
    {
-      CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
+      CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
 
-      DuctIndexType nDucts = m_Girder.GetPostTensioning()->GetDuctCount();
+      DuctIndexType nDucts = pParent->m_pGirder->GetPostTensioning()->GetDuctCount();
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
-         pTimelineMgr->SetStressTendonEventByIndex(m_GirderKey,ductIdx,m_TendonStressingEvent[ductIdx]);
+         pTimelineMgr->SetStressTendonEventByIndex(pParent->m_GirderKey,ductIdx,m_TendonStressingEvent[ductIdx]);
       }
 
-      SegmentIndexType nCP = m_Girder.GetClosureJointCount();
+      SegmentIndexType nCP = pParent->m_pGirder->GetClosureJointCount();
       for ( SegmentIndexType cpIdx = 0; cpIdx < nCP; cpIdx++ )
       {
-         const CClosureJointData* pCP = m_Girder.GetClosureJoint(cpIdx);
+         const CClosureJointData* pCP = pParent->m_pGirder->GetClosureJoint(cpIdx);
          IDType cpID = pCP->GetID();
          pTimelineMgr->SetCastClosureJointEventByIndex(cpID,m_CastClosureEvent[cpIdx]);
       }
@@ -162,39 +179,40 @@ void CEditGirderlineDlg::DoDataExchange(CDataExchange* pDX)
       DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
       DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
 
-      m_Girder.SetConditionFactor(conditionFactor);
-      m_Girder.SetConditionFactorType(conditionFactorType);
+      pParent->m_pGirder->SetConditionFactor(conditionFactor);
+      pParent->m_pGirder->SetConditionFactorType(conditionFactorType);
    }
    else
    {
       // data going into of dialog
-      conditionFactor     = m_Girder.GetConditionFactor();
-      conditionFactorType = m_Girder.GetConditionFactorType();
+      conditionFactor     = pParent->m_pGirder->GetConditionFactor();
+      conditionFactorType = pParent->m_pGirder->GetConditionFactorType();
 
       DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
       DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
    }
-
-   DDX_Check_Bool(pDX,IDC_CHECKBOX,m_bCopyToAll);
 }
 
 
-BEGIN_MESSAGE_MAP(CEditGirderlineDlg, CDialog)
-   ON_BN_CLICKED(IDC_ADD, &CEditGirderlineDlg::OnAddDuct)
-   ON_BN_CLICKED(IDC_DELETE, &CEditGirderlineDlg::OnDeleteDuct)
-   ON_CBN_SELCHANGE(IDC_GRADE, &CEditGirderlineDlg::OnStrandChanged)
-   ON_CBN_SELCHANGE(IDC_TYPE, &CEditGirderlineDlg::OnStrandChanged)
-   ON_CBN_SELCHANGE(IDC_STRAND_SIZE, &CEditGirderlineDlg::OnStrandSizeChanged)
-   ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CEditGirderlineDlg::OnConditionFactorTypeChanged)
-   ON_BN_CLICKED(IDHELP, &CEditGirderlineDlg::OnHelp)
+BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
+   ON_BN_CLICKED(IDC_ADD, &CSplicedGirderGeneralPage::OnAddDuct)
+   ON_BN_CLICKED(IDC_DELETE, &CSplicedGirderGeneralPage::OnDeleteDuct)
+   ON_CBN_SELCHANGE(IDC_GRADE, &CSplicedGirderGeneralPage::OnStrandChanged)
+   ON_CBN_SELCHANGE(IDC_TYPE, &CSplicedGirderGeneralPage::OnStrandChanged)
+   ON_CBN_SELCHANGE(IDC_STRAND_SIZE, &CSplicedGirderGeneralPage::OnStrandSizeChanged)
+   ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CSplicedGirderGeneralPage::OnConditionFactorTypeChanged)
+   ON_BN_CLICKED(IDHELP, &CSplicedGirderGeneralPage::OnHelp)
+   ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
 END_MESSAGE_MAP()
 
 
-// CEditGirderlineDlg message handlers
+// CSplicedGirderGeneralPage message handlers
 
-BOOL CEditGirderlineDlg::OnInitDialog()
+BOOL CSplicedGirderGeneralPage::OnInitDialog()
 {
-   m_bCopyToAll = false;
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+
+   EnableToolTips(TRUE);
 
    // initialize girder girder
 	m_GirderGrid.SubclassDlgItem(IDC_GIRDER_GRID, this);
@@ -202,11 +220,34 @@ BOOL CEditGirderlineDlg::OnInitDialog()
 
    // initialize duct grid
 	m_DuctGrid.SubclassDlgItem(IDC_DUCT_GRID, this);
-   m_DuctGrid.CustomInit(&m_Girder);
+   m_DuctGrid.CustomInit(pParent->m_pGirder);
+
+   // initialize slab offset grid
+   m_SlabOffsetGrid.SubclassDlgItem(IDC_SLABOFFSET_GRID,this);
+   m_SlabOffsetGrid.CustomInit(pParent->m_pGirder);
 
    // subclass the schematic drawing of the tendons
    m_DrawTendons.SubclassDlgItem(IDC_TENDONS,this);
    m_DrawTendons.CustomInit(this);
+
+   const CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
+
+   DuctIndexType nDucts = pParent->m_pGirder->GetPostTensioning()->GetDuctCount();
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pParent->m_GirderKey,ductIdx);
+      m_TendonStressingEvent.push_back(eventIdx);
+   }
+
+   IndexType nClosureJoints = pParent->m_pGirder->GetClosureJointCount();
+   for ( IndexType idx = 0; idx < nClosureJoints; idx++ )
+   {
+      const CPrecastSegmentData* pSegment = pParent->m_pGirder->GetSegment(idx);
+      SegmentIDType segID = pSegment->GetID();
+      EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(segID);
+      m_CastClosureEvent.push_back(eventIdx);
+   }
+
 
    FillStrandList(IDC_STRAND);
 
@@ -220,19 +261,18 @@ BOOL CEditGirderlineDlg::OnInitDialog()
    pcbConditionFactor->AddString(_T("Other"));
    pcbConditionFactor->SetCurSel(0);
 
-   CDialog::OnInitDialog();
+   CPropertyPage::OnInitDialog();
 
    OnConditionFactorTypeChanged();
 
-   CString strCaption;
-   strCaption.Format(_T("Group %d Girder %s"),LABEL_GROUP(m_GirderKey.groupIndex),LABEL_GIRDER(m_GirderKey.girderIndex));
-   SetWindowText(strCaption);
+   UpdateSlabOffsetHyperLink();
+   UpdateSlabOffsetControls();
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CEditGirderlineDlg::OnConditionFactorTypeChanged()
+void CSplicedGirderGeneralPage::OnConditionFactorTypeChanged()
 {
    CEdit* pEdit = (CEdit*)GetDlgItem(IDC_CONDITION_FACTOR);
    CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
@@ -258,7 +298,7 @@ void CEditGirderlineDlg::OnConditionFactorTypeChanged()
    }
 }
 
-void CEditGirderlineDlg::OnAddDuct()
+void CSplicedGirderGeneralPage::OnAddDuct()
 {
    EventIndexType eventIdx = 0;
    if ( m_TendonStressingEvent.size() != 0 )
@@ -270,7 +310,7 @@ void CEditGirderlineDlg::OnAddDuct()
    m_DrawTendons.UpdateWindow();
 }
 
-void CEditGirderlineDlg::OnDeleteDuct()
+void CSplicedGirderGeneralPage::OnDeleteDuct()
 {
    m_TendonStressingEvent.pop_back();
    m_DuctGrid.DeleteDuct();
@@ -278,7 +318,7 @@ void CEditGirderlineDlg::OnDeleteDuct()
    m_DrawTendons.UpdateWindow();
 }
 
-void CEditGirderlineDlg::FillGirderComboBox()
+void CSplicedGirderGeneralPage::FillGirderComboBox()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -302,7 +342,7 @@ void CEditGirderlineDlg::FillGirderComboBox()
    }
 }
 
-void CEditGirderlineDlg::FillStrandList(UINT nIDC)
+void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
 {
    CComboBox* pList = (CComboBox*)GetDlgItem(nIDC);
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
@@ -370,7 +410,7 @@ void CEditGirderlineDlg::FillStrandList(UINT nIDC)
       pList->SetCurSel( pList->GetCount()-1 );
 }
 
-void CEditGirderlineDlg::FillStrandList(CComboBox* pList,matPsStrand::Grade grade,matPsStrand::Type  type)
+void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,matPsStrand::Grade grade,matPsStrand::Type  type)
 {
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
@@ -408,7 +448,7 @@ void CEditGirderlineDlg::FillStrandList(CComboBox* pList,matPsStrand::Grade grad
    }
 }
 
-const matPsStrand* CEditGirderlineDlg::GetStrand()
+const matPsStrand* CSplicedGirderGeneralPage::GetStrand()
 {
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND );
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
@@ -418,23 +458,33 @@ const matPsStrand* CEditGirderlineDlg::GetStrand()
    return pPool->GetStrand(key);
 }
 
-const CSplicedGirderData* CEditGirderlineDlg::GetGirder()
+const CSplicedGirderData* CSplicedGirderGeneralPage::GetGirder()
 {
-   m_Girder.SetPostTensioning( m_DuctGrid.GetPTData() );
-   return &m_Girder;
+#pragma Reminder("UPDATE: is this really needed?")
+   // this is for that callback interface for the drawing control... seems like
+   // we could just initialize the drawing control with this data and get rid
+   // of the interface
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   //pParent->m_pGirder->SetPostTensioning( m_DuctGrid.GetPTData() );
+   return pParent->m_pGirder;
 }
 
-const CGirderKey& CEditGirderlineDlg::GetGirderKey()
+const CGirderKey& CSplicedGirderGeneralPage::GetGirderKey()
 {
-   return m_GirderKey;
+#pragma Reminder("UPDATE: is this really needed?")
+   // this is for that callback interface for the drawing control... seems like
+   // we could just initialize the drawing control with this data and get rid
+   // of the interface
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   return pParent->m_GirderKey;
 }
 
-void CEditGirderlineDlg::OnStrandSizeChanged()
+void CSplicedGirderGeneralPage::OnStrandSizeChanged()
 {
    m_DuctGrid.OnStrandChanged();
 }
 
-void CEditGirderlineDlg::OnStrandChanged()
+void CSplicedGirderGeneralPage::OnStrandChanged()
 {
    CComboBox* pcbGrade = (CComboBox*)GetDlgItem(IDC_GRADE);
    CComboBox* pcbType  = (CComboBox*)GetDlgItem(IDC_TYPE);
@@ -466,20 +516,81 @@ void CEditGirderlineDlg::OnStrandChanged()
    m_DuctGrid.OnStrandChanged();
 }
 
-void CEditGirderlineDlg::OnDuctChanged()
+void CSplicedGirderGeneralPage::OnDuctChanged()
 {
    m_DrawTendons.Invalidate();
    m_DrawTendons.UpdateWindow();
 }
 
 
-int CEditGirderlineDlg::GetDuctCount()
+int CSplicedGirderGeneralPage::GetDuctCount()
 {
    return m_DuctGrid.GetRowCount();
 }
 
-void CEditGirderlineDlg::OnHelp()
+void CSplicedGirderGeneralPage::OnHelp()
 {
 #pragma Reminder("IMPLEMENT")
    AfxMessageBox(_T("Add Help topic"));
+}
+
+LRESULT CSplicedGirderGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
+
+   if ( pBridge->GetSlabOffsetType() == pgsTypes::sotBridge || pBridge->GetSlabOffsetType() == pgsTypes::sotPier )
+   {
+      pBridge->SetSlabOffsetType(pgsTypes::sotGirder);
+   }
+   else
+   {
+#pragma Reminder("UPDATE: need to deal with multiple offset values")
+      // if switching from girder to bridge mode and the slab offsets are different, ask the user
+      // which one is to be used for the entire bridge
+
+      pBridge->SetSlabOffsetType(pgsTypes::sotBridge);
+   }
+
+   UpdateSlabOffsetHyperLink();
+   UpdateSlabOffsetControls();
+
+   return 0;
+}
+
+void CSplicedGirderGeneralPage::UpdateSlabOffsetHyperLink()
+{
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
+
+   if ( pBridge->GetSlabOffsetType() == pgsTypes::sotGirder )
+   {
+      // slab offset is by girder
+      m_ctrlSlabOffsetHyperLink.SetWindowText(_T("Slab Offsets are defined girder by girder"));
+//      if ( m_SlabOffsetTypeCache == pgsTypes::sotBridge )
+         m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for the entire bridge"));
+//      else
+//         m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for this span"));
+   }
+   else if ( pBridge->GetSlabOffsetType() == pgsTypes::sotBridge )
+   {
+      m_ctrlSlabOffsetHyperLink.SetWindowText(_T("A single Slab Offset is used for the entire bridge"));
+      m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to define Slab Offsets by girder"));
+   }
+   else
+   {
+      m_ctrlSlabOffsetHyperLink.SetWindowText(_T("A unique Slab Offset is used at each Pier"));
+      m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to define Slab Offsets by girder"));
+   }
+}
+
+void CSplicedGirderGeneralPage::UpdateSlabOffsetControls()
+{
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
+
+   BOOL bEnable = ( pBridge->GetSlabOffsetType() == pgsTypes::sotGirder ? TRUE : FALSE );
+   m_SlabOffsetGrid.EnableWindow(bEnable);
 }

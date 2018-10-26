@@ -79,9 +79,9 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
    if ( tableType == PierReactionsTable )
-      strTitle.Format(_T("Total Girderline Reactions at Abutments and Piers due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strTitle.Format(_T("Total Girderline Reactions at Abutments and Piers due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
    else
-      strTitle.Format(_T("Girder Bearing Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strTitle.Format(_T("Girder Bearing Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
 
    rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>( strTitle.GetBuffer(),
                                                                                   true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
@@ -95,10 +95,10 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -125,11 +125,11 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
       (*p_table)(row,col++) << reactionLocation.PierLabel;
 
       // Use reaction decider tool to determine when to report
-      ReactionDecider rctdr(tableType, reactionLocation, pBridge, pIntervals);
+      ReactionDecider reactionDecider(tableType, reactionLocation, girderKey, pBridge, pIntervals);
 
       if ( analysisType == pgsTypes::Envelope )
       {
-         if (rctdr.DoReport(intervalIdx))
+         if (reactionDecider.DoReport(intervalIdx))
          {
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDC,       maxBAT ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDC,       minBAT ) );
@@ -150,7 +150,7 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
       }
       else
       {
-         if (rctdr.DoReport(intervalIdx))
+         if (reactionDecider.DoReport(intervalIdx))
          {
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDC,  maxBAT ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDW,  maxBAT ) );

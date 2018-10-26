@@ -75,7 +75,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                           IntervalIndexType intervalIdx, pgsTypes::AnalysisType analysisType) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -211,10 +211,10 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
      if ( analysisType == pgsTypes::Envelope )
      {
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCummulative, pgsTypes::MaxSimpleContinuousEnvelope ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCummulative, pgsTypes::MinSimpleContinuousEnvelope ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCummulative, pgsTypes::MaxSimpleContinuousEnvelope ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCummulative, pgsTypes::MinSimpleContinuousEnvelope ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCumulative, pgsTypes::MaxSimpleContinuousEnvelope ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCumulative, pgsTypes::MinSimpleContinuousEnvelope ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCumulative, pgsTypes::MaxSimpleContinuousEnvelope ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCumulative, pgsTypes::MinSimpleContinuousEnvelope ) );
 
         if ( bPedLoading )
         {
@@ -258,8 +258,8 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
      else
      {
         pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCummulative, bat ) );
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCummulative, bat ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, reactionLocation, ctCumulative, bat ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDW, intervalIdx, reactionLocation, ctCumulative, bat ) );
 
         if ( bPedLoading )
         {

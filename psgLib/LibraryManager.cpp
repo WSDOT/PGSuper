@@ -23,6 +23,10 @@
 #include "StdAfx.h"
 #include <psgLib\LibraryManager.h>
 
+#include <EAF\EAFDocument.h>
+#include <EAF\EAFUtilities.h>
+#include <psgLib\LibraryEditorDoc.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -34,6 +38,50 @@ CLASS
    psgLibraryManager
 ****************************************************************************/
 
+GirderLibrary::GirderLibrary(LPCTSTR idName, LPCTSTR displayName, bool bIsDepreciated) :
+GirderLibraryBase(idName,displayName,bIsDepreciated)
+{
+}
+
+bool GirderLibrary::NewEntry(LPCTSTR key)
+{
+   // Replacing the implementation of the base class... we want to prompt the user
+   // for if they want to create a regular girder or a spliced girder. Only do this
+   // if the parent document is a CLibraryEditorDoc. If the library is open in an application
+   // the girder families are restricted to only those families supported by the application, 
+   // therefore the default option is what we want to use
+
+   if ( IsReservedName(key) )
+      return false;
+
+   // check if key exists already
+   const GirderLibraryEntry* pentry = LookupEntryPrv(key);
+
+   if (!pentry)
+   {
+      // doesn't exist - add a new one.
+      GirderLibraryEntry::CreateType createType = GirderLibraryEntry::DEFAULT;
+      CEAFDocument* pEAFDoc = EAFGetDocument();
+      if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
+      {
+         CString strResponses(_T("Precast Girder\nSpliced Girder Segment"));
+         int result = AfxChoose(_T("Select Girder Type"),_T("What type of girder library entry would you like to create?"),strResponses,0,TRUE);
+         if ( result == -1 )
+            return false; // user pressed cancel
+
+         createType = (result == 0 ? GirderLibraryEntry::PRECAST : GirderLibraryEntry::SPLICED);
+      }
+      LibItem apentry( new GirderLibraryEntry(createType) );
+      apentry->SetName(key);
+      apentry->SetLibrary(this);
+      m_EntryList.insert(EntryList::value_type(key, apentry));
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////

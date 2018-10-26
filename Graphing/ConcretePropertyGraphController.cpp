@@ -258,31 +258,40 @@ void CConcretePropertyGraphController::FillClosureControl()
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
    const CClosureJointData* pClosure = pSegment->GetRightClosure();
 
-   while ( pClosure )
+   if ( pClosure == NULL )
    {
-      if ( pClosure->GetPier() )
-      {
-         PierIDType pierID = pClosure->GetPier()->GetID();
-         PierIndexType pierIdx = pClosure->GetPier()->GetIndex();
-         CString label(GetLabel(pClosure->GetPier(),pDisplayUnits));
-         pCB->SetItemData(pCB->AddString(label),pierIdx);
-      }
-      else
-      {
-         ATLASSERT(pClosure->GetTemporarySupport());
-         SupportIDType tsID = pClosure->GetTemporarySupport()->GetID();
-         SupportIndexType tsIdx = pClosure->GetTemporarySupport()->GetIndex();
-         CString label( GetLabel(pClosure->GetTemporarySupport(),pDisplayUnits) );
-         pCB->SetItemData(pCB->AddString(label), EncodeTSIndex(tsIdx) );
-      }
-
-      if ( pClosure->GetRightSegment() )
-         pClosure = pClosure->GetRightSegment()->GetRightClosure();
-      else
-         pClosure = NULL;
+      // there aren't any closure joints... disable the combo box and the radio button
+      pCB->EnableWindow(FALSE);
+      GetDlgItem(IDC_CLOSURE_JOINT)->EnableWindow(FALSE);
    }
+   else
+   {
+      while ( pClosure )
+      {
+         if ( pClosure->GetPier() )
+         {
+            PierIDType pierID = pClosure->GetPier()->GetID();
+            PierIndexType pierIdx = pClosure->GetPier()->GetIndex();
+            CString label(GetLabel(pClosure->GetPier(),pDisplayUnits));
+            pCB->SetItemData(pCB->AddString(label),pierIdx);
+         }
+         else
+         {
+            ATLASSERT(pClosure->GetTemporarySupport());
+            SupportIDType tsID = pClosure->GetTemporarySupport()->GetID();
+            SupportIndexType tsIdx = pClosure->GetTemporarySupport()->GetIndex();
+            CString label( GetLabel(pClosure->GetTemporarySupport(),pDisplayUnits) );
+            pCB->SetItemData(pCB->AddString(label), EncodeTSIndex(tsIdx) );
+         }
 
-   pCB->SetCurSel(0);
+         if ( pClosure->GetRightSegment() )
+            pClosure = pClosure->GetRightSegment()->GetRightClosure();
+         else
+            pClosure = NULL;
+      }
+
+      pCB->SetCurSel(0);
+   }
 }
 
 void CConcretePropertyGraphController::OnGroupChanged()
@@ -340,6 +349,11 @@ CClosureKey CConcretePropertyGraphController::GetClosureKey()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CLOSURE);
    int curSel = pCB->GetCurSel();
+   if ( curSel == CB_ERR )
+   {
+      return CClosureKey(GetGroupIndex(),GetGirderIndex(),INVALID_INDEX);
+   }
+
    IndexType idx = (IndexType)pCB->GetItemData(curSel);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

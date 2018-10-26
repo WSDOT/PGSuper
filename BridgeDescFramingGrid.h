@@ -66,7 +66,6 @@ public:
 	DECLARE_MESSAGE_MAP()
 
    // virtual overrides for grid
-   int GetColWidth(ROWCOL nCol);
    BOOL OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey);
    void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);

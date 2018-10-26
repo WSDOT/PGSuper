@@ -184,6 +184,7 @@ public:
    CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx);
    const CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx) const;
 
+
    // =================================================================================
    // Diaphragm
    // =================================================================================

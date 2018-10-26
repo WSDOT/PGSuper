@@ -40,11 +40,19 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
+CTitlePageBuilder(strTitle),
 m_pBroker(pBroker),
-m_Title(strTitle),
 m_bFullVersion(bFullVersion)
 {
 }
+
+CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(const CPGSpliceTitlePageBuilder& other) :
+CTitlePageBuilder(other),
+m_pBroker(other.m_pBroker),
+m_bFullVersion(other.m_bFullVersion)
+{
+}
+
 
 CPGSpliceTitlePageBuilder::~CPGSpliceTitlePageBuilder(void)
 {
@@ -65,7 +73,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
    *pTitlePage << pPara;
 
-   *pPara << m_Title.c_str();
+   *pPara << GetReportTitle();
 
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportSubtitleStyle());
@@ -356,4 +364,9 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
    *p << rptNewPage;
 
    return pTitlePage;
+}
+
+CTitlePageBuilder* CPGSpliceTitlePageBuilder::Clone() const
+{
+   return new CPGSpliceTitlePageBuilder(*this);
 }

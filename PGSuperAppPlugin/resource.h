@@ -171,7 +171,7 @@
 #define IDI_COPY_PROPERTIES             316
 #define IDD_MULTI_GIRDER_SELECT         317
 #define IDR_COPY_PASTE                  318
-#define IDD_GIRDERLINE                  318
+#define IDD_SPLICEDGIRDER               318
 #define IDD_LINEAR_DUCT                 319
 #define IDD_PARABOLIC_DUCT              320
 #define IDD_OFFSET_DUCT                 321
@@ -192,7 +192,7 @@
 #define IDR_ACTIVITIES                  341
 #define IDD_ERECT_PIERS                 342
 #define IDD_REMOVE_TS                   343
-#define IDD_CAST_CLOSOURE_JOINT          345
+#define IDD_CAST_CLOSOURE_JOINT         345
 #define IDD_APPLYLOADS                  346
 #define IDD_CONSTRUCT_SEGMENT           347
 #define IDD_STRESS_TENDON               348
@@ -200,7 +200,7 @@
 #define IDD_INSERT_SPAN                 350
 #define IDR_EDIT_GIRDER                 352
 #define IDD_DIALOG2                     353
-#define IDD_SELECT_CLOSURE_JOINT         353
+#define IDD_SELECT_CLOSURE_JOINT        353
 #define IDD_AASHTO_CONCRETE             354
 #define IDD_ACI_CONCRETE                355
 #define IDD_LOAD_FACTORS                356
@@ -400,7 +400,10 @@
 #define IDC_SS_JACK_FORCE_UNIT          1129
 #define IDC_HS_JACK_FORCE_UNIT          1130
 #define IDC_TRAFFICBARRIER              1131
+#define IDC_TS_JACK_FORCE               1131
 #define IDC_SPEC                        1132
+#define IDC_HS_JACK_FORCE_UNIT2         1132
+#define IDC_TS_JACK_FORCE_UNIT          1132
 #define IDC_NUM_TEMP                    1133
 #define IDC_LEFT_TRAFFICBARRIER         1134
 #define IDC_SPACING                     1135
@@ -568,6 +571,7 @@
 #define IDC_LEFT_PRISMATIC_LENGTH       1259
 #define IDC_RELAXATION_TIME             1259
 #define IDC_ANCHORSET_PT                1259
+#define IDC_ADJUSTMENT                  1259
 #define IDC_CONDITION_FACTOR            1260
 #define IDC_LOCATION                    1260
 #define IDC_SERVICE_III_DC              1260
@@ -592,6 +596,8 @@
 #define IDC_ADIM_START                  1272
 #define IDC_START_SLAB_OFFSET           1273
 #define IDC_TOP_COVER_UNIT              1274
+#define IDC_END_SLAB_OFFSET             1274
+#define IDC_END_SLAB_OFFSET_UNIT        1275
 #define IDC_MAGNITUDE                   1275
 #define IDC_LOCATION2                   1276
 #define IDC_RIGHT_MAGNITUDE             1277
@@ -632,7 +638,6 @@
 #define IDC_ERECTION_LABEL              1313
 #define IDC_END_BLOCK_LENGTH_LABEL      1313
 #define IDC_LEFT_DENSITY_LABEL          1314
-#define IDC_END_SLAB_OFFSET2            1315
 #define IDC_RIGHT_DENSITY_LABEL         1316
 #define IDC_STATIC_TEXT                 1317
 #define IDC_GDR_SECTION                 1318
@@ -1000,6 +1005,7 @@
 #define IDC_PERMIT                      1561
 #define IDC_STRENGTH_II_LL_PERMIT2      1561
 #define IDC_LIVELOAD                    1561
+#define IDC_TS_JACK                     1561
 #define IDC_SHOW_NUMBERS                1562
 #define IDC_NEXT_SPAN_SPACING_GRID      1562
 #define IDC_CHECK2                      1562
@@ -1105,6 +1111,7 @@
 #define IDC_RIGHT_SIDEWALK_WIDTH_LABEL  1611
 #define IDC_GIRDER_GIRDER_STATIC        1611
 #define IDC_POINT_GRID                  1611
+#define IDC_SLABOFFSET_GRID             1611
 #define IDC_PIER_GIRDER_STATIC          1612
 #define IDC_LABEL                       1612
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_LABEL 1613
@@ -1422,22 +1429,27 @@
 #define IDC_START_SLAB_OFFSET_UNIT      1775
 #define IDC_SERVICE_IA_PS_LABEL         1775
 #define IDC_TENDON_LABEL                1775
-#define IDC_END_SLAB_OFFSET             1776
 #define IDC_STRENGTH_I_PLUS_MIN         1776
-#define IDC_END_SLAB_OFFSET_UNIT        1777
 #define IDC_BACK_SLAB_OFFSET_NOTE       1778
+#define IDC_ADJUSTMENT_LABEL            1778
 #define IDC_AHEAD_SLAB_OFFSET_NOTE      1779
+#define IDC_ADJUSTMENT_UNIT             1779
 #define IDC_BACK_SLAB_OFFSET            1780
 #define IDC_BACK_SLAB_OFFSET_UNIT       1781
+#define IDC_DRAW_STRANDS                1781
 #define IDC_AHEAD_SLAB_OFFSET           1782
+#define IDC_SS_LABEL                    1782
 #define IDC_AHEAD_SLAB_OFFSET_UNIT      1783
+#define IDC_HS_LABEL                    1783
 #define IDC_BACK_SLAB_OFFSET_LABEL      1784
+#define IDC_BOUNDARY_CONDITION_LABEL    1784
 #define IDC_AHEAD_SLAB_OFFSET_LABEL     1785
 #define IDC_NUMGDR_LABEL                1786
 #define IDC_START_SLAB_OFFSET_LABEL     1787
 #define IDC_STRENGTH_II_PS_MIN_LABEL    1787
 #define IDC_END_SLAB_OFFSET_LABEL       1788
 #define IDC_NWC_NOTE                    1789
+#define IDC_HYPERLINK                   1790
 #define IDC_STRENGTH_I_SH               1843
 #define IDC_STRENGTH_I_PS               1844
 #define IDC_SERVICE_I_CR                1859
@@ -1592,7 +1604,7 @@
 #define ID_ACTIVITIES_ERECTPIERS        36972
 #define ID_ACTIVITIES_ERECT_PIERS       36973
 #define ID_ACTIVITIES_REMOVE_TS         36974
-#define ID_ACTIVITIES_CASTCLOSUREJOINTS  36975
+#define ID_ACTIVITIES_CASTCLOSUREJOINTS 36975
 #define ID_ACTIVITIES_CASTDECK          36976
 #define ID_ACTIVITIES_APPLYLOADS        36977
 #define ID_ACTIVITIES_CONSTRUCTSEGMENT  36978
@@ -1615,7 +1627,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        363
 #define _APS_NEXT_COMMAND_VALUE         36991
-#define _APS_NEXT_CONTROL_VALUE         1776
+#define _APS_NEXT_CONTROL_VALUE         1785
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

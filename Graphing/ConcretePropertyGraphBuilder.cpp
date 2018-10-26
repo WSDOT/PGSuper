@@ -25,7 +25,7 @@
 #include <Graphing\ConcretePropertyGraphBuilder.h>
 #include "ConcretePropertyGraphController.h"
 
-#include <PGSuperColors.h>
+#include "GraphColor.h"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -135,26 +135,19 @@ CGraphBuilder* CConcretePropertyGraphBuilder::Clone()
    return new CConcretePropertyGraphBuilder(*this);
 }
 
-int CConcretePropertyGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
+int CConcretePropertyGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
 {
+   if ( CEAFAutoCalcGraphBuilder::InitializeGraphController(pParent,nID) < 0 )
+      return -1;
+
    // create the graph definitions before creating the graph controller.
    // our graph controller will call GetLoadCaseNames to populate the 
    // list of load cases
    EAFGetBroker(&m_pBroker);
 
-   // let the base class do its thing
-   CEAFAutoCalcGraphBuilder::CreateControls(pParent,nID);
-
-   // create our controls
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   if ( !m_pGraphController->Create(pParent,IDD_CONCRETE_PROPERTY_GRAPH_CONTROLLER, CBRS_LEFT, nID) )
-   {
-      TRACE0("Failed to create control bar\n");
-      return -1; // failed to create
-   }
-
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
+   m_Graph.SetGridPenStyle(GRAPH_GRID_PEN_STYLE, GRAPH_GRID_PEN_WEIGHT, GRAPH_GRID_COLOR);
 
    m_Graph.SetTitle(_T("Concrete Properties"));
 
@@ -187,9 +180,22 @@ int CConcretePropertyGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
    // Show the grid by default... set the control to checked
    m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
    m_Graph.SetDoDrawGrid(); // show grid by default
-   m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
+
 
    return 0;
+}
+
+BOOL CConcretePropertyGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
+{
+   // create our controls
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   if ( !m_pGraphController->Create(pParent,IDD_CONCRETE_PROPERTY_GRAPH_CONTROLLER, CBRS_LEFT, nID) )
+   {
+      TRACE0("Failed to create control bar\n");
+      return FALSE; // failed to create
+   }
+
+   return TRUE;
 }
 
 void CConcretePropertyGraphBuilder::OnShowGrid()
@@ -347,16 +353,16 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
          startIntervalIdx = pIntervals->GetCompositeClosureJointInterval(m_ClosureKey);
       else
-         startIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         startIntervalIdx = pIntervals->GetCompositeDeckInterval(m_SegmentKey);
    }
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(m_SegmentKey);
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
       Float64 xMiddle;
       if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
       {
-         xMiddle = pIntervals->GetMiddle(intervalIdx);
+         xMiddle = pIntervals->GetMiddle(m_SegmentKey,intervalIdx);
       }
       else if ( m_XAxisType == X_AXIS_AGE_LINEAR || m_XAxisType == X_AXIS_AGE_LOG )
       {
@@ -365,7 +371,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
          else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
             xMiddle = pMaterials->GetClosureJointConcreteAge(m_ClosureKey,intervalIdx);
          else
-            xMiddle = pMaterials->GetDeckConcreteAge(intervalIdx);
+            xMiddle = pMaterials->GetDeckConcreteAge(m_ClosureKey,intervalIdx);
       }
       else
       {
@@ -400,11 +406,11 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       {
          if ( m_GraphType == GRAPH_TYPE_FC )
          {
-            value = pMaterials->GetDeckFc(intervalIdx);
+            value = pMaterials->GetDeckFc(m_ClosureKey,intervalIdx);
          }
          else
          {
-            value = pMaterials->GetDeckEc(intervalIdx);
+            value = pMaterials->GetDeckEc(m_ClosureKey,intervalIdx);
          }
       }
       AddGraphPoint(dataSeries,xMiddle,value);

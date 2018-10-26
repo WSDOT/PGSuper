@@ -22,37 +22,22 @@
 
 #pragma once
 
-#include <System\Transaction.h>
-#include <IFace\Project.h>
-#include <PgsExt\SplicedGirderData.h>
+#include <PGSuperAppPlugin\EditBridge.h>
 
-struct txnEditGirderlineData
-{
-   bool operator<(const txnEditGirderlineData& rOther) const { return m_GirderKey < rOther.m_GirderKey; }
-   CGirderKey m_GirderKey;
-   CSplicedGirderData m_Girder;
-   std::vector<EventIndexType> m_StressingEvent;
-   std::vector<EventIndexType> m_ClosureEvent;
-};
-
-class txnEditGirderline : public txnTransaction
+class txnEditGirderline : public txnEditBridgeDescription
 {
 public:
-   txnEditGirderline(const CGirderKey& girderKey,const txnEditGirderlineData& newData);
+   txnEditGirderline(const CGirderKey& girderKey,bool bApplyToAllGirderlines,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
 
-   ~txnEditGirderline();
+   virtual ~txnEditGirderline();
 
    virtual bool Execute();
-   virtual void Undo();
+
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
 
 private:
-   void SetGirderData(const CGirderKey& girderKey,const txnEditGirderlineData& gdrData);
-
    CGirderKey m_GirderKey;
-   txnEditGirderlineData m_NewData;
-   std::set<txnEditGirderlineData> m_OldData;
+   bool m_bApplyToAllGirderlines;
+   bool m_bGirderlineCopied;
 };

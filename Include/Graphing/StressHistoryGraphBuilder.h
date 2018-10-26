@@ -43,7 +43,8 @@ public:
    CStressHistoryGraphBuilder(const CStressHistoryGraphBuilder& other);
    virtual ~CStressHistoryGraphBuilder();
 
-   virtual int CreateControls(CWnd* pParent,UINT nID);
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
    virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC);
    virtual CGraphBuilder* Clone();
 
@@ -54,6 +55,7 @@ protected:
 
    afx_msg void OnShowGrid();
    afx_msg void OnTopDeck();
+   afx_msg void OnBottomDeck();
    afx_msg void OnTopGirder();
    afx_msg void OnBottomGirder();
 
@@ -68,6 +70,7 @@ protected:
    grGraphXY m_Graph;
 
    bool m_bTopDeck;
+   bool m_bBottomDeck;
    bool m_bTopGirder;
    bool m_bBottomGirder;
 
@@ -76,6 +79,7 @@ protected:
    virtual bool UpdateNow();
 
    void UpdateXAxis();
+   void UpdateYAxis();
    void UpdateGraphTitle(const pgsPointOfInterest& poi);
    void UpdateGraphData(const pgsPointOfInterest& poi);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);

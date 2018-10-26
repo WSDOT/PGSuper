@@ -48,10 +48,11 @@ private:
 class pgsLiftingSupportLocationStatusItem : public CEAFStatusItem
 {
 public:
-   pgsLiftingSupportLocationStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   pgsLiftingSupportLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    CSegmentKey m_SegmentKey;
+   pgsTypes::MemberEndType m_End;
 };
 
 ///////////////////////////
@@ -91,10 +92,11 @@ private:
 class pgsBunkPointLocationStatusItem : public CEAFStatusItem
 {
 public:
-   pgsBunkPointLocationStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   pgsBunkPointLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    CSegmentKey m_SegmentKey;
+   pgsTypes::MemberEndType m_End;
 };
 
 ///////////////////////////

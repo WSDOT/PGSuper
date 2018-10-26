@@ -43,6 +43,7 @@ public:
       TendonProfile,
       EffectiveFlangeWidth,
       Fc,
+      Ec,
       PropertyTypeCount // this must always be last
    };
 
@@ -50,14 +51,16 @@ public:
    CGirderPropertiesGraphBuilder(const CGirderPropertiesGraphBuilder& other);
    virtual ~CGirderPropertiesGraphBuilder();
 
-   virtual int CreateControls(CWnd* pParent,UINT nID);
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
    virtual CGraphBuilder* Clone();
+
+   virtual void UpdateXAxis();
 
    LPCTSTR GetPropertyLabel(PropertyType propertyType);
 
 protected:
    virtual CGirderGraphControllerBase* CreateGraphController();
-   virtual BOOL InitGraphController(CWnd* pParent,UINT nID);
    virtual bool UpdateNow();
 
    DECLARE_MESSAGE_MAP()
@@ -67,6 +70,8 @@ protected:
    void UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,PropertyType propertyType);
    void UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,PropertyType propertType,pgsTypes::SectionPropertyType sectPropType);
 
-   void InitializeGraph(PropertyType propertyType,IndexType* pGraph1,IndexType* pGraph2);
+   void InitializeGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,IndexType* pGraph1,IndexType* pGraph2);
    void UpdateTendonGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
+
+   virtual IntervalIndexType GetBeamDrawInterval();
 };

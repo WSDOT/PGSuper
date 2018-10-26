@@ -123,7 +123,7 @@ public:
    // Set/get the slab offset. Has no net effect if slab offset type is not sotBridge
    // Get method returns invalid data if slab offset type is not sotBridge
    void SetSlabOffset(Float64 slabOffset);
-   Float64 GetSlabOffset() const;
+   Float64 GetSlabOffset(bool bGetRawValue = false) const;
 
    // returns the greatest slab offset defined for the bridge
    Float64 GetMaxSlabOffset() const;
@@ -352,8 +352,14 @@ public:
    IndexType GetClosureJointCount() const;
 
    // Returns the closure joint data
-   CClosureJointData* GetClosureJoint(const CSegmentKey& closureKey);
-   const CClosureJointData* GetClosureJoint(const CSegmentKey& closureKey) const;
+   CClosureJointData* GetClosureJoint(const CClosureKey& closureKey);
+   const CClosureJointData* GetClosureJoint(const CClosureKey& closureKey) const;
+
+   const CPrecastSegmentData* GetSegment(const CSegmentKey& segmentKey) const;
+   CPrecastSegmentData* GetSegment(const CSegmentKey& segmentKey);
+
+   bool IsStable() const;
+   bool IsSegmentOverconstrained(const CSegmentKey& segmentKey) const;
 
 protected:
    void MakeCopy(const CBridgeDescription2& rOther);

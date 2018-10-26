@@ -52,10 +52,10 @@ public:
    // Closure objects are associated with either a pier or a temporary support.
    // Use GetPier and GetTemporarySupport to return the associated object.
 
-   CClosureJointData();
-   CClosureJointData(CSplicedGirderData* pGirder,const CTemporarySupportData* pTempSupport);
-   CClosureJointData(CSplicedGirderData* pGirder,const CPierData2* pPier);
-   CClosureJointData(const CClosureJointData& rOther);
+   CClosureJointData(CSplicedGirderData* pGirder=NULL);
+   CClosureJointData(CSplicedGirderData* pGirder,CTemporarySupportData* pTempSupport);
+   CClosureJointData(CSplicedGirderData* pGirder,CPierData2* pPier);
+   CClosureJointData(CSplicedGirderData* pGirder,const CClosureJointData& rOther);
    ~CClosureJointData();
 
    CClosureJointData& operator = (const CClosureJointData& rOther);
@@ -73,13 +73,15 @@ public:
    CSplicedGirderData* GetGirder();
    const CSplicedGirderData* GetGirder() const;
 
-   void SetTemporarySupport(const CTemporarySupportData* pTS);
+   void SetTemporarySupport(CTemporarySupportData* pTS);
    const CTemporarySupportData* GetTemporarySupport() const;
+   CTemporarySupportData* GetTemporarySupport();
    SupportIndexType GetTemporarySupportIndex() const;
    SupportIDType GetTemporarySupportID() const;
 
-   void SetPier(const CPierData2* pPier);
+   void SetPier(CPierData2* pPier);
    const CPierData2* GetPier() const;
+   CPierData2* GetPier();
    PierIndexType GetPierIndex() const;
    PierIDType GetPierID() const;
 
@@ -90,11 +92,6 @@ public:
    void SetRightSegment(CPrecastSegmentData* pRightSegment);
    const CPrecastSegmentData* GetRightSegment() const;
    CPrecastSegmentData* GetRightSegment();
-
-   // Set/Get the slab offset at this closure joint
-   // Valid for slab offset type of pgsTypes::sotSegment
-   void SetSlabOffset(Float64 offset);
-   Float64 GetSlabOffset() const;
 
    void SetConcrete(const CConcreteMaterial& concrete);
    const CConcreteMaterial& GetConcrete() const;
@@ -124,14 +121,9 @@ protected:
    virtual void MakeAssignment(const CClosureJointData& rOther);
    void ResolveReferences();
 
-   void SetIndex(CollectionIndexType idx) { m_Index = idx; }
-   CollectionIndexType m_Index; // index of this closure joint
-
-   Float64 m_SlabOffset;
-
    CSplicedGirderData* m_pGirder; // weak reference to girder this closure is a part of
-   const CTemporarySupportData* m_pTempSupport;
-   const CPierData2* m_pPier;
+   CTemporarySupportData* m_pTempSupport;
+   CPierData2* m_pPier;
    CPrecastSegmentData* m_pLeftSegment;   // weak reference... owned by CSplicedGirderData
    CPrecastSegmentData* m_pRightSegment;  // weak reference... owned by CSplicedGirderData
 

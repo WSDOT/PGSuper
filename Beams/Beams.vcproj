@@ -1050,6 +1050,26 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\ico00001.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\ico00002.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\ico00003.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\ico00004.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\icon1.ico"
+				>
+			</File>
+			<File
 				RelativePath="Res\MultiWeb.emf"
 				>
 			</File>
@@ -1082,11 +1102,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\SplicedIBeam.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\SplicedIBeam.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\SplicedIBeamFactory.rgs"
 				>
 			</File>
 			<File
 				RelativePath=".\SplicedIBeamFamily.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\SplicedUBeam.ico"
 				>
 			</File>
 			<File

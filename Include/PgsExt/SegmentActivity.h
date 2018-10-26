@@ -79,7 +79,7 @@ protected:
 // prestress transfer, lifting from the casting bed, and
 // placing into a storage configuration.
 // It will be assumed that all segments are constucted at the same time
-class PGSEXTCLASS CConstructSegmentActivity
+class PGSEXTCLASS CConstructSegmentActivity : public CSegmentActivityBase
 {
 public:
    CConstructSegmentActivity();
@@ -88,9 +88,6 @@ public:
    CConstructSegmentActivity& operator= (const CConstructSegmentActivity& rOther);
    bool operator==(const CConstructSegmentActivity& rOther) const;
    bool operator!=(const CConstructSegmentActivity& rOther) const;
-
-   void Enable(bool bEnable=true);
-   bool IsEnabled() const;
 
    // Duration of time from strand stressing to release.
    // Used to determine the amount if initial relaxation.
@@ -102,15 +99,14 @@ public:
    void SetAgeAtRelease(Float64 age);
    Float64 GetAgeAtRelease() const;
 
-	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
-
 protected:
    virtual LPCTSTR GetUnitName() { return _T("ConstructSegments"); }
    void MakeCopy(const CConstructSegmentActivity& rOther);
    virtual void MakeAssignment(const CConstructSegmentActivity& rOther);
 
-   bool m_bEnabled;
+   virtual HRESULT LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress);
+   virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress);
+
    Float64 m_RelaxationTime;
    Float64 m_AgeAtRelease;
 };

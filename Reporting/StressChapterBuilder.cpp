@@ -84,8 +84,8 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    rptParagraph* p = 0;
 
@@ -255,7 +255,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       CString strName;
-      strName.Format(_T("Combined Stresses - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strName.Format(_T("Combined Stresses - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
       p->SetName(strName);
       *p << p->GetName();
 

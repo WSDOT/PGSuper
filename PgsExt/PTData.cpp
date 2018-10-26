@@ -44,8 +44,11 @@ static char THIS_FILE[] = __FILE__;
 
 Float64 gs_DefaultOffset2 = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
 
-const CDuctSize CDuctSize::DuctSizes[] = {CDuctSize(_T("4\""),    ::ConvertToSysUnits(4.0,unitMeasure::Inch),31,22,::ConvertToSysUnits(0.55,unitMeasure::Inch),::ConvertToSysUnits(0.70,unitMeasure::Inch)),
-                                            CDuctSize(_T("4 1/2\""),::ConvertToSysUnits(4.5,unitMeasure::Inch),37,27,::ConvertToSysUnits(1.00,unitMeasure::Inch),::ConvertToSysUnits(1.00,unitMeasure::Inch))};
+const CDuctSize CDuctSize::DuctSizes[] = {
+   CDuctSize(_T("3.15\""), ::ConvertToSysUnits(3.15,unitMeasure::Inch),31,22,::ConvertToSysUnits(0.55,unitMeasure::Inch),::ConvertToSysUnits(0.70,unitMeasure::Inch)),
+   CDuctSize(_T("4\""),    ::ConvertToSysUnits(4.00,unitMeasure::Inch),31,22,::ConvertToSysUnits(0.55,unitMeasure::Inch),::ConvertToSysUnits(0.70,unitMeasure::Inch)),
+   CDuctSize(_T("4 1/2\""),::ConvertToSysUnits(4.50,unitMeasure::Inch),37,27,::ConvertToSysUnits(1.00,unitMeasure::Inch),::ConvertToSysUnits(1.00,unitMeasure::Inch))
+};
 const Uint32 CDuctSize::nDuctSizes = sizeof(CDuctSize::DuctSizes)/sizeof(CDuctSize::DuctSizes[0]);
 
 StrandIndexType CDuctSize::GetMaxStrands(matPsStrand::Size size) const
@@ -329,7 +332,15 @@ void CParabolicDuctGeometry::Init()
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
       Point p;
-      p.Distance = (spanIdx == startSpanIdx ? -0.6 : spanIdx == endSpanIdx ? -0.4 : -0.5);
+      if ( startSpanIdx == endSpanIdx )
+      {
+         p.Distance = -0.5;
+      }
+      else
+      {
+         p.Distance = (spanIdx == startSpanIdx ? -0.6 : spanIdx == endSpanIdx ? -0.4 : -0.5);
+      }
+
       p.Offset = gs_DefaultOffset2;
       p.OffsetType = CDuctGeometry::BottomGirder;
       LowPoints.push_back(p);
@@ -758,7 +769,7 @@ CDuctData::CDuctData()
    Pj = 0.0;
    LastUserPj = 0.0;
 
-   DuctGeometryType = CDuctGeometry::Linear;
+   DuctGeometryType = CDuctGeometry::Parabolic;
    JackingEnd = pgsTypes::jeLeft;
 }
 
@@ -772,7 +783,7 @@ CDuctData::CDuctData(const CSplicedGirderData* pGirder)
    Pj = 0.0;
    LastUserPj = 0.0;
 
-   DuctGeometryType = CDuctGeometry::Linear;
+   DuctGeometryType = CDuctGeometry::Parabolic;
    JackingEnd = pgsTypes::jeLeft;
 
    Init(pGirder);
@@ -783,6 +794,12 @@ void CDuctData::SetGirder(const CSplicedGirderData* pGirder)
    LinearDuctGeometry.SetGirder(pGirder);
    ParabolicDuctGeometry.SetGirder(pGirder);
    OffsetDuctGeometry.SetGirder(pGirder);
+}
+
+const CSplicedGirderData* CDuctData::GetGirder() const
+{
+   // all geometry types have the same girder so it doesn't matter which one we use here
+   return LinearDuctGeometry.GetGirder();
 }
 
 void CDuctData::Init(const CSplicedGirderData* pGirder)
@@ -1032,11 +1049,13 @@ const CSplicedGirderData* CPTData::GetGirder() const
    return m_pGirder;
 }
 
-void CPTData::AddDuct(CDuctData& duct)
+void CPTData::AddDuct(CDuctData& duct,EventIndexType stressTendonEventIdx)
 {
    duct.m_pPTData = this;
    duct.Init(m_pGirder);
    m_Ducts.push_back(duct);
+
+   AddToTimeline(m_Ducts.size()-1,stressTendonEventIdx);
 }
 
 DuctIndexType CPTData::GetDuctCount() const
@@ -1091,6 +1110,8 @@ void CPTData::RemoveDuct(DuctIndexType idx)
             ductData.OffsetDuctGeometry.RefDuctIdx--;
       }
    }
+
+   RemoveFromTimeline(idx);
    m_Ducts.erase( m_Ducts.begin() + idx );
 }
 
@@ -1221,13 +1242,16 @@ void CPTData::MakeCopy(const CPTData& rOther)
    bPjTempCalc    = rOther.bPjTempCalc;
    LastUserPjTemp = rOther.LastUserPjTemp;
 
-   m_Ducts      = rOther.m_Ducts;
-   std::vector<CDuctData>::iterator iter(m_Ducts.begin());
-   std::vector<CDuctData>::iterator iterEnd(m_Ducts.end());
-   for ( ; iter != iterEnd; iter++ )
+   m_Ducts        = rOther.m_Ducts;
+   std::vector<CDuctData>::iterator ductIter(m_Ducts.begin());
+   std::vector<CDuctData>::iterator ductIterEnd(m_Ducts.end());
+   std::vector<CDuctData>::const_iterator otherDuctIter(rOther.m_Ducts.begin());
+   DuctIndexType ductIdx = 0;
+   for ( ; ductIter != ductIterEnd; ductIter++, otherDuctIter++, ductIdx++ )
    {
-      CDuctData& duct = *iter;
+      CDuctData& duct = *ductIter;
       duct.SetGirder(m_pGirder);
+      UpdateTimeline(*otherDuctIter,ductIdx);
    }
 
    pStrand = rOther.pStrand;
@@ -1269,5 +1293,40 @@ void CPTData::RemoveFromTimeline()
          CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
          pTimelineEvent->GetStressTendonActivity().RemoveTendon(girderKey,ductIdx);
       }
+   }
+}
+
+void CPTData::RemoveFromTimeline(DuctIndexType ductIdx)
+{
+   CTimelineManager* pTimelineMgr = GetTimelineManager();
+   if ( m_pGirder && pTimelineMgr )
+   {
+      CGirderKey girderKey(m_pGirder->GetGirderKey());
+      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(girderKey,ductIdx);
+      CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+      pTimelineEvent->GetStressTendonActivity().RemoveTendon(girderKey,ductIdx);
+   }
+}
+
+void CPTData::AddToTimeline(DuctIndexType ductIdx,EventIndexType stressTendonEventIdx)
+{
+   CTimelineManager* pTimelineMgr = GetTimelineManager();
+   if ( m_pGirder && pTimelineMgr )
+   {
+      CGirderKey girderKey(m_pGirder->GetGirderKey());
+      CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(stressTendonEventIdx);
+      pTimelineEvent->GetStressTendonActivity().AddTendon(girderKey,ductIdx);
+   }
+}
+
+void CPTData::UpdateTimeline(const CDuctData& otherDuct,DuctIndexType ductIdx)
+{
+   CTimelineManager* pTimelineMgr = GetTimelineManager();
+   if ( pTimelineMgr )
+   {
+      const CSplicedGirderData* pOtherGirder = otherDuct.GetGirder();
+      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pOtherGirder->GetGirderKey(),ductIdx);
+      CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+      pTimelineEvent->GetStressTendonActivity().AddTendon(m_pGirder->GetGirderKey(),ductIdx);
    }
 }

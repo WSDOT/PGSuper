@@ -33,10 +33,10 @@
 ///////////// Functions for Strand Design...  ////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-// convert config fill to compacted DirectStrandFillCollection
-DirectStrandFillCollection PGSEXTFUNC ConvertConfigToDirectStrandFill(const ConfigStrandFillVector& rconfigfil);
-ConfigStrandFillVector PGSEXTFUNC ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, LPCTSTR strGirderName, const DirectStrandFillCollection& coll);
-ConfigStrandFillVector PGSEXTFUNC ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, const CSegmentKey& segmentKey, const DirectStrandFillCollection& coll);
+// convert config fill to compacted CDirectStrandFillCollection
+CDirectStrandFillCollection PGSEXTFUNC ConvertConfigToDirectStrandFill(const ConfigStrandFillVector& rconfigfil);
+ConfigStrandFillVector PGSEXTFUNC ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, LPCTSTR strGirderName, const CDirectStrandFillCollection& coll);
+ConfigStrandFillVector PGSEXTFUNC ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, const CSegmentKey& segmentKey, const CDirectStrandFillCollection& coll);
 
 // mean/lean compute class for computing strand ordering information
 class PGSEXTCLASS ConfigStrandFillTool

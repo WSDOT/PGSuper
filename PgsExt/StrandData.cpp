@@ -36,18 +36,27 @@ CLASS
 ****************************************************************************/
 HRESULT CDirectStrandFillInfo::Load(IStructuredLoad* pStrLoad)
 {
-   pStrLoad->BeginUnit(_T("DirectStrandFillInfo"));
+   CHRException hr;
 
-   CComVariant var;
+   try
+   {
+      hr = pStrLoad->BeginUnit(_T("DirectStrandFillInfo"));
 
-   var.vt = VT_INDEX;
-   pStrLoad->get_Property(_T("permStrandGridIdx"),    &var);
-   permStrandGridIdx = VARIANT2INDEX(var);
+      CComVariant var;
 
-   pStrLoad->get_Property(_T("numFilled"),    &var);
-   numFilled = VARIANT2INDEX(var);
+      var.vt = VT_INDEX;
+      hr = pStrLoad->get_Property(_T("permStrandGridIdx"),    &var);
+      permStrandGridIdx = VARIANT2INDEX(var);
 
-   pStrLoad->EndUnit();
+      hr = pStrLoad->get_Property(_T("numFilled"),    &var);
+      numFilled = VARIANT2INDEX(var);
+
+      hr = pStrLoad->EndUnit();
+   }
+   catch(...)
+   {
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
+   }
 
    return S_OK;
 }
@@ -78,7 +87,7 @@ bool CDirectStrandFillInfo::operator!=(const CDirectStrandFillInfo& rOther) cons
    return !CDirectStrandFillInfo::operator==(rOther);
 }
 
-StrandIndexType DirectStrandFillCollection::GetFilledStrandCount() const
+StrandIndexType CDirectStrandFillCollection::GetFilledStrandCount() const
 {
    StrandIndexType cnt(0);
 
@@ -93,12 +102,12 @@ StrandIndexType DirectStrandFillCollection::GetFilledStrandCount() const
    return cnt;
 }
 
-bool DirectStrandFillCollection::IsStrandFilled(GridIndexType indexGrid) const
+bool CDirectStrandFillCollection::IsStrandFilled(GridIndexType indexGrid) const
 {
    return GetFillCountAtIndex(indexGrid) > 0;
 }
 
-StrandIndexType DirectStrandFillCollection::GetFillCountAtIndex(GridIndexType indexGrid) const
+StrandIndexType CDirectStrandFillCollection::GetFillCountAtIndex(GridIndexType indexGrid) const
 {
    const_iterator it    = begin();
    const_iterator itend = end();
@@ -115,7 +124,7 @@ StrandIndexType DirectStrandFillCollection::GetFillCountAtIndex(GridIndexType in
    return 0;
 }
 
-void DirectStrandFillCollection::RemoveFill(StrandIndexType index) 
+void CDirectStrandFillCollection::RemoveFill(StrandIndexType index) 
 {
    std::vector<CDirectStrandFillInfo>::iterator it = m_StrandFill.begin();
    std::vector<CDirectStrandFillInfo>::iterator itend = m_StrandFill.end();
@@ -132,15 +141,15 @@ void DirectStrandFillCollection::RemoveFill(StrandIndexType index)
    ATLASSERT(0); // not found?
 }
 
-void DirectStrandFillCollection::AddFill(const CDirectStrandFillInfo& fillInf)
+void CDirectStrandFillCollection::AddFill(const CDirectStrandFillInfo& fillInf)
 {
    ATLASSERT(fillInf.numFilled>0); // compressed container should not contain unfilled strands
 
    StrandIndexType localIdx = fillInf.permStrandGridIdx;
 
    // Fill in sorted order
-   DirectStrandFillCollection::const_iterator it = m_StrandFill.begin();
-   DirectStrandFillCollection::const_iterator itend = m_StrandFill.end();
+   CDirectStrandFillCollection::const_iterator it = m_StrandFill.begin();
+   CDirectStrandFillCollection::const_iterator itend = m_StrandFill.end();
    while(it!=itend)
    {
       ATLASSERT(it->permStrandGridIdx!=localIdx); // should never have duplicates
@@ -155,17 +164,191 @@ void DirectStrandFillCollection::AddFill(const CDirectStrandFillInfo& fillInf)
    m_StrandFill.push_back(fillInf);
 }
 
-const CDirectStrandFillInfo& DirectStrandFillCollection::GetFill(CollectionIndexType fillNo) const
+const CDirectStrandFillInfo& CDirectStrandFillCollection::GetFill(CollectionIndexType fillNo) const
 {
    ATLASSERT(fillNo < m_StrandFill.size());
    return m_StrandFill[fillNo];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
+CStrandRow::CStrandRow()
+{
+   m_InnerSpacing = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   m_Spacing = m_InnerSpacing;
+   m_nStrands = 0;
+
+   m_Y[pgsTypes::metStart]    = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   m_Face[pgsTypes::metStart] = pgsTypes::BottomFace;
+
+   m_Y[pgsTypes::metEnd]    = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   m_Face[pgsTypes::metEnd] = pgsTypes::BottomFace;
+
+   m_bIsTemporaryStrand = false;
+   m_bIsExtendedStrand[pgsTypes::metStart] = false;
+   m_bIsExtendedStrand[pgsTypes::metEnd] = false;
+
+   m_bIsDebonded[pgsTypes::metStart] = false;
+   m_bIsDebonded[pgsTypes::metEnd] = false;
+   m_DebondLength[pgsTypes::metStart] = 0;
+   m_DebondLength[pgsTypes::metEnd] = 0;
+}
+
+bool CStrandRow::operator==(const CStrandRow& other) const
+{
+   if ( !IsEqual(m_InnerSpacing,other.m_InnerSpacing) )
+      return false;
+
+   if ( !IsEqual(m_Spacing,other.m_Spacing) )
+      return false;
+
+   if ( m_nStrands != other.m_nStrands )
+      return false;
+
+   if ( !IsEqual(m_Y[pgsTypes::metStart],other.m_Y[pgsTypes::metStart]) )
+      return false;
+
+   if ( m_Face[pgsTypes::metStart] != other.m_Face[pgsTypes::metStart] )
+      return false;
+
+   if ( !IsEqual(m_Y[pgsTypes::metEnd],other.m_Y[pgsTypes::metEnd]) )
+      return false;
+
+   if ( m_Face[pgsTypes::metEnd] != other.m_Face[pgsTypes::metEnd] )
+      return false;
+
+   if ( m_bIsTemporaryStrand != other.m_bIsTemporaryStrand )
+      return false;
+
+   if ( !m_bIsTemporaryStrand )
+   {
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+
+         if ( m_bIsExtendedStrand[end] != other.m_bIsExtendedStrand[end] )
+            return false;
+
+         if ( m_bIsDebonded[end] )
+         {
+            if ( m_bIsDebonded[end] != other.m_bIsDebonded[end] )
+               return false;
+
+            if ( !IsEqual(m_DebondLength[end],other.m_DebondLength[end]) )
+               return false;
+         }
+      }
+   }
+
+   return true;
+}
+
+bool CStrandRow::operator!=(const CStrandRow& other) const
+{
+   return !operator==(other);
+}
+
+HRESULT CStrandRow::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+{
+   pStrSave->BeginUnit(_T("StrandRow"),1.0);
+
+   pStrSave->put_Property(_T("InnerSpacing"),CComVariant(m_InnerSpacing));
+   pStrSave->put_Property(_T("Spacing"),CComVariant(m_Spacing));
+   pStrSave->put_Property(_T("NStrands"),CComVariant(m_nStrands));
+
+   pStrSave->put_Property(_T("YStart"),CComVariant(m_Y[pgsTypes::metStart]));
+   pStrSave->put_Property(_T("FaceStart"),CComVariant(m_Face[pgsTypes::metStart] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
+
+   pStrSave->put_Property(_T("YEnd"),CComVariant(m_Y[pgsTypes::metEnd]));
+   pStrSave->put_Property(_T("FaceEnd"),CComVariant(m_Face[pgsTypes::metEnd] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
+
+   pStrSave->put_Property(_T("IsTemporaryStrand"),CComVariant(m_bIsTemporaryStrand));
+   pStrSave->put_Property(_T("IsExtendedStrandStart"),CComVariant(m_bIsExtendedStrand[pgsTypes::metStart]));
+   pStrSave->put_Property(_T("IsExtendedStrandEnd"),CComVariant(m_bIsExtendedStrand[pgsTypes::metEnd]));
+   pStrSave->put_Property(_T("IsDebondedStart"),CComVariant(m_bIsDebonded[pgsTypes::metStart]));
+   pStrSave->put_Property(_T("IsDebondedEnd"),CComVariant(m_bIsDebonded[pgsTypes::metEnd]));
+   pStrSave->put_Property(_T("DebondLengthStart"),CComVariant(m_DebondLength[pgsTypes::metStart]));
+   pStrSave->put_Property(_T("DebondLengthEnd"),CComVariant(m_DebondLength[pgsTypes::metEnd]));
+
+   pStrSave->EndUnit();
+
+   return S_OK;
+}
+
+HRESULT CStrandRow::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
+{
+   CHRException hr;
+   try
+   {
+      CComVariant var;
+      hr = pStrLoad->BeginUnit(_T("StrandRow"));
+
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("InnerSpacing"),&var);
+      m_InnerSpacing = var.dblVal;
+
+      hr = pStrLoad->get_Property(_T("Spacing"),&var);
+      m_Spacing = var.dblVal;
+
+      var.vt = VT_INDEX;
+      hr = pStrLoad->get_Property(_T("NStrands"),&var);
+      m_nStrands = VARIANT2INDEX(var);
+
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("YStart"),&var);
+      m_Y[pgsTypes::metStart] = var.dblVal;
+
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property(_T("FaceStart"),&var);
+      m_Face[pgsTypes::metStart] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("YEnd"),&var);
+      m_Y[pgsTypes::metEnd] = var.dblVal;
+
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property(_T("FaceEnd"),&var);
+      m_Face[pgsTypes::metEnd] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+
+      var.vt = VT_BOOL;
+      hr = pStrLoad->get_Property(_T("IsTemporaryStrand"),&var);
+      m_bIsTemporaryStrand = (var.boolVal == VARIANT_TRUE ? true : false);
+
+      hr = pStrLoad->get_Property(_T("IsExtendedStrandStart"),&var);
+      m_bIsExtendedStrand[pgsTypes::metStart] = (var.boolVal == VARIANT_TRUE ? true : false);
+
+      hr = pStrLoad->get_Property(_T("IsExtendedStrandEnd"),&var);
+      m_bIsExtendedStrand[pgsTypes::metEnd] = (var.boolVal == VARIANT_TRUE ? true : false);
+
+      hr = pStrLoad->get_Property(_T("IsDebondedStart"),&var);
+      m_bIsDebonded[pgsTypes::metStart] = (var.boolVal == VARIANT_TRUE ? true : false);
+
+      hr = pStrLoad->get_Property(_T("IsDebondedEnd"),&var);
+      m_bIsDebonded[pgsTypes::metEnd] = (var.boolVal == VARIANT_TRUE ? true : false);
+
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("DebondLengthStart"),&var);
+      m_DebondLength[pgsTypes::metStart] = var.dblVal;
+
+      hr = pStrLoad->get_Property(_T("DebondLengthEnd"),&var);
+      m_DebondLength[pgsTypes::metEnd] = var.dblVal;
+
+      pStrLoad->EndUnit();
+   }
+   catch(...)
+   {
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
+   }
+
+   return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
 CStrandData::CStrandData()
 {
    for ( int i = 0; i < 3; i++ )
+   {
       StrandMaterial[i] = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860,matPsStrand::LowRelaxation,matPsStrand::D1524);
+   }
 
    ResetPrestressData();
 
@@ -203,6 +386,25 @@ bool CStrandData::operator==(const CStrandData& rOther) const
 
    if (NumPermStrandsType != rOther.NumPermStrandsType)
       return false;
+
+   if ( NumPermStrandsType == npsUser )
+   {
+      if ( m_StrandRows.size() != rOther.m_StrandRows.size() )
+         return false;
+
+      CStrandRowCollection::const_iterator iter(m_StrandRows.begin());
+      CStrandRowCollection::const_iterator iterEnd(m_StrandRows.end());
+      CStrandRowCollection::const_iterator otherIter(rOther.m_StrandRows.begin());
+      for ( ; iter != iterEnd; iter++, otherIter++ )
+      {
+         const CStrandRow& strandRow(*iter);
+         const CStrandRow& otherStrandRow(*otherIter);
+         if ( strandRow != otherStrandRow )
+         {
+            return false;
+         }
+      }
+   }
 
    for ( Uint16 i = 0; i < 4; i++ )
    {
@@ -261,439 +463,474 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
 {
    USES_CONVERSION;
 
-   HRESULT hr = S_OK;
+   CHRException hr;
 
    CComVariant var;
 
-   pStrLoad->BeginUnit(_T("PrestressData"));  // named this for historical reasons
-   Float64 version;
-   pStrLoad->get_Version(&version);
-   *pVersion = version;
-
-   if (version<6.0)
+   try
    {
-      HsoEndMeasurement = hsoLEGACY;
-   }
-   else
-   {
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("HsoEndMeasurement"), &var );
-      HsoEndMeasurement = (HarpedStrandOffsetType)(var.lVal);
-   }
+      hr = pStrLoad->BeginUnit(_T("PrestressData"));  // named this for historical reasons
+      Float64 version;
+      hr = pStrLoad->get_Version(&version);
+      *pVersion = version;
 
-   var.Clear();
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("HpOffsetAtEnd"), &var );
-   HpOffsetAtEnd = var.dblVal;
-
-   if (version<6.0)
-   {
-      HsoHpMeasurement = hsoLEGACY;
-   }
-   else
-   {
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("HsoHpMeasurement"), &var );
-      HsoHpMeasurement = (HarpedStrandOffsetType)(var.lVal);
-   }
-
-   var.Clear();
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("HpOffsetAtHp"), &var );
-   HpOffsetAtHp = var.dblVal;
-
-   if (version<8.0)
-   {
-      NumPermStrandsType = npsStraightHarped;
-   }
-   else
-   {
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("NumPermStrandsType"), &var );
-      NumPermStrandsType = (PermanentStrandType)var.lVal;
-   }
-
-   var.Clear();
-   var.vt = VT_INDEX;
-   pStrLoad->get_Property(_T("NumHarpedStrands"), &var );
-   Nstrands[pgsTypes::Harped] = VARIANT2INDEX(var);
-
-   var.Clear();
-   var.vt = VT_INDEX;
-   pStrLoad->get_Property(_T("NumStraightStrands"), &var );
-   Nstrands[pgsTypes::Straight] = VARIANT2INDEX(var);
-
-   var.Clear();
-   var.vt = VT_INDEX;
-   pStrLoad->get_Property(_T("NumTempStrands"), &var );
-   Nstrands[pgsTypes::Temporary] = VARIANT2INDEX(var);
-
-   if (version<8.0)
-   {
-      Nstrands[pgsTypes::Permanent] = 0;
-   }
-   else
-   {
-      var.Clear();
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("NumPermanentStrands"), &var );
-      Nstrands[pgsTypes::Permanent] = VARIANT2INDEX(var);
-   }
-   
-   if ( 12 <= version )
-   {
-      // added in version 12
-      pStrLoad->BeginUnit(_T("ExtendedStrands"));
-
-      Float64 extendedStrandVersion;
-      pStrLoad->get_Version(&extendedStrandVersion);
-      if ( extendedStrandVersion < 2.0 )
-         bConvertExtendedStrands = true;
-
-      pStrLoad->BeginUnit(_T("Start"));
-
-      pStrLoad->BeginUnit(_T("Straight"));
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("Count"),&var);
-      StrandIndexType nStrands = VARIANT2INDEX(var);
-      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+      if (version<6.0)
       {
-         pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = VARIANT2INDEX(var);
-         NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].push_back(strandIdx);
+         HsoEndMeasurement = hsoLEGACY;
       }
-      pStrLoad->EndUnit(); // Straight
-
-      pStrLoad->BeginUnit(_T("Harped"));
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = VARIANT2INDEX(var);
-      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+      else
       {
-         pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = VARIANT2INDEX(var);
-         NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].push_back(strandIdx);
-      }
-      pStrLoad->EndUnit(); // Harped
-
-      pStrLoad->BeginUnit(_T("Temporary"));
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = VARIANT2INDEX(var);
-      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
-      {
-         pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = VARIANT2INDEX(var);
-         NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].push_back(strandIdx);
-      }
-      pStrLoad->EndUnit(); // Temporary
-      pStrLoad->EndUnit(); // Start
-
-      pStrLoad->BeginUnit(_T("End"));
-      pStrLoad->BeginUnit(_T("Straight"));
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = VARIANT2INDEX(var);
-      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
-      {
-         pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = VARIANT2INDEX(var);
-         NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].push_back(strandIdx);
-      }
-      pStrLoad->EndUnit(); // Straight
-
-      pStrLoad->BeginUnit(_T("Harped"));
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = VARIANT2INDEX(var);
-      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
-      {
-         pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = VARIANT2INDEX(var);
-         NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].push_back(strandIdx);
-      }
-      pStrLoad->EndUnit(); // Harped
-
-      pStrLoad->BeginUnit(_T("Temporary"));
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = VARIANT2INDEX(var);
-      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
-      {
-         pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = VARIANT2INDEX(var);
-         NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].push_back(strandIdx);
-      }
-      pStrLoad->EndUnit(); // Temporary
-      pStrLoad->EndUnit(); // End
-
-      pStrLoad->EndUnit(); // ExtendedStrands
-   }
-
-   if (12 <= version && NumPermStrandsType == CStrandData::npsDirectSelection)
-   {
-      hr = pStrLoad->BeginUnit(_T("DirectSelectStrandFill"));
-      if (FAILED(hr))
-      {
-         ATLASSERT(0);
-         return hr;
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("HsoEndMeasurement"), &var );
+         HsoEndMeasurement = (HarpedStrandOffsetType)(var.lVal);
       }
 
-      pStrLoad->BeginUnit(_T("StraightStrands"));
-      var.Clear();
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("NumStraightFill"), &var );
-      StrandIndexType nums = VARIANT2INDEX(var);
-      for (StrandIndexType is=0; is<nums; is++)
-      {
-         CDirectStrandFillInfo fi;
-         fi.Load(pStrLoad);
-         m_StraightStrandFill.AddFill(fi);
-      }
-      pStrLoad->EndUnit();
-
-      pStrLoad->BeginUnit(_T("HarpedStrands"));
-      var.Clear();
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("NumHarpedFill"), &var );
-      nums = VARIANT2INDEX(var);
-      for (StrandIndexType is=0; is<nums; is++)
-      {
-         CDirectStrandFillInfo fi;
-         fi.Load(pStrLoad);
-         m_HarpedStrandFill.AddFill(fi);
-      }
-      pStrLoad->EndUnit();
-
-      pStrLoad->BeginUnit(_T("TemporaryStrands"));
-      var.Clear();
-      var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("NumTemporaryFill"), &var );
-      nums = VARIANT2INDEX(var);
-      for (StrandIndexType is=0; is<nums; is++)
-      {
-         CDirectStrandFillInfo fi;
-         fi.Load(pStrLoad);
-         m_TemporaryStrandFill.AddFill(fi);
-      }
-      pStrLoad->EndUnit();
-
-      pStrLoad->EndUnit(); // end DirectSelectStrandFill
-   }
-
-   var.Clear();
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("PjHarped"), &var );
-   Pjack[pgsTypes::Harped] = var.dblVal;
-
-   var.Clear();
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("PjStraight"), &var );
-   Pjack[pgsTypes::Straight] = var.dblVal;
-
-   var.Clear();
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("PjTemp"), &var );
-   Pjack[pgsTypes::Temporary] = var.dblVal;
-
-   if (version<8.0)
-   {
-      Pjack[pgsTypes::Permanent] = 0.0;
-   }
-   else
-   {
       var.Clear();
       var.vt = VT_R8;
-      pStrLoad->get_Property(_T("PjPermanent"), &var );
-      Pjack[pgsTypes::Permanent] = var.dblVal;
-   }
+      hr = pStrLoad->get_Property(_T("HpOffsetAtEnd"), &var );
+      HpOffsetAtEnd = var.dblVal;
 
-   var.Clear();
-   var.vt = VT_I4;
-   pStrLoad->get_Property(_T("CalcPjHarped"), &var );
-   bPjackCalculated[pgsTypes::Harped] = (var.lVal!=0);
+      if (version<6.0)
+      {
+         HsoHpMeasurement = hsoLEGACY;
+      }
+      else
+      {
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("HsoHpMeasurement"), &var );
+         HsoHpMeasurement = (HarpedStrandOffsetType)(var.lVal);
+      }
 
-   var.Clear();
-   var.vt = VT_I4;
-   pStrLoad->get_Property(_T("CalcPjStraight"), &var );
-   bPjackCalculated[pgsTypes::Straight] = (var.lVal!=0);
-
-   var.Clear();
-   var.vt = VT_I4;
-   pStrLoad->get_Property(_T("CalcPjTemp"), &var );
-   bPjackCalculated[pgsTypes::Temporary] = (var.lVal!=0);
-
-   if (version<8.0)
-   {
-      bPjackCalculated[pgsTypes::Permanent] = false;
-   }
-   else
-   {
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("CalcPjPermanent"), &var );
-      bPjackCalculated[pgsTypes::Permanent] = (var.lVal!=0);
-   }
-
-   var.Clear();
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("LastUserPjHarped"), &var );
-   LastUserPjack[pgsTypes::Harped] = var.dblVal;
-
-   var.Clear();
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("LastUserPjStraight"), &var );
-   LastUserPjack[pgsTypes::Straight] = var.dblVal;
-
-   var.Clear();
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("LastUserPjTemp"), &var );
-   LastUserPjack[pgsTypes::Temporary] = var.dblVal;
-
-   if (version<8.0)
-   {
-      LastUserPjack[pgsTypes::Permanent] = 0.0;
-   }
-   else
-   {
       var.Clear();
       var.vt = VT_R8;
-      pStrLoad->get_Property(_T("LastUserPjPermanent"), &var );
-      LastUserPjack[pgsTypes::Permanent] = var.dblVal;
-   }
+      hr = pStrLoad->get_Property(_T("HpOffsetAtHp"), &var );
+      HpOffsetAtHp = var.dblVal;
 
-   if ( version < 3.1 )
-   {
-      TempStrandUsage = pgsTypes::ttsPretensioned;
-   }
-   else
-   {
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("TempStrandUsage"),&var);
-      TempStrandUsage = (pgsTypes::TTSUsage)var.lVal;
-   }
-
-   // in an earlier version of the constructor for this class,
-   // TempStrandUsage was not initialized properly. This caused the variable to
-   // be unset and bogus values to be stored... if the value of TempStrandUsage is
-   // bogus, set it to a reasonable value
-   if ( TempStrandUsage != pgsTypes::ttsPretensioned && 
-        TempStrandUsage != pgsTypes::ttsPTBeforeShipping && 
-        TempStrandUsage != pgsTypes::ttsPTBeforeLifting && 
-        TempStrandUsage != pgsTypes::ttsPTAfterLifting )
-   {
-      TempStrandUsage = pgsTypes::ttsPretensioned;
-   }
-
-
-   if ( 5.0 <= version )
-   {
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("SymmetricDebond"),&var);
-
-      bSymmetricDebond = (var.lVal != 0);
-
-      Debond[pgsTypes::Straight].clear();
-      pStrLoad->BeginUnit(_T("StraightStrandDebonding"));
-      long nDebondInfo;
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("DebondInfoCount"),&var);
-      nDebondInfo = var.lVal;
-
-      int i = 0;
-      for ( i = 0; i < nDebondInfo; i++ )
+      if (version<8.0)
       {
-         CDebondData debond_info;
-         debond_info.Load(pStrLoad,pProgress);
-         Debond[pgsTypes::Straight].push_back(debond_info);
+         NumPermStrandsType = npsStraightHarped;
       }
-      pStrLoad->EndUnit();
-
-
-      Debond[pgsTypes::Harped].clear();
-      pStrLoad->BeginUnit(_T("HarpedStrandDebonding"));
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("DebondInfoCount"),&var);
-      nDebondInfo = var.lVal;
-
-      for ( i = 0; i < nDebondInfo; i++ )
+      else
       {
-         CDebondData debond_info;
-         debond_info.Load(pStrLoad,pProgress);
-         Debond[pgsTypes::Harped].push_back(debond_info);
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("NumPermStrandsType"), &var );
+         NumPermStrandsType = (PermanentStrandType)var.lVal;
       }
-      pStrLoad->EndUnit();
 
-
-      Debond[pgsTypes::Temporary].clear();
-      pStrLoad->BeginUnit(_T("TemporaryStrandDebonding"));
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("DebondInfoCount"),&var);
-      nDebondInfo = var.lVal;
-
-      for ( i = 0; i < nDebondInfo; i++ )
+      if ( NumPermStrandsType == npsUser )
       {
-         CDebondData debond_info;
-         debond_info.Load(pStrLoad,pProgress);
-         Debond[pgsTypes::Temporary].push_back(debond_info);
+         // added in version 13
+         hr = pStrLoad->BeginUnit(_T("StrandRows"));
+         var.Clear();
+         var.vt = VT_INDEX;
+         hr = pStrLoad->get_Property(_T("Count"),&var);
+         IndexType nRows = VARIANT2INDEX(var);
+         for ( RowIndexType rowIdx = 0; rowIdx < nRows; rowIdx++ )
+         {
+            CStrandRow strandRow;
+            hr = strandRow.Load(pStrLoad,pProgress);
+            m_StrandRows.push_back(strandRow);
+         }
+         hr = pStrLoad->EndUnit();
       }
-      pStrLoad->EndUnit();
-   }
+      else
+      {
+         // stopped write this out in version 13 if NumPerStrandType is npsUser
+         var.Clear();
+         var.vt = VT_INDEX;
+         hr = pStrLoad->get_Property(_T("NumHarpedStrands"), &var );
+         Nstrands[pgsTypes::Harped] = VARIANT2INDEX(var);
 
+         var.Clear();
+         var.vt = VT_INDEX;
+         hr = pStrLoad->get_Property(_T("NumStraightStrands"), &var );
+         Nstrands[pgsTypes::Straight] = VARIANT2INDEX(var);
 
-   if ( version < 9 )
-   {
-      StrandMaterial[pgsTypes::Straight]  = 0; // not used in pre-version 9 of this data block
-      StrandMaterial[pgsTypes::Harped]    = 0; // not used in pre-version 9 of this data block
-      StrandMaterial[pgsTypes::Temporary] = 0; // not used in pre-version 9 of this data block
-      // the Project Agent will set this value later
-   }
-   else if ( version < 11 )
-   {
-      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+         var.Clear();
+         var.vt = VT_INDEX;
+         hr = pStrLoad->get_Property(_T("NumTempStrands"), &var );
+         Nstrands[pgsTypes::Temporary] = VARIANT2INDEX(var);
+
+         if (version<8.0)
+         {
+            Nstrands[pgsTypes::Permanent] = 0;
+         }
+         else
+         {
+            var.Clear();
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("NumPermanentStrands"), &var );
+            Nstrands[pgsTypes::Permanent] = VARIANT2INDEX(var);
+         }
+         
+         if ( 12 <= version )
+         {
+            // added in version 12
+            hr = pStrLoad->BeginUnit(_T("ExtendedStrands"));
+
+            Float64 extendedStrandVersion;
+            hr = pStrLoad->get_Version(&extendedStrandVersion);
+            if ( extendedStrandVersion < 2.0 )
+               bConvertExtendedStrands = true;
+
+            hr = pStrLoad->BeginUnit(_T("Start"));
+
+            hr = pStrLoad->BeginUnit(_T("Straight"));
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("Count"),&var);
+            StrandIndexType nStrands = VARIANT2INDEX(var);
+            for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+            {
+               hr = pStrLoad->get_Property(_T("Strand"),&var);
+               StrandIndexType strandIdx = VARIANT2INDEX(var);
+               NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].push_back(strandIdx);
+            }
+            hr = pStrLoad->EndUnit(); // Straight
+
+            hr = pStrLoad->BeginUnit(_T("Harped"));
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("Count"),&var);
+            nStrands = VARIANT2INDEX(var);
+            for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+            {
+               hr = pStrLoad->get_Property(_T("Strand"),&var);
+               StrandIndexType strandIdx = VARIANT2INDEX(var);
+               NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].push_back(strandIdx);
+            }
+            hr = pStrLoad->EndUnit(); // Harped
+
+            hr = pStrLoad->BeginUnit(_T("Temporary"));
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("Count"),&var);
+            nStrands = VARIANT2INDEX(var);
+            for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+            {
+               hr = pStrLoad->get_Property(_T("Strand"),&var);
+               StrandIndexType strandIdx = VARIANT2INDEX(var);
+               NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].push_back(strandIdx);
+            }
+            hr = pStrLoad->EndUnit(); // Temporary
+            hr = pStrLoad->EndUnit(); // Start
+
+            hr = pStrLoad->BeginUnit(_T("End"));
+            hr = pStrLoad->BeginUnit(_T("Straight"));
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("Count"),&var);
+            nStrands = VARIANT2INDEX(var);
+            for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+            {
+               hr = pStrLoad->get_Property(_T("Strand"),&var);
+               StrandIndexType strandIdx = VARIANT2INDEX(var);
+               NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].push_back(strandIdx);
+            }
+            hr = pStrLoad->EndUnit(); // Straight
+
+            hr = pStrLoad->BeginUnit(_T("Harped"));
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("Count"),&var);
+            nStrands = VARIANT2INDEX(var);
+            for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+            {
+               hr = pStrLoad->get_Property(_T("Strand"),&var);
+               StrandIndexType strandIdx = VARIANT2INDEX(var);
+               NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].push_back(strandIdx);
+            }
+            hr = pStrLoad->EndUnit(); // Harped
+
+            hr = pStrLoad->BeginUnit(_T("Temporary"));
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("Count"),&var);
+            nStrands = VARIANT2INDEX(var);
+            for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+            {
+               hr = pStrLoad->get_Property(_T("Strand"),&var);
+               StrandIndexType strandIdx = VARIANT2INDEX(var);
+               NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].push_back(strandIdx);
+            }
+            hr = pStrLoad->EndUnit(); // Temporary
+            hr = pStrLoad->EndUnit(); // End
+
+            hr = pStrLoad->EndUnit(); // ExtendedStrands
+         }
+
+         if (12 <= version && NumPermStrandsType == CStrandData::npsDirectSelection)
+         {
+            hr = hr = pStrLoad->BeginUnit(_T("DirectSelectStrandFill"));
+            if (FAILED(hr))
+            {
+               ATLASSERT(0);
+               return hr;
+            }
+
+            hr = pStrLoad->BeginUnit(_T("StraightStrands"));
+            var.Clear();
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("NumStraightFill"), &var );
+            StrandIndexType nums = VARIANT2INDEX(var);
+            for (StrandIndexType is=0; is<nums; is++)
+            {
+               CDirectStrandFillInfo fi;
+               hr = fi.Load(pStrLoad);
+               m_StraightStrandFill.AddFill(fi);
+            }
+            hr = pStrLoad->EndUnit();
+
+            hr = pStrLoad->BeginUnit(_T("HarpedStrands"));
+            var.Clear();
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("NumHarpedFill"), &var );
+            nums = VARIANT2INDEX(var);
+            for (StrandIndexType is=0; is<nums; is++)
+            {
+               CDirectStrandFillInfo fi;
+               hr = fi.Load(pStrLoad);
+               m_HarpedStrandFill.AddFill(fi);
+            }
+            hr = pStrLoad->EndUnit();
+
+            hr = pStrLoad->BeginUnit(_T("TemporaryStrands"));
+            var.Clear();
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("NumTemporaryFill"), &var );
+            nums = VARIANT2INDEX(var);
+            for (StrandIndexType is=0; is<nums; is++)
+            {
+               CDirectStrandFillInfo fi;
+               hr = fi.Load(pStrLoad);
+               m_TemporaryStrandFill.AddFill(fi);
+            }
+            hr = pStrLoad->EndUnit();
+
+            hr = pStrLoad->EndUnit(); // end DirectSelectStrandFill
+         }
+      }
+
+      var.Clear();
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("PjHarped"), &var );
+      Pjack[pgsTypes::Harped] = var.dblVal;
+
+      var.Clear();
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("PjStraight"), &var );
+      Pjack[pgsTypes::Straight] = var.dblVal;
+
+      var.Clear();
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("PjTemp"), &var );
+      Pjack[pgsTypes::Temporary] = var.dblVal;
+
+      if (version<8.0)
+      {
+         Pjack[pgsTypes::Permanent] = 0.0;
+      }
+      else
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("PjPermanent"), &var );
+         Pjack[pgsTypes::Permanent] = var.dblVal;
+      }
 
       var.Clear();
       var.vt = VT_I4;
-      pStrLoad->get_Property(_T("StrandMaterialKey"),&var);
-      Int32 key = var.lVal;
-      StrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
-      ATLASSERT(StrandMaterial[pgsTypes::Straight] != 0);
-      StrandMaterial[pgsTypes::Harped]    = StrandMaterial[pgsTypes::Straight];
-      StrandMaterial[pgsTypes::Temporary] = StrandMaterial[pgsTypes::Straight];
-   }
-   else
-   {
-      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+      hr = pStrLoad->get_Property(_T("CalcPjHarped"), &var );
+      bPjackCalculated[pgsTypes::Harped] = (var.lVal!=0);
 
       var.Clear();
       var.vt = VT_I4;
-      pStrLoad->get_Property(_T("StraightStrandMaterialKey"),&var);
-      Int32 key = var.lVal;
-      StrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
+      hr = pStrLoad->get_Property(_T("CalcPjStraight"), &var );
+      bPjackCalculated[pgsTypes::Straight] = (var.lVal!=0);
 
-      pStrLoad->get_Property(_T("HarpedStrandMaterialKey"),&var);
-      key = var.lVal;
-      StrandMaterial[pgsTypes::Harped] = pPool->GetStrand(key);
+      var.Clear();
+      var.vt = VT_I4;
+      hr = pStrLoad->get_Property(_T("CalcPjTemp"), &var );
+      bPjackCalculated[pgsTypes::Temporary] = (var.lVal!=0);
 
-      pStrLoad->get_Property(_T("TemporaryStrandMaterialKey"),&var);
-      key = var.lVal;
-      StrandMaterial[pgsTypes::Temporary] = pPool->GetStrand(key);
+      if (version<8.0)
+      {
+         bPjackCalculated[pgsTypes::Permanent] = false;
+      }
+      else
+      {
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("CalcPjPermanent"), &var );
+         bPjackCalculated[pgsTypes::Permanent] = (var.lVal!=0);
+      }
+
+      var.Clear();
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("LastUserPjHarped"), &var );
+      LastUserPjack[pgsTypes::Harped] = var.dblVal;
+
+      var.Clear();
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("LastUserPjStraight"), &var );
+      LastUserPjack[pgsTypes::Straight] = var.dblVal;
+
+      var.Clear();
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("LastUserPjTemp"), &var );
+      LastUserPjack[pgsTypes::Temporary] = var.dblVal;
+
+      if (version<8.0)
+      {
+         LastUserPjack[pgsTypes::Permanent] = 0.0;
+      }
+      else
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("LastUserPjPermanent"), &var );
+         LastUserPjack[pgsTypes::Permanent] = var.dblVal;
+      }
+
+      if ( version < 3.1 )
+      {
+         TempStrandUsage = pgsTypes::ttsPretensioned;
+      }
+      else
+      {
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("TempStrandUsage"),&var);
+         TempStrandUsage = (pgsTypes::TTSUsage)var.lVal;
+      }
+
+      // in an earlier version of the constructor for this class,
+      // TempStrandUsage was not initialized properly. This caused the variable to
+      // be unset and bogus values to be stored... if the value of TempStrandUsage is
+      // bogus, set it to a reasonable value
+      if ( TempStrandUsage != pgsTypes::ttsPretensioned && 
+           TempStrandUsage != pgsTypes::ttsPTBeforeShipping && 
+           TempStrandUsage != pgsTypes::ttsPTBeforeLifting && 
+           TempStrandUsage != pgsTypes::ttsPTAfterLifting )
+      {
+         TempStrandUsage = pgsTypes::ttsPretensioned;
+      }
+
+
+      if ( 5.0 <= version && NumPermStrandsType != npsUser )
+      {
+         // not writing this data if NumPermStrandsType is npsUser... this was added in version 13 of the data block
+
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("SymmetricDebond"),&var);
+
+         bSymmetricDebond = (var.lVal != 0);
+
+         Debond[pgsTypes::Straight].clear();
+         hr = pStrLoad->BeginUnit(_T("StraightStrandDebonding"));
+         long nDebondInfo;
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("DebondInfoCount"),&var);
+         nDebondInfo = var.lVal;
+
+         int i = 0;
+         for ( i = 0; i < nDebondInfo; i++ )
+         {
+            CDebondData debond_info;
+            hr = debond_info.Load(pStrLoad,pProgress);
+            Debond[pgsTypes::Straight].push_back(debond_info);
+         }
+         hr = pStrLoad->EndUnit();
+
+
+         Debond[pgsTypes::Harped].clear();
+         hr = pStrLoad->BeginUnit(_T("HarpedStrandDebonding"));
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("DebondInfoCount"),&var);
+         nDebondInfo = var.lVal;
+
+         for ( i = 0; i < nDebondInfo; i++ )
+         {
+            CDebondData debond_info;
+            hr = debond_info.Load(pStrLoad,pProgress);
+            Debond[pgsTypes::Harped].push_back(debond_info);
+         }
+         hr = pStrLoad->EndUnit();
+
+
+         Debond[pgsTypes::Temporary].clear();
+         hr = pStrLoad->BeginUnit(_T("TemporaryStrandDebonding"));
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("DebondInfoCount"),&var);
+         nDebondInfo = var.lVal;
+
+         for ( i = 0; i < nDebondInfo; i++ )
+         {
+            CDebondData debond_info;
+            hr = debond_info.Load(pStrLoad,pProgress);
+            Debond[pgsTypes::Temporary].push_back(debond_info);
+         }
+         hr = pStrLoad->EndUnit();
+      }
+
+
+      if ( version < 9 )
+      {
+         StrandMaterial[pgsTypes::Straight]  = 0; // not used in pre-version 9 of this data block
+         StrandMaterial[pgsTypes::Harped]    = 0; // not used in pre-version 9 of this data block
+         StrandMaterial[pgsTypes::Temporary] = 0; // not used in pre-version 9 of this data block
+         // the Project Agent will set this value later
+      }
+      else if ( version < 11 )
+      {
+         lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("StrandMaterialKey"),&var);
+         Int32 key = var.lVal;
+         StrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
+         ATLASSERT(StrandMaterial[pgsTypes::Straight] != 0);
+         StrandMaterial[pgsTypes::Harped]    = StrandMaterial[pgsTypes::Straight];
+         StrandMaterial[pgsTypes::Temporary] = StrandMaterial[pgsTypes::Straight];
+      }
+      else
+      {
+         lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("StraightStrandMaterialKey"),&var);
+         Int32 key = var.lVal;
+         StrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
+
+         hr = pStrLoad->get_Property(_T("HarpedStrandMaterialKey"),&var);
+         key = var.lVal;
+         StrandMaterial[pgsTypes::Harped] = pPool->GetStrand(key);
+
+         hr = pStrLoad->get_Property(_T("TemporaryStrandMaterialKey"),&var);
+         key = var.lVal;
+         StrandMaterial[pgsTypes::Temporary] = pPool->GetStrand(key);
+      }
+
+      // before version 10, there was other data in this unit.
+      // the parent object will load it and end the unit,
+      // otherwise, end it here
+      if ( 9 < version )
+      {
+         hr = pStrLoad->EndUnit(); // end PrestressData
+      }
+   }
+   catch(...)
+   {
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   // before version 10, there was other data in this unit.
-   // the parent object will load it and end the unit,
-   // otherwise, end it here
-   if ( 9 < version )
-      pStrLoad->EndUnit(); // end PrestressData
-
+   if ( NumPermStrandsType == npsUser )
+   {
+      ProcessStrandRowData();
+   }
 
    return hr;
 }
@@ -702,7 +939,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PrestressData"),12.0);
+   pStrSave->BeginUnit(_T("PrestressData"),13.0);
 
    pStrSave->put_Property(_T("HsoEndMeasurement"), CComVariant(HsoEndMeasurement));
    pStrSave->put_Property(_T("HpOffsetAtEnd"), CComVariant(HpOffsetAtEnd));
@@ -711,109 +948,127 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("NumPermStrandsType"), CComVariant(NumPermStrandsType));
 
-   pStrSave->put_Property(_T("NumHarpedStrands"), CComVariant(Nstrands[pgsTypes::Harped]));
-   pStrSave->put_Property(_T("NumStraightStrands"), CComVariant(Nstrands[pgsTypes::Straight]));
-   pStrSave->put_Property(_T("NumTempStrands"), CComVariant(Nstrands[pgsTypes::Temporary]));
-   pStrSave->put_Property(_T("NumPermanentStrands"), CComVariant(Nstrands[pgsTypes::Permanent]));
-
-
-   // added in version 12
-   pStrSave->BeginUnit(_T("ExtendedStrands"),2.0); // storing grid index in version 2 (version 1 was strand index)
-   pStrSave->BeginUnit(_T("Start"),1.0);
-   pStrSave->BeginUnit(_T("Straight"),1.0);
-   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].size()));
-   std::vector<GridIndexType>::iterator iter(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].begin());
-   std::vector<GridIndexType>::iterator end(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].end());
-   for ( ; iter != end; iter++ )
+   if ( NumPermStrandsType == npsUser )
    {
-      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
-   }
-   pStrSave->EndUnit(); // Straight
-
-   pStrSave->BeginUnit(_T("Harped"),1.0);
-   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].size()));
-   iter = NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].begin();
-   end  = NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].end();
-   for ( ; iter != end; iter++ )
-   {
-      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
-   }
-   pStrSave->EndUnit(); // Harped
-
-   pStrSave->BeginUnit(_T("Temporary"),1.0);
-   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].size()));
-   iter = NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].begin();
-   end  = NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].end();
-   for ( ; iter != end; iter++ )
-   {
-      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
-   }
-   pStrSave->EndUnit(); // Temporary
-    pStrSave->EndUnit(); // Start
-
-   pStrSave->BeginUnit(_T("End"),1.0);
-   pStrSave->BeginUnit(_T("Straight"),1.0);
-   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].size()));
-   iter = NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].begin();
-   end  = NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].end();
-   for ( ; iter != end; iter++ )
-   {
-      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
-   }
-   pStrSave->EndUnit(); // Straight
-
-   pStrSave->BeginUnit(_T("Harped"),1.0);
-   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].size()));
-   iter = NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].begin();
-   end  = NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].end();
-   for ( ; iter != end; iter++ )
-   {
-      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
-   }
-   pStrSave->EndUnit(); // Harped
-
-   pStrSave->BeginUnit(_T("Temporary"),1.0);
-   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].size()));
-   iter = NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].begin();
-   end  = NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].end();
-   for ( ; iter != end; iter++ )
-   {
-      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
-   }
-   pStrSave->EndUnit(); // Temporary
-   pStrSave->EndUnit(); // End
-   pStrSave->EndUnit(); // ExtendedStrands
-
-   if (NumPermStrandsType == CStrandData::npsDirectSelection)
-   {
-      // Added this in version 12
-      pStrSave->BeginUnit(_T("DirectSelectStrandFill"), 1.0);
-
-      pStrSave->BeginUnit(_T("StraightStrands"), 1.0);
-      pStrSave->put_Property(_T("NumStraightFill"), CComVariant( StrandIndexType(m_StraightStrandFill.size())));
-      for (DirectStrandFillCollection::const_iterator its=m_StraightStrandFill.begin(); its!=m_StraightStrandFill.end(); its++)
+      // added in version 13
+      pStrSave->BeginUnit(_T("StrandRows"),1.0);
+      pStrSave->put_Property(_T("Count"),CComVariant(m_StrandRows.size()));
+      CStrandRowCollection::iterator iter(m_StrandRows.begin());
+      CStrandRowCollection::iterator iterEnd(m_StrandRows.end());
+      for ( ; iter != iterEnd; iter++ )
       {
-         its->Save(pStrSave);
+         CStrandRow& strandRow(*iter);
+         strandRow.Save(pStrSave,pProgress);
       }
       pStrSave->EndUnit();
+   }
+   else
+   {
+      // stopped write this out in version 13 if NumPerStrandType is npsUser
+      pStrSave->put_Property(_T("NumHarpedStrands"), CComVariant(Nstrands[pgsTypes::Harped]));
+      pStrSave->put_Property(_T("NumStraightStrands"), CComVariant(Nstrands[pgsTypes::Straight]));
+      pStrSave->put_Property(_T("NumTempStrands"), CComVariant(Nstrands[pgsTypes::Temporary]));
+      pStrSave->put_Property(_T("NumPermanentStrands"), CComVariant(Nstrands[pgsTypes::Permanent]));
 
-      pStrSave->BeginUnit(_T("HarpedStrands"), 1.0);
-      pStrSave->put_Property(_T("NumHarpedFill"), CComVariant( StrandIndexType(m_HarpedStrandFill.size())));
-      for (DirectStrandFillCollection::const_iterator its=m_HarpedStrandFill.begin(); its!=m_HarpedStrandFill.end(); its++)
+
+      // added in version 12
+      pStrSave->BeginUnit(_T("ExtendedStrands"),2.0); // storing grid index in version 2 (version 1 was strand index)
+      pStrSave->BeginUnit(_T("Start"),1.0);
+      pStrSave->BeginUnit(_T("Straight"),1.0);
+      pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].size()));
+      std::vector<GridIndexType>::iterator iter(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].begin());
+      std::vector<GridIndexType>::iterator end(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].end());
+      for ( ; iter != end; iter++ )
       {
-         its->Save(pStrSave);
+         pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
       }
-      pStrSave->EndUnit();
+      pStrSave->EndUnit(); // Straight
 
-      pStrSave->BeginUnit(_T("TemporaryStrands"), 1.0);
-      pStrSave->put_Property(_T("NumTemporaryFill"), CComVariant( StrandIndexType(m_TemporaryStrandFill.size())));
-      for (DirectStrandFillCollection::const_iterator its=m_TemporaryStrandFill.begin(); its!=m_TemporaryStrandFill.end(); its++)
+      pStrSave->BeginUnit(_T("Harped"),1.0);
+      pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].size()));
+      iter = NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].begin();
+      end  = NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].end();
+      for ( ; iter != end; iter++ )
       {
-         its->Save(pStrSave);
+         pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
       }
-      pStrSave->EndUnit();
+      pStrSave->EndUnit(); // Harped
 
-      pStrSave->EndUnit(); // DirectSelectStrandFill
+      pStrSave->BeginUnit(_T("Temporary"),1.0);
+      pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].size()));
+      iter = NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].begin();
+      end  = NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].end();
+      for ( ; iter != end; iter++ )
+      {
+         pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+      }
+      pStrSave->EndUnit(); // Temporary
+       pStrSave->EndUnit(); // Start
+
+      pStrSave->BeginUnit(_T("End"),1.0);
+      pStrSave->BeginUnit(_T("Straight"),1.0);
+      pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].size()));
+      iter = NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].begin();
+      end  = NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].end();
+      for ( ; iter != end; iter++ )
+      {
+         pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+      }
+      pStrSave->EndUnit(); // Straight
+
+      pStrSave->BeginUnit(_T("Harped"),1.0);
+      pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].size()));
+      iter = NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].begin();
+      end  = NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].end();
+      for ( ; iter != end; iter++ )
+      {
+         pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+      }
+      pStrSave->EndUnit(); // Harped
+
+      pStrSave->BeginUnit(_T("Temporary"),1.0);
+      pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].size()));
+      iter = NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].begin();
+      end  = NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].end();
+      for ( ; iter != end; iter++ )
+      {
+         pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+      }
+      pStrSave->EndUnit(); // Temporary
+      pStrSave->EndUnit(); // End
+      pStrSave->EndUnit(); // ExtendedStrands
+
+      if (NumPermStrandsType == CStrandData::npsDirectSelection)
+      {
+         // Added this in version 12
+         pStrSave->BeginUnit(_T("DirectSelectStrandFill"), 1.0);
+
+         pStrSave->BeginUnit(_T("StraightStrands"), 1.0);
+         pStrSave->put_Property(_T("NumStraightFill"), CComVariant( StrandIndexType(m_StraightStrandFill.size())));
+         for (CDirectStrandFillCollection::const_iterator its=m_StraightStrandFill.begin(); its!=m_StraightStrandFill.end(); its++)
+         {
+            its->Save(pStrSave);
+         }
+         pStrSave->EndUnit();
+
+         pStrSave->BeginUnit(_T("HarpedStrands"), 1.0);
+         pStrSave->put_Property(_T("NumHarpedFill"), CComVariant( StrandIndexType(m_HarpedStrandFill.size())));
+         for (CDirectStrandFillCollection::const_iterator its=m_HarpedStrandFill.begin(); its!=m_HarpedStrandFill.end(); its++)
+         {
+            its->Save(pStrSave);
+         }
+         pStrSave->EndUnit();
+
+         pStrSave->BeginUnit(_T("TemporaryStrands"), 1.0);
+         pStrSave->put_Property(_T("NumTemporaryFill"), CComVariant( StrandIndexType(m_TemporaryStrandFill.size())));
+         for (CDirectStrandFillCollection::const_iterator its=m_TemporaryStrandFill.begin(); its!=m_TemporaryStrandFill.end(); its++)
+         {
+            its->Save(pStrSave);
+         }
+         pStrSave->EndUnit();
+
+         pStrSave->EndUnit(); // DirectSelectStrandFill
+      }
    }
 
    pStrSave->put_Property(_T("PjHarped"), CComVariant(Pjack[pgsTypes::Harped]));
@@ -830,40 +1085,44 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("LastUserPjPermanent"), CComVariant(LastUserPjack[pgsTypes::Permanent]));
    pStrSave->put_Property(_T("TempStrandUsage"),CComVariant(TempStrandUsage));
 
-   pStrSave->put_Property(_T("SymmetricDebond"),CComVariant(bSymmetricDebond));
-
-   pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
-   StrandIndexType nDebondInfo = Debond[pgsTypes::Straight].size();
-   pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-   std::vector<CDebondData>::iterator debond_iter;
-   for ( debond_iter = Debond[pgsTypes::Straight].begin(); debond_iter != Debond[pgsTypes::Straight].end(); debond_iter++ )
+   if ( NumPermStrandsType != npsUser )
    {
-      CDebondData& debond_info = *debond_iter;
-      debond_info.Save(pStrSave,pProgress);
+      // not writing this data if NumPermStrandsType is npsUser... this was added in version 13 of the data block
+      pStrSave->put_Property(_T("SymmetricDebond"),CComVariant(bSymmetricDebond));
+
+      pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
+      StrandIndexType nDebondInfo = Debond[pgsTypes::Straight].size();
+      pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
+      std::vector<CDebondData>::iterator debond_iter;
+      for ( debond_iter = Debond[pgsTypes::Straight].begin(); debond_iter != Debond[pgsTypes::Straight].end(); debond_iter++ )
+      {
+         CDebondData& debond_info = *debond_iter;
+         debond_info.Save(pStrSave,pProgress);
+      }
+      pStrSave->EndUnit(); // StraightStrandDebonding
+
+
+      pStrSave->BeginUnit(_T("HarpedStrandDebonding"),1.0);
+      nDebondInfo = Debond[pgsTypes::Harped].size();
+      pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
+      for ( debond_iter = Debond[pgsTypes::Harped].begin(); debond_iter != Debond[pgsTypes::Harped].end(); debond_iter++ )
+      {
+         CDebondData& debond_info = *debond_iter;
+         debond_info.Save(pStrSave,pProgress);
+      }
+      pStrSave->EndUnit(); // HarpedStrandDebonding
+
+
+      pStrSave->BeginUnit(_T("TemporaryStrandDebonding"),1.0);
+      nDebondInfo = Debond[pgsTypes::Temporary].size();
+      pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
+      for ( debond_iter = Debond[pgsTypes::Temporary].begin(); debond_iter != Debond[pgsTypes::Temporary].end(); debond_iter++ )
+      {
+         CDebondData& debond_info = *debond_iter;
+         debond_info.Save(pStrSave,pProgress);
+      }
+      pStrSave->EndUnit(); // TemporaryStrandDebonding
    }
-   pStrSave->EndUnit(); // StraightStrandDebonding
-
-
-   pStrSave->BeginUnit(_T("HarpedStrandDebonding"),1.0);
-   nDebondInfo = Debond[pgsTypes::Harped].size();
-   pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-   for ( debond_iter = Debond[pgsTypes::Harped].begin(); debond_iter != Debond[pgsTypes::Harped].end(); debond_iter++ )
-   {
-      CDebondData& debond_info = *debond_iter;
-      debond_info.Save(pStrSave,pProgress);
-   }
-   pStrSave->EndUnit(); // HarpedStrandDebonding
-
-
-   pStrSave->BeginUnit(_T("TemporaryStrandDebonding"),1.0);
-   nDebondInfo = Debond[pgsTypes::Temporary].size();
-   pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-   for ( debond_iter = Debond[pgsTypes::Temporary].begin(); debond_iter != Debond[pgsTypes::Temporary].end(); debond_iter++ )
-   {
-      CDebondData& debond_info = *debond_iter;
-      debond_info.Save(pStrSave,pProgress);
-   }
-   pStrSave->EndUnit(); // TemporaryStrandDebonding
 
 
    ///////////////// Added with data block version 11
@@ -934,7 +1193,7 @@ void CStrandData::SetTemporaryNstrands(StrandIndexType nStrands)
    Nstrands[pgsTypes::Temporary] = nStrands;
 }
 
-void CStrandData::SetDirectStrandFillStraight(const DirectStrandFillCollection& rCollection)
+void CStrandData::SetDirectStrandFillStraight(const CDirectStrandFillCollection& rCollection)
 {
    if(NumPermStrandsType != CStrandData::npsDirectSelection)
    {
@@ -949,7 +1208,7 @@ void CStrandData::SetDirectStrandFillStraight(const DirectStrandFillCollection& 
    Nstrands[pgsTypes::Permanent] = ns + Nstrands[pgsTypes::Harped];
 }
 
-const DirectStrandFillCollection* CStrandData::GetDirectStrandFillStraight() const
+const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillStraight() const
 {
    if(NumPermStrandsType == CStrandData::npsDirectSelection)
    {
@@ -962,7 +1221,7 @@ const DirectStrandFillCollection* CStrandData::GetDirectStrandFillStraight() con
    }
 }
 
-void CStrandData::SetDirectStrandFillHarped(const DirectStrandFillCollection& rCollection)
+void CStrandData::SetDirectStrandFillHarped(const CDirectStrandFillCollection& rCollection)
 {
    if(NumPermStrandsType != CStrandData::npsDirectSelection)
    {
@@ -977,7 +1236,7 @@ void CStrandData::SetDirectStrandFillHarped(const DirectStrandFillCollection& rC
    Nstrands[pgsTypes::Permanent] = ns + Nstrands[pgsTypes::Straight];
 }
 
-const DirectStrandFillCollection* CStrandData::GetDirectStrandFillHarped() const
+const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillHarped() const
 {
    if(NumPermStrandsType == CStrandData::npsDirectSelection)
    {
@@ -990,7 +1249,7 @@ const DirectStrandFillCollection* CStrandData::GetDirectStrandFillHarped() const
    }
 }
 
-void CStrandData::SetDirectStrandFillTemporary(const DirectStrandFillCollection& rCollection)
+void CStrandData::SetDirectStrandFillTemporary(const CDirectStrandFillCollection& rCollection)
 {
    if(NumPermStrandsType != CStrandData::npsDirectSelection)
    {
@@ -1004,7 +1263,7 @@ void CStrandData::SetDirectStrandFillTemporary(const DirectStrandFillCollection&
    Nstrands[pgsTypes::Temporary]  = ns;
 }
 
-const DirectStrandFillCollection* CStrandData::GetDirectStrandFillTemporary() const
+const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillTemporary() const
 {
    if(NumPermStrandsType == CStrandData::npsDirectSelection)
    {
@@ -1017,10 +1276,31 @@ const DirectStrandFillCollection* CStrandData::GetDirectStrandFillTemporary() co
    }
 }
 
+void CStrandData::AddStrandRow(const CStrandRow& strandRow)
+{
+   m_StrandRows.push_back(strandRow);
+   ProcessStrandRowData();
+}
+
+void CStrandData::AddStrandRows(const CStrandRowCollection& strandRows)
+{
+   m_StrandRows.insert(m_StrandRows.end(),strandRows.begin(),strandRows.end());
+   ProcessStrandRowData();
+}
+
+void CStrandData::SetStrandRows(const CStrandRowCollection& strandRows)
+{
+   m_StrandRows = strandRows;
+   ProcessStrandRowData();
+}
+
+const CStrandRowCollection& CStrandData::GetStrandRows() const
+{
+   return m_StrandRows;
+}
+
 StrandIndexType CStrandData::GetNstrands(pgsTypes::StrandType type) const
 {
-   ATLASSERT(NumPermStrandsType==CStrandData::npsTotal || NumPermStrandsType==CStrandData::npsStraightHarped  || NumPermStrandsType==CStrandData::npsDirectSelection);
-
    return Nstrands[type];
 }
 
@@ -1145,6 +1425,8 @@ void CStrandData::MakeCopy(const CStrandData& rOther)
    bSymmetricDebond   = rOther.bSymmetricDebond;
 
    bConvertExtendedStrands = rOther.bConvertExtendedStrands;
+
+   m_StrandRows = rOther.m_StrandRows;
 }
 
 void CStrandData::MakeAssignment(const CStrandData& rOther)
@@ -1152,21 +1434,23 @@ void CStrandData::MakeAssignment(const CStrandData& rOther)
    MakeCopy( rOther );
 }
 
-StrandIndexType CStrandData::ProcessDirectFillData(const DirectStrandFillCollection& rInCollection, DirectStrandFillCollection& rLocalCollection)
+StrandIndexType CStrandData::ProcessDirectFillData(const CDirectStrandFillCollection& rInCollection, CDirectStrandFillCollection& rLocalCollection)
 {
    // Clear out old data and make room for new. Dont put any invalid data into collection
    rLocalCollection.clear();
    rLocalCollection.reserve(rInCollection.size());
 
    StrandIndexType ns(0);
-   for (DirectStrandFillCollection::const_iterator it=rInCollection.begin(); it!=rInCollection.end(); it++)
+   CDirectStrandFillCollection::const_iterator iter(rInCollection.begin());
+   CDirectStrandFillCollection::const_iterator iterEnd(rInCollection.end());
+   for ( ; iter != iterEnd; iter++ )
    {
-      ATLASSERT(it->permStrandGridIdx!=INVALID_INDEX);
+      ATLASSERT(iter->permStrandGridIdx!=INVALID_INDEX);
 
-      StrandIndexType n = it->numFilled;
+      StrandIndexType n = iter->numFilled;
       if (n==1 || n==2)
       {
-         rLocalCollection.AddFill(*it);
+         rLocalCollection.AddFill(*iter);
 
          ns += n;
       }
@@ -1178,3 +1462,82 @@ StrandIndexType CStrandData::ProcessDirectFillData(const DirectStrandFillCollect
 
    return ns;
 }
+
+void CStrandData::ProcessStrandRowData()
+{
+   StrandIndexType nStraightStrands = 0;
+   StrandIndexType nTempStrands = 0;
+
+   GridIndexType rowStartGridIdx = 0; // strand strand grid index for the first grid point in the current strand row
+
+   CStrandRowCollection::iterator iter(m_StrandRows.begin());
+   CStrandRowCollection::iterator iterEnd(m_StrandRows.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      CStrandRow& strandRow(*iter);
+
+      GridIndexType nRowGridPoints = strandRow.m_nStrands/2; // # grid points in this row
+
+      for ( GridIndexType rowGridIdx = 0; rowGridIdx < nRowGridPoints; rowGridIdx++ )
+      {
+         GridIndexType gridIdx = rowStartGridIdx + rowGridIdx; // global grid point index
+
+         // extended strands
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)(i);
+            if ( strandRow.m_bIsExtendedStrand[end] )
+            {
+               ATLASSERT(!strandRow.m_bIsTemporaryStrand); // extended strands can't be temporary
+               ATLASSERT(!strandRow.m_bIsDebonded[end]); // extended strands can't be debonded
+
+               NextendedStrands[pgsTypes::Straight][end].push_back(gridIdx);
+            } // end if strand extension
+         }
+
+         // debonded strands
+         if ( strandRow.m_bIsDebonded[pgsTypes::metStart] || strandRow.m_bIsDebonded[pgsTypes::metEnd] )
+         {
+            ATLASSERT(!strandRow.m_bIsTemporaryStrand); // temporary strands are not debonded
+
+
+            CDebondData debondData;
+            debondData.needsConversion = false;
+            debondData.strandTypeGridIdx = gridIdx;
+
+            for ( int i = 0; i < 2; i++ )
+            {
+               pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)(i);
+               if ( strandRow.m_bIsDebonded[end] )
+               {
+                  ATLASSERT(!strandRow.m_bIsExtendedStrand[end] ); // debonded strands can't be extended
+                  debondData.Length[end] = strandRow.m_DebondLength[end];
+               }
+               else
+               {
+                  debondData.Length[end] = 0;
+               }
+            }
+
+            Debond[pgsTypes::Straight].push_back(debondData);
+         } // end if debond
+      } // next grid point
+
+
+      rowStartGridIdx += nRowGridPoints;
+
+      if ( strandRow.m_bIsTemporaryStrand )
+         nTempStrands += strandRow.m_nStrands;
+      else
+         nStraightStrands += strandRow.m_nStrands;
+
+   } // next strand row
+
+   Nstrands[pgsTypes::Straight]  = nStraightStrands;
+   Nstrands[pgsTypes::Temporary] = nTempStrands;
+   Nstrands[pgsTypes::Harped]    = 0;
+   Nstrands[pgsTypes::Permanent] = 0;
+
+   bSymmetricDebond = false;
+}
+

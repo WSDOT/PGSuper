@@ -570,11 +570,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\ACI209CreepCoefficientChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ADimChapterBuilder.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\AlignmentChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BasicCamberChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -828,6 +836,10 @@
 			</File>
 			<File
 				RelativePath=".\LossesChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LRFDCreepCoefficientChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -1139,6 +1151,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TimeStepCamberChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TimeStepParametersChapterBuilder.cpp"
 				>
 			</File>
@@ -1209,6 +1225,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\ADimChapterBuilder.h"
 				>
 			</File>
@@ -1218,6 +1238,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\AutoLib.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\BasicCamberChapterBuilder.h"
 				>
 			</File>
 			<File
@@ -1519,6 +1543,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\MomentCapacityDetailsChapterBuilder.h"
 				>
 			</File>
@@ -1732,6 +1760,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\TendonStressCheckTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TimeStepCamberChapterBuilder.h"
 				>
 			</File>
 			<File

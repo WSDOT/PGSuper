@@ -161,7 +161,7 @@ HRESULT CSegmentActivityBase::Load(IStructuredLoad* pStrLoad,IProgress* pProgres
 
       hr = pStrLoad->EndUnit();
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -225,14 +225,14 @@ HRESULT CSegmentActivityBase::SaveSubclassData(IStructuredSave* pStrSave,IProgre
 
 //////////////////////////////////////////////////////////////////////////////////
 // CConstructSegmentActivity
-CConstructSegmentActivity::CConstructSegmentActivity()
+CConstructSegmentActivity::CConstructSegmentActivity() : CSegmentActivityBase()
 {
-   m_bEnabled = false;
    m_RelaxationTime = 1.0; // day
    m_AgeAtRelease   = 1.0; // day
 }
 
-CConstructSegmentActivity::CConstructSegmentActivity(const CConstructSegmentActivity& rOther)
+CConstructSegmentActivity::CConstructSegmentActivity(const CConstructSegmentActivity& rOther) :
+CSegmentActivityBase(rOther)
 {
    MakeCopy(rOther);
 }
@@ -249,7 +249,7 @@ CConstructSegmentActivity& CConstructSegmentActivity::operator= (const CConstruc
 
 bool CConstructSegmentActivity::operator==(const CConstructSegmentActivity& rOther) const
 {
-   if ( m_bEnabled != rOther.m_bEnabled )
+   if ( !CSegmentActivityBase::operator ==(rOther) )
       return false;
 
    if ( !IsEqual(m_RelaxationTime,rOther.m_RelaxationTime) )
@@ -264,16 +264,6 @@ bool CConstructSegmentActivity::operator==(const CConstructSegmentActivity& rOth
 bool CConstructSegmentActivity::operator!=(const CConstructSegmentActivity& rOther) const
 {
    return !operator==(rOther);
-}
-
-void CConstructSegmentActivity::Enable(bool bEnable)
-{
-   m_bEnabled = bEnable;
-}
-
-bool CConstructSegmentActivity::IsEnabled() const
-{
-   return m_bEnabled;
 }
 
 void CConstructSegmentActivity::SetRelaxationTime(Float64 r)
@@ -298,31 +288,26 @@ Float64 CConstructSegmentActivity::GetAgeAtRelease() const
 
 void CConstructSegmentActivity::MakeCopy(const CConstructSegmentActivity& rOther)
 {
-   m_bEnabled       = rOther.m_bEnabled;
    m_RelaxationTime = rOther.m_RelaxationTime;
    m_AgeAtRelease   = rOther.m_AgeAtRelease;
 }
 
 void CConstructSegmentActivity::MakeAssignment(const CConstructSegmentActivity& rOther)
 {
+   CSegmentActivityBase::MakeAssignment(rOther);
    MakeCopy(rOther);
 }
 
-HRESULT CConstructSegmentActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
+HRESULT CConstructSegmentActivity::LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    CHRException hr;
 
    try
    {
-      hr = pStrLoad->BeginUnit(GetUnitName());
-
-      CComVariant var;
-      var.vt = VT_BOOL;
-      hr = pStrLoad->get_Property(_T("Enabled"),&var);
-      m_bEnabled = (var.boolVal == VARIANT_TRUE ? true : false);
-
       if ( m_bEnabled )
       {
+         CComVariant var;
+
          var.vt = VT_R8;
          pStrLoad->get_Property(_T("RelaxationTime"),&var);
          m_RelaxationTime = var.dblVal;
@@ -330,10 +315,8 @@ HRESULT CConstructSegmentActivity::Load(IStructuredLoad* pStrLoad,IProgress* pPr
          pStrLoad->get_Property(_T("AgeAtRelease"),&var);
          m_AgeAtRelease = var.dblVal;
       } 
-
-      hr = pStrLoad->EndUnit();
    }
-   catch(HRESULT hResult)
+   catch (HRESULT)
    {
       ATLASSERT(false);
       THROW_LOAD(InvalidFileFormat,pStrLoad);
@@ -342,16 +325,13 @@ HRESULT CConstructSegmentActivity::Load(IStructuredLoad* pStrLoad,IProgress* pPr
    return S_OK;
 }
 
-HRESULT CConstructSegmentActivity::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CConstructSegmentActivity::SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(GetUnitName(),1.0);
-   pStrSave->put_Property(_T("Enabled"),CComVariant(m_bEnabled));
    if ( m_bEnabled )
    {
       pStrSave->put_Property(_T("RelaxationTime"),CComVariant(m_RelaxationTime));
       pStrSave->put_Property(_T("AgeAtRelease"),CComVariant(m_AgeAtRelease));
    }
-   pStrSave->EndUnit();
 
    return S_OK;
 }

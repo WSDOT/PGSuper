@@ -39,6 +39,7 @@
 
 #include "ComCat.h"
 #include "PGSuperCatCom.h"
+#include "PGSpliceCatCom.h"
 
 #include <MathEx.h>
 
@@ -111,7 +112,7 @@ CLASS
    GirderLibraryEntry
 ****************************************************************************/
 //======================== LIFECYCLE  =======================================
-GirderLibraryEntry::GirderLibraryEntry() :
+GirderLibraryEntry::GirderLibraryEntry(CreateType createType) :
 m_bUseDifferentHarpedGridAtEnds(true),
 m_HarpingPointLocation(0.25),
 m_HarpPointMeasure(mtFractionOfGirderLength),
@@ -142,7 +143,23 @@ m_MaxDebondLengthByHardDistance(-1.0)
    // is defined by the beam factory this object holds. Therefore we need to create a
    // beam factory. Since we don't what kind of beam the user wants, use the first 
    // one registered as a default
-   std::vector<CString> familyNames = CBeamFamilyManager::GetBeamFamilyNames();
+   std::vector<CString> familyNames;
+   if ( createType == DEFAULT )
+   {
+      familyNames = CBeamFamilyManager::GetBeamFamilyNames();
+   }
+   else if ( createType == PRECAST )
+   {
+      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
+   }
+   else if ( createType == SPLICED )
+   {
+      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
+   }
+   else
+   {
+      ATLASSERT(false); // is there a new create type?
+   }
    ATLASSERT(0 < familyNames.size());
    CComPtr<IBeamFamily> beamFamily;
    HRESULT hr = CBeamFamilyManager::GetBeamFamily(familyNames.front(),&beamFamily);

@@ -463,12 +463,13 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   std::map<IDType,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
-   std::map<IDType,IBridgeSectionViewEventCallback*>::iterator iter;
-   for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+   const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pDoc->GetBridgeSectionViewCallbacks();
+   std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
-      IBridgeSectionViewEventCallback* callback = iter->second;
-      callback->OnBackgroundContextMenu(pMenu);
+      IBridgeSectionViewEventCallback* pCallback = callbackIter->second;
+      pCallback->OnBackgroundContextMenu(pMenu);
    }
 
 
@@ -608,16 +609,17 @@ void CBridgeSectionView::UpdateGirderTooltips()
          }
       }
 
-      // Slab Offset
-      Float64 startOffset, endOffset;
-      startOffset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
-      endOffset   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
-      CString strMsg4;
-      strMsg4.Format(_T("\r\n\r\nSlab Offset\r\nStart: %s\r\nEnd: %s"),
-         FormatDimension(startOffset,pDisplayUnits->GetComponentDimUnit()),
-         FormatDimension(endOffset,pDisplayUnits->GetComponentDimUnit()));
+#pragma Reminder("UPDATE: slab offset tooltip")
+      //// Slab Offset
+      //Float64 startOffset, endOffset;
+      //startOffset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+      //endOffset   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
+      //CString strMsg4;
+      //strMsg4.Format(_T("\r\n\r\nSlab Offset\r\nStart: %s\r\nEnd: %s"),
+      //   FormatDimension(startOffset,pDisplayUnits->GetComponentDimUnit()),
+      //   FormatDimension(endOffset,pDisplayUnits->GetComponentDimUnit()));
 
-      CString strMsg = strMsg1 + strMsg2 + strMsg3 + strMsg4;
+      CString strMsg = strMsg1 + strMsg2 + strMsg3;// + strMsg4;
 
 #if defined _DEBUG
             CString strSegID;

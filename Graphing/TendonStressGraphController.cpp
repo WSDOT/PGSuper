@@ -38,42 +38,36 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-IMPLEMENT_DYNCREATE(CTendonStressGraphController,CGirderGraphControllerBase)
+IMPLEMENT_DYNCREATE(CTendonStressGraphController,CMultiIntervalGirderGraphControllerBase)
 
 CTendonStressGraphController::CTendonStressGraphController():
-CGirderGraphControllerBase(false/*don't use ALL_GROUPS*/),
+CMultiIntervalGirderGraphControllerBase(false/*don't use ALL_GROUPS*/),
 m_DuctIdx(INVALID_INDEX)
 {
 }
 
-BEGIN_MESSAGE_MAP(CTendonStressGraphController, CGirderGraphControllerBase)
+BEGIN_MESSAGE_MAP(CTendonStressGraphController, CMultiIntervalGirderGraphControllerBase)
 	//{{AFX_MSG_MAP(CTendonStressGraphController)
    ON_CBN_SELCHANGE( IDC_DUCT, OnDuctChanged )
+   ON_CONTROL_RANGE( BN_CLICKED, IDC_STRESS, IDC_FORCE, OnRadioButton)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 BOOL CTendonStressGraphController::OnInitDialog()
 {
-   CGirderGraphControllerBase::OnInitDialog();
+   CMultiIntervalGirderGraphControllerBase::OnInitDialog();
 
    FillDuctCtrl();
+   CheckRadioButton(IDC_STRESS,IDC_FORCE,IDC_STRESS);
 
    return TRUE;
 }
 
-IndexType CTendonStressGraphController::GetGraphCount()
-{
-   return 1;
-}
-
 void CTendonStressGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
+   CMultiIntervalGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
    if ( lHint == HINT_BRIDGECHANGED )
    {
-      // The bridge changed, so reset the controls
-      FillGroupCtrl();
-      FillGirderCtrl();
-      FillIntervalCtrl();
       FillDuctCtrl();
    }
 }
@@ -81,6 +75,23 @@ void CTendonStressGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObjec
 DuctIndexType CTendonStressGraphController::GetDuct()
 {
    return m_DuctIdx;
+}
+
+bool CTendonStressGraphController::IsStressGraph()
+{
+   if ( GetSafeHwnd() == NULL )
+   {
+      return true;
+   }
+   else
+   {
+      return GetCheckedRadioButton(IDC_STRESS,IDC_FORCE) == IDC_STRESS ? true : false;
+   }
+}
+
+void CTendonStressGraphController::OnRadioButton(UINT nIDC)
+{
+   UpdateGraph();
 }
 
 void CTendonStressGraphController::OnGroupChanged()
@@ -97,9 +108,11 @@ void CTendonStressGraphController::OnDuctChanged()
 {
    CComboBox* pcbDuct = (CComboBox*)GetDlgItem(IDC_DUCT);
    int curSel = pcbDuct->GetCurSel();
-   if ( m_DuctIdx != (DuctIndexType)curSel )
+   DuctIndexType ductIdx = (DuctIndexType)pcbDuct->GetItemData(curSel);
+   if ( m_DuctIdx != ductIdx )
    {
-      m_DuctIdx = (DuctIndexType)curSel;
+      m_DuctIdx = ductIdx;
+      FillIntervalCtrl();
       UpdateGraph();
    }
 }
@@ -113,23 +126,27 @@ void CTendonStressGraphController::FillDuctCtrl()
    int curSel = pcbDuct->GetCurSel();
    pcbDuct->ResetContent();
 
+   int idx = pcbDuct->AddString(_T("Prestressing"));
+   pcbDuct->SetItemData(idx,(DWORD_PTR)INVALID_INDEX);
+
    GET_IFACE(ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(CGirderKey(grpIdx,gdrIdx));
    
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       CString strDuct;
-      strDuct.Format(_T("Duct %d"),LABEL_DUCT(ductIdx));
-      pcbDuct->AddString(strDuct);
+      strDuct.Format(_T("Tendon %d"),LABEL_DUCT(ductIdx));
+      idx = pcbDuct->AddString(strDuct);
+      pcbDuct->SetItemData(idx,(DWORD_PTR)ductIdx);
    }
 
-   if ( curSel != CB_ERR && curSel < nDucts)
+   if ( curSel == CB_ERR )
    {
-      curSel = pcbDuct->SetCurSel(curSel);
+      curSel = pcbDuct->SetCurSel(0);
    }
    else
    {
-      curSel = pcbDuct->SetCurSel(0);
+      curSel = pcbDuct->SetCurSel(curSel);
    }
 
    if ( curSel == CB_ERR )
@@ -139,19 +156,33 @@ void CTendonStressGraphController::FillDuctCtrl()
    }
    else
    {
-      m_DuctIdx = (DuctIndexType)curSel;
+      m_DuctIdx = (DuctIndexType)pcbDuct->GetItemData(curSel);
       pcbDuct->EnableWindow(TRUE);
+   }
+}
+
+IntervalIndexType CTendonStressGraphController::GetFirstInterval()
+{
+   GET_IFACE(IIntervals,pIntervals);
+   CGirderKey girderKey(GetGirderKey());
+   if ( m_DuctIdx == INVALID_INDEX )
+   {
+      return pIntervals->GetFirstStressStrandInterval(girderKey);
+   }
+   else
+   {
+      return pIntervals->GetFirstTendonStressingInterval(girderKey);
    }
 }
 
 #ifdef _DEBUG
 void CTendonStressGraphController::AssertValid() const
 {
-	CGirderGraphControllerBase::AssertValid();
+	CMultiIntervalGirderGraphControllerBase::AssertValid();
 }
 
 void CTendonStressGraphController::Dump(CDumpContext& dc) const
 {
-	CGirderGraphControllerBase::Dump(dc);
+	CMultiIntervalGirderGraphControllerBase::Dump(dc);
 }
 #endif //_DEBUG

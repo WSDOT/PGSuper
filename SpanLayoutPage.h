@@ -29,6 +29,8 @@
 // SpanLayoutPage.h : header file
 //
 #include "PGSuperAppPlugin\resource.h"
+#include "SameSlabOffsetHyperLink.h"
+#include <MFCTools\CacheEdit.h>
 
 class CSpanDetailsDlg;
 
@@ -59,7 +61,9 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
    afx_msg void OnHelp();
+   afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	//}}AFX_VIRTUAL
+   afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
 
 // Implementation
 protected:
@@ -69,7 +73,19 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   SpanIndexType m_SpanIdx;
+   PierIndexType m_PrevPierIdx;
+   PierIndexType m_NextPierIdx;
+
    Float64 m_SpanLength;
+
+   CCacheEdit m_ctrlStartSlabOffset;
+   CCacheEdit m_ctrlEndSlabOffset;
+
+   CSameSlabOffsetHyperLink      m_SlabOffsetHyperLink;
+   pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
+   void UpdateSlabOffsetHyperLinkText();
+   void UpdateSlabOffsetWindowState();
 };
 
 //{{AFX_INSERT_LOCATION}}

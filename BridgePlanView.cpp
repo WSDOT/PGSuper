@@ -1011,12 +1011,13 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-   std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
-   for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+   const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
+   std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
-      IBridgePlanViewEventCallback* callback = iter->second;
-      callback->OnBackgroundContextMenu(pMenu);
+      IBridgePlanViewEventCallback* pCallback = callbackIter->second;
+      pCallback->OnBackgroundContextMenu(pMenu);
    }
 
 
@@ -3306,8 +3307,8 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
    }
    else
    {
-      pgsTypes::PierSegmentConnectionType connectionType = pPierData->GetSegmentConnectionType();
-      switch(connectionType)
+      pgsTypes::PierSegmentConnectionType segmentConnectionType = pPierData->GetSegmentConnectionType();
+      switch(segmentConnectionType)
       {
       case pgsTypes::psctContinousClosureJoint:
          strConnection = _T("C-CJ");
@@ -3328,6 +3329,23 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
       default:
          ATLASSERT(false); // who added a new connection type?
          strConnection = _T("?");
+      }
+
+      pgsTypes::PierConnectionType pierConnectionType = pPierData->GetPierConnectionType();
+
+      switch( pierConnectionType )
+      {
+      case pgsTypes::Hinge:
+         strConnection += _T("-H");
+         break;
+
+      case pgsTypes::Roller:
+         strConnection += _T("-R");
+         break;
+
+      default:
+         ATLASSERT(0); // who added a new connection type?
+         strConnection += _T("-?");
       }
    }
 

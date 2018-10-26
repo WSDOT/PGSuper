@@ -38,7 +38,10 @@
 #define IDI_ICON3                       220
 #define IDI_BOXBEAM2                    220
 #define IDR_UBEAMFAMILY                 221
+#define IDI_SPLICED_IBEAM               221
 #define IDR_BOXBEAMFAMILY               222
+#define IDI_ICON2                       222
+#define IDI_SPLICED_UBEAM               222
 #define IDR_DECKBULBTEEBEAMFAMILY       223
 #define IDR_DOUBLETEEBEAMFAMILY         224
 #define IDR_RIBBEDBEAMFAMILY            225
@@ -54,7 +57,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        221
+#define _APS_NEXT_RESOURCE_VALUE        223
 #define _APS_NEXT_COMMAND_VALUE         32768
 #define _APS_NEXT_CONTROL_VALUE         201
 #define _APS_NEXT_SYMED_VALUE           113

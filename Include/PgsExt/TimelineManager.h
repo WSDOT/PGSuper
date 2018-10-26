@@ -166,10 +166,10 @@ public:
    void SetTempSupportEvents(SupportIDType tsID,EventIndexType erectIdx,EventIndexType removeIdx);
    void GetTempSupportEvents(SupportIDType tsID,EventIndexType* pErectIdx,EventIndexType* pRemoveIdx) const;
 
-   EventIndexType GetSegmentConstructionEventIndex() const;
-   EventIDType GetSegmentConstructionEventID() const;
-   void SetSegmentConstructionEventByIndex(EventIndexType eventIdx);
-   void SetSegmentConstructionEventByID(EventIDType ID);
+   EventIndexType GetSegmentConstructionEventIndex(SegmentIDType segmentID) const;
+   EventIDType GetSegmentConstructionEventID(SegmentIDType segmentID) const;
+   void SetSegmentConstructionEventByIndex(SegmentIDType segmentID,EventIndexType eventIdx);
+   void SetSegmentConstructionEventByID(SegmentIDType segmentID,EventIDType ID);
 
    EventIndexType GetSegmentErectionEventIndex(SegmentIDType segmentID) const;
    EventIDType GetSegmentErectionEventID(SegmentIDType segmentID) const;

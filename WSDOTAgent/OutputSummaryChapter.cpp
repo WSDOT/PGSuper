@@ -160,7 +160,7 @@ void section_properties(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey&
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    GET_IFACE2(pBroker,IGirder,pGirder);
    bool bPrismaticNonComp = pGirder->IsPrismatic(releaseIntervalIdx,segmentKey);
@@ -310,7 +310,7 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx    = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx    = pIntervals->GetLiveLoadInterval(segmentKey);
 
    (*pTable)(0,0) << _T("Prestress Loss at Lifting");
    (*pTable)(0,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,liftSegmentIntervalIdx,pgsTypes::Middle) );
@@ -331,8 +331,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, disp, pDisplayUnits->GetDisplacementUnit(), true );
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( camber, IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetDisplacementUnit(), true, false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, disp, pDisplayUnits->GetDeflectionUnit(), true );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( camber, IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetDeflectionUnit(), true, false );
 
    // Get the interfaces we need
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -370,27 +370,27 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    Float64 temp;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
 
    delta_gdr = pProductForces->GetGirderDeflectionForCamber( poi );
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   delta_dl = pProductForces->GetDisplacement(castDeckIntervalIdx, pftSlab, poi, bat )
-            + pProductForces->GetDisplacement(castDeckIntervalIdx, pftDiaphragm, poi, bat )
-            + pProductForces->GetDisplacement(castDeckIntervalIdx, pftShearKey, poi, bat );
+   delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab, poi, bat, ctIncremental )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, poi, bat, ctIncremental )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pftShearKey, poi, bat, ctIncremental );
 
-   delta_overlay = pProductForces->GetDisplacement(overlayIntervalIdx, pftOverlay, poi, bat );
+   delta_overlay = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, poi, bat, ctIncremental );
 
-   delta_sidl = pProductForces->GetDisplacement(railingSystemIntervalIdx, pftTrafficBarrier, poi, bat );
-   delta_sidewalk = pProductForces->GetDisplacement(railingSystemIntervalIdx, pftSidewalk, poi, bat );
+   delta_sidl = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, ctIncremental );
+   delta_sidewalk = pProductForces->GetDeflection(railingSystemIntervalIdx, pftSidewalk, poi, bat, ctIncremental );
 
-   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, liveLoadIntervalIdx, poi, bat, true, false, &delta_ll, &temp );
+   pProductForces->GetLiveLoadDeflection(pgsTypes::lltDesign, liveLoadIntervalIdx, poi, bat, true, false, &delta_ll, &temp );
 
-   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi, bat, &delta_oll, &temp );
+   pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi, bat, &delta_oll, &temp );
 
    // get # of days for creep
 
@@ -839,7 +839,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType intervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1001,7 +1001,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType intervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1121,7 +1121,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1388,7 +1388,7 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    StrandIndexType NhMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Harped);
 

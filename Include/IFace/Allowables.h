@@ -170,7 +170,7 @@ interface IAllowableConcreteStress : IUnknown
    virtual std::vector<pgsTypes::LimitState> GetStressCheckLimitStates() = 0;
 
    // Returns true if the stress check is applicable to this interval, limit state, and stress type
-   virtual bool IsStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType) = 0;
+   virtual bool IsStressCheckApplicable(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType) = 0;
 
    // Returns true if the the allowable tension stress in the specified interval has a "with bonded reinforcement"
    // option. If bInPTZ is true, the result is for the precompressed tensile zone, otherwise it is for areas other than the

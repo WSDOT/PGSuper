@@ -67,7 +67,6 @@ public:
 	CSpinButtonCtrl	            m_NumGdrSpinner[2];
    CSameNumberOfGirdersHyperLink m_NumGirdersHyperLink[2];
    CSameGirderSpacingHyperLink   m_GirderSpacingHyperLink[2];
-   CSameSlabOffsetHyperLink      m_SlabOffsetHyperLink[2];
    CComboBox                     m_cbGirderSpacingMeasurement[2];
 
    GirderIndexType m_nGirders[2];
@@ -78,11 +77,6 @@ public:
    GirderIndexType m_RefGirderIdx[2];
    Float64 m_RefGirderOffset[2];
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType[2];
-
-   pgsTypes::SlabOffsetType m_SlabOffsetType;
-   pgsTypes::SlabOffsetType m_SlabOffsetTypeCache;
-   Float64 m_SlabOffset[2];
-   CString m_strSlabOffsetCache[2];
 
    pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
 
@@ -111,7 +105,6 @@ protected:
 	//}}AFX_MSG
    afx_msg LRESULT OnChangeSameNumberOfGirders(WPARAM wParam,LPARAM lParam);
    afx_msg LRESULT OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
    CStatic m_NoSpacingNote;
@@ -136,7 +129,6 @@ protected:
 
    void UpdateGirderSpacingHyperLinkText();
    void UpdateNumGirdersHyperLinkText();
-   void UpdateSlabOffsetHyperLinkText();
    
    void DisableAll();
    void UpdateLinkedNote();

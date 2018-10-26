@@ -70,8 +70,8 @@ DEFINE_GUID(IID_IGirderHaunch,
 0x4f3feb86, 0x88b1, 0x11d2, 0x88, 0x82, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IGirderHaunch : IUnknown
 {
-   virtual Float64 GetRequiredSlabOffset(const CSegmentKey& segmentKey) = 0;
-   virtual void GetHaunchDetails(const CSegmentKey& segmentKey,HAUNCHDETAILS* pDetails) = 0;
+   virtual Float64 GetRequiredSlabOffset(const CGirderKey& girderKey) = 0;
+   virtual void GetHaunchDetails(const CGirderKey& girderKey,HAUNCHDETAILS* pDetails) = 0;
 };
 
 

@@ -248,8 +248,8 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
-   std::_tstring stage_name( pIntervals->GetDescription(intervalIdx) );
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
+   std::_tstring stage_name( pIntervals->GetDescription(girderKey,intervalIdx) );
 
    GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
    GET_IFACE2(pBroker,IBridge,pBridge);

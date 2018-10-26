@@ -25,7 +25,7 @@
 #include <Graphing\InfluenceLineGraphBuilder.h>
 #include <Graphing\GirderGraphControllerBase.h>
 
-class CInfluenceLineGraphController : public CGirderGraphControllerBase
+class CInfluenceLineGraphController : public CIntervalGirderGraphControllerBase
 {
 public:
    CInfluenceLineGraphController();

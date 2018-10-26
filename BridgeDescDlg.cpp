@@ -29,6 +29,8 @@
 #include "BridgeDescDlg.h"
 #include <PgsExt\DeckRebarData.h>
 
+#include "PGSuperDocBase.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -49,6 +51,18 @@ CBridgeDescDlg::CBridgeDescDlg(const CBridgeDescription2& bridgeDesc,CWnd* pPare
 
 CBridgeDescDlg::~CBridgeDescDlg()
 {
+   DestroyExtensionPages();
+}
+
+INT_PTR CBridgeDescDlg::DoModal()
+{
+   INT_PTR result = CPropertySheet::DoModal();
+   if ( result == IDOK )
+   {
+      NotifyExtensionPages();
+   }
+
+   return result;
 }
 
 void CBridgeDescDlg::SetBridgeDescription(const CBridgeDescription2& bridgeDesc)
@@ -78,6 +92,78 @@ void CBridgeDescDlg::Init()
    AddPage( &m_DeckDetailsPage );
    AddPage( &m_DeckRebarPage );
    AddPage( &m_EnvironmentalPage );
+
+   CreateExtensionPages();
+}
+
+void CBridgeDescDlg::CreateExtensionPages()
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+
+   const std::map<IDType,IEditBridgeCallback*>& callbacks = pDoc->GetEditBridgeCallbacks();
+   std::map<IDType,IEditBridgeCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditBridgeCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditBridgeCallback* pCallback = callbackIter->second;
+      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
+      if ( pPage )
+      {
+         EditBridgeExtension extension;
+         extension.callbackID = callbackIter->first;
+         extension.pCallback = pCallback;
+         extension.pPage = pPage;
+         m_ExtensionPages.insert(extension);
+         AddPage(pPage);
+      }
+   }
+}
+
+void CBridgeDescDlg::DestroyExtensionPages()
+{
+   std::set<EditBridgeExtension>::iterator extIter(m_ExtensionPages.begin());
+   std::set<EditBridgeExtension>::iterator extIterEnd(m_ExtensionPages.end());
+   for ( ; extIter != extIterEnd; extIter++ )
+   {
+      CPropertyPage* pPage = extIter->pPage;
+      delete pPage;
+   }
+   m_ExtensionPages.clear();
+}
+
+const std::set<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages() const
+{
+   return m_ExtensionPages;
+}
+
+std::set<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages()
+{
+   return m_ExtensionPages;
+}
+
+txnTransaction* CBridgeDescDlg::GetExtensionPageTransaction()
+{
+   if ( 0 < m_Macro.GetTxnCount() )
+      return m_Macro.CreateClone();
+   else
+      return NULL;
+}
+
+void CBridgeDescDlg::NotifyExtensionPages()
+{
+   std::set<EditBridgeExtension>::iterator pageIter(m_ExtensionPages.begin());
+   std::set<EditBridgeExtension>::iterator pageIterEnd(m_ExtensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      IEditBridgeCallback* pCallback = pageIter->pCallback;
+      CPropertyPage* pPage = pageIter->pPage;
+      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      if ( pTxn )
+      {
+         m_Macro.AddTransaction(pTxn);
+      }
+   }
 }
 
 BEGIN_MESSAGE_MAP(CBridgeDescDlg, CPropertySheet)
@@ -85,7 +171,30 @@ BEGIN_MESSAGE_MAP(CBridgeDescDlg, CPropertySheet)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
    WBFL_ON_PROPSHEET_OK
+	ON_MESSAGE(WM_KICKIDLE,OnKickIdle)
 END_MESSAGE_MAP()
+
+LRESULT CBridgeDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
+{
+   // The CPropertySheet::OnKickIdle method calls GetActivePage()
+   // which doesn't work with extension pages. Since GetActivePage
+   // is not virtual, we have to replace the implementation of
+   // OnKickIdle.
+   // The same problem exists with OnCommandHelp
+
+	ASSERT_VALID(this);
+
+	CPropertyPage* pPage = GetPage(GetActiveIndex());
+
+	/* Forward the message on to the active page of the property sheet */
+	if( pPage != NULL )
+	{
+		//ASSERT_VALID(pPage);
+		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
+	}
+	else
+		return 0;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDlg message handlers
@@ -125,7 +234,10 @@ void CBridgeDescDlg::DoDataExchange(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       // force the active page to update its data
-      CPropertyPage* pPage = GetActivePage();
-      pPage->UpdateData(TRUE);
+   	CPropertyPage* pPage = GetPage(GetActiveIndex());
+      if ( !pPage->UpdateData(TRUE) )
+      {
+         pDX->Fail();
+      }
    }
 }

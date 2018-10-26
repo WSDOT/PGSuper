@@ -56,7 +56,8 @@ public:
    CConcretePropertyGraphBuilder(const CConcretePropertyGraphBuilder& other);
    virtual ~CConcretePropertyGraphBuilder();
 
-   virtual int CreateControls(CWnd* pParent,UINT nID);
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
    virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC);
    virtual CGraphBuilder* Clone();
 

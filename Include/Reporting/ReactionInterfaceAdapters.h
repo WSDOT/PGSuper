@@ -218,7 +218,7 @@ private:
 class ReactionDecider
 {
 public:
-   ReactionDecider(ReactionTableType tableType, const ReactionLocation& location, IBridge* pBridge,IIntervals* pIntervals);
+   ReactionDecider(ReactionTableType tableType, const ReactionLocation& location, const CGirderKey& girderKey,IBridge* pBridge,IIntervals* pIntervals);
 
    // If true, report results
    bool DoReport(IntervalIndexType intervalIdx);

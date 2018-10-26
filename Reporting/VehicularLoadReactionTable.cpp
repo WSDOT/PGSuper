@@ -90,7 +90,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval() : pIntervals->GetLiveLoadInterval() );
+   IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval(girderKey) : pIntervals->GetLiveLoadInterval(girderKey) );
 
    bool bPermit = false;
 

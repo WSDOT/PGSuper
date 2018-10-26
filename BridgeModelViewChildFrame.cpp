@@ -39,6 +39,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include "htmlhelp\HelpTopics.hh"
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\ClosureJointData.h>
 #include "EditBoundaryConditions.h"
 
 #include "PGSuperAppPlugin\InsertSpanDlg.h"
@@ -683,10 +684,80 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       }
       else
       {
-#pragma Reminder("UPDATE: BUG: INVALID_INDEX is a dummy value. Need to figure out actual events")
-         ATLASSERT(false); // this is to just get my attention when this method gets called
          pgsTypes::PierSegmentConnectionType oldConnectionType = pPier->GetSegmentConnectionType();
-         pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,INVALID_INDEX,newSegmentConnectionType,INVALID_INDEX);
+         EventIndexType oldClosureEventIdx = INVALID_INDEX;
+         EventIndexType newClosureEventIdx = INVALID_INDEX;
+         const CGirderGroupData* pGroup = pPier->GetGirderGroup(pgsTypes::Back); // this is an interior pier so back/ahead are the same
+         GroupIndexType grpIdx = pGroup->GetIndex();
+         if ( oldConnectionType == pgsTypes::psctContinousClosureJoint || oldConnectionType == pgsTypes::psctIntegralClosureJoint )
+         {
+            IndexType closureIdx = pPier->GetClosureJoint(0)->GetIndex();
+            oldClosureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(grpIdx,closureIdx);
+         }
+
+         if ( newSegmentConnectionType == pgsTypes::psctContinousClosureJoint || newSegmentConnectionType == pgsTypes::psctIntegralClosureJoint )
+         {
+            // A new closure joint is being created. We need to supply the bridge model with the event index
+            // for when the closure joint is cast. Since the user wasn't prompted (this is a response
+            // handler for a right-click context menu) the first-best guess is to use the closure casting
+            // event for another closure joint in this girder.
+
+            newClosureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(grpIdx,0);
+            if ( newClosureEventIdx == INVALID_INDEX )
+            {
+               // there isn't another closure joint in this group with a valid event index
+               // the next best guess is to use the event just before the event when the first 
+               // tendon is installed.
+               EventIndexType eventIdx = INVALID_INDEX;
+               GirderIndexType nGirders = pGroup->GetGirderCount();
+               for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+               {
+                  const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+                  CGirderKey girderKey(pGirder->GetGirderKey());
+                  const CPTData* pPT = pGirder->GetPostTensioning();
+                  DuctIndexType nDucts = pPT->GetDuctCount();
+                  for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+                  {
+                     EventIndexType stressTendonEventIdx = pIBridgeDesc->GetStressTendonEventIndex(girderKey,ductIdx);
+                     eventIdx = Min(eventIdx,stressTendonEventIdx);
+                  }
+               }
+
+               if ( eventIdx != INVALID_INDEX )
+               {
+                  newClosureEventIdx = eventIdx-1;
+               }
+            }
+
+            if ( newClosureEventIdx == INVALID_INDEX )
+            {
+               // the last best guess is to cast the closure when the segments are installed
+               EventIndexType eventIdx = 0;
+               GirderIndexType nGirders = pGroup->GetGirderCount();
+               for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+               {
+                  const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+                  SegmentIndexType nSegments = pGirder->GetSegmentCount();
+                  for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+                  {
+                     const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+                     CSegmentKey segmentKey(pSegment->GetSegmentKey());
+                     EventIndexType erectSegmentEventIdx = pIBridgeDesc->GetSegmentErectionEventIndex(segmentKey);
+                     eventIdx = Max(eventIdx,erectSegmentEventIdx);
+                  }
+               }
+
+               if ( eventIdx != INVALID_INDEX )
+               {
+                  newClosureEventIdx = eventIdx;
+               }
+            }
+
+            // if this fires then there is a use case that hasn't been considered
+            ATLASSERT(newClosureEventIdx != INVALID_INDEX);
+         }
+
+         pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,oldClosureEventIdx,newSegmentConnectionType,newClosureEventIdx);
       }
       txnTxnManager::GetInstance()->Execute(pTxn);
    }

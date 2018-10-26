@@ -38,14 +38,14 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-IMPLEMENT_DYNCREATE(CInfluenceLineGraphController,CGirderGraphControllerBase)
+IMPLEMENT_DYNCREATE(CInfluenceLineGraphController,CIntervalGirderGraphControllerBase)
 
 CInfluenceLineGraphController::CInfluenceLineGraphController():
-CGirderGraphControllerBase(false/*don't use ALL_GROUPS*/)
+CIntervalGirderGraphControllerBase(false/*don't use ALL_GROUPS*/)
 {
 }
 
-BEGIN_MESSAGE_MAP(CInfluenceLineGraphController, CGirderGraphControllerBase)
+BEGIN_MESSAGE_MAP(CInfluenceLineGraphController, CIntervalGirderGraphControllerBase)
 	//{{AFX_MSG_MAP(CInfluenceLineGraphController)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -54,11 +54,11 @@ BOOL CInfluenceLineGraphController::OnInitDialog()
 {
    FillGraphTypeControl();
 
-   CGirderGraphControllerBase::OnInitDialog();
+   CIntervalGirderGraphControllerBase::OnInitDialog();
 
    // This graph always works in the last interval
    GET_IFACE(IIntervals,pIntervals);
-   m_IntervalIdx = pIntervals->GetIntervalCount()-1;
+   m_IntervalIdx = pIntervals->GetIntervalCount(GetGirderKey())-1;
 
    return TRUE;
 }
@@ -95,11 +95,11 @@ CInfluenceLineGraphBuilder::GraphType CInfluenceLineGraphController::GetGraphTyp
 #ifdef _DEBUG
 void CInfluenceLineGraphController::AssertValid() const
 {
-	CGirderGraphControllerBase::AssertValid();
+	CIntervalGirderGraphControllerBase::AssertValid();
 }
 
 void CInfluenceLineGraphController::Dump(CDumpContext& dc) const
 {
-	CGirderGraphControllerBase::Dump(dc);
+	CIntervalGirderGraphControllerBase::Dump(dc);
 }
 #endif //_DEBUG

@@ -648,6 +648,18 @@ BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       }
    }
 
+   if ( nCol == 5 )
+   {
+      CString strSize = GetCellValue(nRow,nCol-1);
+      CString strSpacing = GetCellValue(nRow,nCol);
+      Float64 spacing = _tstof(strSpacing);
+      if ( strSize != _T("None") && IsLE(spacing,0.0) )
+      {
+         SetWarningText(_T("Bar spacing must be greater than zero"));
+         return false;
+      }
+   }
+
    if ( nCol == 6 || nCol == 7 )
    {
       CString strCutoff = GetCellValue(nRow,6);

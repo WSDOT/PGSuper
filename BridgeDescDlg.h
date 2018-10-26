@@ -36,16 +36,22 @@
 #include "BridgeDescDeckReinforcementPage.h"
 #include "BridgeDescEnvironmental.h"
 
+#include <IFace\ExtendUI.h>
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDlg
 
-class CBridgeDescDlg : public CPropertySheet
+class CBridgeDescDlg : public CPropertySheet, public IEditBridgeData
 {
 	DECLARE_DYNAMIC(CBridgeDescDlg)
 
 // Construction
 public:
 	CBridgeDescDlg(const CBridgeDescription2& bridgeDesc,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+
+// IEditBridgeData
+public:
+   virtual void EBDummy() {};
 
 // Attributes
 public:
@@ -73,9 +79,21 @@ public:
 public:
 	virtual ~CBridgeDescDlg();
 
+   virtual INT_PTR DoModal();
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsble for deleting this object
+   txnTransaction* GetExtensionPageTransaction();
+
+   const std::set<EditBridgeExtension>& GetExtensionPages() const;
+   std::set<EditBridgeExtension>& GetExtensionPages();
+
 	// Generated message map functions
 protected:
    void Init();
+   void CreateExtensionPages();
+   void DestroyExtensionPages();
+
    CBridgeDescription2 m_BridgeDesc; // this is the bridge we are operating on
 
    friend CBridgeDescGeneralPage;
@@ -87,10 +105,16 @@ protected:
    friend CBridgeDescDeckRebarGrid;
    friend CBridgeDescFramingGrid;
 
+
+   txnMacroTxn m_Macro;
+   std::set<EditBridgeExtension> m_ExtensionPages;
+   void NotifyExtensionPages();
+
 	//{{AFX_MSG(CBridgeDescDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.
    virtual void DoDataExchange(CDataExchange* pDX);
 	//}}AFX_MSG
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
 };
 

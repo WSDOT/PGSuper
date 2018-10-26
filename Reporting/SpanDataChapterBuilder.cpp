@@ -82,9 +82,9 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -114,7 +114,7 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             {
                for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
                {
-                  *p << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
+                  *p << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,intervalIdx) << rptNewLine;
                   CStrandEccTable ecc_table;
                   *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
                }

@@ -64,7 +64,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();

@@ -154,7 +154,6 @@
 #include "EditSpan.h"
 #include "InsertDeleteSpan.h"
 #include "EditLLDF.h"
-#include "CopyGirder.h"
 #include "EditEnvironment.h"
 #include "EditProjectCriteria.h"
 #include "EditRatingCriteria.h"
@@ -175,6 +174,7 @@
 #include <algorithm>
 
 #include <PgsExt\StatusItem.h>
+#include <PgsExt\MacroTxn.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -307,7 +307,7 @@ m_bAutoCalcEnabled(true)
 
    m_pPGSuperDocProxyAgent = NULL;
 
-   m_ViewCallbackID = 0;
+   m_CallbackID = 0;
 
    // Reserve a range of command IDs for extension agent commands (which are current supported)
    // and EAFDocumentPlugin objects (which are not currently supported in PGSuper)
@@ -437,9 +437,20 @@ void CPGSuperDocBase::EditBridgeDescription(int nPage)
    if ( dlg.DoModal() == IDOK )
    {
 
-      txnEditBridge* pTxn = new txnEditBridge(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
+      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
                                               oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? expNormal : expSevere,
                                               oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity);
+
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
@@ -461,7 +472,17 @@ bool CPGSuperDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditPier* pTxn = new txnEditPier(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
+      txnTransaction* pTxn = new txnEditPier(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn != NULL )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
+
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -484,7 +505,17 @@ bool CPGSuperDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditSpan* pTxn = new txnEditSpan(spanIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
+      txnTransaction* pTxn = new txnEditSpan(spanIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
+
+      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
+      {
+         txnMacroTxn* pMacro = new pgsMacroTxn;
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(pTxn);
+         pMacro->AddTransaction(pExtensionTxn);
+         pTxn = pMacro;
+      }
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -494,6 +525,8 @@ bool CPGSuperDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 
 bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
 {
+#pragma Reminder("UPDATE: move this to the CPGSuperDoc class... it doesn't belong in the common base class")
+   // it doesn't apply to PGSplice
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
@@ -508,7 +541,7 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    txnEditPrecastSegmentData oldSegmentData;
    oldSegmentData.m_SegmentKey           = segmentKey;
    oldSegmentData.m_SegmentData          = *pSegment;
-   oldSegmentData.m_ConstructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex();
+   oldSegmentData.m_ConstructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(pSegment->GetID());
    oldSegmentData.m_ErectionEventIdx     = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
 
    if (pSegment->Strands.NumPermStrandsType != CStrandData::npsDirectSelection )
@@ -538,18 +571,17 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    Float64 maxDebondLength = pBridge->GetSegmentLength(segmentKey)/2.0;
 
    // Fire up dialog
+   txnEditPrecastSegmentData newSegmentData = oldSegmentData;
+
    CGirderSelectStrandsDlg dlg;
-   dlg.InitializeData(segmentKey, pSegment->Strands, pSpecEntry, pGdrEntry,
+#pragma Reminder("UPDATE: clean up this initialization... the same code is in multiple locations")
+   // this initialization is here, in BridgeDescPrestressPage.cpp and in GirderSegmentDlg.cpp
+   // make the page more self-sufficient
+   dlg.m_SelectStrandsPage.InitializeData(segmentKey, &newSegmentData.m_SegmentData.Strands, pSpecEntry, pGdrEntry,
                       allowEndAdjustment, allowHpAdjustment, endMeasureType, hpMeasureType, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
 
    if ( dlg.DoModal() == IDOK )
    {
-      // Make copy of girder data before we modify
-      txnEditPrecastSegmentData newSegmentData = oldSegmentData;
-
-      // Get new girder data from dialog
-      dlg.GetData( newSegmentData.m_SegmentData.Strands );
-
       // The dialog does not deal with Pjack. Update pjack here
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
       GET_IFACE(IPretensionForce, pPrestress );
@@ -834,7 +866,7 @@ BOOL CPGSuperDocBase::UpdateTemplates()
 
 IDType CPGSuperDocBase::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_BridgePlanViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -850,14 +882,14 @@ bool CPGSuperDocBase::UnregisterBridgePlanViewCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IBridgePlanViewEventCallback*> CPGSuperDocBase::GetBridgePlanViewCallbacks()
+const std::map<IDType,IBridgePlanViewEventCallback*>& CPGSuperDocBase::GetBridgePlanViewCallbacks()
 {
    return m_BridgePlanViewCallbacks;
 }
 
 IDType CPGSuperDocBase::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_BridgeSectionViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -873,14 +905,14 @@ bool CPGSuperDocBase::UnregisterBridgeSectionViewCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IBridgeSectionViewEventCallback*> CPGSuperDocBase::GetBridgeSectionViewCallbacks()
+const std::map<IDType,IBridgeSectionViewEventCallback*>& CPGSuperDocBase::GetBridgeSectionViewCallbacks()
 {
    return m_BridgeSectionViewCallbacks;
 }
 
 IDType CPGSuperDocBase::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_GirderElevationViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -896,14 +928,14 @@ bool CPGSuperDocBase::UnregisterGirderElevationViewCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IGirderElevationViewEventCallback*> CPGSuperDocBase::GetGirderElevationViewCallbacks()
+const std::map<IDType,IGirderElevationViewEventCallback*>& CPGSuperDocBase::GetGirderElevationViewCallbacks()
 {
    return m_GirderElevationViewCallbacks;
 }
 
 IDType CPGSuperDocBase::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_GirderSectionViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -919,9 +951,227 @@ bool CPGSuperDocBase::UnregisterGirderSectionViewCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IGirderSectionViewEventCallback*> CPGSuperDocBase::GetGirderSectionViewCallbacks()
+const std::map<IDType,IGirderSectionViewEventCallback*>& CPGSuperDocBase::GetGirderSectionViewCallbacks()
 {
    return m_GirderSectionViewCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterEditPierCallback(IEditPierCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditPierCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterEditPierCallback(IDType ID)
+{
+   std::map<IDType,IEditPierCallback*>::iterator found = m_EditPierCallbacks.find(ID);
+   if ( found == m_EditPierCallbacks.end() )
+      return false;
+
+   m_EditPierCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IEditPierCallback*>& CPGSuperDocBase::GetEditPierCallbacks()
+{
+   return m_EditPierCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditTemporarySupportCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterEditTemporarySupportCallback(IDType ID)
+{
+   std::map<IDType,IEditTemporarySupportCallback*>::iterator found = m_EditTemporarySupportCallbacks.find(ID);
+   if ( found == m_EditTemporarySupportCallbacks.end() )
+      return false;
+
+   m_EditTemporarySupportCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IEditTemporarySupportCallback*>& CPGSuperDocBase::GetEditTemporarySupportCallbacks()
+{
+   return m_EditTemporarySupportCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterEditSpanCallback(IEditSpanCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditSpanCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterEditSpanCallback(IDType ID)
+{
+   std::map<IDType,IEditSpanCallback*>::iterator found = m_EditSpanCallbacks.find(ID);
+   if ( found == m_EditSpanCallbacks.end() )
+      return false;
+
+   m_EditSpanCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IEditSpanCallback*>& CPGSuperDocBase::GetEditSpanCallbacks()
+{
+   return m_EditSpanCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback * pCopyCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditGirderCallbacks.insert(std::make_pair(key,pCallback));
+
+   if ( pCopyCallback )
+   {
+      m_CopyGirderPropertiesCallbacks.insert(std::make_pair(key,pCopyCallback));
+   }
+
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterEditGirderCallback(IDType ID)
+{
+   std::map<IDType,IEditGirderCallback*>::iterator foundCallback = m_EditGirderCallbacks.find(ID);
+   if ( foundCallback == m_EditGirderCallbacks.end() )
+      return false;
+
+   m_EditGirderCallbacks.erase(foundCallback);
+
+   std::map<IDType,ICopyGirderPropertiesCallback*>::iterator foundCopyCallback = m_CopyGirderPropertiesCallbacks.find(ID);
+   if ( foundCopyCallback != m_CopyGirderPropertiesCallbacks.end() )
+   {
+      m_CopyGirderPropertiesCallbacks.erase(foundCopyCallback);
+   }
+
+   return true;
+}
+
+const std::map<IDType,IEditGirderCallback*>& CPGSuperDocBase::GetEditGirderCallbacks()
+{
+   return m_EditGirderCallbacks;
+}
+
+const std::map<IDType,ICopyGirderPropertiesCallback*>& CPGSuperDocBase::GetCopyGirderPropertiesCallbacks()
+{
+   return m_CopyGirderPropertiesCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditSplicedGirderCallbacks.insert(std::make_pair(key,pCallback));
+
+   if ( pCopyCallback )
+   {
+      m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(key,pCopyCallback));
+   }
+
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterEditSplicedGirderCallback(IDType ID)
+{
+   std::map<IDType,IEditSplicedGirderCallback*>::iterator found = m_EditSplicedGirderCallbacks.find(ID);
+   if ( found == m_EditSplicedGirderCallbacks.end() )
+      return false;
+
+   m_EditSplicedGirderCallbacks.erase(found);
+
+   std::map<IDType,ICopyGirderPropertiesCallback*>::iterator foundCopyCallback = m_CopySplicedGirderPropertiesCallbacks.find(ID);
+   if ( foundCopyCallback != m_CopySplicedGirderPropertiesCallbacks.end() )
+   {
+      m_CopySplicedGirderPropertiesCallbacks.erase(foundCopyCallback);
+   }
+
+   return true;
+}
+
+const std::map<IDType,IEditSplicedGirderCallback*>& CPGSuperDocBase::GetEditSplicedGirderCallbacks()
+{
+   return m_EditSplicedGirderCallbacks;
+}
+
+const std::map<IDType,ICopyGirderPropertiesCallback*>& CPGSuperDocBase::GetCopySplicedGirderPropertiesCallbacks()
+{
+   return m_CopySplicedGirderPropertiesCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterEditSegmentCallback(IEditSegmentCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditSegmentCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterEditSegmentCallback(IDType ID)
+{
+   std::map<IDType,IEditSegmentCallback*>::iterator found = m_EditSegmentCallbacks.find(ID);
+   if ( found == m_EditSegmentCallbacks.end() )
+      return false;
+
+   m_EditSegmentCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IEditSegmentCallback*>& CPGSuperDocBase::GetEditSegmentCallbacks()
+{
+   return m_EditSegmentCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditClosureJointCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterEditClosureJointCallback(IDType ID)
+{
+   std::map<IDType,IEditClosureJointCallback*>::iterator found = m_EditClosureJointCallbacks.find(ID);
+   if ( found == m_EditClosureJointCallbacks.end() )
+      return false;
+
+   m_EditClosureJointCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IEditClosureJointCallback*>& CPGSuperDocBase::GetEditClosureJointCallbacks()
+{
+   return m_EditClosureJointCallbacks;
+}
+
+IDType CPGSuperDocBase::RegisterEditBridgeCallback(IEditBridgeCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditBridgeCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDocBase::UnregisterEditBridgeCallback(IDType ID)
+{
+   std::map<IDType,IEditBridgeCallback*>::iterator found = m_EditBridgeCallbacks.find(ID);
+   if ( found == m_EditBridgeCallbacks.end() )
+      return false;
+
+   m_EditBridgeCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IEditBridgeCallback*>& CPGSuperDocBase::GetEditBridgeCallbacks()
+{
+   return m_EditBridgeCallbacks;
 }
 
 BOOL CPGSuperDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
@@ -935,6 +1185,22 @@ BOOL CPGSuperDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 
 void CPGSuperDocBase::OnCloseDocument()
 {
+   // Put report favorites options back into CPGSuperBaseAppPlugin
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSuperBaseAppPlugin* pPGSuperAppPlugin = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+
+   bool doDisplayFavorites = GetDoDisplayFavoriteReports();
+   std::vector<std::_tstring> Favorites = GetFavoriteReports();
+
+   pPGSuperAppPlugin->SetDoDisplayFavoriteReports(doDisplayFavorites);
+   pPGSuperAppPlugin->SetFavoriteReports(Favorites);
+
+   // user-defined custom reports
+   CEAFCustomReports reports = GetCustomReports();
+   pPGSuperAppPlugin->SetCustomReports(reports);
+
    // Put the main frame icon back the way it was
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    pFrame->SetIcon(m_hMainFrameBigIcon,TRUE);
@@ -976,6 +1242,11 @@ void CPGSuperDocBase::OnCreateInitialize()
 
 void CPGSuperDocBase::OnCreateFinalize()
 {
+   // Register callbacks for status items
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   m_scidInformationalError  = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+   m_StatusGroupID = pStatusCenter->CreateStatusGroupID();
+
    CEAFBrokerDocument::OnCreateFinalize();
 
    PopulateReportMenu();
@@ -1317,6 +1588,36 @@ BOOL CPGSuperDocBase::Init()
    CComPtr<IAppUnitSystem> appUnitSystem;
    pPGSuper->GetAppUnitSystem(&appUnitSystem);
    CreateDocUnitSystem(appUnitSystem,&m_DocUnitSystem);
+
+   // Transfer report favorites and custom reports data from CPGSuperBaseAppPlugin to CEAFBrokerDocument (this)
+   bool doDisplayFavorites = pPGSuper->GetDoDisplayFavoriteReports();
+   std::vector<std::_tstring> Favorites = pPGSuper->GetFavoriteReports();
+
+   SetDoDisplayFavoriteReports(doDisplayFavorites);
+   SetFavoriteReports(Favorites);
+
+   CEAFCustomReports customs = pPGSuper->GetCustomReports();
+   SetCustomReports(customs);
+
+   // register the standard copy girder callback objects
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderType));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderSlabOffset));
+
+#pragma Reminder("REVIEW: is this correct for spliced girders?")
+   // the copy girder properties features really hasn't been tested or made to work for spliced
+   // girders yet.
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderType));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderSlabOffset));
 
    // Put our icon on the main frame window
    CEAFMainFrame* pFrame = EAFGetMainFrame();
@@ -2068,8 +2369,12 @@ CSelection CPGSuperDocBase::GetSelection()
 
 void CPGSuperDocBase::SetSelection(const CSelection& selection)
 {
-   m_Selection = selection;
-   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&m_Selection);
+#pragma Reminder("UPDATE: need a not equal operator for CSelection")
+   //if ( m_Selection != selection )
+   {
+      m_Selection = selection;
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&m_Selection);
+   }
 }
 
 void CPGSuperDocBase::SelectPier(PierIndexType pierIdx)
@@ -2151,7 +2456,7 @@ void CPGSuperDocBase::SelectSegment(const CSegmentKey& segmentKey)
    }
 }
 
-void CPGSuperDocBase::SelectClosureJoint(const CSegmentKey& closureKey)
+void CPGSuperDocBase::SelectClosureJoint(const CClosureKey& closureKey)
 {
    if ( m_Selection.Type == CSelection::ClosureJoint && m_Selection.GroupIdx == closureKey.groupIndex && m_Selection.GirderIdx == closureKey.girderIndex && m_Selection.SegmentIdx == closureKey.segmentIndex )
       return;
@@ -2255,31 +2560,41 @@ void CPGSuperDocBase::ClearSelection()
 
 void CPGSuperDocBase::OnCopyGirderProps() 
 {
+#pragma Reminder("UPDATE: need to make OnCopyGirderProps work for spliced girders")
+   // This may be a case when OnCopyGirderProps needs to move to the CPGSuperDoc and CPGSpliceDoc
+   // classes.
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CCopyGirderDlg dlg(m_pBroker);
    if ( dlg.DoModal() == IDOK )
    {
-      OnApplyCopyGirder(dlg.m_FromGirderKey,
-                        dlg.m_ToGirderKeys,
-                        dlg.m_bCopyGirder,
-                        dlg.m_bCopyTransverse,
-                        dlg.m_bCopyLongitudinalRebar,
-                        dlg.m_bCopyPrestressing,
-                        dlg.m_bCopyHandling,
-                        dlg.m_bCopyMaterial,
-                        dlg.m_bCopySlabOffset);
+      pgsMacroTxn* pMacro = new pgsMacroTxn;
+      pMacro->Name(_T("Copy Girder Properties"));
+
+      std::vector<IDType> callbackIDs = dlg.GetCallbackIDs();
+      std::vector<IDType>::iterator iter(callbackIDs.begin());
+      std::vector<IDType>::iterator end(callbackIDs.end());
+      for ( ; iter != end; iter++ )
+      {
+         IDType callbackID = *iter;
+         std::map<IDType,ICopyGirderPropertiesCallback*>::iterator found(m_CopyGirderPropertiesCallbacks.find(callbackID));
+         ATLASSERT(found != m_CopyGirderPropertiesCallbacks.end());
+         ICopyGirderPropertiesCallback* pCallback = found->second;
+
+         txnTransaction* pTxn = pCallback->CreateCopyTransaction(dlg.m_FromGirderKey,dlg.m_ToGirderKeys);
+         if ( pTxn )
+         {
+            pMacro->AddTransaction(pTxn);
+         }
+      }
+
+      if ( 0 < pMacro->GetTxnCount() )
+      {
+         GET_IFACE(IEAFTransactions,pTransactions);
+         pTransactions->Execute(pMacro);
+      }
    }
-}
-
-void CPGSuperDocBase::OnApplyCopyGirder(const CGirderKey& fromGirder,const std::vector<CGirderKey>& toGirders,BOOL bGirder,BOOL bTransverse,BOOL bLongitudinalRebar,BOOL bPrestress,BOOL bHandling, BOOL bMaterial, BOOL bSlabOffset)
-{
-   if (!(bGirder || bTransverse || bPrestress || bLongitudinalRebar || bHandling || bMaterial || bSlabOffset))
-      return; //nothing to do
-
-   txnCopyGirder* pTxn = new txnCopyGirder(fromGirder,toGirders,bGirder,bTransverse,bLongitudinalRebar,bPrestress,bHandling,bMaterial,bSlabOffset);
-   GET_IFACE(IEAFTransactions,pTransactions);
-   pTransactions->Execute(pTxn);
 }
 
 void CPGSuperDocBase::OnImportProjectLibrary() 
@@ -3257,8 +3572,7 @@ BOOL CPGSuperDocBase::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
 
    CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
 
-
-   BuildReportMenu(&contextMenu,false);
+   CEAFBrokerDocument::PopulateReportMenu(&contextMenu);
 
    GET_IFACE(IEAFToolbars,pToolBars);
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
@@ -3444,6 +3758,10 @@ UINT CPGSuperDocBase::GetUIHintSettings() const
 void CPGSuperDocBase::SetUIHintSettings(UINT settings)
 {
    m_UIHintSettings = settings;
+   if ( m_UIHintSettings == UIHINT_ENABLE_ALL )
+   {
+      m_pPGSuperDocProxyAgent->OnResetHints();
+   }
 }
 
 bool CPGSuperDocBase::ShowProjectPropertiesOnNewProject()
@@ -3476,4 +3794,43 @@ void CPGSuperDocBase::DeleteContents()
 long CPGSuperDocBase::GetReportViewKey()
 {
    return m_pPGSuperDocProxyAgent->GetReportViewKey();
+}
+
+
+void CPGSuperDocBase::OnChangedFavoriteReports(bool isFavorites)
+{
+   // update main menu submenu
+   PopulateReportMenu();
+}
+
+void CPGSuperDocBase::OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName)
+{
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   std::_tostringstream os;
+
+   switch(error)
+   {
+      case creParentMissingAtLoad:
+         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found at program load time. The custom report was deleted.");
+         break;
+      case creParentMissingAtImport:
+         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found. The report may have depended on one of PGSuper's plug-ins. The custom report was deleted.");
+         break;
+      case creChapterMissingAtLoad:
+      case creChapterMissingAtImport:
+         os << _T("For custom report \"")<<reportName<<_T("\": the following chapter ")<<otherName<<_T(" does not exist in the pareent report. The chapter was removed. Perhaps the chapter name changed? You may want to edit the report.");
+         break;
+      default:
+         ATLASSERT(0);
+   };
+
+   pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,os.str().c_str());
+   pStatusCenter->Add(pStatusItem);
+}
+
+void CPGSuperDocBase::OnCustomReportHelp(custRepportHelpType helpType)
+{
+   UINT helpID = helpType==crhCustomReport ? IDH_CUSTOM_REPORT : IDH_FAVORITE_REPORT;
+
+   ::HtmlHelp( NULL, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ParabolicDuctGrid.h"
-#include "EditGirderlineDlg.h"
+#include "PGSuperAppPlugin\SplicedGirderGeneralPage.h"
 
 // CParabolicDuctDlg dialog
 
@@ -10,7 +10,7 @@ class CParabolicDuctDlg : public CDialog, public CParabolicDuctGridCallback
 	DECLARE_DYNAMIC(CParabolicDuctDlg)
 
 public:
-	CParabolicDuctDlg(CEditGirderlineDlg* pGdrDlg,CWnd* pParent = NULL);   // standard constructor
+	CParabolicDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CParabolicDuctDlg();
 
    CParabolicDuctGrid m_Grid;
@@ -24,7 +24,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
-   CEditGirderlineDlg* m_pGirderlineDlg;
+   CSplicedGirderGeneralPage* m_pGirderlineDlg;
 
 public:
    virtual BOOL OnInitDialog();

@@ -231,7 +231,7 @@ Float64 ProductForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,
 {
    ATLASSERT(rLocation.Face == rftMid);
 
-   return m_Pointer->GetReaction(intervalIdx, type, rLocation.PierIdx, rLocation.GirderKey, bat);
+   return m_Pointer->GetReaction(intervalIdx, type, rLocation.PierIdx, rLocation.GirderKey, bat, ctIncremental);
 }
 
 void ProductForcesReactionAdapter::GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
@@ -435,7 +435,7 @@ void CmbLsBearingDesignReactionAdapter::GetReaction(pgsTypes::LimitState ls,Inte
 /////////////////////////////////////////////
 // class ReactionDecider
 /////////////////////////////////////////////
-ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLocation& location,IBridge* pBridge,IIntervals* pIntervals)
+ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLocation& location,const CGirderKey& girderKey,IBridge* pBridge,IIntervals* pIntervals)
 {
    // full pier reactions are always reported
    if (tableType == PierReactionsTable)
@@ -476,8 +476,8 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
          EventIndexType back_continunity_event, ahead_continuity_event;
          pBridge->GetContinuityEventIndex(location.PierIdx,&back_continunity_event,&ahead_continuity_event);
 
-         IntervalIndexType back_continuity_interval  = pIntervals->GetInterval(back_continunity_event);
-         IntervalIndexType ahead_continuity_interval = pIntervals->GetInterval(ahead_continuity_event);
+         IntervalIndexType back_continuity_interval  = pIntervals->GetInterval(girderKey,back_continunity_event);
+         IntervalIndexType ahead_continuity_interval = pIntervals->GetInterval(girderKey,ahead_continuity_event);
 
          m_ThresholdInterval = (location.Face == rftBack ? back_continuity_interval : ahead_continuity_interval);
       }

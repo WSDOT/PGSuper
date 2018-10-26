@@ -39,28 +39,28 @@ static char THIS_FILE[] = __FILE__;
 
 /****************************************************************************
 CLASS
-   CUserDisplacementsTable
+   CUserDeflectionsTable
 ****************************************************************************/
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CUserDisplacementsTable::CUserDisplacementsTable()
+CUserDeflectionsTable::CUserDeflectionsTable()
 {
 }
 
-CUserDisplacementsTable::CUserDisplacementsTable(const CUserDisplacementsTable& rOther)
+CUserDeflectionsTable::CUserDeflectionsTable(const CUserDeflectionsTable& rOther)
 {
    MakeCopy(rOther);
 }
 
-CUserDisplacementsTable::~CUserDisplacementsTable()
+CUserDeflectionsTable::~CUserDeflectionsTable()
 {
 }
 
 //======================== OPERATORS  =======================================
-CUserDisplacementsTable& CUserDisplacementsTable::operator= (const CUserDisplacementsTable& rOther)
+CUserDeflectionsTable& CUserDeflectionsTable::operator= (const CUserDeflectionsTable& rOther)
 {
    if( this != &rOther )
    {
@@ -71,18 +71,18 @@ CUserDisplacementsTable& CUserDisplacementsTable::operator= (const CUserDisplace
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+rptRcTable* CUserDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
                                               IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
-   strTitle.Format(_T("Displacements due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,unitmgtLengthData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
+   strTitle.Format(_T("Deflections due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,unitmgtLengthData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -118,14 +118,14 @@ rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& gi
       std::vector<Float64> minLLIM, maxLLIM;
 
 
-      maxDC = pForces2->GetDisplacement( intervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC = pForces2->GetDisplacement( intervalIdx, pftUserDC, vPoi, minBAT );
+      maxDC = pForces2->GetDeflection( intervalIdx, pftUserDC, vPoi, maxBAT, ctIncremental );
+      minDC = pForces2->GetDeflection( intervalIdx, pftUserDC, vPoi, minBAT, ctIncremental );
 
-      maxDW = pForces2->GetDisplacement( intervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW = pForces2->GetDisplacement( intervalIdx, pftUserDW, vPoi, minBAT );
+      maxDW = pForces2->GetDeflection( intervalIdx, pftUserDW, vPoi, maxBAT, ctIncremental );
+      minDW = pForces2->GetDeflection( intervalIdx, pftUserDW, vPoi, minBAT, ctIncremental );
 
-      maxLLIM = pForces2->GetDisplacement( intervalIdx, pftUserLLIM, vPoi, maxBAT );
-      minLLIM = pForces2->GetDisplacement( intervalIdx, pftUserLLIM, vPoi, minBAT );
+      maxLLIM = pForces2->GetDeflection( intervalIdx, pftUserLLIM, vPoi, maxBAT, ctIncremental );
+      minLLIM = pForces2->GetDeflection( intervalIdx, pftUserLLIM, vPoi, minBAT, ctIncremental );
 
       // Fill up the table
       IndexType index = 0;
@@ -140,18 +140,18 @@ rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& gi
 
          if ( analysisType == pgsTypes::Envelope )
          {
-            (*p_table)(row,col++) << displacement.SetValue( maxDC[index] );
-            (*p_table)(row,col++) << displacement.SetValue( minDC[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxDW[index] );
-            (*p_table)(row,col++) << displacement.SetValue( minDW[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxLLIM[index] );
-            (*p_table)(row,col++) << displacement.SetValue( minLLIM[index] );
+            (*p_table)(row,col++) << deflection.SetValue( maxDC[index] );
+            (*p_table)(row,col++) << deflection.SetValue( minDC[index] );
+            (*p_table)(row,col++) << deflection.SetValue( maxDW[index] );
+            (*p_table)(row,col++) << deflection.SetValue( minDW[index] );
+            (*p_table)(row,col++) << deflection.SetValue( maxLLIM[index] );
+            (*p_table)(row,col++) << deflection.SetValue( minLLIM[index] );
          }
          else
          {
-            (*p_table)(row,col++) << displacement.SetValue( maxDC[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxDW[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxLLIM[index] );
+            (*p_table)(row,col++) << deflection.SetValue( maxDC[index] );
+            (*p_table)(row,col++) << deflection.SetValue( maxDW[index] );
+            (*p_table)(row,col++) << deflection.SetValue( maxLLIM[index] );
          }
 
          row++;
@@ -171,12 +171,12 @@ rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& gi
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void CUserDisplacementsTable::MakeCopy(const CUserDisplacementsTable& rOther)
+void CUserDeflectionsTable::MakeCopy(const CUserDeflectionsTable& rOther)
 {
    // Add copy code here...
 }
 
-void CUserDisplacementsTable::MakeAssignment(const CUserDisplacementsTable& rOther)
+void CUserDeflectionsTable::MakeAssignment(const CUserDeflectionsTable& rOther)
 {
    MakeCopy( rOther );
 }
@@ -194,24 +194,24 @@ void CUserDisplacementsTable::MakeAssignment(const CUserDisplacementsTable& rOth
 
 //======================== DEBUG      =======================================
 #if defined _DEBUG
-bool CUserDisplacementsTable::AssertValid() const
+bool CUserDeflectionsTable::AssertValid() const
 {
    return true;
 }
 
-void CUserDisplacementsTable::Dump(dbgDumpContext& os) const
+void CUserDeflectionsTable::Dump(dbgDumpContext& os) const
 {
-   os << _T("Dump for CUserDisplacementsTable") << endl;
+   os << _T("Dump for CUserDeflectionsTable") << endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CUserDisplacementsTable::TestMe(dbgLog& rlog)
+bool CUserDeflectionsTable::TestMe(dbgLog& rlog)
 {
-   TESTME_PROLOGUE("CUserDisplacementsTable");
+   TESTME_PROLOGUE("CUserDeflectionsTable");
 
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserDisplacementsTable");
+   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserDeflectionsTable");
 
-   TESTME_EPILOG("CUserDisplacementsTable");
+   TESTME_EPILOG("CUserDeflectionsTable");
 }
 #endif // _UNITTEST

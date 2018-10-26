@@ -518,7 +518,7 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segment
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BOUNDARY_PIER)   ? poi.HasAttribute(POI_BOUNDARY_PIER) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_ABUTMENT)   ? poi.HasAttribute(POI_ABUTMENT) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)   ? poi.HasAttribute(POI_STIRRUP_ZONE) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TEMPSUPPORT)   ? poi.HasAttribute(POI_TEMPSUPPORT) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT)   ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)   ? poi.HasAttribute(POI_CLOSURE) : true)
       )
    {
@@ -612,7 +612,7 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentK
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BOUNDARY_PIER)   ? poi.HasAttribute(POI_BOUNDARY_PIER) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_ABUTMENT)   ? poi.HasAttribute(POI_ABUTMENT) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)   ? poi.HasAttribute(POI_STIRRUP_ZONE) : false) ||
-    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TEMPSUPPORT)   ? poi.HasAttribute(POI_TEMPSUPPORT) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT)   ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)   ? poi.HasAttribute(POI_CLOSURE) : false)
     )
    {

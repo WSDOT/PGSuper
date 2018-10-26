@@ -29,6 +29,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+CDebondData::CDebondData() :
+   strandTypeGridIdx(INVALID_INDEX)
+{ 
+   Length[pgsTypes::metStart] = 0.0;
+   Length[pgsTypes::metEnd] = 0.0;
+}
+
 HRESULT CDebondData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    pStrLoad->BeginUnit(_T("DebondInfo"));
@@ -60,11 +67,11 @@ HRESULT CDebondData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("Length1"),      &var);
-   Length1 = var.dblVal;
+   Length[pgsTypes::metStart] = var.dblVal;
 
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("Length2"),    &var);
-   Length2 = var.dblVal;
+   Length[pgsTypes::metEnd] = var.dblVal;
 
    pStrLoad->EndUnit();
 
@@ -75,8 +82,8 @@ HRESULT CDebondData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    pStrSave->BeginUnit(_T("DebondInfo"),2.0);
    pStrSave->put_Property(_T("Strand"),    CComVariant(strandTypeGridIdx));
-   pStrSave->put_Property(_T("Length1"),    CComVariant(Length1));
-   pStrSave->put_Property(_T("Length2"),    CComVariant(Length2));
+   pStrSave->put_Property(_T("Length1"),    CComVariant(Length[pgsTypes::metStart]));
+   pStrSave->put_Property(_T("Length2"),    CComVariant(Length[pgsTypes::metEnd]));
    pStrSave->EndUnit();
 
    return S_OK;
@@ -87,11 +94,11 @@ bool CDebondData::operator==(const CDebondData& rOther) const
    if ( strandTypeGridIdx != rOther.strandTypeGridIdx )
       return false;
 
-   if ( Length1 != rOther.Length1 )
-      return false;
-
-   if ( Length2 != rOther.Length2 )
-      return false;
+   for ( int i = 0; i < 2; i++ )
+   {
+      if ( Length[i] != rOther.Length[i] )
+         return false;
+   }
 
    return true;
 }

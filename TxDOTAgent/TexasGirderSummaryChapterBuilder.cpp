@@ -143,6 +143,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
 
    const CPierData2* pPrevPier = pGroup->GetPier(pgsTypes::metStart);
    const CPierData2* pNextPier = pGroup->GetPier(pgsTypes::metEnd);
@@ -346,10 +348,10 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row++,1) << component.SetValue(pBridge->GetGrossSlabDepth( poi ));
 
    (*pTable)(row,0) << _T("Slab Offset at Start (\"A\" Dimension)");
-   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(segmentKey.girderIndex,pgsTypes::metStart));
+   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
 
    (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
-   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(segmentKey.girderIndex,pgsTypes::metEnd));
+   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
 
    (*pTable)(row,0) << _T("Overlay");
    (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);

@@ -174,7 +174,11 @@ void txnDesignGirder::DoExecute(int i)
          }
          else
          {
-            pIBridgeDesc->SetSlabOffset(segmentKey,rdata.m_SlabOffset[pgsTypes::metStart][i], rdata.m_SlabOffset[pgsTypes::metEnd][i]);
+            GET_IFACE2(pBroker,IBridge,pBridge);
+            PierIndexType startPierIdx, endPierIdx;
+            pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
+            pIBridgeDesc->SetSlabOffset(segmentKey.groupIndex,startPierIdx,segmentKey.girderIndex,rdata.m_SlabOffset[pgsTypes::metStart][i]);
+            pIBridgeDesc->SetSlabOffset(segmentKey.groupIndex,endPierIdx,  segmentKey.girderIndex,rdata.m_SlabOffset[pgsTypes::metEnd][i]);
          }
       }
 
@@ -324,8 +328,8 @@ void txnDesignGirder::CacheFlexureDesignResults(DesignData& rdata)
 #endif
       }
 
-      cdbi.Length1    = rdbrinfo.LeftDebondLength;
-      cdbi.Length2    = rdbrinfo.RightDebondLength;
+      cdbi.Length[pgsTypes::metStart] = rdbrinfo.DebondLength[pgsTypes::metStart];
+      cdbi.Length[pgsTypes::metEnd]   = rdbrinfo.DebondLength[pgsTypes::metEnd];
 
       rdata.m_Strands[1].Debond[pgsTypes::Straight].push_back(cdbi);
    }
@@ -355,8 +359,8 @@ void txnDesignGirder::CacheFlexureDesignResults(DesignData& rdata)
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-   rdata.m_SlabOffset[pgsTypes::metStart][0] = pSegment->GetSlabOffset(pgsTypes::metStart);
-   rdata.m_SlabOffset[pgsTypes::metEnd][0]   = pSegment->GetSlabOffset(pgsTypes::metEnd);
+   rdata.m_SlabOffset[pgsTypes::metStart][0] = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex);
+   rdata.m_SlabOffset[pgsTypes::metEnd][0]   = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  segmentKey.girderIndex);
    rdata.m_SlabOffset[pgsTypes::metStart][1] = rdata.m_DesignArtifact.GetSlabOffset(pgsTypes::metStart);
    rdata.m_SlabOffset[pgsTypes::metEnd][1]   = rdata.m_DesignArtifact.GetSlabOffset(pgsTypes::metEnd);
 

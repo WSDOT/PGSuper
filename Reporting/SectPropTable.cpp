@@ -73,7 +73,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType constructionIntervalIdx        = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval(segmentKey);
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(segmentKey);
 
 #if defined _DEBUG
@@ -182,8 +182,8 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       (*xs_table)(row++,1) << _T("-"); // Ybd
    }
 
-   (*xs_table)(row++,1) << l3.SetValue( fabs(pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopGirder)) );
-   (*xs_table)(row++,1) << l3.SetValue( fabs(pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::BottomGirder)) );
+   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopGirder) );
+   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
 
    if ( bComposite )
    {
@@ -194,8 +194,8 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    (*xs_table)(row++,1) << _T("-"); // Qdeck
    (*xs_table)(row++,1) << _T("-"); // Effective flange width
 
-   (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKt(constructionIntervalIdx,poi)) );
-   (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKb(constructionIntervalIdx,poi)) );
+   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetKt(constructionIntervalIdx,poi) );
+   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetKb(constructionIntervalIdx,poi) );
 
    (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetPerimeter(poi) );
    (*xs_table)(row++,1) << scalar.SetValue( span_length/depth );
@@ -216,18 +216,18 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::TopDeck) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::BottomDeck) );
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder)) );
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder)) );
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopDeck)) );
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomDeck)) );
+      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder) );
+      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder) );
+      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopDeck) );
+      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomDeck) );
       (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetQSlab(poi) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetEffectiveFlangeWidth(poi) );
 
       if ( lastTendonStressingIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx )
       {
          // PT occurs after the deck is composite so kern points are applicable
-         (*xs_table)(row++,2) << l1.SetValue( fabs(pSectProp->GetKt(lastTendonStressingIntervalIdx,poi)) );
-         (*xs_table)(row++,2) << l1.SetValue( fabs(pSectProp->GetKb(lastTendonStressingIntervalIdx,poi)) );
+         (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetKt(lastTendonStressingIntervalIdx,poi) );
+         (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetKb(lastTendonStressingIntervalIdx,poi) );
       }
       else
       {
