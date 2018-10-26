@@ -24,6 +24,7 @@
 #define INCLUDED_HINTS_H_
 
 #include <IFace\Project.h> // has girder change hints
+#include <EAF\EAFHints.h>
 
 // Hint Dialog states
 #define UIHINT_ENABLE_ALL                 0x0000
@@ -66,7 +67,6 @@
 
 #define MAX_RESULTS_HINT              HINT_ANALYSISTYPECHANGED
 
-#define HINT_UPDATEERROR              200
 #define HINT_LIBRARYCHANGED           201 // Changes made to non-referenced entries only
 
 

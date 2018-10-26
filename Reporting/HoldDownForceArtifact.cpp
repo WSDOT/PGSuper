@@ -24,7 +24,7 @@
 #include <Reporting\HoldDownForceCheck.h>
 
 #include <IFace\Artifact.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
@@ -70,7 +70,7 @@ CHoldDownForceCheck& CHoldDownForceCheck::operator= (const CHoldDownForceCheck& 
 
 //======================== OPERATIONS =======================================
 rptRcTable* CHoldDownForceCheck::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                       IDisplayUnits* pDisplayUnits) const
+                                       IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);

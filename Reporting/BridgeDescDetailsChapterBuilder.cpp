@@ -26,7 +26,7 @@
 #include <Reporting\StrandLocations.h>
 #include <Reporting\LongRebarLocations.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
@@ -50,15 +50,15 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static void write_connection_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
-static void write_girder_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
-static void write_intermedate_diaphragm_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
-static void write_traffic_barrier_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
-static void write_strand_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr);
-static void write_rebar_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
-static void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
-static void write_handling(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType gdr);
-void write_debonding(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, SpanIndexType span,GirderIndexType gdr);
+static void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
+static void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
+static void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
+static void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr);
+static void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
+static void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType gdr);
+void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, SpanIndexType span,GirderIndexType gdr);
 
 std::string get_connection_image_name(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
 
@@ -125,34 +125,78 @@ LPCTSTR CBridgeDescDetailsChapterBuilder::GetName() const
 rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType gdr = pSGRptSpec->GetGirder();
+   SpanIndexType span;
+   GirderIndexType gdr;
+
+   if ( pSGRptSpec )
+   {
+      pSGRptSpec->GetBroker(&pBroker);
+      span = pSGRptSpec->GetSpan();
+      gdr = pSGRptSpec->GetGirder();
+   }
+   else if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      span = ALL_SPANS;
+      gdr = pGdrRptSpec->GetGirder();
+   }
+   else
+   {
+      span = ALL_SPANS;
+      gdr  = ALL_GIRDERS;
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    write_connection_details( pBroker, pDisplayUnits, pChapter, level);
-   write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, span, gdr, level);
-   write_girder_details( pBroker, pDisplayUnits, pChapter, span, gdr, level);
 
-   write_handling(pChapter,pBroker,pDisplayUnits,span,gdr);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
+      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
 
-   CStrandLocations strand_table;
-   strand_table.Build(pChapter,pBroker,span,gdr,pDisplayUnits);
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      {
+         rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter<<pHead;
+         *pHead << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << rptNewLine;
 
-   write_debonding(pChapter, pBroker, pDisplayUnits, span, gdr);
+         write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
+         write_girder_details( pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
 
-   rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter<<pHead;
-   *pHead<<"Transverse Reinforcement Stirrup Zones"<<rptNewLine;
-   CStirrupTable stirrup_table;
-   stirrup_table.Build(pChapter,pBroker,span,gdr,pDisplayUnits);
+         write_handling(pChapter,pBroker,pDisplayUnits,spanIdx, gdrIdx);
 
-   CLongRebarLocations long_rebar_table;
-   long_rebar_table.Build(pChapter,pBroker,span,gdr,pDisplayUnits);
+         CStrandLocations strand_table;
+         strand_table.Build(pChapter,pBroker,spanIdx, gdrIdx,pDisplayUnits);
+
+         write_debonding(pChapter, pBroker, pDisplayUnits, spanIdx, gdrIdx);
+
+         pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter<<pHead;
+         *pHead<<"Transverse Reinforcement Stirrup Zones"<<rptNewLine;
+         CStirrupTable stirrup_table;
+         stirrup_table.Build(pChapter,pBroker,spanIdx, gdrIdx,pDisplayUnits);
+
+         CLongRebarLocations long_rebar_table;
+         long_rebar_table.Build(pChapter,pBroker,spanIdx, gdrIdx,pDisplayUnits);
+
+         pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter<<pHead;
+         *pHead<<"Materials"<<rptNewLine;
+         write_concrete_details( pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
+         write_strand_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx);
+      } // gdrIdx
+   } // spanIdx
+   write_rebar_details( pBroker, pDisplayUnits, pChapter, level);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -161,13 +205,6 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
    if ( pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing() != pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing() )
       write_traffic_barrier_details( pBroker, pDisplayUnits, pChapter, level, pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing());
-
-   pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter<<pHead;
-   *pHead<<"Materials"<<rptNewLine;
-   write_concrete_details( pBroker, pDisplayUnits, pChapter, span, gdr, level);
-   write_strand_details( pBroker, pDisplayUnits, pChapter, level, span, gdr);
-   write_rebar_details( pBroker, pDisplayUnits, pChapter, level);
 
    return pChapter;
 }
@@ -196,7 +233,7 @@ CChapterBuilder* CBridgeDescDetailsChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void write_connection_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
+void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    GET_IFACE2(pBroker, ILibrary,   pLib );
    GET_IFACE2(pBroker, IBridge,    pBridge ); 
@@ -290,7 +327,7 @@ void write_connection_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptC
 }
 
 
-void write_girder_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
+void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -345,7 +382,7 @@ void write_girder_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapt
 #pragma Reminder("Implement")
 }
 
-void write_debonding(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType gdr)
+void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType gdr)
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    if ( pStrandGeom->CanDebondStrands(span,gdr,pgsTypes::Straight) || 
@@ -400,7 +437,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisp
 }
 
 
-void write_intermedate_diaphragm_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
+void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  locdim,  pDisplayUnits->GetSpanLengthUnit(), true );
@@ -481,7 +518,7 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IDisplayUnits* pDispla
 
 }
 
-void write_traffic_barrier_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry)
+void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  ydim,  pDisplayUnits->GetComponentDimUnit(), true );
@@ -530,7 +567,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits
 }
 
 
-void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
+void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
@@ -654,7 +691,7 @@ void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptCha
       }
 }
 
-void write_strand_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)
+void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
@@ -694,7 +731,7 @@ void write_strand_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapt
    row++;
 }
 
-void write_rebar_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
+void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
@@ -722,7 +759,7 @@ void write_rebar_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapte
    (*pTable)(row,1) << stress.SetValue( pbar->GetYieldStrength() );
 }
 
-void write_handling(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType girder)
+void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType girder)
 {
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    bool dolift = pGirderLiftingSpecCriteria->IsLiftingCheckEnabled();

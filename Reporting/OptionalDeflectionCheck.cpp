@@ -25,7 +25,7 @@
 #include <Reporting\StirrupDetailingCheckTable.h>
 
 #include <IFace\Artifact.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
@@ -71,7 +71,7 @@ COptionalDeflectionCheck& COptionalDeflectionCheck::operator= (const COptionalDe
 
 //======================== OPERATIONS =======================================
 void COptionalDeflectionCheck::Build(rptChapter* pChapter, const pgsGirderArtifact* pArtifact,
-                              SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDisplayUnits) const
+                              SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const
 {
    const pgsDeflectionCheckArtifact* pDef = pArtifact->GetDeflectionCheckArtifact();
 

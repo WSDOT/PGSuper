@@ -27,7 +27,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
@@ -71,21 +71,47 @@ CPrestressStressTable& CPrestressStressTable::operator= (const CPrestressStressT
 
 //======================== OPERATIONS =======================================
 rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                            IDisplayUnits* pDisplayUnits) const
+                                            IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, gdrpoi, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPointOfInterest, spanpoi, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
+   gdrpoi.IncludeSpanAndGirder(span == ALL_SPANS);
    gdrpoi.MakeGirderPoi();
+
+   spanpoi.IncludeSpanAndGirder(span == ALL_SPANS);
    spanpoi.MakeSpanPoi();
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   long NtMax = pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary);
+   bool bTempStrands = false;
+   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType gdrIdx = (nGirders <= girder ? nGirders-1 : girder);
+      if ( 0 < pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
+      {
+         bTempStrands = true;
+         break;
+      }
+   }
 
-   int nColumns = ( 0 < NtMax ? 7 : 6 );
+   int nColumns = ( bTempStrands ? 7 : 6 );
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,"Prestress Stresses");
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Set up table headings
    int col = 0;
@@ -93,7 +119,7 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*p_table)(0,col++) << COLHDR("Casting Yard",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
-   if ( 0 < NtMax )
+   if ( bTempStrands )
       (*p_table)(0,col++) << COLHDR("Temporary" << rptNewLine << "Strand" << rptNewLine << "Removal",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    (*p_table)(0,col++) << COLHDR("Bridge Site 1",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -121,9 +147,6 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
 
    GET_IFACE2(pBroker,IPrestressStresses,pPrestress);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
-
    // Fill up the table
    pgsPointOfInterest prev_poi(0,0,0);
    bool bSkipToNextRow = false;
@@ -145,6 +168,7 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          row--;
       }
 
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
       if ( stage == pgsTypes::CastingYard )
       {
          (*p_table)(row,col++) << gdrpoi.SetValue( poi );
@@ -165,7 +189,7 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
          col++;
 
-         if ( 0 < NtMax )
+         if ( bTempStrands )
          {
             fTop = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::TopGirder);
             fBot = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::BottomGirder);

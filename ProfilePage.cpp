@@ -29,7 +29,7 @@
 #include "AlignmentDescriptionDlg.h"
 #include <MfcTools\CogoDDX.h>
 #include <MfcTools\CustomDDX.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include "htmlhelp\HelpTopics.hh"
 
 #ifdef _DEBUG
@@ -67,7 +67,7 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   GET_IFACE2(GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Station(pDX, IDC_STATION,  m_ProfileData.Station, pDisplayUnits->GetStationFormat() );
    DDX_UnitValueAndTag( pDX, IDC_ELEVATION, IDC_ELEVATION_UNIT, m_ProfileData.Elevation, pDisplayUnits->GetAlignmentLengthUnit() );

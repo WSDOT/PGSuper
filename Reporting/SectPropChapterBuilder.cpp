@@ -30,7 +30,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -62,14 +62,32 @@ LPCTSTR CSectPropChapterBuilder::GetName() const
 rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   SpanIndexType span;
+   GirderIndexType gdr;
+
+   if ( pSGRptSpec )
+   {
+      pSGRptSpec->GetBroker(&pBroker);
+      span = pSGRptSpec->GetSpan();
+      gdr = pSGRptSpec->GetGirder();
+   }
+   else if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      span = ALL_SPANS;
+      gdr = pGdrRptSpec->GetGirder();
+   }
+   else
+   {
+      span = ALL_SPANS;
+      gdr  = ALL_GIRDERS;
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
 
    rptParagraph* pPara = new rptParagraph();
@@ -79,6 +97,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IBarriers,pBarriers);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2( pBroker, IBridgeMaterial, pMaterial );
 
    INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDisplayUnits->GetAreaUnit(), false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue, ui, pDisplayUnits->GetMomentOfInertiaUnit(), true );
@@ -87,12 +106,6 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,    pDisplayUnits->GetComponentDimUnit(),    true );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl, pDisplayUnits->GetForcePerLengthUnit(), true );
 
-   GET_IFACE2( pBroker, IBridgeMaterial, pMaterial );
-   (*pPara) << "Girder " << RPT_EC << " = " << modE.SetValue( pMaterial->GetEcGdr(span,girder) ) << rptNewLine;
-   (*pPara) << "Girder " << RPT_ECI << " = " << modE.SetValue( pMaterial->GetEciGdr(span,girder) ) << rptNewLine;
-
-   if ( pBridge->IsCompositeDeck() )
-     (*pPara) << "Slab   " << RPT_EC << " = " << modE.SetValue( pMaterial->GetEcSlab() ) << rptNewLine;
 
    *pPara << rptNewLine;
 
@@ -128,54 +141,79 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
    *pPara << rptNewLine;
 
-   double span_length = pBridge->GetSpanLength(span,girder);
-   (*pPara) << "Bending Stiffness of Entire Bridge Section at mid-span" << rptNewLine;
-   (*pPara) << Sub2("EI","xx") << " = " << uei.SetValue( pSectProp2->GetBridgeEIxx(span_length/2) ) << " (used to compute Live Load Deflections per LRFD 3.6.1.3.2)" << rptNewLine;
-   (*pPara) << Sub2("EI","yy") << " = " << uei.SetValue( pSectProp2->GetBridgeEIyy(span_length/2) ) << rptNewLine;
-   *pPara << rptNewLine;
+   bool bComposite = pBridge->IsCompositeDeck();
+   if ( bComposite )
+     (*pPara) << "Slab   " << RPT_EC << " = " << modE.SetValue( pMaterial->GetEcSlab() ) << rptNewLine;
 
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
 
-   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-
-   bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(pgsTypes::CastingYard,span,girder);
-   bool bIsPrismatic_Final       = pGirder->IsPrismatic(pgsTypes::BridgeSite3,span,girder);
-
-   bool bComposite = (deckType != pgsTypes::sdtNone);
-
-   if ( bIsPrismatic_CastingYard && bIsPrismatic_Final )
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
    {
-      // simple table
-      rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,span,girder,bComposite,pDisplayUnits);
-      *pPara << pTable << rptNewLine;
-   }
-   else if ( bIsPrismatic_CastingYard && !bIsPrismatic_Final )
-   {
-      // simple table for bare girder (don't report composite)
-      rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,span,girder,false,pDisplayUnits);
-      *pPara << pTable << rptNewLine;
-
-      if ( bComposite )
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
+      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
+      
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
       {
-         // there is a deck so we have composite, non-prismatic results
-         pTable = CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDisplayUnits);
-         *pPara << pTable << rptNewLine;
-      }
-   }
-   else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
-   {
-      rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::CastingYard,pDisplayUnits);
-      *pPara << pTable << rptNewLine;
+         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter << pPara;
+         (*pPara) << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << rptNewLine;
 
-      if ( pBridge->GetDeckType() != pgsTypes::sdtNone ) // if there isn't a deck, no need to report duplicate properties
-      {
-         pTable = CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDisplayUnits);
-         *pPara << pTable << rptNewLine;
-      }
-   }
-   else if ( !bIsPrismatic_CastingYard && bIsPrismatic_Final )
-   {
-      ATLASSERT(false); // this is an impossible case
-   }
+         pPara = new rptParagraph();
+         *pChapter << pPara;
+
+         (*pPara) << "Girder " << RPT_EC << " = " << modE.SetValue( pMaterial->GetEcGdr(spanIdx,gdrIdx) ) << rptNewLine;
+         (*pPara) << "Girder " << RPT_ECI << " = " << modE.SetValue( pMaterial->GetEciGdr(spanIdx,gdrIdx) ) << rptNewLine;
+
+
+         Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
+         (*pPara) << "Bending Stiffness of Entire Bridge Section at mid-span" << rptNewLine;
+         (*pPara) << Sub2("EI","xx") << " = " << uei.SetValue( pSectProp2->GetBridgeEIxx(span_length/2) ) << " (used to compute Live Load Deflections per LRFD 3.6.1.3.2)" << rptNewLine;
+         (*pPara) << Sub2("EI","yy") << " = " << uei.SetValue( pSectProp2->GetBridgeEIyy(span_length/2) ) << rptNewLine;
+         *pPara << rptNewLine;
+
+         bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(pgsTypes::CastingYard,spanIdx,gdrIdx);
+         bool bIsPrismatic_Final       = pGirder->IsPrismatic(pgsTypes::BridgeSite3,spanIdx,gdrIdx);
+
+
+         if ( bIsPrismatic_CastingYard && bIsPrismatic_Final )
+         {
+            // simple table
+            rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,spanIdx,gdrIdx,bComposite,pDisplayUnits);
+            *pPara << pTable << rptNewLine;
+         }
+         else if ( bIsPrismatic_CastingYard && !bIsPrismatic_Final )
+         {
+            // simple table for bare girder (don't report composite)
+            rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,spanIdx,gdrIdx,false,pDisplayUnits);
+            *pPara << pTable << rptNewLine;
+
+            if ( bComposite )
+            {
+               // there is a deck so we have composite, non-prismatic results
+               pTable = CSectionPropertiesTable2().Build(pBroker,spanIdx,gdrIdx,pgsTypes::BridgeSite3,pDisplayUnits);
+               *pPara << pTable << rptNewLine;
+            }
+         }
+         else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
+         {
+            rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spanIdx,gdrIdx,pgsTypes::CastingYard,pDisplayUnits);
+            *pPara << pTable << rptNewLine;
+
+            if ( pBridge->GetDeckType() != pgsTypes::sdtNone ) // if there isn't a deck, no need to report duplicate properties
+            {
+               pTable = CSectionPropertiesTable2().Build(pBroker,spanIdx,gdrIdx,pgsTypes::BridgeSite3,pDisplayUnits);
+               *pPara << pTable << rptNewLine;
+            }
+         }
+         else if ( !bIsPrismatic_CastingYard && bIsPrismatic_Final )
+         {
+            ATLASSERT(false); // this is an impossible case
+         }
+      } // gdrIdx
+   } // spanIdx
 
    return pChapter;
 }

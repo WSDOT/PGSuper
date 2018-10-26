@@ -420,6 +420,9 @@ public:
    virtual void UpdateMomentLoad(CollectionIndexType idx, const CMomentLoadData& pld);
    virtual void DeleteMomentLoad(CollectionIndexType idx);
 
+   virtual void SetConstructionLoad(Float64 load);
+   virtual Float64 GetConstructionLoad() const;
+
 // ILiveLoads
 public:
    virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType);
@@ -541,6 +544,9 @@ private:
 
       bool operator==(const LiveLoadSelection& other) const
       { return pEntry == other.pEntry; }
+
+      bool operator<(const LiveLoadSelection& other) const
+      { return EntryName < other.EntryName; }
    };
 
    typedef std::vector<LiveLoadSelection> LiveLoadSelectionContainer;
@@ -581,6 +587,8 @@ private:
    typedef std::vector<CMomentLoadData> MomentLoadList;
    typedef MomentLoadList::iterator MomentLoadListIterator;
    MomentLoadList m_MomentLoads;
+
+   Float64 m_ConstructionLoad;
 
    HRESULT SavePointLoads(IStructuredSave* pSave);
    HRESULT LoadPointLoads(IStructuredLoad* pLoad);

@@ -11,19 +11,22 @@
 			<name>Analysis_Results</name>
 		</folder>
 		<folder>
-			<name>StatusCenter</name>
-		</folder>
-		<folder>
 			<name>AutoCalc_Mode</name>
 		</folder>
 		<folder>
-			<name>Customizing_PGSuper</name>
+			<name>StatusCenter</name>
+		</folder>
+		<folder>
+			<name>Appendix B - PGSuper Library Dialogs</name>
 		</folder>
 		<folder>
 			<name>Girder_Editing</name>
 		</folder>
 		<folder>
-			<name>Appendix B - PGSuper Library Dialogs</name>
+			<name>Customizing_PGSuper</name>
+		</folder>
+		<folder>
+			<name>AnalysisControls</name>
 		</folder>
 		<folder>
 			<name>Projects</name>
@@ -35,19 +38,22 @@
 			<name>Appendix A - PGSuper Dialogs</name>
 		</folder>
 		<folder>
-			<name>Bridge_Model_Editing</name>
+			<name>Command_Line_Options</name>
 		</folder>
 		<folder>
-			<name>Design</name>
+			<name>Bridge_Model_Editing</name>
 		</folder>
 		<folder>
 			<name>UserDefinedLoads</name>
 		</folder>
 		<folder>
-			<name>AnalysisControls</name>
+			<name>Design</name>
 		</folder>
 		<folder>
-			<name>Command_Line_Options</name>
+			<name>Extending_PGSuper</name>
+		</folder>
+		<folder>
+			<name>LoadRating</name>
 		</folder>
 	</folders>
 	<topics>

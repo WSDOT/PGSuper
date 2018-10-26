@@ -24,7 +24,7 @@
 #include <Reporting\ConfinementCheckTable.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 
 #include <PgsExt\GirderArtifact.h>
@@ -59,7 +59,7 @@ CConfinementCheckTable::~CConfinementCheckTable()
 
 //======================== OPERATIONS =======================================
 rptRcTable* CConfinementCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                               IDisplayUnits* pDisplayUnits,
+                                               IEAFDisplayUnits* pDisplayUnits,
                                                pgsTypes::Stage stage) const
 {
    GET_IFACE2(pBroker,IStirrupGeometry, pStirrupGeometry);

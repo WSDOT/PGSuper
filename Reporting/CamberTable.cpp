@@ -28,7 +28,7 @@
 #include <PgsExt\GirderData.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 
@@ -128,10 +128,11 @@ bool CCamberTable::TestMe(dbgLog& rlog)
 
 
 void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                         IDisplayUnits* pDisplayUnits,Int16 constructionRate,
+                                         IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                          rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -166,6 +167,18 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 1 (upwards is positive)");
    table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,"Camber - Part 3 (upwards is positive)");
+
+   if ( span == ALL_SPANS )
+   {
+      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table3->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Setup table headings
    int col = 0;
@@ -325,10 +338,11 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
 
 void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                             IDisplayUnits* pDisplayUnits,Int16 constructionRate,
+                             IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                              rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -363,6 +377,18 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,"Camber - Part 1 (upwards is positive)");
    table2 = pgsReportStyleHolder::CreateDefaultTable(6 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0)+ (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,"Camber - Part 3 (upwards is positive)");
+
+   if ( span == ALL_SPANS )
+   {
+      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table3->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Setup table headings
    int col = 0;
@@ -506,10 +532,11 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 }
 
 void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                         IDisplayUnits* pDisplayUnits,Int16 constructionRate,
+                                         IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                          rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -544,6 +571,18 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 1 (upwards is positive)");
    table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,"Camber - Part 3 (upwards is positive)");
+
+   if ( span == ALL_SPANS )
+   {
+      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table3->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Setup table headings
    int col = 0;
@@ -705,10 +744,11 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
 
 void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                             IDisplayUnits* pDisplayUnits,Int16 constructionRate,
+                             IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                              rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -743,6 +783,18 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,"Camber - Part 1 (upwards is positive)");
    table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,"Camber - Part 3 (upwards is positive)");
+
+   if ( span == ALL_SPANS )
+   {
+      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table3->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Setup table headings
    int col = 0;
@@ -887,10 +939,11 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 }
 
 void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                            IDisplayUnits* pDisplayUnits,Int16 constructionRate,
+                                            IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                             rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -925,6 +978,18 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 1 (upwards is positive)");
    table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 3 (upwards is positive)");
+
+   if ( span == ALL_SPANS )
+   {
+      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table3->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Setup table headings
    int col = 0;
@@ -1082,10 +1147,11 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 }
 
 void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                IDisplayUnits* pDisplayUnits,Int16 constructionRate,
+                                IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                 rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -1120,6 +1186,18 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,"Camber - Part 1 (upwards is positive)");
    table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 3 (upwards is positive)");
+
+   if ( span == ALL_SPANS )
+   {
+      table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table3->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Setup table headings
    int col = 0;

@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -49,14 +49,14 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the rating summary table with results listed by limit state and structural action
-   virtual rptRcTable* BuildByLimitState(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,RatingTableType ratingTableType) const;
+   virtual rptRcTable* BuildByLimitState(IBroker* pBroker,GirderIndexType gdrLineIdx,RatingTableType ratingTableType) const;
 
    //------------------------------------------------------------------------
    // Builds the rating summary table with results listed by rating vehicle
-   virtual rptRcTable* BuildByVehicle(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::LoadRatingType ratingType) const;
+   virtual rptRcTable* BuildByVehicle(IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const;
 
    //------------------------------------------------------------------------
    // Builds the load posting table for a limit state
-   virtual rptRcTable* BuildLoadPosting(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::LoadRatingType ratingType) const;
+   virtual rptRcTable* BuildLoadPosting(IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const;
 };
 

@@ -27,7 +27,7 @@
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
@@ -47,11 +47,11 @@ CLASS
 
 rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                                       pgsTypes::Stage stage,
-                                      IDisplayUnits* pDisplayUnits);
+                                      IEAFDisplayUnits* pDisplayUnits);
 
 rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                                           pgsTypes::Stage stage, pgsTypes::LimitState ls,
-                                          IDisplayUnits* pDisplayUnits);
+                                          IEAFDisplayUnits* pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -77,7 +77,7 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(CReportSpecification* pR
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    pgsTypes::Stage stage = pgsTypes::BridgeSite3;
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
@@ -94,7 +94,7 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(CReportSpecification* pR
 
 rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                                       pgsTypes::Stage stage, 
-                                      IDisplayUnits* pDisplayUnits)
+                                      IEAFDisplayUnits* pDisplayUnits)
 {
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph();
@@ -113,6 +113,8 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
    INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),  false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDisplayUnits->GetComponentDimUnit(),  false );
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
    const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
@@ -122,6 +124,13 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
    *pParagraph << RPT_FY << " for the girder is "<<stress.SetValue(pstirrup_artifact->GetFy())<<" "<< stress.GetUnitTag()<<rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(3,"");
+
+   if ( span == ALL_SPANS )
+   {
+      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
    *pParagraph << table << rptNewLine;
 
    table->TableLabel() << "Details for Minimum Transverse Reinforcement Check - 5.8.2.5-1";
@@ -176,7 +185,7 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
 
 rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                                     pgsTypes::Stage stage, pgsTypes::LimitState ls,
-                                    IDisplayUnits* pDisplayUnits)
+                                    IEAFDisplayUnits* pDisplayUnits)
 {
    // Spacing check 5.8.2.7
    rptParagraph* pParagraph;
@@ -196,8 +205,17 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,    pDisplayUnits->GetShearUnit(),        false );
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+
    // get a little fancy here with the equation so it lines up
    rptRcTable* petable = pgsReportStyleHolder::CreateDefaultTable(2,"");
+
+   if ( span == ALL_SPANS )
+   {
+      petable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      petable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
    *pParagraph << petable << rptNewLine;
 
    GET_IFACE2(pBroker,ITransverseReinforcementSpec,pTransverseReinforcementSpec);

@@ -33,6 +33,7 @@
 #define EVT_LIVELOADNAME      0x0400
 #define EVT_ANALYSISTYPE      0x0800
 #define EVT_RATING_SPECIFICATION 0x1000
+#define EVT_CONSTRUCTIONLOAD     0x2000
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -231,6 +232,32 @@ public:
 		pT->Unlock();
 		return ret;
 	}
+
+   HRESULT Fire_ConstructionLoadChanged()
+   {
+		T* pT = (T*)this;
+      
+      if ( pT->m_bHoldingEvents )
+      {
+         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_CONSTRUCTIONLOAD);
+         return S_OK;
+      }
+
+      pT->Lock();
+		HRESULT ret;
+		IUnknown** pp = m_vec.begin();
+		while (pp < m_vec.end())
+		{
+			if (*pp != NULL)
+			{
+				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
+				ret = pEventSink->OnConstructionLoadChanged();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+   }
 
 	HRESULT Fire_LiveLoadChanged()
 	{

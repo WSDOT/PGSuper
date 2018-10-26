@@ -25,7 +25,7 @@
 #include "InplacePierStationEditEvents.h"
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\BridgeDescription.h>
 #include "MovePierDlg.h"
 #include "EditPierStation.h"
@@ -52,7 +52,7 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
    if ( IsEqual(old_station,new_station) )
       return;
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitStationFormat& station_format = pDisplayUnits->GetStationFormat();
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);

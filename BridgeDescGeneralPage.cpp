@@ -37,7 +37,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistFactorEngineer.h>
 
 #include <algorithm>
@@ -104,7 +104,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
@@ -132,13 +132,13 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       if ( IsEqual(m_GirderSpacing,m_MaxGirderSpacing) )
          m_GirderSpacing = m_MaxGirderSpacing;
 
-      DDV_UnitValueLimitOrMore(pDX, m_GirderSpacing, m_MinGirderSpacing, pDisplayUnits->GetXSectionDimUnit() );
-      DDV_UnitValueLimitOrLess(pDX, m_GirderSpacing, m_MaxGirderSpacing, pDisplayUnits->GetXSectionDimUnit() );
+      DDV_UnitValueLimitOrMore(pDX, IDC_SPACING, m_GirderSpacing, m_MinGirderSpacing, pDisplayUnits->GetXSectionDimUnit() );
+      DDV_UnitValueLimitOrLess(pDX, IDC_SPACING, m_GirderSpacing, m_MaxGirderSpacing, pDisplayUnits->GetXSectionDimUnit() );
    }
    else if ( m_GirderSpacingType == pgsTypes::sbsUniformAdjacent )
    {
       // check joint spacing
-      DDV_UnitValueLimitOrLess(pDX, m_GirderSpacing, m_MaxGirderSpacing-m_MinGirderSpacing, pDisplayUnits->GetComponentDimUnit() );
+      DDV_UnitValueLimitOrLess(pDX, IDC_SPACING, m_GirderSpacing, m_MaxGirderSpacing-m_MinGirderSpacing, pDisplayUnits->GetComponentDimUnit() );
    }
 
    if ( pDX->m_bSaveAndValidate )
@@ -237,7 +237,7 @@ void CBridgeDescGeneralPage::Init()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    m_bSameNumberOfGirders = pParent->m_BridgeDesc.UseSameNumberOfGirdersInAllSpans();
    m_bSameGirderName      = pParent->m_BridgeDesc.UseSameGirderForEntireBridge();
@@ -683,7 +683,7 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
    // update the unit tag that goes with the spacing input box
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CDataExchange dx(this,FALSE);
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
@@ -1079,7 +1079,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
    // update the the unit of measure
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CWnd* pWnd = GetDlgItem(IDC_SPACING_UNIT);
    if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -1190,7 +1190,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IBridge,       pBridge);
-   GET_IFACE2(pBroker, IDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    // need a spacing range that works for every girder in every span
    m_MinGirderSpacing = -MAX_GIRDER_SPACING;

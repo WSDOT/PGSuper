@@ -25,7 +25,7 @@
 #include <Reporting\ReportNotes.h>
 
 #include <IFace\Artifact.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandlingPointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Project.h>
@@ -78,7 +78,7 @@ CLiftingCheck& CLiftingCheck::operator= (const CLiftingCheck& rOther)
 //======================== OPERATIONS =======================================
 void CLiftingCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDisplayUnits) const
+                              IEAFDisplayUnits* pDisplayUnits) const
 {
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -99,6 +99,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    location.MakeSpanPoi();
 
 

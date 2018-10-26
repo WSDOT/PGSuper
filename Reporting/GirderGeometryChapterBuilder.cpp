@@ -26,7 +26,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 
@@ -38,11 +38,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-void girder_points(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter);
-void girder_offsets(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter);
-void girder_spacing(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter);
-void girder_ends(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter);
-void girder_lengths(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter);
+void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
+void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
+void girder_spacing(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
+void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
+void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
 
 /****************************************************************************
 CLASS
@@ -73,7 +73,7 @@ rptChapter* CGirderGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -111,7 +111,7 @@ CChapterBuilder* CGirderGeometryChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void girder_points(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pPara << "Girder Points";
@@ -265,7 +265,7 @@ void girder_points(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pCh
    }
 }
 
-void girder_offsets(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pPara << "Girder Offsets";
@@ -419,7 +419,7 @@ void girder_offsets(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pC
    }
 }
 
-void girder_lengths(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
 {
    USES_CONVERSION;
 
@@ -526,7 +526,7 @@ void girder_lengths(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pC
    }
 }
 
-void girder_spacing(IBroker*pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
 {
    USES_CONVERSION;
 
@@ -688,7 +688,7 @@ void girder_spacing(IBroker*pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pCh
 }
 
 
-void girder_ends(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
 {
    USES_CONVERSION;
 

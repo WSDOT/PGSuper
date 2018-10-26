@@ -46,7 +46,7 @@
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 
 #include <PgsExt\BridgeDescription.h>
@@ -493,7 +493,7 @@ void CBridgePlanView::UpdateGirderTooltips()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
@@ -1335,7 +1335,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    GET_IFACE2(pBroker,IRoadway,pAlignment);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IGirder,pGirder);
 
@@ -1843,7 +1843,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2030,7 +2030,7 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRoadway,pAlignment);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )

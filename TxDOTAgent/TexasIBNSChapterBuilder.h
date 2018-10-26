@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TEXASIBNSCHAPTERBUILDER_H_
 #define INCLUDED_TEXASIBNSCHAPTERBUILDER_H_
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 

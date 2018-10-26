@@ -354,6 +354,17 @@ void CSpanGirderReportDlg::InitFromRptSpec()
       m_Span   = pRptSpec->GetSpan();
       m_Girder = pRptSpec->GetGirder();
    }
+   else if ( m_Mode == GirderAndChapters )
+   {
+      boost::shared_ptr<CGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CGirderReportSpecification>(m_pInitRptSpec);
+      m_Girder = pRptSpec->GetGirder();
+   }
+   else
+   {
+      ATLASSERT(false); // is there a new mode?
+      m_Span = 0;
+      m_Girder = 0;
+   }
 
    UpdateData(FALSE);
 

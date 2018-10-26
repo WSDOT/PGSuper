@@ -65,10 +65,10 @@ private:
    CLoadRatingDetailsChapterBuilder(const CLoadRatingDetailsChapterBuilder&);
    CLoadRatingDetailsChapterBuilder& operator=(const CLoadRatingDetailsChapterBuilder&);
 
-   void ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType) const;
-   void MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
-   void ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,const pgsRatingArtifact* pRatingArtifact) const;
-   void StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,const pgsRatingArtifact* pRatingArtifact) const;
-   void ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
-   void LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,const pgsRatingArtifact* pRatingArtifact) const;
+   void ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const;
+   void MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
+   void ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,const pgsRatingArtifact* pRatingArtifact) const;
+   void StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,const pgsRatingArtifact* pRatingArtifact) const;
+   void ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
+   void LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,const pgsRatingArtifact* pRatingArtifact) const;
 };

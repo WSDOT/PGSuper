@@ -30,7 +30,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>
 #include <IFace\StatusCenter.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\statusitem.h>
 #include <PgsExt\GirderLabel.h>
@@ -112,7 +112,7 @@ void pgsMomentCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID
 {
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
 }
 
@@ -262,8 +262,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
          if ( FAILED(hr) )
          {
-            GET_IFACE(IStatusCenter,pStatusCenter);
-            GET_IFACE(IDisplayUnits,pDisplayUnits);
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
             const unitmgtLengthData& unit = pDisplayUnits->GetSpanLengthUnit();
             CString msg;

@@ -24,7 +24,7 @@
 #include <Reporting\ConstructabilityCheckTable.h>
 
 #include <IFace\Artifact.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
@@ -72,7 +72,7 @@ CConstructabilityCheckTable& CConstructabilityCheckTable::operator= (const CCons
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits) const
+rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
@@ -131,7 +131,7 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,S
    }
 }
 
-void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);

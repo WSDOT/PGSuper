@@ -33,7 +33,7 @@
 
 #include "HtmlHelp\HelpTopics.hh"
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <PgsExt\BridgeDescription.h>
@@ -70,7 +70,7 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
@@ -134,7 +134,7 @@ BOOL CPierLayoutPage::OnInitDialog()
 	
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    CString fmt;
    fmt.LoadString( IS_SI_UNITS(pDisplayUnits) ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US );
@@ -185,7 +185,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // read the current value of the station edit
    double toStation;

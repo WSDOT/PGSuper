@@ -150,4 +150,6 @@
 #define IDH_LOAD_RATING_CRITERIA                                  3910
 #define IDH_LIVE_LOAD_FACTORS                                     3911
 
+#define IDH_CONSTRUCTION_LOADS                                    3920
+
 #endif // INCLUDED_HELPTOPICS_HH_

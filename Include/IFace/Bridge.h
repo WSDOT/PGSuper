@@ -54,7 +54,7 @@ class matRebar;
 class rptChapter;
 
 interface IRCBeam2Ex;
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 interface IDirection;
 interface IAngle;
@@ -219,7 +219,8 @@ interface IBridge : IUnknown
 
    // negative moment calculations and results need not be processed if a simple span analysis is
    // used or if there isn't any continuity.
-   // this method returns true when negative moments should be processed
+   // this method returns true when negative moments should be processed for a given span.
+   // Use ALL_SPANS for to evaluate all spans
    virtual bool ProcessNegativeMoments(SpanIndexType spanIdx) = 0;
 };
 
@@ -608,7 +609,7 @@ interface ISectProp2 : IUnknown
    virtual Float64 GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi) = 0;
 
    // Reporting
-   virtual void ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits) = 0;
+   virtual void ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
 
    // Volume and surface area
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi) = 0;

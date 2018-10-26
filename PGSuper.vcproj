@@ -1031,6 +1031,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ConstructionLoadDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="convert.cpp"
 				>
 				<FileConfiguration
@@ -1186,28 +1190,6 @@
 			</File>
 			<File
 				RelativePath="DebondGrid.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="DesignGirder.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1862,50 +1844,6 @@
 			</File>
 			<File
 				RelativePath="InplaceSpanLengthEditEvents.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="InsertDeleteLoad.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="InsertDeleteSpan.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3324,6 +3262,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ConstructionLoadDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="convert.h"
 				>
 			</File>
@@ -3356,10 +3298,6 @@
 				>
 			</File>
 			<File
-				RelativePath="DesignGirder.h"
-				>
-			</File>
-			<File
 				RelativePath="DesignGirderDlg.h"
 				>
 			</File>
@@ -3389,6 +3327,14 @@
 			</File>
 			<File
 				RelativePath="EditDistributedLoadDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="EditLoadsChildFrm.h"
+				>
+			</File>
+			<File
+				RelativePath="EditLoadsView.h"
 				>
 			</File>
 			<File
@@ -3509,14 +3455,6 @@
 			</File>
 			<File
 				RelativePath="InplaceSpanLengthEditEvents.h"
-				>
-			</File>
-			<File
-				RelativePath="InsertDeleteLoad.h"
-				>
-			</File>
-			<File
-				RelativePath="InsertDeleteSpan.h"
 				>
 			</File>
 			<File
@@ -4005,15 +3943,15 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
-				>
-			</File>
-			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\ico00002.ico"
+				>
+			</File>
+			<File
+				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
+				>
+			</File>
+			<File
+				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -4037,15 +3975,15 @@
 				>
 			</File>
 			<File
+				RelativePath="res\ico00005.ico"
+				>
+			</File>
+			<File
 				RelativePath="LibraryEditor\res\ico00005.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00005.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\ico00005.ico"
 				>
 			</File>
 			<File
@@ -4392,6 +4330,10 @@
 				Name="Header Files"
 				>
 				<File
+					RelativePath="DesignGirder.h"
+					>
+				</File>
+				<File
 					RelativePath="EditAlignment.h"
 					>
 				</File>
@@ -4408,6 +4350,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\EditConstructionLoad.h"
+					>
+				</File>
+				<File
 					RelativePath="EditEnvironment.h"
 					>
 				</File>
@@ -4421,14 +4367,6 @@
 				</File>
 				<File
 					RelativePath="EditLLDF.h"
-					>
-				</File>
-				<File
-					RelativePath="EditLoadsChildFrm.h"
-					>
-				</File>
-				<File
-					RelativePath="EditLoadsView.h"
 					>
 				</File>
 				<File
@@ -4455,10 +4393,40 @@
 					RelativePath="EditSpanLength.h"
 					>
 				</File>
+				<File
+					RelativePath="InsertDeleteLoad.h"
+					>
+				</File>
+				<File
+					RelativePath="InsertDeleteSpan.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="Source Files"
 				>
+				<File
+					RelativePath="DesignGirder.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
 				<File
 					RelativePath="EditAlignment.cpp"
 					>
@@ -4546,6 +4514,10 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\EditConstructionLoad.cpp"
+					>
 				</File>
 				<File
 					RelativePath="EditEnvironment.cpp"
@@ -4773,6 +4745,50 @@
 				</File>
 				<File
 					RelativePath="EditSpanLength.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="InsertDeleteLoad.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="InsertDeleteSpan.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"

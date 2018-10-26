@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TEXASGIRDERSUMMARYCHAPTERBUILDER_H_
 #define INCLUDED_TEXASGIRDERSUMMARYCHAPTERBUILDER_H_
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 

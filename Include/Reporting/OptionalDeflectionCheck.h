@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <PgsExt\GirderArtifact.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -75,7 +75,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual void Build(rptChapter* pChapter, const pgsGirderArtifact* pArtifact,
-                      SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDisplayUnits) const;
+                      SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

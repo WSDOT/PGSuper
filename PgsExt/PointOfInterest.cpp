@@ -22,6 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderLabel.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -462,7 +463,7 @@ m_Poi(poi),m_bSpanPOI(bSpanPOI),m_bPrefixAttributes(true)
 rptPointOfInterest::rptPointOfInterest(const unitLength* pUnitOfMeasure,
                                        Float64 zeroTolerance,
                                        bool bShowUnitTag,bool bSpanPOI) :
-rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bSpanPOI(bSpanPOI),m_bPrefixAttributes(true)
+rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bSpanPOI(bSpanPOI),m_bPrefixAttributes(true),m_bIncludeSpanAndGirder(false)
 {
 }
 
@@ -503,6 +504,16 @@ bool rptPointOfInterest::IsSpanPoi() const
 bool rptPointOfInterest::IsGirderPoi() const
 {
    return !m_bSpanPOI;
+}
+
+void rptPointOfInterest::IncludeSpanAndGirder(bool bIncludeSpanAndGirder)
+{
+   m_bIncludeSpanAndGirder = bIncludeSpanAndGirder;
+}
+
+bool rptPointOfInterest::IncludeSpanAndGirder() const
+{
+   return m_bIncludeSpanAndGirder;
 }
 
 rptReportContent& rptPointOfInterest::SetValue(const pgsPointOfInterest& poi,Float64 endOffset)
@@ -546,22 +557,36 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
    
-   if ( m_Poi.HasAttribute(POI_CRITSECTSHEAR1) )
+   if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
    {
-      if ( 0 < nAttributes )
-         strAttrib += ", ";
+      if ( m_Poi.HasAttribute(POI_CRITSECTSHEAR1) || m_Poi.HasAttribute(POI_CRITSECTSHEAR2) )
+      {
+         if ( 0 < nAttributes )
+            strAttrib += ", ";
 
-      strAttrib += "DCS";
-      nAttributes++;
+         strAttrib += "CS";
+         nAttributes++;
+      }
    }
-   
-   if ( m_Poi.HasAttribute(POI_CRITSECTSHEAR2) )
+   else
    {
-      if ( 0 < nAttributes )
-         strAttrib += ", ";
+      if ( m_Poi.HasAttribute(POI_CRITSECTSHEAR1) )
+      {
+         if ( 0 < nAttributes )
+            strAttrib += ", ";
 
-      strAttrib += "PCS";
-      nAttributes++;
+         strAttrib += "DCS";
+         nAttributes++;
+      }
+      
+      if ( m_Poi.HasAttribute(POI_CRITSECTSHEAR2) )
+      {
+         if ( 0 < nAttributes )
+            strAttrib += ", ";
+
+         strAttrib += "PCS";
+         nAttributes++;
+      }
    }
 
    if ( m_Poi.HasAttribute(POI_PSXFER) )
@@ -663,16 +688,24 @@ std::string rptPointOfInterest::AsString() const
    std::string strValue = rptLengthUnitValue::AsString();
 
    std::string str;
+
+   if ( m_bIncludeSpanAndGirder )
+   {
+      CString str1;
+      str1.Format("Span %d Girder %s, ",LABEL_SPAN(m_Poi.GetSpan()),LABEL_GIRDER(m_Poi.GetGirder()));
+      str = str1;
+   }
+
    if ( nAttributes == 0 )
    {
-      str = strValue;
+      str += strValue;
    }
    else
    {
       if ( m_bPrefixAttributes )
-         str = strAttrib + " " + strValue;
+         str += strAttrib + " " + strValue;
       else
-         str = strValue + " " + strAttrib;
+         str += strValue + " " + strAttrib;
    }
 
    return str;
@@ -683,6 +716,7 @@ void rptPointOfInterest::MakeCopy(const rptPointOfInterest& rOther)
    m_Poi = rOther.m_Poi;
    m_bSpanPOI = rOther.m_bSpanPOI;
    m_bPrefixAttributes = rOther.m_bPrefixAttributes;
+   m_bIncludeSpanAndGirder = rOther.m_bIncludeSpanAndGirder;
 }
 
 void rptPointOfInterest::MakeAssignment(const rptPointOfInterest& rOther)

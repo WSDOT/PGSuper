@@ -23,6 +23,7 @@
 
 #pragma once
 #include <EAF\EAFAppPlugin.h>
+#include <EAF\EAFUIIntegration.h>
 #include "PGSuperBaseAppPlugin.h"
 
 class CPGSuperAppPlugin;
@@ -34,6 +35,7 @@ public:
 
    afx_msg void OnConfigurePlugins();
    afx_msg void OnUpdateTemplates();
+   afx_msg void OnProgramSettings();
 
    CPGSuperAppPlugin* m_pMyAppPlugin;
 
@@ -48,7 +50,8 @@ class ATL_NO_VTABLE CPGSuperAppPlugin :
    public CPGSuperBaseAppPlugin,
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CPGSuperAppPlugin, &CLSID_PGSuperAppPlugin>,
-   public IEAFAppPlugin
+   public IEAFAppPlugin,
+   public IEAFCommandCallback
 {
 public:
    CPGSuperAppPlugin()
@@ -60,6 +63,7 @@ public:
 
 BEGIN_COM_MAP(CPGSuperAppPlugin)
    COM_INTERFACE_ENTRY(IEAFAppPlugin)
+   COM_INTERFACE_ENTRY(IEAFCommandCallback)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CPGSuperAppPlugin)
@@ -77,14 +81,22 @@ public:
    void ConfigurePlugins();
    void UpdateTemplates();
    bool UpdatingTemplates();
+   void OnProgramSettings();
 
 // IEAFAppPlugin
 public:
    virtual BOOL Init(CEAFApp* pParent);
    virtual void Terminate();
+   virtual void IntegrateWithUI(BOOL bIntegrate);
    virtual CEAFDocTemplate* CreateDocTemplate();
-   virtual CCmdTarget* GetCommandTarget();
    virtual HMENU GetSharedMenuHandle();
    virtual UINT GetDocumentResourceID();
    virtual CString GetName();
+
+// IEAFCommandCallback
+public:
+   virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
+   virtual void GetStatusBarMessageString(UINT nID, CString& rMessage) const;
+   virtual void GetToolTipMessageString(UINT nID, CString& rMessage) const;
+
 };

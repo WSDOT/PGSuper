@@ -32,7 +32,7 @@
 #include <PsgLib\SpecLibraryEntry.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
 
@@ -78,7 +78,7 @@ CFlexuralStressCheckTable& CFlexuralStressCheckTable::operator= (const CFlexural
 
 //======================== OPERATIONS =======================================
 void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                           IDisplayUnits* pDisplayUnits,
+                                           IEAFDisplayUnits* pDisplayUnits,
                                            pgsTypes::Stage stage,
                                            pgsTypes::LimitState limitState,
                                            pgsTypes::StressType stressType) const
@@ -92,6 +92,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
 
    rptCapacityToDemand cap_demand;
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    if ( stage == pgsTypes::CastingYard )
       location.MakeGirderPoi();
    else
@@ -394,6 +395,13 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
       p_table = pgsReportStyleHolder::CreateDefaultTable(9,"");
 
    *p << p_table;
+
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    int col1=0;
    int col2=0;

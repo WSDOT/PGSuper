@@ -28,6 +28,7 @@
 #include <fstream>
 
 #include <PsgLib\StructuredLoad.h>
+#include <PsgLib\StructuredSave.h>
 #include <psglib\LibraryEditorDoc.h>
 
 #include <System\FileStream.h>
@@ -43,10 +44,22 @@
 #include "PGSuperLibraryMgrCATID.h"
 
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
+
+// cause the resource control values to be defined
+#define APSTUDIO_INVOKED
+#undef APSTUDIO_READONLY_SYMBOLS
+
+#include "resource.h"       // main symbols 
+
+#define LIBRARY_PLUGIN_COMMAND_BASE 0xC000 // 49152 (this gives us about 8100 plug commands)
+#if LIBRARY_PLUGIN_COMMAND_BASE < _APS_NEXT_COMMAND_VALUE
+#error "Library Manager Plugins: Command IDs interfere with plug-in commands, change the plugin command base ID"
 #endif
 
 static const Float64 FILE_VERSION=1.00;
@@ -77,6 +90,10 @@ CLibraryEditorDoc::CLibraryEditorDoc()
    // library editor doesn't use the status center
    CEAFStatusCenter& status_center = GetStatusCenter();
    status_center.Enable(false);
+
+
+   // Set the base command ID for EAFDocumentPlugin objects
+   GetPluginCommandManager()->SetBaseCommandID(LIBRARY_PLUGIN_COMMAND_BASE);
 }
 
 CLibraryEditorDoc::~CLibraryEditorDoc()
@@ -119,6 +136,7 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
    if ( bIntegrate )
    {
       // set up the toolbar here
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
       UINT tbID = pFrame->CreateToolBar("Library",GetPluginCommandManager());
       m_pMyToolBar = pFrame->GetToolBar(tbID);
       m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,NULL);
@@ -135,144 +153,87 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
    CEAFDocument::DoIntegrateWithUI(bIntegrate);
 }
 
-BOOL CLibraryEditorDoc::OpenTheDocument(LPCTSTR lpszPathName)
+HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
 {
-   // Skip this, we are doing it our own way
-   //if ( !CEAFDocument::OpenTheDocument(lpszPathName) )
-   //   return FALSE;
-   CComPtr<IStructuredLoad> pStrLoad;
-   pStrLoad.CoCreateInstance(CLSID_StructuredLoad);
-   CStructuredLoad load( pStrLoad );
+   CStructuredSave mysave(pStrSave);
 
-   HRESULT hr = pStrLoad->Open(lpszPathName);
-   if ( SUCCEEDED(hr) )
+   try
    {
-      try
-      {
-         // clear out library and load up new
-	      m_LibraryManager.ClearAllEntries();
+      // save editor-specific information
+      CEAFApp* pApp = (CEAFApp*)AfxGetApp();
+      mysave.BeginUnit("LIBRARY_EDITOR", 1.0);
+      if (pApp->GetUnitsMode() == eafTypes::umUS)
+         mysave.Property("EDIT_UNITS", "US");
+      else
+         mysave.Property("EDIT_UNITS", "SI");
 
-         eafTypes::UnitMode unitMode;
-         if ( FAILED(pgslibReadLibraryDocHeader(pStrLoad,&unitMode)) )
-            THROW_LOAD(InvalidFileFormat,(&load));
+      // save library manager and all the library data
+      m_LibraryManager.SaveMe(&mysave);
 
-         CEAFApp* pApp = (CEAFApp*)AfxGetApp();
-         pApp->SetUnitsMode(unitMode);
-
-         // load the library 
-         m_LibraryManager.LoadMe(&load);
-
-         if ( FAILED(pStrLoad->EndUnit()) )
-            THROW_LOAD(InvalidFileFormat,(&load));
-      }
-      catch (const sysXStructuredLoad& rLoad)
-      {
-         sysXStructuredLoad::Reason reason = rLoad.GetExplicitReason();
-         std::string msg;
-         CString cmsg;
-         rLoad.GetErrorMessage(&msg);
-         if (reason==sysXStructuredLoad::InvalidFileFormat)
-            cmsg = "Invalid file data format. The file may have been corrupted. Extended error information is as follows: ";
-         else if (reason==sysXStructuredLoad::BadVersion)
-            cmsg = "Data file was written by a newer program version. Please upgrade this software. Extended error information is as follows: ";
-         else if ( reason == sysXStructuredLoad::UserDefined )
-            cmsg = "Error reading file. Extended error information is as follows:";
-         else
-            cmsg = "Undetermined error reading data file.  Extended error information is as follows: ";
-
-         cmsg += msg.c_str();
-         AfxMessageBox(cmsg,MB_OK | MB_ICONEXCLAMATION);
-         return FALSE;
-      }
+      mysave.EndUnit();
    }
-   else
-      return FALSE;
+   catch (const sysXStructuredSave& rXSave)
+   {
+      rXSave; // unused
+      AfxMessageBox("Error saving library data. You may have a full hard disk",MB_OK|MB_ICONEXCLAMATION);
+      return E_FAIL;
+   }
+	
+   // document is now clean
+   SetModifiedFlag(FALSE);
+
+   return S_OK;
+}
+
+HRESULT CLibraryEditorDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
+{
+   eafTypes::UnitMode unitMode;
+   HRESULT hr = pgslibLoadLibrary(pStrLoad,&m_LibraryManager,&unitMode);
+   if ( FAILED(hr) )
+      return hr;
+
+
+   CEAFApp* pApp = (CEAFApp*)AfxGetApp();
+   pApp->SetUnitsMode(unitMode);
 	
    m_LibraryManager.EnableEditingForAllEntries(true);
 
    SetModifiedFlag(FALSE);
 
-   return TRUE;
+   return S_OK;
 }
 
-BOOL CLibraryEditorDoc::SaveTheDocument(LPCTSTR lpszPathName)
+HRESULT CLibraryEditorDoc::OpenDocumentRootNode(IStructuredLoad* pStrLoad)
 {
-   // We are using our own method for saving library documents.
-   // By-pass the base class method
-	//if (!CEAFDocument::SaveTheDocument(lpszPathName))
-	//	return FALSE;
-	
-   HANDLE hFile;
-   WIN32_FIND_DATA find_file_data;
-   hFile = ::FindFirstFile( lpszPathName, &find_file_data );
-   if ( hFile != INVALID_HANDLE_VALUE )
-   {
-      ::FindClose(hFile); // don't want no stinkin resource leaks.
-      // OK, The file exists.
-      // check to make sure it's not read-only
-	   DWORD dwAttrib = GetFileAttributes(lpszPathName);
-	   if (dwAttrib & FILE_ATTRIBUTE_READONLY)
-      {
-         CString msg;
-         msg.Format("Cannot save file. The file %s is read-only. Please try to save again to a different file.", lpszPathName);
-         AfxMessageBox(msg );
-         return FALSE;
-      }
-   }
+   // base class uses app name for unit name... 
+   // set the state so it gets our name and not the main applications
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());  
 
-   CComBSTR filname(lpszPathName);
-   FileStream ofs;
-   if (ofs.open(filname,false))
-   {
-      try
-      {
-      // save
-         sysStructuredSaveXmlPrs mysave;
-         mysave.BeginSave(&ofs);
-
-         // save editor-specific information
-         CEAFApp* pApp = (CEAFApp*)AfxGetApp();
-         mysave.BeginUnit("LIBRARY_EDITOR", 1.0);
-         if (pApp->GetUnitsMode() == eafTypes::umUS)
-            mysave.Property("EDIT_UNITS", "US");
-         else
-            mysave.Property("EDIT_UNITS", "SI");
-
-         // save library manager
-            m_LibraryManager.SaveMe(&mysave);
-
-         mysave.EndUnit();
-
-         mysave.EndSave();
-      }
-      catch (const sysXStructuredSave& rXSave)
-      {
-         rXSave; // unused
-         AfxMessageBox("Error saving library data. You may have a full hard disk",MB_OK||MB_ICONEXCLAMATION);
-         return FALSE;
-      }
-   }
-   else
-      return FALSE;
-	
-   // document is now clean
-   SetModifiedFlag(FALSE);
-
-	return TRUE;// CDocument::OnSaveDocument(lpszPathName);
+   // it is ok if this fails... before moving to the EAF implementation and persisting
+   // plug-in data, there was not a structured storage unit that wrapped the entire file
+   m_hrOpenRootNode = CEAFDocument::OpenDocumentRootNode(pStrLoad);
+   return S_OK;  // always return S_OK
 }
 
-HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
+HRESULT CLibraryEditorDoc::CloseDocumentRootNode(IStructuredLoad* pStrLoad)
 {
-   // Not using this functionality - should never get here
-   ATLASSERT(false);
-   return E_FAIL;
+   // it is ok if this fails... before moving to the EAF implementation and persisting
+   // plug-in data, there was not a structured storage unit that wrapped the entire file
+   
+   // only call the base-class to EndUnit of the unit was opened
+   if ( m_hrOpenRootNode == S_OK )
+      CEAFDocument::CloseDocumentRootNode(pStrLoad);
+
+   return S_OK;  // always return S_OK
 }
 
-HRESULT CLibraryEditorDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
+HRESULT CLibraryEditorDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
 {
-   // Not using this functionality - should never get here
-   ATLASSERT(false);
-   return E_FAIL;
+   // base class uses app name for unit name... 
+   // set the state so it gets our name and not the main applications
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());  
+
+   return CEAFDocument::OpenDocumentRootNode(pStrSave);
 }
 
 void CLibraryEditorDoc::OnImport()

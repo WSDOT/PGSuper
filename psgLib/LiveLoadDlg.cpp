@@ -78,10 +78,10 @@ void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBItemData(pDX, IDC_USAGE, m_UsageType);
 
    DDX_UnitValueAndTag( pDX, IDC_LANE_LOAD,  IDC_LANE_LOAD_UNITS, m_LaneLoad, pDisplayUnits->ForcePerLength);
-   DDV_UnitValueZeroOrMore( pDX, m_LaneLoad, pDisplayUnits->ForcePerLength );
+   DDV_UnitValueZeroOrMore( pDX, IDC_LANE_LOAD,m_LaneLoad, pDisplayUnits->ForcePerLength );
 
    DDX_UnitValueAndTag( pDX, IDC_BRIDGE_LENGTH,  IDC_BRIDGE_LENGTH_UNITS, m_LaneLoadSpanLength, pDisplayUnits->SpanLength );
-   DDV_UnitValueZeroOrMore( pDX, m_LaneLoadSpanLength, pDisplayUnits->SpanLength );
+   DDV_UnitValueZeroOrMore( pDX, IDC_BRIDGE_LENGTH, m_LaneLoadSpanLength, pDisplayUnits->SpanLength );
 
    DDX_Check_Bool(pDX,IDC_IS_VARIABLE_AXLE_TRUCK,m_bHasVariableAxle);
    DDX_CBIndex(pDX, IDC_AXLE_LIST, m_VariableAxleIndex );

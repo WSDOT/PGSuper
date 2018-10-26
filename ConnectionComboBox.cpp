@@ -24,6 +24,7 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include "PGSuper.h"
 #include "ConnectionComboBox.h"
 #include <PgsExt\PierData.h>

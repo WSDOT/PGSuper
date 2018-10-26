@@ -27,14 +27,14 @@
 #include <IFace\AnalysisResults.h>
 #include "ReportNotes.h"
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 interface IRatingSpecification;
 
 std::string REPORTINGFUNC LiveLoadPrefix(pgsTypes::LiveLoadType llType);
 void REPORTINGFUNC LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType girder,bool bDesign,bool bRating);
 
 ColumnIndexType REPORTINGFUNC GetProductLoadTableColumnCount(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,
-                                                             bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,pgsTypes::Stage* pContinuityStage,SpanIndexType* pStartSpan,SpanIndexType* pNSpans);
+                                                             bool* pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,pgsTypes::Stage* pContinuityStage,SpanIndexType* pStartSpan,SpanIndexType* pNSpans);
 
 /*****************************************************************************
 CLASS 
@@ -83,7 +83,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             bool bDesign,bool bRating,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const;
+                             bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const;
 
 protected:
 
@@ -96,9 +96,9 @@ protected:
 };
 
 template <class M,class T>
-int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bDeckPanels,bool bSidewalk,bool bShearKey,
+int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,
                                      bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,pgsTypes::Stage continuityStage,
-                                     IRatingSpecification* pRatingSpec,IDisplayUnits* pDisplayUnits,const T& unitT)
+                                     IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    p_table->SetNumberOfHeaderRows(2);
 
@@ -137,6 +137,23 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bD
          p_table->SetRowSpan(0,row1col,2);
          p_table->SetRowSpan(1,row2col++,-1);
          (*p_table)(0,row1col++) << COLHDR("Shear" << rptNewLine << "Key", M, unitT );
+      }
+   }
+
+   if ( bConstruction )
+   {
+      if ( analysisType == pgsTypes::Envelope && continuityStage == pgsTypes::BridgeSite1 )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "Construction";
+         (*p_table)(1,row2col++) << COLHDR("Max", M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min", M, unitT );
+      }
+      else
+      {
+         p_table->SetRowSpan(0,row1col,2);
+         p_table->SetRowSpan(1,row2col++,-1);
+         (*p_table)(0,row1col++) << COLHDR("Construction", M, unitT );
       }
    }
 

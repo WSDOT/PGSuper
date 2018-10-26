@@ -86,13 +86,13 @@ void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_T, m_Fc, pDisplayUnits->Stress );
-   DDV_UnitValueGreaterThanZero(pDX, m_Fc, pDisplayUnits->Stress );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_FC, m_Fc, pDisplayUnits->Stress );
 
    DDX_Check_Bool(pDX, IDC_MOD_E, m_bUserEc);
    if (m_bUserEc || !pDX->m_bSaveAndValidate)
    {
       DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_T, m_Ec, pDisplayUnits->Stress );
-      DDV_UnitValueGreaterThanZero(pDX, m_Ec, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_EC, m_Ec, pDisplayUnits->Stress );
 
       if (!pDX->m_bSaveAndValidate)
       {
@@ -102,11 +102,11 @@ void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag(pDX, IDC_DS, IDC_DS_T, m_Ds, pDisplayUnits->Density);
-   DDV_UnitValueGreaterThanZero(pDX, m_Ds, pDisplayUnits->Density );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_DS, m_Ds, pDisplayUnits->Density );
    DDX_UnitValueAndTag(pDX, IDC_DW, IDC_DW_T, m_Dw, pDisplayUnits->Density );
-   DDV_UnitValueGreaterThanZero(pDX, m_Dw, pDisplayUnits->Density );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_DW, m_Dw, pDisplayUnits->Density );
    DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_T, m_AggSize, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, m_AggSize, pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_SIZE, m_AggSize, pDisplayUnits->ComponentDim );
    DDX_Text(pDX, IDC_K1, m_K1 );
    DDV_GreaterThanZero(pDX,IDC_K1,m_K1);
 

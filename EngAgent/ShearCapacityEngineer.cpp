@@ -87,7 +87,7 @@ void pgsShearCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID)
 {
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidGirderDescriptionError   = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusError) );
 
 }
@@ -166,7 +166,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
    // concrete shear capacity
    if (!ComputeVc(poi,pscd))
    {
-      GET_IFACE(IStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
       std::string msg("An error occured while computing shear capacity");
       pgsGirderDescriptionStatusItem* pStatusItem =
@@ -748,7 +748,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
       }
       else if (rxs.GetReason()==lrfdXShear::MaxIterExceeded)
       {
-         GET_IFACE(IStatusCenter,pStatusCenter);
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
          std::string msg("Error computing shear capacity - could not converge on a solution");
          pgsGirderDescriptionStatusItem* pStatusItem =

@@ -43,7 +43,7 @@
 #include <WBFLUnitServer_i.c>
 
 #include "BridgeAgentImp.h"
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\StatusCenter.h>

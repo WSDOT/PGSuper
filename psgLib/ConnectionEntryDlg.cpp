@@ -118,19 +118,19 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_MetaFileStatic(pDX, IDC_CONNECTION_MF, m_ConnectionPicture,image_name, _T("Metafile") );
 
    DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, m_GirderEndDistance, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_GirderEndDistance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_END_DISTANCE, m_GirderEndDistance, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, m_GirderBearingOffset, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_GirderBearingOffset, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BEARING_OFFSET, m_GirderBearingOffset, pDisplayUnits->ComponentDim );
 
    DDX_UnitValueAndTag(pDX, IDC_SUPPORT_WIDTH, IDC_SUPPORT_WIDTH_T, m_SupportWidth, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_SupportWidth, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_SUPPORT_WIDTH, m_SupportWidth, pDisplayUnits->ComponentDim );
 
    DDX_UnitValueAndTag(pDX, IDC_DIAPHRAGM_HEIGHT, IDC_DIAPHRAGM_HEIGHT_T, m_DiaphragmHeight, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_DiaphragmHeight, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_DIAPHRAGM_HEIGHT, m_DiaphragmHeight, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_DIAPHRAGM_WIDTH, IDC_DIAPHRAGM_WIDTH_T, m_DiaphragmWidth, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_DiaphragmWidth, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_DIAPHRAGM_WIDTH,m_DiaphragmWidth, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag( pDX, IDC_DIAPHRAGM_OFFSET, IDC_DIAPHRAGM_OFFSET_UNITS, m_DiaphragmLoadLocation, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_DiaphragmLoadLocation, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation, pDisplayUnits->ComponentDim );
 
    DDX_CBItemData(pDX,IDC_BEARING_OFFSET_MEASURE,m_BearingOffsetMeasurementType);
    DDX_CBItemData(pDX,IDC_END_DISTANCE_MEASURE,m_EndDistanceMeasurementType);

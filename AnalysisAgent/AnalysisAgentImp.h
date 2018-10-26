@@ -120,6 +120,7 @@ public:
    virtual Float64 GetPedestrianLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx);
 
    virtual void GetOverlayLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<OverlayLoad>* pOverlayLoads);
+   virtual void GetConstructionLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ConstructionLoad>* pConstructionLoads);
 
    virtual void GetCantileverSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
    virtual void GetIntermediateDiaphragmLoads(pgsTypes::Stage stage, SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<DiaphragmLoad>* pLoads);
@@ -133,9 +134,10 @@ public:
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
 
 private:
-   virtual void GetMainSpanSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<SlabLoad>* pSlabLoads);
-   virtual void GetMainSpanOverlayLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<OverlayLoad>* pOverlayLoads);
-   virtual void GetMainSpanShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ShearKeyLoad>* pLoads);
+   void GetMainSpanSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<SlabLoad>* pSlabLoads);
+   void GetMainSpanOverlayLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<OverlayLoad>* pOverlayLoads);
+   void GetMainSpanShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ShearKeyLoad>* pLoads);
+   void GetMainConstructionLoad(SpanIndexType span,GirderIndexType gdr, std::vector<ConstructionLoad>* pConstructionLoads);
 
 // IProductForces
 public:
@@ -313,6 +315,7 @@ public:
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
    virtual HRESULT OnLiveLoadNameChanged(const char* strOldName,const char* strNewName);
+   virtual HRESULT OnConstructionLoadChanged();
 
 // ISpecificationEventSink
 public:
@@ -466,6 +469,7 @@ private:
    void ApplyDiaphragmLoad(ILBAMModel* pModel, GirderIndexType gdr);
    void ApplySlabLoad(ILBAMModel* pModel, GirderIndexType gdr );
    void ApplyOverlayLoad(ILBAMModel* pModel, GirderIndexType gdr);
+   void ApplyConstructionLoad(ILBAMModel* pModel,GirderIndexType gdr);
    void ApplyShearKeyLoad(ILBAMModel* pModel, GirderIndexType gdr);
    void GetRailingSystemLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight);
    void ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,GirderIndexType gdr);

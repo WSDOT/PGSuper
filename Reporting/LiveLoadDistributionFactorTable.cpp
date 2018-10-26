@@ -25,7 +25,7 @@
 #include <Reporting\ReportNotes.h>
 
 #include <IFace\DistributionFactors.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
@@ -73,7 +73,7 @@ CLiveLoadDistributionFactorTable& CLiveLoadDistributionFactorTable::operator= (c
 //======================== OPERATIONS =======================================
 void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
                                              IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                             IDisplayUnits* pDisplayUnits) const
+                                             IEAFDisplayUnits* pDisplayUnits) const
 {
    rptRcScalar df;
    df.SetFormat(sysNumericFormatTool::Fixed);
@@ -82,9 +82,6 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
-
-   PierIndexType startPier = span;
-   PierIndexType endPier   = span+1;
 
    bool bNegMoments = pBridge->ProcessNegativeMoments(span);
 
@@ -97,6 +94,12 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,"Live Load Distribution Factors");
    *pBody << pTable;
+
+   if ( span == ALL_SPANS )
+   {
+      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
@@ -152,17 +155,19 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder, POI_TABULAR);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
+   SpanIndexType last_span_idx = 0;
    std::vector<pgsPointOfInterest>::iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
    {
       pgsPointOfInterest poi = *iter;
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
       (*pTable)(row,0) << location.SetValue( poi, end_size );
 
       double pM, nM, V;
@@ -178,7 +183,24 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
          (*pTable)(row,2) << "---";
       }
       (*pTable)(row,3) << df.SetValue(V);
-      (*pTable)(row,4) << "";
+
+      if ( iter == vPoi.begin() || last_span_idx != poi.GetSpan() )
+      {
+         last_span_idx = poi.GetSpan();
+         (*pTable)(row,4) << df.SetValue(pDistFact->GetReactionDistFactor(poi.GetSpan(),poi.GetGirder(),pgsTypes::StrengthI));
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            (*pTable)(row,8) << df.SetValue(pDistFact->GetReactionDistFactor(poi.GetSpan(),poi.GetGirder(),pgsTypes::FatigueI));
+         }
+      }
+      else
+      {
+         (*pTable)(row,4) << "";
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            (*pTable)(row,8) << "";
+         }
+      }
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
@@ -195,20 +217,15 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
          }
 
          (*pTable)(row,7) << df.SetValue(V);
-         (*pTable)(row,8) << "";
       }
 
       row++;
    }
 
-   row = pTable->GetNumberOfHeaderRows();
-   (*pTable)(row,4)               << df.SetValue(pDistFact->GetReactionDistFactor(startPier,girder,pgsTypes::StrengthI));
-   (*pTable)(row+vPoi.size()-1,4) << df.SetValue(pDistFact->GetReactionDistFactor(endPier,  girder,pgsTypes::StrengthI));
-
+   (*pTable)(row-1,4) << df.SetValue(pDistFact->GetReactionDistFactor(vPoi.back().GetSpan(),vPoi.back().GetGirder(),pgsTypes::StrengthI));
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      (*pTable)(row,8)               << df.SetValue(pDistFact->GetReactionDistFactor(startPier,girder,pgsTypes::FatigueI));
-      (*pTable)(row+vPoi.size()-1,8) << df.SetValue(pDistFact->GetReactionDistFactor(endPier,  girder,pgsTypes::FatigueI));
+      (*pTable)(row-1,8) << df.SetValue(pDistFact->GetReactionDistFactor(vPoi.back().GetSpan(),vPoi.back().GetGirder(),pgsTypes::FatigueI));
    }
 
 

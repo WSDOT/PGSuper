@@ -222,10 +222,10 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX, IDC_HOLD_DOWN_FORCE, IDC_HOLD_DOWN_FORCE_UNITS, m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
    if (m_Entry.m_DoCheckHoldDown)
-      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HOLD_DOWN_FORCE,m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
 
    DDX_UnitValueAndTag(pDX, IDC_MAX_STIRRUP_SPACING, IDC_MAX_STIRRUP_SPACING_UNITS, m_Entry.m_MaxStirrupSpacing, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MaxStirrupSpacing, pDisplayUnits->ComponentDim);
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_STIRRUP_SPACING,m_Entry.m_MaxStirrupSpacing, pDisplayUnits->ComponentDim);
 
 	DDX_Text(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_CyCompStressServ);
    DDV_GreaterThanZero(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_CyCompStressServ);
@@ -233,15 +233,15 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT2, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_CyTensStressServ, pDisplayUnits->SqrtPressure );
    CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )");
    DDX_Text(pDX,IDC_CYS_TENS_BYLINE,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_CyTensStressServ, pDisplayUnits->SqrtPressure);
+   DDV_UnitValueZeroOrMore(pDX, IDC_CYS_TENS_BYLINE,m_Entry.m_CyTensStressServ, pDisplayUnits->SqrtPressure);
    DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX2, m_Entry.m_CyDoTensStressServMax);
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX2, IDC_NORMAL_MAX_MAX_UNITS2, m_Entry.m_CyTensStressServMax, pDisplayUnits->Stress );
    if (m_Entry.m_CyDoTensStressServMax)
-      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_CyTensStressServMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_NORMAL_MAX_MAX2,m_Entry.m_CyTensStressServMax, pDisplayUnits->Stress );
 
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT3, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->Stress);
    DDX_Text(pDX,IDC_CYS_TENS_BYLINE2,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->Stress );
+   DDV_UnitValueZeroOrMore(pDX, IDC_CYS_TENS_BYLINE2,m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->Stress );
 
 	DDX_Text(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
    DDV_GreaterThanZero(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
@@ -269,28 +269,28 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_FR_SQRT,tag);
 
    DDX_UnitValueAndTag(pDX, IDC_PICK_POINT_HEIGHT, IDC_PICK_POINT_HEIGHT_UNITS, m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_PICK_POINT_HEIGHT,m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_LIFTING_LOOP_TOLERANCE, IDC_LIFTING_LOOP_TOLERANCE_UNITS, m_Entry.m_LiftingLoopTolerance, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_LiftingLoopTolerance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_LIFTING_LOOP_TOLERANCE,m_Entry.m_LiftingLoopTolerance, pDisplayUnits->ComponentDim );
 	DDX_Text(pDX, IDC_GIRDER_SWEEP_TOL, m_Entry.m_MaxGirderSweepLifting);
    DDV_NonNegativeDouble(pDX, IDC_GIRDER_SWEEP_TOL, m_Entry.m_MaxGirderSweepLifting);
    DDX_UnitValueAndTag(pDX, IDC_MIN_CABLE_ANGLE, IDC_MIN_CABLE_ANGLE_UNITS, m_Entry.m_MinCableInclination, pDisplayUnits->Angle);
-   DDV_UnitValueRange(pDX, m_Entry.m_MinCableInclination, 0.0, 90., pDisplayUnits->Angle );
+   DDV_UnitValueRange(pDX, IDC_MIN_CABLE_ANGLE,m_Entry.m_MinCableInclination, 0.0, 90., pDisplayUnits->Angle );
 
 	DDX_Text(pDX, IDC_CY_ALLOW_LIFTING_COMP, m_Entry.m_CyCompStressLifting);
    DDV_GreaterThanZero(pDX, IDC_CY_ALLOW_LIFTING_COMP, m_Entry.m_CyCompStressLifting);
 
    DDX_UnitValueAndTag(pDX, IDC_LIFTING_NORMAL_MAX_SQRT, IDC_LIFTING_NORMAL_MAX_SQRT_UNITS, m_Entry.m_CyTensStressLifting, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_LIFT_TENS,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_CyTensStressLifting, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_LIFT_TENS,m_Entry.m_CyTensStressLifting, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_LIFTING_NORMAL_MAX_MAX, m_Entry.m_CyDoTensStressLiftingMax);
    DDX_UnitValueAndTag(pDX, IDC_LIFTING_NORMAL_MAX_MAX, IDC_LIFTING_NORMAL_MAX_MAX_UNITS, m_Entry.m_CyTensStressLiftingMax, pDisplayUnits->Stress );
    if (m_Entry.m_CyDoTensStressLiftingMax)
-      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_CyTensStressLiftingMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_LIFTING_NORMAL_MAX_MAX,m_Entry.m_CyTensStressLiftingMax, pDisplayUnits->Stress );
 
    DDX_UnitValueAndTag(pDX, IDC_LIFTING_NORMAL_MAX_SQRT2, IDC_LIFTING_NORMAL_MAX_SQRT_UNITS, m_Entry.m_TensStressLiftingWithRebar, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_LIFT_TENS2,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_TensStressLiftingWithRebar, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_LIFT_TENS2,m_Entry.m_TensStressLiftingWithRebar, pDisplayUnits->SqrtPressure );
 
    DDX_Text(pDX, IDC_IMPACT_UPWARD_LIFTING, m_Entry.m_LiftingUpwardImpact);
    DDV_MinMaxDouble(pDX, m_Entry.m_LiftingUpwardImpact, 0.0, 1.0);
@@ -298,9 +298,9 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDV_MinMaxDouble(pDX, m_Entry.m_LiftingDownwardImpact, 0.0, 1.0);
  
    DDX_UnitValueAndTag(pDX, IDC_MIN_LIFTING_POINT,IDC_MIN_LIFTING_POINT_UNIT,m_Entry.m_MinLiftPoint, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MinLiftPoint, pDisplayUnits->SpanLength );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MIN_LIFTING_POINT,m_Entry.m_MinLiftPoint, pDisplayUnits->SpanLength );
    DDX_UnitValueAndTag(pDX, IDC_LIFTING_POINT_LOCATION_ACCURACY,IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,m_Entry.m_LiftPointAccuracy, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_LiftPointAccuracy, pDisplayUnits->SpanLength );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_LIFTING_POINT_LOCATION_ACCURACY,m_Entry.m_LiftPointAccuracy, pDisplayUnits->SpanLength );
 
    if (!pDX->m_bSaveAndValidate)
    {
@@ -336,15 +336,15 @@ void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX, IDC_HAULING_MAX_TENSSQRT, IDC_HAULING_MAX_TENSSQRT_UNITS, m_Entry.m_TensStressHauling, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAUL_TENS,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_TensStressHauling, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAUL_TENS,m_Entry.m_TensStressHauling, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENS_MAX, m_Entry.m_DoTensStressHaulingMax);
    DDX_UnitValueAndTag(pDX, IDC_HAULING_TENS_MAX, IDC_HAULING_TENS_MAX_UNITS, m_Entry.m_TensStressHaulingMax, pDisplayUnits->Stress );
    if (m_Entry.m_DoTensStressHaulingMax)
-      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TensStressHaulingMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENS_MAX,m_Entry.m_TensStressHaulingMax, pDisplayUnits->Stress );
 
    DDX_UnitValueAndTag(pDX, IDC_HAULING_MAX_TENSSQRT2, IDC_HAULING_MAX_TENSSQRT_UNITS, m_Entry.m_TensStressHaulingWithRebar, pDisplayUnits->SqrtPressure  );
    DDX_Text(pDX,IDC_HAUL_TENS2,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_TensStressHaulingWithRebar, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_MAX_TENSSQRT2,m_Entry.m_TensStressHaulingWithRebar, pDisplayUnits->SqrtPressure );
 
    // Validate truck roll stiffness input
    DDX_Radio(pDX, IDC_LUMPSUM_METHOD, m_Entry.m_TruckRollStiffnessMethod );
@@ -352,28 +352,28 @@ void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_AXLE_WEIGHT, IDC_AXLE_WEIGHT_UNITS, m_Entry.m_AxleWeightLimit, pDisplayUnits->GeneralForce );
    DDX_UnitValueAndTag(pDX, IDC_AXLE_STIFFNESS, IDC_AXLE_STIFFNESS_UNITS, m_Entry.m_AxleStiffness, pDisplayUnits->MomentPerAngle );
    DDX_UnitValueAndTag(pDX, IDC_MIN_ROLL_STIFFNESS, IDC_MIN_ROLL_STIFFNESS_UNITS, m_Entry.m_MinRollStiffness, pDisplayUnits->MomentPerAngle );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TruckRollStiffness, pDisplayUnits->MomentPerAngle );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_AxleWeightLimit, pDisplayUnits->GeneralForce );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_AxleStiffness, pDisplayUnits->MomentPerAngle );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MinRollStiffness, pDisplayUnits->MomentPerAngle );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_ROLL_STIFFNESS, m_Entry.m_TruckRollStiffness, pDisplayUnits->MomentPerAngle );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_AXLE_WEIGHT,m_Entry.m_AxleWeightLimit, pDisplayUnits->GeneralForce );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_AXLE_STIFFNESS,m_Entry.m_AxleStiffness, pDisplayUnits->MomentPerAngle );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MIN_ROLL_STIFFNESS,m_Entry.m_MinRollStiffness, pDisplayUnits->MomentPerAngle );
 
    
    DDX_UnitValueAndTag(pDX, IDC_HEIGHT_GIRDER_BOTTOM, IDC_HEIGHT_GIRDER_BOTTOM_UNITS, m_Entry.m_TruckGirderHeight, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TruckGirderHeight, pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_HEIGHT_GIRDER_BOTTOM,m_Entry.m_TruckGirderHeight, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_HEIGHT_ROLL_CENTER, IDC_HEIGHT_ROLL_CENTER_UNITS, m_Entry.m_TruckRollCenterHeight, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TruckRollCenterHeight, pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_HEIGHT_ROLL_CENTER,m_Entry.m_TruckRollCenterHeight, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_AXLE_SPACING, IDC_AXLE_SPACING_UNITS, m_Entry.m_TruckAxleWidth, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TruckAxleWidth, pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_AXLE_SPACING,m_Entry.m_TruckAxleWidth, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_MAX_HAULING_SUPPORT_LENGTH, IDC_MAX_HAULING_SUPPORT_LENGTH_UNITS, m_Entry.m_HaulingSupportDistance, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_HaulingSupportDistance, pDisplayUnits->SpanLength );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_HAULING_SUPPORT_LENGTH,m_Entry.m_HaulingSupportDistance, pDisplayUnits->SpanLength );
    DDX_UnitValueAndTag(pDX, IDC_MAXOVERHANG, IDC_MAXOVERHANG_UNITS, m_Entry.m_MaxHaulingOverhang, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MaxHaulingOverhang, pDisplayUnits->SpanLength );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAXOVERHANG,m_Entry.m_MaxHaulingOverhang, pDisplayUnits->SpanLength );
    DDX_Text(pDX, IDC_HE_ROADWAY_SUPERELEVATION, m_Entry.m_RoadwaySuperelevation);
    DDV_MinMaxDouble(pDX, m_Entry.m_RoadwaySuperelevation, 0.0, 0.5);
 	DDX_Text(pDX, IDC_GIRDER_SWEEP_TOL, m_Entry.m_MaxGirderSweepHauling);
    DDV_MinMaxDouble(pDX, m_Entry.m_MaxGirderSweepHauling, 0.0, 1.0);
    DDX_UnitValueAndTag(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE, IDC_SUPPORT_PLACEMENT_TOLERANCE_UNITS, m_Entry.m_HaulingSupportPlacementTolerance, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_HaulingSupportPlacementTolerance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE,m_Entry.m_HaulingSupportPlacementTolerance, pDisplayUnits->ComponentDim );
 	DDX_Text(pDX, IDC_CAMBER_CG_ADJUSTMENT, m_Entry.m_HaulingCamberPercentEstimate);
    DDV_MinMaxDouble(pDX, m_Entry.m_HaulingCamberPercentEstimate, 0.0, 100.0);
 	DDX_Text(pDX, IDC_IMPACT_UPWARD_HAULING, m_Entry.m_HaulingUpwardImpact);
@@ -381,12 +381,12 @@ void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_IMPACT_DOWNWARD_HAULING, m_Entry.m_HaulingDownwardImpact);
    DDV_MinMaxDouble(pDX, m_Entry.m_HaulingDownwardImpact, 0.0, 1.0);
    DDX_UnitValueAndTag(pDX, IDC_MAXWGT, IDC_MAXWGT_UNITS, m_Entry.m_MaxGirderWgt, pDisplayUnits->GeneralForce );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MaxGirderWgt, pDisplayUnits->GeneralForce );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAXWGT,m_Entry.m_MaxGirderWgt, pDisplayUnits->GeneralForce );
  
    DDX_UnitValueAndTag(pDX, IDC_MIN_TRUCK_SUPPORT,IDC_MIN_TRUCK_SUPPORT_UNIT,m_Entry.m_MinHaulPoint, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MinHaulPoint, pDisplayUnits->SpanLength );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MIN_TRUCK_SUPPORT,m_Entry.m_MinHaulPoint, pDisplayUnits->SpanLength );
    DDX_UnitValueAndTag(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
 }
 
 void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
@@ -405,11 +405,11 @@ void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT3, IDC_NORMAL_MAX_SQRT_UNITS3, m_Entry.m_TempStrandRemovalTensStress, pDisplayUnits->SqrtPressure );
    CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )");
    DDX_Text(pDX,IDC_CYS_TENS_BYLINE2,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_TempStrandRemovalTensStress, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX,IDC_CYS_TENS_BYLINE2, m_Entry.m_TempStrandRemovalTensStress, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX3, m_Entry.m_TempStrandRemovalDoTensStressMax);
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX3, IDC_NORMAL_MAX_MAX_UNITS3, m_Entry.m_TempStrandRemovalTensStressMax, pDisplayUnits->Stress );
    if (m_Entry.m_TempStrandRemovalDoTensStressMax)
-      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TempStrandRemovalTensStressMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_NORMAL_MAX_MAX3,m_Entry.m_TempStrandRemovalTensStressMax, pDisplayUnits->Stress );
 
 
 
@@ -418,11 +418,11 @@ void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT2, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_Bs1TensStress, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_CYS_TENS_BYLINE,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_Bs1TensStress, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_CYS_TENS_BYLINE,m_Entry.m_Bs1TensStress, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX2, m_Entry.m_Bs1DoTensStressMax);
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX2, IDC_NORMAL_MAX_MAX_UNITS2, m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
    if (m_Entry.m_Bs1DoTensStressMax)
-      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_NORMAL_MAX_MAX2,m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
 }
 
 void CSpecMainSheet::ExchangeBs2Data(CDataExchange* pDX)
@@ -453,19 +453,19 @@ void CSpecMainSheet::ExchangeBsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
    CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )");
    DDX_Text(pDX,IDC_BS_NORMAL_TENS,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BS_NORMAL_TENS,m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX, m_Entry.m_Bs3DoTensStressServNcMax);
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX, IDC_NORMAL_MAX_MAX_UNITS, m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
    if (m_Entry.m_Bs3DoTensStressServNcMax)
-      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_NORMAL_MAX_MAX,m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
 
    DDX_UnitValueAndTag(pDX, IDC_EXTREME_MAX_SQRT, IDC_EXTREME_MAX_SQRT_UNITS, m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_BS_EXTREME_TENS,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BS_EXTREME_TENS,m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
    DDX_Check_Bool(pDX, IDC_CHECK_EXTREME_MAX_MAX, m_Entry.m_Bs3DoTensStressServScMax);
    DDX_UnitValueAndTag(pDX, IDC_EXTREME_MAX_MAX, IDC_EXTREME_MAX_MAX_UNITS, m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
    if (m_Entry.m_Bs3DoTensStressServScMax)
-      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_EXTREME_MAX_MAX,m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
 
    DDX_CBIndex(pDX, IDC_LLDF, m_Entry.m_LldfMethod);
 
@@ -496,7 +496,7 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )");
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_FlexureModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_FR,m_Entry.m_FlexureModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
 }
 
 void CSpecMainSheet::CheckShearCapacityMethod()
@@ -555,7 +555,7 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )");
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_LABEL, m_Entry.m_ShearModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_ShearModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_FR,m_Entry.m_ShearModulusOfRuptureCoefficient, pDisplayUnits->SqrtPressure );
 }
 
 void CSpecMainSheet::ExchangeDeflectionsData(CDataExchange* pDX)
@@ -576,22 +576,22 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX, IDC_XFER_TIME, IDC_XFER_TIME_TAG, m_Entry.m_XferTime, pDisplayUnits->Time );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_XferTime, pDisplayUnits->Time );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_XFER_TIME,m_Entry.m_XferTime, pDisplayUnits->Time );
 
    DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION1_MIN, IDC_CREEP_DURATION1_TAG, m_Entry.m_CreepDuration1Min, pDisplayUnits->Time2 );
-   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_CreepDuration1Min, pDisplayUnits->Time2 );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_CREEP_DURATION1_MIN,m_Entry.m_CreepDuration1Min, pDisplayUnits->Time2 );
 
    DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION1_MAX, IDC_CREEP_DURATION1_TAG, m_Entry.m_CreepDuration1Max, pDisplayUnits->Time2 );
-   DDV_UnitValueLimitOrMore(pDX, m_Entry.m_CreepDuration1Max, m_Entry.m_CreepDuration1Min, pDisplayUnits->Time2 );
+   DDV_UnitValueLimitOrMore(pDX, IDC_CREEP_DURATION1_MAX,m_Entry.m_CreepDuration1Max, m_Entry.m_CreepDuration1Min, pDisplayUnits->Time2 );
 
    DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION2_MIN, IDC_CREEP_DURATION2_TAG, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
-   DDV_UnitValueGreaterThanLimit(pDX, m_Entry.m_CreepDuration2Min, m_Entry.m_XferTime, pDisplayUnits->Time2 );
+   DDV_UnitValueGreaterThanLimit(pDX, IDC_CREEP_DURATION2_MIN,m_Entry.m_CreepDuration2Min, m_Entry.m_XferTime, pDisplayUnits->Time2 );
 
    DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION2_MAX, IDC_CREEP_DURATION2_TAG, m_Entry.m_CreepDuration2Max, pDisplayUnits->Time2 );
-   DDV_UnitValueLimitOrMore(pDX, m_Entry.m_CreepDuration2Max, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
+   DDV_UnitValueLimitOrMore(pDX, IDC_CREEP_DURATION2_MAX,m_Entry.m_CreepDuration2Max, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
 
    DDX_UnitValueAndTag(pDX, IDC_NC_CREEP, IDC_NC_CREEP_TAG, m_Entry.m_TotalCreepDuration, pDisplayUnits->Time2 );
-   DDV_UnitValueGreaterThanLimit(pDX, m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
+   DDV_UnitValueGreaterThanLimit(pDX, IDC_NC_CREEP,m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
 
    DDX_Text(pDX,IDC_CURING_TIME_FACTOR,m_Entry.m_CuringMethodTimeAdjustmentFactor);
    DDV_MinMaxDouble(pDX,m_Entry.m_CuringMethodTimeAdjustmentFactor,1,999);

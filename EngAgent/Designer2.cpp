@@ -35,7 +35,7 @@
 #include <IFace\Constructability.h>
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\PrecastIGirderDetailsSpec.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandling.h>
 
 #include "Designer2.h"
@@ -250,7 +250,7 @@ void pgsDesigner2::SetStatusGroupID(StatusGroupIDType statusGroupID)
 {
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidLiveLoad = pStatusCenter->RegisterCallback( new pgsLiveLoadStatusCallback(m_pBroker) );
    m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
 }
@@ -274,7 +274,7 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
    GET_IFACE(IRoadwayData,pRoadway);
    GET_IFACE(IRoadway,pAlignment);
    GET_IFACE(IGirder,pGdr);
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
    GET_IFACE(ILibrary, pLib );
    GET_IFACE(ISpecification, pSpec );
@@ -448,7 +448,7 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
 pgsGirderArtifact pgsDesigner2::Check(SpanIndexType span,GirderIndexType gdr)
 {
    GET_IFACE(ILiveLoads,pLiveLoads);
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
    pgsGirderArtifact gdr_artifact(span,gdr);
 
@@ -989,7 +989,7 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(task.stage,span,gdr,POI_FLEXURESTRESS | POI_TABULAR);
    std::vector<pgsPointOfInterest>::iterator iter;
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    double Es, fy;
@@ -1337,7 +1337,7 @@ pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(con
    CHECK(stage==pgsTypes::BridgeSite3);
    CHECK(ls==pgsTypes::StrengthI || ls == pgsTypes::StrengthII);
 
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(IBridge,pBridge);
 
    // throw an exception if span length is too short
@@ -3850,6 +3850,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG("M girder      = " << ::ConvertFromSysUnits(pProductForces->GetMoment(girderLoadStage,pftGirder,poi,bat),unitMeasure::KipFeet) << " k-ft");
    LOG("M diaphragm   = " << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,poi,bat),unitMeasure::KipFeet) << " k-ft");
    LOG("M shear key   = " << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftShearKey,poi,bat),unitMeasure::KipFeet) << " k-ft");
+   LOG("M construction= " << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftConstruction,poi,bat),unitMeasure::KipFeet) << " k-ft");
    LOG("M slab        = " << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,poi,bat),unitMeasure::KipFeet) << " k-ft");
    LOG("dM slab       = " << ::ConvertFromSysUnits(pProductForces->GetDesignSlabPadMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi),unitMeasure::KipFeet) << " k-ft");
    LOG("M panel       = " << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPanel,poi,bat),unitMeasure::KipFeet) << " k-ft");
@@ -6956,7 +6957,7 @@ Float64 pgsDesigner2::RoundSlabOffset(Float64 offset)
 {
    Float64 newoff;
    // Round to nearest 1/4" (5 mm) per WSDOT BDM
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    if ( IS_SI_UNITS(pDisplayUnits) )
       newoff = CeilOff(offset,::ConvertToSysUnits(5.0,unitMeasure::Millimeter) );
    else

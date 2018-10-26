@@ -65,8 +65,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    *pTitlePage << pPara;
 
    // Determine if the report spec has span/girder information
-   boost::shared_ptr<CSpanReportSpecification> pSpanRptSpec = boost::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
    boost::shared_ptr<CSpanGirderReportSpecification> pSpanGirderRptSpec = boost::dynamic_pointer_cast<CSpanGirderReportSpecification,CReportSpecification>(pRptSpec);
+   boost::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = boost::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
+   boost::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = boost::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
 
    if ( pSpanGirderRptSpec != NULL )
    {
@@ -76,19 +77,16 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       {
          *pPara << "For" << rptNewLine << rptNewLine;
          *pPara << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << rptNewLine;
-         *pPara << rptNewLine;
       }
       else if( spanIdx != INVALID_INDEX )
       {
          *pPara << "For" << rptNewLine << rptNewLine;
          *pPara << "Span " << LABEL_SPAN(spanIdx) << rptNewLine;
-         *pPara << rptNewLine;
       }
       else if ( gdrIdx != NULL )
       {
          *pPara << "For" << rptNewLine << rptNewLine;
          *pPara << "Girder Line " << LABEL_GIRDER(gdrIdx) << rptNewLine;
-         *pPara << rptNewLine;
       }
    }
    else if ( pSpanRptSpec != NULL )
@@ -98,9 +96,18 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       {
          *pPara << "For" << rptNewLine << rptNewLine;
          *pPara << "Span " << LABEL_SPAN(spanIdx) << rptNewLine;
-         *pPara << rptNewLine;
       }
    }
+   else if ( pGirderRptSpec != NULL )
+   {
+      GirderIndexType gdrIdx = pGirderRptSpec->GetGirder();
+      if ( gdrIdx != INVALID_INDEX )
+      {
+         *pPara << "For" << rptNewLine << rptNewLine;
+         *pPara << "Girder Line " << LABEL_GIRDER(gdrIdx) << rptNewLine;
+      }
+   }
+   *pPara << rptNewLine;
 
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportSubtitleStyle());
@@ -138,7 +145,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       *pPara << rptNewLine << rptNewLine;
 
    GET_IFACE(IProjectProperties,pProps);
-   GET_IFACE(IDocument,pDocument);
+   GET_IFACE(IEAFDocument,pDocument);
 
    rptParagraph* pPara3 = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pTitlePage << pPara3;
@@ -257,11 +264,19 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       (*pTable)(row,0) << "PSXFR";
       (*pTable)(row++,1) << "Point of prestress transfer";
 
-      (*pTable)(row,0) << "DCS";
-      (*pTable)(row++,1) << "Critical Section for Shear based on Design (Strength I) Loads";
+      if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
+      {
+         (*pTable)(row,0) << "CS";
+         (*pTable)(row++,1) << "Critical Section for Shear";
+      }
+      else
+      {
+         (*pTable)(row,0) << "DCS";
+         (*pTable)(row++,1) << "Critical Section for Shear based on Design (Strength I) Loads";
 
-      (*pTable)(row,0) << "PCS";
-      (*pTable)(row++,1) << "Critical Section for Shear based on Permit (Strength II) Loads";
+         (*pTable)(row,0) << "PCS";
+         (*pTable)(row++,1) << "Critical Section for Shear based on Permit (Strength II) Loads";
+      }
 
       (*pTable)(row,0) << "H";
       (*pTable)(row++,1) << "H from end of girder or face of support";
@@ -280,7 +295,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
 
    // Status Center Items
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    CollectionIndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )

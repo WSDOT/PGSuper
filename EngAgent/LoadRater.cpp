@@ -22,6 +22,7 @@
 
 #include "stdafx.h"
 #include "LoadRater.h"
+#include "Designer2.h"
 
 #include <IFace\Project.h> // for ISpecification
 #include <IFace\AnalysisResults.h>
@@ -34,6 +35,13 @@
 #include <IFace\DistributionFactors.h>
 
 #define RF_MAX 9999999
+Float64 sum_values(Float64 a,Float64 b) { return a + b; }
+void special_transform(IBridge* pBridge,
+                       std::vector<pgsPointOfInterest>::const_iterator poiBeginIter,
+                       std::vector<pgsPointOfInterest>::const_iterator poiEndIter,
+                       std::vector<Float64>::iterator forceBeginIter,
+                       std::vector<Float64>::iterator resultBeginIter,
+                       std::vector<Float64>::iterator outputBeginIter);
 
 pgsLoadRater::pgsLoadRater(void)
 {
@@ -50,23 +58,23 @@ void pgsLoadRater::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-pgsRatingArtifact pgsLoadRater::Rate(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx)
+pgsRatingArtifact pgsLoadRater::Rate(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx)
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
 
    pgsRatingArtifact ratingArtifact;
 
    // Rate for positive moment - flexure
-   MomentRating(spanIdx,gdrIdx,true,ratingType,vehicleIdx,ratingArtifact);
+   MomentRating(gdrLineIdx,true,ratingType,vehicleIdx,ratingArtifact);
 
    // Rate for negative moment - flexure, if applicable
    GET_IFACE(IBridge,pBridge);
-   if ( pBridge->ProcessNegativeMoments(spanIdx) )
-      MomentRating(spanIdx,gdrIdx,false,ratingType,vehicleIdx,ratingArtifact);
+   if ( pBridge->ProcessNegativeMoments(ALL_SPANS) )
+      MomentRating(gdrLineIdx,false,ratingType,vehicleIdx,ratingArtifact);
 
    // Rate for shear if applicable
    if ( pRatingSpec->RateForShear(ratingType) )
-      ShearRating(spanIdx,gdrIdx,ratingType,vehicleIdx,ratingArtifact);
+      ShearRating(gdrLineIdx,ratingType,vehicleIdx,ratingArtifact);
 
    // Rate for stress if applicable
    if ( pRatingSpec->RateForStress(ratingType) )
@@ -74,33 +82,31 @@ pgsRatingArtifact pgsLoadRater::Rate(SpanIndexType spanIdx,GirderIndexType gdrId
       if ( ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special )
       {
          // Service I reinforcement yield check if permit rating
-         CheckReinforcementYielding(spanIdx,gdrIdx,ratingType,vehicleIdx,true,ratingArtifact);
+         CheckReinforcementYielding(gdrLineIdx,ratingType,vehicleIdx,true,ratingArtifact);
 
-         if ( pBridge->ProcessNegativeMoments(spanIdx) )
-            CheckReinforcementYielding(spanIdx,gdrIdx,ratingType,vehicleIdx,false,ratingArtifact);
+         if ( pBridge->ProcessNegativeMoments(ALL_SPANS) )
+            CheckReinforcementYielding(gdrLineIdx,ratingType,vehicleIdx,false,ratingArtifact);
       }
       else
       {
          // Service III flexure if other rating type
-         StressRating(spanIdx,gdrIdx,ratingType,vehicleIdx,ratingArtifact);
+         StressRating(gdrLineIdx,ratingType,vehicleIdx,ratingArtifact);
       }
    }
 
    return ratingArtifact;
 }
 
-Float64 sum_values(Float64 a,Float64 b) { return a + b; }
-
-void pgsLoadRater::MomentRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
+void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_ALL, POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,ALL_SPANS,gdrLineIdx,POI_ALL, POIFIND_OR);
 
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;
    std::vector<Float64> vLLIMmin,vLLIMmax;
    std::vector<long> vMinTruckIndex, vMaxTruckIndex;
-   GetMoments(spanIdx,gdrIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex);
+   GetMoments(gdrLineIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex);
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    std::vector<MOMENTCAPACITYDETAILS> vM = pMomentCapacity->GetMomentCapacityDetails(pgsTypes::BridgeSite3,vPOI,bPositiveMoment);
@@ -116,7 +122,6 @@ void pgsLoadRater::MomentRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,boo
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
    Float64 system_factor    = pRatingSpec->GetSystemFactorFlexure();
-   Float64 condition_factor = (bPositiveMoment ? pRatingSpec->GetGirderConditionFactor(spanIdx,gdrIdx) : pRatingSpec->GetDeckConditionFactor() );
 
    pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
 
@@ -125,7 +130,7 @@ void pgsLoadRater::MomentRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,boo
 
    GET_IFACE(IProductLoads,pProductLoads);
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
-   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrIdx);
+   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
 
    GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(ISpecification,pSpec);
@@ -135,6 +140,11 @@ void pgsLoadRater::MomentRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,boo
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
       pgsPointOfInterest& poi = vPOI[i];
+
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+      Float64 condition_factor = (bPositiveMoment ? pRatingSpec->GetGirderConditionFactor(spanIdx,gdrIdx) 
+                                                  : pRatingSpec->GetDeckConditionFactor() );
 
       Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
       Float64 DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
@@ -248,13 +258,13 @@ void pgsLoadRater::MomentRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,boo
    }
 }
 
-void pgsLoadRater::ShearRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
+void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_ALL, POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,ALL_SPANS,gdrLineIdx,POI_ALL, POIFIND_OR);
 
    std::vector<sysSectionValue> vDCmin, vDCmax;
    std::vector<sysSectionValue> vDWmin, vDWmax;
@@ -312,13 +322,12 @@ void pgsLoadRater::ShearRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsT
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
    Float64 system_factor    = pRatingSpec->GetSystemFactorShear();
-   Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(spanIdx,gdrIdx);
 
    Float64 gDC = pRatingSpec->GetDeadLoadFactor(ls);
    Float64 gDW = pRatingSpec->GetWearingSurfaceFactor(ls);
 
    GET_IFACE(IProductLoads,pProductLoads);
-   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrIdx);
+   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
 
    GET_IFACE(IProductForces,pProductForce);
 
@@ -327,6 +336,9 @@ void pgsLoadRater::ShearRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsT
    {
       pgsPointOfInterest& poi = vPOI[i];
 
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+      Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(spanIdx,gdrIdx);
 
       Float64 DCmin   = min(vDCmin[i].Left(),  vDCmin[i].Right());
       Float64 DCmax   = max(vDCmax[i].Left(),  vDCmax[i].Right());
@@ -456,11 +468,20 @@ void pgsLoadRater::ShearRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsT
       shearArtifact.SetLiveLoadFactor(gLL);
       shearArtifact.SetLiveLoadShear(LLIM);
 
+      // longitudinal steel check
+      pgsLongReinfShearArtifact l_artifact;
+      SHEARCAPACITYDETAILS scd;
+      pgsDesigner2 designer;
+      designer.SetBroker(m_pBroker);
+      pShearCapacity->GetShearCapacityDetails(ls,pgsTypes::BridgeSite3,poi,&scd);
+      designer.CheckLongReinfShear(poi,pgsTypes::BridgeSite3,ls,scd,&l_artifact);
+      shearArtifact.SetLongReinfShearArtifact(l_artifact);
+
       ratingArtifact.AddArtifact(poi,shearArtifact);
    }
 }
 
-void pgsLoadRater::StressRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
+void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
    ATLASSERT(ratingType == pgsTypes::lrDesign_Inventory || 
              ratingType == pgsTypes::lrLegal_Routine    ||
@@ -470,7 +491,7 @@ void pgsLoadRater::StressRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgs
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_ALL, POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,ALL_SPANS,gdrLineIdx,POI_ALL, POIFIND_OR);
 
    std::vector<Float64> vDCTopMin, vDCBotMin, vDCTopMax, vDCBotMax;
    std::vector<Float64> vDWTopMin, vDWBotMin, vDWTopMax, vDWBotMax;
@@ -536,8 +557,6 @@ void pgsLoadRater::StressRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgs
    GET_IFACE(IRatingSpecification,pRatingSpec);
 
    Float64 system_factor    = pRatingSpec->GetSystemFactorFlexure();
-   Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(spanIdx,gdrIdx);
-   Float64 fr               = pRatingSpec->GetAllowableTension(ratingType,spanIdx,gdrIdx);
 
    pgsTypes::LimitState ls = GetServiceLimitStateType(ratingType);
 
@@ -545,7 +564,7 @@ void pgsLoadRater::StressRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgs
    Float64 gDW = pRatingSpec->GetWearingSurfaceFactor(ls);
 
    GET_IFACE(IProductLoads,pProductLoads);
-   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrIdx);
+   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
 
    GET_IFACE(IProductForces,pProductForce);
 
@@ -553,6 +572,12 @@ void pgsLoadRater::StressRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgs
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
       pgsPointOfInterest& poi = vPOI[i];
+
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+
+      Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(spanIdx,gdrIdx);
+      Float64 fr               = pRatingSpec->GetAllowableTension(ratingType,spanIdx,gdrIdx);
 
       Float64 DC   = vDCBotMax[i];
       Float64 DW   = vDWBotMax[i];
@@ -640,53 +665,22 @@ void pgsLoadRater::StressRating(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgs
    }
 }
 
-void pgsLoadRater::CheckReinforcementYielding(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact)
+void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact)
 {
    ATLASSERT(ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special);
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_ALL, POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,ALL_SPANS,gdrLineIdx,POI_ALL, POIFIND_OR);
 
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;
    std::vector<Float64> vLLIMmin,vLLIMmax;
    std::vector<long> vMinTruckIndex, vMaxTruckIndex;
-   GetMoments(spanIdx,gdrIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex);
+   GetMoments(gdrLineIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex);
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
    pgsTypes::LimitState ls = GetServiceLimitStateType(ratingType);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
-   if ( ratingType == pgsTypes::lrPermit_Special ) // if it is any of the special permit types
-   {
-      // The live load distribution factor used for special permits is one loaded lane without multiple presense factor.
-      // However, when evaluating the reinforcement yielding in the Service I limit state (the thing this function does)
-      // the controlling of one loaded lane and two or more loaded lanes live load distribution factors is to be used.
-      // (See MBE 6A.4.5.4.2b and C6A.5.4.2.2b).
-      //
-      // vLLIMmin and vLLIMmax includes the one lane LLDF... divide out this LLDF and multiply by the correct LLDF
-
-      GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
-      Float64 g;
-      if ( bPositiveMoment )
-      {
-         Float64 g_old = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
-         Float64 g_new = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::ServiceI_PermitSpecial);
-         g = g_new/g_old;
-      }
-      else
-      {
-         Float64 g_old = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
-         Float64 g_new = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::ServiceI_PermitSpecial);
-         g = g_new/g_old;
-      }
-
-      CollectionIndexType nPoints = vLLIMmin.size();
-      for ( CollectionIndexType i = 0; i < nPoints; i++ )
-      {
-         vLLIMmin[i] *= g;
-         vLLIMmax[i] *= g;
-      }
-   }
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    std::vector<CRACKINGMOMENTDETAILS> vMcr = pMomentCapacity->GetCrackingMomentDetails(pgsTypes::BridgeSite3,vPOI,bPositiveMoment);
@@ -705,24 +699,6 @@ void pgsLoadRater::CheckReinforcementYielding(SpanIndexType spanIdx,GirderIndexT
    ATLASSERT(vDWmin.size()   == vDWmax.size());
    ATLASSERT(vLLIMmin.size() == vLLIMmax.size());
 
-   // Get material properties
-   GET_IFACE(IBridgeMaterial,pMaterial);
-   Float64 Eg = pMaterial->GetEcGdr(spanIdx,gdrIdx);
-
-   Float64 Es, fy;
-   if ( bPositiveMoment )
-   {
-      Es = pMaterial->GetStrand(spanIdx,gdrIdx)->GetE();
-      fy = pMaterial->GetStrand(spanIdx,gdrIdx)->GetYieldStrength();
-   }
-   else
-   {
-      pMaterial->GetDeckRebarProperties(&Es,&fy);
-   }
-
-   // Get allowable
-   Float64 K = pRatingSpec->GetYieldStressLimitCoefficient();
-   Float64 fr = K*fy; // 6A.5.4.2.2b 
 
    // Get load factors
    Float64 gDC = pRatingSpec->GetDeadLoadFactor(ls);
@@ -734,7 +710,7 @@ void pgsLoadRater::CheckReinforcementYielding(SpanIndexType spanIdx,GirderIndexT
    Float64 top_slab_cover = pLongRebar->GetCoverTopMat();
 
    GET_IFACE(IProductLoads,pProductLoads);
-   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrIdx);
+   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdrLineIdx);
 
    GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(ISpecification,pSpec);
@@ -743,10 +719,59 @@ void pgsLoadRater::CheckReinforcementYielding(SpanIndexType spanIdx,GirderIndexT
    // Create artifacts
    GET_IFACE(IPrestressForce,pPrestressForce);
    GET_IFACE(ISectProp2,pSectProp);
+   GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
    CollectionIndexType nPOI = vPOI.size();
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
       pgsPointOfInterest& poi = vPOI[i];
+
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+
+      // Get material properties
+      GET_IFACE(IBridgeMaterial,pMaterial);
+      Float64 Eg = pMaterial->GetEcGdr(spanIdx,gdrIdx);
+
+      Float64 Es, fy;
+      if ( bPositiveMoment )
+      {
+         Es = pMaterial->GetStrand(spanIdx,gdrIdx)->GetE();
+         fy = pMaterial->GetStrand(spanIdx,gdrIdx)->GetYieldStrength();
+      }
+      else
+      {
+         pMaterial->GetDeckRebarProperties(&Es,&fy);
+      }
+
+      // Get allowable
+      Float64 K = pRatingSpec->GetYieldStressLimitCoefficient();
+      Float64 fr = K*fy; // 6A.5.4.2.2b 
+
+      if ( ratingType == pgsTypes::lrPermit_Special ) // if it is any of the special permit types
+      {
+         // The live load distribution factor used for special permits is one loaded lane without multiple presense factor.
+         // However, when evaluating the reinforcement yielding in the Service I limit state (the thing this function does)
+         // the controlling of one loaded lane and two or more loaded lanes live load distribution factors is to be used.
+         // (See MBE 6A.4.5.4.2b and C6A.5.4.2.2b).
+         //
+         // vLLIMmin and vLLIMmax includes the one lane LLDF... divide out this LLDF and multiply by the correct LLDF
+
+         Float64 gpM_Old, gnM_Old, gV;
+         Float64 gpM_New, gnM_New;
+         pLLDF->GetDistributionFactors(poi,pgsTypes::FatigueI,              &gpM_Old,&gnM_Old,&gV);
+         pLLDF->GetDistributionFactors(poi,pgsTypes::ServiceI_PermitSpecial,&gpM_New,&gnM_New,&gV);
+
+         if ( bPositiveMoment )
+         {
+            Float64 g = gpM_New/gpM_Old;
+            vLLIMmax[i] *= g;
+         }
+         else
+         {
+            Float64 g = gnM_New/gnM_Old;
+            vLLIMmin[i] *= g;
+         }
+      }
 
       Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
       Float64 DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
@@ -935,7 +960,7 @@ pgsTypes::LimitState pgsLoadRater::GetServiceLimitStateType(pgsTypes::LoadRating
    return ls;
 }
 
-void pgsLoadRater::GetMoments(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<long>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<long>& vMaxTruckIndex)
+void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<long>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<long>& vMaxTruckIndex)
 {
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -982,23 +1007,24 @@ void pgsLoadRater::GetMoments(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool 
    }
    else
    {
-      // Because of the construction sequence, some loads don't contribute to the negative moment..
-      // Those loads applied to the simple span girders before continuity don't contribute to the
-      // negative moment resisted by the deck.
-      //
-      // Special load processing is required
+      //// Because of the construction sequence, some loads don't contribute to the negative moment..
+      //// Those loads applied to the simple span girders before continuity don't contribute to the
+      //// negative moment resisted by the deck.
+      ////
+      //// Special load processing is required
       GET_IFACE(IBridge,pBridge);
-      pgsTypes::Stage start,end,dummy;
-      PierIndexType prevPierIdx = spanIdx;
-      PierIndexType nextPierIdx = prevPierIdx + 1;
+      //pgsTypes::Stage start,end,dummy;
+      //PierIndexType prevPierIdx = spanIdx;
+      //PierIndexType nextPierIdx = prevPierIdx + 1;
 
-      pBridge->GetContinuityStage(prevPierIdx,&dummy,&start);
-      pBridge->GetContinuityStage(nextPierIdx,&end,&dummy);
+      //pBridge->GetContinuityStage(prevPierIdx,&dummy,&start);
+      //pBridge->GetContinuityStage(nextPierIdx,&end,&dummy);
 
-      bool bIncludeSlab = false;
-      if ( start == pgsTypes::BridgeSite1 || end == pgsTypes::BridgeSite1 )
-         bIncludeSlab = true;
+      //bool bIncludeSlab = false;
+      //if ( start == pgsTypes::BridgeSite1 || end == pgsTypes::BridgeSite1 )
+      //   bIncludeSlab = true;
 
+      std::vector<Float64> vConstructionMin, vConstructionMax;
       std::vector<Float64> vSlabMin, vSlabMax;
       std::vector<Float64> vSlabPanelMin, vSlabPanelMax;
       std::vector<Float64> vDiaphragmMin, vDiaphragmMax;
@@ -1014,18 +1040,21 @@ void pgsLoadRater::GetMoments(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool 
       bool bFutureOverlay = pBridge->HasOverlay() && pBridge->IsFutureOverlay();
 
       GET_IFACE(IProductLoads,pProductLoads);
-      pgsTypes::Stage girderLoadStage = pProductLoads->GetGirderDeadLoadStage(spanIdx,gdrIdx);
+      pgsTypes::Stage girderLoadStage = pProductLoads->GetGirderDeadLoadStage(gdrLineIdx);
 
       // Get all the product load responces
       GET_IFACE(IProductForces2,pProductForces);
       if ( analysisType == pgsTypes::Envelope )
       {
          // Get all the product loads
+         vConstructionMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftConstruction,vPOI,MinSimpleContinuousEnvelope);
+         vConstructionMax = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftConstruction,vPOI,MaxSimpleContinuousEnvelope);
+
          vSlabMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,vPOI,MinSimpleContinuousEnvelope);
          vSlabMax = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,vPOI,MaxSimpleContinuousEnvelope);
 
-         vSlabPanelMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,vPOI,MinSimpleContinuousEnvelope);
-         vSlabPanelMax = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,vPOI,MaxSimpleContinuousEnvelope);
+         vSlabPanelMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPanel,vPOI,MinSimpleContinuousEnvelope);
+         vSlabPanelMax = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPanel,vPOI,MaxSimpleContinuousEnvelope);
 
          vDiaphragmMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,vPOI,MinSimpleContinuousEnvelope);
          vDiaphragmMax = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,vPOI,MaxSimpleContinuousEnvelope);
@@ -1075,10 +1104,13 @@ void pgsLoadRater::GetMoments(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool 
       }
       else
       {
+         vConstructionMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftConstruction,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+         vConstructionMax = vConstructionMin;
+
          vSlabMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
          vSlabMax = vSlabMin;
 
-         vSlabPanelMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+         vSlabPanelMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPanel,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
          vSlabPanelMax = vSlabPanelMin;
 
          vDiaphragmMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
@@ -1129,20 +1161,16 @@ void pgsLoadRater::GetMoments(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool 
       vDWmin.resize(vPOI.size(),0);
       vDWmax.resize(vPOI.size(),0);
 
-      if ( bIncludeSlab )
-      {
-         std::transform(vSlabMin.begin(),vSlabMin.end(),vDCmin.begin(),vDCmin.begin(),sum_values);
-         std::transform(vSlabMax.begin(),vSlabMax.end(),vDCmax.begin(),vDCmax.begin(),sum_values);
-
-         std::transform(vSlabPanelMin.begin(),vSlabPanelMin.end(),vDCmin.begin(),vDCmin.begin(),sum_values);
-         std::transform(vSlabPanelMax.begin(),vSlabPanelMax.end(),vDCmax.begin(),vDCmax.begin(),sum_values);
-
-         std::transform(vDiaphragmMin.begin(),vDiaphragmMin.end(),vDCmin.begin(),vDCmin.begin(),sum_values);
-         std::transform(vDiaphragmMax.begin(),vDiaphragmMax.end(),vDCmax.begin(),vDCmax.begin(),sum_values);
-
-         std::transform(vShearKeyMin.begin(),vShearKeyMin.end(),vDCmin.begin(),vDCmin.begin(),sum_values);
-         std::transform(vShearKeyMax.begin(),vShearKeyMax.end(),vDCmax.begin(),vDCmax.begin(),sum_values);
-      }
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vConstructionMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vConstructionMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabPanelMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabPanelMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vDiaphragmMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vDiaphragmMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vShearKeyMin.begin(),vDCmin.begin(),vDCmin.begin());
+      special_transform(pBridge,vPOI.begin(),vPOI.end(),vShearKeyMax.begin(),vDCmax.begin(),vDCmax.begin());
 
       std::transform(vUserDC1Min.begin(),vUserDC1Min.end(),vDCmin.begin(),vDCmin.begin(),sum_values);
       std::transform(vUserDC1Max.begin(),vUserDC1Max.end(),vDCmax.begin(),vDCmax.begin(),sum_values);
@@ -1164,5 +1192,36 @@ void pgsLoadRater::GetMoments(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool 
 
       std::transform(vOverlayMin.begin(),vOverlayMin.end(),vDWmin.begin(),vDWmin.begin(),sum_values);
       std::transform(vOverlayMax.begin(),vOverlayMax.end(),vDWmax.begin(),vDWmax.begin(),sum_values);
+   }
+}
+
+void special_transform(IBridge* pBridge,
+                       std::vector<pgsPointOfInterest>::const_iterator poiBeginIter,
+                       std::vector<pgsPointOfInterest>::const_iterator poiEndIter,
+                       std::vector<Float64>::iterator forceBeginIter,
+                       std::vector<Float64>::iterator resultBeginIter,
+                       std::vector<Float64>::iterator outputBeginIter)
+{
+   std::vector<pgsPointOfInterest>::const_iterator poiIter = poiBeginIter;
+   std::vector<Float64>::iterator forceIter = forceBeginIter;
+   std::vector<Float64>::iterator resultIter = resultBeginIter;
+   std::vector<Float64>::iterator outputIter = outputBeginIter;
+
+   for ( ; poiIter != poiEndIter; poiIter++, forceIter++, resultIter++, outputIter++ )
+   {
+      const pgsPointOfInterest& poi = *poiIter;
+
+      pgsTypes::Stage start,end,dummy;
+      PierIndexType prevPierIdx = poi.GetSpan();
+      PierIndexType nextPierIdx = prevPierIdx + 1;
+
+      pBridge->GetContinuityStage(prevPierIdx,&dummy,&start);
+      pBridge->GetContinuityStage(nextPierIdx,&end,&dummy);
+
+      bool bIncludeSlab = false;
+      if ( start == pgsTypes::BridgeSite1 || end == pgsTypes::BridgeSite1 )
+      {
+         *outputIter = (*forceIter + *resultIter);
+      }
    }
 }

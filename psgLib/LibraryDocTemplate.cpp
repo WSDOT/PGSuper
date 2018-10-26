@@ -37,23 +37,9 @@ CLibraryDocTemplate::CLibraryDocTemplate(UINT nIDResource,
                    CRuntimeClass* pFrameClass,
                    CRuntimeClass* pViewClass,
                    HMENU hSharedMenu,
-                   int maxViewCount)
-: CEAFDocTemplate(nIDResource,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
+                   int maxViewCount) : 
+CEAFDocTemplate(nIDResource,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
 {
-   CString strExtName;
-   GetDocString(strExtName,CDocTemplate::filterExt);
-
-   CString strFileName;
-   GetDocString(strFileName,CDocTemplate::fileNewName);
-
-   CString strItemName;
-   if ( strExtName != "" )
-      strItemName.Format("%s (%s)",strFileName,strExtName);
-   else
-      strItemName = strFileName;
- 
-   HICON hIcon = AfxGetApp()->LoadIcon(IDI_LIBRARY_MANAGER);
-   m_TemplateGroup.AddItem( new CEAFTemplateItem(strItemName,NULL,hIcon) );
 }
 
 CString CLibraryDocTemplate::GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const

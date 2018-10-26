@@ -49,7 +49,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Transactions.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 // tranactions executed by this agent
 #include "txnEditBridgeDescription.h"
@@ -304,6 +304,8 @@ CProjectAgentImp::CProjectAgentImp()
    m_ReservedLiveLoads.push_back("AASHTO Legal Loads");
    m_ReservedLiveLoads.push_back("Notional Rating Load (NRL)");
    m_ReservedLiveLoads.push_back("Single-Unit SHVs");
+
+   m_ConstructionLoad = 0;
 }
 
 CProjectAgentImp::~CProjectAgentImp()
@@ -748,7 +750,7 @@ HRESULT CProjectAgentImp::UnitModeProc(IStructuredSave* pSave,IStructuredLoad* p
    // The EAFDocProxy agent should be peristing this value since it is responsible for it
    // However, it would really mess up all of the existing PGSuper files.
    // It is just easier to persist it here.
-   GET_IFACE2(pObj->m_pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pObj->m_pBroker,IEAFDisplayUnits,pDisplayUnits);
    eafTypes::UnitMode unitMode;
 
    HRESULT hr = S_OK;
@@ -2567,11 +2569,13 @@ HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    HRESULT hr = S_OK;
    if ( pSave )
    {
-      pSave->BeginUnit("UserDefinedLoads",2.0);
+      pSave->BeginUnit("UserDefinedLoads",3.0);
 
       pObj->SavePointLoads(pSave);
       pObj->SaveDistributedLoads(pSave);
       pObj->SaveMomentLoads(pSave);
+
+      pSave->put_Property("ConstructionLoad",CComVariant(pObj->m_ConstructionLoad));
       
       pSave->EndUnit();
    }
@@ -2598,7 +2602,15 @@ HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLo
                return hr;
          }
 
-         hr = pLoad->EndUnit();// DistFactorMethodDetails
+         if ( 3 <= version )
+         {
+            CComVariant var;
+            var.vt = VT_R8;
+            pLoad->get_Property("ConstructionLoad",&var);
+            pObj->m_ConstructionLoad = var.dblVal;
+         }
+
+         hr = pLoad->EndUnit();// UserDefinedLoads
          if ( FAILED(hr) )
             return hr;
       }
@@ -3286,7 +3298,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       else if ( e.GetExplicitReason() == sysXStructuredLoad::UserDefined )
       {
          WATCH("User defined error");
-         GET_IFACE(IProjectLog,pLog);
+         GET_IFACE(IEAFProjectLog,pLog);
          std::string strMsg;
          e.GetErrorMessage(&strMsg);
          pLog->LogMessage(strMsg.c_str());
@@ -4603,7 +4615,7 @@ pgsTypes::MeasurementLocation  CProjectAgentImp::GetMeasurementLocation()
 //   }
 //
 //   // execute as a transaction so that this edit can be undone
-//   GET_IFACE(ITransactions,pTransactions);
+//   GET_IFACE(IEAFTransactions,pTransactions);
 //   txnEditBridgeDescription* pTxn = new txnEditBridgeDescription(m_pBroker,m_BridgeDescription,newBridgeDesc);
 //   pTransactions->Execute(pTxn);
 //}
@@ -5967,6 +5979,20 @@ void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
    Fire_GirderChanged(span,gdr,GCH_LOADING);
 }
 
+void CProjectAgentImp::SetConstructionLoad(Float64 load)
+{
+   if ( !IsEqual(load,m_ConstructionLoad) )
+   {
+      m_ConstructionLoad = load;
+      Fire_ConstructionLoadChanged();
+   }
+}
+
+Float64 CProjectAgentImp::GetConstructionLoad() const
+{
+   return m_ConstructionLoad;
+}
+
 HRESULT CProjectAgentImp::SavePointLoads(IStructuredSave* pSave)
 {
    HRESULT hr=S_OK;
@@ -6177,6 +6203,9 @@ void CProjectAgentImp::FirePendingEvents()
 
    if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LOADMODIFIER) )
       Fire_LoadModifiersChanged();
+
+   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_CONSTRUCTIONLOAD) )
+      Fire_ConstructionLoadChanged();
 
    if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LIVELOAD) )
       Fire_LiveLoadChanged();
@@ -6543,7 +6572,7 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
    if (m_BridgeDescription.UseSameGirderForEntireBridge() &&
        rList.IsConflict(girderLibrary, m_BridgeDescription.GetGirderName(), &new_name))
    {
-      m_BridgeDescription.SetGirderName(new_name.c_str());
+      m_BridgeDescription.RenameGirder(new_name.c_str());
    }
 
    CSpanData* pSpan = m_BridgeDescription.GetSpan(0);
@@ -6558,7 +6587,7 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
 
          girderTypes.GetGirderGroup(groupIdx,&firstGdrIdx,&lastGdrIdx,strGirderName);
          if (rList.IsConflict(girderLibrary, strGirderName, &new_name))
-            girderTypes.SetGirderName(groupIdx,new_name.c_str());
+            girderTypes.RenameGirder(groupIdx,new_name.c_str());
 
       }
 
@@ -6827,7 +6856,7 @@ void CProjectAgentImp::DealWithConnectionLibraryChanges(bool fromLibrary)
       }
 
       // one status message for all changes made
-      GET_IFACE(IStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       os << "was measured from the bearing line; and the connection's bearing offset was measured along the girder. These settings are not compatible. The spacing was Automatically Forced to be measured from CL Pier. Please check your bearing locations and span length!";
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,124,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
@@ -6874,7 +6903,7 @@ bool CProjectAgentImp::CanHavePedestrianLoad() const
 void CProjectAgentImp::AddGirderStatusItem(SpanIndexType span,GirderIndexType girder, std::string& message)
 {
    // first post message
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    pgsGirderDescriptionStatusItem* pStatusItem =  new pgsGirderDescriptionStatusItem(span,girder,0,m_StatusGroupID,m_scidGirderDescriptionWarning,message.c_str());
    long st_id = pStatusCenter->Add(pStatusItem);
 
@@ -6897,7 +6926,7 @@ void CProjectAgentImp::AddGirderStatusItem(SpanIndexType span,GirderIndexType gi
 
 void CProjectAgentImp::RemoveGirderStatusItems(SpanIndexType span,GirderIndexType girder)
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
    SpanGirderHashType hashval = HashSpanGirder(span, girder);
 

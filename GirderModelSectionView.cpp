@@ -24,6 +24,7 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include "PGSuper.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
@@ -34,7 +35,7 @@
 #include "DisplayObjectFactory.h"
 #include <IFace\Bridge.h>
 #include <IFace\DrawBridgeSettings.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <MfcTools\Text.h>
 
@@ -650,7 +651,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDoc* pDoc,IBr
    CString strDim;
    CComPtr<iTextBlock> textBlock;
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
 
    textBlock.CoCreateInstance(CLSID_TextBlock);
@@ -723,7 +724,7 @@ void CGirderModelSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pH
       UpdateDisplayObjects();
       ScaleToFit(false);
    }
-   else if ( lHint == HINT_UPDATEERROR )
+   else if ( lHint == EAF_HINT_UPDATEERROR )
    {
       CString* pmsg = (CString*)pHint;
       m_ErrorMsg = *pmsg;

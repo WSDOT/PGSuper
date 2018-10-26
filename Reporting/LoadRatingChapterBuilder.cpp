@@ -25,9 +25,11 @@
 #include <Reporting\RatingSummaryTable.h>
 
 #include <IFace\Artifact.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Bridge.h>
+
+#include <Reporting\LongReinfShearCheck.h>
 
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
@@ -55,13 +57,13 @@ LPCTSTR CLoadRatingChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType spanIdx = pSGRptSpec->GetSpan();
-   GirderIndexType gdrIdx = pSGRptSpec->GetGirder();
+   pGdrRptSpec->GetBroker(&pBroker);
+   GirderIndexType gdrLineIdx = pGdrRptSpec->GetGirder();
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -75,9 +77,23 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       (*pPara) << pPara->GetName() << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
-      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,spanIdx,gdrIdx, CRatingSummaryTable::Design ) << rptNewLine;
-      (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,spanIdx,gdrIdx, pgsTypes::lrDesign_Inventory) << rptNewLine;
-      (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,spanIdx,gdrIdx, pgsTypes::lrDesign_Operating) << rptNewLine;
+      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,gdrLineIdx, CRatingSummaryTable::Design ) << rptNewLine;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+      {
+         if ( pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
+            CLongReinfShearCheck().Build(pChapter,pBroker,gdrLineIdx,pgsTypes::StrengthI_Inventory,pDisplayUnits);
+
+         //(*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrDesign_Inventory) << rptNewLine;
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+      {
+         if ( pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) )
+            CLongReinfShearCheck().Build(pChapter,pBroker,gdrLineIdx,pgsTypes::StrengthI_Operating,pDisplayUnits);
+
+         //(*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrDesign_Operating) << rptNewLine;
+      }
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
@@ -88,11 +104,25 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       (*pPara) << pPara->GetName() << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
-      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,spanIdx,gdrIdx, CRatingSummaryTable::Legal ) << rptNewLine;
-      (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,spanIdx,gdrIdx, pgsTypes::lrLegal_Routine) << rptNewLine;
-      (*pPara) << CRatingSummaryTable().BuildLoadPosting(pBroker,spanIdx,gdrIdx, pgsTypes::lrLegal_Routine) << rptNewLine;
-      (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,spanIdx,gdrIdx, pgsTypes::lrLegal_Special) << rptNewLine;
-      (*pPara) << CRatingSummaryTable().BuildLoadPosting(pBroker,spanIdx,gdrIdx, pgsTypes::lrLegal_Special) << rptNewLine;
+      //(*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,gdrLineIdx, CRatingSummaryTable::Legal ) << rptNewLine;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+      {
+         if ( pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) )
+            CLongReinfShearCheck().Build(pChapter,pBroker,gdrLineIdx,pgsTypes::StrengthI_LegalRoutine,pDisplayUnits);
+
+         (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine) << rptNewLine;
+         (*pPara) << CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine) << rptNewLine;
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      {
+         if ( pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
+            CLongReinfShearCheck().Build(pChapter,pBroker,gdrLineIdx,pgsTypes::StrengthI_LegalSpecial,pDisplayUnits);
+
+         (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special) << rptNewLine;
+         (*pPara) << CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special) << rptNewLine;
+      }
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
@@ -104,9 +134,23 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       pPara = new rptParagraph;
       (*pChapter) << pPara;
       (*pPara) << Super("*") << "MBE 6A.4.5.2 Permit load rating should only be used if the bridge has a rating factor greater than 1.0 when evaluated for AASHTO legal loads." << rptNewLine;
-      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,spanIdx,gdrIdx, CRatingSummaryTable::Permit );
-      (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,spanIdx,gdrIdx, pgsTypes::lrPermit_Routine) << rptNewLine;
-      (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,spanIdx,gdrIdx, pgsTypes::lrPermit_Special) << rptNewLine;
+      //(*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,spanIdx,gdrIdx, CRatingSummaryTable::Permit );
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+      {
+         if ( pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) )
+            CLongReinfShearCheck().Build(pChapter,pBroker,gdrLineIdx,pgsTypes::StrengthII_PermitRoutine,pDisplayUnits);
+
+         (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Routine) << rptNewLine;
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+      {
+         if ( pRatingSpec->RateForShear(pgsTypes::lrPermit_Special) )
+            CLongReinfShearCheck().Build(pChapter,pBroker,gdrLineIdx,pgsTypes::StrengthII_PermitSpecial,pDisplayUnits);
+
+         (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Special) << rptNewLine;
+      }
    }
    
    return pChapter;

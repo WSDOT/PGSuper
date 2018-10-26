@@ -28,7 +28,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Allowables.h>
 
@@ -60,7 +60,7 @@ CDebondCheckTable::~CDebondCheckTable()
 //======================== OPERATORS  =======================================
 
 //======================== OPERATIONS =======================================
-void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const
+void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IDebondLimits,debond_limits);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -136,7 +136,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexTy
    *p << Super("*") << "Not more than " << debond_limits->GetMaxDebondedStrandsPerSection(span,girder)*100 << "% of the debonded strands, or " << debond_limits->GetMaxNumDebondedStrandsPerSection(span,girder) << " strands, whichever is greatest, shall have debonding terminated at any section" << rptNewLine;
 }
 
-rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const
+rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const
 {
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7," ");
    table->TableCaption().SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
@@ -187,9 +187,16 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,S
    return table;
 }
 
-rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,Float64 Lg, pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const
+rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,Float64 Lg, pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const
 {
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(4," ");
+
+
+   if ( span == ALL_SPANS )
+   {
+      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    (*table)(0,0) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,1) << "Number" << rptNewLine << "Debonded" << rptNewLine << "Strands";
@@ -198,6 +205,7 @@ rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,S
 
    // Fill up the table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    StrandIndexType nMaxStrands1;
    Float64 fraMaxStrands;

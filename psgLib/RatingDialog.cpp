@@ -226,4 +226,108 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorMod
    DDX_Text(pDX,IDC_LF_SERVICE_2,pModel->m_gLL_Service[1]);
    DDX_Text(pDX,IDC_LF_SERVICE_3,pModel->m_gLL_Service[2]);
    DDX_Text(pDX,IDC_LF_SERVICE_4,pModel->m_gLL_Service[3]);
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      if ( pModel->m_LiveLoadFactorType == pgsTypes::gllSingleValue )
+      {
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_1,pModel->m_gLL_Service[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER1,pModel->m_gLL_Lower[0]);
+      }
+      else if ( pModel->m_LiveLoadFactorType == pgsTypes::gllStepped )
+      {
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_1,pModel->m_gLL_Service[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_2,pModel->m_gLL_Service[1]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_4,pModel->m_gLL_Service[3]);
+
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER1,pModel->m_gLL_Lower[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER2,pModel->m_gLL_Lower[1]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER4,pModel->m_gLL_Lower[3]);
+
+         DDV_LimitOrMore(pDX,IDC_ADTT1,pModel->m_ADTT[0],0);
+      }
+      else if ( pModel->m_LiveLoadFactorType == pgsTypes::gllLinear )
+      {
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_1,pModel->m_gLL_Service[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_2,pModel->m_gLL_Service[1]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_4,pModel->m_gLL_Service[3]);
+
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER1,pModel->m_gLL_Lower[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER2,pModel->m_gLL_Lower[1]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER4,pModel->m_gLL_Lower[3]);
+
+         DDV_LimitOrMore(pDX,IDC_ADTT1,pModel->m_ADTT[0],0);
+         DDV_LimitOrMore(pDX,IDC_ADTT2,pModel->m_ADTT[1],0);
+
+         if ( pModel->m_ADTT[1] < pModel->m_ADTT[0] )
+         {
+            pDX->PrepareEditCtrl(IDC_ADTT2);
+            AfxMessageBox("The ADTT < value must be less than the ADTT > value",MB_OK | MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+      }
+      else if ( pModel->m_LiveLoadFactorType == pgsTypes::gllBilinear )
+      {
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_1,pModel->m_gLL_Service[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_2,pModel->m_gLL_Service[1]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_3,pModel->m_gLL_Service[2]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_4,pModel->m_gLL_Service[3]);
+
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER1,pModel->m_gLL_Lower[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER2,pModel->m_gLL_Lower[1]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER3,pModel->m_gLL_Lower[2]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER4,pModel->m_gLL_Lower[3]);
+
+         DDV_LimitOrMore(pDX,IDC_ADTT1,pModel->m_ADTT[0],0);
+         DDV_LimitOrMore(pDX,IDC_ADTT2,pModel->m_ADTT[1],0);
+         DDV_LimitOrMore(pDX,IDC_ADTT3,pModel->m_ADTT[2],0);
+
+         if ( !(pModel->m_ADTT[0] < pModel->m_ADTT[1]) ||
+              !(pModel->m_ADTT[1] < pModel->m_ADTT[2]) )
+         {
+            pDX->PrepareEditCtrl(IDC_ADTT1);
+            AfxMessageBox("ADTT values are incorrect",MB_OK | MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+      }
+      else if ( pModel->m_LiveLoadFactorType == pgsTypes::gllBilinearWithWeight )
+      {
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_1,pModel->m_gLL_Service[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_2,pModel->m_gLL_Service[1]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_3,pModel->m_gLL_Service[2]);
+         DDV_GreaterThanZero(pDX,IDC_LF_SERVICE_4,pModel->m_gLL_Service[3]);
+
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER1,pModel->m_gLL_Lower[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER2,pModel->m_gLL_Lower[1]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER3,pModel->m_gLL_Lower[2]);
+         DDV_GreaterThanZero(pDX,IDC_LF_LOWER4,pModel->m_gLL_Lower[3]);
+
+         DDV_GreaterThanZero(pDX,IDC_LF_UPPER1,pModel->m_gLL_Upper[0]);
+         DDV_GreaterThanZero(pDX,IDC_LF_UPPER2,pModel->m_gLL_Upper[1]);
+         DDV_GreaterThanZero(pDX,IDC_LF_UPPER3,pModel->m_gLL_Upper[2]);
+         DDV_GreaterThanZero(pDX,IDC_LF_UPPER4,pModel->m_gLL_Upper[3]);
+
+         DDV_LimitOrMore(pDX,IDC_ADTT1,pModel->m_ADTT[0],0);
+         DDV_LimitOrMore(pDX,IDC_ADTT2,pModel->m_ADTT[1],0);
+         DDV_LimitOrMore(pDX,IDC_ADTT3,pModel->m_ADTT[2],0);
+
+         DDV_UnitValueZeroOrMore(pDX,IDC_LOWER_VEHICLE_WEIGHT,pModel->m_Wlower,pDisplayUnits->GeneralForce);
+         DDV_UnitValueZeroOrMore(pDX,IDC_UPPER_VEHICLE_WEIGHT,pModel->m_Wupper,pDisplayUnits->GeneralForce);
+
+         if ( !(pModel->m_ADTT[0] < pModel->m_ADTT[1]) ||
+              !(pModel->m_ADTT[1] < pModel->m_ADTT[2]) )
+         {
+            pDX->PrepareEditCtrl(IDC_ADTT1);
+            AfxMessageBox("ADTT values are incorrect",MB_OK | MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+
+         if ( IsLE(pModel->m_Wupper,pModel->m_Wlower) )
+         {
+            pDX->PrepareEditCtrl(IDC_UPPER_VEHICLE_WEIGHT);
+            AfxMessageBox("Vehicle weight must be greater than the lower limit value",MB_OK | MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+      }
+   }
 }

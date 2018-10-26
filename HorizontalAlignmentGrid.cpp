@@ -27,7 +27,7 @@
 #include "HorizontalAlignmentGrid.h"
 #include "HorizontalAlignmentPage.h"
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -117,7 +117,7 @@ void CHorizontalAlignmentGrid::InitRowData(ROWCOL row)
 	GetParam()->EnableUndo(FALSE);
 
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    SetValueRange(CGXRange(row,1),unit_mode == umUS ? "0+00" : "0+000");
@@ -133,7 +133,7 @@ void CHorizontalAlignmentGrid::CustomInit()
 {
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::string strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
@@ -271,7 +271,7 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,HorzCurveData& data)
 
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    double station = data.PIStation;
@@ -317,7 +317,7 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,double* pStation,double* p
 
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    CString strStation = GetCellValue(nRow,1);

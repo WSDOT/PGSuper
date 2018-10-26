@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\ContinuityCheck.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -70,7 +70,7 @@ CContinuityCheck& CContinuityCheck::operator= (const CContinuityCheck& rOther)
 //======================== OPERATIONS =======================================
 void CContinuityCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDisplayUnits) const
+                              IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IContinuity,pContinuity);
    GET_IFACE2(pBroker,IBridge,pBridge);

@@ -25,7 +25,7 @@
 #include <Reporting\DesignOutcomeChapterBuilder.h>
 
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandling.h>
@@ -49,9 +49,9 @@ CLASS
    CDesignOutcomeChapterBuilder
 ****************************************************************************/
 
-void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
-void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
-void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
+void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
+void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
+void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
 
 CDesignOutcomeChapterBuilder::CDesignOutcomeChapterBuilder()
 {
@@ -75,7 +75,7 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2( pBroker, IDisplayUnits, pDisplayUnits );
+   GET_IFACE2( pBroker, IEAFDisplayUnits, pDisplayUnits );
    GET_IFACE2( pBroker, IArtifact, pIArtifact );
    const pgsDesignArtifact* pArtifact = pIArtifact->GetDesignArtifact(span,gdr);
 
@@ -104,7 +104,7 @@ CChapterBuilder* CDesignOutcomeChapterBuilder::Clone() const
    return new CDesignOutcomeChapterBuilder;
 }
 
-void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
+void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
 {
 
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
@@ -586,7 +586,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
    }
 }
 
-void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
+void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
 {
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -602,7 +602,7 @@ void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,r
    write_artifact_data(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
 }
 
-void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
+void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
 {
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );

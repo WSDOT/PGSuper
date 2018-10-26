@@ -27,7 +27,7 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -69,9 +69,9 @@ public:
    //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
 
-   static void WriteAlignmentData(IBroker* pBroker, IDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
-   static void WriteProfileData(IBroker* pBroker, IDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
-   static void WriteCrownData(IBroker* pBroker, IDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
+   static void WriteAlignmentData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
+   static void WriteProfileData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
+   static void WriteCrownData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
 
 
    // GROUP: ACCESS

@@ -27,11 +27,12 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\CapacityToDemand.h>
+#include <PgsExt\RatingArtifact.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
@@ -80,8 +81,10 @@ CLongReinfShearCheck& CLongReinfShearCheck::operator= (const CLongReinfShearChec
 void CLongReinfShearCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                               pgsTypes::Stage stage,pgsTypes::LimitState ls,
-                              IDisplayUnits* pDisplayUnits) const
+                              IEAFDisplayUnits* pDisplayUnits) const
 {
+   USES_CONVERSION;
+
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear,  pDisplayUnits->GetShearUnit(), false );
 
@@ -90,10 +93,8 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
 
-   if ( ls == pgsTypes::StrengthI )
-      *pTitle << "Longitudinal Reinforcement For Shear Check - Strength I Limit State [5.8.3.5]";
-   else
-      *pTitle << "Longitudinal Reinforcement For Shear Check - Strength II Limit State [5.8.3.5]";
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pTitle << "Longitudinal Reinforcement for Shear Check - " << OLE2A(pStageMap->GetLimitStateName(ls)) << " [5.8.3.5]";
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
@@ -165,6 +166,109 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
          double ratio = IsZero(D) ? DBL_MAX : C/D;
          if ( pArtifact->Passed() && fabs(pArtifact->GetMu()) <= fabs(pArtifact->GetMr()) && ratio < 1.0 )
+         {
+            bAddFootnote = true;
+            (*table)(row,4) << "*";
+         }
+
+         (*table)(row,4) << rptNewLine << "(" << cap_demand.SetValue(C,D,bPassed) << ")";
+
+         row++;
+      }
+   }
+
+   if ( bAddFootnote )
+   {
+      rptParagraph* pFootnote = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      *pChapter << pFootnote;
+
+      *pFootnote << "* The area of longitudinal reinforcement on the flexural tension side of the member need not exceed the area required to resist the maximum moment acting alone" << rptNewLine;
+   }
+}
+
+void CLongReinfShearCheck::Build(rptChapter* pChapter,
+                              IBroker* pBroker,GirderIndexType gdrLineIdx,
+                              pgsTypes::LimitState ls,
+                              IEAFDisplayUnits* pDisplayUnits) const
+{
+   USES_CONVERSION;
+
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   location.IncludeSpanAndGirder(true);
+
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear,  pDisplayUnits->GetShearUnit(), false );
+
+   rptCapacityToDemand cap_demand;
+
+   pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
+
+   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << pTitle;
+
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pTitle << "Longitudinal Reinforcement for Shear Check - " << OLE2A(pStageMap->GetLimitStateName(ls)) << " [5.8.3.5]";
+
+   rptParagraph* pBody = new rptParagraph;
+   *pChapter << pBody;
+
+   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation 2005.gif")<<rptNewLine;
+   else
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "Longitudinal Reinforcement Check Equation.gif")<<rptNewLine;
+
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+   *pBody << table;
+
+   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   (*table)(0,1)  << COLHDR("Capacity",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,2)  << COLHDR("Demand",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,3)  << "Equation";
+   (*table)(0,4)  << "Status" << rptNewLine << "(C/D)";
+
+   // Fill up the table
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+
+   const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(gdrLineIdx,ratingType,INVALID_INDEX);
+   pgsRatingArtifact::ShearRatings shearRatings = pRatingArtifact->GetShearRatings();
+
+   bool bAddFootnote = false;
+
+   RowIndexType row = table->GetNumberOfHeaderRows();
+
+   pgsRatingArtifact::ShearRatings::iterator i;
+   for ( i = shearRatings.begin(); i != shearRatings.end(); i++ )
+   {
+      pgsPointOfInterest& poi = i->first;
+      pgsShearRatingArtifact& shearRatingArtifact = i->second;
+      const pgsLongReinfShearArtifact& artifact = shearRatingArtifact.GetLongReinfShearArtifact();
+
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+      if ( artifact.IsApplicable() )
+      {
+         (*table)(row,0) << location.SetValue( poi, end_size );
+
+         double C = artifact.GetCapacityForce();
+         double D = artifact.GetDemandForce();
+         (*table)(row,1) << shear.SetValue( C );
+         (*table)(row,2) << shear.SetValue( D );
+
+         (*table)(row,3) << "5.8.3.5-" << artifact.GetEquation();
+
+         bool bPassed = artifact.Passed();
+         if ( bPassed )
+            (*table)(row,4) << RPT_PASS;
+         else
+            (*table)(row,4) << RPT_FAIL;
+
+         double ratio = IsZero(D) ? DBL_MAX : C/D;
+         if ( artifact.Passed() && fabs(artifact.GetMu()) <= fabs(artifact.GetMr()) && ratio < 1.0 )
          {
             bAddFootnote = true;
             (*table)(row,4) << "*";

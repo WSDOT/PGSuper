@@ -24,7 +24,7 @@
 #include <Reporting\StirrupTable.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 
 #include <Lrfd\RebarPool.h>
@@ -69,7 +69,7 @@ CStirrupTable& CStirrupTable::operator= (const CStirrupTable& rOther)
 
 //======================== OPERATIONS =======================================
 void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                IDisplayUnits* pDisplayUnits) const
+                                IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
 

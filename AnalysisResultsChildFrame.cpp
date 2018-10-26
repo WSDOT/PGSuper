@@ -817,7 +817,20 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
 
    // Product Load Cases
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Girder",         pftGirder,        true,  true,  false, false, false, false, ACTIONS_ALL,BROWN) );
+
+   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
+   if ( !IsZero(pUserLoads->GetConstructionLoad()) )
+   {
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Construction",           pftConstruction,  false, false, false, true,  false, false, ACTIONS_ALL,SALMON) );
+   }
+
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Slab",           pftSlab,          false, false, false, true,  false, false, ACTIONS_ALL,SALMON) );
+
+   if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
+   {
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Slab Panels",           pftSlabPanel,          false, false, false, true,  false, false, ACTIONS_ALL,SALMON) );
+   }
+
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Diaphragm",      pftDiaphragm,     false, false, false, true,  false, false, ACTIONS_ALL,ORANGE) );
 
    if (bShearKey)

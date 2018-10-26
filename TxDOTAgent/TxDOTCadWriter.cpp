@@ -29,7 +29,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\DistributionFactors.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\DistFactorEngineer.h>
 
@@ -95,7 +95,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 	/* Interfaces to all relevant agents */
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker, IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker, IGirderData, pGirderData);
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
    GET_IFACE2(pBroker, ISectProp2, pSectProp2);

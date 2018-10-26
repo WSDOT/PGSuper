@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 class pgsDebondArtifact;
 
 
@@ -67,16 +67,16 @@ public:
 
    // GROUP: OPERATIONS
 
-   void Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const;
+   void Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const;
 
 private:
    //------------------------------------------------------------------------
    // Builds the table for debonded strands in a row
-   rptRcTable* Build1(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const;
+   rptRcTable* Build1(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const;
 
    //------------------------------------------------------------------------
    // Builds the table for debonded strands at a section
-   rptRcTable* Build2(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder, Float64 girderLength, pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const;
+   rptRcTable* Build2(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder, Float64 girderLength, pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

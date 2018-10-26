@@ -27,7 +27,7 @@
 #include "LegalRatingPage.h"
 #include "RatingOptionsDlg.h"
 #include <MFCTools\CustomDDX.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include "HtmlHelp\HelpTopics.hh"
@@ -104,7 +104,7 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> broker;
    EAFGetBroker(&broker);
-   GET_IFACE2(broker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
 
    CString tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )";

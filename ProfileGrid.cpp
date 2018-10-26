@@ -27,7 +27,7 @@
 #include "ProfileGrid.h"
 #include "ProfilePage.h"
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -99,7 +99,7 @@ void CProfileGrid::CustomInit()
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::string strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
@@ -220,7 +220,7 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
 
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    double station = data.PVIStation;
@@ -249,7 +249,7 @@ bool CProfileGrid::GetRowData(ROWCOL nRow,double* pStation,double* pGrade,double
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    CString strStation = GetCellValue(nRow,1);

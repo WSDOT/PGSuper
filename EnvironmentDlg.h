@@ -28,6 +28,7 @@
 #endif // _MSC_VER >= 1000
 // EnvironmentDlg.h : header file
 //
+#include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CEnvironmentDlg dialog

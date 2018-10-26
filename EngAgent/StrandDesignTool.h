@@ -61,6 +61,7 @@ inline static std::string DumpIntVector(const std::vector<DebondLevelType>& rvec
 // FORWARD DECLARATIONS
 //
 interface IBroker;
+interface IPrestressForce;
 
 // MISCELLANEOUS
 // Strand adjustment outcomes

@@ -28,7 +28,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
@@ -73,7 +73,7 @@ CConcurrentShearTable& CConcurrentShearTable::operator= (const CConcurrentShearT
 //======================== OPERATIONS =======================================
 void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
                                        SpanIndexType span,GirderIndexType girder,
-                                       IDisplayUnits* pDisplayUnits,
+                                       IEAFDisplayUnits* pDisplayUnits,
                                        pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const
 {
    if ( stage == pgsTypes::CastingYard )
@@ -84,13 +84,14 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetGeneralForceUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
    rptRcTable* p_table = 0;
-   rptRcTable* p_table2 = 0;
 
    SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
    SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
@@ -113,6 +114,13 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    ColumnIndexType col = 0;
 
    p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Concurrent Shears");
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
    (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*p_table)(0,col++) << COLHDR(Sub2("M","max") << rptNewLine << "Strength I", rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*p_table)(0,col++) << COLHDR(Sub2("V","i"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );

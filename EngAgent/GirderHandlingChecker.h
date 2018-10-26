@@ -105,7 +105,9 @@ private:
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
-   StatusCallbackIDType m_scidLiftingSupportLocation;
+   StatusCallbackIDType m_scidLiftingSupportLocationError;
+   StatusCallbackIDType m_scidLiftingSupportLocationWarning;
+   StatusCallbackIDType m_scidBunkPointLocation;
    StatusCallbackIDType m_scidTruckStiffness;
 
    CComPtr<IFem2dModel> m_Model;

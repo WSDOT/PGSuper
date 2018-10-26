@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -69,7 +69,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the  table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                             IDisplayUnits* pDisplayUnits,
+                             IEAFDisplayUnits* pDisplayUnits,
                              pgsTypes::Stage stage,
                              pgsTypes::LimitState ls,
                              bool& bStrutAndTieRequired) const;

@@ -110,7 +110,7 @@ double CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pier,GirderIndexT
    return m_pImpl->GetReactionDF(pier,gdr,ls,fcgdr);
 }
 
-void CBulbTeeDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
+void CBulbTeeDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    m_pImpl->BuildReport(span,gdr,pChapter,pDisplayUnits);
 }

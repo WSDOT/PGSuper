@@ -58,7 +58,6 @@ void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CConfigurePGSuperDlg)
-	DDX_Control(pDX, IDC_PUBLISHERS, m_PublisherList);
 	DDX_Text(pDX, IDC_COMPANY_NAME, m_Company);
 	DDX_Text(pDX, IDC_ENGINEER_NAME, m_Engineer);
 	DDX_Radio(pDX, IDC_GENERIC, m_Method);
@@ -426,8 +425,7 @@ void CConfigurePGSuperDlg::OnMethod()
    GetDlgItem(IDC_ADD)->EnableWindow(bEnable);
    GetDlgItem(IDC_SERVERS_STATIC)->EnableWindow(bEnable);
    GetDlgItem(IDC_SERVERS_STATIC2)->EnableWindow(bEnable);
-   GetDlgItem(IDC_PUBLISHERS)->ShowWindow(bEnable ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_SERVER_STATIC3)->ShowWindow(!bEnable ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_PUBLISHERS)->EnableWindow(bEnable);
    GetDlgItem(IDC_UPDATENOW)->EnableWindow( bEnable);
    GetDlgItem(IDC_UPDATE_FREQUENCY)->EnableWindow( bEnable);
    GetDlgItem(IDC_UPDATES_STATIC)->EnableWindow( bEnable);

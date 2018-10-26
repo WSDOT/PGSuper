@@ -57,7 +57,7 @@ void CLibraryEntryConflict::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLibraryEntryConflict)
-	DDX_Control(pDX, ID_OVERWRITE, m_Overwrite);
+	DDX_Control(pDX, IDC_OVERWRITE, m_Overwrite);
 	DDX_Control(pDX, IDC_CONFLICT_BOTTOM, m_ConflictBottom);
 	DDX_Control(pDX, IDC_CONFLICT_TOP, m_ConflictTop);
 	DDX_Control(pDX, IDC_ENTRY_TEXT, m_EntryText);
@@ -67,8 +67,8 @@ void CLibraryEntryConflict::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CLibraryEntryConflict, CDialog)
 	//{{AFX_MSG_MAP(CLibraryEntryConflict)
-	ON_BN_CLICKED(ID_RENAME_ENTRY, OnRenameEntry)
-	ON_BN_CLICKED(ID_OVERWRITE, OnOverwrite)
+	ON_BN_CLICKED(IDC_RENAME_ENTRY, OnRenameEntry)
+	ON_BN_CLICKED(IDC_OVERWRITE, OnOverwrite)
 	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()

@@ -28,7 +28,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <MfcTools\CustomDDX.h>
 #include <System\Tokenizer.h>
 #include <..\htmlhelp\HelpTopics.hh>
@@ -207,7 +207,7 @@ END_MESSAGE_MAP()
 BOOL CEditDistributedLoadDlg::OnInitDialog() 
 {
    // units
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    m_bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    if (m_bUnitsSI)

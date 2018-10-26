@@ -28,7 +28,7 @@
 #include "BridgeDescShearPage.h"
 #include "GirderDescDlg.h"
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <MfcTools\CustomDDX.h>
 
 #include "HtmlHelp\HelpTopics.hh"
@@ -67,11 +67,11 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
    DDX_UnitValueAndTag(pDX, IDC_TF_SPACING, IDC_TF_SPACING_UNITS, m_ShearData.TopFlangeBarSpacing, pDisplayUnits->GetComponentDimUnit());
-   DDV_UnitValueZeroOrMore(pDX, m_ShearData.TopFlangeBarSpacing, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_TF_SPACING, m_ShearData.TopFlangeBarSpacing, pDisplayUnits->GetComponentDimUnit() );
 
 	DDV_GXGridWnd(pDX, &m_Grid);
 

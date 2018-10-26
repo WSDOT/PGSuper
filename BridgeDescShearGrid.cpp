@@ -28,7 +28,7 @@
 #include "BridgeDescShearGrid.h"
 #include "BridgeDescShearPage.h"
 #include <Units\Measure.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -132,7 +132,7 @@ void CGirderDescShearGrid::InsertRow(bool bAppend)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	// if there are no cells selected,
 	// copy the current cell's coordinates
@@ -218,7 +218,7 @@ void CGirderDescShearGrid::CustomInit()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 

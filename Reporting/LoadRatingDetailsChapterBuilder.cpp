@@ -25,7 +25,7 @@
 
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
 
@@ -55,20 +55,19 @@ LPCTSTR CLoadRatingDetailsChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType spanIdx = pSGRptSpec->GetSpan();
-   GirderIndexType gdrIdx = pSGRptSpec->GetGirder();
+   pGdrRptSpec->GetBroker(&pBroker);
+   GirderIndexType gdrLineIdx = pGdrRptSpec->GetGirder();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   ReportRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,pgsTypes::lrDesign_Inventory);
-   ReportRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,pgsTypes::lrDesign_Operating);
-   ReportRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,pgsTypes::lrLegal_Routine);
-   ReportRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,pgsTypes::lrLegal_Special);
-   ReportRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,pgsTypes::lrPermit_Routine);
-   ReportRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,pgsTypes::lrPermit_Special);
+   ReportRatingDetails(pChapter,pBroker,gdrLineIdx,pgsTypes::lrDesign_Inventory);
+   ReportRatingDetails(pChapter,pBroker,gdrLineIdx,pgsTypes::lrDesign_Operating);
+   ReportRatingDetails(pChapter,pBroker,gdrLineIdx,pgsTypes::lrLegal_Routine);
+   ReportRatingDetails(pChapter,pBroker,gdrLineIdx,pgsTypes::lrLegal_Special);
+   ReportRatingDetails(pChapter,pBroker,gdrLineIdx,pgsTypes::lrPermit_Routine);
+   ReportRatingDetails(pChapter,pBroker,gdrLineIdx,pgsTypes::lrPermit_Special);
 
    return pChapter;
 }
@@ -78,7 +77,7 @@ CChapterBuilder* CLoadRatingDetailsChapterBuilder::Clone() const
    return new CLoadRatingDetailsChapterBuilder;
 }
 
-void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType) const
+void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const
 {
    USES_CONVERSION;
 
@@ -90,7 +89,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    if ( !pRatingSpec->IsRatingEnabled(ratingType) )
       return;
 
-   bool bNegMoments = pBridge->ProcessNegativeMoments(spanIdx);
+   bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
 
    CComBSTR bstrLiveLoadType = ::GetLiveLoadTypeName(ratingType);
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -100,9 +99,11 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-   for ( VehicleIndexType vehIdx = INVALID_INDEX; vehIdx < nVehicles; vehIdx++ )
+   VehicleIndexType firstVehicleIdx = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? INVALID_INDEX : 0);
+   VehicleIndexType lastVehicleIdx  = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? 0 : nVehicles);
+   for ( VehicleIndexType vehIdx = firstVehicleIdx; vehIdx < lastVehicleIdx; vehIdx++ )
    {
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(spanIdx,gdrIdx,ratingType,vehIdx);
+      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,vehIdx);
       if ( pRatingArtifact )
       {
          std::string strVehicleName = pProductLoads->GetLiveLoadName(llType,vehIdx);
@@ -111,36 +112,36 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
          *pChapter << pPara;
          *pPara << strVehicleName << rptNewLine;
 
-         MomentRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,true,pRatingArtifact);
+         MomentRatingDetails(pChapter,pBroker,gdrLineIdx,true,pRatingArtifact);
          if ( bNegMoments )
-            MomentRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,false,pRatingArtifact);
+            MomentRatingDetails(pChapter,pBroker,gdrLineIdx,false,pRatingArtifact);
          
          if ( pRatingSpec->RateForShear(ratingType) )
-            ShearRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,pRatingArtifact);
+            ShearRatingDetails(pChapter,pBroker,gdrLineIdx,pRatingArtifact);
 
          if ( pRatingSpec->RateForStress(ratingType) )
          {
             if ( ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special )
             {
-               ReinforcementYieldingDetails(pChapter,pBroker,spanIdx,gdrIdx,true,pRatingArtifact);
+               ReinforcementYieldingDetails(pChapter,pBroker,gdrLineIdx,true,pRatingArtifact);
                if ( bNegMoments )
-                  ReinforcementYieldingDetails(pChapter,pBroker,spanIdx,gdrIdx,false,pRatingArtifact);
+                  ReinforcementYieldingDetails(pChapter,pBroker,gdrLineIdx,false,pRatingArtifact);
             }
             else
             {
-               StressRatingDetails(pChapter,pBroker,spanIdx,gdrIdx,pRatingArtifact);
+               StressRatingDetails(pChapter,pBroker,gdrLineIdx,pRatingArtifact);
             }
          }
 
          if ( ratingType == pgsTypes::lrLegal_Routine || ratingType == pgsTypes::lrLegal_Special )
          {
-            LoadPostingDetails(pChapter,pBroker,spanIdx,gdrIdx,pRatingArtifact);
+            LoadPostingDetails(pChapter,pBroker,gdrLineIdx,pRatingArtifact);
          }
       }
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const
+void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -152,11 +153,17 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "MomentRatingEquation.png" ) << rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(13,"");
+   
+   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
    *pPara << table << rptNewLine;
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   location.IncludeSpanAndGirder(true);
+
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,   pDisplayUnits->GetMomentUnit(),       false );
 
    rptRcScalar scalar;
@@ -167,8 +174,6 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    rptCapacityToDemand rating_factor;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
-
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -195,6 +200,10 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       const pgsPointOfInterest& poi = iter->first;
       pgsMomentRatingArtifact& artifact = iter->second;
 
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
+
       (*table)(row,col++) << location.SetValue( poi, end_size );
       (*table)(row,col++) << scalar.SetValue(artifact.GetConditionFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetSystemFactor());
@@ -218,7 +227,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,const pgsRatingArtifact* pRatingArtifact) const
+void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,const pgsRatingArtifact* pRatingArtifact) const
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -227,11 +236,17 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ShearRatingEquation.png" ) << rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(12,"");
+   
+   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
    *pPara << table << rptNewLine;
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   location.IncludeSpanAndGirder(true);
+
    INIT_UV_PROTOTYPE( rptForceUnitValue,  shear,    pDisplayUnits->GetShearUnit(),        false );
 
    rptRcScalar scalar;
@@ -242,7 +257,6 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    rptCapacityToDemand rating_factor;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
    ColumnIndexType col = 0;
 
@@ -269,6 +283,10 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
       const pgsPointOfInterest& poi = iter->first;
       pgsShearRatingArtifact& artifact = iter->second;
 
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
+
       (*table)(row,col++) << location.SetValue( poi, end_size );
       (*table)(row,col++) << scalar.SetValue(artifact.GetConditionFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetSystemFactor());
@@ -291,7 +309,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,const pgsRatingArtifact* pRatingArtifact) const
+void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,const pgsRatingArtifact* pRatingArtifact) const
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -300,11 +318,17 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "StressRatingEquation.png" ) << rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,"");
+   
+   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
    *pPara << table << rptNewLine;
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   location.IncludeSpanAndGirder(true);
+
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,    pDisplayUnits->GetStressUnit(),        false );
 
    rptRcScalar scalar;
@@ -315,7 +339,6 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    rptCapacityToDemand rating_factor;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
    ColumnIndexType col = 0;
 
@@ -340,6 +363,10 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
       const pgsPointOfInterest& poi = iter->first;
       pgsStressRatingArtifact& artifact = iter->second;
 
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
+
       (*table)(row,col++) << location.SetValue( poi, end_size );
       (*table)(row,col++) << stress.SetValue(artifact.GetAllowableStress());
       (*table)(row,col++) << scalar.SetValue(artifact.GetDeadLoadFactor());
@@ -360,7 +387,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const
+void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -372,11 +399,17 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ReinforcementYieldingEquation.png" ) << rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(16,"");
+   
+   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
    //*pPara << table << rptNewLine; // don't add table here... see below
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,  location, pDisplayUnits->GetSpanLengthUnit(),      false );
+   location.IncludeSpanAndGirder(true);
+
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  dim,      pDisplayUnits->GetComponentDimUnit(),    false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,   pDisplayUnits->GetStressUnit(),          false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,  moment,   pDisplayUnits->GetMomentUnit(),          false );
@@ -391,7 +424,6 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    rptCapacityToDemand rating_factor;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
    ColumnIndexType col = 0;
 
@@ -430,6 +462,10 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       const pgsPointOfInterest& poi = iter->first;
       pgsYieldStressRatioArtifact& artifact = iter->second;
 
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
+
       (*table)(row,col++) << location.SetValue( poi, end_size );
       (*table)(row,col++) << moment.SetValue(artifact.GetDeadLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetWearingSurfaceMoment());
@@ -456,9 +492,9 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,const pgsRatingArtifact* pRatingArtifact) const
+void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,const pgsRatingArtifact* pRatingArtifact) const
 {
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -470,6 +506,10 @@ void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,I
    rptCapacityToDemand rating_factor;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+   
+   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
    *pPara << table << rptNewLine;
 
    ColumnIndexType col = 0;

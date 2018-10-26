@@ -34,7 +34,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\PointOfInterest.h>
 
@@ -44,7 +44,10 @@
 #include "GirderViewPrintJob.h"
 #include "EditPointLoadDlg.h"
 #include "EditDistributedLoadDlg.h"
+#include "EditMomentLoadDlg.h"
 #include "htmlhelp\HelpTopics.hh"
+
+#include "InsertDeleteLoad.h"
 
 #include <WBFLDManip.h>
 
@@ -98,7 +101,8 @@ BEGIN_MESSAGE_MAP(CGirderModelChildFrame, CSplitChildFrame)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, OnFilePrintDirect)
 	ON_CBN_SELCHANGE(IDC_SELSTAGE, OnSelectLoadingStage)
 	ON_COMMAND(ID_GV_ADD_POINTLOAD, OnAddPointload)
-	ON_COMMAND(ID_ADD_GV_DISTRIBUTED_LOAD, OnAddGvDistributedLoad)
+	ON_COMMAND(ID_ADD_GV_DISTRIBUTED_LOAD, OnAddDistributedLoad)
+	ON_COMMAND(ID_GV_ADD_MOMENT, OnAddMoment)
    ON_CBN_SELCHANGE( IDC_GIRDER, OnGirderChanged )
    ON_CBN_SELCHANGE( IDC_SPAN, OnSpanChanged )
    ON_COMMAND(IDC_SECTION_CUT, OnSectionCut )
@@ -352,7 +356,7 @@ void CGirderModelChildFrame::UpdateBar()
             ASSERT(0); // unknown cut location type
       }
 
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       CString msg;
       msg.Format("Section Cut Offset: %s",FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
 
@@ -508,7 +512,7 @@ void CGirderModelChildFrame::CutAtLocation()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
 
@@ -596,12 +600,12 @@ void CGirderModelChildFrame::OnAddPointload()
 	CEditPointLoadDlg dlg(data,pBroker);
    if (dlg.DoModal() == IDOK)
    {
-      GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-      pUdl->AddPointLoad(dlg.m_Load);
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
+      txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
 
-void CGirderModelChildFrame::OnAddGvDistributedLoad() 
+void CGirderModelChildFrame::OnAddDistributedLoad() 
 {
    CPGSuperDoc* pDoc = (CPGSuperDoc*) GetActiveDocument();
    CComPtr<IBroker> pBroker;
@@ -625,8 +629,37 @@ void CGirderModelChildFrame::OnAddGvDistributedLoad()
 	CEditDistributedLoadDlg dlg(data,pBroker);
    if (dlg.DoModal() == IDOK)
    {
-      GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-      pUdl->AddDistributedLoad(dlg.m_Load);
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
+      txnTxnManager::GetInstance()->Execute(pTxn);
+   }
+}
+
+void CGirderModelChildFrame::OnAddMoment() 
+{
+   CPGSuperDoc* pDoc = (CPGSuperDoc*) GetActiveDocument();
+   CComPtr<IBroker> pBroker;
+   pDoc->GetBroker(&pBroker);
+
+   SpanIndexType spanIdx, gdrIdx;
+   GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
+
+   ATLASSERT(  spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS  ); // if we are adding a point load, a girder better be selected
+
+   // set data to that of view
+   CMomentLoadData data;
+   data.m_Span   = spanIdx;
+   data.m_Girder = gdrIdx;
+
+   if (this->m_LoadingStage != UserLoads::BridgeSite3)
+      data.m_Stage = this->m_LoadingStage;
+   else
+      data.m_LoadCase = UserLoads::LL_IM;
+
+	CEditMomentLoadDlg dlg(data,pBroker);
+   if (dlg.DoModal() == IDOK)
+   {
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);
+      txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
 

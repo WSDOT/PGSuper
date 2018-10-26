@@ -28,6 +28,7 @@
 #endif // _MSC_VER > 1000
 // EditMomentLoadDlg.h : header file
 //
+#include "resource.h"
 #include <pgsExt\MomentLoadData.h>
 
 /////////////////////////////////////////////////////////////////////////////

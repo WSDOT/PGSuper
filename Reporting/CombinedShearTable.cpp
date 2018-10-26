@@ -30,7 +30,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 
@@ -76,7 +76,7 @@ CCombinedShearTable& CCombinedShearTable::operator= (const CCombinedShearTable& 
 //======================== OPERATIONS =======================================
 void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
                                        SpanIndexType span,GirderIndexType girder,
-                                       IDisplayUnits* pDisplayUnits,
+                                       IEAFDisplayUnits* pDisplayUnits,
                                        pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
                                        bool bDesign,bool bRating) const
 {
@@ -84,6 +84,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    if ( stage == pgsTypes::CastingYard )
       location.MakeGirderPoi();
    else
@@ -124,6 +125,12 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
 
    ColumnIndexType col = 0;
    RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,"Shear",false,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    *p << p_table;
 
@@ -220,12 +227,12 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
          {
             maxDCinc = pForces2->GetShear( lcDC, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
             minDCinc = pForces2->GetShear( lcDC, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
-            maxDWinc = pForces2->GetShear( lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
-            minDWinc = pForces2->GetShear( lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+            minDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
             maxDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-            maxDWcum = pForces2->GetShear( lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
-            minDWcum = pForces2->GetShear( lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+            minDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
 
             pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
             pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
@@ -233,9 +240,9 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
          else
          {
             maxDCinc = pForces2->GetShear( lcDC, stage, vPoi, ctIncremental, SimpleSpan );
-            maxDWinc = pForces2->GetShear( lcDW, stage, vPoi, ctIncremental, SimpleSpan );
+            maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, SimpleSpan );
             maxDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, SimpleSpan );
-            maxDWcum = pForces2->GetShear( lcDW, stage, vPoi, ctCummulative, SimpleSpan );
+            maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, SimpleSpan );
             pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, SimpleSpan, &minServiceI, &maxServiceI );
          }
       }
@@ -245,12 +252,12 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
          {
             maxDCinc = pForces2->GetShear( lcDC, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
             minDCinc = pForces2->GetShear( lcDC, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
-            maxDWinc = pForces2->GetShear( lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
-            minDWinc = pForces2->GetShear( lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+            minDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
             maxDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-            maxDWcum = pForces2->GetShear( lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
-            minDWcum = pForces2->GetShear( lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+            minDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
 
             pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
             pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
@@ -259,9 +266,9 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
          {
             BridgeAnalysisType bat = ( analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
             maxDCinc = pForces2->GetShear( lcDC, stage, vPoi, ctIncremental, bat );
-            maxDWinc = pForces2->GetShear( lcDW, stage, vPoi, ctIncremental, bat );
+            maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat );
             maxDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, bat );
-            maxDWcum = pForces2->GetShear( lcDW, stage, vPoi, ctCummulative, bat );
+            maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat );
 
             pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, bat, &minServiceI, &maxServiceI );
          }
@@ -273,12 +280,12 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
          {
             maxDCinc = pForces2->GetShear( lcDC, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
             minDCinc = pForces2->GetShear( lcDC, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
-            maxDWinc = pForces2->GetShear( lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
-            minDWinc = pForces2->GetShear( lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+            minDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
             maxDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-            maxDWcum = pForces2->GetShear( lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
-            minDWcum = pForces2->GetShear( lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+            minDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
 
             if ( bDesign )
             {
@@ -341,9 +348,9 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
          {
             BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
             maxDCinc = pForces2->GetShear( lcDC, stage, vPoi, ctIncremental, bat );
-            maxDWinc = pForces2->GetShear( lcDW, stage, vPoi, ctIncremental, bat );
+            maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat );
             maxDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, bat );
-            maxDWcum = pForces2->GetShear( lcDW, stage, vPoi, ctCummulative, bat );
+            maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat );
 
             if ( bDesign )
             {

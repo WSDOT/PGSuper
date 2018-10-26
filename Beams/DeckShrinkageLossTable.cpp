@@ -34,7 +34,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CDeckShrinkageLossTable::CDeckShrinkageLossTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits) :
+CDeckShrinkageLossTable::CDeckShrinkageLossTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -58,7 +58,7 @@ rptRcTable(NumColumns,0)
    strain.SetPrecision(3);
 }
 
-CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
+CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::string strSpecName = pSpec->GetSpecification();
@@ -160,7 +160,7 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    return table;
 }
 
-void CDeckShrinkageLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
+void CDeckShrinkageLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,1) << area.SetValue( details.RefinedLosses2005.GetAd() );
    (*this)(row,2) << ecc.SetValue( details.RefinedLosses2005.GetEccpc() );

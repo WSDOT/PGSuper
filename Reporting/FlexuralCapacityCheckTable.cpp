@@ -30,7 +30,7 @@
 #include <PgsExt\CapacityToDemand.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\Project.h>
@@ -77,10 +77,11 @@ CFlexuralCapacityCheckTable& CFlexuralCapacityCheckTable::operator= (const CFlex
 
 //======================== OPERATIONS =======================================
 rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                               IDisplayUnits* pDisplayUnits,
+                                               IEAFDisplayUnits* pDisplayUnits,
                                                pgsTypes::Stage stage,
                                                pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const
 {
+   USES_CONVERSION;
    bool bOverReinforced = false;
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -91,7 +92,15 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"");
 
-   std::string strLimitState( ls == pgsTypes::StrengthI ? "Strength I" : "Strength II" );
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   std::string strLimitState = OLE2A(pStageMap->GetLimitStateName(ls));
 
    if ( bPositiveMoment )
       p_table->TableLabel() << "Positive Moment Capacity for " << strLimitState << " Limit State";
@@ -149,6 +158,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptRcScalar scalar;
    scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );

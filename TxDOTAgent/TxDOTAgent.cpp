@@ -40,7 +40,7 @@
 #include <PGSuperIEPlugin_i.c>
 #include <IReportManager.h>
 #include <IFace\StatusCenter.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Selection.h>
 #include <IFace\TxDOTCadExport.h>
 #include <IFace\Project.h>

@@ -38,7 +38,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <MfcTools\CustomDDX.h>
 
@@ -137,7 +137,7 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::Back]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::Ahead]);
 
@@ -961,7 +961,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
             // for the entire bridge???
             CComPtr<IBroker> broker;
             EAFGetBroker(&broker);
-            GET_IFACE2(broker,IDisplayUnits,pDisplayUnits);
+            GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
             CSelectItemDlg dlg;
             dlg.m_strLabel = "Select the spacing to be used for the entire bridge";
@@ -1088,7 +1088,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CWnd* pWnd = GetDlgItem(pierFace == pgsTypes::Back ? IDC_BACK_SLAB_OFFSET : IDC_AHEAD_SLAB_OFFSET);
 

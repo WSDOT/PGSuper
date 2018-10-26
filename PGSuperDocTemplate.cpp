@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "resource.h"
 #include "PGSuper.h"
 #include "PGSuperDocTemplate.h"
 #include "PGSuperDoc.h"

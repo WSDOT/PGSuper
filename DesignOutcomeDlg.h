@@ -29,6 +29,7 @@
 // DesignOutcomeDlg.h : header file
 //
 
+#include "resource.h"
 #include <PgsExt\DesignArtifact.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <boost\shared_ptr.hpp>

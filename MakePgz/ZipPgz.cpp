@@ -113,7 +113,7 @@ int FindInFolder(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR
       FindIconFiles(hz,lpszFolderName,lpszZipFolderName,pgzFileName); // if there are template files, look for icon files
 
    // look for sub-folders
-   wchar_t buffer[MAX_PATH];
+   TCHAR buffer[MAX_PATH];
    _stprintf(buffer,_T("%s\\*.*"),lpszFolderName);
 
    WIN32_FIND_DATA FindFileData;
@@ -121,12 +121,12 @@ int FindInFolder(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR
    do
    {
       if ( FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && 
-           wcscmp(FindFileData.cFileName,_T("."))  != 0             && 
-           wcscmp(FindFileData.cFileName,_T("..")) != 0)
+           _tcscmp(FindFileData.cFileName,_T("."))  != 0             && 
+           _tcscmp(FindFileData.cFileName,_T("..")) != 0)
       {
-         wchar_t full_path[MAX_PATH];
+         TCHAR full_path[MAX_PATH];
          _stprintf(full_path,_T("%s\\%s"),lpszFolderName,FindFileData.cFileName);
-         wchar_t full_zip_path[MAX_PATH];
+         TCHAR full_zip_path[MAX_PATH];
          _stprintf(full_zip_path,_T("%s\\%s"),lpszZipFolderName,FindFileData.cFileName);
          FindInFolder(hz,full_path,full_zip_path,pgzFileName);
       }
@@ -150,7 +150,7 @@ int FindIconFiles(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHA
 
 int FindFiles(HZIP hz,_TCHAR* lpszExtension,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName)
 {
-   wchar_t buffer[MAX_PATH];
+   TCHAR buffer[MAX_PATH];
    _stprintf(buffer,_T("%s\\*.%s"),lpszFolderName,lpszExtension);
 
    WIN32_FIND_DATA FindFileData;
@@ -160,7 +160,7 @@ int FindFiles(HZIP hz,_TCHAR* lpszExtension,_TCHAR* lpszFolderName,_TCHAR* lpszZ
 
    do
    {
-      wchar_t FileSpec1[MAX_PATH], FileSpec2[MAX_PATH];
+      TCHAR FileSpec1[MAX_PATH], FileSpec2[MAX_PATH];
       _stprintf(FileSpec1,_T("%s\\%s"),lpszZipFolderName,FindFileData.cFileName);
       _stprintf(FileSpec2,_T("%s\\%s"),lpszFolderName,FindFileData.cFileName);
 

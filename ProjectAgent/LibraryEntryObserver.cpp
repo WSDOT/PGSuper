@@ -26,6 +26,7 @@
 #include "ProjectAgent_i.h"
 #include "ProjectAgentImp.h"
 #include <IFace\StatusCenter.h>
+#include <EAF\EAFUIIntegration.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -57,6 +58,8 @@ pgsLibraryEntryObserver::~pgsLibraryEntryObserver()
 void pgsLibraryEntryObserver::Update(ConcreteLibraryEntry* pSubject, Int32 hint)
 {
    // no action required
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   pDoc->SetModified();
 }
 
 void pgsLibraryEntryObserver::Update(ConnectionLibraryEntry* pSubject, Int32 hint)
@@ -98,6 +101,9 @@ void pgsLibraryEntryObserver::Update(ConnectionLibraryEntry* pSubject, Int32 hin
       m_pAgent->Fire_BridgeChanged();
    }
    m_pAgent->FirePendingEvents();
+
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   pDoc->SetModified();
 }
 
 void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
@@ -106,7 +112,7 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
    if (hint & LibraryHints::EntryRenamed)
    {
       if ( m_pAgent->m_BridgeDescription.GetGirderLibraryEntry() == pSubject )
-         m_pAgent->m_BridgeDescription.SetGirderName( pSubject->GetName().c_str() );
+         m_pAgent->m_BridgeDescription.RenameGirder( pSubject->GetName().c_str() );
 
       CSpanData* pSpan = m_pAgent->m_BridgeDescription.GetSpan(0);
       while ( pSpan )
@@ -121,7 +127,7 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
 
             if ( girderTypes.GetGirderLibraryEntry(firstGdrIdx) == pSubject )
             {
-               girderTypes.SetGirderName( grpIdx, pSubject->GetName().c_str() );
+               girderTypes.RenameGirder( grpIdx, pSubject->GetName().c_str() );
             }
          }
 
@@ -129,6 +135,10 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
 
          pSpan = pSpan->GetNextPier()->GetNextSpan();
       }
+
+      m_pAgent->Fire_BridgeChanged(); // if we had a lessor event, we should fire that
+                                      // need to fire something so that the bridge view tooltips
+                                      // are updated to display the correct name
    }
 
    if (hint & LibraryHints::EntryEdited)
@@ -141,6 +151,9 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
       m_pAgent->Fire_BridgeChanged();
    }
    m_pAgent->FirePendingEvents();
+
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   pDoc->SetModified();
 }
 
 void pgsLibraryEntryObserver::Update(SpecLibraryEntry* pSubject, Int32 hint)
@@ -155,6 +168,9 @@ void pgsLibraryEntryObserver::Update(SpecLibraryEntry* pSubject, Int32 hint)
       m_pAgent->SpecificationChanged(true);
    }
    m_pAgent->FirePendingEvents();
+
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   pDoc->SetModified();
 }
 
 void pgsLibraryEntryObserver::Update(RatingLibraryEntry* pSubject, Int32 hint)
@@ -169,6 +185,9 @@ void pgsLibraryEntryObserver::Update(RatingLibraryEntry* pSubject, Int32 hint)
       m_pAgent->RatingSpecificationChanged(true);
    }
    m_pAgent->FirePendingEvents();
+
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   pDoc->SetModified();
 }
 
 void pgsLibraryEntryObserver::Update(TrafficBarrierEntry* pSubject, Int32 hint)
@@ -195,6 +214,9 @@ void pgsLibraryEntryObserver::Update(TrafficBarrierEntry* pSubject, Int32 hint)
       m_pAgent->Fire_BridgeChanged();
    }
    m_pAgent->FirePendingEvents();
+
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   pDoc->SetModified();
 }
 
 void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
@@ -233,6 +255,9 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
       m_pAgent->Fire_LiveLoadChanged();
    }
    m_pAgent->FirePendingEvents();
+
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   pDoc->SetModified();
 }
 
 //======================== ACCESS     =======================================
@@ -243,7 +268,7 @@ void pgsLibraryEntryObserver::SetAgent(CProjectAgentImp* pAgent)
 
 void pgsLibraryEntryObserver::ClearStatusItems()
 {
-   GET_IFACE2(m_pAgent->m_pBroker,IStatusCenter,pStatusCenter);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFStatusCenter,pStatusCenter);
    pStatusCenter->RemoveByStatusGroupID(m_pAgent->m_StatusGroupID);
 }
 

@@ -33,7 +33,7 @@
 #include <System\Tokenizer.h>
 #include "CopyConcreteEntry.h"
 #include <Lrfd\Lrfd.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 
 #include <PGSuperColors.h>
@@ -77,24 +77,24 @@ void CConcreteDetailsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FC,      m_ctrlFc);
 	DDX_Control(pDX, IDC_DS,      m_ctrlStrengthDensity);
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_UNIT, m_Fc, pDisplayUnits->GetStressUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, m_Fc, pDisplayUnits->GetStressUnit() );
+   DDV_UnitValueGreaterThanZero(pDX,IDC_FC, m_Fc, pDisplayUnits->GetStressUnit() );
 
    DDX_Check_Bool(pDX, IDC_MOD_E, m_bUserEc);
    if (m_bUserEc || !pDX->m_bSaveAndValidate)
    {
       DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, m_Ec, pDisplayUnits->GetModEUnit() );
-      DDV_UnitValueGreaterThanZero(pDX, m_Ec, pDisplayUnits->GetModEUnit() );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_EC, m_Ec, pDisplayUnits->GetModEUnit() );
    }
 
    DDX_UnitValueAndTag(pDX, IDC_DS, IDC_DS_UNIT, m_Ds, pDisplayUnits->GetDensityUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, m_Ds, pDisplayUnits->GetDensityUnit() );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_DS, m_Ds, pDisplayUnits->GetDensityUnit() );
    DDX_UnitValueAndTag(pDX, IDC_DW, IDC_DW_UNIT, m_Dw, pDisplayUnits->GetDensityUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, m_Dw, pDisplayUnits->GetDensityUnit() );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_DW, m_Dw, pDisplayUnits->GetDensityUnit() );
    DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_UNIT, m_AggSize, pDisplayUnits->GetComponentDimUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, m_AggSize, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_SIZE, m_AggSize, pDisplayUnits->GetComponentDimUnit() );
    DDX_Text(pDX, IDC_K1, m_K1 );
    DDV_GreaterThanZero(pDX,IDC_K1, m_K1);
 
@@ -244,7 +244,7 @@ CString CConcreteDetailsDlg::UpdateEc(const CString& strFc,const CString& strDen
    {
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          const unitPressure& stress_unit = pDisplayUnits->GetStressUnit().UnitOfMeasure;
          const unitDensity& density_unit = pDisplayUnits->GetDensityUnit().UnitOfMeasure;
@@ -297,7 +297,7 @@ HBRUSH CConcreteDetailsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
    // TODO:  Change any attributes of the DC here
    if ( pWnd->GetDlgCtrlID() == IDC_DS && 0 < pWnd->GetWindowTextLength())
    {
-      GET_IFACE(IDisplayUnits,pDisplayUnits);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       try
       {
@@ -322,7 +322,7 @@ HBRUSH CConcreteDetailsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
    }
    else if ( pWnd->GetDlgCtrlID() == IDC_DW && 0 < pWnd->GetWindowTextLength() )
    {
-      GET_IFACE(IDisplayUnits,pDisplayUnits);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       try
       {

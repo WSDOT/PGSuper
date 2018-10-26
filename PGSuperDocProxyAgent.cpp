@@ -91,9 +91,23 @@ void CPGSuperDocProxyAgent::SetDocument(CPGSuperDoc* pDoc)
    m_pPGSuperDoc = pDoc;
 }
 
+void CPGSuperDocProxyAgent::CreateAcceleratorKeys()
+{
+   GET_IFACE(IEAFAcceleratorTable,pAccelTable);
+   pAccelTable->AddAccelKey(FVIRTKEY,           VK_F5, ID_PROJECT_UPDATENOW,NULL);
+   pAccelTable->AddAccelKey(FCONTROL | FVIRTKEY,VK_U,  ID_PROJECT_UPDATENOW,NULL);
+}
+
+void CPGSuperDocProxyAgent::RemoveAcceleratorKeys()
+{
+   GET_IFACE(IEAFAcceleratorTable,pAccelTable);
+   pAccelTable->RemoveAccelKey(FVIRTKEY,           VK_F5);
+   pAccelTable->RemoveAccelKey(FCONTROL | FVIRTKEY,VK_U );
+}
+
 void CPGSuperDocProxyAgent::CreateToolBars()
 {
-   GET_IFACE(IToolBars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
 
    m_StdToolBarID = pToolBars->CreateToolBar("Standard");
    CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
@@ -121,7 +135,7 @@ void CPGSuperDocProxyAgent::CreateToolBars()
 
 void CPGSuperDocProxyAgent::RemoveToolBars()
 {
-   GET_IFACE(IToolBars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
    pToolBars->DestroyToolBar(m_StdToolBarID);
    pToolBars->DestroyToolBar(m_LibToolBarID);
    pToolBars->DestroyToolBar(m_HelpToolBarID);
@@ -139,7 +153,7 @@ void CPGSuperDocProxyAgent::RegisterViews()
    // TODO: After the menu and command extensions can be made, the agents that are responsble
    // for the views below will register them. For example, tne analysis results view is the
    // responsiblity of the analysis results agent, so that view's implementation will move
-   GET_IFACE(IViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    m_BridgeModelEditorViewKey = pViewReg->RegisterView(RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
    m_GirderModelEditorViewKey = pViewReg->RegisterView(RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, 1);
    m_LibraryEditorViewKey     = pViewReg->RegisterView(RUNTIME_CLASS(CLibChildFrame),             RUNTIME_CLASS(CLibraryEditorView),        hMenu, 1);
@@ -151,7 +165,7 @@ void CPGSuperDocProxyAgent::RegisterViews()
 
 void CPGSuperDocProxyAgent::UnregisterViews()
 {
-   GET_IFACE(IViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    pViewReg->RemoveView(m_BridgeModelEditorViewKey);
    pViewReg->RemoveView(m_GirderModelEditorViewKey);
    pViewReg->RemoveView(m_LibraryEditorViewKey);
@@ -188,7 +202,7 @@ void CPGSuperDocProxyAgent::AdviseEventSinks()
    ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
-   hr = pBrokerInit->FindConnectionPoint( IID_IDisplayUnitsEventSink, &pCP );
+   hr = pBrokerInit->FindConnectionPoint( IID_IEAFDisplayUnitsEventSink, &pCP );
    ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Advise( GetUnknown(), &m_dwDisplayUnitsCookie );
    ATLASSERT( SUCCEEDED(hr) );
@@ -246,7 +260,7 @@ void CPGSuperDocProxyAgent::UnadviseEventSinks()
    CHECK( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
-   hr = pBrokerInit->FindConnectionPoint( IID_IDisplayUnitsEventSink, &pCP );
+   hr = pBrokerInit->FindConnectionPoint( IID_IEAFDisplayUnitsEventSink, &pCP );
    CHECK( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwDisplayUnitsCookie );
    CHECK( SUCCEEDED(hr) );
@@ -279,20 +293,20 @@ void CPGSuperDocProxyAgent::UnadviseEventSinks()
 
 void CPGSuperDocProxyAgent::CreateBridgeModelView()
 {
-   GET_IFACE(IViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    pViewReg->CreateView(m_BridgeModelEditorViewKey);
 }
 
 void CPGSuperDocProxyAgent::CreateGirderView(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
       AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
    }
    else
    {
-      GET_IFACE(IViewRegistrar,pViewReg);
+      GET_IFACE(IEAFViewRegistrar,pViewReg);
       CView* pView = pViewReg->CreateView(m_GirderModelEditorViewKey);
       CGirderModelChildFrame* pFrame = (CGirderModelChildFrame*)(pView->GetParent()->GetParent());
       pFrame->SelectSpanAndGirder(spanIdx,gdrIdx);
@@ -301,41 +315,41 @@ void CPGSuperDocProxyAgent::CreateGirderView(SpanIndexType spanIdx,GirderIndexTy
 
 void CPGSuperDocProxyAgent::CreateAnalysisResultsView()
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
       AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
    }
    else
    {
-      GET_IFACE(IViewRegistrar,pViewReg);
+      GET_IFACE(IEAFViewRegistrar,pViewReg);
       pViewReg->CreateView(m_AnalysisResultsViewKey);
    }
 }
 
 void CPGSuperDocProxyAgent::CreateStabilityView()
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
       AfxMessageBox("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details.",MB_OK);
    }
    else
    {
-      GET_IFACE(IViewRegistrar,pViewReg);
+      GET_IFACE(IEAFViewRegistrar,pViewReg);
       pViewReg->CreateView(m_FactorOfSafetyViewKey);
    }
 }
 
 void CPGSuperDocProxyAgent::CreateLoadsView()
 {
-   GET_IFACE(IViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    pViewReg->CreateView(m_LoadsViewKey);
 }
 
 void CPGSuperDocProxyAgent::CreateLibraryEditorView()
 {
-   GET_IFACE(IViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    pViewReg->CreateView(m_LibraryEditorViewKey);
 }
 
@@ -348,7 +362,7 @@ void CPGSuperDocProxyAgent::CreateReportView(CollectionIndexType rptIdx,bool bPr
    GET_IFACE(IReportManager,pRptMgr);
    data.m_pRptMgr = pRptMgr;
 
-   GET_IFACE(IViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    pViewReg->CreateView(m_ReportViewKey,(LPVOID)&data);
 }
 
@@ -356,8 +370,8 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
 {
    if ( m_pBroker )
    {
-      GET_IFACE(IStatusCenter,pStatusCenter);
-      GET_IFACE(IToolBars,pToolBars);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFToolbars,pToolBars);
       CEAFToolBar* pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
 
       if ( pToolBar == NULL )
@@ -449,10 +463,12 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
    {
       RegisterViews();
       CreateToolBars();
+      CreateAcceleratorKeys();
    }
    else
    {
       RemoveToolBars();
+      RemoveAcceleratorKeys();
       UnregisterViews();
    }
 
@@ -497,7 +513,7 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged()
 HRESULT CPGSuperDocProxyAgent::OnGirderFamilyChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   GET_IFACE(IDocument,pDoc);
+   GET_IFACE(IEAFDocument,pDoc);
    pDoc->SetModified();
    FireEvent( 0, HINT_GIRDERFAMILYCHANGED, 0 );
    return S_OK;
@@ -534,6 +550,14 @@ HRESULT CPGSuperDocProxyAgent::OnLiveLoadNameChanged(const char* strOldName,cons
    return S_OK;
 }
 
+HRESULT CPGSuperDocProxyAgent::OnConstructionLoadChanged()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   m_pPGSuperDoc->SetModifiedFlag();
+   FireEvent( 0, HINT_BRIDGECHANGED, 0 );
+   return S_OK;
+}
+
 // IEnvironmentEventSink
 HRESULT CPGSuperDocProxyAgent::OnExposureConditionChanged()
 {
@@ -561,13 +585,13 @@ HRESULT CPGSuperDocProxyAgent::OnProjectPropertiesChanged()
    return S_OK;
 }
 
-// IDisplayUnitsEventSink
+// IEAFDisplayUnitsEventSink
 HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(eafTypes::UnitMode newUnitMode)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CComPtr<IDocUnitSystem> pDocUnitSystem;
    m_pPGSuperDoc->GetDocUnitSystem(&pDocUnitSystem);

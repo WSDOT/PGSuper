@@ -81,31 +81,36 @@ static char THIS_FILE[] = __FILE__;
 
 DECLARE_LOGFILE;
 
+// NOTE: If a new product load is added don't forget to change
+// GetDesignStress() so that it is included in the design process
+
 // Analysis Model Load Case ID's for Product Loads
 const LoadCaseIDType g_lcidGirder              =   1;
-const LoadCaseIDType g_lcidSlab                =   2;
-const LoadCaseIDType g_lcidDiaphragm           =   3;
-const LoadCaseIDType g_lcidSidewalk            =   4;
-const LoadCaseIDType g_lcidTrafficBarrier      =   5;
-const LoadCaseIDType g_lcidOverlay             =   6;
-const LoadCaseIDType g_lcidMinDesignTruck      =   7;
-const LoadCaseIDType g_lcidMaxDesignTruck      =   8;
-const LoadCaseIDType g_lcidMinDesignTandem     =   9;
-const LoadCaseIDType g_lcidMaxDesignTandem     =  10;
-const LoadCaseIDType g_lcidMinLiveLoad         =  11;
-const LoadCaseIDType g_lcidMaxLiveLoad         =  12;
+const LoadCaseIDType g_lcidConstruction        =   2;
+const LoadCaseIDType g_lcidSlab                =   3;
+const LoadCaseIDType g_lcidDiaphragm           =   4;
+const LoadCaseIDType g_lcidSidewalk            =   5;
+const LoadCaseIDType g_lcidTrafficBarrier      =   6;
+const LoadCaseIDType g_lcidOverlay             =   7;
+const LoadCaseIDType g_lcidOverlayRating       =   8;
+const LoadCaseIDType g_lcidMinDesignTruck      =   9;
+const LoadCaseIDType g_lcidMaxDesignTruck      =  10;
+const LoadCaseIDType g_lcidMinDesignTandem     =  11;
+const LoadCaseIDType g_lcidMaxDesignTandem     =  12;
+const LoadCaseIDType g_lcidMinLiveLoad         =  13;
+const LoadCaseIDType g_lcidMaxLiveLoad         =  14;
 
-const LoadCaseIDType g_lcidMinDeflDesignTruck  =  13;
-const LoadCaseIDType g_lcidMaxDeflDesignTruck  =  14;
-const LoadCaseIDType g_lcidMinDefl25DesignTruck=  15;
-const LoadCaseIDType g_lcidMaxDefl25DesignTruck=  16;
-const LoadCaseIDType g_lcidMinDeflLiveLoad     =  17;
-const LoadCaseIDType g_lcidMaxDeflLiveLoad     =  18;
+const LoadCaseIDType g_lcidMinDeflDesignTruck  =  15;
+const LoadCaseIDType g_lcidMaxDeflDesignTruck  =  16;
+const LoadCaseIDType g_lcidMinDefl25DesignTruck=  17;
+const LoadCaseIDType g_lcidMaxDefl25DesignTruck=  18;
+const LoadCaseIDType g_lcidMinDeflLiveLoad     =  19;
+const LoadCaseIDType g_lcidMaxDeflLiveLoad     =  20;
 
-const LoadCaseIDType g_lcidStraightStrand      =  19;
-const LoadCaseIDType g_lcidHarpedStrand        =  20;
-const LoadCaseIDType g_lcidTemporaryStrand     =  21;
-const LoadCaseIDType g_lcidShearKey=  22;
+const LoadCaseIDType g_lcidStraightStrand      =  21;
+const LoadCaseIDType g_lcidHarpedStrand        =  22;
+const LoadCaseIDType g_lcidTemporaryStrand     =  23;
+const LoadCaseIDType g_lcidShearKey            =  24;
 
 const LoadGroupIDType g_lcidDCInc           = 100; // incremental DC loading
 const LoadGroupIDType g_lcidDWInc           = 101; // incremental DW loading
@@ -181,6 +186,10 @@ LoadCaseIDType get_load_case_id(ProductForceType type)
       lcid = g_lcidGirder;
       break;
 
+   case pftConstruction:
+      lcid = g_lcidConstruction;
+      break;
+
    case pftSlab:
       lcid = g_lcidSlab;
       break;
@@ -199,6 +208,10 @@ LoadCaseIDType get_load_case_id(ProductForceType type)
 
    case pftOverlay:
       lcid = g_lcidOverlay;
+      break;
+
+   case pftOverlayRating:
+      lcid = g_lcidOverlayRating;
       break;
 
    case pftShearKey:
@@ -514,6 +527,10 @@ CComBSTR CAnalysisAgentImp::GetLoadCaseName(LoadingCombination combo)
          bstrLoadCase = "DW";
       break;
 
+      case lcDWRating:
+         bstrLoadCase = "DW_Rating";
+      break;
+
       default:
          ATLASSERT(false); // SHOULD NEVER GET HERE
    }
@@ -756,6 +773,10 @@ CComBSTR GetLoadGroupName(ProductForceType type)
          bstrLoadGroup = "Diaphragm";
       break;
 
+      case pftConstruction:
+         bstrLoadGroup = "Construction";
+      break;
+
       case pftSlab:
          bstrLoadGroup = "Slab";
       break;
@@ -766,6 +787,10 @@ CComBSTR GetLoadGroupName(ProductForceType type)
 
       case pftOverlay:
          bstrLoadGroup = "Overlay";
+      break;
+
+      case pftOverlayRating:
+         bstrLoadGroup = "Overlay Rating";
       break;
 
       case pftTrafficBarrier:
@@ -843,7 +868,7 @@ void CAnalysisAgentImp::Invalidate(bool clearStatus)
 
    if (clearStatus)
    {
-      GET_IFACE(IStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
    }
 }
@@ -1032,7 +1057,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
          Float64 e_end_size = pBridge->GetGirderEndConnectionLength(spanIdx,gdrIdx);
          if (s_end_size<0.0 || e_end_size<0.0)
          {
-            GET_IFACE(IStatusCenter,pStatusCenter);
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
             std::ostringstream os;
             os<<"Error - The end of the girder is located off of the bearing at the ";
             if (s_end_size<0.0 && e_end_size<0.0)
@@ -1212,6 +1237,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
       // Loads
       ApplySelfWeightLoad(    pModel, gdr);
       ApplyDiaphragmLoad(     pModel, gdr);
+      ApplyConstructionLoad(  pModel, gdr);
       ApplySlabLoad(          pModel, gdr);
       ApplyOverlayLoad(       pModel, gdr);
       ApplyTrafficBarrierAndSidewalkLoad(pModel, gdr);
@@ -2292,6 +2318,9 @@ void CAnalysisAgentImp::ApplyOverlayLoad(ILBAMModel* pModel,GirderIndexType gdr)
    pgsTypes::Stage stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
    CComBSTR bstrStage = pStageMap->GetStageName(stage);
    CComBSTR bstrLoadGroup = GetLoadGroupName(pftOverlay); 
+   CComBSTR bstrLoadGroupRating = GetLoadGroupName(pftOverlayRating); 
+
+   bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
@@ -2314,6 +2343,64 @@ void CAnalysisAgentImp::ApplyOverlayLoad(ILBAMModel* pModel,GirderIndexType gdr)
       for (int i = 0; i < numsl; i++)
       {
          OverlayLoad& ol = sload[i];
+         Float64 x1 = ol.StartLoc - end_size;
+         Float64 x2 = ol.EndLoc - end_size;
+         Float64 w1 = ol.StartLoad;
+         Float64 w2 = ol.EndLoad;
+
+         CComPtr<IDistributedLoad> load;
+         load.CoCreateInstance(CLSID_DistributedLoad);
+         load->put_MemberType(mtSpan);
+         load->put_MemberID(spanIdx);
+         load->put_Direction(ldFy);
+         load->put_WStart(w1);
+         load->put_WEnd(w2);
+         load->put_StartLocation(x1);
+         load->put_EndLocation(x2);
+
+         CComPtr<IDistributedLoadItem> distLoadItem;
+         distLoads->Add(bstrStage,bstrLoadGroup,load,&distLoadItem);
+
+
+         if ( !bFutureOverlay )
+         {
+            CComPtr<IDistributedLoadItem> distLoadItem;
+            distLoads->Add(bstrStage,bstrLoadGroupRating,load,&distLoadItem);
+         }
+      }
+   }
+}
+
+void CAnalysisAgentImp::ApplyConstructionLoad(ILBAMModel* pModel,GirderIndexType gdr)
+{
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IGirder,pGdr);
+   GET_IFACE(IStageMap,pStageMap);
+   pgsTypes::Stage stage = pgsTypes::BridgeSite1;
+   CComBSTR bstrStage = pStageMap->GetStageName(stage);
+   CComBSTR bstrLoadGroup = GetLoadGroupName(pftConstruction); 
+
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+
+   CComPtr<IDistributedLoads> distLoads;
+   pModel->get_DistributedLoads(&distLoads);
+
+   CComPtr<IPointLoads> pointLoads;
+   pModel->get_PointLoads(&pointLoads);
+   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType gdrIdx = min(gdr,nGirders-1);
+
+      Float64 end_size = pBridge->GetGirderStartConnectionLength( spanIdx, gdrIdx );
+
+      // Add the overlay load in the main part of the span
+      std::vector<ConstructionLoad> sload;
+      GetMainConstructionLoad(spanIdx, gdrIdx, &sload);
+      int numsl = sload.size();
+      for (int i = 0; i < numsl; i++)
+      {
+         ConstructionLoad& ol = sload[i];
          Float64 x1 = ol.StartLoc - end_size;
          Float64 x2 = ol.EndLoc - end_size;
          Float64 w1 = ol.StartLoad;
@@ -3273,6 +3360,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    // Add load cases
    AddLoadCase(loadcases, CComBSTR("DC"),    CComBSTR("Component and Attachments"));
    AddLoadCase(loadcases, CComBSTR("DW"),    CComBSTR("Wearing Surfaces and Utilities"));
+   AddLoadCase(loadcases, CComBSTR("DW_Rating"), CComBSTR("Wearing Surfaces and Utilities (for Load Rating)"));
    AddLoadCase(loadcases, CComBSTR("LL_IM"), CComBSTR("User defined live load"));
 
    // add load combinations
@@ -3382,7 +3470,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Inventory);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Inventory,true);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_inventory->put_LiveLoadFactor(LLIM);
    loadcombos->Add(strengthI_inventory);
@@ -3399,7 +3487,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Operating,true);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_operating->put_LiveLoadFactor(LLIM);
 
@@ -3416,7 +3504,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Inventory);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Inventory,true);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_inventory->put_LiveLoadFactor(LLIM);
 
@@ -3433,7 +3521,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Operating,true);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_operating->put_LiveLoadFactor(LLIM);
 
@@ -3450,7 +3538,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalRoutine,true);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_routine->put_LiveLoadFactor(LLIM);
 
@@ -3467,7 +3555,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalRoutine,true);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_routine->put_LiveLoadFactor(LLIM);
 
@@ -3484,7 +3572,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalSpecial,true);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_special->put_LiveLoadFactor(LLIM);
 
@@ -3501,7 +3589,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalSpecial,true);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_special->put_LiveLoadFactor(LLIM);
 
@@ -3518,7 +3606,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitRoutine,true);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthII_routine->put_LiveLoadFactor(LLIM);
 
@@ -3534,7 +3622,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitSpecial,true);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthII_special->put_LiveLoadFactor(LLIM);
 
@@ -3551,7 +3639,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitRoutine,true);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceI_routine->put_LiveLoadFactor(LLIM);
 
@@ -3568,7 +3656,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitSpecial,true);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
-   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceI_routine->put_LiveLoadFactor(LLIM);
 
@@ -3669,6 +3757,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    CComPtr<ILoadCase> load_case_dc;
    load_cases->Find(CComBSTR("DC"),&load_case_dc);
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftGirder));
+   load_case_dc->AddLoadGroup(GetLoadGroupName(pftConstruction));
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftSlab));
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftSlabPanel));
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftDiaphragm));
@@ -3682,6 +3771,15 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    load_case_dw->AddLoadGroup(GetLoadGroupName(pftOverlay));
    load_case_dw->AddLoadGroup(GetLoadGroupName(pftUserDW));
 
+   CComPtr<ILoadCase> load_case_dw_rating;
+   load_cases->Find(CComBSTR("DW_Rating"),&load_case_dw_rating);
+   GET_IFACE(IBridge,pBridge);
+   if ( !pBridge->IsFutureOverlay() )
+   {
+      load_case_dw_rating->AddLoadGroup(GetLoadGroupName(pftOverlayRating));
+   }
+   load_case_dw_rating->AddLoadGroup(GetLoadGroupName(pftUserDW));
+
    CComPtr<ILoadCase> load_case_ll;
    load_cases->Find(CComBSTR("LL_IM"),&load_case_ll);
    load_case_ll->AddLoadGroup(GetLoadGroupName(pftUserLLIM));
@@ -3690,6 +3788,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    CComPtr<ILoadGroups> loadGroups;
    pModel->get_LoadGroups(&loadGroups);
    AddLoadGroup(loadGroups, GetLoadGroupName(pftGirder),         CComBSTR("Girder self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftConstruction),   CComBSTR("Construction"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftSlab),           CComBSTR("Slab self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftSlabPanel),      CComBSTR("Slab Panel self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftDiaphragm),      CComBSTR("Diaphragm self weight"));
@@ -3697,6 +3796,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    AddLoadGroup(loadGroups, GetLoadGroupName(pftTrafficBarrier), CComBSTR("Traffic Barrier self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftShearKey),       CComBSTR("Shear Key Weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftOverlay),        CComBSTR("Overlay self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftOverlayRating),  CComBSTR("Overlay self weight (rating)"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftUserDC),         CComBSTR("User applied loads in DC"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftUserDW),         CComBSTR("User applied loads in DW"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftUserLLIM),       CComBSTR("User applied live load"));
@@ -4260,6 +4360,12 @@ void CAnalysisAgentImp::GetOverlayLoad(SpanIndexType span,GirderIndexType girder
    GetMainSpanOverlayLoad(span,girder,pOverlayLoads);
 }
 
+void CAnalysisAgentImp::GetConstructionLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ConstructionLoad>* pConstructionLoads)
+{
+   ValidateAnalysisModels(spanIdx,gdrIdx);
+   GetMainConstructionLoad(spanIdx,gdrIdx,pConstructionLoads);
+}
+
 bool CAnalysisAgentImp::HasShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -4546,13 +4652,9 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType g
             pBridge->GetStationAndOffset(poi,&station,&offset);
             Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
 
-            SpanIndexType test_span_idx;
-            Float64 dist_from_start_of_span;
-            pBridge->GetDistFromStartOfSpan(gdrIdx,dist_from_start_of_bridge,&test_span_idx,&dist_from_start_of_span);
-            ATLASSERT(test_span_idx == span);
-
             // slab overhang from CL of girder (normal to alignment)
-            Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabGirderOverhang(span,dist_from_start_of_span) : pBridge->GetRightSlabGirderOverhang(span,dist_from_start_of_span));
+            Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabOverhang(dist_from_start_of_bridge) : pBridge->GetRightSlabOverhang(dist_from_start_of_bridge));
+
             Float64 top_width = pGdr->GetTopWidth(poi);
 
             // slab overhang from edge of girder (normal to alignment)
@@ -4816,6 +4918,93 @@ void CAnalysisAgentImp::GetMainSpanOverlayLoad(SpanIndexType span,GirderIndexTyp
       load.EndLoad   = endW;
 
       pOverlayLoads->push_back(load);
+   }
+}
+
+void CAnalysisAgentImp::GetMainConstructionLoad(SpanIndexType span,GirderIndexType gdr, std::vector<ConstructionLoad>* pConstructionLoads)
+{
+   CHECK(pConstructionLoads!=0);
+   pConstructionLoads->clear();
+
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IGirder, pGdr);
+   GET_IFACE(IBridgeMaterial,pMat);
+   GET_IFACE(IRoadway,pAlignment);
+   GET_IFACE(IPointOfInterest,pIPoi);
+
+   GirderIndexType nGirders = pBridge->GetGirderCount(span);
+   GirderIndexType gdrIdx = min(gdr,nGirders-1);
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
+
+   GET_IFACE(IUserDefinedLoadData,pLoads);
+   Float64 construction_load = pLoads->GetConstructionLoad();
+
+   // Get some important POIs that we will be using later
+   PoiAttributeType attrib = POI_ALLACTIONS;
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,span,gdrIdx,attrib,POIFIND_OR);
+   CHECK(vPoi.size()!=0);
+
+   GET_IFACE(ISectProp2,pSectProp2);
+   GET_IFACE(IGirder,pGirder);
+
+   int num_poi = vPoi.size();
+   for ( int i = 0; i < num_poi-1; i++ )
+   {
+      const pgsPointOfInterest& prevPoi = vPoi[i];
+      const pgsPointOfInterest& currPoi = vPoi[i+1];
+
+      // Width of loaded area, and load intensity
+      Float64 startWidth, endWidth;
+      Float64 startW, endW;
+
+      if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+      {
+         ATLASSERT( ::IsJointSpacing(pBridgeDesc->GetGirderSpacingType()) );
+         Float64 left,right;
+         pBridge->GetDistanceBetweenGirders(prevPoi,&left,&right);
+
+         Float64 width = max(pGirder->GetTopWidth(prevPoi),pGirder->GetBottomWidth(prevPoi));
+
+         startWidth = width + (left+right)/2;
+         startW = -startWidth*construction_load;
+
+         pBridge->GetDistanceBetweenGirders(currPoi,&left,&right);
+
+         width = max(pGirder->GetTopWidth(currPoi),pGirder->GetBottomWidth(currPoi));
+
+         endWidth = width + (left+right)/2;
+         endW = -endWidth*construction_load;
+      }
+      else
+      {
+         startWidth = pSectProp2->GetTributaryFlangeWidth(prevPoi);
+         // negative width means that slab is not over girder
+         if (startWidth < 0.0)
+            startWidth = 0.0;
+
+         startW = -startWidth*construction_load;
+
+         endWidth = pSectProp2->GetTributaryFlangeWidth(currPoi);
+         if (endWidth < 0.0)
+            endWidth = 0.0;
+
+         endW = -endWidth*construction_load;
+      }
+
+      // Create load and stuff it
+      ConstructionLoad load;
+      load.StartLoc = prevPoi.GetDistFromStart();
+      load.EndLoc   = currPoi.GetDistFromStart();
+      load.StartWcc = startWidth;
+      load.EndWcc   = endWidth;
+      load.StartLoad = startW;
+      load.EndLoad   = endW;
+
+      pConstructionLoads->push_back(load);
    }
 }
 
@@ -8692,12 +8881,13 @@ std::vector<Float64> CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState
 
             if ( start == pgsTypes::BridgeSite2 && end == pgsTypes::BridgeSite2 )
             {
-               Float64 Mslab       = GetMoment(pgsTypes::BridgeSite1, pftSlab,      poi,bat);
-               Float64 Mslab_panel = GetMoment(pgsTypes::BridgeSite1, pftSlabPanel, poi,bat);
-               Float64 Mdiaphragm  = GetMoment(pgsTypes::BridgeSite1, pftDiaphragm, poi,bat);
-               Float64 Mshear_key  = GetMoment(pgsTypes::BridgeSite1, pftShearKey,  poi,bat);
+               Float64 Mconstruction = GetMoment(pgsTypes::BridgeSite1, pftConstruction,      poi, bat);
+               Float64 Mslab         = GetMoment(pgsTypes::BridgeSite1, pftSlab,              poi, bat);
+               Float64 Mslab_panel   = GetMoment(pgsTypes::BridgeSite1, pftSlabPanel,         poi, bat);
+               Float64 Mdiaphragm    = GetMoment(pgsTypes::BridgeSite1, pftDiaphragm,         poi, bat);
+               Float64 Mshear_key    = GetMoment(pgsTypes::BridgeSite1, pftShearKey,          poi, bat);
 
-               MzMin -= gDC*(Mslab + Mslab_panel + Mdiaphragm + Mshear_key);
+               MzMin -= gDC*(Mconstruction + Mslab + Mslab_panel + Mdiaphragm + Mshear_key);
             }
 
             // remove user dc moments
@@ -9051,6 +9241,9 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage 
    }
 
    // Bridge Site Stage 1
+   GetStress(pgsTypes::BridgeSite1,pftConstruction,poi,bat,&ft,&fb);
+   ftop1 += dc*ft;   fbot1 += dc*fb;
+
    GetStress(pgsTypes::BridgeSite1,pftSlab,poi,bat,&ft,&fb);
    ftop1 += dc*ft;   fbot1 += dc*fb;
 
@@ -9486,7 +9679,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
       {
          ATLASSERT( ex.GetReason() == lrfdXCreepCoefficient::VSRatio );
 
-         GET_IFACE(IStatusCenter,pStatusCenter);
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
          std::string strMsg("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep");
       
@@ -9573,7 +9766,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
       {
             ATLASSERT( ex.GetReason() == lrfdXCreepCoefficient::VSRatio );
 
-         GET_IFACE(IStatusCenter,pStatusCenter);
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
          std::string strMsg("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep");
       
@@ -10525,6 +10718,14 @@ HRESULT CAnalysisAgentImp::OnLiveLoadNameChanged(const char* strOldName,const ch
       }
    }
 
+   return S_OK;
+}
+
+HRESULT CAnalysisAgentImp::OnConstructionLoadChanged()
+{
+   LOG("OnConstructionLoadChanged Event Received");
+#pragma Reminder ("Took the easy way out here.")
+   Invalidate();
    return S_OK;
 }
 
@@ -11675,7 +11876,7 @@ double CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pier,GirderInde
 
       BridgeAnalysisType bat = ContinuousSpan;
 
-      Float64 fbSlab, fbTrafficBarrier, fbSidewalk, fbOverlay, fbUserDC, fbUserDW, fbUserLLIM, fbLLIM;
+      Float64 fbConstruction, fbSlab, fbTrafficBarrier, fbSidewalk, fbOverlay, fbUserDC, fbUserDW, fbUserLLIM, fbLLIM;
 
       Float64 fTop,fBottom;
 
@@ -11683,10 +11884,14 @@ double CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pier,GirderInde
       {
          GetStress(pgsTypes::BridgeSite1,pftSlab,poi,bat,&fTop,&fBottom);
          fbSlab = fBottom;
+
+         GetStress(pgsTypes::BridgeSite1,pftConstruction,poi,bat,&fTop,&fBottom);
+         fbConstruction = fBottom;
       }
       else
       {
          fbSlab = 0;
+         fbConstruction = 0;
       }
 
       GetStress(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat,&fTop,&fBottom);
@@ -11716,7 +11921,7 @@ double CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pier,GirderInde
       GetCombinedLiveLoadStress(pgsTypes::lltDesign,pgsTypes::BridgeSite3,poi,bat,&fTopMin,&fTopMax,&fBotMin,&fBotMax);
       fbLLIM = fBotMin; // greatest compression
 
-      fBottom = fbSlab + fbTrafficBarrier + fbSidewalk + fbOverlay + fbUserDC + fbUserDW + 0.5*(fbUserLLIM + fbLLIM);
+      fBottom = fbConstruction + fbSlab + fbTrafficBarrier + fbSidewalk + fbOverlay + fbUserDC + fbUserDW + 0.5*(fbUserLLIM + fbLLIM);
 
       f[i] = fBottom;
    }

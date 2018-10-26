@@ -29,6 +29,7 @@
 // CatalogServerDlg.h : header file
 //
 
+#include "resource.h"
 #include "PGSuperCatalogServers.h"
 
 /////////////////////////////////////////////////////////////////////////////

@@ -28,7 +28,7 @@
 #include <WBFLCore.h>
 
 class REPORTINGCLASS CLoadRatingReportSpecificationBuilder :
-   public CSpanGirderReportSpecificationBuilder
+   public CGirderReportSpecificationBuilder
 {
 public:
    CLoadRatingReportSpecificationBuilder(IBroker* pBroker);

@@ -30,7 +30,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IDisplayUnits* pDisplayUnits)
+void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
 {
    if (lrd.Nb>1)
    {
@@ -166,7 +166,7 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
    }
 }
 
-void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IDisplayUnits* pDisplayUnits)
+void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
 
@@ -202,7 +202,7 @@ void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::Rigi
    (*pPara) << "mg" << Super("ME") << Sub(rd.e.size() > 1 ? "2+" : "1") << " = " << scalar.SetValue(rd.mg) << rptNewLine;
 }
 
-void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IDisplayUnits* pDisplayUnits)
+void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
 {
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );

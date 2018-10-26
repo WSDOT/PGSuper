@@ -24,6 +24,7 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include "pgsuper.h"
 #include "SlabDisplayObjectEvents.h"
 #include "BridgeSectionCutDisplayImpl.h"

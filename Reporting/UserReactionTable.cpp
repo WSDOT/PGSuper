@@ -25,7 +25,7 @@
 #include <Reporting\UserMomentsTable.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
@@ -69,7 +69,7 @@ CUserReactionTable& CUserReactionTable::operator= (const CUserReactionTable& rOt
 
 //======================== OPERATIONS =======================================
 rptRcTable* CUserReactionTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                                      IDisplayUnits* pDisplayUnits) const
+                                      IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );

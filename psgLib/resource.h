@@ -3,8 +3,8 @@
 // Used by psgLib.rc
 //
 #define ID_INDICATOR_MODIFIED           1
-#define IDS_GIRDER_SHEET                1
 #define ID_INDICATOR_STATUS             2
+#define IDS_GIRDER_SHEET                1
 #define IDS_GIRDER_DIMENSIONS           2
 #define IDS_GIRDER_MISC                 3
 #define IDS_GIRDER_DIAPHRAGM            3
@@ -28,9 +28,6 @@
 #define IDS_SPEC_LOSS                   28
 #define IDS_SPEC_ANALYSIS               29
 #define IDS_GIRDER_HARPPOINT            30
-#define ID_UNITS_SI                     100
-#define ID_UNITS_US                     101
-#define ID_EDIT_UNITS                   102
 #define IDD_CONCRETE_ENTRY              129
 #define IDD_TEST                        131
 #define IDD_CONNECTION_ENTRY            132
@@ -441,11 +438,11 @@
 #define IDC_SHIPPING                    1168
 #define IDC_BEFORE_XFER_LABEL           1169
 #define IDC_AFTER_XFER_LABEL            1170
-#define ID_RENAME_ENTRY                 1170
+#define IDC_RENAME_ENTRY                 1170
 #define IDC_SHIPPING2_LABEL             1171
 #define IDC_ENTRY_TEXT                  1171
 #define IDC_FINAL_LABEL                 1172
-#define ID_OVERWRITE                    1172
+#define IDC_OVERWRITE                    1172
 #define IDC_SHIPPING_TAG                1173
 #define IDC_HARP_LOCATION_TAG           1174
 #define IDC_LIFTING_LABEL               1174
@@ -861,27 +858,25 @@
 #define IDS_E_WRITE                     1650
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
-#define ID_VIEW_STATUSCENTER            10006
 #define IDR_LIBEDITORTOOLBAR            12132
-#define IDM_ADD_ENTRY                   12807
-#define IDM_EDIT_ENTRY                  12808
-#define IDM_DELETE_ENTRY                12809
-#define IDM_DUPLICATE_ENTRY             12810
-#define IDM_EXPORT_TEMPLATE             12813
-#define IDM_LARGE_ICONS                 12815
-#define IDM_SMALL_ICONS                 12816
-#define IDM_LIST_ICONS                  12817
-#define IDM_ARRANGE_ICONS               12818
-#define IDM_RENAME_ENTRY                12843
-#define ID_APP_LEGAL                    12849
-#define ID_FILE_IMPORT                  13000
-#define ID_EDIT_INSERTROW               32771
-#define ID_EDIT_DELETEROW               32772
-#define ID_EDIT_REMOVEROWS              32773
-#define ID_EDIT_ROW                     32776
-#define ID_STR_APPEND                   32777
-#define ID_STR_INSERT                   32778
-#define ID_STR_DELETE                   32779
+
+#define IDM_ADD_ENTRY                   33024
+#define IDM_EDIT_ENTRY                  33025
+#define IDM_DELETE_ENTRY                33026
+#define IDM_DUPLICATE_ENTRY             33027
+#define IDM_LARGE_ICONS                 33028
+#define IDM_SMALL_ICONS                 33029
+#define IDM_LIST_ICONS                  33030
+#define IDM_ARRANGE_ICONS               33031
+#define IDM_RENAME_ENTRY                33032
+#define ID_FILE_IMPORT                  33033
+#define ID_EDIT_INSERTROW               33034
+#define ID_EDIT_DELETEROW               33035
+#define ID_EDIT_REMOVEROWS              33036
+#define ID_EDIT_ROW                     33037
+#define ID_STR_INSERT                   33038
+#define ID_STR_DELETE                   33039
+#define ID_MANAGE_PLUGINS               33040
 
 // Next default values for new objects
 // 
@@ -889,7 +884,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        205
-#define _APS_NEXT_COMMAND_VALUE         32776
+#define _APS_NEXT_COMMAND_VALUE         33041
 #define _APS_NEXT_CONTROL_VALUE         1490
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

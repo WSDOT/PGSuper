@@ -36,15 +36,12 @@
 
 #include <EAF\EAFApp.h>
 
-#include "resource.h"       // main symbols 
 #include "MainFrm.h"
 #include "PGSuperCatalogServers.h"
 #include "PGSuperCommandLineInfo.h"
 
 #include <System\Date.h>
 #include <PsgLib\LibraryManager.h>
-
-typedef void(*DocCallback)(CDocument* pDoc,void* pStuff); 
 
 //   DECLARE_LOGFILE;
 #if defined ENABLE_LOGGING
@@ -133,14 +130,9 @@ public:
 
     CString GetMasterLibraryPublisher() const;
 
-   void ForEachDoc(DocCallback pfn,void* pStuff);
-
-
 private:
 
    CPGSuperCommandLineInfo m_CommandLineInfo;
-
-   CString m_LastError;
 
    CPGSuperCatalogServers m_CatalogServers;
 

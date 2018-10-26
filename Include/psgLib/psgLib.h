@@ -117,6 +117,9 @@ HRESULT PSGLIBFUNC pgslibPGSuperDocHeader(IStructuredLoad* pLoad);
 
 HRESULT PSGLIBFUNC pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode* pUnitsMode);
 
+HRESULT PSGLIBFUNC pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode);
+HRESULT PSGLIBFUNC pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode);
+
 /////////////////////////////////////////////////////////////////////////////
 
 //{{AFX_INSERT_LOCATION}}

@@ -26,7 +26,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 
@@ -39,9 +39,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
-static void write_profile_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
-static void write_crown_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 
 /****************************************************************************
 CLASS
@@ -75,7 +75,7 @@ rptChapter* CAlignmentChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CComPtr<IBroker> pBroker;
    pBrokerSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    write_alignment_data(pBroker,pDisplayUnits,pChapter,level);
    write_profile_data(pBroker,pDisplayUnits,pChapter,level);
@@ -111,7 +111,7 @@ CChapterBuilder* CAlignmentChapterBuilder::Clone() const
 //======================== INQUERY    =======================================
 
 
-void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
+void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    USES_CONVERSION;
 
@@ -361,7 +361,7 @@ void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapt
    }
 }
 
-void write_profile_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
+void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    GET_IFACE2(pBroker, IRoadway, pRoadway);
    GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
@@ -546,7 +546,7 @@ void write_profile_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter
    }
 }
 
-void write_crown_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
+void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
    rptParagraph* pPara;

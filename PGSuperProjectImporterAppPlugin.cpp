@@ -32,6 +32,11 @@ void CPGSuperProjectImporterAppPlugin::Terminate()
    ::DestroyMenu( m_hMenuShared );
 }
 
+void CPGSuperProjectImporterAppPlugin::IntegrateWithUI(BOOL bIntegrate)
+{
+   // no UI integration
+}
+
 CEAFDocTemplate* CPGSuperProjectImporterAppPlugin::CreateDocTemplate()
 {
    CPGSuperImportPluginDocTemplate* pDocTemplate = new CPGSuperImportPluginDocTemplate(
@@ -54,11 +59,6 @@ CEAFDocTemplate* CPGSuperProjectImporterAppPlugin::CreateDocTemplate()
    }
 
    return pDocTemplate;
-}
-
-CCmdTarget* CPGSuperProjectImporterAppPlugin::GetCommandTarget()
-{
-   return NULL;
 }
 
 HMENU CPGSuperProjectImporterAppPlugin::GetSharedMenuHandle()

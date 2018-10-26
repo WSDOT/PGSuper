@@ -26,7 +26,7 @@
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
@@ -48,18 +48,20 @@ CRatingSummaryTable::~CRatingSummaryTable()
 
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,CRatingSummaryTable::RatingTableType ratingTableType) const
+rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexType gdrLineIdx,CRatingSummaryTable::RatingTableType ratingTableType) const
 {
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   bool bNegMoments = pBridge->ProcessNegativeMoments(spanIdx);
+   bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
 
    rptCapacityToDemand rating_factor;
 
    INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true );
+
+   location.IncludeSpanAndGirder(true);
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -98,6 +100,10 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(4,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(4,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(7,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(7,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    table->SetNumberOfHeaderRows(2);
 
@@ -115,14 +121,14 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
    (*table)(0,2) << strRoutine;
    (*table)(1,2) << "RF";
    (*table)(1,3) << Sub2(symbol(gamma),"LL");
-   (*table)(1,4) << COLHDR(RPT_LFT_SUPPORT_LOCATION,rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(1,4) << RPT_LFT_SUPPORT_LOCATION;
    table->SetColumnSpan(0,5,3);
    table->SetColumnSpan(0,6,-1);
    table->SetColumnSpan(0,7,-1);
    (*table)(0,5) << strSpecial;
    (*table)(1,5) << "RF";
    (*table)(1,6) << Sub2(symbol(gamma),"LL");
-   (*table)(1,7) << COLHDR(RPT_LFT_SUPPORT_LOCATION,rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(1,7) << RPT_LFT_SUPPORT_LOCATION;
  
    RowIndexType row0 = 2; // row counter for column 0
    RowIndexType row1 = 2; // row counter for column 1
@@ -196,14 +202,12 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
    }
 
    GET_IFACE2(pBroker,IArtifact,pArtifact);
-   const pgsRatingArtifact* pRoutineRatingArtifact = pArtifact->GetRatingArtifact(spanIdx,gdrIdx,routine_rating_type,INVALID_INDEX);
-   const pgsRatingArtifact* pSpecialRatingArtifact = pArtifact->GetRatingArtifact(spanIdx,gdrIdx,special_rating_type,INVALID_INDEX);
+   const pgsRatingArtifact* pRoutineRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,routine_rating_type,INVALID_INDEX);
+   const pgsRatingArtifact* pSpecialRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,special_rating_type,INVALID_INDEX);
 
    bool bReportPostingAnalysis = false;
 
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
-
-   ColumnIndexType col = 2;
+    ColumnIndexType col = 2;
    for (int i = 0; i < 2; i++)
    {
       RowIndexType row = table->GetNumberOfHeaderRows();
@@ -223,7 +227,11 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                (*table)(row,col) << RF_PASS(rating_factor,RF);
 
             (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
-            (*table)(row,col+2) << location.SetValue(pMomentArtifact->GetPointOfInterest(),end_size);
+ 
+            pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
+            Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+            
+            (*table)(row,col+2) << location.SetValue(poi,end_size);
             row++;
 
             if ( bNegMoments )
@@ -235,7 +243,11 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
 
                (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
-               (*table)(row,col+2) << location.SetValue(pMomentArtifact->GetPointOfInterest(),end_size);
+
+               pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
+               Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+               
+               (*table)(row,col+2) << location.SetValue(poi,end_size);
                row++;
             }
 
@@ -249,7 +261,11 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
 
                (*table)(row,col+1) << scalar.SetValue(pShearArtifact->GetLiveLoadFactor());
-               (*table)(row,col+2) << location.SetValue(pShearArtifact->GetPointOfInterest(),end_size);
+
+               pgsPointOfInterest poi = pShearArtifact->GetPointOfInterest();
+               Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+               (*table)(row,col+2) << location.SetValue(poi,end_size);
                row++;
             }
             else
@@ -272,7 +288,10 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                (*table)(row,col) << RF_PASS(rating_factor,RF);
 
             (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
-            (*table)(row,col+2) << location.SetValue(pMomentArtifact->GetPointOfInterest(),end_size);
+            pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
+            Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+            
+            (*table)(row,col+2) << location.SetValue(poi,end_size);
             row++;
 
             if ( bNegMoments )
@@ -284,7 +303,11 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
 
                (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
-               (*table)(row,col+2) << location.SetValue(pMomentArtifact->GetPointOfInterest(),end_size);
+
+               pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
+               Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+               
+               (*table)(row,col+2) << location.SetValue(poi,end_size);
                row++;
             }
 
@@ -298,7 +321,10 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
 
                (*table)(row,col+1) << scalar.SetValue(pShearArtifact->GetLiveLoadFactor());
-               (*table)(row,col+2) << location.SetValue(pShearArtifact->GetPointOfInterest(),end_size);
+               pgsPointOfInterest poi = pShearArtifact->GetPointOfInterest();
+               Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+               (*table)(row,col+2) << location.SetValue(poi,end_size);
                row++;
             }
             else
@@ -325,7 +351,10 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                      (*table)(row,col) << RF_PASS(rating_factor,RF);
 
                   (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
-                  (*table)(row,col+2) << location.SetValue(pYieldStressArtifact->GetPointOfInterest(),end_size);
+                  pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
+                  Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+                  
+                  (*table)(row,col+2) << location.SetValue(poi,end_size);
                   row++;
 
                   RF = pRatingArtifact->GetYieldStressRatioEx(false, &pYieldStressArtifact);
@@ -335,7 +364,10 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                      (*table)(row,col) << RF_PASS(rating_factor,RF);
 
                   (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
-                  (*table)(row,col+2) << location.SetValue(pYieldStressArtifact->GetPointOfInterest(),end_size);
+                  poi = pYieldStressArtifact->GetPointOfInterest();
+                  end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+                  
+                  (*table)(row,col+2) << location.SetValue(poi,end_size);
                   row++;
                }
                else
@@ -348,7 +380,10 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                      (*table)(row,col) << RF_PASS(rating_factor,RF);
 
                   (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
-                  (*table)(row,col+2) << location.SetValue(pYieldStressArtifact->GetPointOfInterest(),end_size);
+                  pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
+                  Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+                  
+                  (*table)(row,col+2) << location.SetValue(poi,end_size);
                   row++;
                }
             }
@@ -396,7 +431,10 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
                   (*table)(row,col) << RF_PASS(rating_factor,RF);
 
                (*table)(row,col+1) << scalar.SetValue(pStressArtifact->GetLiveLoadFactor());
-               (*table)(row,col+2) << location.SetValue(pStressArtifact->GetPointOfInterest(),end_size);
+               pgsPointOfInterest poi = pStressArtifact->GetPointOfInterest();
+               Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+               
+               (*table)(row,col+2) << location.SetValue(poi,end_size);
                row++;
             }
          }
@@ -508,11 +546,11 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,SpanIndexTyp
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType) const
+rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IArtifact,pArtifact);
 
@@ -525,9 +563,9 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType s
    scalar.SetTolerance(1.0e-6);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true );
+   location.IncludeSpanAndGirder(true);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
@@ -547,7 +585,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType s
    (*pTable)(0,0) << "Truck";
    (*pTable)(0,1) << "RF";
    (*pTable)(0,2) << Sub2(symbol(gamma),"LL");
-   (*pTable)(0,3) << "Controlling Point";
+   (*pTable)(0,3)  << "Controlling Point" << rptNewLine << RPT_LFT_SUPPORT_LOCATION;
    (*pTable)(0,4) << "Cause";
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -557,7 +595,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType s
    {
       std::string strName = pProductLoads->GetLiveLoadName(llType,vehIdx);
 
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(spanIdx,gdrIdx,ratingType,vehIdx);
+      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,vehIdx);
 
       const pgsMomentRatingArtifact* pPositiveMoment;
       const pgsMomentRatingArtifact* pNegativeMoment;
@@ -571,6 +609,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType s
       Float64 gLL;
       std::string strControlling;
       pgsPointOfInterest poi;
+      bool bIsStressRatio = false;
       if ( pPositiveMoment )
       {
          ATLASSERT(vehIdx == pPositiveMoment->GetVehicleIndex());
@@ -605,6 +644,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType s
          gLL = pYieldStressPositiveMoment->GetLiveLoadFactor();
          strControlling = "Yield Stress Positive Moment";
          poi = pYieldStressPositiveMoment->GetPointOfInterest();
+         bIsStressRatio = true;
       }
       else if ( pYieldStressNegativeMoment )
       {
@@ -612,6 +652,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType s
          gLL = pYieldStressNegativeMoment->GetLiveLoadFactor();
          strControlling = "Yield Stress Negative Moment";
          poi = pYieldStressNegativeMoment->GetPointOfInterest();
+         bIsStressRatio = true;
       }
       else
       {
@@ -619,6 +660,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType s
          strControlling = "UNKNOWN";
       }
 
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
       if ( 0 < gLL )
       {
          (*pTable)(row,0) << strName;
@@ -628,11 +670,11 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType s
          else
             (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
-         ATLASSERT(spanIdx == poi.GetSpan());
-         ATLASSERT(gdrIdx  == poi.GetGirder());
+         if ( bIsStressRatio )
+            (*pTable)(row,1) << rptNewLine << "(Stress Ratio)";
 
          (*pTable)(row,2) << scalar.SetValue(gLL);
-         (*pTable)(row,3) << "Span " << LABEL_SPAN(poi.GetSpan()) << " Girder " << LABEL_GIRDER(poi.GetGirder()) << " " << location.SetValue( poi,end_size );
+         (*pTable)(row,3) << location.SetValue( poi,end_size );
          (*pTable)(row,4) << strControlling;
 
          row++;
@@ -642,10 +684,10 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,SpanIndexType s
    return pTable;
 }
 
-rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType) const
+rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IArtifact,pArtifact);
 
    rptCapacityToDemand rating_factor;
@@ -670,7 +712,7 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,SpanIndexType
    for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
    {
       ColumnIndexType col = 0;
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(spanIdx,gdrIdx,ratingType,vehIdx);
+      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,vehIdx);
       if ( pRatingArtifact )
       {
          Float64 postingLoad, W, RF;

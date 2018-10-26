@@ -74,14 +74,15 @@ bool pgsLiftingSupportLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsLiftingSupportLocationStatusCallback::pgsLiftingSupportLocationStatusCallback(IBroker* pBroker):
-m_pBroker(pBroker)
+pgsLiftingSupportLocationStatusCallback::pgsLiftingSupportLocationStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
+m_pBroker(pBroker),
+m_Severity(severity)
 {
 }
 
 eafTypes::StatusSeverityType pgsLiftingSupportLocationStatusCallback::GetSeverity()
 {
-   return eafTypes::statusError;
+   return m_Severity;
 }
 
 void pgsLiftingSupportLocationStatusCallback::Execute(CEAFStatusItem* pStatusItem)
@@ -131,3 +132,40 @@ void pgsTruckStiffnessStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    msg.Format("%s\n\nThe truck roll stiffness is specified in the Hauling Parameters of the Design Criteria\nDesign Criteria may be viewed in the Library Editor",pStatusItem->GetDescription().c_str());
    AfxMessageBox(msg);
 }
+
+////////////////
+
+pgsBunkPointLocationStatusItem::pgsBunkPointLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
+{
+}
+
+bool pgsBunkPointLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
+{
+   pgsBunkPointLocationStatusItem* other = dynamic_cast<pgsBunkPointLocationStatusItem*>(pOther);
+   if ( !other )
+      return false;
+
+   return (other->m_Span == m_Span && other->m_Girder == m_Girder);
+}
+
+//////////////////////////////////////////////////////////
+pgsBunkPointLocationStatusCallback::pgsBunkPointLocationStatusCallback(IBroker* pBroker):
+m_pBroker(pBroker)
+{
+}
+
+eafTypes::StatusSeverityType pgsBunkPointLocationStatusCallback::GetSeverity()
+{
+   return eafTypes::statusWarning;
+}
+
+void pgsBunkPointLocationStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+{
+   pgsBunkPointLocationStatusItem* pItem = dynamic_cast<pgsBunkPointLocationStatusItem*>(pStatusItem);
+   ATLASSERT(pItem!=NULL);
+
+   GET_IFACE(IEditByUI,pEdit);
+   pEdit->EditGirderDescription(pItem->m_Span,pItem->m_Girder,EGD_TRANSPORTATION);
+}
+

@@ -28,7 +28,7 @@
 #include "BridgeDescLongitudinalRebar.h"
 #include "GirderDescDlg.h"
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
 #include "HtmlHelp\HelpTopics.hh"
 
@@ -67,7 +67,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
    // longitudinal steel information from grid and store it
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    if (pDX->m_bSaveAndValidate)
    {

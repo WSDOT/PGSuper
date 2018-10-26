@@ -32,7 +32,7 @@
 
 #include <IFace\BeamFactory.h>
 #include <IFace\StatusCenter.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription.h>
@@ -143,7 +143,7 @@ m_ShearCapEngineer(0,0)
 //-----------------------------------------------------------------------------
 void CEngAgentImp::InvalidateAll()
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
 
    InvalidateHaunch();
@@ -257,7 +257,7 @@ void CEngAgentImp::ValidateArtifacts(SpanIndexType span,GirderIndexType gdr)
 }
 
 //-----------------------------------------------------------------------------
-void CEngAgentImp::ValidateRatingArtifacts(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
+void CEngAgentImp::ValidateRatingArtifacts(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( !pRatingSpec->IsRatingEnabled(ratingType) )
@@ -267,17 +267,17 @@ void CEngAgentImp::ValidateRatingArtifacts(SpanIndexType spanIdx,GirderIndexType
    CEAFAutoProgress ap(pProgress);
 
    std::ostringstream os;
-   os << "Load Rating Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << std::ends;
+   os << "Load Rating Girder Line " << LABEL_GIRDER(gdrLineIdx) << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    std::map<RatingArtifactKey,pgsRatingArtifact>::iterator found;
-   RatingArtifactKey key(spanIdx,gdrIdx,vehicleIndex);
+   RatingArtifactKey key(gdrLineIdx,vehicleIndex);
    found = m_RatingArtifacts[ratingType].find(key);
    if ( found != m_RatingArtifacts[ratingType].end() )
       return; // We already have an artifact for this girder
 
 
-   pgsRatingArtifact artifact = m_LoadRater.Rate(spanIdx,gdrIdx,ratingType,vehicleIndex);
+   pgsRatingArtifact artifact = m_LoadRater.Rate(gdrLineIdx,ratingType,vehicleIndex);
 
    m_RatingArtifacts[ratingType].insert( std::make_pair(key,artifact) );
 }
@@ -309,10 +309,10 @@ pgsGirderArtifact* CEngAgentImp::FindArtifact(SpanIndexType span,GirderIndexType
     return &(*found).second;
 }
 
-pgsRatingArtifact* CEngAgentImp::FindRatingArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
+pgsRatingArtifact* CEngAgentImp::FindRatingArtifact(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
 {
     std::map<RatingArtifactKey,pgsRatingArtifact>::iterator found;
-    RatingArtifactKey key(spanIdx,gdrIdx,vehicleIndex);
+    RatingArtifactKey key(gdrLineIdx,vehicleIndex);
     found = m_RatingArtifacts[ratingType].find( key );
     if ( found == m_RatingArtifacts[ratingType].end() )
         return 0;
@@ -347,7 +347,7 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(pgsTypes::Sta
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    std::ostringstream os;
    os << "Computing " << strSectionType << " minimum moment capacity for Span "
@@ -390,7 +390,7 @@ const CRACKINGMOMENTDETAILS* CEngAgentImp::ValidateCrackingMoments(pgsTypes::Sta
 
    std::string strSectionType = ( stage == pgsTypes::BridgeSite1 ? "noncomposite" : "composite" );
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    std::ostringstream os;
    os << "Computing " << strSectionType << " cracking moment for Span "
@@ -520,7 +520,7 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
    GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IProgress, pProgress);
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CEAFAutoProgress ap(pProgress);
 
@@ -547,7 +547,7 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
    GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IProgress, pProgress);
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CEAFAutoProgress ap(pProgress);
 
@@ -655,7 +655,7 @@ const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitS
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    std::ostringstream os;
    std::string strLimitState = (ls == pgsTypes::StrengthI ? "Strength I" : "Strength II");
@@ -691,7 +691,7 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    std::ostringstream os;
    os << "Computing fpc for Span "
@@ -1038,7 +1038,7 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
    }
    catch (const mathXEvalError&)
    {
-      GET_IFACE(IStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
       std::string msg("An error occured while locating the critical section for shear");
       pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
@@ -1066,7 +1066,7 @@ const CRACKEDSECTIONDETAILS* CEngAgentImp::ValidateCrackedSectionDetails(const p
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    std::ostringstream os;
    os << "Analyzing cracked section for Span "
       << LABEL_SPAN(poi.GetSpan()) << " Girder "
@@ -1381,7 +1381,7 @@ LOSSDETAILS CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi)
    return *pLosses;
 }
 
-void CEngAgentImp::ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
+void CEngAgentImp::ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    m_PsForceEngineer.ReportLosses(span,gdr,pChapter,pDisplayUnits);
 }
@@ -1781,7 +1781,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
    GET_IFACE(IRoadwayData,pRoadway);
    GET_IFACE(IRoadway,pAlignment);
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(ILiveLoads,pLiveLoads);
 
 
@@ -1879,7 +1879,7 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
 
    // get angle between all girders in this span
    // if < than limit then status center + exception
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(IBridge,pBridge);
 
    GET_IFACE(ILibrary,pLib);
@@ -1913,7 +1913,7 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    double ratio = Imin/Imax;
    if ( ratio < minStiffnessRatio )
    {
-      GET_IFACE(IDisplayUnits,pDisplayUnits);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       std::ostringstream os;
       os << "Live Load Distribution Factors could not be calculated for the following reason" << std::endl;
       os << "Per 4.6.2.2.1, the girders in this span do not have approximately the same stiffness." << std::endl;
@@ -1939,7 +1939,7 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
 
    // get angle between all girders in this span
    // if < than limit then status center + exception
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(IBridge,pBridge);
 
    GET_IFACE(ILibrary,pLib);
@@ -1977,7 +1977,7 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
 
    if ( maxAllowableAngle < maxAngularDifference )
    {
-      GET_IFACE(IDisplayUnits,pDisplayUnits);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       std::ostringstream os;
       os << "Live Load Distribution Factors could not be calculated for the following reason" << std::endl;
       os << "Per 4.6.2.2.1, the girders in this span are not parallel." << std::endl;
@@ -2339,7 +2339,7 @@ void CEngAgentImp::GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexTy
    pCP->GetContraflexurePoints(span,gdr,dfPoints,nPoints);
 }
 
-void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
+void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2518,18 +2518,47 @@ bool CEngAgentImp::GetDFResultsEx(SpanIndexType span, GirderIndexType gdr,pgsTyp
 
 Uint32 CEngAgentImp::GetNumberOfDesignLanes(SpanIndexType spanIdx)
 {
-   // Base number of design lanes on the more narrow end of the span
-   // assumes the span is not wider at the ends than it is in the middle
+   Float64 dist_to_section, curb_to_curb;
+   return GetNumberOfDesignLanesEx(spanIdx,&dist_to_section,&curb_to_curb);
+}
+
+Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDistToSection,Float64* pCurbToCurb)
+{
+   // Base number of design lanes on the width of the bridge at the LLDF spacing location
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
    GET_IFACE(IBridge,pBridge);
    PierIndexType prev_pier_idx = spanIdx;
-   PierIndexType next_pier_idx = prev_pier_idx + 1;
 
    Float64 start_bridge_station = pBridge->GetPierStation(0);
-   Float64 prev_pier_station = pBridge->GetPierStation(prev_pier_idx);
-   Float64 next_pier_station = pBridge->GetPierStation(next_pier_idx);
-   Float64 start_width = pBridge->GetCurbToCurbWidth(prev_pier_station - start_bridge_station);
-   Float64 end_width   = pBridge->GetCurbToCurbWidth(next_pier_station - start_bridge_station);
-   Float64 curb_to_curb_width = min(start_width,end_width);
+   Float64 prev_pier_station    = pBridge->GetPierStation(prev_pier_idx);
+
+   Float64 span_length = pBridge->GetSpanLength(spanIdx);
+
+   Float64 span_fraction_for_girder_spacing = pSpecEntry->GetLLDFGirderSpacingLocation();
+   Float64 loc1 = span_fraction_for_girder_spacing*span_length;
+   Float64 loc2 = (1.0-span_fraction_for_girder_spacing)*span_length;
+
+   Float64 width1 = pBridge->GetCurbToCurbWidth( (prev_pier_station - start_bridge_station) + loc1 );
+   Float64 width2 = pBridge->GetCurbToCurbWidth( (prev_pier_station - start_bridge_station) + loc2 );
+
+   Float64 curb_to_curb_width;
+
+   if ( width1 < width2 )
+   {
+      curb_to_curb_width = width1;
+      *pDistToSection = (prev_pier_station - start_bridge_station) + loc1;
+   }
+   else
+   {
+      curb_to_curb_width = width2;
+      *pDistToSection = (prev_pier_station - start_bridge_station) + loc2;
+   }
+
+   *pCurbToCurb = curb_to_curb_width;
+
    return lrfdUtility::GetNumDesignLanes(curb_to_curb_width);
 }
 
@@ -2939,7 +2968,7 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(SpanIndexType span,GirderIndexType g
 
    // Round to nearest 1/4" (5 mm) per WSDOT BDM
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    if ( IS_SI_UNITS(pDisplayUnits) )
       slab_offset = RoundOff(slab_offset,::ConvertToSysUnits(5.0,unitMeasure::Millimeter) );
    else
@@ -3301,10 +3330,10 @@ const pgsGirderArtifact* CEngAgentImp::GetArtifact(SpanIndexType span,GirderInde
    return FindArtifact(span,gdr);
 }
 
-const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
+const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
 {
-   ValidateRatingArtifacts(spanIdx,gdrIdx,ratingType,vehicleIndex);
-   return FindRatingArtifact(spanIdx,gdrIdx,ratingType,vehicleIndex);
+   ValidateRatingArtifacts(gdrLineIdx,ratingType,vehicleIndex);
+   return FindRatingArtifact(gdrLineIdx,ratingType,vehicleIndex);
 }
 
 const pgsDesignArtifact* CEngAgentImp::CreateDesignArtifact(SpanIndexType span,GirderIndexType gdr,arDesignOptions options)
@@ -3503,6 +3532,11 @@ HRESULT CEngAgentImp::OnLiveLoadChanged()
 HRESULT CEngAgentImp::OnLiveLoadNameChanged(const char* strOldName,const char* strNewName)
 {
    LOG("OnLiveLoadNameChanged Event Received");
+   return S_OK;
+}
+
+HRESULT CEngAgentImp::OnConstructionLoadChanged()
+{
    return S_OK;
 }
 

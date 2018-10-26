@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TEXASIBNSPARAGRAPHBUILDER_H_
 #define INCLUDED_TEXASIBNSPARAGRAPHBUILDER_H_
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -57,7 +57,7 @@ public:
 
    //------------------------------------------------------------------------
    rptParagraph* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                       IDisplayUnits* pDisplayUnits,
+                       IEAFDisplayUnits* pDisplayUnits,
                        Uint16 level) const;
 
    //------------------------------------------------------------------------
@@ -83,7 +83,7 @@ private:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDisplayUnits) const;
+   void WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

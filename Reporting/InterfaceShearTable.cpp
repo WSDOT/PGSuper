@@ -29,7 +29,7 @@
 #include <PgsExt\CapacityToDemand.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 
 #include <Lrfd\ConcreteUtil.h>
@@ -62,10 +62,12 @@ CInterfaceShearTable::~CInterfaceShearTable()
 //======================== OPERATIONS =======================================
 void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
                                   SpanIndexType span,GirderIndexType girder,
-                                  IDisplayUnits* pDisplayUnits,
+                                  IEAFDisplayUnits* pDisplayUnits,
                                   pgsTypes::Stage stage,
                                   pgsTypes::LimitState ls) const
 {
+   USES_CONVERSION;
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -78,24 +80,28 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptAreaUnitValue,           area,     pDisplayUnits->GetAreaUnit(),            false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dimu,      pDisplayUnits->GetComponentDimUnit(),  true);
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+
    rptCapacityToDemand cap_demand;
 
    rptParagraph* pPara;
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
 
-   if (ls==pgsTypes::StrengthI)
-      *pPara << "Horizontal Interface Shears/Length for Strength I Limit State [5.8.4]"<<rptNewLine;
-   else if (ls==pgsTypes::StrengthII)
-      *pPara << "Horizontal Interface Shears/Length for Strength II Limit State [5.8.4]"<<rptNewLine;
-   else
-      ATLASSERT(false);
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pPara << "Horizontal Interface Shears/Length for " << OLE2A(pStageMap->GetLimitStateName(ls)) << " Limit State [5.8.4]" << rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,"");
    *pPara << table;
+
+   if ( span == ALL_SPANS )
+   {
+      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    table->SetNumberOfHeaderRows(2);
    table->SetRowSpan(0,0,2);

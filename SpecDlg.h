@@ -29,10 +29,8 @@
 // SpecDlg.h : header file
 //
 
-#if !defined INCLUDED_VECTOR_
+#include "resource.h"
 #include <vector>
-#define INCLUDED_VECTOR_
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecDlg dialog

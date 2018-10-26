@@ -25,7 +25,7 @@
 
 #include <Reporter\Chapter.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 

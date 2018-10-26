@@ -26,7 +26,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 
 #include <PgsExt\BridgeDescription.h>
@@ -45,7 +45,7 @@ CLASS
 ****************************************************************************/
 
 
-void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
+void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -67,7 +67,7 @@ rptChapter* CPierGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    pier_geometry(pBroker,pChapter,pDisplayUnits);
@@ -99,7 +99,7 @@ CChapterBuilder* CPierGeometryChapterBuilder::Clone() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
+void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    USES_CONVERSION;
 

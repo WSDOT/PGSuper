@@ -25,7 +25,7 @@
 #include <Reporting\ProductMomentsTable.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
@@ -71,7 +71,7 @@ CProductReactionTable& CProductReactionTable::operator= (const CProductReactionT
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                         bool bIncludeImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
+                                         bool bIncludeImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -80,20 +80,20 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
 
-   bool bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    SpanIndexType startSpan, nSpans;
    pgsTypes::Stage continuity_stage;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
 
    PierIndexType nPiers = nSpans+1;
    PierIndexType startPier = startSpan;
    PierIndexType endPier   = (span == ALL_SPANS ? nPiers : startPier+2 );
    
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Reactions");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,true,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,true,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    // get the stage the girder dead load is applied in
    GET_IFACE2(pBroker,IProductLoads,pLoads);
@@ -122,6 +122,19 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          else
          {
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftShearKey, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+         }
+      }
+
+      if ( bConstruction )
+      {
+         if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftConstruction,   pier, gdr, MaxSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftConstruction,   pier, gdr, MinSimpleContinuousEnvelope ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftConstruction,   pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
          }
       }
 
@@ -158,8 +171,8 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
 
          (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, pftTrafficBarrier, pier, gdr, MaxSimpleContinuousEnvelope ) );
          (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, pftTrafficBarrier, pier, gdr, MinSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlay_stage, pftOverlay,        pier, gdr, MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlay_stage, pftOverlay,        pier, gdr, MinSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlay_stage, bRating ? pftOverlayRating : pftOverlay,        pier, gdr, MaxSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlay_stage, bRating ? pftOverlayRating : pftOverlay,        pier, gdr, MinSimpleContinuousEnvelope ) );
 
          Float64 min, max;
          long minConfig, maxConfig;
@@ -372,7 +385,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          }
 
          (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite2, pftTrafficBarrier, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlay_stage, pftOverlay,        pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlay_stage, bRating ? pftOverlayRating : pftOverlay,        pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
 
          Float64 min, max;
          long minConfig, maxConfig;

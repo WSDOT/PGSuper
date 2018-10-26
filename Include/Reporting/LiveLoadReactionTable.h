@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 // MISCELLANEOUS
 //
@@ -79,7 +79,7 @@ public:
    // Builds the strand eccentricity table.
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder,
-                      IDisplayUnits* pDisplayUnits,
+                      IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY

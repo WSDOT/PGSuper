@@ -33,7 +33,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include "SelectItemDlg.h"
 
@@ -91,7 +91,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -102,7 +102,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag( pDX, IDC_FCI, IDC_FCI_UNIT, pParent->m_GirderData.Material.Fci, pDisplayUnits->GetStressUnit() );
    // Validation: 0 < f'ci <= f'c   
-   DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Material.Fci,  pParent->m_GirderData.Material.Fc, pDisplayUnits->GetStressUnit() );
+   DDV_UnitValueLimitOrLess( pDX, IDC_FCI, pParent->m_GirderData.Material.Fci,  pParent->m_GirderData.Material.Fc, pDisplayUnits->GetStressUnit() );
 
    // Slab Offset
    DDX_Tag(pDX, IDC_ADIM_START_UNIT, pDisplayUnits->GetComponentDimUnit() );
@@ -151,20 +151,20 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    DDX_UnitValueAndTag( pDX, IDC_GIRDER_FC,  IDC_GIRDER_FC_UNIT,   pParent->m_GirderData.Material.Fc , pDisplayUnits->GetStressUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, pParent->m_GirderData.Material.Fc, pDisplayUnits->GetStressUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_GIRDER_FC,pParent->m_GirderData.Material.Fc, pDisplayUnits->GetStressUnit() );
 
    DDX_Check_Bool(pDX, IDC_MOD_ECI, pParent->m_GirderData.Material.bUserEci);
    DDX_UnitValueAndTag( pDX, IDC_ECI,  IDC_ECI_UNIT,   pParent->m_GirderData.Material.Eci , pDisplayUnits->GetModEUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, pParent->m_GirderData.Material.Eci, pDisplayUnits->GetModEUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_ECI,pParent->m_GirderData.Material.Eci, pDisplayUnits->GetModEUnit() );
 
    DDX_Check_Bool(pDX, IDC_MOD_EC,  pParent->m_GirderData.Material.bUserEc);
    DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_GirderData.Material.Ec , pDisplayUnits->GetModEUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, pParent->m_GirderData.Material.Ec, pDisplayUnits->GetModEUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_EC, pParent->m_GirderData.Material.Ec, pDisplayUnits->GetModEUnit() );
 
    if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == 1 )
    {
@@ -257,7 +257,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    m_SlabOffset[pgsTypes::metStart] = pGirderTypes->GetSlabOffset(pParent->m_CurrentGirderIdx,pgsTypes::metStart);
    m_SlabOffset[pgsTypes::metEnd]   = pGirderTypes->GetSlabOffset(pParent->m_CurrentGirderIdx,pgsTypes::metEnd);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_strSlabOffsetCache[pgsTypes::metStart].Format("%s",FormatDimension(m_SlabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
    m_strSlabOffsetCache[pgsTypes::metEnd].Format(  "%s",FormatDimension(m_SlabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit(),false));
 
@@ -362,7 +362,7 @@ void CGirderDescGeneralPage::UpdateEci()
 
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -385,7 +385,7 @@ void CGirderDescGeneralPage::UpdateEc()
 
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -481,7 +481,7 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -605,7 +605,7 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
    {
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 slabOffset[2];
       CDataExchange dx(this,TRUE);

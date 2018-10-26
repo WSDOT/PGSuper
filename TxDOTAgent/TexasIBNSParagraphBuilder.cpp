@@ -35,7 +35,7 @@
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\GirderLibraryEntry.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -61,10 +61,10 @@ public:
    TxDOTDebondTool(span, gdr, girderLength, pStrandGeometry)
    {;}
 
-   void WriteDebondData(rptParagraph* pPara,IDisplayUnits* pDisplayUnits);
+   void WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
 };
 
-void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IDisplayUnits* pDisplayUnits)
+void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits)
 {
    *pPara<<rptNewLine; // make some space
 
@@ -245,7 +245,7 @@ CTexasIBNSParagraphBuilder::CTexasIBNSParagraphBuilder()
 
 /*--------------------------------------------------------------------*/
 rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	span,GirderIndexType girder, 
-                                                IDisplayUnits* pDisplayUnits, Uint16	level) const
+                                                IEAFDisplayUnits* pDisplayUnits, Uint16	level) const
 {
    rptParagraph* p = new rptParagraph;
 
@@ -467,7 +467,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    return p;
 }
 
-void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDisplayUnits) const
+void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );

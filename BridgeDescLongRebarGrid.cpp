@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "PGSuperDoc.h"
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include "BridgeDescLongRebarGrid.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include <system\tokenizer.h>
@@ -176,7 +176,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 

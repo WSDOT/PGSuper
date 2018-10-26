@@ -26,7 +26,7 @@
 #include <Reporting\ReportNotes.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
@@ -77,7 +77,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
                                                VehicleIndexType vehicleIndex, 
                                                pgsTypes::AnalysisType analysisType,
                                                bool bReportTruckConfig,
-                                               IDisplayUnits* pDisplayUnits) const
+                                               IEAFDisplayUnits* pDisplayUnits) const
 
 {
    // Build table

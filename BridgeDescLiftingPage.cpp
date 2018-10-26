@@ -34,7 +34,7 @@
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 
 #ifdef _DEBUG
@@ -74,16 +74,16 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag( pDX, IDC_LIFTING_LOOP_LOCATION, IDC_LIFTING_LOOP_LOCATION_UNITS, m_LiftingLocation, pDisplayUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, m_LiftingLocation, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_LIFTING_LOOP_LOCATION, m_LiftingLocation, pDisplayUnits->GetSpanLengthUnit() );
 
    DDX_UnitValueAndTag( pDX, IDC_LEADINGOVERHANG, IDC_LEADINGOVERHANG_UNITS, m_LeadingOverhang, pDisplayUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, m_LeadingOverhang, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_LEADINGOVERHANG, m_LeadingOverhang, pDisplayUnits->GetSpanLengthUnit() );
 
    DDX_UnitValueAndTag( pDX, IDC_TRAILINGOVERHANG, IDC_TRAILINGOVERHANG_UNITS, m_TrailingOverhang, pDisplayUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, m_TrailingOverhang, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_TRAILINGOVERHANG, m_TrailingOverhang, pDisplayUnits->GetSpanLengthUnit() );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 

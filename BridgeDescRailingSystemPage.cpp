@@ -34,7 +34,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <MfcTools\CustomDDX.h>
 #include <PGSuperColors.h>
 
@@ -72,7 +72,7 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    
    DDX_CBStringExactCase(pDX, IDC_LEFT_EXTERIORBARRIER,  m_LeftRailingSystem.strExteriorRailing );
 	DDX_CBStringExactCase(pDX, IDC_RIGHT_EXTERIORBARRIER, m_RightRailingSystem.strExteriorRailing );
@@ -126,17 +126,10 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      pDX->PrepareCtrl(IDC_LEFT_FC);
-      DDV_UnitValueGreaterThanZero( pDX, m_LeftRailingSystem.fc, pDisplayUnits->GetStressUnit() );
-
-      pDX->PrepareCtrl(IDC_LEFT_EC);
-      DDV_UnitValueGreaterThanZero( pDX, m_LeftRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
-
-      pDX->PrepareCtrl(IDC_RIGHT_FC);
-      DDV_UnitValueGreaterThanZero( pDX, m_RightRailingSystem.fc, pDisplayUnits->GetStressUnit() );
-
-      pDX->PrepareCtrl(IDC_RIGHT_EC);
-      DDV_UnitValueGreaterThanZero( pDX, m_RightRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_FC, m_LeftRailingSystem.fc, pDisplayUnits->GetStressUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_EC, m_LeftRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_FC, m_RightRailingSystem.fc, pDisplayUnits->GetStressUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_EC, m_RightRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
    }
 
    if ( pDX->m_bSaveAndValidate && m_LeftRailingSystem.bUserEc )
@@ -242,7 +235,7 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    if ( IS_SI_UNITS(pDisplayUnits) )
    {
       GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText("Density");
@@ -700,7 +693,7 @@ HBRUSH CBridgeDescRailingSystemPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlCol
    {
       try
       {
-         GET_IFACE(IDisplayUnits,pDisplayUnits);
+         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
          CDataExchange dx(this,TRUE);
 
          Float64 value;
@@ -719,7 +712,7 @@ HBRUSH CBridgeDescRailingSystemPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlCol
    {
       try
       {
-         GET_IFACE(IDisplayUnits,pDisplayUnits);
+         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
          CDataExchange dx(this,TRUE);
 
          Float64 value;
@@ -778,7 +771,7 @@ void CBridgeDescRailingSystemPage::UpdateLeftConcreteParametersToolTip()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
    const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
    const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
@@ -811,7 +804,7 @@ void CBridgeDescRailingSystemPage::UpdateRightConcreteParametersToolTip()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
    const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();

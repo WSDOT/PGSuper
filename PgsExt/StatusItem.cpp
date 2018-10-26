@@ -323,7 +323,7 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       {
          // assume that edit took care of status
          StatusItemIDType id = pItem->GetID();
-         GET_IFACE(IStatusCenter,pStatusCenter);
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }

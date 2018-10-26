@@ -35,7 +35,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\EditByUI.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include "htmlhelp\HelpTopics.hh"
 #include <PgsExt\BridgeDescription.h>
 #include "EditBoundaryConditions.h"
@@ -184,7 +184,7 @@ void CBridgeModelViewChildFrame::ShowCutDlg()
    double start = pBridge->GetPierStation(0);
    double end   = pBridge->GetPierStation(nPiers-1);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    CStationCutDlg dlg(m_CurrentCutLocation,start,end,bUnitsSI);

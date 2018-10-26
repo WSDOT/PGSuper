@@ -80,7 +80,7 @@ void CDiaphragmDefinitionDlg::DoDataExchange(CDataExchange* pDX)
    else
    {
       DDX_UnitValueAndTag(pDX,IDC_LOCATION,IDC_LOCATION_UNIT,m_Rule.Location, pDisplayUnits->SpanLength );
-      DDV_UnitValueZeroOrMore(pDX, m_Rule.Location, pDisplayUnits->SpanLength );
+      DDV_UnitValueZeroOrMore(pDX, IDC_LOCATION,m_Rule.Location, pDisplayUnits->SpanLength );
    }
 }
 

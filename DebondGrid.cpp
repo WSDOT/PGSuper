@@ -30,7 +30,7 @@
 #include "GirderDescDlg.h"
 #include <Units\Measure.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -83,7 +83,7 @@ void CGirderDescDebondGrid::InsertRow()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDebondPage* pParent = (CGirderDescDebondPage*)GetParent();
    CGirderDescDlg* pDlg = (CGirderDescDlg*)(pParent->GetParent());
@@ -133,7 +133,7 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 // in OnInitialUpdate.
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	Initialize( );
 
@@ -262,7 +262,7 @@ void CGirderDescDebondGrid::FillGrid(const std::vector<CDebondInfo>& debondInfo)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -375,7 +375,7 @@ Float64 CGirderDescDebondGrid::GetDebondLength(ROWCOL row,ROWCOL col)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    Float64 length;
    CString strDebondLength = GetCellValue(row,col);
@@ -486,7 +486,7 @@ void CGirderDescDebondGrid::SymmetricDebond(bool bSymmetricDebond)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
    m_bSymmetricDebond = bSymmetricDebond;

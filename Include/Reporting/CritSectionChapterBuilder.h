@@ -27,7 +27,7 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 
 /*****************************************************************************
@@ -86,7 +86,7 @@ private:
    bool m_bRating;
 
    // GROUP: LIFECYCLE
-   void Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const;
+   void Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
 
    // Prevent accidental copying and assignment
    CCritSectionChapterBuilder(const CCritSectionChapterBuilder&);

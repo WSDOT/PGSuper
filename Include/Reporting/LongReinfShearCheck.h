@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -72,13 +72,19 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   // Build
+   // Build (design limit states)
    virtual void Build(rptChapter* pChapter,
                       IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                       pgsTypes::Stage stage,pgsTypes::LimitState ls,
-                      IDisplayUnits* pDisplayUnits) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+                      IEAFDisplayUnits* pDisplayUnits) const;
+
+
+   //------------------------------------------------------------------------
+   // Build (rating limit states)
+   virtual void Build(rptChapter* pChapter,
+                      IBroker* pBroker,GirderIndexType gdrLineIdx,
+                      pgsTypes::LimitState ls,
+                      IEAFDisplayUnits* pDisplayUnits) const;
 
 protected:
    // GROUP: DATA MEMBERS
