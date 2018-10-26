@@ -320,7 +320,7 @@ void CLibraryEditorDoc::OnImport()
             ASSERT(FALSE);
          }
 
-         double ver;
+         Float64 ver;
          pStrLoad->get_Version(&ver);
          if(ver < FILE_VERSION)
             return;
@@ -383,6 +383,7 @@ void CLibraryEditorDoc::OnImport()
 
 void CLibraryEditorDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString msg1;
    switch( hr )
    {

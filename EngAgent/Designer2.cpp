@@ -47,6 +47,7 @@
 #include "Designer2.h"
 #include "PsForceEng.h"
 #include "GirderHandlingChecker.h"
+#include "GirderLiftingChecker.h"
 #include <DesignConfigUtil.h>
 
 #include "StatusItems.h"
@@ -83,6 +84,8 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define MIN_SPAN_DEPTH_RATIO 4
+
+static Float64 gs_60KSI = ::ConvertToSysUnits(60.0,unitMeasure::KSI);
 
 /****************************************************************************
 CLASS
@@ -515,7 +518,7 @@ pgsGirderArtifact pgsDesigner2::Check(const CGirderKey& girderKey)
    // going to need this inside the loop
    GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   pgsGirderHandlingChecker handling_checker(m_pBroker,m_StatusGroupID);
+   pgsGirderLiftingChecker lifting_checker(m_pBroker,m_StatusGroupID);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx     = pIntervals->GetLiveLoadInterval();
@@ -553,8 +556,12 @@ pgsGirderArtifact pgsDesigner2::Check(const CGirderKey& girderKey)
          else
          {
             Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
-            Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
-            std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(endDist,endDist+segmentSpanLength));
+            Float64 startEndDist      = pBridge->GetSegmentStartEndDistance(segmentKey);
+            bool bStartCantilever, bEndCantilever;
+            pBridge->ModelCantilevers(segmentKey,&bStartCantilever,&bEndCantilever);
+            Float64 start = (bStartCantilever ? 0 : startEndDist);
+            Float64 end   = (bEndCantilever ? pBridge->GetSegmentLength(segmentKey) : startEndDist + segmentSpanLength);
+            std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(start,end));
          }
 
 
@@ -614,16 +621,20 @@ pgsGirderArtifact pgsDesigner2::Check(const CGirderKey& girderKey)
       {
          pgsLiftingAnalysisArtifact* pLiftingAnalysisArtifact = new(pgsLiftingAnalysisArtifact);
 
-         handling_checker.CheckLifting(segmentKey,pLiftingAnalysisArtifact);
+         lifting_checker.CheckLifting(segmentKey,pLiftingAnalysisArtifact);
          pSegmentArtifact->SetLiftingAnalysisArtifact(pLiftingAnalysisArtifact);
       }
 
       // Check Hauling
       if ( pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
       {
-         pgsHaulingAnalysisArtifact* pHaulingAnalysisArtifact = new(pgsHaulingAnalysisArtifact);
+         // Use factory function to create correct hauling checker
+         pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);
 
-         handling_checker.CheckHauling(segmentKey,pHaulingAnalysisArtifact);
+         std::auto_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
+
+         pgsHaulingAnalysisArtifact* pHaulingAnalysisArtifact = hauling_checker->CheckHauling(segmentKey,LOGGER);
+         
          pSegmentArtifact->SetHaulingAnalysisArtifact(pHaulingAnalysisArtifact);
       }
 
@@ -1719,6 +1730,8 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
    pgsAlternativeTensileStressCalculator altCalc(segmentKey, releaseIntervalIdx, pGirder, pShapes, pSectProps, pRebarGeom, pMaterials, bUnitsSI);
 
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
+   pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
+
 
    std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
@@ -1735,7 +1748,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
       {
          c = pAllowable->GetAllowableCompressiveStressCoefficient(poi,task.intervalIdx,task.ls);
 
-         fLowAllowable = pAllowable->GetAllowableStress(poi, task.intervalIdx, task.ls, pgsTypes::Compression, fci);
+         fLowAllowable  = pAllowable->GetAllowableStress(poi, task.intervalIdx, task.ls, pgsTypes::Compression, fci);
          fHighAllowable = fLowAllowable;
       }
       else
@@ -2058,7 +2071,9 @@ ZoneIndexType pgsDesigner2::GetCriticalSectionZone(const pgsPointOfInterest& poi
    for ( ; iter != end; iter++ )
    {
       CRITSECTDETAILS& csDetails(iter->first);
-      if ( InRange(csDetails.Start,x,csDetails.End) )
+      CSegmentKey csSegmentKey = (csDetails.bAtFaceOfSupport ? csDetails.poiFaceOfSupport.GetSegmentKey() : csDetails.pCriticalSection->Poi.GetSegmentKey());
+
+      if ( csSegmentKey == poi.GetSegmentKey() && InRange(csDetails.Start,x,csDetails.End) )
          return (ZoneIndexType)(iter - m_CriticalSections.begin());
    }
 
@@ -2295,6 +2310,14 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    pArtifact->SetK2(K2);
 
    // nominal shear capacities 5.8.4.1-2,3
+   if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SixthEditionWith2013Interims && gs_60KSI < fy)
+   {
+      fy = gs_60KSI;
+      pArtifact->WasFyLimited(true);
+   }
+
+   pArtifact->SetFy(fy);
+
    Float64 Vn1, Vn2, Vn3;
    lrfdConcreteUtil::HorizontalShearResistances(c, u, K1, K2, Acv, pArtifact->GetAvOverS(), Pc, fc, fy,
                                                 &Vn1, &Vn2, &Vn3);
@@ -2316,8 +2339,6 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
 
    Float64 sall = lrfdConcreteUtil::MaxStirrupSpacingForHoriz();
    pArtifact->SetSall(sall);
-
-   pArtifact->SetFy(fy);
 
    lrfdConcreteUtil::HsAvfOverSMinType avfmin = lrfdConcreteUtil::AvfOverSMin(bv,fy,Vuh,phi,c,u,Pc);
    pArtifact->SetAvOverSMin_5_8_4_4_1(avfmin.res5_8_4_4_1);
@@ -3148,7 +3169,7 @@ void pgsDesigner2::InitSupportZones(const CSegmentKey& segmentKey)
    }
 }
 
-void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const GDRCONFIG* pConfig)
+void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<CRITSECTDETAILS>& vCSDetails,const GDRCONFIG* pConfig)
 {
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -3167,74 +3188,89 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
    InitSupportZones(segmentKey);
 
    // cache CS locations as they are very expensive to get
+   // First try to get them from our list of POIs
    m_CriticalSections.clear();
-   GET_IFACE(IPointOfInterest,pPOI);
-   if( pConfig == NULL)
+   if ( !vCSDetails.empty() )
    {
-      std::vector<pgsPointOfInterest> vCSPoi(pPOI->GetCriticalSections(ls,segmentKey));
-      const std::vector<CRITSECTDETAILS>& vCS = pShearCapacity->GetCriticalSectionDetails(ls,segmentKey);
-      ATLASSERT(vCSPoi.size() == vCS.size());
-      std::vector<CRITSECTDETAILS>::const_iterator iter(vCS.begin());
-      std::vector<CRITSECTDETAILS>::const_iterator end(vCS.end());
-      std::vector<pgsPointOfInterest>::const_iterator poiIter(vCSPoi.begin());
-      for ( ; iter != end; iter++, poiIter++ )
+      std::vector<CRITSECTDETAILS>::const_iterator iter(vCSDetails.begin());
+      std::vector<CRITSECTDETAILS>::const_iterator end(vCSDetails.end());
+      for ( ; iter != end; iter++ )
       {
-         CRITSECTDETAILS csDetails(*iter);
-#if defined _DEBUG
-         if ( csDetails.bAtFaceOfSupport )
-         {
-            ATLASSERT(csDetails.poiFaceOfSupport.GetSegmentKey() == poiIter->GetSegmentKey());
-            ATLASSERT(IsEqual(csDetails.poiFaceOfSupport.GetDistFromStart(),poiIter->GetDistFromStart()));
-         }
-         else
-         {
-            ATLASSERT(csDetails.pCriticalSection->Poi.GetSegmentKey() == poiIter->GetSegmentKey());
-            ATLASSERT(IsEqual(csDetails.pCriticalSection->Poi.GetDistFromStart(),poiIter->GetDistFromStart()));
-         }
-#endif
-         if ( csDetails.bAtFaceOfSupport )
-         {
-            csDetails.poiFaceOfSupport = *poiIter;
-         }
-         else
-         {
-            csDetails.pCriticalSection->Poi = *poiIter;
-         }
-         m_CriticalSections.push_back(std::make_pair(csDetails,false));
+         m_CriticalSections.push_back(std::make_pair(*iter,false));
       }
    }
    else
    {
-      std::vector<pgsPointOfInterest> vCSPoi(pPOI->GetCriticalSections(ls,segmentKey,*pConfig));
-      std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(ls,segmentKey,*pConfig);
-      ATLASSERT(vCSPoi.size() == vCS.size());
-      std::vector<CRITSECTDETAILS>::iterator iter(vCS.begin());
-      std::vector<CRITSECTDETAILS>::iterator end(vCS.end());
-      std::vector<pgsPointOfInterest>::const_iterator poiIter(vCSPoi.begin());
-      for ( ; iter != end; iter++, poiIter++ )
+      // Critical sections not in the POI list - wee need to compute them - this is realy expensive,
+      // and likely for load rating cases only
+      GET_IFACE(IPointOfInterest,pPOI);
+      if( pConfig == NULL)
       {
-         CRITSECTDETAILS csDetails(*iter);
-#if defined _DEBUG
-         if ( csDetails.bAtFaceOfSupport )
+         std::vector<pgsPointOfInterest> vCSPoi(pPOI->GetCriticalSections(ls,segmentKey));
+         const std::vector<CRITSECTDETAILS>& vCS = pShearCapacity->GetCriticalSectionDetails(ls,segmentKey);
+         ATLASSERT(vCSPoi.size() == vCS.size());
+         std::vector<CRITSECTDETAILS>::const_iterator iter(vCS.begin());
+         std::vector<CRITSECTDETAILS>::const_iterator end(vCS.end());
+         std::vector<pgsPointOfInterest>::const_iterator poiIter(vCSPoi.begin());
+         for ( ; iter != end; iter++, poiIter++ )
          {
-            ATLASSERT(csDetails.poiFaceOfSupport.GetSegmentKey() == poiIter->GetSegmentKey());
-            ATLASSERT(IsEqual(csDetails.poiFaceOfSupport.GetDistFromStart(),poiIter->GetDistFromStart()));
+            CRITSECTDETAILS csDetails(*iter);
+   #if defined _DEBUG
+            if ( csDetails.bAtFaceOfSupport )
+            {
+               ATLASSERT(csDetails.poiFaceOfSupport.GetSegmentKey() == poiIter->GetSegmentKey());
+               ATLASSERT(IsEqual(csDetails.poiFaceOfSupport.GetDistFromStart(),poiIter->GetDistFromStart()));
+            }
+            else
+            {
+               ATLASSERT(csDetails.pCriticalSection->Poi.GetSegmentKey() == poiIter->GetSegmentKey());
+               ATLASSERT(IsEqual(csDetails.pCriticalSection->Poi.GetDistFromStart(),poiIter->GetDistFromStart()));
+            }
+   #endif
+            if ( csDetails.bAtFaceOfSupport )
+            {
+               csDetails.poiFaceOfSupport = *poiIter;
+            }
+            else
+            {
+               csDetails.pCriticalSection->Poi = *poiIter;
+            }
+            m_CriticalSections.push_back(std::make_pair(csDetails,false));
          }
-         else
+      }
+      else
+      {
+         std::vector<pgsPointOfInterest> vCSPoi(pPOI->GetCriticalSections(ls,segmentKey,*pConfig));
+         std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(ls,segmentKey,*pConfig);
+         ATLASSERT(vCSPoi.size() == vCS.size());
+         std::vector<CRITSECTDETAILS>::iterator iter(vCS.begin());
+         std::vector<CRITSECTDETAILS>::iterator end(vCS.end());
+         std::vector<pgsPointOfInterest>::const_iterator poiIter(vCSPoi.begin());
+         for ( ; iter != end; iter++, poiIter++ )
          {
-            ATLASSERT(csDetails.pCriticalSection->Poi.GetSegmentKey() == poiIter->GetSegmentKey());
-            ATLASSERT(IsEqual(csDetails.pCriticalSection->Poi.GetDistFromStart(),poiIter->GetDistFromStart()));
+            CRITSECTDETAILS csDetails(*iter);
+   #if defined _DEBUG
+            if ( csDetails.bAtFaceOfSupport )
+            {
+               ATLASSERT(csDetails.poiFaceOfSupport.GetSegmentKey() == poiIter->GetSegmentKey());
+               ATLASSERT(IsEqual(csDetails.poiFaceOfSupport.GetDistFromStart(),poiIter->GetDistFromStart()));
+            }
+            else
+            {
+               ATLASSERT(csDetails.pCriticalSection->Poi.GetSegmentKey() == poiIter->GetSegmentKey());
+               ATLASSERT(IsEqual(csDetails.pCriticalSection->Poi.GetDistFromStart(),poiIter->GetDistFromStart()));
+            }
+   #endif
+            if ( csDetails.bAtFaceOfSupport )
+            {
+               csDetails.poiFaceOfSupport = *poiIter;
+            }
+            else
+            {
+               csDetails.pCriticalSection->Poi = *poiIter;
+            }
+            m_CriticalSections.push_back(std::make_pair(csDetails,false));
          }
-#endif
-         if ( csDetails.bAtFaceOfSupport )
-         {
-            csDetails.poiFaceOfSupport = *poiIter;
-         }
-         else
-         {
-            csDetails.pCriticalSection->Poi = *poiIter;
-         }
-         m_CriticalSections.push_back(std::make_pair(csDetails,false));
       }
    }
 
@@ -3294,7 +3330,8 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
 #endif
 
-   InitShearCheck(segmentKey,intervalIdx,ls,pConfig); // sets up some class member variables used for checking this segment
+   std::vector<CRITSECTDETAILS> vCSDetails; // send an empty vector into InitShearCheck
+   InitShearCheck(segmentKey,intervalIdx,ls,vCSDetails,pConfig); // sets up some class member variables used for checking this segment
 
    // InitShearCheck causes the critical section for shear POI to be created...
    // Get the POI here so the CS poi are in the list
@@ -3855,7 +3892,7 @@ void pgsDesigner2::CheckConstructability(const CSegmentKey& segmentKey,pgsConstr
 
       HAUNCHDETAILS haunch_details;
       pGdrHaunch->GetHaunchDetails(segmentKey,&haunch_details);
-      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && 0.0 < haunch_details.HaunchDiff );
+      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && ::IsGT(0.0,haunch_details.HaunchDiff) );
    }
 
    ///////////////////////////////////////////////////////////////
@@ -5809,7 +5846,7 @@ bool pgsDesigner2::CheckLiftingStressDesign(const CSegmentKey& segmentKey,const 
    lift_config.LeftOverhang = m_StrandDesignTool.GetLeftLiftingLocation();
    lift_config.RightOverhang = m_StrandDesignTool.GetRightLiftingLocation();
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
+   pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID);
    IGirderLiftingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderLiftingDesignPointsOfInterest*>(&m_StrandDesignTool);
 
    checker.AnalyzeLifting(segmentKey,lift_config,pPoiLd,&artifact);
@@ -6057,7 +6094,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID); // this guy can do the stability design!
+   pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID); // this guy can do the stability design!
 
    GDRCONFIG config = m_StrandDesignTool.GetSegmentConfiguration();
    if ( bProportioningStrands )
@@ -6433,7 +6470,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
+   pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID);
    GDRCONFIG config = m_StrandDesignTool.GetSegmentConfiguration();
 
    if ( bProportioningStrands )
@@ -6652,7 +6689,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
 
       pgsLiftingAnalysisArtifact artifact;
 
-      pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
+      pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID);
       // Designer manages it's own POIs
       IGirderLiftingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderLiftingDesignPointsOfInterest*>(&m_StrandDesignTool);
       checker.AnalyzeLifting(segmentKey,liftConfig,pPoiLd,&artifact);
@@ -6743,21 +6780,24 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
-   
-   pgsHaulingAnalysisArtifact artifact;
+   // Use factory to create appropriate hauling checker
+   pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);
+   std::auto_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
+
    bool bResult = false;
    bool bTemporaryStrandsAdded = false;
+   std::auto_ptr<pgsHaulingAnalysisArtifact> final_artifact;
 
    do
    {
       const GDRCONFIG& config = m_StrandDesignTool.GetSegmentConfiguration();
 
       IGirderHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
-      bResult = checker.DesignShipping(segmentKey,config,m_bShippingDesignWithEqualCantilevers,m_bShippingDesignIgnoreConfigurationLimits,pPoiLd,&artifact,LOGGER);
+
+      std::auto_ptr<pgsHaulingAnalysisArtifact> artifact ( hauling_checker->DesignHauling(segmentKey,config,m_bShippingDesignWithEqualCantilevers,m_bShippingDesignIgnoreConfigurationLimits,pPoiLd,&bResult,LOGGER));
 
       // capture the results of the trial
-      m_StrandDesignTool.SetTruckSupportLocations(artifact.GetTrailingOverhang(),artifact.GetLeadingOverhang());
+      m_StrandDesignTool.SetTruckSupportLocations(artifact->GetTrailingOverhang(),artifact->GetLeadingOverhang());
       if (!bResult )
       {
          LOG(_T("Adding temporary strands"));
@@ -6778,8 +6818,8 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
             GET_IFACE(IGirderHaulingSpecCriteria,pCriteria);
             Float64 maxDistanceBetweenSupports = pCriteria->GetAllowableDistanceBetweenSupports();
             Float64 maxLeadingOverhang = pCriteria->GetAllowableLeadingOverhang();
-            Float64 distBetweenSupportPoints = m_StrandDesignTool.GetSegmentLength() - artifact.GetTrailingOverhang() - artifact.GetLeadingOverhang();
-            if ( IsEqual(maxLeadingOverhang,artifact.GetLeadingOverhang()) &&
+            Float64 distBetweenSupportPoints = m_StrandDesignTool.GetSegmentLength() - artifact->GetTrailingOverhang() - artifact->GetLeadingOverhang();
+            if ( IsEqual(maxLeadingOverhang,artifact->GetLeadingOverhang()) &&
                  IsEqual(maxDistanceBetweenSupports,distBetweenSupportPoints) )
             {
                LOG(_T("Failed to satisfy shipping requirements - shipping configuration prevents a suitable solution from being found"));
@@ -6812,6 +6852,12 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
             continue; // go back to top of loop and try again
          }
       }
+      else
+      {
+         // Capture final result
+         final_artifact = artifact;
+      }
+
    } while ( !bResult );
 
 
@@ -6819,7 +6865,10 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
 
 #if defined _DEBUG
    LOG(_T("-- Dump of Hauling Artifact After Design --"));
-   artifact.Dump(LOGGER);
+   if (final_artifact.get() != NULL)
+   {
+      final_artifact->Dump(LOGGER);
+   }
    LOG(_T("-- End Dump of Hauling Artifact --"));
 #endif
 
@@ -6829,8 +6878,8 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    Float64 fc_max = m_StrandDesignTool.GetMaximumConcreteStrength();
 
    // Get required release strength from artifact
-   Float64 fc_comp, fc_tens, fc_tens_wrebar;
-   artifact.GetRequiredConcreteStrength(&fc_comp,&fc_tens,&fc_tens_wrebar);
+   Float64 fc_comp(0.0), fc_tens(0.0), fc_tens_wrebar(0.0);
+   final_artifact->GetRequiredConcreteStrength(&fc_comp,&fc_tens,&fc_tens_wrebar);
 
    fc_tens = fc_tens_wrebar; // Hauling design always uses higher allowable limit (lower f'c)
 
@@ -6857,7 +6906,10 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
       }
    }
 
-   LOG(_T("Shipping Results : f'c (unrounded) tens = ") << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << _T(" KSI, Comp = ") << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI)<<_T("KSI, Left Bunk Point = ") << ::ConvertFromSysUnits(artifact.GetTrailingOverhang(),unitMeasure::Feet) << _T(" ft") << _T("    Right Bunk Point = ") << ::ConvertFromSysUnits(artifact.GetLeadingOverhang(),unitMeasure::Feet) << _T(" ft"));
+   LOG(_T("Shipping Results : f'c (unrounded) tens = ") << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << _T(" KSI, Comp = ")
+        << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI)<<_T("KSI, Left Bunk Point = ") 
+        << ::ConvertFromSysUnits(final_artifact->GetTrailingOverhang(),unitMeasure::Feet) << _T(" ft") 
+        << _T("    Right Bunk Point = ") << ::ConvertFromSysUnits(final_artifact->GetLeadingOverhang(),unitMeasure::Feet) << _T(" ft"));
 
    CHECK_PROGRESS;
 
@@ -6905,145 +6957,22 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    LOG(_T("Shipping Design Complete - Continue design") );
 }
 
-
-std::vector<DebondLevelType> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pProgress)
-{
-   pProgress->UpdateMessage(_T("Designing final debonding for Shipping"));
-
-   // fine-tune debonding for shipping
-   SectionIndexType max_db_sections = m_StrandDesignTool.GetMaxNumberOfDebondSections();
-
-   // set up our vector to return debond levels at each section
-   std::vector<DebondLevelType> shipping_debond_levels;
-   shipping_debond_levels.assign(max_db_sections,0);
-
-   Float64 fci_current = m_StrandDesignTool.GetReleaseStrength();
-
-   LOG(_T(""));
-   LOG(_T("DESIGNING DEBONDING FOR SHIPPING"));
-   LOG(_T(""));
-   m_StrandDesignTool.DumpDesignParameters();
-
-   if (m_StrandDesignTool.GetFlexuralDesignType() == dtDesignForDebonding)
-   {
-      const CSegmentKey& segmentKey = m_StrandDesignTool.GetSegmentKey();
-
-      Float64 fc  = m_StrandDesignTool.GetConcreteStrength();
-      ConcStrengthResultType rebar_reqd;
-      Float64 fci = m_StrandDesignTool.GetReleaseStrength(&rebar_reqd);
-      LOG(_T("current f'c  = ") << ::ConvertFromSysUnits(fc,unitMeasure::KSI) << _T(" KSI "));
-      LOG(_T("current f'ci = ") << ::ConvertFromSysUnits(fci,unitMeasure::KSI) << _T(" KSI") );
-
-      GET_IFACE(IGirderHaulingSpecCriteria,pHaulingCrit);
-      Float64 allowable_tension = pHaulingCrit->GetHaulingAllowableTensileConcreteStressEx(fc,rebar_reqd==ConcSuccessWithRebar);
-      Float64 allowable_compression = pHaulingCrit->GetHaulingAllowableCompressiveConcreteStressEx(fc);
-      LOG(_T("Allowable tensile stress at hauling     = ") << ::ConvertFromSysUnits(allowable_tension,unitMeasure::KSI) << _T(" KSI")<<(rebar_reqd==ConcSuccessWithRebar ? _T(" min rebar was required for this strength"):_T(""))  );
-      LOG(_T("Allowable compressive stress at hauling = ") << ::ConvertFromSysUnits(allowable_compression,unitMeasure::KSI) << _T(" KSI") );
-
-      // debond levels must be measured from fully bonded section
-      GDRCONFIG config = m_StrandDesignTool.GetSegmentConfiguration();
-      config.PrestressConfig.Debond[pgsTypes::Straight].clear();
-
-      // This is an analysis to determine stresses that must be reduced by debonding
-      // maximum debond level is used at this point and we should pass spec check
-      pgsHaulingAnalysisArtifact artifact;
-
-      HANDLINGCONFIG ship_config;
-      ship_config.GdrConfig = config;
-      ship_config.LeftOverhang = m_StrandDesignTool.GetLeadingOverhang();
-      ship_config.RightOverhang = m_StrandDesignTool.GetTrailingOverhang();
-
-      pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
-      IGirderHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
-
-      checker.AnalyzeHauling(segmentKey,ship_config,pPoiLd,&artifact);
-
-      StrandIndexType nss = config.PrestressConfig.GetNStrands(pgsTypes::Straight);
-      StrandIndexType nts = nss + config.PrestressConfig.GetNStrands(pgsTypes::Harped) + config.PrestressConfig.GetNStrands(pgsTypes::Temporary); // to get an average force per strand
-      Float64 force_per_strand = 0.0;
-
-      // get vector of max stresses from artifact
-      pgsHaulingAnalysisArtifact::MaxHaulingStressCollection max_applied_stresses;
-      artifact.GetMinMaxHaulingStresses(max_applied_stresses);
-      ATLASSERT(!max_applied_stresses.empty());
-
-      // only want stresses in end zones
-      Float64 rgt_end, lft_end;
-      m_StrandDesignTool.GetMidZoneBoundaries(&lft_end, &rgt_end);
-
-      // we'll pick strand force at location just past transfer length
-      Float64 xfer_length = m_StrandDesignTool.GetTransferLength(pgsTypes::Permanent);
-
-      // Build stress demand
-      std::vector<pgsStrandDesignTool::StressDemand> stress_demands;
-      stress_demands.reserve(max_applied_stresses.size());
-
-      LOG(_T("--- Compute hauling stresses for debonding --- nss = ")<<nss);
-      GET_IFACE(IPretensionStresses, pPrestress);
-      pgsHaulingAnalysisArtifact::MaxHaulingStressIterator it( max_applied_stresses.begin() );
-      pgsHaulingAnalysisArtifact::MaxHaulingStressIterator itEnd( max_applied_stresses.end() );
-      for ( ; it != itEnd; it++)
-      {
-         CHECK_PROGRESS;
-
-         const pgsHaulingAnalysisArtifact::MaxdHaulingStresses& max_stresses = *it;
-
-         Float64 poi_loc = max_stresses.m_HaulingPoi.GetDistFromStart();
-         if(poi_loc <= lft_end || rgt_end <= poi_loc)
-         {
-            // get strand force if we haven't yet
-            if (xfer_length <= poi_loc && force_per_strand == 0.0)
-            {
-               force_per_strand = max_stresses.m_PrestressForce / nts;
-               LOG(_T("Sample prestress force per strand taken at ")<< ::ConvertFromSysUnits(poi_loc,unitMeasure::Feet)<<_T(" ft, force = ") << ::ConvertFromSysUnits(force_per_strand, unitMeasure::Kip) << _T(" kip"));
-            }
-
-            Float64 fTop = max_stresses.m_TopMaxStress;
-            Float64 fBot = max_stresses.m_BottomMinStress;
-
-            LOG(_T("At ")<< ::ConvertFromSysUnits(poi_loc,unitMeasure::Feet)<<_T(" ft, Ftop = ")<< ::ConvertFromSysUnits(fTop,unitMeasure::KSI) << _T(" ksi Fbot = ")<< ::ConvertFromSysUnits(fBot,unitMeasure::KSI) << _T(" ksi") );
-            LOG(_T("Average force per strand = ") << ::ConvertFromSysUnits(max_stresses.m_PrestressForce / nss,unitMeasure::Kip) << _T(" kip"));
-
-            pgsStrandDesignTool::StressDemand demand;
-            demand.m_Poi  = max_stresses.m_HaulingPoi;
-            demand.m_TopStress = fTop;
-            demand.m_BottomStress = fBot;
-
-            stress_demands.push_back(demand);
-         }
-      }
-
-      // compute debond levels at each section from demand
-      shipping_debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, nss, force_per_strand, allowable_tension, allowable_compression);
-
-      if (  shipping_debond_levels.empty() )
-      {
-         ATLASSERT(0);
-         LOG(_T("Debonding failed, this should not happen?"));
-
-         m_StrandDesignTool.SetOutcome(pgsDesignArtifact::DebondDesignFailed);
-         m_DesignerOutcome.AbortDesign();
-      }
-   }
-
-   return shipping_debond_levels;
-}
-
 bool pgsDesigner2::CheckShippingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config)
 {
-   pgsHaulingAnalysisArtifact artifact;
-
    HANDLINGCONFIG ship_config;
    ship_config.GdrConfig = config;
    ship_config.LeftOverhang = m_StrandDesignTool.GetLeadingOverhang();
    ship_config.RightOverhang = m_StrandDesignTool.GetTrailingOverhang();
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
    IGirderHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
 
-   checker.AnalyzeHauling(segmentKey,ship_config,pPoiLd,&artifact);
+   // Use factory to create appropriate hauling checker
+   pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);
+   std::auto_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
 
-   return artifact.PassedStressCheck();
+   std::auto_ptr<pgsHaulingAnalysisArtifact> artifact( hauling_checker->AnalyzeHauling(segmentKey,ship_config,pPoiLd) );
+
+   return artifact->PassedStressCheck();
 }
 
 void pgsDesigner2::RefineDesignForAllowableStress(IProgress* pProgress)
@@ -7721,6 +7650,21 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
                pArtifact->AddDesignNote(pgsDesignArtifact::dnStrandsAddedForLongReinfShear); // give user a note
             }
+         }
+      }
+      else if (sdo == pgsShearDesignTool::sdDesignFailedFromShearStress)
+      {
+         // Strut and tie required - see if we can find a f'c that will work
+         Float64 fcreqd = m_ShearDesignTool.GetFcRequiredForShearStress();
+
+         if (fcreqd < m_StrandDesignTool.GetMaximumConcreteStrength())
+         {
+            m_StrandDesignTool.UpdateConcreteStrengthForShear(fcreqd, liveLoadIntervalIdx, pgsTypes::StrengthI);
+         }
+         else
+         {
+            // We can't increase concrete strength enough. Just issue message
+            pArtifact->AddDesignNote(pgsDesignArtifact::dnShearRequiresStrutAndTie);
          }
       }
       else if (sdo != pgsShearDesignTool::sdSuccess)

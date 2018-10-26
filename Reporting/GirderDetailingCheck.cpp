@@ -27,6 +27,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
+#include <IFace\Project.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
@@ -81,7 +82,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
-
+#pragma Reminder("UPDATE: Use chapter levels instead of m_BasicVersion")
    if (!m_BasicVersion)
    {
       // girder dimensions check table
@@ -101,6 +102,12 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    {
       *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
       *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
+   }
+
+   // Stirrup Layout Check
+   if ( !m_BasicVersion )
+   {
+      BuildStirrupLayoutCheck(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
    }
 }
 
@@ -225,6 +232,104 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
    }
 }
 
+
+void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
+                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
+
+
+
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,  IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, true );
+   rptRcScalar scalar;
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      CSegmentKey segmentKey(pGirderArtifact->GetGirderKey(),segIdx);
+
+      if ( 1 < nSegments )
+      {
+         rptParagraph* pSubHeading = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         *pChapter << pSubHeading;
+         *pSubHeading << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+      }
+
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Stirrup Layout Geometry Check"));
+      *pPara << p_table;
+
+      (*p_table)(0,0) << _T("Zone");
+      (*p_table)(0,1) << _T("Stirrup Layout");
+      (*p_table)(0,2) << _T("Status");
+
+
+      GET_IFACE2(pBroker,IShear,pShear);
+      const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
+   
+      ZoneIndexType squishyZoneIdx = INVALID_INDEX;
+      if ( pShearData->bAreZonesSymmetrical )
+      {
+         // if zones are symmetrical, the last zone input is the "squishy" zone
+         squishyZoneIdx = pShearData->ShearZones.size()-1;
+      }
+
+      RowIndexType row = p_table->GetNumberOfHeaderRows();
+      ZoneIndexType nZones = pStirrupGeometry->GetNumPrimaryZones(segmentKey);
+      for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++, row++)
+      {
+         (*p_table)(row,0) << LABEL_STIRRUP_ZONE(zoneIdx);
+
+         Float64 zoneStart, zoneEnd;
+         pStirrupGeometry->GetPrimaryZoneBounds(segmentKey, zoneIdx, &zoneStart, &zoneEnd);
+         Float64 zoneLength = zoneEnd-zoneStart;
+
+         matRebar::Size barSize;
+         Float64 spacing;
+         Float64 nStirrups;
+         pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,zoneIdx,&barSize,&nStirrups,&spacing);
+
+         if (barSize != matRebar::bsNone && TOLERANCE < spacing)
+         {
+            // If spacings fit within 1%, then pass. Otherwise fail
+            Float64 nFSpaces = zoneLength / spacing;
+            Int32 nSpaces = (Int32)nFSpaces;
+            Float64 rmdr = nFSpaces - nSpaces;
+   
+   
+            if ( zoneIdx == squishyZoneIdx )
+            {
+               nSpaces++; // round up one (the value was truncated above)
+               (*p_table)(row,1) << nSpaces <<_T(" Spa. @ ")<<gdim.SetValue(spacing)<<_T(" (Max) = ")<<gdim.SetValue(zoneLength);
+               (*p_table)(row,2) << _T("OK");
+            }
+            else
+            {
+               bool pass = IsZero(rmdr, 0.01) || IsEqual(rmdr, 1.0, 0.01);
+   
+               (*p_table)(row,1) <<scalar.SetValue(nFSpaces)<<_T(" Spa. @ ")<<gdim.SetValue(spacing)<<_T(" = ")<<gdim.SetValue(zoneLength);
+               if (pass)
+               {
+                  (*p_table)(row,2) << _T("OK");
+               }
+               else
+               {
+                  (*p_table)(row,2) << color(Red) << _T("Zone length is not compatible with stirrup spacing") << color(Black);
+               }
+            }
+         }
+         else
+         {
+            (*p_table)(row,1) << _T("(None)");
+            (*p_table)(row,2) << RPT_NA;
+         }
+      }
+   }
+}
 
 
 //======================== ACCESS     =======================================

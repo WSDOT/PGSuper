@@ -74,7 +74,8 @@ public:
       ceParsingURL,
       ceMissingMd5Deep,
       ceFindingFile,
-      ceDownloadingFile
+      ceDownloadingFile,
+      ceServerNotFound
    };
 
    CCatalogServerException(ErrorType error, const CString& msg = CString()):
@@ -110,6 +111,7 @@ class CPGSuperCatalogServer
 {
 public:
    CPGSuperCatalogServer(const CString& name,SharedResourceType type,const CString& strExt); 
+   ~CPGSuperCatalogServer();
 
    CString GetServerName() const;
    SharedResourceType GetServerType() const;

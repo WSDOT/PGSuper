@@ -3,7 +3,7 @@
 	<folders/>
 	<topics>
 		<topic>
-			<name>Construction_Loads.htm</name>
+			<name>Girder_Editing_Dialog.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -13,12 +13,7 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Copy_Girder_Properties.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Girder_Editing_Dialog.htm</name>
+			<name>Structural_Analysis_Method_Dialog.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -53,22 +48,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
+			<name>Construction_Loads.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
 			<name>Alignment_Description_Dialog.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
 			<name>Configure_PGSuper.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Bridge_Editing_Dialog.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Structural_Analysis_Method_Dialog.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -88,17 +78,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
+			<name>Copy_Girder_Properties.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Bridge_Editing_Dialog.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
 			<name>environment.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Edit_Point_Load.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Rating_Options_(Permit).htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -108,12 +98,7 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Reports.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Rating_Options_(Legal).htm</name>
+			<name>Effective_Flange_Width.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -124,6 +109,21 @@
 		</topic>
 		<topic>
 			<name>Units.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Edit_Moment_Load.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Rating_Options_(Permit).htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Reports.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -158,12 +158,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Edit_Moment_Load.htm</name>
+			<name>Edit_Point_Load.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Effective_Flange_Width.htm</name>
+			<name>Rating_Options_(Legal).htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Direct_Selection_of_Strand_Fill.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>

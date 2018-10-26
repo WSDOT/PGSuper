@@ -35,6 +35,9 @@
 #include "PGSuperPluginMgr.h"
 #include "PGSuperCatCom.h"
 
+#include "PGSComponentInfo.h"
+typedef CEAFPluginManager<IPGSuperComponentInfo,CPGSuperDoc> CPGSuperComponentInfoManager;
+
 /*--------------------------------------------------------------------*/
 class CPGSuperDoc : public CPGSuperDocBase
 {
@@ -72,9 +75,13 @@ public:
 
    virtual UINT GetStandardToolbarResourceID();
 
+   CPGSuperComponentInfoManager* GetComponentInfoManager() { return &m_ComponentInfoManager; }
+
 // Generated message map functions
 protected:
-	//{{AFX_MSG(CPGSuperDoc)
+   BOOL Init();
+
+   //{{AFX_MSG(CPGSuperDoc)
 	afx_msg void OnEditBridgeDescription();
 	afx_msg void OnEditGirder();
 	afx_msg void OnProjectDesignGirder();
@@ -84,6 +91,8 @@ protected:
    afx_msg void OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI);
    afx_msg void OnProjectAnalysis();
    //}}AFX_MSG
+
+   CPGSuperComponentInfoManager m_ComponentInfoManager;
 
    bool m_bDesignFlexureEnabled;
    bool m_bDesignShearEnabled;
@@ -99,6 +108,7 @@ protected:
    virtual CATID GetAgentCategoryID() { return CATID_PGSuperAgent; }
    virtual CATID GetExtensionAgentCategoryID() { return CATID_PGSuperExtensionAgent; }
    virtual CATID GetBeamFamilyCategoryID() { return CATID_PGSuperBeamFamily; }
+   virtual CATID GetComponentInfoCategoryID() { return CATID_PGSuperComponentInfo; }
 
    virtual LPCTSTR GetTemplateExtension();
 

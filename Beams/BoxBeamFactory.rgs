@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFactory.BoxBeamFactory.1 = s 'Box Beam (TxDOT)'
 	{
-		CLSID = s '{73D5A32E-F747-4fff-8B48-D561A93494AC}'
+		CLSID = s '{B195CB90-CEB0-4495-B91D-7FC6DFBF31CF}'
 	}
 	PGSuperBeamFactory.BoxBeamFactory = s 'Box Beam (TxDOT)'
 	{
-		CLSID = s '{73D5A32E-F747-4fff-8B48-D561A93494AC}'
+		CLSID = s '{B195CB90-CEB0-4495-B91D-7FC6DFBF31CF}'
 		CurVer = s 'PGSuperBeamFactory.BoxBeamFactory.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {73D5A32E-F747-4fff-8B48-D561A93494AC} = s 'Box Beam (TxDOT)'
+		ForceRemove {B195CB90-CEB0-4495-B91D-7FC6DFBF31CF} = s 'Box Beam (TxDOT)'
 		{
 			ProgID = s 'PGSuperBeamFactory.BoxBeamFactory.1'
 			VersionIndependentProgID = s 'PGSuperBeamFactory.BoxBeamFactory'

@@ -183,7 +183,7 @@ BOOL CBeamDimensionGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	}
 	else if ((nCol==4 || nCol==5)  && !s.IsEmpty( ))
 	{
-      double d;
+      Float64 d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));

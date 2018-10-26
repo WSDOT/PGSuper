@@ -128,6 +128,8 @@ interface IGirderHaulingSpecCriteria : IUnknown
 
    // do we analyze hauling or not?
    virtual bool IsHaulingAnalysisEnabled() const = 0;
+
+   virtual pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const=0;
    
    // Impact
    virtual void GetHaulingImpact(Float64* pDownward, Float64* pUpward) const = 0;
@@ -182,6 +184,29 @@ interface IGirderHaulingSpecCriteria : IUnknown
 
    virtual Float64 GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const = 0;
    virtual Float64 GetHaulingSupportLocationAccuracy() const = 0;
+};
+
+// {CA374433-127A-4850-AEC1-AB250D323724}
+DEFINE_GUID(IID_IKdotGirderHaulingSpecCriteria, 
+0xca374433, 0x127a, 0x4850, 0xae, 0xc1, 0xab, 0x25, 0xd, 0x32, 0x37, 0x24);
+interface IKdotGirderHaulingSpecCriteria : IUnknown
+{
+   // Spec criteria for KDOT analyses
+   // Allowable concrete stresses
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey)=0;
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey)=0;
+   virtual Float64 GetKdotHaulingAllowableTensionFactor()=0;
+   virtual Float64 GetKdotHaulingAllowableCompressionFactor()=0;
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) = 0;
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor() = 0;
+   virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)=0;
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(Float64 fc)=0;
+
+   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const = 0;
+   virtual Float64 GetHaulingDesignLocationAccuracy() const = 0;
+
+   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const = 0;
 };
 
 #endif // INCLUDED_IFACE_GIRDERHANDLINGSPECCRITERIA_H_

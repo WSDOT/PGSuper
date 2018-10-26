@@ -100,9 +100,9 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	TCHAR	strFilter[] = {_T("CAD Export Files (*.txt)|*.txt||")};
 
    GET_IFACE2(pBroker,ISelection,pSelection);
-   SpanIndexType spanIdx = pSelection->GetSpanIdx();
+   SpanIndexType spanIdx = pSelection->GetSpanIndex();
    spanIdx = spanIdx<0 ? 0 : spanIdx; // default to 0
-   GirderIndexType gdrIdx = pSelection->GetGirderIdx();
+   GirderIndexType gdrIdx = pSelection->GetGirderIndex();
    gdrIdx = gdrIdx<0 ? 0 : gdrIdx;
 
    CGirderKey girderKey(spanIdx,gdrIdx);

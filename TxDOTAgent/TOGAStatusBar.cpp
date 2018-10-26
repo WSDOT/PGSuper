@@ -27,7 +27,7 @@
 static UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator
-   ID_INDICATOR_MODIFIED,
+   EAFID_INDICATOR_MODIFIED,
    ID_INDICATOR_CAPS,
 	ID_INDICATOR_NUM,
 	ID_INDICATOR_SCRL,

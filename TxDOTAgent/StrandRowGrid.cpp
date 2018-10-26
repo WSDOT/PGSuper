@@ -69,11 +69,11 @@ int CStrandRowGrid::GetColWidth(ROWCOL nCol)
    switch (nCol)
    {
    case 0:
-      return (int)(rect.Width( )*(double)1/7);
+      return (int)(rect.Width( )*(Float64)1/7);
    case 1:
-      return (int)(rect.Width( )*(double)3/7);
+      return (int)(rect.Width( )*(Float64)3/7);
    case 2:
-      return (int)(rect.Width( )*(double)3/7);
+      return (int)(rect.Width( )*(Float64)3/7);
    default:
       ASSERT(0);
       return (int)(rect.Width( )/7);
@@ -203,7 +203,7 @@ void CStrandRowGrid::FillGrid(const CTxDOTOptionalDesignGirderData::AvailableStr
 
       SetStyleRange(CGXRange(row,1), CGXStyle()
          .SetReadOnly(TRUE)
-         .SetUserAttribute(1,avail_row.RowElev) // use user attribute to store entire double - this way we don't have to worry about string conversion
+         .SetUserAttribute(1,avail_row.RowElev) // use user attribute to store entire Float64 - this way we don't have to worry about string conversion
          .SetValue(strelev));
 
       // Combo box containing available strands
@@ -261,7 +261,7 @@ CTxDOTOptionalDesignGirderData::StrandRowContainer CStrandRowGrid::GetData()
 
          strrow.StrandsInRow = strandcnt;
 
-         // retreive double from cell
+         // retreive Float64 from cell
          CGXStyle style;
          GetStyleRowCol(row, 1, style);
          const CGXAbstractUserAttribute& rat = style.GetUserAttribute(1);

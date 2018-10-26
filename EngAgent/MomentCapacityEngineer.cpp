@@ -409,7 +409,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
    matRebar::Type rebarType;
    matRebar::Grade deckRebarGrade;
-   pMaterial->GetSlabRebarMaterial(rebarType,deckRebarGrade);
+   pMaterial->GetDeckRebarMaterial(rebarType,deckRebarGrade);
 
    GET_IFACE(IResistanceFactors,pResistanceFactors);
    Float64 PhiRC,PhiPS,PhiC;
@@ -431,6 +431,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    solution->get_TensionResultantLocation(&cgT);
 
    Float64 fps_avg = 0;
+
+   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
 
    if ( !IsZero(Mn) )
    {
@@ -459,8 +461,6 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       szOffset->get_Dx(&dx);
       szOffset->get_Dy(&dy);
 
-      GET_IFACE(IMaterials,pMaterial);
-      const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
       Float64 aps = pStrand->GetNominalArea();
 
       // determine average stress in strands and location of de
@@ -641,8 +641,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       Float64 ecl, etl;
       if ( bPositiveMoment )
       {
-         // the strain limits are the same for grade 60 rebar and strand
-         pResistanceFactors->GetFlexuralStrainLimits(matRebar::Grade60,&ecl,&etl);
+         pResistanceFactors->GetFlexuralStrainLimits(pStrand->GetGrade(),pStrand->GetType(),&ecl,&etl);
       }
       else
       {
@@ -885,7 +884,7 @@ void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Fl
       {
          GET_IFACE(IMaterials,pMaterials);
          Float64 E,fy,fu;
-         pMaterials->GetSlabRebarProperties(&E,&fy,&fu);
+         pMaterials->GetDeckRebarProperties(&E,&fy,&fu);
 
          *pG3 = fy/fu;
       }
@@ -1368,7 +1367,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    // slab rebar
    CComPtr<IRebarModel> matSlabRebar;
    matSlabRebar.CoCreateInstance(CLSID_RebarModel);
-   pMaterial->GetSlabRebarProperties(&E,&Fy,&Fu);
+   pMaterial->GetDeckRebarProperties(&E,&Fy,&Fu);
    matSlabRebar->Init( Fy, E, 1.00 );
    CComQIPtr<IStressStrain> ssSlabRebar(matSlabRebar);
 
@@ -2012,7 +2011,7 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType st
          GET_IFACE(IStrandGeometry,pStrandGeom);
          Float64 bond_start, bond_end;
          bool bDebonded = pStrandGeom->IsStrandDebonded(segmentKey,strandIdx,strandType,m_Config,&bond_start,&bond_end);
-         STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,bDebonded);
+         STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,m_Config,bDebonded);
 
          bond_factor = m_pPrestressForce->GetStrandBondFactor(m_Poi,m_Config,strandIdx,strandType,dev_length.fps,dev_length.fpe);
       }

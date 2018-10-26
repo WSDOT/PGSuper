@@ -94,11 +94,11 @@ bool pgsLiftingStressAnalysisArtifact::TensionPassed() const
 {
    Float64 fTop, fBottom, CapacityTop, CapacityBottom;
    GetMaxTensileStress(&fTop, &fBottom, &CapacityTop, &CapacityBottom);
-   if ( IsGT(fTop, CapacityTop) )
+   if ( IsGT(CapacityTop,fTop) )
    {
       return false;
    }
-   else if ( IsGT(fBottom, CapacityBottom) )
+   else if ( IsGT(CapacityBottom,fBottom) )
    {
       return false;
    }

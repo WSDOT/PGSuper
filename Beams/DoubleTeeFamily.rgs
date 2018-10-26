@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFamily.DoubleTee.1 = s 'Double Tee'
 	{
-		CLSID = s '{8167A722-A9CD-404f-BEDE-CF57D5305871}'
+		CLSID = s '{82B858CE-58B4-44ff-95A3-6D9C399C0600}'
 	}
 	PGSuperBeamFamily.DoubleTee = s 'Double Tee'
 	{
-		CLSID = s '{8167A722-A9CD-404f-BEDE-CF57D5305871}'
+		CLSID = s '{82B858CE-58B4-44ff-95A3-6D9C399C0600}'
 		CurVer = s 'PGSuperBeamFamily.DoubleTee.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {8167A722-A9CD-404f-BEDE-CF57D5305871} = s 'Double Tee'
+		ForceRemove {82B858CE-58B4-44ff-95A3-6D9C399C0600} = s 'Double Tee'
 		{
 			ProgID = s 'PGSuperBeamFamily.DoubleTee.1'
 			VersionIndependentProgID = s 'PGSuperBeamFamily.DoubleTee'

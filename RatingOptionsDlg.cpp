@@ -46,12 +46,17 @@ CRatingOptionsDlg::~CRatingOptionsDlg()
 
 void CRatingOptionsDlg::GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls)
 {
+   GetLoadFactorToolTip(strTip,ls,pgsTypes::ptMultipleTripWithTraffic/*doesn't really matter, it isn't used with these limit states*/);
+}
+
+void CRatingOptionsDlg::GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType)
+{
    CComPtr<IBroker> broker;
    EAFGetBroker(&broker);
    GET_IFACE2(broker,IRatingSpecification,pRatingSpec);
    GET_IFACE2(broker,ILibrary,pLibrary);
    const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry(m_GeneralPage.m_Data.CriteriaName.c_str());
-   Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,m_GeneralPage.m_Data.ADTT,pRatingEntry,true);
+   Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,specialPermitType,m_GeneralPage.m_Data.ADTT,pRatingEntry,true);
    if ( gLL < 0 )
    {
       AfxFormatString1(strTip,IDS_LIVE_LOAD_FACTOR_TOOLTIP,_T("The live load factor is a function of the axle weights on the bridge"));

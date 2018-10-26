@@ -66,6 +66,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CBridgeDescDlg)
 	virtual BOOL OnInitDialog();
+   afx_msg BOOL OnOK();
    //}}AFX_VIRTUAL
 
 // Implementation
@@ -88,6 +89,7 @@ protected:
 
 	//{{AFX_MSG(CBridgeDescDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.
+   virtual void DoDataExchange(CDataExchange* pDX);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

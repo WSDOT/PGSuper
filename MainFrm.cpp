@@ -27,7 +27,6 @@
 #include "PGSuper.h"
 #include "MainFrm.h"
 #include "Resource.h"
-#include <IFace\StatusCenter.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

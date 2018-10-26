@@ -1550,7 +1550,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 //
 //         if ( !IsZero(allowable_tension) )
 //         {
-//            double f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
+//            Float64 f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
 //           (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension,f,bPassed)<<_T(")");
 //         }
 //      }
@@ -1580,7 +1580,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 //	      else
 //		      (*p_table)(row, ++col) << RPT_FAIL;
 //
-//         double f = min(fTop,fBot);
+//         Float64 f = min(fTop,fBot);
 //         (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_compression,f,bPassed)<<_T(")");
 //      }
 //

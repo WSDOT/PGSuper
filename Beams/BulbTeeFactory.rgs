@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFactory.BulbTeeFactory.1 = s 'Deck Bulb Tee'
 	{
-		CLSID = s '{9AA6D6FF-2D05-46db-B3F0-479B182B3193}'
+		CLSID = s '{16CC6372-256E-4828-9BDA-3185C27DC65E}'
 	}
 	PGSuperBeamFactory.BulbTeeFactory = s 'Deck Bulb Tee'
 	{
-		CLSID = s '{9AA6D6FF-2D05-46db-B3F0-479B182B3193}'
+		CLSID = s '{16CC6372-256E-4828-9BDA-3185C27DC65E}'
 		CurVer = s 'PGSuperBeamFactory.BulbTeeFactory.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {9AA6D6FF-2D05-46db-B3F0-479B182B3193} = s 'Deck Bulb Tee'
+		ForceRemove {16CC6372-256E-4828-9BDA-3185C27DC65E} = s 'Deck Bulb Tee'
 		{
 			ProgID = s 'PGSuperBeamFactory.BulbTeeFactory.1'
 			VersionIndependentProgID = s 'PGSuperBeamFactory.BulbTeeFactory'

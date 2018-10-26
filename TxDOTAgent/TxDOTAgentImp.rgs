@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.TxDOTAgent.1 = s 'TxDOT Extensions'
 	{
-		CLSID = s '{360F7694-BE5B-4E97-864F-EF3575689C6E}'
+		CLSID = s '{3700B253-8489-457c-8A6D-D174F95C457C}'
 	}
 	PGSuper.TxDOTAgent = s 'TxDOT Extensions'
 	{
-		CLSID = s '{360F7694-BE5B-4E97-864F-EF3575689C6E}'
+		CLSID = s '{3700B253-8489-457c-8A6D-D174F95C457C}'
 		CurVer = s 'PGSuper.TxDOTAgent.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {360F7694-BE5B-4E97-864F-EF3575689C6E} = s 'TxDOT Extensions'
+		ForceRemove {3700B253-8489-457c-8A6D-D174F95C457C} = s 'TxDOT Extensions'
 		{
 			ProgID = s 'PGSuper.TxDOTAgent.1'
 			VersionIndependentProgID = s 'PGSuper.TxDOTAgent'

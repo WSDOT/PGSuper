@@ -47,10 +47,6 @@ public:
    DECLARE_MESSAGE_MAP()
 };
 
-//// {C1731920-FBCA-40fa-959D-9B749F03DEC0}
-//DEFINE_GUID(CLSID_PGSuperAppPlugin, 
-//0xc1731920, 0xfbca, 0x40fa, 0x95, 0x9d, 0x9b, 0x74, 0x9f, 0x3, 0xde, 0xc0);
-
 class ATL_NO_VTABLE CPGSuperAppPlugin : 
    public CPGSuperBaseAppPlugin,
    public CComObjectRootEx<CComSingleThreadModel>,

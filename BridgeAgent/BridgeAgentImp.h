@@ -231,12 +231,13 @@ public:
    virtual CSegmentKey GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey);
    virtual void GetSpansForSegment(const CSegmentKey& segmentKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
    virtual GDRCONFIG GetSegmentConfiguration(const CSegmentKey& segmentKey);
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever);
    virtual bool GetSpan(Float64 station,SpanIndexType* pSpanIdx);
-   virtual void GetPoint(const CSegmentKey& segmentKey,Float64 distFromStartOfSpan,IPoint2d** ppPoint);
+   virtual void GetPoint(const CSegmentKey& segmentKey,Float64 distFromStartOfSegment,IPoint2d** ppPoint);
    virtual void GetPoint(const pgsPointOfInterest& poi,IPoint2d** ppPoint);
    virtual bool GetSegmentPierIntersection(const CSegmentKey& segmentKey,PierIndexType pierIdx,IPoint2d** ppPoint);
    virtual bool GetSegmentTempSupportIntersection(const CSegmentKey& segmentKey,SupportIndexType tsIdx,IPoint2d** ppPoint);
-   virtual void GetStationAndOffset(const CSegmentKey& segmentKey,Float64 distFromStartOfBridge,Float64* pStation,Float64* pOffset);
+   virtual void GetStationAndOffset(const CSegmentKey& segmentKey,Float64 distFromStartOfSegment,Float64* pStation,Float64* pOffset);
    virtual void GetStationAndOffset(const pgsPointOfInterest& poi,Float64* pStation,Float64* pOffset);
    virtual void GetDistFromStartOfSpan(GirderIndexType gdrIdx,Float64 distFromStartOfBridge,SpanIndexType* pSpanIdx,Float64* pDistFromStartOfSpan);
    virtual bool IsInteriorGirder(const CGirderKey& girderKey);
@@ -433,9 +434,9 @@ public:
    virtual void GetClosurePourTransverseRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu);
    virtual void GetClosurePourTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
    virtual std::_tstring GetClosurePourTransverseRebarName(const CClosureKey& closureKey);
-   virtual void GetSlabRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu);
-   virtual std::_tstring GetSlabRebarName();
-   virtual void GetSlabRebarMaterial(matRebar::Type& type,matRebar::Grade& grade);
+   virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu);
+   virtual std::_tstring GetDeckRebarName();
+   virtual void GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade);
    virtual Float64 GetNWCDensityLimit();
    virtual Float64 GetLWCDensityLimit();
    virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type);
@@ -640,6 +641,7 @@ public:
    virtual SectionIndexType GetNumDebondSections(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType);
    virtual StrandIndexType GetNumDebondedStrandsAtSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType);
    virtual StrandIndexType GetNumBondedStrandsAtSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType);
+   virtual std::vector<StrandIndexType> GetDebondedStrandsAtSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType);
 
    virtual bool CanDebondStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType); // can debond any of the strands
    virtual bool CanDebondStrands(LPCTSTR strGirderName,pgsTypes::StrandType strandType);
@@ -864,7 +866,7 @@ public:
 
 // IBridgeDescriptionEventSink
 public:
-   virtual HRESULT OnBridgeChanged();
+   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint);
    virtual HRESULT OnGirderFamilyChanged();
    virtual HRESULT OnGirderChanged(const CGirderKey& girderKey,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
@@ -1137,7 +1139,7 @@ private:
 
    HRESULT GetSlabOverhangs(Float64 distance,Float64* pLeft,Float64* pRight);
    Float64 GetDistanceFromStartOfBridge(const pgsPointOfInterest& poi);
-   Float64 GetDistanceFromStartOfBridge(const CSegmentKey& segmentKey,Float64 distFromStartOfSpan);
+   Float64 GetDistanceFromStartOfBridge(const CSegmentKey& segmentKey,Float64 distFromStartOfSegment);
    HRESULT GetGirderSection(const pgsPointOfInterest& poi,pgsTypes::SectionCoordinateType csType,IGirderSection** gdrSection);
    HRESULT GetSuperstructureMember(const CGirderKey& girderKey,ISuperstructureMember* *ssmbr);
    HRESULT GetSegment(const CSegmentKey& segmentKey,ISegment** segment);

@@ -148,7 +148,7 @@ std::vector<CEAFDocTemplate*> CPGSuperAppPlugin::CreateDocTemplates()
    std::vector<CEAFDocTemplate*> vDocTemplates;
 
    CPGSuperDocTemplate* pTemplate = new CPGSuperDocTemplate(
-		IDR_BRIDGEMODELEDITOR,
+		IDR_PGSUPER,
       NULL,
 		RUNTIME_CLASS(CPGSuperDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
@@ -270,8 +270,7 @@ void CPGSuperAppPlugin::UpdateTemplates()
 {
    USES_CONVERSION;
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
 
    int result = AfxMessageBox(_T("All of the template library entries will be updated to match the Master Library.\n\nDo you want to proceed?"),MB_YESNO);
    if ( result == IDNO )

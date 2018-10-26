@@ -1,0 +1,164 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Optional Design Analysis</title>
+
+<!--(Meta)==========================================================-->
+
+<meta name="template" content="TxDOTTopicTemplate.htt">
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=topic-check-list content="Ran Smart Index">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=2012>
+<meta name=layout-width content=661>
+
+
+<!--(Links)=========================================================-->
+
+<link rel="StyleSheet" href="default.css">
+
+
+
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<!--kadov_tag{{<placeholder id="header">}}-->
+<h1><!--kadov_tag{{<variable name=title
+							x-format=default
+							x-value="Optional Design Analysis">}}-->Optional 
+ Design Analysis<!--kadov_tag{{</variable>}}--></h1>
+
+<p>The analysis of fabricator optional designs is intentionally simplified 
+ in order to streamline TxDOT approval. This section describes the assumptions 
+ and computations made during the TOGA analysis.</p>
+
+<p>The following flowchart outlines the basic analysis. Details for each 
+ step are given in the sections below.</p>
+
+<p><img src="AnalysisFlowChart.gif"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				width: 433px;
+				height: 432px;
+				float: none;"
+		width=433
+		height=432
+		border=0></p>
+
+<h2>Build PGSuper Model</h2>
+
+<p>TOGA utilizes PGSuper to perform most of the analyses in the Optional 
+ Design evaluation. The first step in the analysis process is to build 
+ a bridge model with the girders to be analyzed for the Equivalent Original 
+ configuration and for the Fabricator Optional girder design. The following 
+ pages describe the model building process in detail:</p>
+
+<p style="margin-left: 40px;"><a href="Girder_Models_Used_In_Analysis.htm">Girder 
+ Models Used In Analysis</a> - Refer here for nomenclature used in this 
+ article</p>
+
+<p style="margin-left: 40px;"><a href="Generation_of_the_PGSuper_Model.htm">Generation 
+ of the PGSuper Model</a></p>
+
+<h2>Compute Stresses and Cambers for Equivalent Original Girder</h2>
+
+<p>Here we analyze the Equivalent Original PGSuper girder model to determine 
+ maximum stresses, required ultimate moment, and final girder camber.</p>
+
+<h2><a name=Compute_Stress_Factors></a>Compute Stress Factors and Apply 
+ to Fabricator Optional Design</h2>
+
+<p>Since we do not know the exact configuration of the Per-Plan design, 
+ there is uncertainty whether the Equivalent Original model is an accurate 
+ representation of the Per-Plan Model. This uncertainly applies especially 
+ to the accuracy of applied loads. But, we do know the exact Per-Plan maximum 
+ stresses due to non-prestress loads from the <a href="Girder_Models_Used_In_Analysis.htm#Input_Response_Data">Input_Response_Data</a>. 
+ Therefore, an Input/Analysis stress ratio can be determined from the maximum 
+ stresses due to non-prestressing loads computed from the Equivalent Original 
+ design. This stress ratio could then be applied to the Equivalent Original 
+ Girder analysis results to give a better approximation of the Per-Plan 
+ response.</p>
+
+<p>The purpose of the <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->Equivalent 
+ Original Girder analysis model is to calibrate the responses for the Fabricator 
+ Optional analysis. Since the configuration of the Equivalent Original 
+ Girder analysis model is identical to that of the Fabricator Optional 
+ Design, except for strand and girder materials, it makes sense to apply 
+ the same stress ratios to Fabricator Optional Design in order to achieve 
+ a better approximation of the actual response. This is exactly how stress 
+ factors are used in TOGA.</p>
+
+<p>If the stress factor for either top stress or bottom stress is less 
+ than 1.0. A &quot;Design Deficiency&quot; warning is reported.</p>
+
+<p style="font-style: italic; font-weight: bold;">Note that stress factors 
+ are only used in stress computations and not for any other part of the 
+ analysis.</p>
+
+<h2>Check Input Concrete Strength</h2>
+
+<p>Once stresses in the Fabricator Optional Design have been factored, 
+ required concrete strengths for all applicable LRFD limit states can be 
+ computed. &quot;Beam Does not Satisfy Design Requirements&quot; will be 
+ reported if either f'ci or f'c from the <a href="Girder_Models_Used_In_Analysis.htm#Input_Response_Data">Input_Response_Data</a> 
+ are inadequate.</p>
+
+<h2>Check Ultimate Moment</h2>
+
+<p>The ultimate moment capacity at the mid-span of the Fabricator Optional 
+ girder is computed using a strain compatibility analysis. This capacity 
+ is compared against two demand values:</p>
+
+<ol style="list-style: decimal;"
+	type=1>
+	
+	<li class=kadov-p><p>Mu, the required ultimate moment capacity from 
+ the <a href="Girder_Models_Used_In_Analysis.htm#Input_Response_Data">Input_Response_Data</a>. 
+ If the girder strength is inadequate, &quot;Beam Does not Satisfy Design 
+ Requirements&quot; will be reported</p></li>
+	
+	<li class=kadov-p><p>Mu, the required ultimate moment computed in the 
+ Equivalent Original PGSuper girder model . A failure here results in a 
+ <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->&quot;Design 
+ Deficiency&quot; warning.</p></li>
+</ol>
+
+<h2>Check Camber</h2>
+
+<p>Maximum final camber values are computed for the Equivalent Original 
+ Girder and Fabricator Optional Design. A &quot;Design Deficiency&quot; 
+ warning is reported If the camber for the Fabricator Optional Design violates 
+ a tolerance of +/- 1/2 in (0.0417 ft) compared with analysis of the Equivalent 
+ Original Girder.</p>
+
+<h2>Run Complete Specification Check</h2>
+
+<p>The last analysis step is to run a complete Specification Check for 
+ the Fabricator Optional Design girder. Any failures will be reported in 
+ the Short Form Report. More details about design failures can be found 
+ in the Long Form Report. Refer to PGSuper's Theoretical Manual for a detailed 
+ description of specification checking.</p>
+
+<p class=Tip>Tip: If additional details about design failures and computations 
+ are needed, export the TOGA data to PGSuper and run a Details report.</p>
+
+<!--kadov_tag{{<placeholder id="footer">}}-->
+</body>
+
+</html>

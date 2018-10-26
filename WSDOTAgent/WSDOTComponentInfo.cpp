@@ -35,7 +35,7 @@ void CWSDOTComponentInfo::FinalRelease()
 {
 }
 
-BOOL CWSDOTComponentInfo::Init(CEAFApp* pApp)
+BOOL CWSDOTComponentInfo::Init(CPGSuperDoc* pDoc)
 {
    return TRUE;
 }

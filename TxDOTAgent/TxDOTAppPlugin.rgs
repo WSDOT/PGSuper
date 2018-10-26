@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.TxDOTAppPlugin.1 = s 'TxDOT Optional Girder Analysis (TOGA)'
 	{
-		CLSID = s '{FB446ED8-EBFA-46a0-9D84-8E5DC53A371F}'
+		CLSID = s '{F4629B75-7EF8-4159-A09A-9F4F30B60501}'
 	}
 	PGSuper.TxDOTAppPlugin = s 'TxDOT Optional Girder Analysis (TOGA)'
 	{
-		CLSID = s '{FB446ED8-EBFA-46a0-9D84-8E5DC53A371F}'
+		CLSID = s '{F4629B75-7EF8-4159-A09A-9F4F30B60501}'
 		CurVer = s 'PGSuper.TxDOTAppPlugin.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {FB446ED8-EBFA-46a0-9D84-8E5DC53A371F} = s 'TxDOT Optional Girder Analysis (TOGA)'
+		ForceRemove {F4629B75-7EF8-4159-A09A-9F4F30B60501} = s 'TxDOT Optional Girder Analysis (TOGA)'
 		{
 			ProgID = s 'PGSuper.TxDOTAppPlugin.1'
 			VersionIndependentProgID = s 'PGSuper.TxDOTAppPlugin'

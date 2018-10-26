@@ -28,7 +28,7 @@
 
 // PROJECT INCLUDES
 //
-
+#include <PgsExt\SegmentKey.h>
 
 // LOCAL INCLUDES
 //
@@ -96,6 +96,15 @@ private:
    // Prevent accidental copying and assignment
    CGirderScheduleChapterBuilder(const CGirderScheduleChapterBuilder&);
    CGirderScheduleChapterBuilder& operator=(const CGirderScheduleChapterBuilder&);
+
+   int GetReinforcementDetails(IBroker* pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,IndexType* pV1,Float64 *pV2,IndexType *pV3,Float64* pV4,IndexType *pV5,Float64* pV6) const;
+
+   struct DebondInformation
+   {
+      std::vector<StrandIndexType> Strands;
+      Float64 Length;
+   };
+   int GetDebondDetails(IBroker* pBroker,const CSegmentKey& segmentKey,std::vector<DebondInformation>& debondInfo) const;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

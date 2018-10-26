@@ -70,6 +70,7 @@ STDMETHODIMP CSpecAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IPrecastIGirderDetailsSpec,   this );
    pBrokerInit->RegInterface( IID_IGirderLiftingSpecCriteria,   this );
    pBrokerInit->RegInterface( IID_IGirderHaulingSpecCriteria,   this );
+   pBrokerInit->RegInterface( IID_IKdotGirderHaulingSpecCriteria, this );
    pBrokerInit->RegInterface( IID_IDebondLimits,                this );
    pBrokerInit->RegInterface( IID_IResistanceFactors,           this );
 
@@ -870,6 +871,12 @@ bool CSpecAgentImp::IsHaulingAnalysisEnabled() const
    return pSpec->IsHaulingAnalysisEnabled();
 }
 
+pgsTypes::HaulingAnalysisMethod CSpecAgentImp::GetHaulingAnalysisMethod() const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetHaulingAnalysisMethod();
+}
+
 void CSpecAgentImp::GetHaulingImpact(Float64* pDownward, Float64* pUpward) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
@@ -1100,6 +1107,77 @@ Float64 CSpecAgentImp::GetHaulingSupportLocationAccuracy() const
 }
 
 /////////////////////////////////////////////////////////////////////
+//  IKdogGirderLiftingSpecCriteria
+// Spec criteria for KDOT analyses
+Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey)
+{
+   return GetHaulingAllowableTensileConcreteStress(segmentKey);
+}
+
+Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey)
+{
+   return GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+}
+
+Float64 CSpecAgentImp::GetKdotHaulingAllowableTensionFactor()
+{
+   return GetHaulingAllowableTensionFactor();
+}
+
+Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressionFactor()
+{
+   return GetHaulingAllowableCompressionFactor();
+}
+
+Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey)
+
+{
+   return GetHaulingWithMildRebarAllowableStress(segmentKey);
+}
+
+Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStressFactor()
+{
+   return GetHaulingWithMildRebarAllowableStressFactor();
+}
+
+void CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax)
+{
+   GetHaulingAllowableTensileConcreteStressParameters(factor, pbMax, fmax);
+}
+
+Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)
+{
+   return GetHaulingAllowableTensileConcreteStressEx(fc, includeRebar);
+}
+
+Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(Float64 fc)
+{
+   return GetHaulingAllowableCompressiveConcreteStressEx(fc);
+}
+
+void CSpecAgentImp::GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   *pHardDistance = pSpec->GetMininumTruckSupportLocation();
+   *pUseFactoredLength = pSpec->GetUseMinTruckSupportLocationFactor();
+   *pLengthFactor = pSpec->GetMinTruckSupportLocationFactor();
+}
+
+Float64 CSpecAgentImp::GetHaulingDesignLocationAccuracy() const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetTruckSupportLocationAccuracy();
+}
+
+void CSpecAgentImp::GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+
+   *pOverhangFactor = pSpec->GetOverhangGFactor();
+   *pInteriorFactor = pSpec->GetInteriorGFactor();
+}
+
+/////////////////////////////////////////////////////////////////////
 // IDebondLimits
 Float64 CSpecAgentImp::GetMaxDebondedStrands(const CSegmentKey& segmentKey)
 {
@@ -1196,6 +1274,12 @@ void CSpecAgentImp::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Floa
    pSpec->GetFlexureResistanceFactors(type,phiTensionPS,phiTensionRC,phiCompression);
 }
 
+void CSpecAgentImp::GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl)
+{
+   // The values for Grade 60 are the same as for all types of strand
+   GetFlexuralStrainLimits(matRebar::Grade60,pecl,petl);
+}
+
 void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl)
 {
    switch (rebarGrade )
@@ -1211,13 +1295,18 @@ void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* 
       break;
 
    case matRebar::Grade75:
-      *pecl = 0.0026;
-      *petl = 0.0054;
+      *pecl = 0.0028;
+      *petl = 0.0050;
       break;
 
    case matRebar::Grade80:
-      *pecl = 0.0028;
+      *pecl = 0.0030;
       *petl = 0.0056;
+      break;
+
+   case matRebar::Grade100:
+      *pecl = 0.0040;
+      *petl = 0.0080;
       break;
 
    default:

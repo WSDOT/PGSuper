@@ -33,6 +33,9 @@
 #include <EAF\EAFTransactions.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
+#include <IFace\GirderHandlingSpecCriteria.h>
+
+#include <EAF\EAFDisplayUnits.h>
 
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>

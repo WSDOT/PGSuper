@@ -110,6 +110,8 @@ private:
                            Float64* pAcn,
                            Float64* pIcn,
                            Float64* pYbcn,
+                           Float64* pVolume,
+                           Float64* pSurfaceArea,
                            Float64* pAd,
                            Float64* ped,
                            Float64* pKsh,

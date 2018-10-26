@@ -106,8 +106,8 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
    int p = createString.Find(_T('|'));
    if ( p != -1 )
    {
-      CString strType = createString.Left(p);
-      CString strAddress = createString.Mid(p+1);
+      CString strType(createString.Left(p));
+      CString strAddress(createString.Mid(p+1));
       if (strType==_T("FTP"))
       {
          CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress, strExt);
@@ -341,6 +341,10 @@ m_TemplateFileExt(strExt)
 {
 }
 
+CPGSuperCatalogServer::~CPGSuperCatalogServer()
+{
+}
+
 CString CPGSuperCatalogServer::GetServerName() const
 {
    return m_Name;
@@ -419,7 +423,7 @@ CPGSuperCatalogServer(_T("WSDOT"),srtInternetFtp,strExt)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
-   m_ServerAddress.Format(_T("%s/%s/"),_T("ftp://ftp.wsdot.wa.gov/public/bridge/software/BridgeLink"),pApp->m_pszProfileName);
+   m_ServerAddress.Format(_T("%s/%s/"),_T("ftp://ftp.wsdot.wa.gov/public/bridge/software/"),pApp->m_pszProfileName);
    Init();
 }
 

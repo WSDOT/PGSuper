@@ -218,7 +218,6 @@ private:
    void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress);
    void DesignEndZone(bool firstTime, arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
    void DesignForShipping(IProgress* pProgress);
-   std::vector<DebondLevelType> DesignForShippingDebondingFinal(IProgress* pProgress);
    bool CheckShippingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config);
 
    void DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
@@ -255,7 +254,7 @@ private:
                                          Float64 fcSlab,Float64 fcGdr, Float64 fy, bool checkConfinement,const GDRCONFIG* pConfig,
                                          pgsStirrupCheckAtPoisArtifact* pArtifact);
 
-   void InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const GDRCONFIG* pConfig);
+   void InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<CRITSECTDETAILS>& vCSDetails,const GDRCONFIG* pConfig);
    bool IsDeepSection( const pgsPointOfInterest& poi);
    ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi);
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact );

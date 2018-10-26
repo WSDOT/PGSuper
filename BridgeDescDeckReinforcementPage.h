@@ -54,6 +54,7 @@ public:
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
+   void EnableAddBtn(bool bEnable);
    void EnableRemoveBtn(bool bEnable);
 
 // Overrides
@@ -78,10 +79,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    void FillRebarComboBox(CComboBox* pcbRebar);
-
-   void FillMaterialComboBox(CComboBox* pCB);
-   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
-   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
 
    CString m_strTip;
 

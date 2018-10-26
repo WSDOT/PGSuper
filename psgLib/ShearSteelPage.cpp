@@ -26,6 +26,7 @@
 #include <PsgLib\ShearData.h>
 #include <PsgLib\ShearSteelPage.h>
 #include <PsgLib\RebarUIUtils.h>
+#include <psglib\LibraryEditorDoc.h>
 
 #include <IFace\Project.h>
 #include <EAF\EAFApp.h>
@@ -150,7 +151,15 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
    {
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      GetStirrupMaterial(idx,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
+      if ( idx == CB_ERR )
+      {
+         m_ShearData.ShearBarType = matRebar::A615;
+         m_ShearData.ShearBarGrade = matRebar::Grade60;
+      }
+      else
+      {
+         GetStirrupMaterial(idx,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
+      }
 
       // zone info from grid
       m_ShearData.ShearZones.clear();
@@ -341,8 +350,13 @@ BOOL CShearSteelPage::OnInitDialog()
 	m_pHorizGrid->SubclassDlgItem(IDC_HORIZ_GRID, this);
    m_pHorizGrid->CustomInit();
 
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   bool bFilterBySpec = true;
+   if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
+      bFilterBySpec = false;
+
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillMaterialComboBox(pc);
+   FillRebarMaterialComboBox(pc,bFilterBySpec);
 
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_SPLITTING_BAR_SIZE));
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_CONFINE_BAR_SIZE));

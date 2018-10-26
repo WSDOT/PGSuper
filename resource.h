@@ -1,12 +1,8 @@
+
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by PGSuper.rc
 //
-#define ID_INDICATOR_MODIFIED           1
-#define ID_INDICATOR_STATUS             2
-#define ID_INDICATOR_ANALYSIS           3
-#define ID_INDICATOR_AUTOCALC_ON        4
-#define ID_INDICATOR_AUTOCALC_OFF       5
 #define IDS_E_ONLINERESOURCES           9
 #define IDB_SPLASH                      102
 #define IDR_MAINFRAME                   128
@@ -37,10 +33,6 @@
 #define IDS_COMPANY                     1699
 #define IDS_E_USERDEFINED               1752
 #define IDC_APPLIST                     3333
-#define ID_HELP_INET_ARP                33025
-#define ID_HELP_INET_WSDOT              33026
-#define ID_HELP_INET_PGSUPER            33027
-#define ID_SCREEN_SIZE                  33028
 
 
 // Next default values for new objects

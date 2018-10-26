@@ -201,7 +201,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    *pbPermit     = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    *pStartGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   *pNGroups    = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() : (*pStartGroup)+1 );
+   *pNGroups    = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() : 1 );
 
    CGirderKey key(*pStartGroup,girderKey.girderIndex);
    *pbPedLoading = pLoads->HasPedestrianLoad(key);

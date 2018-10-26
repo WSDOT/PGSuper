@@ -211,6 +211,11 @@ interface IBridge : IUnknown
    // End-to-end length of segment, measured along the grade 
    virtual Float64 GetSegmentPlanLength(const CSegmentKey& segmentKey) = 0;
 
+   // Segment cantilevers are to be modeled if the cantilever length is
+   // at least the depth of the non-composite member. This method
+   // provides a uniform means of determining if cantilevers are to be modeled
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever) = 0;
+
    // Grade of segment
    virtual Float64 GetSegmentSlope(const CSegmentKey& segmentKey) = 0;
 
@@ -574,10 +579,10 @@ interface IMaterials : IUnknown
    virtual std::_tstring GetClosurePourTransverseRebarName(const CClosureKey& closureKey) = 0;
    virtual void GetClosurePourTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) = 0;
 
-   // Rebar properties for design
-   virtual void GetSlabRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu) = 0;
-   virtual std::_tstring GetSlabRebarName() = 0;
-   virtual void GetSlabRebarMaterial(matRebar::Type& type,matRebar::Grade& grade) = 0;
+   // Rebar properties for deck
+   virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu) = 0;
+   virtual std::_tstring GetDeckRebarName() = 0;
+   virtual void GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade) = 0;
 
    // Density limits for normal and light weight concrete
    virtual Float64 GetNWCDensityLimit() = 0; // returns the minimum density for normal weight concrete
@@ -855,6 +860,7 @@ interface IStrandGeometry : IUnknown
    virtual SectionIndexType GetNumDebondSections(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType) = 0;
    virtual StrandIndexType GetNumDebondedStrandsAtSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType) = 0;
    virtual StrandIndexType GetNumBondedStrandsAtSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType) = 0;
+   virtual std::vector<StrandIndexType> GetDebondedStrandsAtSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType) = 0;
 
    virtual bool CanDebondStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)=0; // can debond any of the strands?
    virtual bool CanDebondStrands(LPCTSTR strGirderName,pgsTypes::StrandType strandType)=0; // can debond any of the strands?

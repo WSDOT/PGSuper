@@ -131,7 +131,10 @@ void CTendonStressGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,GirderInd
    CString strInterval( pIntervals->GetDescription(intervalIdx) );
 
    CString strGraphTitle;
-   strGraphTitle.Format(_T("Group %d Girder %s Duct %d - %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_DUCT(ductIdx),strInterval);
+   if ( ductIdx == INVALID_INDEX )
+      strGraphTitle.Format(_T("Group %d Girder %s - Interval %d %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_INTERVAL(intervalIdx),strInterval);
+   else
+      strGraphTitle.Format(_T("Group %d Girder %s Duct %d - Interval %d %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_DUCT(ductIdx),LABEL_INTERVAL(intervalIdx),strInterval);
    
    m_Graph.SetTitle(std::_tstring(strGraphTitle));
 }
@@ -157,7 +160,8 @@ void CTendonStressGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderInde
    IndexType dataSeries1 = m_Graph.CreateDataSeries(_T("fpj prior to anchor set"),PS_SOLID,1,ORANGE);
    IndexType dataSeries2 = m_Graph.CreateDataSeries(_T("fpj after anchor set"),PS_SOLID,1,GREEN);
    IndexType dataSeries3 = m_Graph.CreateDataSeries(_T("fpe"),PS_SOLID,1,BLUE);
-   IndexType dataSeries4 = m_Graph.CreateDataSeries(_T("fpe with LL+IM"),PS_SOLID,1,PURPLE);
+   IndexType dataSeries4 = m_Graph.CreateDataSeries(_T("fpe with Max LL+IM"),PS_SOLID,1,PURPLE);
+   IndexType dataSeries5 = m_Graph.CreateDataSeries(_T("fpe with Min LL+IM"),PS_SOLID,1,MAROON);
 
    GET_IFACE(ILosses,pLosses);
 
@@ -171,12 +175,14 @@ void CTendonStressGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderInde
 
       Float64 X = *xIter;
 
-      Float64 fpj = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpj;
-
+      Float64 fpj  = 0;
+      Float64 fpe  = 0;
       Float64 dfpF = 0;
       Float64 dfpA = 0;
-      if ( stressTendonIntervalIdx <= intervalIdx )
+      if ( ductIdx != INVALID_INDEX && stressTendonIntervalIdx <= intervalIdx )
       {
+         fpj  = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpj;
+         fpe  = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpe;
          dfpF = pDetails->FrictionLossDetails[ductIdx].dfpF;
          dfpA = pDetails->FrictionLossDetails[ductIdx].dfpA;
       }
@@ -185,13 +191,15 @@ void CTendonStressGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderInde
       AddGraphPoint(dataSeries1,X,fpj2);
       AddGraphPoint(dataSeries2,X,fpj);
 
-      Float64 fpe = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpe;
       AddGraphPoint(dataSeries3,X,fpe);
 
       if ( liveLoadIntervalIdx <= intervalIdx )
       {
-         Float64 fpeLL = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLL;
-         AddGraphPoint(dataSeries4,X,fpeLL);
+         Float64 fpeLLMax = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMax;
+         AddGraphPoint(dataSeries4,X,fpeLLMax);
+
+         Float64 fpeLLMin = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMin;
+         AddGraphPoint(dataSeries5,X,fpeLLMin);
       }
    }
 }

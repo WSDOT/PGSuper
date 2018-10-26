@@ -131,17 +131,17 @@ bool CTxDOTOptionalDesignDocProxyAgent::UpdatingTemplates()
 
 // NOTE: Not really utilizing this interface - just appealing functions that need it.
 
-PierIndexType CTxDOTOptionalDesignDocProxyAgent::GetPierIdx()
+PierIndexType CTxDOTOptionalDesignDocProxyAgent::GetPierIndex()
 {
    return TOGA_SPAN;
 }
 
-SpanIndexType CTxDOTOptionalDesignDocProxyAgent::GetSpanIdx()
+SpanIndexType CTxDOTOptionalDesignDocProxyAgent::GetSpanIndex()
 {
    return TOGA_SPAN;
 }
 
-GirderIndexType CTxDOTOptionalDesignDocProxyAgent::GetGirderIdx()
+GirderIndexType CTxDOTOptionalDesignDocProxyAgent::GetGirderIndex()
 {
    return TOGA_FABR_GDR;
 }

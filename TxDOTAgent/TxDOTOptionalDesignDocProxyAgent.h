@@ -107,9 +107,9 @@ public:
 
    // ISelection
 public:
-   virtual PierIndexType GetPierIdx();
-   virtual SpanIndexType GetSpanIdx();
-   virtual GirderIndexType GetGirderIdx();
+   virtual PierIndexType GetPierIndex();
+   virtual SpanIndexType GetSpanIndex();
+   virtual GirderIndexType GetGirderIndex();
    virtual void SelectPier(PierIndexType pierIdx);
    virtual void SelectSpan(SpanIndexType spanIdx);
    virtual void SelectGirder(const CGirderKey& girderKey);

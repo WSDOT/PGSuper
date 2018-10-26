@@ -74,9 +74,18 @@ interface IRatingSpecification : IUnknown
    virtual void SetWearingSurfaceFactor(pgsTypes::LimitState ls,Float64 gDW) = 0;
    virtual Float64 GetWearingSurfaceFactor(pgsTypes::LimitState ls) = 0;
 
+   virtual void SetCreepFactor(pgsTypes::LimitState ls,Float64 gCR) = 0;
+   virtual Float64 GetCreepFactor(pgsTypes::LimitState ls) = 0;
+
+   virtual void SetShrinkageFactor(pgsTypes::LimitState ls,Float64 gSH) = 0;
+   virtual Float64 GetShrinkageFactor(pgsTypes::LimitState ls) = 0;
+
+   virtual void SetPrestressFactor(pgsTypes::LimitState ls,Float64 gPS) = 0;
+   virtual Float64 GetPrestressFactor(pgsTypes::LimitState ls) = 0;
+
    virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL) = 0;
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) = 0;
-   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) = 0;
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) = 0;
 
    virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t) = 0;
    virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) = 0;

@@ -439,9 +439,9 @@ public:
    Float64 GetFrictionFactor() const {return m_FrictionFactor;}
    void SetFrictionFactor(Float64 factor) {m_FrictionFactor = factor;}
    Float64 GetK1() const;
-   void SetK1(double k1);
+   void SetK1(Float64 k1);
    Float64 GetK2() const;
-   void SetK2(double k2);
+   void SetK2(Float64 k2);
    Float64 GetPhi() const {return m_Phi;}
    void SetPhi(Float64 phi) {m_Phi = phi;}
    // capacities from eqn's 5.8.4.1-1,2,3
@@ -461,6 +461,8 @@ public:
    void SetSall(Float64 sall);
    Float64 GetFy() const;
    void SetFy(Float64 fy);
+   bool WasFyLimited() const;
+   void WasFyLimited(bool bWasLimited);
    bool Is5_8_4_1_4Applicable() const;
    
    Float64 GetAvOverSMin_5_8_4_4_1() const;
@@ -487,11 +489,11 @@ public:
    Float64 GetVu() const;
    void SetVu(const Float64& vu);
    Float64 GetDv() const;
-   void SetDv(double dv);
+   void SetDv(Float64 dv);
    Float64 GetI() const;
-   void SetI(double i);
+   void SetI(Float64 i);
    Float64 GetQ() const;
-   void SetQ(double q);
+   void SetQ(Float64 q);
 
    // Use this function for locations outside of the CSS. This allows checking
    // whether Av/S is decreasing in the end zones
@@ -563,6 +565,7 @@ private:
    Float64 m_Bv;
    Float64 m_Sall;
    Float64 m_Fy;
+   bool    m_bWasFyLimited; // true if fy is limited to 60 ksi per LRFD2013 5.8.4.1
    Float64 m_AvOverSMin_5_8_4_4_1;
    Float64 m_AvOverSMin_5_8_4_1_3;
    Float64 m_AvOverSMin;

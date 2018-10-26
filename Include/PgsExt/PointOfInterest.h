@@ -270,6 +270,10 @@ public:
    // Returns the attributes of this POI.
    PoiAttributeType GetAttributes() const;
 
+   //------------------------------------------------------------------------
+   // Removes attributes from this POI.
+   void RemoveAttributes(PoiAttributeType attrib);
+
    PoiAttributeType GetReference() const;
    static PoiAttributeType GetReference(PoiAttributeType attrib);
 

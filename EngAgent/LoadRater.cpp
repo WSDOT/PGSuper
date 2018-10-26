@@ -25,7 +25,6 @@
 #include "Designer2.h"
 
 #include <IFace\Project.h> // for ISpecification
-#include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Bridge.h>
 #include <IFace\MomentCapacity.h>
@@ -53,6 +52,11 @@ void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pInte
                        std::vector<Float64>::iterator forceBeginIter,
                        std::vector<Float64>::iterator resultBeginIter,
                        std::vector<Float64>::iterator outputBeginIter);
+
+bool AxleHasWeight(AxlePlacement& placement)
+{
+   return !IsZero(placement.Weight);
+}
 
 pgsLoadRater::pgsLoadRater(void)
 {
@@ -172,7 +176,6 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,bool bPositiveMoment
       Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
       if ( gLL < 0 )
       {
-         // need to compute gLL based on axle weights
          if ( ::IsStrengthLimitState(ls) )
          {
             Float64 Mmin, Mmax, Dummy;
@@ -186,52 +189,11 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,bool bPositiveMoment
             {
                pProductForces->GetVehicularLiveLoadMoment(llType,truck_index,liveLoadIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&Mmin,&Mmax,&MinAxleConfig,&MaxAxleConfig);
             }
-
-            Float64 sum_axle_weight = 0;
-            if ( bPositiveMoment )
-            {
-               AxleConfiguration::iterator iter;
-               for ( iter = MaxAxleConfig.begin(); iter != MaxAxleConfig.end(); iter++ )
-               {
-                  AxlePlacement axle_placement = *iter;
-                  sum_axle_weight += axle_placement.Weight;
-               }
-            }
-            else
-            {
-               AxleConfiguration::iterator iter;
-               for ( iter = MinAxleConfig.begin(); iter != MinAxleConfig.end(); iter++ )
-               {
-                  AxlePlacement axle_placement = *iter;
-                  sum_axle_weight += axle_placement.Weight;
-               }
-            }
-
-            GET_IFACE(ILibrary,pLibrary);
-            const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-            CLiveLoadFactorModel model;
-            if ( ratingType == pgsTypes::lrPermit_Routine )
-               model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-            else if ( ratingType == pgsTypes::lrPermit_Special )
-               model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-            else
-               model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-
-            gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),sum_axle_weight);
+            gLL = GetStrengthLiveLoadFactor(ratingType,bPositiveMoment ? MaxAxleConfig : MinAxleConfig);
          }
          else
          {
-            GET_IFACE(ILibrary,pLibrary);
-            const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-            CLiveLoadFactorModel model;
-            if ( ratingType == pgsTypes::lrPermit_Routine )
-               model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-            else if ( ratingType == pgsTypes::lrPermit_Special )
-               model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-            else
-               model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-
-            gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
+            gLL = GetServiceLiveLoadFactor(ratingType);
          }
       }
 
@@ -400,76 +362,24 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
                pProductForce->GetVehicularLiveLoadShear(llType,truck_index,liveLoadIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&Vmin,&Vmax,&MinLeftAxleConfig,&MinRightAxleConfig,&MaxLeftAxleConfig,&MaxRightAxleConfig);
             }
 
-            Float64 sum_axle_weight = 0;
             if ( fabs(LLIMmin) < fabs(LLIMmax) )
             {
                if (IsEqual(fabs(vLLIMmax[i].Left()),fabs(LLIMmax)))
-               {
-                  AxleConfiguration::iterator iter;
-                  for ( iter = MaxLeftAxleConfig.begin(); iter != MaxLeftAxleConfig.end(); iter++ )
-                  {
-                     AxlePlacement axle_placement = *iter;
-                     sum_axle_weight += axle_placement.Weight;
-                  }
-               }
+                  gLL = GetStrengthLiveLoadFactor(ratingType,MaxLeftAxleConfig);
                else
-               {
-                  AxleConfiguration::iterator iter;
-                  for ( iter = MaxRightAxleConfig.begin(); iter != MaxRightAxleConfig.end(); iter++ )
-                  {
-                     AxlePlacement axle_placement = *iter;
-                     sum_axle_weight += axle_placement.Weight;
-                  }
-               }
+                  gLL = GetStrengthLiveLoadFactor(ratingType,MaxRightAxleConfig);
             }
             else
             {
                if (IsEqual(fabs(vLLIMmin[i].Left()),fabs(LLIMmin)))
-               {
-                  AxleConfiguration::iterator iter;
-                  for ( iter = MinLeftAxleConfig.begin(); iter != MinLeftAxleConfig.end(); iter++ )
-                  {
-                     AxlePlacement axle_placement = *iter;
-                     sum_axle_weight += axle_placement.Weight;
-                  }
-               }
+                  gLL = GetStrengthLiveLoadFactor(ratingType,MinLeftAxleConfig);
                else
-               {
-                  AxleConfiguration::iterator iter;
-                  for ( iter = MinRightAxleConfig.begin(); iter != MinRightAxleConfig.end(); iter++ )
-                  {
-                     AxlePlacement axle_placement = *iter;
-                     sum_axle_weight += axle_placement.Weight;
-                  }
-               }
+                  gLL = GetStrengthLiveLoadFactor(ratingType,MinRightAxleConfig);
             }
-
-            GET_IFACE(ILibrary,pLibrary);
-            const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-            CLiveLoadFactorModel model;
-            if ( ratingType == pgsTypes::lrPermit_Routine )
-               model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-            else if ( ratingType == pgsTypes::lrPermit_Special )
-               model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-            else
-               model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-
-            gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),sum_axle_weight);
          }
          else
          {
-
-            GET_IFACE(ILibrary,pLibrary);
-            const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-            CLiveLoadFactorModel model;
-            if ( ratingType == pgsTypes::lrPermit_Routine )
-               model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-            else if ( ratingType == pgsTypes::lrPermit_Special )
-               model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-            else
-               model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-
-            gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
+            gLL = GetServiceLiveLoadFactor(ratingType);
          }
       }
 
@@ -501,8 +411,9 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
       SHEARCAPACITYDETAILS scd;
       pgsDesigner2 designer;
       designer.SetBroker(m_pBroker);
+      std::vector<CRITSECTDETAILS> vCSDetails = pShearCapacity->GetCriticalSectionDetails(ls,poi.GetSegmentKey());
       pShearCapacity->GetShearCapacityDetails(ls,liveLoadIntervalIdx,poi,&scd);
-      designer.InitShearCheck(poi.GetSegmentKey(),liveLoadIntervalIdx,ls,NULL);
+      designer.InitShearCheck(poi.GetSegmentKey(),liveLoadIntervalIdx,ls,vCSDetails,NULL);
       designer.CheckLongReinfShear(poi,liveLoadIntervalIdx,ls,scd,NULL,&l_artifact);
       shearArtifact.SetLongReinfShearArtifact(l_artifact);
 
@@ -648,39 +559,11 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
                pProductForce->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
             }
 
-            Float64 sum_axle_weight = 0;
-            AxleConfiguration::iterator iter;
-            for ( iter = MaxAxleConfigBot.begin(); iter != MaxAxleConfigBot.end(); iter++ )
-            {
-               AxlePlacement axle_placement = *iter;
-               sum_axle_weight += axle_placement.Weight;
-            }
-
-            GET_IFACE(ILibrary,pLibrary);
-            const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-            CLiveLoadFactorModel model;
-            if ( ratingType == pgsTypes::lrPermit_Routine )
-               model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-            else if ( ratingType == pgsTypes::lrPermit_Special )
-               model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-            else
-               model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-
-            gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),sum_axle_weight);
+            gLL = GetStrengthLiveLoadFactor(ratingType,MaxAxleConfigBot);
          }
          else
          {
-            GET_IFACE(ILibrary,pLibrary);
-            const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-            CLiveLoadFactorModel model;
-            if ( ratingType == pgsTypes::lrPermit_Routine )
-               model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-            else if ( ratingType == pgsTypes::lrPermit_Special )
-               model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-            else
-               model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-
-            gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
+            gLL = GetServiceLiveLoadFactor(ratingType);
          }
       }
 
@@ -786,7 +669,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
       }
       else
       {
-         pMaterials->GetSlabRebarProperties(&Es,&fy,&fu);
+         pMaterials->GetDeckRebarProperties(&Es,&fy,&fu);
       }
 
       // Get allowable
@@ -846,39 +729,11 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
                pProductForces->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
             }
 
-            Float64 sum_axle_weight = 0;
-            AxleConfiguration::iterator iter;
-            for ( iter = MaxAxleConfigBot.begin(); iter != MaxAxleConfigBot.end(); iter++ )
-            {
-               AxlePlacement axle_placement = *iter;
-               sum_axle_weight += axle_placement.Weight;
-            }
-
-            GET_IFACE(ILibrary,pLibrary);
-            const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-            CLiveLoadFactorModel model;
-            if ( ratingType == pgsTypes::lrPermit_Routine )
-               model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-            else if ( ratingType == pgsTypes::lrPermit_Special )
-               model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-            else
-               model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-
-            gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),sum_axle_weight);
+            gLL = GetStrengthLiveLoadFactor(ratingType,MaxAxleConfigBot);
          }
          else
          {
-            GET_IFACE(ILibrary,pLibrary);
-            const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-            CLiveLoadFactorModel model;
-            if ( ratingType == pgsTypes::lrPermit_Routine )
-               model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-            else if ( ratingType == pgsTypes::lrPermit_Special )
-               model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-            else
-               model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-
-            gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
+            gLL = GetServiceLiveLoadFactor(ratingType);
          }
       }
 
@@ -1284,4 +1139,95 @@ void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pInte
          *outputIter = (*forceIter + *resultIter);
       }
    }
+}
+
+Float64 pgsLoadRater::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingType,AxleConfiguration& axleConfig)
+{
+   Float64 sum_axle_weight = 0; // sum of axle weights on the bridge
+   Float64 firstAxleLocation = -1;
+   Float64 lastAxleLocation = 0;
+   AxleConfiguration::iterator iter(axleConfig.begin());
+   AxleConfiguration::iterator end(axleConfig.end());
+   for ( ; iter != end; iter++ )
+   {
+      AxlePlacement& axle_placement = *iter;
+      sum_axle_weight += axle_placement.Weight;
+
+      if ( !IsZero(axle_placement.Weight) )
+      {
+         if ( firstAxleLocation < 0 )
+            firstAxleLocation = axle_placement.Location;
+
+         lastAxleLocation = axle_placement.Location;
+      }
+   }
+   
+   Float64 AL = fabs(firstAxleLocation - lastAxleLocation); // front axle to rear axle length (for axles on the bridge)
+
+   Float64 gLL = 0;
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE(ILibrary,pLibrary);
+   const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
+   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   {
+      CLiveLoadFactorModel model;
+      if ( ratingType == pgsTypes::lrPermit_Routine )
+         model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
+      else if ( ratingType == pgsTypes::lrPermit_Special )
+         model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
+      else
+         model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
+
+      gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),sum_axle_weight);
+   }
+   else
+   {
+      Float64 GVW = sum_axle_weight;
+      Float64 PermitWeightRatio = IsZero(AL) ? 0 : GVW/AL;
+      CLiveLoadFactorModel2 model;
+      if ( ratingType == pgsTypes::lrPermit_Routine )
+         model = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
+      else if ( ratingType == pgsTypes::lrPermit_Special )
+         model = pRatingEntry->GetLiveLoadFactorModel2(pRatingSpec->GetSpecialPermitType());
+      else
+         model = pRatingEntry->GetLiveLoadFactorModel2(ratingType);
+
+      gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),PermitWeightRatio);
+   }
+
+   return gLL;
+}
+
+Float64 pgsLoadRater::GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingType)
+{
+   Float64 gLL = 0;
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE(ILibrary,pLibrary);
+   const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
+   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   {
+      CLiveLoadFactorModel model;
+      if ( ratingType == pgsTypes::lrPermit_Routine )
+         model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
+      else if ( ratingType == pgsTypes::lrPermit_Special )
+         model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
+      else
+         model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
+
+      gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
+   }
+   else
+   {
+      CLiveLoadFactorModel2 model;
+      if ( ratingType == pgsTypes::lrPermit_Routine )
+         model = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
+      else if ( ratingType == pgsTypes::lrPermit_Special )
+         model = pRatingEntry->GetLiveLoadFactorModel2(pRatingSpec->GetSpecialPermitType());
+      else
+         model = pRatingEntry->GetLiveLoadFactorModel2(ratingType);
+
+      gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
+   }
+
+   return gLL;
 }

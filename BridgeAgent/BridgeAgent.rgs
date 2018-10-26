@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.BridgeAgent.1 = s 'BridgeAgent Class'
 	{
-		CLSID = s '{59753CA0-3B7B-11d2-8EC5-006097DF3C68}'
+		CLSID = s '{3FD393DD-8AF4-4cb2-A1C5-71E46C436BA0}'
 	}
 	PGSuper.BridgeAgent = s 'BridgeAgent Class'
 	{
-		CLSID = s '{59753CA0-3B7B-11d2-8EC5-006097DF3C68}'
+		CLSID = s '{3FD393DD-8AF4-4cb2-A1C5-71E46C436BA0}'
 		CurVer = s 'PGSuper.BridgeAgent.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {59753CA0-3B7B-11d2-8EC5-006097DF3C68} = s 'BridgeAgent Class'
+		ForceRemove {3FD393DD-8AF4-4cb2-A1C5-71E46C436BA0} = s 'BridgeAgent Class'
 		{
 			ProgID = s 'PGSuper.BridgeAgent.1'
 			VersionIndependentProgID = s 'PGSuper.BridgeAgent'

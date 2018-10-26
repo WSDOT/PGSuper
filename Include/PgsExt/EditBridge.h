@@ -31,7 +31,7 @@ class PGSEXTCLASS txnEditBridge : public txnTransaction
 public:
    txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
       enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
-      double oldRelHumidity, double newRelHumidity
+      Float64 oldRelHumidity, Float64 newRelHumidity
       );
 
    txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);

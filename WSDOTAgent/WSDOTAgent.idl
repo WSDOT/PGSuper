@@ -40,7 +40,7 @@ library PGSuper
 	importlib("stdole2.tlb");
 
    [
-		uuid(338AD645-BAF2-41DC-964E-A9DFC8123253),
+		uuid(B1A19633-8880-40bc-A3C9-DDF47F7F1844),
 		helpstring("WSDOTAgent Class")
 	]
 	coclass WSDOTAgent
@@ -49,7 +49,7 @@ library PGSuper
 	};
 
    [
-      uuid(78D50F7D-4825-4FB0-86CC-CAAF7326B8FB)
+      uuid(5656F52E-4DC8-4299-8AD1-23EB3AE46353)
    ]
    coclass WSDOTComponentInfo
    {

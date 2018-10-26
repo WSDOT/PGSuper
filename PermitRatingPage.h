@@ -56,4 +56,6 @@ public:
    afx_msg void OnPermitTypeChanged();
    afx_msg void OnHelp();
    virtual BOOL OnSetActive();
+
+   pgsTypes::SpecialPermitType GetSpecialPermitType();
 };

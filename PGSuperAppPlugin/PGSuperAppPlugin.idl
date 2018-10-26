@@ -18,7 +18,7 @@ library PGSuperAppPluginLib
 
 
    [
-      uuid(C1731920-FBCA-40FA-959D-9B749F03DEC0)
+      uuid(22F091F9-B2BE-4313-BDA3-8F46A44681E9)
    ]
    coclass PGSuperAppPlugin
    {
@@ -26,7 +26,7 @@ library PGSuperAppPluginLib
    }
 
    [
-      uuid(552AB673-3D3D-47E6-AFD6-4EA033A8A7F2)
+      uuid(73B452CE-0955-4ff5-AB8C-EF54BD1DFB72)
    ]
    coclass PGSuperProjectImporterAppPlugin
    {
@@ -34,7 +34,7 @@ library PGSuperAppPluginLib
    }
 
    [
-      uuid(3EB252D0-84CF-4f09-98CA-9C0A80472258)
+      uuid(339425CE-5469-41c2-B8A2-511A79B7483F)
    ]
    coclass PGSuperComponentInfo
    {

@@ -101,7 +101,7 @@ public:
    CComboBox m_PierGirderCB;
    afx_msg void OnCbnSelchangeGirderSpan();
    afx_msg void OnCbnSelchangePier();
-   double m_UserInputValue;
+   Float64 m_UserInputValue;
    int m_Method;
    int m_GIRDER_SPAN_INT;
    int m_GIRDER_GIRDER_INT;

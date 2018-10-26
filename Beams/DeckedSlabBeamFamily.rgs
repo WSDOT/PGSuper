@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFamily.DeckedSlabBeam.1 = s 'Decked Slab Beam'
 	{
-		CLSID = s '{BFC403E9-AAF5-4e49-86AB-B537F1C50066}'
+		CLSID = s '{58D7AA2D-057A-4ec0-ADF3-81F1CAD84288}'
 	}
 	PGSuperBeamFamily.DeckedSlabBeam = s 'Decked Slab Beam'
 	{
-		CLSID = s '{BFC403E9-AAF5-4e49-86AB-B537F1C50066}'
+		CLSID = s '{58D7AA2D-057A-4ec0-ADF3-81F1CAD84288}'
 		CurVer = s 'PGSuperBeamFamily.DeckedSlabBeam.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {BFC403E9-AAF5-4e49-86AB-B537F1C50066} = s 'Decked Slab Beam'
+		ForceRemove {58D7AA2D-057A-4ec0-ADF3-81F1CAD84288} = s 'Decked Slab Beam'
 		{
 			ProgID = s 'PGSuperBeamFamily.DeckedSlabBeam.1'
 			VersionIndependentProgID = s 'PGSuperBeamFamily.DeckedSlabBeam'

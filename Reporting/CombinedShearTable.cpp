@@ -121,6 +121,11 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
@@ -179,14 +184,20 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
       std::vector<sysSectionValue> minDCcum, maxDCcum;
       std::vector<sysSectionValue> minDWinc, maxDWinc;
       std::vector<sysSectionValue> minDWcum, maxDWcum;
+      std::vector<sysSectionValue> minCRinc, maxCRinc;
+      std::vector<sysSectionValue> minCRcum, maxCRcum;
+      std::vector<sysSectionValue> minSHinc, maxSHinc;
+      std::vector<sysSectionValue> minSHcum, maxSHcum;
+      std::vector<sysSectionValue> minPSinc, maxPSinc;
+      std::vector<sysSectionValue> minPScum, maxPScum;
 
-      if ( intervalIdx < castDeckIntervalIdx )
-      {
-         maxDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
-         pLsForces2->GetShear( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
-      }
-      else //if ( intervalIdx == castDeckIntervalIdx )
-      {
+      //if ( intervalIdx < castDeckIntervalIdx )
+      //{
+      //   maxDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
+      //   pLsForces2->GetShear( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
+      //}
+      //else //if ( intervalIdx == castDeckIntervalIdx )
+      //{
          maxDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
          minDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, minBAT );
          maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctIncremental, maxBAT );
@@ -196,12 +207,29 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
          maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
          minDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctCummulative, minBAT );
 
+         if ( bTimeStepMethod )
+         {
+            maxCRinc = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctIncremental, maxBAT );
+            minCRinc = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctIncremental, minBAT );
+            maxSHinc = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctIncremental, maxBAT );
+            minSHinc = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctIncremental, minBAT );
+            maxPSinc = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctIncremental, maxBAT );
+            minPSinc = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctIncremental, minBAT );
+
+            maxCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCummulative, maxBAT );
+            minCRcum = pForces2->GetShear( lcCR, intervalIdx, vPoi, ctCummulative, minBAT );
+            maxSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCummulative, maxBAT );
+            minSHcum = pForces2->GetShear( lcSH, intervalIdx, vPoi, ctCummulative, minBAT );
+            maxPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCummulative, maxBAT );
+            minPScum = pForces2->GetShear( lcPS, intervalIdx, vPoi, ctCummulative, minBAT );
+         }
+
          if ( intervalIdx < liveLoadIntervalIdx )
          {
             pLsForces2->GetShear( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
             pLsForces2->GetShear( pgsTypes::ServiceI, intervalIdx, vPoi, minBAT, &minServiceI, &dummy );
          }
-      }
+      //}
 #pragma Reminder("OBSOLETE: remove obsolete code")
       //else if ( intervalIdx == compositeDeckIntervalIdx )
       //{
@@ -249,23 +277,52 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
          (*p_table)(row,col++) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, poi, end_size );
-         if ( intervalIdx < castDeckIntervalIdx )
-         {
-            (*p_table)(row,col++) << shear.SetValue( maxDCinc[index] );
-            (*p_table)(row,col++) << shear.SetValue( maxServiceI[index] );
-         }
-         else //if ( intervalIdx == castDeckIntervalIdx )
-         {
+         //if ( intervalIdx < castDeckIntervalIdx )
+         //{
+         //   (*p_table)(row,col++) << shear.SetValue( maxDCinc[index] );
+
+         //   if ( bTimeStepMethod )
+         //   {
+         //      (*p_table)(row,col++) << shear.SetValue( maxCRinc[index] );
+         //      (*p_table)(row,col++) << shear.SetValue( maxSHinc[index] );
+         //      (*p_table)(row,col++) << shear.SetValue( maxPSinc[index] );
+         //   }
+
+         //   (*p_table)(row,col++) << shear.SetValue( maxServiceI[index] );
+         //}
+         //else //if ( intervalIdx == castDeckIntervalIdx )
+         //{
             if ( analysisType == pgsTypes::Envelope /*&& continunityIntervalIdx == castDeckIntervalIdx*/ )
             {
                (*p_table)(row,col++) << shear.SetValue( maxDCinc[index] );
                (*p_table)(row,col++) << shear.SetValue( minDCinc[index] );
                (*p_table)(row,col++) << shear.SetValue( maxDWinc[index] );
                (*p_table)(row,col++) << shear.SetValue( minDWinc[index] );
+
+               if ( bTimeStepMethod )
+               {
+                  (*p_table)(row,col++) << shear.SetValue( maxCRinc[index] );
+                  (*p_table)(row,col++) << shear.SetValue( minCRinc[index] );
+                  (*p_table)(row,col++) << shear.SetValue( maxSHinc[index] );
+                  (*p_table)(row,col++) << shear.SetValue( minSHinc[index] );
+                  (*p_table)(row,col++) << shear.SetValue( maxPSinc[index] );
+                  (*p_table)(row,col++) << shear.SetValue( minPSinc[index] );
+               }
+
                (*p_table)(row,col++) << shear.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << shear.SetValue( minDCcum[index] );
                (*p_table)(row,col++) << shear.SetValue( maxDWcum[index] );
                (*p_table)(row,col++) << shear.SetValue( minDWcum[index] );
+
+               if ( bTimeStepMethod )
+               {
+                  (*p_table)(row,col++) << shear.SetValue( maxCRcum[index] );
+                  (*p_table)(row,col++) << shear.SetValue( minCRcum[index] );
+                  (*p_table)(row,col++) << shear.SetValue( maxSHcum[index] );
+                  (*p_table)(row,col++) << shear.SetValue( minSHcum[index] );
+                  (*p_table)(row,col++) << shear.SetValue( maxPScum[index] );
+                  (*p_table)(row,col++) << shear.SetValue( minPScum[index] );
+               }
 
                if ( intervalIdx < liveLoadIntervalIdx )
                {
@@ -277,15 +334,30 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             {
                (*p_table)(row,col++) << shear.SetValue( maxDCinc[index] );
                (*p_table)(row,col++) << shear.SetValue( maxDWinc[index] );
+
+               if ( bTimeStepMethod )
+               {
+                  (*p_table)(row,col++) << shear.SetValue( maxCRinc[index] );
+                  (*p_table)(row,col++) << shear.SetValue( maxSHinc[index] );
+                  (*p_table)(row,col++) << shear.SetValue( maxPSinc[index] );
+               }
+
                (*p_table)(row,col++) << shear.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << shear.SetValue( maxDWcum[index] );
+
+               if ( bTimeStepMethod )
+               {
+                  (*p_table)(row,col++) << shear.SetValue( maxCRcum[index] );
+                  (*p_table)(row,col++) << shear.SetValue( maxSHcum[index] );
+                  (*p_table)(row,col++) << shear.SetValue( maxPScum[index] );
+               }
 
                if ( intervalIdx < liveLoadIntervalIdx )
                {
                   (*p_table)(row,col++) << shear.SetValue( maxServiceI[index] );
                }
             }
-         }
+         //}
          //else if ( intervalIdx == compositeDeckIntervalIdx )
          //{
          //   if ( analysisType == pgsTypes::Envelope )

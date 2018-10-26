@@ -40,7 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 43.0
+#define CURRENT_VERSION 44.0
 
 
 /****************************************************************************
@@ -94,6 +94,7 @@ m_PickPointHeight(0),
 m_MaxGirderSweepLifting(0),
 m_EnableHaulingCheck(true),
 m_EnableHaulingDesign(true),
+m_HaulingAnalysisMethod(pgsTypes::hmWSDOT),
 m_MaxGirderSweepHauling(0),
 m_HaulingSupportDistance(ConvertToSysUnits(200.0,unitMeasure::Feet)),
 m_HaulingSupportPlacementTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
@@ -182,6 +183,10 @@ m_MinLiftPoint(-1), // H
 m_LiftPointAccuracy(::ConvertToSysUnits(0.25,unitMeasure::Feet)),
 m_MinHaulPoint(-1), // H
 m_HaulPointAccuracy(::ConvertToSysUnits(0.5,unitMeasure::Feet)),
+m_UseMinTruckSupportLocationFactor(true),
+m_MinTruckSupportLocationFactor(0.1),
+m_OverhangGFactor(3.0),
+m_InteriorGFactor(1.0),
 m_PedestrianLoad(::ConvertToSysUnits(0.075,unitMeasure::KSF)),
 m_MinSidewalkWidth(::ConvertToSysUnits(2.0,unitMeasure::Feet)),
 m_MaxAngularDeviationBetweenGirders(::ConvertToSysUnits(5.0,unitMeasure::Degree)),
@@ -347,6 +352,8 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2010"));
    else if (m_SpecificationType==lrfdVersionMgr::SixthEdition2012)
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2012"));
+   else if (m_SpecificationType==lrfdVersionMgr::SixthEditionWith2013Interims)
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2013"));
    else
       ASSERT(false); // is there a new version?
 
@@ -357,7 +364,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    else
       ASSERT(0);
 
-   pSave->Property(_T("SectionPropertyType"),m_SectionPropertyMode); // added version 43
+   pSave->Property(_T("SectionPropertyType"),m_SectionPropertyMode); // added version 44
 
    pSave->Property(_T("DoCheckStrandSlope"), m_DoCheckStrandSlope);
    pSave->Property(_T("DoDesignStrandSlope"), m_DoDesignStrandSlope);
@@ -396,6 +403,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxGirderSweepLifting"), m_MaxGirderSweepLifting);
    pSave->Property(_T("EnableHaulingCheck"), m_EnableHaulingCheck);
    pSave->Property(_T("EnableHaulingDesign"), m_EnableHaulingDesign);
+   pSave->Property(_T("HaulingAnalysisMethod"), (Int32)m_HaulingAnalysisMethod); // added version 43
    pSave->Property(_T("MaxGirderSweepHauling"), m_MaxGirderSweepHauling);
    pSave->Property(_T("HaulingSupportDistance"),m_HaulingSupportDistance);
    pSave->Property(_T("MaxHaulingOverhang"), m_MaxHaulingOverhang);
@@ -430,6 +438,12 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("LiftingPointLocationAccuracy"),  m_LiftPointAccuracy   );
    pSave->Property(_T("MinHaulingSupportLocation"),     m_MinHaulPoint        );
    pSave->Property(_T("HaulingSupportLocationAccuracy"),m_HaulPointAccuracy   );
+
+   // KDOT values added at version 43
+   pSave->Property(_T("UseMinTruckSupportLocationFactor"), m_UseMinTruckSupportLocationFactor);
+   pSave->Property(_T("MinTruckSupportLocationFactor"), m_MinTruckSupportLocationFactor);
+   pSave->Property(_T("OverhangGFactor"), m_OverhangGFactor);
+   pSave->Property(_T("InteriorGFactor"), m_InteriorGFactor);
 
    // Added at version 4.0
    pSave->Property(_T("CastingYardTensileStressLimitWithMildRebar"),m_CyTensStressServWithRebar);
@@ -573,7 +587,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
    pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
 
-   // added in version 23, removed version 43
+   // added in version 23, removed version 4
    //pSave->Property(_T("AnchorSet"),m_Dset);
    //pSave->Property(_T("WobbleFriction"),m_WobbleFriction);
    //pSave->Property(_T("CoefficientOfFriction"),m_FrictionCoefficient);
@@ -718,7 +732,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       std::_tstring tmp;
       if(pLoad->Property(_T("SpecificationType"),&tmp))
       {
-         if(tmp==_T("AashtoLrfd2012"))
+         if(tmp==_T("AashtoLrfd2013"))
+            m_SpecificationType = lrfdVersionMgr::SixthEditionWith2013Interims;
+         else if(tmp==_T("AashtoLrfd2012"))
             m_SpecificationType = lrfdVersionMgr::SixthEdition2012;
          else if(tmp==_T("AashtoLrfd2010"))
             m_SpecificationType = lrfdVersionMgr::FifthEdition2010;
@@ -979,6 +995,19 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if (version < 43)
+      {
+         m_HaulingAnalysisMethod = pgsTypes::hmWSDOT;
+      }
+      else
+      {
+         Int32 tmp;
+         if(!pLoad->Property(_T("HaulingAnalysisMethod"), &tmp))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_HaulingAnalysisMethod = (pgsTypes::HaulingAnalysisMethod)tmp;
+      }
+
       if(!pLoad->Property(_T("MaxGirderSweepHauling"), &m_MaxGirderSweepHauling))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1100,6 +1129,22 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->Property(_T("HaulingSupportLocationAccuracy"),&m_HaulPointAccuracy) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if ( 43 <= version )
+      {
+         // KDOT values
+         if ( !pLoad->Property(_T("UseMinTruckSupportLocationFactor"),&m_UseMinTruckSupportLocationFactor) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("MinTruckSupportLocationFactor"),&m_MinTruckSupportLocationFactor) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("OverhangGFactor"),&m_OverhangGFactor) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("InteriorGFactor"),&m_InteriorGFactor) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -1654,9 +1699,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad );
       m_LossMethod = temp;
 
-      if ( 42 < version )
+      if ( 43 < version )
       {
-         // added in version 43
+         // added in version 44
          if ( !pLoad->Property(_T("TimeDependentModel"),&temp) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1829,9 +1874,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      if ( 22 < version && version < 43)
+      if ( 22 < version && version < 44)
       {
-         // added in version 23 and removed in version 43
+         // added in version 23 and removed in version 44
          Float64 Dset, WobbleFriction, FrictionCoefficient;
          if ( !pLoad->Property(_T("AnchorSet"),&Dset) )
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2327,6 +2372,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_MaxGirderSweepHauling      , rOther.m_MaxGirderSweepHauling      );
    TEST (m_EnableHaulingCheck         , rOther.m_EnableHaulingCheck            );
    TEST (m_EnableHaulingDesign        , rOther.m_EnableHaulingDesign           );
+   TEST (m_HaulingAnalysisMethod      , rOther.m_HaulingAnalysisMethod       );
    TESTD(m_HaulingSupportDistance          , rOther.m_HaulingSupportDistance );
    TESTD(m_HaulingSupportPlacementTolerance, rOther.m_HaulingSupportPlacementTolerance );
    TESTD(m_HaulingCamberPercentEstimate    , rOther.m_HaulingCamberPercentEstimate );
@@ -2461,6 +2507,11 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_LiftPointAccuracy , rOther.m_LiftPointAccuracy );
    TESTD(m_MinHaulPoint      , rOther.m_MinHaulPoint );
    TESTD(m_HaulPointAccuracy , rOther.m_HaulPointAccuracy);
+
+   TEST(m_UseMinTruckSupportLocationFactor , rOther.m_UseMinTruckSupportLocationFactor);
+   TESTD(m_MinTruckSupportLocationFactor , rOther.m_MinTruckSupportLocationFactor);
+   TESTD(m_OverhangGFactor , rOther.m_OverhangGFactor);
+   TESTD(m_InteriorGFactor , rOther.m_InteriorGFactor);
 
    TESTD(m_PedestrianLoad,   rOther.m_PedestrianLoad);
    TESTD(m_MinSidewalkWidth, rOther.m_MinSidewalkWidth);
@@ -2732,6 +2783,16 @@ bool SpecLibraryEntry::IsHaulingDesignEnabled() const
       ATLASSERT(!m_EnableHaulingDesign); // design should not be enabled if check is not
       return false;
    }
+}
+
+void SpecLibraryEntry::SetHaulingAnalysisMethod(pgsTypes::HaulingAnalysisMethod method)
+{
+   m_HaulingAnalysisMethod = method;
+}
+
+pgsTypes::HaulingAnalysisMethod SpecLibraryEntry::GetHaulingAnalysisMethod() const
+{
+   return m_HaulingAnalysisMethod;
 }
 
 Float64 SpecLibraryEntry::GetHaulingUpwardImpact() const
@@ -3822,6 +3883,46 @@ Float64 SpecLibraryEntry::GetTruckSupportLocationAccuracy() const
    return m_HaulPointAccuracy;
 }
 
+void SpecLibraryEntry::SetUseMinTruckSupportLocationFactor(bool factor)
+{
+   m_UseMinTruckSupportLocationFactor = factor;
+}
+
+bool SpecLibraryEntry::GetUseMinTruckSupportLocationFactor() const
+{
+   return m_UseMinTruckSupportLocationFactor;
+}
+
+void SpecLibraryEntry::SetMinTruckSupportLocationFactor(Float64 factor)
+{
+   m_MinTruckSupportLocationFactor = factor;
+}
+
+Float64 SpecLibraryEntry::GetMinTruckSupportLocationFactor() const
+{
+   return m_MinTruckSupportLocationFactor;
+}
+
+void SpecLibraryEntry::SetOverhangGFactor(Float64 factor)
+{
+   m_OverhangGFactor = factor;
+}
+
+Float64 SpecLibraryEntry::GetOverhangGFactor() const
+{
+   return m_OverhangGFactor;
+}
+
+void SpecLibraryEntry::SetInteriorGFactor(Float64 factor)
+{
+   m_InteriorGFactor = factor;
+}
+
+Float64 SpecLibraryEntry::GetInteriorGFactor() const
+{
+   return m_InteriorGFactor;
+}
+
 void SpecLibraryEntry::SetMininumLiftingPointLocation(Float64 x)
 {
    m_MinLiftPoint = x;
@@ -4007,6 +4108,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_MaxGirderSweepLifting      = rOther.m_MaxGirderSweepLifting;
    m_EnableHaulingCheck         = rOther.m_EnableHaulingCheck;
    m_EnableHaulingDesign        = rOther.m_EnableHaulingDesign;
+   m_HaulingAnalysisMethod      = rOther.m_HaulingAnalysisMethod;
    m_MaxGirderSweepHauling      = rOther.m_MaxGirderSweepHauling;
    m_MaxHaulingOverhang         = rOther.m_MaxHaulingOverhang;
    m_HaulingSupportDistance          = rOther.m_HaulingSupportDistance;
@@ -4150,6 +4252,11 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_LiftPointAccuracy = rOther.m_LiftPointAccuracy;
    m_MinHaulPoint      = rOther.m_MinHaulPoint;
    m_HaulPointAccuracy = rOther.m_HaulPointAccuracy;
+
+   m_UseMinTruckSupportLocationFactor = rOther.m_UseMinTruckSupportLocationFactor;
+   m_MinTruckSupportLocationFactor = rOther.m_MinTruckSupportLocationFactor;
+   m_OverhangGFactor = rOther.m_OverhangGFactor;
+   m_InteriorGFactor = rOther.m_InteriorGFactor;
 
    m_PedestrianLoad   = rOther.m_PedestrianLoad;
    m_MinSidewalkWidth = rOther.m_MinSidewalkWidth;

@@ -257,6 +257,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       return pChapter;
    }
 
+   // The rating settings are consistent with WSDOT policies... report the rating
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(),   true );
 
@@ -275,6 +276,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    rptParagraph* pRemarks = new rptParagraph;
    (*pRemarks) << _T("Remarks:") << rptNewLine;
+   (*pRemarks) << _T("This load rating does not include rating factors for substructure elements.") << rptNewLine;
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
    (*pPara) << pTable << rptNewLine;

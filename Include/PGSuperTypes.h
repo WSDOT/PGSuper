@@ -175,7 +175,7 @@ struct pgsTypes
                      LimitStateCount // this should always be the last one as it will define the total number of limit states
                    }; 
 
-   enum StressLocation { BottomGirder, TopGirder, TopSlab };
+   enum StressLocation { BottomGirder, TopGirder, TopDeck };
    // Note that Permanent was added below when input for total permanent strands was added in 12/06
    enum StrandType { Straight, Harped, Temporary, Permanent };
    enum AnalysisType { Simple, Continuous, Envelope };
@@ -440,6 +440,10 @@ struct pgsTypes
       blMidGirderLength, // centered at mid-girder - fixed length
       blMidGirderEnds    // centered at mid-girder - measured from ends of girder
    };
+
+   // Hauling analysis
+   enum HaulingAnalysisMethod {hmWSDOT,   // WashDOT
+                               hmKDOT };  // Kansas
 
    typedef enum CureMethod
    {
@@ -1120,6 +1124,57 @@ inline bool IsAdjacentSpacing(pgsTypes::SupportedBeamSpacing sbs)
 {
    // spacing type is for adjacent beams
    return !IsSpreadSpacing(sbs);
+}
+
+inline pgsTypes::LiveLoadType LiveLoadTypeFromLimitState(pgsTypes::LimitState ls)
+{
+   pgsTypes::LiveLoadType llType;
+   switch(ls)
+   {
+   case pgsTypes::ServiceI:
+   case pgsTypes::ServiceIA:
+   case pgsTypes::ServiceIII:
+   case pgsTypes::StrengthI:
+   case pgsTypes::StrengthI_Inventory:
+   case pgsTypes::StrengthI_Operating:
+   case pgsTypes::ServiceIII_Inventory:
+   case pgsTypes::ServiceIII_Operating:
+      llType = pgsTypes::lltDesign;
+      break;
+
+   case pgsTypes::StrengthII:
+      llType = pgsTypes::lltPermit;
+      break;
+
+   case pgsTypes::FatigueI:
+      llType = pgsTypes::lltFatigue;
+      break;
+
+   case pgsTypes::StrengthI_LegalRoutine:
+   case pgsTypes::ServiceIII_LegalRoutine:
+      llType = pgsTypes::lltLegalRating_Routine;
+      break;
+
+   case pgsTypes::StrengthI_LegalSpecial:
+   case pgsTypes::ServiceIII_LegalSpecial:
+      llType = pgsTypes::lltLegalRating_Special;
+      break;
+
+   case pgsTypes::StrengthII_PermitRoutine:
+   case pgsTypes::ServiceI_PermitRoutine:
+      llType = pgsTypes::lltPermitRating_Routine;
+      break;
+
+   case pgsTypes::StrengthII_PermitSpecial:
+   case pgsTypes::ServiceI_PermitSpecial:
+      llType = pgsTypes::lltPermitRating_Special;
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+
+   return llType;
 }
 
 inline bool IsRatingLimitState(pgsTypes::LimitState ls)

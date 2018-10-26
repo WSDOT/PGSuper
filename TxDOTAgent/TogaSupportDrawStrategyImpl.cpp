@@ -82,7 +82,7 @@ STDMETHODIMP_(void) CTogaSupportDrawStrategyImpl::XDrawPointStrategy::DrawDragIm
 {
    METHOD_PROLOGUE(CTogaSupportDrawStrategyImpl,DrawPointStrategy);
 
-   double wx, wy;
+   Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
    pThis->m_CachePoint->put_X(wx);
    pThis->m_CachePoint->put_Y(wy);
@@ -98,7 +98,7 @@ STDMETHODIMP_(void) CTogaSupportDrawStrategyImpl::XDrawPointStrategy::GetBoundin
    CComPtr<IPoint2d> point;
    pDO->GetPosition(&point);
 
-   double px, py;
+   Float64 px, py;
    point->get_X(&px);
    point->get_Y(&py);
 
@@ -109,7 +109,7 @@ STDMETHODIMP_(void) CTogaSupportDrawStrategyImpl::XDrawPointStrategy::GetBoundin
    CComPtr<iCoordinateMap> pMap;
    pDispMgr->GetCoordinateMap(&pMap);
 
-   double wid,hgt;
+   Float64 wid,hgt;
    pThis->GetWSymbolSize(pMap, &wid, &hgt);
 
    CComPtr<IRect2d> bounding_box;
@@ -124,12 +124,12 @@ STDMETHODIMP_(void) CTogaSupportDrawStrategyImpl::XDrawPointStrategy::GetBoundin
    (*rect)->AddRef();
 }
 
-void CTogaSupportDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, double* psx, double* psy)
+void CTogaSupportDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64* psy)
 {
 
-   double xo,yo;
+   Float64 xo,yo;
    pMap->TPtoWP(0,0,&xo,&yo);
-   double x2,y2;
+   Float64 x2,y2;
    pMap->TPtoWP(SSIZE,SSIZE,&x2,&y2);
 
    *psx = fabs(x2-xo)/2.0;

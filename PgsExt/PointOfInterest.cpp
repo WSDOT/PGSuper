@@ -259,6 +259,14 @@ PoiAttributeType pgsPointOfInterest::GetAttributes() const
    return m_Attributes;
 }
 
+void pgsPointOfInterest::RemoveAttributes(PoiAttributeType attrib)
+{
+   sysFlags<PoiAttributeType>::Clear(&m_Attributes,attrib);
+
+   UPDATE_ATTRIBUTES;
+   ASSERTVALID;
+}
+
 PoiAttributeType pgsPointOfInterest::GetReference() const
 {
    return GetReference(m_Attributes);

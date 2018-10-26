@@ -47,13 +47,13 @@
 
 #include <EAF\EAFAppPlugin.h>
 
-#include "BridgeLinkCatCom.h"
+#include "BridgeLinkCATID.h"
 #include "PGSuperCatCom.h"
 #include <System\ComCatMgr.h>
 
-#include <EAF\EAFComponentInfo.h>
 #include <EAF\EAFUIIntegration.h>
 
+#include "PGSComponentInfo.h"
 #include <PGSuperIEPlugin_i.c>
 #include <WBFLReportManagerAgent_i.c>
 #include "TxDOTOptionalDesignDocProxyAgent.h"
@@ -117,7 +117,7 @@ HRESULT Register(bool bRegister)
 
    // The TxDOT component info objects provides information about this entire plug-in component
    // This information is used in the "About" dialog
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_BridgeLinkComponents,bRegister);
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponentInfo,bRegister);
    if ( FAILED(hr) )
       return hr;
 

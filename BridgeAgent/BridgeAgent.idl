@@ -34,7 +34,7 @@ library PGSuper
    importlib("WBFLCore.tlb");
 
 	[
-		uuid(59753CA0-3B7B-11d2-8EC5-006097DF3C68)
+		uuid(3FD393DD-8AF4-4cb2-A1C5-71E46C436BA0)
 	]
 	coclass BridgeAgent
 	{

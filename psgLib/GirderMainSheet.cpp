@@ -585,7 +585,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
       BOOL bval = m_Entry.m_MaxDebondLengthBySpanFraction<0 ? FALSE:TRUE;
       DDX_Check(pDX, IDC_CHECK_MAX_LENGTH_FRACTION, bval);
 
-      double dval = (bval!=FALSE) ? m_Entry.m_MaxDebondLengthBySpanFraction : 0.0;
+      Float64 dval = (bval!=FALSE) ? m_Entry.m_MaxDebondLengthBySpanFraction : 0.0;
       DDX_Percentage(pDX,IDC_MAX_LENGTH_FRACTION, dval);
 
       bval = m_Entry.m_MaxDebondLengthByHardDistance<0 ? FALSE:TRUE;
@@ -603,7 +603,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
       if(bval!=FALSE)
       {
          DDX_Percentage(pDX,IDC_MAX_LENGTH_FRACTION, m_Entry.m_MaxDebondLengthBySpanFraction);
-         double dval = m_Entry.m_MaxDebondLengthBySpanFraction * 100;
+         Float64 dval = m_Entry.m_MaxDebondLengthBySpanFraction * 100;
          DDV_MinMaxDouble(pDX, dval, 0.0, 45.0);
       }
       else

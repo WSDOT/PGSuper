@@ -64,7 +64,6 @@ interface IBeamFactory;
 
 // MISCELLANEOUS
 //
-static const Float64 TwoInches = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
 
 /*****************************************************************************
 CLASS 
@@ -802,10 +801,7 @@ private:
       pgsTypes::GirderFace m_BottomFace;
       Float64    m_BottomLimit;
 
-      HarpedStrandAdjustment() : m_AllowVertAdjustment(false), m_StrandIncrement(TwoInches),
-		                          m_TopFace(pgsTypes::GirderTop), m_TopLimit(TwoInches),
-		                          m_BottomFace(pgsTypes::GirderBottom), m_BottomLimit(TwoInches)
-      {;}
+      HarpedStrandAdjustment();
 
       bool operator==(const HarpedStrandAdjustment& rOther) const
       {  
@@ -932,6 +928,10 @@ private:
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
+
+   std::map<std::_tstring,std::_tstring> m_CLSIDMap; // maps old PGSuper CLSIDs to new BridgeLink CLSIDs
+   void InitCLSIDMap();
+   std::_tstring TranslateCLSID(const std::_tstring& strCLSID);
 };
 
 // INLINE METHODS

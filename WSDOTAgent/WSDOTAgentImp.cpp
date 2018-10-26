@@ -47,6 +47,10 @@ DECLARE_LOGFILE;
 STDMETHODIMP CWSDOTAgentImp::SetBroker(IBroker* pBroker)
 {
    AGENT_SET_BROKER(pBroker);
+
+   CComQIPtr<ICLSIDMap> clsidMap(pBroker);
+   clsidMap->AddCLSID(_T("{338AD645-BAF2-41DC-964E-A9DFC8123253}"),_T("{B1A19633-8880-40BC-A3C9-DDF47F7F1844}"));
+
    return S_OK;
 }
 

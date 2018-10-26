@@ -9,6 +9,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include "HtmlHelp\HelpTopics.hh"
+#include <PsgLib\RebarUIUtils.h>
 
 
 // CClosurePourLongitudinalReinforcementPage dialog
@@ -60,13 +61,13 @@ void CClosurePourLongitudinalReinforcementPage::DoDataExchange(CDataExchange* pD
 
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      pParent->GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
+      GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
 
       pParent->m_ClosurePour.GetRebar() = rebarData;
    }
    else
    {
-      int idx = pParent->GetStirrupMaterialIndex(pParent->m_ClosurePour.GetStirrups().ShearBarType,pParent->m_ClosurePour.GetStirrups().ShearBarGrade);
+      int idx = GetStirrupMaterialIndex(pParent->m_ClosurePour.GetStirrups().ShearBarType,pParent->m_ClosurePour.GetStirrups().ShearBarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
 
       CLongitudinalRebarData rebardata;
@@ -108,7 +109,7 @@ BOOL CClosurePourLongitudinalReinforcementPage::OnInitDialog()
 
    CClosurePourDlg* pParent = (CClosurePourDlg*)GetParent();
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   pParent->FillMaterialComboBox(pc);
+   FillRebarMaterialComboBox(pc);
 
    CPropertyPage::OnInitDialog();
 	

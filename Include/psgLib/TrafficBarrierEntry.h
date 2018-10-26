@@ -163,8 +163,8 @@ public:
    bool IsBarrierStructurallyContinuous() const;
    void IsBarrierStructurallyContinuous(bool bContinuous);
 
-   void SetCurbOffset(double curbOffset);
-   double GetCurbOffset() const;
+   void SetCurbOffset(Float64 curbOffset);
+   Float64 GetCurbOffset() const;
 
    //------------------------------------------------------------------------
    // Equality - test if two entries are equal. Ignore names by default
@@ -190,7 +190,7 @@ private:
    WeightMethod m_WeightMethod;
    Float64 m_Weight;
    Float64 m_Ec;
-   double m_CurbOffset; // offset from face of barrier to "notional" curb line
+   Float64 m_CurbOffset; // offset from face of barrier to "notional" curb line
    bool m_bStructurallyContinuous;
 
    // GROUP: LIFECYCLE
@@ -199,7 +199,7 @@ private:
    bool ComparePoints(IPoint2dCollection* points1,IPoint2dCollection* points2) const;
    void CopyPoints(IPoint2dCollection* points1,IPoint2dCollection* points2);
    void CopyPoints(IPoint2dCollection* points1,IPoint2dCollection* points2) const;
-   void ConvertDimensionsToPoints(double x1,double x2,double x3,double x4,double x5,double y1,double y2,double y3);
+   void ConvertDimensionsToPoints(Float64 x1,Float64 x2,Float64 x3,Float64 x4,Float64 x5,Float64 y1,Float64 y2,Float64 y3);
    void CreatePolyShape(pgsTypes::TrafficBarrierOrientation orientation,IPoint2dCollection* points,IPolyShape** polyShape) const;
 
    // GROUP: ACCESS

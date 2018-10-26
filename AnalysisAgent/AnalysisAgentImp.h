@@ -69,6 +69,7 @@ class ATL_NO_VTABLE CAnalysisAgentImp :
    public IContraflexurePoints,
    public IContinuity,
    public IBearingDesign,
+   public IInfluenceResults,
    public IBridgeDescriptionEventSink,
    public ISpecificationEventSink,
    public IRatingSpecificationEventSink,
@@ -104,6 +105,7 @@ BEGIN_COM_MAP(CAnalysisAgentImp)
    COM_INTERFACE_ENTRY(IContraflexurePoints)
    COM_INTERFACE_ENTRY(IContinuity)
    COM_INTERFACE_ENTRY(IBearingDesign)
+   COM_INTERFACE_ENTRY(IInfluenceResults)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
    COM_INTERFACE_ENTRY(IRatingSpecificationEventSink)
@@ -399,9 +401,13 @@ public:
    virtual bool IsContinuityFullyEffective(const CGirderKey& girderKey);
    virtual Float64 GetContinuityStressLevel(PierIndexType pierIdx,const CGirderKey& girderKey);
 
+// IInfluenceResults
+public:
+   virtual std::vector<Float64> GetUnitLoadMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitLoadPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx);
+
 // IBridgeDescriptionEventSink
 public:
-   virtual HRESULT OnBridgeChanged();
+   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint);
    virtual HRESULT OnGirderFamilyChanged();
    virtual HRESULT OnGirderChanged(const CGirderKey& girderKey,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
@@ -448,11 +454,13 @@ private:
       IntervalIndexType Interval;
       CComPtr<IFem2dModel> Model;
       pgsPoiMap PoiMap;
+      std::map<PoiIDType,LoadCaseIDType> UnitLoadIDMap; // maps product model POI ID to a FEM2D load case ID for a unit load at the corrosponding poi in the Fem2d Model
       SegmentModelData& operator=(const SegmentModelData& other)
       {
          Interval = other.Interval;
          Model = other.Model;
          PoiMap = other.PoiMap;
+         UnitLoadIDMap = other.UnitLoadIDMap;
          return *this;
       };
    };
@@ -474,7 +482,8 @@ private:
       // Index is pgsTypes::SimpleSpan or pgsTypes::ContinuousSpan
       CComPtr<ILoadGroupResponse>       pLoadGroupResponse[2]; // Girder, Traffic Barrier, etc
       CComPtr<ILoadCaseResponse>        pLoadCaseResponse[2];  // DC, DW, etc
-      CComPtr<IContraflexureResponse>   pContraflexureResponse[2]; 
+      CComPtr<IContraflexureResponse>   pContraflexureResponse[2];
+      CComPtr<IUnitLoadResponse>        pUnitLoadResponse[2];
 
       // first index is force effect: fetFx, fetFy, fetMz
       // second index is optimization: optMinimize, optMaximize
@@ -635,7 +644,7 @@ private:
    void AddUserTruck(const std::_tstring& strLLName,ILibrary* pLibrary,Float64 IMtruck,Float64 IMlane,IVehicularLoads* pVehicles);
    void AddDummyLiveLoad(IVehicularLoads* pVehicles);
 
-   void GetSectionResults(SegmentModels& models,const pgsPointOfInterest& poi,sysSectionValue* pFx,sysSectionValue* pFy,sysSectionValue* pMz,Float64* pDx,Float64* pDy,Float64* pRz);
+   void GetSectionResults(SegmentModels& models,LoadCaseIDType lcid,const pgsPointOfInterest& poi,sysSectionValue* pFx,sysSectionValue* pFy,sysSectionValue* pMz,Float64* pDx,Float64* pDy,Float64* pRz);
    Float64 GetSectionStress(SegmentModels& models,pgsTypes::StressLocation loc,const pgsPointOfInterest& poi);
    Float64 GetReactions(SegmentModels& model,PierIndexType pier,const CGirderKey& girderKey);
 
@@ -702,7 +711,8 @@ private:
 
    enum SpanType { PinPin, PinFix, FixPin, FixFix };
    SpanType GetSpanType(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bContinuous);
-   void AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,Float64 gF,Float64 gD, Float64 gPedes);
+   void AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,
+                               Float64 gFM,Float64 gFV,Float64 gD, Float64 gPedes);
    Uint32 GetCfPointsInRange(IDblArray* cfLocs, Float64 spanStart, Float64 spanEnd, Float64* ptsInrg);
    void ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
    void ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
@@ -785,6 +795,44 @@ private:
 
    void GetStressTimeStep(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludePrestress,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
    void GetStressElastic(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludePrestress,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
+
+   struct ProductLoadDisplacement
+   {
+      ProductForceType pfType;
+      IntervalIndexType intervalIdx;
+      PoiIDType poiID;
+      pgsTypes::BridgeAnalysisType bat;
+      Float64 D;
+      ProductLoadDisplacement(IntervalIndexType i,ProductForceType pft,PoiIDType id,pgsTypes::BridgeAnalysisType b,Float64 d=9999999) :
+      intervalIdx(i), pfType(pft), poiID(id), bat(b), D(d) {}
+      bool operator<(const ProductLoadDisplacement& other) const
+      {
+         if ( pfType < other.pfType )
+            return true;
+
+         if ( other.pfType < pfType )
+            return false;
+
+         if ( intervalIdx < other.intervalIdx )
+            return true;
+
+         if ( other.intervalIdx < intervalIdx )
+            return false;
+
+         if ( bat < other.bat )
+            return true;
+
+         if ( other.bat < bat )
+            return false;
+
+         return (poiID < other.poiID);
+      }
+   };
+   std::set<ProductLoadDisplacement> m_ProductLoadDisplacements;
+
+   std::vector<Float64> GetTimeStepDisplacement(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat);
+   std::vector<Float64> GetTimeStepDisplacement(LoadingCombination combo,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,CombinationType type,pgsTypes::BridgeAnalysisType bat);
+   void GetTimeStepDisplacement(pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
 
    void ComputeTimeDependentEffects(const CGirderKey& girderKey);
 

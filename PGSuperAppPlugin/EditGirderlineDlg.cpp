@@ -9,6 +9,7 @@
 
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\ClosurePourData.h>
 #include <IFace\Project.h>
 
 // CEditGirderlineDlg dialog
@@ -57,26 +58,32 @@ void DDX_PTData(CDataExchange* pDX,INT nIDC,CPTData* ptData)
 
 IMPLEMENT_DYNAMIC(CEditGirderlineDlg, CDialog)
 
-CEditGirderlineDlg::CEditGirderlineDlg(const CSplicedGirderData* pGirder,CWnd* pParent /*=NULL*/)
+CEditGirderlineDlg::CEditGirderlineDlg(const CGirderKey& girderKey,CWnd* pParent /*=NULL*/)
 	: CDialog(CEditGirderlineDlg::IDD, pParent)
 {
-   m_Girder = *pGirder;
-   m_GirderKey = pGirder->GetGirderKey();
-   m_GirderID = pGirder->GetID();
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   const CTimelineManager* pTimelineMgr = pGirder->GetGirderGroup()->GetBridgeDescription()->GetTimelineManager();
+   m_BridgeDescription = *pBridgeDesc;
+   m_Girder = *m_BridgeDescription.GetGirderGroup(girderKey.groupIndex)->GetGirder(girderKey.girderIndex);
+   m_GirderKey = girderKey;
+   m_GirderID = m_Girder.GetID();
 
-   DuctIndexType nDucts = pGirder->GetPostTensioning()->GetDuctCount();
+   const CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
+
+   DuctIndexType nDucts = m_Girder.GetPostTensioning()->GetDuctCount();
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(m_GirderKey,ductIdx);
       m_TendonStressingEvent.push_back(eventIdx);
    }
 
-   IndexType nClosurePours = pGirder->GetClosurePourCount();
+   IndexType nClosurePours = m_Girder.GetClosurePourCount();
    for ( IndexType idx = 0; idx < nClosurePours; idx++ )
    {
-      const CPrecastSegmentData* pSegment = pGirder->GetSegment(idx);
+      const CPrecastSegmentData* pSegment = m_Girder.GetSegment(idx);
       SegmentIDType segID = pSegment->GetID();
       EventIndexType eventIdx = pTimelineMgr->GetCastClosurePourEventIndex(segID);
       m_CastClosureEvent.push_back(eventIdx);
@@ -105,7 +112,35 @@ void CEditGirderlineDlg::DoDataExchange(CDataExchange* pDX)
    DDV_GXGridWnd(pDX,&m_DuctGrid);
    DDX_PTData(pDX,IDC_DUCT_GRID,m_Girder.GetPostTensioning());
 
-   DDX_Check_Bool(pDX,IDC_CHECKBOX,m_bCopyToAll);
+   // Validate the timeline
+   if ( pDX->m_bSaveAndValidate )
+   {
+      CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
+
+      DuctIndexType nDucts = m_Girder.GetPostTensioning()->GetDuctCount();
+      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      {
+         pTimelineMgr->SetStressTendonEventByIndex(m_GirderKey,ductIdx,m_TendonStressingEvent[ductIdx]);
+      }
+
+      SegmentIndexType nCP = m_Girder.GetClosurePourCount();
+      for ( SegmentIndexType cpIdx = 0; cpIdx < nCP; cpIdx++ )
+      {
+         const CClosurePourData* pCP = m_Girder.GetClosurePour(cpIdx);
+         IDType cpID = pCP->GetID();
+         pTimelineMgr->SetCastClosurePourEventByIndex(cpID,m_CastClosureEvent[cpIdx]);
+      }
+
+      int result = pTimelineMgr->Validate();
+      if ( result != TLM_SUCCESS )
+      {
+         pDX->PrepareCtrl(IDC_GIRDER_GRID);
+         CString strMsg = pTimelineMgr->GetErrorMessage(result);
+         AfxMessageBox(strMsg);
+         pDX->Fail();
+      }
+   }
+
 
    Float64 conditionFactor;
    pgsTypes::ConditionFactorType conditionFactorType;
@@ -127,6 +162,8 @@ void CEditGirderlineDlg::DoDataExchange(CDataExchange* pDX)
       DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
       DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
    }
+
+   DDX_Check_Bool(pDX,IDC_CHECKBOX,m_bCopyToAll);
 }
 
 

@@ -189,6 +189,8 @@ const LoadCaseIDType g_lcidHarpedStrand        =  22;
 const LoadCaseIDType g_lcidTemporaryStrand     =  23;
 const LoadCaseIDType g_lcidShearKey            =  24;
 
+const LoadCaseIDType g_lcidUnitLoadBase        = -1000;
+
 const LoadGroupIDType g_lcidDCInc           = 100; // incremental DC loading
 const LoadGroupIDType g_lcidDWInc           = 101; // incremental DW loading
 const LoadGroupIDType g_lcidDC              = 102; // DC loading summed over stages
@@ -371,6 +373,7 @@ void CAnalysisAgentImp::ModelData::CreateAnalysisEngine(ILBAMModel* theModel,pgs
    // initialize the engine with default values (NULL), except for the vehicular response enveloper
    engine->InitializeEx(theModel,atForce,
                         NULL, // load group response
+                        NULL, // unit load response
                         NULL, // influence line response
                         NULL, // analysis pois
                         NULL, // basic vehicular response
@@ -384,6 +387,7 @@ void CAnalysisAgentImp::ModelData::CreateAnalysisEngine(ILBAMModel* theModel,pgs
 
    // get the various response interfaces from the engine so we don't have to do it over and over again
    engine->get_LoadGroupResponse(&pLoadGroupResponse[bat]);
+   engine->get_UnitLoadResponse(&pUnitLoadResponse[bat]);
    engine->get_LoadCaseResponse(&pLoadCaseResponse[bat]);
    engine->get_ContraflexureResponse(&pContraflexureResponse[bat]);
    engine->get_LoadCombinationResponse(&pLoadComboResponse[bat]);
@@ -529,8 +533,12 @@ void CAnalysisAgentImp::ModelData::operator=(const CAnalysisAgentImp::ModelData&
 
    pLoadGroupResponse[pgsTypes::SimpleSpan]     = other.pLoadGroupResponse[pgsTypes::SimpleSpan];
    pLoadGroupResponse[pgsTypes::ContinuousSpan] = other.pLoadGroupResponse[pgsTypes::ContinuousSpan];
+
    pLoadCaseResponse[pgsTypes::SimpleSpan]      = other.pLoadCaseResponse[pgsTypes::SimpleSpan];
    pLoadCaseResponse[pgsTypes::ContinuousSpan]  = other.pLoadCaseResponse[pgsTypes::ContinuousSpan];
+
+   pUnitLoadResponse[pgsTypes::SimpleSpan]      = other.pUnitLoadResponse[pgsTypes::SimpleSpan];
+   pUnitLoadResponse[pgsTypes::ContinuousSpan]  = other.pUnitLoadResponse[pgsTypes::ContinuousSpan];
 
    pLiveLoadResponse[pgsTypes::SimpleSpan]                  = other.pLiveLoadResponse[pgsTypes::SimpleSpan];
    pLiveLoadResponse[pgsTypes::ContinuousSpan]              = other.pLiveLoadResponse[pgsTypes::ContinuousSpan];
@@ -601,8 +609,8 @@ CComBSTR CAnalysisAgentImp::GetLoadCaseName(LoadingCombination combo)
          bstrLoadCase = _T("CR");
          break;
 
-      case lcSR:
-         bstrLoadCase = _T("SR");
+      case lcSH:
+         bstrLoadCase = _T("SH");
          break;
 
       case lcPS:
@@ -638,9 +646,9 @@ bool GetLoadCaseTypeFromName(const CComBSTR& name, LoadingCombination* pCombo)
       *pCombo = lcCR;
       return true;
    }
-   else if (CComBSTR("SR") == name )
+   else if (CComBSTR("SH") == name )
    {
-      *pCombo = lcSR;
+      *pCombo = lcSH;
       return true;
    }
    else if (CComBSTR("PS") == name )
@@ -948,6 +956,8 @@ void CAnalysisAgentImp::Invalidate(bool clearStatus)
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
    }
+
+   m_ProductLoadDisplacements.clear();
 }
 
 void CAnalysisAgentImp::InvalidateCamberModels()
@@ -1470,7 +1480,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
             }
 
             bool bModelLeftCantilever, bModelRightCantilever;
-            ModelCantilevers(segmentKey,&bModelLeftCantilever,&bModelRightCantilever);
+            pBridge->ModelCantilevers(segmentKey,&bModelLeftCantilever,&bModelRightCantilever);
 
             // End to end segment length
             Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
@@ -1787,7 +1797,41 @@ CAnalysisAgentImp::SegmentModelData CAnalysisAgentImp::BuildCastingYardModels(co
    // Build the Model
    SegmentModelData model_data;
    model_data.Interval = intervalIdx;
-   pgsGirderModelFactory::CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Lg-rightSupportDistance,Ec,g_lcidGirder,true,vPOI,&model_data.Model,&model_data.PoiMap);
+   pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Lg-rightSupportDistance,Ec,g_lcidGirder,true,vPOI,&model_data.Model,&model_data.PoiMap);
+
+   // Generate unit loads
+   CComPtr<IFem2dPOICollection> POIs;
+   model_data.Model->get_POIs(&POIs);
+   LoadCaseIDType lcid = g_lcidUnitLoadBase;
+   CComPtr<IFem2dLoadingCollection> loadings;
+   model_data.Model->get_Loadings(&loadings);
+   std::vector<pgsPointOfInterest>::iterator iter(vPOI.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPOI.end());
+   for ( ; iter != end; iter++, lcid-- )
+   {
+      pgsPointOfInterest& poi = *iter;
+
+      CComPtr<IFem2dLoading> loading;
+      loadings->Create(lcid,&loading);
+
+      CComPtr<IFem2dPointLoadCollection> pointLoads;
+      loading->get_PointLoads(&pointLoads);
+
+      PoiIDType modelPoiID = model_data.PoiMap.GetModelPoi(poi);
+
+      CComPtr<IFem2dPOI> femPoi;
+      POIs->Find(modelPoiID,&femPoi);
+
+      MemberIDType mbrID;
+      Float64 x;
+      femPoi->get_MemberID(&mbrID);
+      femPoi->get_Location(&x);
+
+      CComPtr<IFem2dPointLoad> pointLoad;
+      pointLoads->Create(0,mbrID,x,0.0,-1.0,0.0,lotMember,&pointLoad);
+
+      model_data.UnitLoadIDMap.insert(std::make_pair(poi.GetID(),lcid));
+   }
 
    return model_data;
 }
@@ -1852,7 +1896,7 @@ Float64 CAnalysisAgentImp::GetSectionStress(SegmentModels& models,pgsTypes::Stre
    if (poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_PIER) )
       return 0; // there isn't a closure pour in these segment models.... return 0.0 stress
 
-   if ( loc == pgsTypes::TopSlab )
+   if ( loc == pgsTypes::TopDeck )
       return 0.0; // the slab isn't cast yet
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -1891,7 +1935,7 @@ Float64 CAnalysisAgentImp::GetSectionStress(SegmentModels& models,pgsTypes::Stre
    return stress;
 }
 
-void CAnalysisAgentImp::GetSectionResults(SegmentModels& model,const pgsPointOfInterest& poi,sysSectionValue* pFx,sysSectionValue* pFy,sysSectionValue* pMz,Float64* pDx,Float64* pDy,Float64* pRz)
+void CAnalysisAgentImp::GetSectionResults(SegmentModels& model,LoadCaseIDType lcid,const pgsPointOfInterest& poi,sysSectionValue* pFx,sysSectionValue* pFy,sysSectionValue* pMz,Float64* pDx,Float64* pDy,Float64* pRz)
 {
    if ( poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_PIER) )
    {
@@ -1980,12 +2024,12 @@ void CAnalysisAgentImp::GetSectionResults(SegmentModels& model,const pgsPointOfI
          else
          {
             // forces on the left face of the POI come from the forces at the right end of the previous fem2d member
-            hr = results->ComputeMemberForces(g_lcidGirder,memberID-1,&dummyFx,&dummyFy,&dummyMz,&FxLeft,&FyLeft,&MzLeft);
+            hr = results->ComputeMemberForces(lcid,memberID-1,&dummyFx,&dummyFy,&dummyMz,&FxLeft,&FyLeft,&MzLeft);
             ATLASSERT(SUCCEEDED(hr));
          }
 
          // forces on the right face of the POI ceom from the forces at the left end of this fem2d member
-         hr = results->ComputeMemberForces(g_lcidGirder,memberID,&FxRight,&FyRight,&MzRight,&dummyFx,&dummyFy,&dummyMz);
+         hr = results->ComputeMemberForces(lcid,memberID,&FxRight,&FyRight,&MzRight,&dummyFx,&dummyFy,&dummyMz);
          ATLASSERT(SUCCEEDED(hr));
       }
       else if ( IsEqual(location,mbrLength) )
@@ -1997,7 +2041,7 @@ void CAnalysisAgentImp::GetSectionResults(SegmentModels& model,const pgsPointOfI
          // come from the forces on the right face of this member. The forces on the
          // right face of the POI come from the forces on the left face of the next fem2d member.
          Float64 dummyFx, dummyFy, dummyMz;
-         hr = results->ComputeMemberForces(g_lcidGirder,memberID,&dummyFx,&dummyFy,&dummyMz,&FxLeft,&FyLeft,&MzLeft);
+         hr = results->ComputeMemberForces(lcid,memberID,&dummyFx,&dummyFy,&dummyMz,&FxLeft,&FyLeft,&MzLeft);
          FyLeft *= -1.0;
          ATLASSERT(SUCCEEDED(hr));
 
@@ -2012,19 +2056,19 @@ void CAnalysisAgentImp::GetSectionResults(SegmentModels& model,const pgsPointOfI
          else
          {
             // forces on the right face of the POI come from the forces at the left end of the next fem2d member
-            hr = results->ComputeMemberForces(g_lcidGirder,memberID+1,&FxRight,&FyRight,&MzRight,&dummyFx,&dummyFy,&dummyMz);
+            hr = results->ComputeMemberForces(lcid,memberID+1,&FxRight,&FyRight,&MzRight,&dummyFx,&dummyFy,&dummyMz);
             ATLASSERT(SUCCEEDED(hr));
          }
       }
       else
       {
          // POI is somewhere along the fem2d member... get left/right face POI results
-         hr = results->ComputePOIForces(g_lcidGirder,poi_id,mftLeft,lotGlobal,&FxLeft,&FyLeft,&MzLeft);
+         hr = results->ComputePOIForces(lcid,poi_id,mftLeft,lotGlobal,&FxLeft,&FyLeft,&MzLeft);
          ATLASSERT(SUCCEEDED(hr));
 
          FyLeft *= -1;
 
-         hr = results->ComputePOIForces(g_lcidGirder,poi_id,mftRight,lotGlobal,&FxRight,&FyRight,&MzRight);
+         hr = results->ComputePOIForces(lcid,poi_id,mftRight,lotGlobal,&FxRight,&FyRight,&MzRight);
          ATLASSERT(SUCCEEDED(hr));
       }
 
@@ -2037,7 +2081,7 @@ void CAnalysisAgentImp::GetSectionResults(SegmentModels& model,const pgsPointOfI
       pMz->Left()  = MzLeft;
       pMz->Right() = MzRight;
 
-      hr = results->ComputePOIDisplacements(g_lcidGirder,poi_id,lotGlobal,pDx,pDy,pRz);
+      hr = results->ComputePOIDisplacements(lcid,poi_id,lotGlobal,pDx,pDy,pRz);
       ATLASSERT(SUCCEEDED(hr));
    }
 }
@@ -2145,7 +2189,7 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
    std::vector<pgsPointOfInterest>::iterator newEnd( std::unique(vPOI.begin(),vPOI.end()) );
    vPOI.erase(newEnd,vPOI.end());
 
-   pgsGirderModelFactory::CreateGirderModel(m_pBroker,intervalIdx,segmentKey,0.0,Lg,E,g_lcidGirder,false,vPOI,&pModelData->Model,&pModelData->PoiMap);
+   pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,0.0,Lg,E,g_lcidGirder,false,vPOI,&pModelData->Model,&pModelData->PoiMap);
 
    //
    // Apply the loads due to prestressing (use prestress force at mid-span)
@@ -2486,8 +2530,8 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool 
    std::vector<pgsPointOfInterest>::iterator newEnd( std::unique(vPOI.begin(),vPOI.end()) );
    vPOI.erase(newEnd,vPOI.end());
 
-   pgsGirderModelFactory::CreateGirderModel(m_pBroker,releaseIntervalIdx,   segmentKey,0.0,L,Eci,g_lcidGirder,false,vPOI,&pInitialModelData->Model,&pInitialModelData->PoiMap);
-   pgsGirderModelFactory::CreateGirderModel(m_pBroker,tsRemovalIntervalIdx, segmentKey,0.0,L,Ec, g_lcidGirder,false,vPOI,&pReleaseModelData->Model,&pReleaseModelData->PoiMap);
+   pgsGirderModelFactory().CreateGirderModel(m_pBroker,releaseIntervalIdx,   segmentKey,0.0,L,Eci,g_lcidGirder,false,vPOI,&pInitialModelData->Model,&pInitialModelData->PoiMap);
+   pgsGirderModelFactory().CreateGirderModel(m_pBroker,tsRemovalIntervalIdx, segmentKey,0.0,L,Ec, g_lcidGirder,false,vPOI,&pReleaseModelData->Model,&pReleaseModelData->PoiMap);
 
    // Determine the prestress forces and eccentricities
    vPOI = pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_MIDSPAN);
@@ -2589,6 +2633,7 @@ STDMETHODIMP CAnalysisAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IContraflexurePoints, this );
    pBrokerInit->RegInterface( IID_IContinuity,          this );
    pBrokerInit->RegInterface( IID_IBearingDesign,       this );
+   pBrokerInit->RegInterface( IID_IInfluenceResults,    this );
 
    return S_OK;
 };
@@ -2598,6 +2643,43 @@ STDMETHODIMP CAnalysisAgentImp::Init()
    CREATE_LOGFILE("AnalysisAgent");
 
    AGENT_INIT;
+
+   // create an array for pois going into the lbam. create it here once so we don't need to make a new one every time we need it
+   HRESULT hr = m_LBAMPoi.CoCreateInstance(CLSID_IDArray);
+   CHECK( SUCCEEDED(hr) );
+
+   // Register status callbacks that we want to use
+   m_scidInformationalError = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError,IDH_GIRDER_CONNECTION_ERROR)); // informational with help for girder end offset error
+   m_scidVSRatio            = pStatusCenter->RegisterCallback(new pgsVSRatioStatusCallback(m_pBroker));
+   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
+
+   // Create Product Load Map
+   m_ProductLoadMap.AddLoadItem(pftGirder,_T("Girder"));
+   m_ProductLoadMap.AddLoadItem(pftDiaphragm,_T("Diaphragm"));
+   m_ProductLoadMap.AddLoadItem(pftConstruction,_T("Construction"));
+   m_ProductLoadMap.AddLoadItem(pftSlab,_T("Slab"));
+   m_ProductLoadMap.AddLoadItem(pftSlabPad,_T("Haunch"));
+   m_ProductLoadMap.AddLoadItem(pftSlabPanel,_T("Slab Panel"));
+   m_ProductLoadMap.AddLoadItem(pftOverlay,_T("Overlay"));
+   m_ProductLoadMap.AddLoadItem(pftOverlayRating,_T("Overlay Rating"));
+   m_ProductLoadMap.AddLoadItem(pftTrafficBarrier,_T("Traffic Barrier"));
+   m_ProductLoadMap.AddLoadItem(pftSidewalk,_T("Sidewalk"));
+   m_ProductLoadMap.AddLoadItem(pftUserDC,_T("UserDC"));
+   m_ProductLoadMap.AddLoadItem(pftUserDW,_T("UserDW"));
+   m_ProductLoadMap.AddLoadItem(pftUserLLIM,_T("UserLLIM"));
+   m_ProductLoadMap.AddLoadItem(pftShearKey,_T("Shear Key"));
+   m_ProductLoadMap.AddLoadItem(pftTotalPostTensioning,_T("Total Post Tensioning"));
+   m_ProductLoadMap.AddLoadItem(pftPrimaryPostTensioning,_T("Primary Post Tensioning"));
+   m_ProductLoadMap.AddLoadItem(pftSecondaryEffects,_T("Secondary Effects"));
+   m_ProductLoadMap.AddLoadItem(pftCreep,_T("Creep"));
+   m_ProductLoadMap.AddLoadItem(pftShrinkage,_T("Shrinkage"));
+   m_ProductLoadMap.AddLoadItem(pftRelaxation,_T("Relaxation"));
+
+   return AGENT_S_SECONDPASSINIT;
+}
+
+STDMETHODIMP CAnalysisAgentImp::Init2()
+{
 
    //
    // Attach to connection points
@@ -2634,42 +2716,6 @@ STDMETHODIMP CAnalysisAgentImp::Init()
    CHECK( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
-   // create an array for pois going into the lbam. create it here once so we don't need to make a new one every time we need it
-   hr = m_LBAMPoi.CoCreateInstance(CLSID_IDArray);
-   CHECK( SUCCEEDED(hr) );
-
-   // Register status callbacks that we want to use
-   m_scidInformationalError = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError,IDH_GIRDER_CONNECTION_ERROR)); // informational with help for girder end offset error
-   m_scidVSRatio            = pStatusCenter->RegisterCallback(new pgsVSRatioStatusCallback(m_pBroker));
-   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
-
-   // Create Product Load Map
-   m_ProductLoadMap.AddLoadItem(pftGirder,_T("Girder"));
-   m_ProductLoadMap.AddLoadItem(pftDiaphragm,_T("Diaphragm"));
-   m_ProductLoadMap.AddLoadItem(pftConstruction,_T("Construction"));
-   m_ProductLoadMap.AddLoadItem(pftSlab,_T("Slab"));
-   m_ProductLoadMap.AddLoadItem(pftSlabPad,_T("Haunch"));
-   m_ProductLoadMap.AddLoadItem(pftSlabPanel,_T("Slab Panel"));
-   m_ProductLoadMap.AddLoadItem(pftOverlay,_T("Overlay"));
-   m_ProductLoadMap.AddLoadItem(pftOverlayRating,_T("Overlay Rating"));
-   m_ProductLoadMap.AddLoadItem(pftTrafficBarrier,_T("Traffic Barrier"));
-   m_ProductLoadMap.AddLoadItem(pftSidewalk,_T("Sidewalk"));
-   m_ProductLoadMap.AddLoadItem(pftUserDC,_T("UserDC"));
-   m_ProductLoadMap.AddLoadItem(pftUserDW,_T("UserDW"));
-   m_ProductLoadMap.AddLoadItem(pftUserLLIM,_T("UserLLIM"));
-   m_ProductLoadMap.AddLoadItem(pftShearKey,_T("Shear Key"));
-   m_ProductLoadMap.AddLoadItem(pftTotalPostTensioning,_T("Total Post Tensioning"));
-   m_ProductLoadMap.AddLoadItem(pftPrimaryPostTensioning,_T("Primary Post Tensioning"));
-   m_ProductLoadMap.AddLoadItem(pftSecondaryEffects,_T("Secondary Effects"));
-   m_ProductLoadMap.AddLoadItem(pftCreep,_T("Creep"));
-   m_ProductLoadMap.AddLoadItem(pftShrinkage,_T("Shrinkage"));
-   m_ProductLoadMap.AddLoadItem(pftRelaxation,_T("Relaxation"));
-
-   return S_OK;
-}
-
-STDMETHODIMP CAnalysisAgentImp::Init2()
-{
    return S_OK;
 }
 
@@ -2727,24 +2773,6 @@ STDMETHODIMP CAnalysisAgentImp::ShutDown()
    AGENT_CLEAR_INTERFACE_CACHE;
 
    return S_OK;
-}
-
-void CAnalysisAgentImp::ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever)
-{
-   // This method determines if the overhangs at the ends of a segment are modeled as cantilevers in the LBAM
-   // Overhangs are modeled as cantilevers if they are longer than the height of the segment at the CL Bearing
-   GET_IFACE(IBridge, pBridge);
-   GET_IFACE(IGirder, pGirder);
-   Float64 segment_length       = pBridge->GetSegmentLength(segmentKey);
-   Float64 start_offset         = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 end_offset           = pBridge->GetSegmentEndEndDistance(segmentKey);
-   Float64 segment_height_start = pGirder->GetHeight(pgsPointOfInterest(segmentKey,start_offset));
-   Float64 segment_height_end   = pGirder->GetHeight(pgsPointOfInterest(segmentKey,segment_length-end_offset));
-
-   // the cantilevers at the ends of the segment are modeled as flexural members if
-   // if the cantilever length exceeds the height of the girder
-   *pbStartCantilever = (start_offset < segment_height_start ? false : true);
-   *pbEndCantilever   = (end_offset   < segment_height_end   ? false : true);
 }
 
 void CAnalysisAgentImp::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,GirderIndexType gdrIdx)
@@ -4349,7 +4377,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    AddLoadCase(loadcases, CComBSTR("DW_Rating"), CComBSTR("Wearing Surfaces and Utilities (for Load Rating)"));
    AddLoadCase(loadcases, CComBSTR("LL_IM"), CComBSTR("User defined live load"));
    AddLoadCase(loadcases, CComBSTR("CR"), CComBSTR("Creep"));
-   AddLoadCase(loadcases, CComBSTR("SR"), CComBSTR("Shrinkage"));
+   AddLoadCase(loadcases, CComBSTR("SH"), CComBSTR("Shrinkage"));
    AddLoadCase(loadcases, CComBSTR("PS"), CComBSTR("Secondary forces due to post-tensioning"));
 
    // add load combinations
@@ -4374,11 +4402,9 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strength1->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::StrengthI],   pLoadFactors->DCmax[pgsTypes::StrengthI]);
    hr = strength1->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::StrengthI],   pLoadFactors->DWmax[pgsTypes::StrengthI]);
    hr = strength1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::StrengthI], pLoadFactors->LLIMmax[pgsTypes::StrengthI]);
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = strength1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->DCmin[pgsTypes::StrengthI],   pLoadFactors->DCmax[pgsTypes::StrengthI]);
-   hr = strength1->AddLoadCaseFactor(CComBSTR("SR"),    pLoadFactors->DCmin[pgsTypes::StrengthI],   pLoadFactors->DCmax[pgsTypes::StrengthI]);
-   hr = strength1->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = strength1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::StrengthI],   pLoadFactors->CRmax[pgsTypes::StrengthI]);
+   hr = strength1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::StrengthI],   pLoadFactors->SHmax[pgsTypes::StrengthI]);
+   hr = strength1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::StrengthI],   pLoadFactors->PSmax[pgsTypes::StrengthI]);
 
    hr = loadcombos->Add(strength1) ;
 
@@ -4399,11 +4425,9 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strength2->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::StrengthII],   pLoadFactors->DCmax[pgsTypes::StrengthII]);
    hr = strength2->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::StrengthII],   pLoadFactors->DWmax[pgsTypes::StrengthII]);
    hr = strength2->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::StrengthII], pLoadFactors->LLIMmax[pgsTypes::StrengthII]);
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = strength2->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->DCmin[pgsTypes::StrengthII],   pLoadFactors->DCmax[pgsTypes::StrengthII]);
-   hr = strength2->AddLoadCaseFactor(CComBSTR("SR"),    pLoadFactors->DCmin[pgsTypes::StrengthII],   pLoadFactors->DCmax[pgsTypes::StrengthII]);
-   hr = strength2->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = strength2->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::StrengthII],   pLoadFactors->CRmax[pgsTypes::StrengthII]);
+   hr = strength2->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::StrengthII],   pLoadFactors->SHmax[pgsTypes::StrengthII]);
+   hr = strength2->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::StrengthII],   pLoadFactors->PSmax[pgsTypes::StrengthII]);
 
    hr = loadcombos->Add(strength2) ;
 
@@ -4425,11 +4449,9 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service1->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::ServiceI],   pLoadFactors->DCmax[pgsTypes::ServiceI]);
    hr = service1->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::ServiceI],   pLoadFactors->DWmax[pgsTypes::ServiceI]);
    hr = service1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceI], pLoadFactors->LLIMmax[pgsTypes::ServiceI]);
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = service1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->DCmin[pgsTypes::ServiceI],   pLoadFactors->DCmax[pgsTypes::ServiceI]);
-   hr = service1->AddLoadCaseFactor(CComBSTR("SR"),    pLoadFactors->DCmin[pgsTypes::ServiceI],   pLoadFactors->DCmax[pgsTypes::ServiceI]);
-   hr = service1->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = service1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceI],   pLoadFactors->CRmax[pgsTypes::ServiceI]);
+   hr = service1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceI],   pLoadFactors->SHmax[pgsTypes::ServiceI]);
+   hr = service1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceI],   pLoadFactors->PSmax[pgsTypes::ServiceI]);
 
    hr = loadcombos->Add(service1) ;
 
@@ -4450,12 +4472,10 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service3->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::ServiceIII],   pLoadFactors->DCmax[pgsTypes::ServiceIII]);
    hr = service3->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::ServiceIII],   pLoadFactors->DWmax[pgsTypes::ServiceIII]);
    hr = service3->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceIII], pLoadFactors->LLIMmax[pgsTypes::ServiceIII]);
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = service3->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->DCmin[pgsTypes::ServiceIII],   pLoadFactors->DCmax[pgsTypes::ServiceIII]);
-   hr = service3->AddLoadCaseFactor(CComBSTR("SR"),    pLoadFactors->DCmin[pgsTypes::ServiceIII],   pLoadFactors->DCmax[pgsTypes::ServiceIII]);
-   hr = service3->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
-
+   hr = service3->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceIII],   pLoadFactors->CRmax[pgsTypes::ServiceIII]);
+   hr = service3->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceIII],   pLoadFactors->SHmax[pgsTypes::ServiceIII]);
+   hr = service3->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceIII],   pLoadFactors->PSmax[pgsTypes::ServiceIII]);
+ 
    hr = loadcombos->Add(service3) ;
 
    // SERVICE-IA... A PGSuper specific load combination not setup by the utility object
@@ -4475,11 +4495,9 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service1a->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::ServiceIA],   pLoadFactors->DCmax[pgsTypes::ServiceIA]);
    hr = service1a->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::ServiceIA],   pLoadFactors->DWmax[pgsTypes::ServiceIA]);
    hr = service1a->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceIA], pLoadFactors->LLIMmax[pgsTypes::ServiceIA]);
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = service1a->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->DCmin[pgsTypes::ServiceIA],   pLoadFactors->DCmax[pgsTypes::ServiceIA]);
-   hr = service1a->AddLoadCaseFactor(CComBSTR("SR"),    pLoadFactors->DCmin[pgsTypes::ServiceIA],   pLoadFactors->DCmax[pgsTypes::ServiceIA]);
-   hr = service1a->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = service1a->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceIA],   pLoadFactors->CRmax[pgsTypes::ServiceIA]);
+   hr = service1a->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceIA],   pLoadFactors->SHmax[pgsTypes::ServiceIA]);
+   hr = service1a->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceIA],   pLoadFactors->PSmax[pgsTypes::ServiceIA]);
 
    loadcombos->Add(service1a);
 
@@ -4500,16 +4518,14 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::FatigueI],   pLoadFactors->DCmax[pgsTypes::FatigueI]);
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::FatigueI],   pLoadFactors->DWmax[pgsTypes::FatigueI]);
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::FatigueI], pLoadFactors->LLIMmax[pgsTypes::FatigueI]);
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = fatigue1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->DCmin[pgsTypes::FatigueI],   pLoadFactors->DCmax[pgsTypes::FatigueI]);
-   hr = fatigue1->AddLoadCaseFactor(CComBSTR("SR"),    pLoadFactors->DCmin[pgsTypes::FatigueI],   pLoadFactors->DCmax[pgsTypes::FatigueI]);
-   hr = fatigue1->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = fatigue1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::FatigueI],   pLoadFactors->CRmax[pgsTypes::FatigueI]);
+   hr = fatigue1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::FatigueI],   pLoadFactors->SHmax[pgsTypes::FatigueI]);
+   hr = fatigue1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::FatigueI],   pLoadFactors->PSmax[pgsTypes::FatigueI]);
 
    loadcombos->Add(fatigue1);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
-   Float64 DC, DW, LLIM;
+   Float64 DC, DW, CR, SH, PS, LLIM;
 
    // Deal with pedestrian load applications for rating.
    // All rating limit states are treated the same
@@ -4530,16 +4546,17 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_Inventory);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Inventory);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_Inventory);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_Inventory);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::StrengthI_Inventory);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Inventory,true);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_inventory->put_LiveLoadFactor(LLIM);
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
    loadcombos->Add(strengthI_inventory);
 
 
@@ -4558,17 +4575,17 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_Operating);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Operating);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_Operating);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_Operating);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::StrengthI_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Operating,true);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_operating->put_LiveLoadFactor(LLIM);
-
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthI_operating);
 
@@ -4587,17 +4604,17 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_Inventory);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Inventory);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_Inventory);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Inventory);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::ServiceIII_Inventory);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Inventory,true);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_inventory->put_LiveLoadFactor(LLIM);
-
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceIII_inventory);
 
@@ -4616,17 +4633,18 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_Operating);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Operating);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_Operating);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Operating);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::ServiceIII_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Operating,true);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_operating->put_LiveLoadFactor(LLIM);
 
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceIII_operating);
 
@@ -4645,17 +4663,18 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_LegalRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalRoutine);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalRoutine);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalRoutine);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::StrengthI_LegalRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalRoutine,true);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_routine->put_LiveLoadFactor(LLIM);
 
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthI_routine);
 
@@ -4674,17 +4693,18 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalRoutine);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalRoutine);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalRoutine);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::ServiceIII_LegalRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalRoutine,true);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_routine->put_LiveLoadFactor(LLIM);
 
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceIII_routine);
 
@@ -4703,17 +4723,18 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_LegalSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalSpecial);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalSpecial);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalSpecial);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::StrengthI_LegalSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalSpecial,true);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_special->put_LiveLoadFactor(LLIM);
 
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthI_special);
 
@@ -4732,17 +4753,18 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalSpecial);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalSpecial);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::ServiceIII_LegalSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalSpecial,true);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_special->put_LiveLoadFactor(LLIM);
 
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceIII_special);
 
@@ -4761,17 +4783,18 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitRoutine);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitRoutine);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitRoutine);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::StrengthII_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitRoutine,true);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthII_routine->put_LiveLoadFactor(LLIM);
 
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthII_routine);
 
@@ -4789,17 +4812,18 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitSpecial);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitSpecial);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitSpecial);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::StrengthII_PermitSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitSpecial,true);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthII_special->put_LiveLoadFactor(LLIM);
 
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(strengthII_special);
 
@@ -4818,17 +4842,18 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitRoutine);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitRoutine);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitRoutine);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::ServiceI_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitRoutine,true);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceI_routine->put_LiveLoadFactor(LLIM);
 
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceI_routine);
 
@@ -4847,17 +4872,18 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitSpecial);
+   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitSpecial);
+   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitSpecial);
+   PS = pRatingSpec->GetPrestressFactor(     pgsTypes::ServiceI_PermitSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitSpecial,true);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceI_routine->put_LiveLoadFactor(LLIM);
 
-#pragma Reminder("UPDATE: need user defined values for CR, SR, and PS load factors")
-   // creep and shrinkage load factor same as DC, PS load factor = 1.0 (see LRFD Table 3.4.1-3)
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("CR"),    DC, DC);
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("SR"),    DC, DC);
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("PS"),    1.0, 1.0);
+   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
 
    loadcombos->Add(serviceI_special);
 
@@ -5017,7 +5043,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    CComPtr<ILoadCase> load_case_cr;
    load_cases->Find(CComBSTR("CR"),&load_case_cr);
    CComPtr<ILoadCase> load_case_sr;
-   load_cases->Find(CComBSTR("SR"),&load_case_sr);
+   load_cases->Find(CComBSTR("SH"),&load_case_sr);
    //CComPtr<ILoadCase> load_case_ps;
    //load_cases->Find(CComBSTR("PS"),&load_case_ps);
    load_case_cr->AddLoadGroup(GetLoadGroupName(pftCreep));
@@ -5262,7 +5288,7 @@ void CAnalysisAgentImp::ApplyIntermediateDiaphragmLoads( ILBAMModel* pModel, pgs
             mbrID++;
 
          bool bModelStartCantilever,bModelEndCantilever;
-         ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
+         pBridge->ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
 
          for ( int diaType = 0; diaType < 2; diaType++ )
          {
@@ -6452,7 +6478,7 @@ void CAnalysisAgentImp::GetCantileverSlabLoads(const CSegmentKey& segmentKey, Fl
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
    bool bModelStartCantilever,bModelEndCantilever;
-   ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
+   pBridge->ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
 
    // main slab load
    std::vector<SlabLoad> sload;
@@ -8095,6 +8121,194 @@ void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,F
    *pfbot = P/A + M/Sb;
 }
 
+std::vector<Float64> CAnalysisAgentImp::GetTimeStepDisplacement(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat)
+{
+   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
+
+   // Deflections are computing using the method of virtual work.
+   // See Structural Analysis, 4th Edition, Jack C. McCormac, pg365. Section 18.5, Application of Virtual Work to Beams and Frames
+
+#pragma Reminder("REVIEW: why can't we compute PrimaryPT and SecondaryPT deflections?")
+   ATLASSERT(pfType != pftPrimaryPostTensioning);
+   ATLASSERT(pfType != pftSecondaryEffects);
+
+   ATLASSERT(pfType != pftOverlayRating); // no used with time step analysis
+
+   std::vector<Float64> deflections;
+
+   GET_IFACE(ILosses,pILosses);
+   GET_IFACE(IPointOfInterest,pPoi);
+
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+
+      ProductLoadDisplacement key(intervalIdx,pfType,poi.GetID(),bat);
+      std::set<ProductLoadDisplacement>::iterator found(m_ProductLoadDisplacements.find(key));
+
+      Float64 delta = 0;
+      if ( found == m_ProductLoadDisplacements.end() )
+      {
+         // not previously computed... compute now
+         std::vector<Float64> moments = GetUnitLoadMoment(vPoi,poi,bat,intervalIdx);
+
+         ATLASSERT(moments.size() == vPoi.size());
+
+         delta = 0;
+         IndexType nResults = moments.size();
+         for ( IndexType idx = 0; idx < nResults-1; idx++ )
+         {
+            Float64 m1 = moments[idx];
+            Float64 m2 = moments[idx+1];
+
+            const pgsPointOfInterest& poi1(vPoi[idx]);
+            const pgsPointOfInterest& poi2(vPoi[idx+1]);
+
+            Float64 x1 = pPoi->ConvertPoiToGirderCoordinate(poi1);
+            Float64 x2 = pPoi->ConvertPoiToGirderCoordinate(poi2);
+
+            const LOSSDETAILS* pDetails1 = pILosses->GetLossDetails(poi1);
+            const LOSSDETAILS* pDetails2 = pILosses->GetLossDetails(poi2);
+
+            Float64 c1 = pDetails1->TimeStepDetails[intervalIdx].rr[pfType];
+            Float64 c2 = pDetails2->TimeStepDetails[intervalIdx].rr[pfType];
+
+            delta -= (x2-x1)*(m1*c1 + m2*c2)/2.0;
+         }
+
+         ProductLoadDisplacement pld(intervalIdx,pfType,poi.GetID(),bat,delta);
+         m_ProductLoadDisplacements.insert(pld);
+      }
+      else
+      {
+         // retreive from cache
+         ProductLoadDisplacement& pld = *found;
+         delta = pld.D;
+      }
+
+      deflections.push_back(delta);
+   }
+
+   return deflections;
+}
+
+std::vector<Float64> CAnalysisAgentImp::GetTimeStepDisplacement(LoadingCombination combo,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,CombinationType type,pgsTypes::BridgeAnalysisType bat)
+{
+   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
+   ATLASSERT(combo != lcDWRating); // not setup to handle this yet
+
+   std::vector<ProductForceType> pfTypes;
+   std::vector<Float64> deflections;
+   deflections.insert(deflections.begin(),vPoi.size(),0.0);
+   if ( combo == lcDC )
+   {
+      pfTypes.push_back(pftGirder);
+      pfTypes.push_back(pftConstruction);
+      pfTypes.push_back(pftSlab);
+      pfTypes.push_back(pftSlabPad);
+      pfTypes.push_back(pftSlabPanel);
+      pfTypes.push_back(pftDiaphragm); 
+      pfTypes.push_back(pftSidewalk);
+      pfTypes.push_back(pftTrafficBarrier);
+      pfTypes.push_back(pftUserDC);
+      pfTypes.push_back(pftShearKey);
+   }
+   else if ( combo == lcDW )
+   {
+      pfTypes.push_back(pftOverlay);
+      pfTypes.push_back(pftUserDW);
+   }
+   else if ( combo == lcCR )
+   {
+      pfTypes.push_back(pftCreep);
+   }
+   else if ( combo == lcSH )
+   {
+      pfTypes.push_back(pftShrinkage);
+   }
+   else if ( combo == lcPS )
+   {
+      pfTypes.push_back(pftRelaxation);
+   }
+
+   std::vector<ProductForceType>::iterator pfIter(pfTypes.begin());
+   std::vector<ProductForceType>::iterator pfIterEnd(pfTypes.end());
+   for ( ; pfIter != pfIterEnd; pfIter++ )
+   {
+      std::vector<Float64> delta(GetTimeStepDisplacement(vPoi,intervalIdx,*pfIter,bat));
+
+      std::transform(deflections.begin(),deflections.end(),delta.begin(),deflections.begin(),std::plus<Float64>());
+   }
+
+   return deflections;
+}
+
+void CAnalysisAgentImp::GetTimeStepDisplacement(pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
+{
+   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
+
+   pMin->clear();
+   pMax->clear();
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   GET_IFACE(ILoadFactors,pILoadFactors);
+   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+   Float64 gLLMin = pLoadFactors->LLIMmin[limitState];
+   Float64 gLLMax = pLoadFactors->LLIMmax[limitState];
+   Float64 gDCMin = pLoadFactors->DCmin[limitState];
+   Float64 gDCMax = pLoadFactors->DCmax[limitState];
+   Float64 gDWMin = pLoadFactors->DWmin[limitState];
+   Float64 gDWMax = pLoadFactors->DWmax[limitState];
+   Float64 gCRMax = pLoadFactors->CRmax[limitState];
+   Float64 gCRMin = pLoadFactors->CRmin[limitState];
+   Float64 gSHMax = pLoadFactors->SHmax[limitState];
+   Float64 gSHMin = pLoadFactors->SHmin[limitState];
+   Float64 gPSMax = pLoadFactors->PSmax[limitState];
+   Float64 gPSMin = pLoadFactors->PSmin[limitState];
+
+   std::vector<Float64> DC(GetTimeStepDisplacement(lcDC,intervalIdx,vPoi,ctCummulative,bat));
+   std::vector<Float64> DW(GetTimeStepDisplacement(lcDW,intervalIdx,vPoi,ctCummulative,bat));
+   std::vector<Float64> CR(GetTimeStepDisplacement(lcCR,intervalIdx,vPoi,ctCummulative,bat));
+   std::vector<Float64> SH(GetTimeStepDisplacement(lcSH,intervalIdx,vPoi,ctCummulative,bat));
+   std::vector<Float64> PS(GetTimeStepDisplacement(lcPS,intervalIdx,vPoi,ctCummulative,bat));
+
+   std::vector<Float64> LLMin,LLMax;
+   if ( intervalIdx < liveLoadIntervalIdx )
+   {
+      LLMin.insert(LLMin.begin(),vPoi.size(),0.0);
+      LLMax.insert(LLMax.begin(),vPoi.size(),0.0);
+   }
+   else
+   {
+      pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+      GetCombinedLiveLoadDisplacement(llType,intervalIdx,vPoi,bat,&LLMin,&LLMax);
+   }
+
+   IndexType nPoi = vPoi.size();
+   for ( IndexType idx = 0; idx < nPoi; idx++ )
+   {
+      Float64 dMax = (0 <= DC[idx] ? gDCMax : gDCMin)*DC[idx];
+      dMax += (::BinarySign(dMax) == ::BinarySign(DW[idx])    ? gDWMax : gDWMin)*DW[idx];
+      dMax += (::BinarySign(dMax) == ::BinarySign(CR[idx])    ? gCRMax : gCRMin)*CR[idx];
+      dMax += (::BinarySign(dMax) == ::BinarySign(SH[idx])    ? gSHMax : gDWMin)*SH[idx];
+      dMax += (::BinarySign(dMax) == ::BinarySign(PS[idx])    ? gPSMax : gDWMin)*PS[idx];
+      dMax += (::BinarySign(dMax) == ::BinarySign(LLMax[idx]) ? gLLMax : gLLMin)*LLMax[idx];
+      pMax->push_back(dMax);
+
+      Float64 dMin = (DC[idx] <= 0 ? gDCMax : gDCMin)*DC[idx];
+      dMin += (::BinarySign(dMin) == ::BinarySign(DW[idx])    ? gDWMax : gDWMin)*DW[idx];
+      dMin += (::BinarySign(dMin) == ::BinarySign(CR[idx])    ? gCRMax : gCRMin)*CR[idx];
+      dMin += (::BinarySign(dMin) == ::BinarySign(SH[idx])    ? gSHMax : gDWMin)*SH[idx];
+      dMin += (::BinarySign(dMin) == ::BinarySign(PS[idx])    ? gPSMax : gDWMin)*PS[idx];
+      dMin += (::BinarySign(dMin) == ::BinarySign(LLMin[idx]) ? gLLMax : gLLMin)*LLMin[idx];
+      pMin->push_back(dMin);
+   }
+}
+
 std::_tstring CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
 {
    USES_CONVERSION;
@@ -8475,7 +8689,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
             Float64 dx(0),dy(0),rz(0);
             if ( type == pftGirder )
             {
-               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
             }
             results.push_back(fy);
          }
@@ -8574,7 +8788,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
             Float64 dx(0),dy(0),rz(0);
             if ( type == pftGirder )
             {
-               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
                ATLASSERT(IsEqual(mz.Left(),-mz.Right(),0.0001));
             }
             results.push_back( mz.Left() );
@@ -8678,31 +8892,43 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
    }
 
 
-   if ( type == pftCreep || type == pftShrinkage || type == pftRelaxation )
-   {
-      int i = int(type-pftCreep);
+   //if ( type == pftCreep || type == pftShrinkage || type == pftRelaxation )
+   //{
+   //   int i = int(type-pftCreep);
 
-      GET_IFACE(ILosses,pLosses);
-      std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      IndexType idx = 0;
-      for ( ; iter != end; iter++, idx++ )
-      {
-         const pgsPointOfInterest& poi(*iter);
-         const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi);
-         Float64 Mr = pLossDetails->TimeStepDetails[intervalIdx].Mr[i];
-         results[idx] -= Mr;
-      }
-   }
+   //   GET_IFACE(ILosses,pLosses);
+   //   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   //   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   //   IndexType idx = 0;
+   //   for ( ; iter != end; iter++, idx++ )
+   //   {
+   //      const pgsPointOfInterest& poi(*iter);
+   //      const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi);
+   //      Float64 Mr = pLossDetails->TimeStepDetails[intervalIdx].Mr[i];
+   //      results[idx] -= Mr;
+
+   //      if ( type == pftCreep )
+   //      {
+   //         results[idx] += pLossDetails->TimeStepDetails[intervalIdx].Girder.MrCreep + pLossDetails->TimeStepDetails[intervalIdx].Slab.MrCreep;
+   //      }
+   //   }
+   //}
 
    return results;
 }
 
-std::vector<Float64> CAnalysisAgentImp::GetDisplacement(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat)
+std::vector<Float64> CAnalysisAgentImp::GetDisplacement(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat)
 {
+   GET_IFACE(ILibrary,       pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+      return GetTimeStepDisplacement(vPoi,intervalIdx,pfType,bat);
+
    USES_CONVERSION;
 
-   if ( type == pftCreep || type == pftShrinkage || type == pftRelaxation )
+   if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
    {
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey());
    }
@@ -8727,9 +8953,9 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(IntervalIndexType interv
             ValidateAnalysisModels(segmentKey.girderIndex);
             sysSectionValue fx(0),fy(0),mz(0);
             Float64 dx(0),dy(0),rz(0);
-            if ( type == pftGirder )
+            if ( pfType == pftGirder )
             {
-               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
             }
             results.push_back( dy );
          }
@@ -8746,10 +8972,10 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(IntervalIndexType interv
       {
          ModelData* pModelData = UpdateLBAMPois(vPoi);
 
-         if ( type == pftSecondaryEffects || type == pftPrimaryPostTensioning )
-            type = pftTotalPostTensioning; // secondary displacements ar the displacements due to post-tensioning
+         if ( pfType == pftSecondaryEffects || pfType == pftPrimaryPostTensioning )
+            pfType = pftTotalPostTensioning; // secondary displacements ar the displacements due to post-tensioning
 
-         CComBSTR bstrLoadGroup( GetLoadGroupName(type) );
+         CComBSTR bstrLoadGroup( GetLoadGroupName(pfType) );
          CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
          CComPtr<ISectionResult3Ds> section_results;
@@ -8817,7 +9043,7 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
             Float64 dx(0),dy(0),rz(0);
             if ( type == pftGirder )
             {
-               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
             }
             results.push_back( rz );
          }
@@ -9185,6 +9411,18 @@ void CAnalysisAgentImp::GetLiveLoadShear(pgsTypes::LiveLoadType llType,IntervalI
 
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    VARIANT_BOOL vbIncludeLLDF   = (bIncludeLLDF   ? VARIANT_TRUE : VARIANT_FALSE);
+
+   // TRICKY:
+   // For shear, we must flip sign of results to go from LBAM to beam coordinates. This means
+   // that the optimization must go the opposite way as well when using the envelopers
+   if (bat == pgsTypes::MinSimpleContinuousEnvelope)
+   {
+      bat = pgsTypes::MaxSimpleContinuousEnvelope;
+   }
+   else if (bat == pgsTypes::MaxSimpleContinuousEnvelope)
+   {
+      bat = pgsTypes::MinSimpleContinuousEnvelope;
+   }
 
    CComPtr<ILiveLoadModelSectionResults> minResults;
    CComPtr<ILiveLoadModelSectionResults> maxResults;
@@ -10187,8 +10425,8 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(LoadingCombination comb
 {
    USES_CONVERSION;
 
-   //if combo is  lcCR, lcSR, or lcPS, need to do the time-step analysis because it adds loads to the LBAM
-   if ( combo == lcCR || combo == lcSR || combo == lcPS )
+   //if combo is  lcCR, lcSH, or lcPS, need to do the time-step analysis because it adds loads to the LBAM
+   if ( combo == lcCR || combo == lcSH || combo == lcPS )
    {
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey());
    }
@@ -10214,7 +10452,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(LoadingCombination comb
             
             sysSectionValue fx,fy,mz;
             Float64 dx,dy,rz;
-            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
 
             section_results.push_back(fy);
          }
@@ -10273,8 +10511,8 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(LoadingCombination combo,Inter
 {
    USES_CONVERSION;
 
-   //if combo is  lcCR, lcSR, or lcPS, need to do the time-step analysis because it adds loads to the LBAM
-   if ( combo == lcCR || combo == lcSR || combo == lcPS )
+   //if combo is  lcCR, lcSH, or lcPS, need to do the time-step analysis because it adds loads to the LBAM
+   if ( combo == lcCR || combo == lcSH || combo == lcPS )
    {
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey());
    }
@@ -10301,7 +10539,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(LoadingCombination combo,Inter
             Float64 dx(0),dy(0),rz(0);
             if ( combo == lcDC )
             {
-               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+               GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
             }
             ATLASSERT(IsEqual(mz.Left(),-mz.Right(),0.0001));
             Mz.push_back(mz.Left());
@@ -10368,33 +10606,37 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(LoadingCombination combo,Inter
    }
 
 
-   if ( combo == lcCR || combo == lcSR || combo == lcPS )
-   {
-      int i = int(combo-lcCR);
+   //if ( combo == lcCR || combo == lcSH || combo == lcPS )
+   //{
+   //   int i = int(combo-lcCR);
 
-      GET_IFACE(ILosses,pLosses);
-      std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      IndexType idx = 0;
-      for ( ; iter != end; iter++, idx++ )
-      {
-         const pgsPointOfInterest& poi(*iter);
-         const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi);
-         Float64 Mr = 0;
-         if ( type == ctIncremental )
-         {
-            Mr += pLossDetails->TimeStepDetails[intervalIdx].Mr[i];
-         }
-         else
-         {
-            for ( IntervalIndexType intIdx = 0; intIdx <= intervalIdx; intIdx++ )
-            {
-               Mr += pLossDetails->TimeStepDetails[intIdx].Mr[i];
-            }
-         }
-         Mz[idx] -= Mr;
-      }
-   }
+   //   GET_IFACE(ILosses,pLosses);
+   //   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   //   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   //   IndexType idx = 0;
+   //   for ( ; iter != end; iter++, idx++ )
+   //   {
+   //      const pgsPointOfInterest& poi(*iter);
+   //      const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi);
+   //      Float64 Mr = 0;
+   //      if ( type == ctIncremental )
+   //      {
+   //         Mr += pLossDetails->TimeStepDetails[intervalIdx].Mr[i];
+   //         if ( combo == lcCR )
+   //            Mr -= pLossDetails->TimeStepDetails[intervalIdx].Girder.MrCreep + pLossDetails->TimeStepDetails[intervalIdx].Slab.MrCreep;
+   //      }
+   //      else
+   //      {
+   //         for ( IntervalIndexType intIdx = 0; intIdx <= intervalIdx; intIdx++ )
+   //         {
+   //            Mr += pLossDetails->TimeStepDetails[intIdx].Mr[i];
+   //            if ( combo == lcCR )
+   //               Mr -= pLossDetails->TimeStepDetails[intIdx].Girder.MrCreep + pLossDetails->TimeStepDetails[intIdx].Slab.MrCreep;
+   //         }
+   //      }
+   //      Mz[idx] -= Mr;
+   //   }
+   //}
 
    return Mz;
 }
@@ -10403,8 +10645,15 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(LoadingCombination combo
 {
    USES_CONVERSION;
 
-   //if combo is  lcCR, lcSR, or lcPS, need to do the time-step analysis because it adds loads to the LBAM
-   if ( combo == lcCR || combo == lcSR || combo == lcPS )
+   GET_IFACE(ILibrary,       pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+      return GetTimeStepDisplacement(combo,intervalIdx,vPoi,type,bat);
+
+   //if combo is  lcCR, lcSH, or lcPS, need to do the time-step analysis because it adds loads to the LBAM
+   if ( combo == lcCR || combo == lcSH || combo == lcPS )
    {
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey());
    }
@@ -10428,7 +10677,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(LoadingCombination combo
             ValidateAnalysisModels(segmentKey.girderIndex);
             sysSectionValue fx(0),fy(0),mz(0);
             Float64 dx(0),dy(0),rz(0);
-            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
             results.push_back(dy);
          }
          return results;
@@ -10487,8 +10736,8 @@ void CAnalysisAgentImp::GetStress(LoadingCombination combo,IntervalIndexType int
 {
    USES_CONVERSION;
 
-   //if combo is  lcCR, lcSR, or lcPS, need to do the time-step analysis because it adds loads to the LBAM
-   if ( combo == lcCR || combo == lcSR || combo == lcPS )
+   //if combo is  lcCR, lcSH, or lcPS, need to do the time-step analysis because it adds loads to the LBAM
+   if ( combo == lcCR || combo == lcSH || combo == lcPS )
    {
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey());
    }
@@ -10732,6 +10981,18 @@ void CAnalysisAgentImp::GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,I
    CComBSTR bstrLoadCombo( GetLoadCombinationName(llType) );
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
    VARIANT_BOOL incImpact = bIncludeImpact ? VARIANT_TRUE: VARIANT_FALSE;
+
+   // TRICKY:
+   // For shear, we must flip sign of results to go from LBAM to beam coordinates. This means
+   // that the optimization must go the opposite way as well when using the envelopers
+   if (bat == pgsTypes::MinSimpleContinuousEnvelope)
+   {
+      bat = pgsTypes::MaxSimpleContinuousEnvelope;
+   }
+   else if (bat == pgsTypes::MaxSimpleContinuousEnvelope)
+   {
+      bat = pgsTypes::MinSimpleContinuousEnvelope;
+   }
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
    pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMaximize, VARIANT_TRUE, incImpact, VARIANT_FALSE, &maxResults);
@@ -10980,7 +11241,7 @@ void CAnalysisAgentImp::GetMoment(pgsTypes::LimitState ls,IntervalIndexType inte
 
             sysSectionValue fx,fy,mz;
             Float64 dx,dy,rz;
-            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
 
             ATLASSERT(IsEqual(mz.Left(),-mz.Right(),0.0001));
 
@@ -11049,41 +11310,41 @@ void CAnalysisAgentImp::GetMoment(pgsTypes::LimitState ls,IntervalIndexType inte
    }
 
 #pragma Reminder("UPDATE: need CR, SR, and PS load factors")
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-   {
-      GET_IFACE(ILosses,pLosses);
+   //GET_IFACE(ILibrary,pLib);
+   //GET_IFACE(ISpecification,pSpec);
+   //const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   //if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   //{
+   //   GET_IFACE(ILosses,pLosses);
 
-      std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      Float64 load_factor[3];
-      load_factor[0] = 1.0; // CR
-      load_factor[1] = 1.0; // SR
-      load_factor[2] = 1.0; // PS
-      IndexType idx = 0;
-      for ( ; iter != end; iter++, idx++ )
-      {
-         const pgsPointOfInterest& poi(*iter);
-         const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi);
-         Float64 Mmin = pMin->at(idx);
-         Float64 Mmax = pMax->at(idx);
-         for ( int i = 0; i < 3; i++ )
-         {
-            Float64 Mr = 0;
-            for ( IntervalIndexType intIdx = 0; intIdx <= intervalIdx; intIdx++ )
-            {
-               Mr += load_factor[i]*pLossDetails->TimeStepDetails[intIdx].Mr[i];
-            }
-            Mmin -= Mr;
-            Mmax -= Mr;
-         }
+   //   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   //   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   //   Float64 load_factor[3];
+   //   load_factor[0] = 1.0; // CR
+   //   load_factor[1] = 1.0; // SR
+   //   load_factor[2] = 1.0; // PS
+   //   IndexType idx = 0;
+   //   for ( ; iter != end; iter++, idx++ )
+   //   {
+   //      const pgsPointOfInterest& poi(*iter);
+   //      const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi);
+   //      Float64 Mmin = pMin->at(idx);
+   //      Float64 Mmax = pMax->at(idx);
+   //      for ( int i = 0; i < 3; i++ )
+   //      {
+   //         Float64 Mr = 0;
+   //         for ( IntervalIndexType intIdx = 0; intIdx <= intervalIdx; intIdx++ )
+   //         {
+   //            Mr += load_factor[i]*pLossDetails->TimeStepDetails[intIdx].Mr[i];
+   //         }
+   //         Mmin -= Mr;
+   //         Mmax -= Mr;
+   //      }
 
-         pMin->at(idx) = Mmin;
-         pMax->at(idx) = Mmax;
-      }
-   }
+   //      pMin->at(idx) = Mmin;
+   //      pMax->at(idx) = Mmax;
+   //   }
+   //}
 }
 
 void CAnalysisAgentImp::GetShear(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax)
@@ -11114,7 +11375,7 @@ void CAnalysisAgentImp::GetShear(pgsTypes::LimitState ls,IntervalIndexType inter
 
             sysSectionValue fx,fy,mz;
             Float64 dx,dy,rz;
-            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
 
             pMin->push_back( fy );
             pMax->push_back( fy );
@@ -11126,6 +11387,18 @@ void CAnalysisAgentImp::GetShear(pgsTypes::LimitState ls,IntervalIndexType inter
 
          CComBSTR bstrLoadCombo( GetLoadCombinationName(ls) );
          CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
+
+         // TRICKY:
+         // For shear, we must flip sign of results to go from LBAM to beam coordinates. This means
+         // that the optimization must go the opposite way as well when using the envelopers
+         if (bat == pgsTypes::MinSimpleContinuousEnvelope)
+         {
+            bat = pgsTypes::MaxSimpleContinuousEnvelope;
+         }
+         else if (bat == pgsTypes::MaxSimpleContinuousEnvelope)
+         {
+            bat = pgsTypes::MinSimpleContinuousEnvelope;
+         }
 
          GET_IFACE(IIntervals,pIntervals);
          IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -11317,6 +11590,16 @@ void CAnalysisAgentImp::GetDisplacement(pgsTypes::LimitState ls,IntervalIndexTyp
 {
    USES_CONVERSION;
 
+   GET_IFACE(ILibrary,       pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      GetTimeStepDisplacement(ls,intervalIdx,vPoi,bat,pMin,pMax);
+      return;
+   }
+
    // need to do the time-step analysis because it adds loads to the LBAM
    ComputeTimeDependentEffects(vPoi.front().GetSegmentKey());
 
@@ -11341,7 +11624,7 @@ void CAnalysisAgentImp::GetDisplacement(pgsTypes::LimitState ls,IntervalIndexTyp
 
             sysSectionValue fx,fy,mz;
             Float64 dx,dy,rz;
-            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+            GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
 
             pMin->push_back( dy );
             pMax->push_back( dy );
@@ -11403,38 +11686,168 @@ void CAnalysisAgentImp::GetStress(pgsTypes::LimitState ls,IntervalIndexType inte
 
 void CAnalysisAgentImp::GetStressTimeStep(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludePrestress,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
 {
+   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
+
    pMin->clear();
    pMax->clear();
 
-   GET_IFACE(ILosses,pLosses);
+   GET_IFACE(ILoadFactors,pILoadFactors);
+   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+   Float64 gLLMin = pLoadFactors->LLIMmin[ls];
+   Float64 gLLMax = pLoadFactors->LLIMmax[ls];
+   Float64 gDCMin = pLoadFactors->DCmin[ls];
+   Float64 gDCMax = pLoadFactors->DCmax[ls];
+   Float64 gDWMin = pLoadFactors->DWmin[ls];
+   Float64 gDWMax = pLoadFactors->DWmax[ls];
+   Float64 gCRMax = pLoadFactors->CRmax[ls];
+   Float64 gCRMin = pLoadFactors->CRmin[ls];
+   Float64 gSHMax = pLoadFactors->SHmax[ls];
+   Float64 gSHMin = pLoadFactors->SHmin[ls];
+   Float64 gPSMax = pLoadFactors->PSmax[ls];
+   Float64 gPSMin = pLoadFactors->PSmin[ls];
 
+   GET_IFACE(ILosses,pLosses);
 
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; iter != end; iter++ )
    {
+      Float64 fDCMin(0), fDWMin(0), fCRMin(0), fSHMin(0), fPSMin(0), fLLMin(0);
+      Float64 fDCMax(0), fDWMax(0), fCRMax(0), fSHMax(0), fPSMax(0), fLLMax(0);
       const pgsPointOfInterest& poi(*iter);
       const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
       const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
-      if ( loc == pgsTypes::TopSlab )
+
+      if ( loc == pgsTypes::TopDeck )
       {
-         pMin->push_back(tsDetails.Slab.fTop);
-         pMax->push_back(tsDetails.Slab.fTop);
+         for ( int i = 0; i < 15; i++ )
+         {
+            ProductForceType pfType = (ProductForceType)i;
+            if ( pfType == pftOverlay || pfType == pftUserDW )
+            {
+               // Product force is a DW load
+               fDWMin += tsDetails.Deck.fTop[i][ctCummulative];
+               fDWMax += tsDetails.Deck.fTop[i][ctCummulative];
+            }
+            else if ( pfType == pftUserLLIM )
+            {
+               // Product force is a LL
+               fLLMin += tsDetails.Deck.fTop[i][ctCummulative];
+               fLLMax += tsDetails.Deck.fTop[i][ctCummulative];
+            }
+            else
+            {
+               // Product force is a DC load
+
+               // if thie product force is a prestress and we are not included prestress, skip this load
+               if ( (pfType == pftPrestress || pfType == pftTotalPostTensioning) && !bIncludePrestress )
+                  continue;
+
+               fDCMin += tsDetails.Deck.fTop[i][ctCummulative];
+               fDCMax += tsDetails.Deck.fTop[i][ctCummulative];
+            }
+         }
+
+         fCRMin += tsDetails.Deck.fTop[pftCreep][ctCummulative];
+         fSHMin += tsDetails.Deck.fTop[pftShrinkage][ctCummulative];
+         fPSMin += tsDetails.Deck.fTop[pftRelaxation][ctCummulative];
+         fLLMin += tsDetails.Deck.fTopLLMin;
+
+         fCRMax += tsDetails.Deck.fTop[pftCreep][ctCummulative];
+         fSHMax += tsDetails.Deck.fTop[pftShrinkage][ctCummulative];
+         fPSMax += tsDetails.Deck.fTop[pftRelaxation][ctCummulative];
+         fLLMax += tsDetails.Deck.fTopLLMax;
       }
       else if ( loc == pgsTypes::TopGirder )
       {
-         pMin->push_back(tsDetails.Girder.fTop);
-         pMax->push_back(tsDetails.Girder.fTop);
+         for ( int i = 0; i < 15; i++ )
+         {
+            ProductForceType pfType = (ProductForceType)i;
+            if ( pfType == pftOverlay || pfType == pftUserDW )
+            {
+               // Product force is a DW load
+               fDWMin += tsDetails.Girder.fTop[i][ctCummulative];
+               fDWMax += tsDetails.Girder.fTop[i][ctCummulative];
+            }
+            else if ( pfType == pftUserLLIM )
+            {
+               // Product force is a LL
+               fLLMin += tsDetails.Girder.fTop[i][ctCummulative];
+               fLLMax += tsDetails.Girder.fTop[i][ctCummulative];
+            }
+            else
+            {
+               // Product force is a DC load
+
+               // if thie product force is a prestress and we are not included prestress, skip this load
+               if ( (pfType == pftPrestress || pfType == pftTotalPostTensioning) && !bIncludePrestress )
+                  continue;
+
+               fDCMin += tsDetails.Girder.fTop[i][ctCummulative];
+               fDCMax += tsDetails.Girder.fTop[i][ctCummulative];
+            }
+         }
+
+         fCRMin += tsDetails.Girder.fTop[pftCreep][ctCummulative];
+         fSHMin += tsDetails.Girder.fTop[pftShrinkage][ctCummulative];
+         fPSMin += tsDetails.Girder.fTop[pftRelaxation][ctCummulative];
+         fLLMin += tsDetails.Girder.fTopLLMin;
+
+         fCRMax += tsDetails.Girder.fTop[pftCreep][ctCummulative];
+         fSHMax += tsDetails.Girder.fTop[pftShrinkage][ctCummulative];
+         fPSMax += tsDetails.Girder.fTop[pftRelaxation][ctCummulative];
+         fLLMax += tsDetails.Girder.fTopLLMax;
       }
       else if ( loc == pgsTypes::BottomGirder )
       {
-         pMin->push_back(tsDetails.Girder.fBot);
-         pMax->push_back(tsDetails.Girder.fBot);
+         for ( int i = 0; i < 15; i++ )
+         {
+            ProductForceType pfType = (ProductForceType)i;
+            if ( pfType == pftOverlay || pfType == pftUserDW )
+            {
+               // Product force is a DW load
+               fDWMin += tsDetails.Girder.fBot[i][ctCummulative];
+               fDWMax += tsDetails.Girder.fBot[i][ctCummulative];
+            }
+            else if ( pfType == pftUserLLIM )
+            {
+               // Product force is a LL
+               fLLMin += tsDetails.Girder.fBot[i][ctCummulative];
+               fLLMax += tsDetails.Girder.fBot[i][ctCummulative];
+            }
+            else
+            {
+               // Product force is a DC load
+
+               // if thie product force is a prestress and we are not included prestress, skip this load
+               if ( (pfType == pftPrestress || pfType == pftTotalPostTensioning) && !bIncludePrestress )
+                  continue;
+
+               fDCMin += tsDetails.Girder.fBot[i][ctCummulative];
+               fDCMax += tsDetails.Girder.fBot[i][ctCummulative];
+            }
+         }
+
+         fCRMin += tsDetails.Girder.fBot[pftCreep][ctCummulative];
+         fSHMin += tsDetails.Girder.fBot[pftShrinkage][ctCummulative];
+         fPSMin += tsDetails.Girder.fBot[pftRelaxation][ctCummulative];
+         fLLMin += tsDetails.Girder.fBotLLMin;
+
+         fCRMax += tsDetails.Girder.fBot[pftCreep][ctCummulative];
+         fSHMax += tsDetails.Girder.fBot[pftShrinkage][ctCummulative];
+         fPSMax += tsDetails.Girder.fBot[pftRelaxation][ctCummulative];
+         fLLMax += tsDetails.Girder.fBotLLMax;
       }
       else
       {
          ATLASSERT(false);
       }
+
+      Float64 fMin = gDCMin*fDCMin + gDWMin*fDWMin + gLLMin*fLLMin + gCRMin*fCRMin + gSHMin*fSHMin + gPSMin*fPSMin;
+      Float64 fMax = gDCMax*fDCMax + gDWMax*fDWMax + gLLMax*fLLMax + gCRMax*fCRMax + gSHMax*fSHMax + gPSMax*fPSMax;
+
+      pMin->push_back(fMin);
+      pMax->push_back(fMax);
    }
 }
 
@@ -11794,6 +12207,7 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,L
       }
       else if (intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx)
       {
+         ATLASSERT(false); // does this get called?
          std::vector<Float64> results;
          results.insert(results.begin(),vPoi.size(),0.0);
          return results;
@@ -11809,7 +12223,7 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,L
          //   ValidateAnalysisModels(segmentKey.girderIndex);
          //   sysSectionValue fx,fy,mz;
          //   Float64 dx,dy,rz;
-         //   GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+         //   GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
          //   ATLASSERT(IsEqual(fx.Left(),-fx.Right()));
          //   results.push_back( fx.Left() );
          //}
@@ -11914,7 +12328,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
          //   ValidateAnalysisModels(segmentKey.girderIndex);
          //   sysSectionValue fx,fy,mz;
          //   Float64 dx,dy,rz;
-         //   GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), poi, &fx, &fy, &mz, &dx, &dy, &rz );
+         //   GetSectionResults( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), g_lcidGirder, poi, &fx, &fy, &mz, &dx, &dy, &rz );
          //   ATLASSERT(IsEqual(mz.Left(),-mz.Right()));
          //   results.push_back( mz.Left() );
          //}
@@ -13445,7 +13859,7 @@ Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPoin
 {
    // Stress in the girder due to prestressing
 
-   if ( loc == pgsTypes::TopSlab )
+   if ( loc == pgsTypes::TopDeck )
       return 0.0; // pretensioning does not cause stress in the slab
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -13489,7 +13903,7 @@ Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPoin
 
 Float64 CAnalysisAgentImp::GetStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e)
 {
-   if ( loc == pgsTypes::TopSlab )
+   if ( loc == pgsTypes::TopDeck )
       return 0.0;
 
    GET_IFACE(IIntervals,pIntervals);
@@ -13567,7 +13981,7 @@ Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,const p
 /////////////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
 //
-HRESULT CAnalysisAgentImp::OnBridgeChanged()
+HRESULT CAnalysisAgentImp::OnBridgeChanged(CBridgeChangedHint* pHint)
 {
    LOG("OnBridgeChanged Event Received");
    Invalidate();
@@ -14946,6 +15360,75 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
 }
 
 /////////////////////////////////////////////////
+// IInfluenceResults
+std::vector<Float64> CAnalysisAgentImp::GetUnitLoadMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitLoadPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx)
+{
+   std::vector<Float64> moments;
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+   IntervalIndexType storageIntervalIdx  = pIntervals->GetStorageInterval(vPoi.front().GetSegmentKey());
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
+   if (intervalIdx < erectionIntervalIdx )
+   {
+      std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+      for ( ; iter != end; iter++ )
+      {
+         const pgsPointOfInterest& poi = *iter;
+         const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+         ValidateAnalysisModels(segmentKey.girderIndex);
+
+         SegmentModels& segmentModels(intervalIdx < storageIntervalIdx ? m_ReleaseModels : m_StorageModels);
+         SegmentModelData& modelData(segmentModels[unitLoadPOI.GetSegmentKey()]);
+
+         sysSectionValue fx(0),fy(0),mz(0);
+         Float64 dx(0),dy(0),rz(0);
+         if ( segmentKey == unitLoadPOI.GetSegmentKey() && !unitLoadPOI.HasAttribute(POI_CLOSURE) && !unitLoadPOI.HasAttribute(POI_PIER) )
+         {
+            LoadCaseIDType lcid = modelData.UnitLoadIDMap[unitLoadPOI.GetID()];
+            GetSectionResults( segmentModels, lcid, poi, &fx, &fy, &mz, &dx, &dy, &rz );
+            ATLASSERT(IsEqual(mz.Left(),-mz.Right(),0.0001));
+         }
+         moments.push_back( mz.Left() );
+      }
+   }
+   else
+   {
+      CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
+
+      ModelData* pModelData = UpdateLBAMPois(vPoi);
+
+      PoiIDType poiID = pModelData->PoiMap.GetModelPoi(unitLoadPOI);
+      ATLASSERT( 0 <= poiID );
+
+      CComPtr<ISectionResult3Ds> section_results; // holds the unit load moment response for a unit load at poiID
+      pModelData->pUnitLoadResponse[bat]->ComputeForces(m_LBAMPoi,poiID,bstrStage,roMember,&section_results);
+
+      // Loop over all section results and numerically integrate m*c... summation is the deflection at this poi
+      Float64 delta = 0;
+      CollectionIndexType nResults;
+      section_results->get_Count(&nResults);
+      ATLASSERT(vPoi.size() == nResults);
+      for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
+      {
+         CComPtr<ISectionResult3D> result;
+         section_results->get_Item(resultIdx,&result);
+
+         Float64 MzLeft, MzRight;
+         result->get_ZLeft(&MzLeft);
+         result->get_ZRight(&MzRight);
+         ATLASSERT(IsEqual(MzLeft,-MzRight));
+
+         moments.push_back(MzLeft);
+      }
+   }
+
+   return moments;
+}
+
+/////////////////////////////////////////////////
 // IBearingDesign
 
 bool CAnalysisAgentImp::AreBearingReactionsAvailable(const CGirderKey& girderKey, bool* pBleft, bool* pBright)
@@ -15016,20 +15499,52 @@ void CAnalysisAgentImp::GetBearingProductReaction(IntervalIndexType intervalIdx,
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    GET_IFACE(IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPoi1( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),           POI_ERECTED_SEGMENT | POI_0L, POIFIND_OR) );
-   std::vector<pgsPointOfInterest> vPoi2( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,nSegments-1), POI_ERECTED_SEGMENT | POI_10L,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPoi1( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),           POI_ERECTED_SEGMENT | POI_0L, POIFIND_AND) );
+   std::vector<pgsPointOfInterest> vPoi2( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,nSegments-1), POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND) );
    ATLASSERT(vPoi1.size()==1);
    ATLASSERT(vPoi2.size()==1);
-   std::vector<pgsPointOfInterest> vPois;
-   vPois.push_back(vPoi1.front());
-   vPois.push_back(vPoi2.front());
-   ATLASSERT(vPois.size()==2);
+   ATLASSERT(vPoi1.front().IsTenthPoint(POI_ERECTED_SEGMENT));
+   ATLASSERT(vPoi2.front().IsTenthPoint(POI_ERECTED_SEGMENT));
 
-   std::vector<sysSectionValue> sec_vals = GetShear(intervalIdx, type, vPois, bat, cmbtype);
+   // Loop twice to pick up left and right ends
+   for (IndexType idx=0; idx<2; idx++)
+   {
+      pgsTypes::BridgeAnalysisType tmpbat = bat;
+      std::vector<pgsPointOfInterest> vPoi;
+      if (idx == 0)
+      {
+         vPoi.push_back(vPoi1.front());
+      }
+      else
+      {
+         vPoi.push_back(vPoi2.front());
 
-   *pLftEnd =  sec_vals.front().Right();
-   *pRgtEnd = -sec_vals.back().Left();
+         // Extremely TRICKY:
+         // Below we are getting reactions from  end shear, we must flip sign of results to go 
+         // from LBAM to beam coordinates. This means that the optimization must go the opposite when using the envelopers.
+         if (bat == pgsTypes::MinSimpleContinuousEnvelope)
+         {
+            tmpbat = pgsTypes::MaxSimpleContinuousEnvelope;
+         }
+         else if (bat == pgsTypes::MaxSimpleContinuousEnvelope)
+         {
+            tmpbat = pgsTypes::MinSimpleContinuousEnvelope;
+         }
+      }
 
+      std::vector<sysSectionValue> sec_vals = GetShear(intervalIdx, type, vPoi, tmpbat, cmbtype);
+
+      if (idx == 0)
+      {
+         *pLftEnd = sec_vals.front().Left();
+      }
+      else
+      {
+         *pRgtEnd = -sec_vals.front().Right();
+      }
+   }
+
+   // Last, add point loads from overhangs
    pgsTypes::AnalysisType analysisType = (bat == pgsTypes::SimpleSpan ? pgsTypes::Simple : pgsTypes::Continuous);
 
    Float64 lft_pnt_load, rgt_pnt_load;
@@ -15058,6 +15573,10 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
    GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
+   SpanIndexType leftSpanIdx,rightSpanIdx;
+   pBridge->GetGirderGroupSpans(girderKey.groupIndex,&leftSpanIdx,&rightSpanIdx);
+
+
    GET_IFACE(IPointOfInterest,pIPOI);
    std::vector<pgsPointOfInterest> vPoi1( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),           POI_ERECTED_SEGMENT | POI_0L, POIFIND_OR) );
    std::vector<pgsPointOfInterest> vPoi2( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,nSegments-1), POI_ERECTED_SEGMENT | POI_10L,POIFIND_OR) );
@@ -15072,15 +15591,46 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    VARIANT_BOOL vbIncludeLLDF   = (bIncludeLLDF   ? VARIANT_TRUE : VARIANT_FALSE);
 
+   GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
    // Loop twice to pick up left and right ends
    for (IndexType idx=0; idx<2; idx++)
    {
+      pgsTypes::BridgeAnalysisType tmpbat = bat;
       std::vector<pgsPointOfInterest> vPoi;
+
+
+      // Shear and reaction LLDF's can be different. Must ratio results by reaction/shear.
+      Float64 lldfRatio = 1.0;
+      Float64 lldfShear;
+      pgsTypes::LimitState lldfLimitState;
+      if (bIncludeLLDF)
+      {
+         bool is_fatigue = llType==pgsTypes::lltFatigue || llType==pgsTypes::lltPermitRating_Special;
+         lldfLimitState = is_fatigue ? pgsTypes::FatigueI : pgsTypes::StrengthI;
+         lldfShear = pLLDF->GetShearDistFactor(idx == 0 ? leftSpanIdx : rightSpanIdx,girderKey.girderIndex,lldfLimitState);
+
+         Float64 lldfReact = pLLDF->GetReactionDistFactor(idx == 0 ? leftSpanIdx : rightSpanIdx,girderKey.girderIndex, lldfLimitState);
+         lldfRatio = lldfReact/lldfShear;
+      }
+
       if (idx==0)
       {
          vPoi.push_back(lftPoi);
+
+         // Extremely TRICKY:
+         // Below we are getting reactions from  end shear, we must flip sign of results to go 
+         // from LBAM to beam coordinates. This means that the optimization must go the opposite when using the envelopers.
+         if (bat == pgsTypes::MinSimpleContinuousEnvelope)
+         {
+            tmpbat = pgsTypes::MaxSimpleContinuousEnvelope;
+         }
+         else if (bat == pgsTypes::MaxSimpleContinuousEnvelope)
+         {
+            tmpbat = pgsTypes::MinSimpleContinuousEnvelope;
+         }
       }
       else
       {
@@ -15090,15 +15640,15 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
       // Get max'd end shears from lbam
       ModelData* pModelData = UpdateLBAMPois(vPoi);
       CComPtr<ILBAMAnalysisEngine> pEngine;
-      GetEngine(pModelData,bat == pgsTypes::SimpleSpan ? false : true, &pEngine);
+      GetEngine(pModelData,tmpbat == pgsTypes::SimpleSpan ? false : true, &pEngine);
       CComPtr<IBasicVehicularResponse> response;
-      pEngine->get_BasicVehicularResponse(&response);
+      pEngine->get_BasicVehicularResponse(&response); // used to get corresponding rotations
 
       CComPtr<ILiveLoadModelSectionResults> minResults;
       CComPtr<ILiveLoadModelSectionResults> maxResults;
-      pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+      pModelData->pLiveLoadResponse[tmpbat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
              roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-      pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+      pModelData->pLiveLoadResponse[tmpbat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
              roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
       // Extract reactions and corresponding rotations
@@ -15116,8 +15666,8 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
       {
          // Left End
          // Reaction
-         *pLeftRmin = FyMaxRight;
-         *pLeftRmax = FyMinRight;
+         *pLeftRmin = FyMaxRight * lldfRatio;
+         *pLeftRmax = FyMinRight * lldfRatio;
 
          // Vehicle indexes
          if ( pLeftMinVehIdx )
@@ -15138,7 +15688,7 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
 
          Float64 T;
          result->get_ZLeft(&T);
-         *pLeftTmin = T;
+         *pLeftTmin = T * lldfRatio;
 
          results.Release();
          result.Release();
@@ -15150,14 +15700,14 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
 
          results->get_Item(0,&result);
          result->get_ZLeft(&T);
-         *pLeftTmax = T;
+         *pLeftTmax = T * lldfRatio;
       }
       else
       {
          // Right End 
          // Reaction
-         *pRightRmin = FyMinLeft;
-         *pRightRmax = FyMaxLeft;
+         *pRightRmin = FyMinLeft * lldfRatio;
+         *pRightRmax = FyMaxLeft * lldfRatio;
 
          // Vehicle indexes
          if ( pRightMinVehIdx )
@@ -15178,7 +15728,7 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
 
          Float64 T;
          result->get_ZRight(&T);
-         *pRightTmin = T;
+         *pRightTmin = T * lldfRatio;
 
          results.Release();
          result.Release();
@@ -15190,7 +15740,7 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
 
          results->get_Item(0,&result);
          result->get_ZRight(&T);
-         *pRightTmax = T;
+         *pRightTmax = T * lldfRatio;
       }
    }
 }
@@ -15246,10 +15796,32 @@ void CAnalysisAgentImp::GetBearingLiveLoadRotation(pgsTypes::LiveLoadType llType
       CComPtr<ILiveLoadModelSectionResults> minResults;
       CComPtr<ILiveLoadModelSectionResults> maxResults;
 
-      pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
-                          fetRz, optMaximize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&maxResults);
-      pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
-                          fetRz, optMinimize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&minResults);
+      if ( bat == pgsTypes::SimpleSpan || bat == pgsTypes::ContinuousSpan )
+      {
+         pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                fetRz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+         pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                fetRz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+      }
+      else
+      {
+         if ( idx == 0 )
+         {
+            pgsTypes::BridgeAnalysisType batLeft = (bat == pgsTypes::MinSimpleContinuousEnvelope ? pgsTypes::MaxSimpleContinuousEnvelope : pgsTypes::MinSimpleContinuousEnvelope);
+            pModelData->pLiveLoadResponse[batLeft]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                   fetRz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+            pModelData->pLiveLoadResponse[batLeft]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                   fetRz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+         }
+         else
+         {
+            pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                   fetRz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+            pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                   fetRz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+         }
+      }
+
 
       // Extract rotations and corresponding reactions
       Float64 TzMaxLeft, TzMaxRight;
@@ -15399,6 +15971,9 @@ void CAnalysisAgentImp::GetBearingCombinedLiveLoadReaction(pgsTypes::LiveLoadTyp
    GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
+   SpanIndexType leftSpanIdx,rightSpanIdx;
+   pBridge->GetGirderGroupSpans(girderKey.groupIndex,&leftSpanIdx,&rightSpanIdx);
+
    GET_IFACE(IPointOfInterest,pIPOI);
    std::vector<pgsPointOfInterest> vPoi1( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),           POI_ERECTED_SEGMENT | POI_0L, POIFIND_OR) );
    std::vector<pgsPointOfInterest> vPoi2( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,nSegments-1), POI_ERECTED_SEGMENT | POI_10L,POIFIND_OR) );
@@ -15410,14 +15985,39 @@ void CAnalysisAgentImp::GetBearingCombinedLiveLoadReaction(pgsTypes::LiveLoadTyp
 
    sysSectionValue lft_min_sec_val, lft_max_sec_val, rgt_min_sec_val, rgt_max_sec_val;
 
+  // TRICKY:
+   // For shear, we must flip sign of results to go from LBAM to beam coordinates. This means
+   // that the optimization must go the opposite way as well when using the envelopers
+   pgsTypes::BridgeAnalysisType right_bat(bat);
+   if (bat == pgsTypes::MinSimpleContinuousEnvelope)
+   {
+      right_bat = pgsTypes::MaxSimpleContinuousEnvelope;
+   }
+   else if (bat == pgsTypes::MaxSimpleContinuousEnvelope)
+   {
+      right_bat = pgsTypes::MinSimpleContinuousEnvelope;
+   }
+
    GetCombinedLiveLoadShear(llType, intervalIdx, lftPoi, bat, bIncludeImpact, &lft_min_sec_val, &lft_max_sec_val);
-   GetCombinedLiveLoadShear(llType, intervalIdx, rgtPoi, bat, bIncludeImpact, &rgt_min_sec_val, &rgt_max_sec_val);
+   GetCombinedLiveLoadShear(llType, intervalIdx, rgtPoi, right_bat, bIncludeImpact, &rgt_min_sec_val, &rgt_max_sec_val);
+   // Shear and reaction LLDF's can be different. Must ratio results by reaction/shear.
+   GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+   bool is_fatigue = llType==pgsTypes::lltFatigue || llType==pgsTypes::lltPermitRating_Special;
+   pgsTypes::LimitState lldfLimitState = is_fatigue ? pgsTypes::FatigueI : pgsTypes::StrengthI;
+   Float64 lldfLeftShear  = pLLDF->GetShearDistFactor(leftSpanIdx, girderKey.girderIndex,lldfLimitState);
+   Float64 lldfRightShear = pLLDF->GetShearDistFactor(rightSpanIdx,girderKey.girderIndex,lldfLimitState);
 
-   *pLeftRmin =  lft_min_sec_val.Left();
-   *pLeftRmax =  lft_max_sec_val.Left();
+   Float64 lldfLeftReact  = pLLDF->GetReactionDistFactor(leftSpanIdx,  girderKey.girderIndex, lldfLimitState);
+   Float64 lldfRightReact = pLLDF->GetReactionDistFactor(rightSpanIdx, girderKey.girderIndex, lldfLimitState);
 
-   *pRightRmin = -rgt_max_sec_val.Right();
-   *pRightRmax = -rgt_min_sec_val.Right();
+   Float64 lldfLeftRatio  = lldfLeftReact/lldfLeftShear;
+   Float64 lldfRightRatio = lldfRightReact/lldfRightShear;
+
+   *pLeftRmin =  lft_min_sec_val.Left() * lldfLeftRatio;
+   *pLeftRmax =  lft_max_sec_val.Left() * lldfLeftRatio;
+
+   *pRightRmin = -rgt_max_sec_val.Right() * lldfRightRatio;
+   *pRightRmax = -rgt_min_sec_val.Right() * lldfRightRatio;
 }
 
 void CAnalysisAgentImp::GetBearingLimitStateReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const CGirderKey& girderKey,
@@ -15677,7 +16277,8 @@ CAnalysisAgentImp::SpanType CAnalysisAgentImp::GetSpanType(SpanIndexType spanIdx
    return PinPin;
 }
 
-void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,Float64 gF,Float64 gD,Float64 gPedes)
+void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,
+                                               Float64 gFM,Float64 gFV,Float64 gD, Float64 gPedes)
 {
    CComPtr<IDistributionFactorSegment> dfSegment;
    dfSegment.CoCreateInstance(CLSID_DistributionFactorSegment);
@@ -15693,7 +16294,7 @@ void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Flo
             gD,  gD,  // deflections
             gR,  gR,  // reaction
             gpM, gpM, // rotation
-            gF,       // fatigue
+            gFM, gFV, // fatigue
             gPedes    // pedestrian loading
             );
 
@@ -15771,11 +16372,12 @@ void CAnalysisAgentImp::ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType g
    Float64 gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gR  =  99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-   Float64 gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFM  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,span_length,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,span_length,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 }
 
 void CAnalysisAgentImp::ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -15819,18 +16421,19 @@ void CAnalysisAgentImp::ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType g
    Float64 gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gR  =  99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-   Float64 gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFM  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
 
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 
    // for the second part of the span, use the negative moment distribution factor that goes over the next pier
    PierIndexType pierIdx = spanIdx+1;
    gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
 
-   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 }
 
 void CAnalysisAgentImp::ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -15876,15 +16479,16 @@ void CAnalysisAgentImp::ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType g
    Float64 gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead); // DF over pier at start of span
    Float64 gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gR  =  99999999; // this parameter not should be used so use a value that is obviously wrong to easily detect bugs
-   Float64 gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFM  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
 
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 
    gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI); // DF in the span
-   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 }
 
 void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -15913,7 +16517,8 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
    Float64 gnM;
    Float64 gV; 
    Float64 gR;
-   Float64 gF;
+   Float64 gFM  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
@@ -15926,14 +16531,13 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead);
       gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
       gR  = 99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-      gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
 
-      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gF,gD, gPedes);
+      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD, gPedes);
       
 #pragma Reminder("BUG? Review gdrID and segIdx passed into this method") // assumes precast girders brdige
       pierIdx = spanIdx+1;
       gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
    }
    else if ( num_cf_points_in_span == 1 )
    {
@@ -15942,16 +16546,15 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead);
       gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
       gR  = 99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-      gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
 
       Float64 seg_length_1 = cf_points_in_span[0] - span_start;
       Float64 seg_length_2 = span_end - cf_points_in_span[0];
 
-      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
       
       pierIdx = spanIdx+1;
       gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
    }
    else
    {
@@ -15960,20 +16563,19 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead);
       gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
       gR  =  99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-      gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
 
       Float64 seg_length_1 = cf_points_in_span[0] - span_start;
       Float64 seg_length_2 = cf_points_in_span[1] - cf_points_in_span[0];
       Float64 seg_length_3 = span_end - cf_points_in_span[1];
 
-      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
       
       gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
-      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
       
       pierIdx = spanIdx+1;
       gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
    }
 }
 
@@ -16021,7 +16623,7 @@ void CAnalysisAgentImp::ApplyLLDF_Support(SpanIndexType spanIdx,GirderIndexType 
             gD,  gD,  // deflections
             gR,  gR,  // reaction
             gD,  gD,  // rotation
-            gF,       // fatigue
+            gF,  gF,  // fatigue
             gPedes    // pedestrian
             );
 }
@@ -16122,7 +16724,8 @@ CAnalysisAgentImp::ModelData* CAnalysisAgentImp::UpdateLBAMPois(const std::vecto
    ModelData* pModelData = 0;
    pModelData = GetModelData(gdrIdx);
 
-   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   iter = vPoi.begin();
+   for ( ; iter != end; iter++ )
    {
       const pgsPointOfInterest& poi = *iter;
 
@@ -16138,7 +16741,6 @@ CAnalysisAgentImp::ModelData* CAnalysisAgentImp::UpdateLBAMPois(const std::vecto
       {
          m_LBAMPoi->Add(poi_id);
       }
-
    }
 
 #if defined _DEBUG
@@ -16394,7 +16996,7 @@ Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPoin
       S = pSectProp->GetSb(intervalIdx,poi);
       break;
 
-   case pgsTypes::TopSlab:
+   case pgsTypes::TopDeck:
       S = pSectProp->GetSt(intervalIdx,poi);
       break;
 
@@ -16606,7 +17208,7 @@ MemberIDType CAnalysisAgentImp::ApplyDistributedLoads(IntervalIndexType interval
    Float64 HgEnd   = pGdr->GetHeight(endPoi);
 
    bool bModelStartCantilever,bModelEndCantilever;
-   ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
+   pBridge->ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
 
    // apply distributed load items
    std::vector<LinearLoad>::const_iterator iter(vLoads.begin());
@@ -16753,11 +17355,11 @@ MemberIDType CAnalysisAgentImp::ApplyDistributedLoads(IntervalIndexType interval
             ssmbrs->get_Item(mbrID,&ssmbr);
             Float64 Lssmbr;
             ssmbr->get_Length(&Lssmbr);
-            ATLASSERT( 0 <= start[i] );
-            ATLASSERT( start[i] <= Lssmbr );
-            ATLASSERT( 0 <= end[i] );
-            ATLASSERT( end[i] <= Lssmbr );
-            ATLASSERT( start[i] <= end[i] );
+            ATLASSERT( ::IsLE(0.0,start[i]) );
+            ATLASSERT( ::IsLE(start[i],Lssmbr) );
+            ATLASSERT( ::IsLE(0.0,end[i]) );
+            ATLASSERT( ::IsLE(end[i],Lssmbr) );
+            ATLASSERT( ::IsLE(start[i],end[i]) );
 #endif
             CComPtr<IDistributedLoad> selfWgt;
             selfWgt.CoCreateInstance(CLSID_DistributedLoad);

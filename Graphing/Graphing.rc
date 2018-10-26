@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,0
- PRODUCTVERSION 3,0,0,0
+ FILEVERSION 3,0,0,1
+ PRODUCTVERSION 3,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Graphing"
-            VALUE "FileVersion", "3.0.0.0"
+            VALUE "FileVersion", "3.0.0.1"
             VALUE "InternalName", "Graphing"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperGraphing.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.0"
+            VALUE "ProductVersion", "3.0.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -163,16 +163,18 @@ IDD_STRESSHISTORY_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 369
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    COMBOBOX        IDC_POI,6,7,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Top of Slab",IDC_TOPSLAB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,28,52,10
-    CONTROL         "Top of Girder",IDC_TOPGIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,41,58,10
-    CONTROL         "Bottom of Girder",IDC_BOTTOMGIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,54,69,10
-    GROUPBOX        "Horizontal Axis",IDC_STATIC,6,70,142,59
-    CONTROL         "Time (Linear Scale)",IDC_TIME_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,83,76,10
-    CONTROL         "Time (Logarithmic Scale)",IDC_TIME_LOG,"Button",BS_AUTORADIOBUTTON,11,97,93,10
-    CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON,11,110,41,10
-    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,143,48,10
-    EDITTEXT        IDC_INTERVAL_LIST,6,181,142,181,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | WS_VSCROLL | WS_HSCROLL
+    COMBOBOX        IDC_GROUP,6,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,81,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_POI,6,24,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Top of Deck",IDC_TOPDECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,45,54,10
+    CONTROL         "Top of Girder",IDC_TOPGIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,58,58,10
+    CONTROL         "Bottom of Girder",IDC_BOTTOMGIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,71,69,10
+    GROUPBOX        "Horizontal Axis",IDC_STATIC,6,87,142,59
+    CONTROL         "Time (Linear Scale)",IDC_TIME_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,100,76,10
+    CONTROL         "Time (Logarithmic Scale)",IDC_TIME_LOG,"Button",BS_AUTORADIOBUTTON,11,114,93,10
+    CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON,11,127,41,10
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,160,48,10
+    EDITTEXT        IDC_INTERVAL_LIST,6,179,142,183,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | WS_VSCROLL | WS_HSCROLL
 END
 
 IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 150

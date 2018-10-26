@@ -195,20 +195,6 @@ void section_properties(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey&
 
 void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
 {
-#if defined IGNORE_2007_CHANGES
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
-   {
-
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
-   }
-#endif
-
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
@@ -1677,11 +1663,12 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
 
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsSegmentArtifact* pSegmentArtifact = pArtifacts->GetSegmentArtifact(segmentKey);
-   const pgsHaulingAnalysisArtifact* pHaulArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
+   const pgsHaulingAnalysisArtifact* pHaulArtifact_base = pSegmentArtifact->GetHaulingAnalysisArtifact();
+   const pgsWsdotHaulingAnalysisArtifact* pHaulArtifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(pHaulArtifact_base);
 
    if (pHaulArtifact==NULL)
    {
-      *p<<_T("Hauling check not performed because it is not enabled in the library")<<rptNewLine;
+      *p<<_T("WSDOT Hauling check not performed because it is not enabled in the library")<<rptNewLine;
       return;
    }
 

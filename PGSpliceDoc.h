@@ -29,6 +29,9 @@
 #include "PGSuperPluginMgr.h"
 #include "PGSpliceCatCom.h"
 
+#include "PGSComponentInfo.h"
+typedef CEAFPluginManager<IPGSpliceComponentInfo,CPGSpliceDoc> CPGSpliceComponentInfoManager;
+
 #define ETSD_GENERAL       0
 #define ETSD_CONNECTION    1
 
@@ -60,8 +63,14 @@ public:
 
    virtual UINT GetStandardToolbarResourceID();
 
+   CPGSpliceComponentInfoManager* GetComponentInfoManager() { return &m_ComponentInfoManager; }
+
 // Generated message map functions
 protected:
+   BOOL Init();
+
+   CPGSpliceComponentInfoManager m_ComponentInfoManager;
+
 	//{{AFX_MSG(CPGSpliceDoc)
 	afx_msg void OnDeleteSelection();
 	afx_msg void OnUpdateDeleteSelection(CCmdUI* pCmdUI);
@@ -87,6 +96,7 @@ protected:
    virtual CATID GetAgentCategoryID() { return CATID_PGSpliceAgent; }
    virtual CATID GetExtensionAgentCategoryID() { return CATID_PGSpliceExtensionAgent; }
    virtual CATID GetBeamFamilyCategoryID() { return CATID_PGSpliceBeamFamily; }
+   virtual CATID GetComponentInfoCategoryID() { return CATID_PGSpliceComponentInfo; }
 
    virtual LPCTSTR GetTemplateExtension();
 

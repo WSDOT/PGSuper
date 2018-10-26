@@ -334,7 +334,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3);
       *pParagraph << pTable;
 
       pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -670,6 +670,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          }
 
          // Current configuration
+         *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
 
@@ -686,6 +687,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          *pParagraph << _T("Proposed Design:") << rptNewLine;
          write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, pShearData);
 
+         *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
       write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, p_shear_data);
@@ -697,6 +699,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          *pParagraph << _T("Proposed Design:") << rptNewLine;
          write_additional_shear_data(pParagraph, pDisplayUnits, girder_length, pShearData);
 
+         *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
 
@@ -751,7 +754,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          GDRCONFIG config = pArtifact->GetSegmentConfiguration();
 
          GET_IFACE2(pBroker,ICamber,pCamber);
-         double excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
+         Float64 excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
          if ( excess_camber < 0 )
          {
             *pNotesParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
@@ -1249,8 +1252,8 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const s
 
 void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, ZoneIndexType nz, const CShearData2* pShearData)
 {
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -1277,18 +1280,20 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
       }
    }
 
+   ColumnIndexType col = 0;
    if (is_stirrups)
    {
-      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(7,_T(""));
-      *pParagraph << pTables;
+      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(8);
+      *pParagraph << pTables << rptNewLine;
 
-      (*pTables)(0,0) << _T("Zone #");
-      (*pTables)(0,1) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTables)(0,2) << _T("Bar Size");
-      (*pTables)(0,3) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTables)(0,4) << _T("# Legs")<<rptNewLine<<_T("Vertical");
-      (*pTables)(0,5) << _T("# Legs")<<rptNewLine<<_T("Into Deck");
-      (*pTables)(0,6) << _T("Confinement")<<rptNewLine<<_T("Bar Size");
+      (*pTables)(0,col++) << _T("Zone #");
+      (*pTables)(0,col++) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTables)(0,col++) << COLHDR(_T("Zone Length"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTables)(0,col++) << _T("Bar Size");
+      (*pTables)(0,col++) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTables)(0,col++) << _T("# Legs")<<rptNewLine<<_T("Vertical");
+      (*pTables)(0,col++) << _T("# Legs")<<rptNewLine<<_T("Into Deck");
+      (*pTables)(0,col++) << _T("Confinement")<<rptNewLine<<_T("Bar Size");
 
       Float64 max_zoneloc = is_symm ? girderLength/2.0 : girderLength;
 
@@ -1297,10 +1302,11 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
       bool bdone(false);
       while (!bdone)
       {
+         col = 0;
          RowIndexType row = i+1;
          const CShearZoneData2& rszdata = pShearData->ShearZones[i];
          zone_end += rszdata.ZoneLength;
-         (*pTables)(row,0) << rszdata.ZoneNum;
+         (*pTables)(row,col++) << rszdata.ZoneNum;
 
          if ( nz <= i+1 || max_zoneloc <= zone_end)
          {
@@ -1309,31 +1315,35 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
 
          if (!bdone)
          {
-            (*pTables)(row,1) << location.SetValue(zone_end);
+            (*pTables)(row,col++) << location.SetValue(zone_end);
+            (*pTables)(row,col++) << location.SetValue(rszdata.ZoneLength);
          }
          else
          {
             if (is_symm)
-               (*pTables)(row,1) << _T("Mid-Girder");
+               (*pTables)(row,col++) << _T("Mid-Girder");
             else
-               (*pTables)(row,1) << _T("End of Girder");
+               (*pTables)(row,col++) << _T("End of Girder");
+
+            (*pTables)(row,col++) << _T("");
          }
 
          if (rszdata.VertBarSize!=matRebar::bsNone)
          {
-            (*pTables)(row,2) << lrfdRebarPool::GetBarSize(rszdata.VertBarSize).c_str();
-            (*pTables)(row,3) << length.SetValue(rszdata.BarSpacing);
-            (*pTables)(row,4) << scalar.SetValue(rszdata.nVertBars);
-            (*pTables)(row,5) << scalar.SetValue(rszdata.nHorzInterfaceBars);
-            (*pTables)(row,6) << lrfdRebarPool::GetBarSize(rszdata.ConfinementBarSize).c_str();
+            (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rszdata.VertBarSize).c_str();
+            (*pTables)(row,col++) << length.SetValue(rszdata.BarSpacing);
+            (*pTables)(row,col++) << scalar.SetValue(rszdata.nVertBars);
+            (*pTables)(row,col++) << scalar.SetValue(rszdata.nHorzInterfaceBars);
+            (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rszdata.ConfinementBarSize).c_str();
          }
          else
          {
-            (*pTables)(row,2) << _T("none");
-            (*pTables)(row,3) << _T("--");
-            (*pTables)(row,4) << _T("--");
-            (*pTables)(row,5) << _T("--");
-            (*pTables)(row,6) << _T("--");
+            (*pTables)(row,col++) << _T("none");
+            (*pTables)(row,col++) << _T("--");
+            (*pTables)(row,col++) << _T("--");
+            (*pTables)(row,col++) << _T("--");
+            (*pTables)(row,col++) << _T("--");
+            (*pTables)(row,col++) << _T("--");
          }
 
          i++;
@@ -1375,14 +1385,16 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
 
    if(is_hstirrups)
    {
-      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(5,_T(""));
-      *pParagraph << pTables;
+      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(6);
+      *pParagraph << pTables << rptNewLine;
 
-      (*pTables)(0,0) << _T("Zone #");
-      (*pTables)(0,1) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTables)(0,2) << _T("Bar Size");
-      (*pTables)(0,3) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTables)(0,4) << _T("# Legs");
+      ColumnIndexType col = 0;
+      (*pTables)(0,col++) << _T("Zone #");
+      (*pTables)(0,col++) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTables)(0,col++) << COLHDR(_T("Zone Length"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTables)(0,col++) << _T("Bar Size");
+      (*pTables)(0,col++) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTables)(0,col++) << _T("# Legs");
 
       Float64 max_zoneloc = is_symm ? girderLength/2.0 : girderLength;
 
@@ -1391,10 +1403,11 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
       bool bdone(false);
       while (!bdone)
       {
+         col = 0;
          RowIndexType row = i+1;
          const CHorizontalInterfaceZoneData& rhzdata = pShearData->HorizontalInterfaceZones[i];
          zone_end += rhzdata.ZoneLength;
-         (*pTables)(row,0) << rhzdata.ZoneNum;
+         (*pTables)(row,col++) << rhzdata.ZoneNum;
 
          if ( nhz <= i+1 || max_zoneloc <= zone_end )
          {
@@ -1403,27 +1416,30 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
 
          if (!bdone)
          {
-            (*pTables)(row,1) << location.SetValue(zone_end);
+            (*pTables)(row,col++) << location.SetValue(zone_end);
+            (*pTables)(row,col++) << location.SetValue(rhzdata.ZoneLength);
          }
          else
          {
             if (is_symm)
-               (*pTables)(row,1) << _T("Mid-Girder");
+               (*pTables)(row,col++) << _T("Mid-Girder");
             else
-               (*pTables)(row,1) << _T("End of Girder");
+               (*pTables)(row,col++) << _T("End of Girder");
+
+            (*pTables)(row,col++) << _T("");
          }
 
          if (rhzdata.BarSize!=matRebar::bsNone)
          {
-            (*pTables)(row,2) << lrfdRebarPool::GetBarSize(rhzdata.BarSize).c_str();
-            (*pTables)(row,3) << length.SetValue(rhzdata.BarSpacing);
-            (*pTables)(row,4) << scalar.SetValue(rhzdata.nBars);
+            (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rhzdata.BarSize).c_str();
+            (*pTables)(row,col++) << length.SetValue(rhzdata.BarSpacing);
+            (*pTables)(row,col++) << scalar.SetValue(rhzdata.nBars);
          }
          else
          {
-            (*pTables)(row,2) << _T("none");
-            (*pTables)(row,3) << _T("--");
-            (*pTables)(row,4) << _T("--");
+            (*pTables)(row,col++) << _T("none");
+            (*pTables)(row,col++) << _T("--");
+            (*pTables)(row,col++) << _T("--");
          }
 
          i++;

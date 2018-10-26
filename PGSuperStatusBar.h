@@ -41,6 +41,7 @@ public:
 	virtual ~CPGSuperStatusBar();
 
    virtual void GetStatusIndicators(const UINT** lppIDArray,int* pnIDCount);
+   virtual BOOL SetStatusIndicators(const UINT* lpIDArray, int nIDCount);
 
    int GetAnalysisModePaneIndex();
    int GetAutoCalcPaneIndex();

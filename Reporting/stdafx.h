@@ -28,6 +28,8 @@
 
 #include <PGSuperAll.h>
 
+#include <Reporter\Reporter.h>
+
 #include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ReportNotes.h>

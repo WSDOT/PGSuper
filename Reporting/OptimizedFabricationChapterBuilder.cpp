@@ -86,6 +86,14 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       return pChapter;
    }
 
+   if (pGirderHaulingSpecCriteria->GetHaulingAnalysisMethod() != pgsTypes::hmWSDOT)
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara <<color(Red)<<_T("Fabrication analysis not performed. Analysis can only be performed for WSDOT hauling analysis method.")<<color(Black)<<rptNewLine;
+      return pChapter;
+   }
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 

@@ -597,7 +597,7 @@ BOOL CSegmentSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       Float64 minGirderSpacing = m_MinGirderSpacing[nCol-1];
       Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
-      if ( spacing < 0 || IsGT(spacing,maxGirderSpacing-minGirderSpacing) )
+      if ( spacing < 0 || IsGT(maxGirderSpacing-minGirderSpacing,spacing) )
       {
          SetWarningText(_T("Joint spacing is out of range"));
          return FALSE;

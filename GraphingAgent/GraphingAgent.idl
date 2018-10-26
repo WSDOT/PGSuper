@@ -42,7 +42,7 @@ library PGSuperGraphingAgent
    importlib("WBFLCore.tlb");
 
 	[
-		uuid(3DA9045D-7C49-4591-AD14-D560E7D95581),
+		uuid(B4639189-ED38-4a68-8A18-38026202E9DE),
 		helpstring("Grapher Class")
 	]
 	coclass PGSuperGraphingAgent

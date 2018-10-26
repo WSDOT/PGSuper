@@ -74,18 +74,10 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                      IEAFDisplayUnits* pDisplayUnits) const;
-   virtual bool BuildImpactedStressTable(rptChapter* pChapter,
-                      IBroker* pBroker,const CSegmentKey& segmentKey,
-                      IEAFDisplayUnits* pDisplayUnits) const;
-   virtual void BuildInclinedStressTable(rptChapter* pChapter,
-                      IBroker* pBroker,const CSegmentKey& segmentKey,
-                      IEAFDisplayUnits* pDisplayUnits) const;
-   virtual void BuildOtherTables(rptChapter* pChapter,
-                      IBroker* pBroker,const CSegmentKey& segmentKey,
-                      IEAFDisplayUnits* pDisplayUnits) const;
+   void Build(rptChapter* pChapter,
+              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+              IEAFDisplayUnits* pDisplayUnits) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

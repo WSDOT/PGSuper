@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.PGSuperAppPlugin.1 = s 'PGSuper'
 	{
-		CLSID = s '{C1731920-FBCA-40FA-959D-9B749F03DEC0}'
+		CLSID = s '{22F091F9-B2BE-4313-BDA3-8F46A44681E9}'
 	}
 	PGSuper.PGSuperAppPlugin = s 'PGSuper'
 	{
-		CLSID = s '{C1731920-FBCA-40FA-959D-9B749F03DEC0}'
+		CLSID = s '{22F091F9-B2BE-4313-BDA3-8F46A44681E9}'
 		CurVer = s 'PGSuper.PGSuperAppPlugin.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {C1731920-FBCA-40FA-959D-9B749F03DEC0} = s 'PGSuper'
+		ForceRemove {22F091F9-B2BE-4313-BDA3-8F46A44681E9} = s 'PGSuper'
 		{
 			ProgID = s 'PGSuper.PGSuperAppPlugin.1'
 			VersionIndependentProgID = s 'PGSuper.PGSuperAppPlugin'

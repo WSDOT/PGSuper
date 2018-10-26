@@ -187,10 +187,11 @@ void txnDesignGirder::DoExecute(int i)
          // RAB: commented this block out when merging RDP's shear design code over
          // I think the call to SetShearData above is enough for this version of PGSuper/PGSplice
 
-         //if (design_options.doDesignForFlexure==dtNoDesign &&
-         //    rdata.m_DesignArtifact.GetWasLongitudinalRebarForShearDesigned())
+
+         //if (design_options.doDesignForFlexure==dtNoDesign)
          //{
          //   // Need to set girder data in order to pick up long reinf for shear design
+         //   // and possible increase in concrete strength for shear stress
          //   pGirderData->SetGirderData(rdata.m_GirderData[i], span, gdr);
          //}
       }
@@ -411,4 +412,19 @@ void txnDesignGirder::CacheShearDesignResults(DesignData& rdata)
    //   // Rebar data was changed during shear design
    //   rdata.m_GirderData[1].LongitudinalRebarData  = rdata.m_DesignArtifact.GetLongitudinalRebarData();
    //}
+///////////////// END OF COMMENT BLOCK RELATED TO BUG REMINDER /////////////////////
+
+   // It is possible for shear stress to control final concrete strength
+   // Make sure it is updated if no flexural design was requested
+   if (rdata.m_DesignArtifact.GetDesignOptions().doDesignForFlexure == dtNoDesign)
+   {
+      rdata.m_Material[1].Concrete.Fc = rdata.m_DesignArtifact.GetConcreteStrength();
+      if (!rdata.m_Material[1].Concrete.bUserEc)
+      {
+         rdata.m_Material[1].Concrete.Ec = lrfdConcreteUtil::ModE( rdata.m_Material[1].Concrete.Fc, 
+                                                               rdata.m_Material[1].Concrete.StrengthDensity, 
+                                                               false );// ignore LRFD range checks 
+         rdata.m_Material[1].Concrete.Ec *= (rdata.m_Material[1].Concrete.EcK1*rdata.m_Material[1].Concrete.EcK2);
+      }
+   }
 }

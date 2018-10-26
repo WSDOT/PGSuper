@@ -398,7 +398,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
             (*p_table)(row,0) << row;
             CComPtr<IPoint2d> spt;
             spts->get_Item(is, &spt);
-            double x,y;
+            Float64 x,y;
             spt->get_X(&x);
             spt->get_Y(&y);
             (*p_table)(row,1) << dim.SetValue(x);

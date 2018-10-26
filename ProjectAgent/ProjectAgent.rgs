@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.ProjectAgent.1 = s 'ProjectAgent Class'
 	{
-		CLSID = s '{59D50426-265C-11D2-8EB0-006097DF3C68}'
+		CLSID = s '{256B5B5B-762C-4693-8802-6B0351290FEA}'
 	}
 	PGSuper.ProjectAgent = s 'ProjectAgent Class'
 	{
-		CLSID = s '{59D50426-265C-11D2-8EB0-006097DF3C68}'
+		CLSID = s '{256B5B5B-762C-4693-8802-6B0351290FEA}'
 		CurVer = s 'PGSuper.ProjectAgent.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {59D50426-265C-11D2-8EB0-006097DF3C68} = s 'ProjectAgent Class'
+		ForceRemove {256B5B5B-762C-4693-8802-6B0351290FEA} = s 'ProjectAgent Class'
 		{
 			ProgID = s 'PGSuper.ProjectAgent.1'
 			VersionIndependentProgID = s 'PGSuper.ProjectAgent'

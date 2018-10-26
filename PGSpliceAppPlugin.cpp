@@ -132,8 +132,8 @@ void CPGSpliceAppPlugin::IntegrateWithUI(BOOL bIntegrate)
       // Append to the end of the Manage menu
       pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSplice Plugins and Extensions..."),this);
 
-      // Alt+Ctrl+U
-      pFrame->GetAcceleratorTable()->AddAccelKey(FALT | FCONTROL | FVIRTKEY, VK_U, ID_UPDATE_TEMPLATE,this);
+      // Alt+Ctrl+I
+      pFrame->GetAcceleratorTable()->AddAccelKey(FALT | FCONTROL | FVIRTKEY, VK_I, ID_UPDATE_TEMPLATE,this);
    }
    else
    {
@@ -263,8 +263,7 @@ void CPGSpliceAppPlugin::UpdateTemplates()
 {
    USES_CONVERSION;
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
 
    int result = AfxMessageBox(_T("All of the template library entries will be updated to match the Master Library.\n\nDo you want to proceed?"),MB_YESNO);
    if ( result == IDNO )

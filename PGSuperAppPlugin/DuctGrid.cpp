@@ -247,11 +247,6 @@ void CDuctGrid::CustomInit(const CSplicedGirderData* pGirder)
 void CDuctGrid::AddDuct(EventIndexType stressingEvent)
 {
    CDuctData duct(m_PTData.GetGirder());
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
    m_PTData.AddDuct(duct);
    AddDuct(duct,stressingEvent);
 }
@@ -439,7 +434,9 @@ void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
 {
    CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
 
-   CDuctGeometry::GeometryType geomType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(nRow,nDuctGeomTypeCol));
+#pragma Reminder("UPDATE: add other duct geometry types") // commented out for alpha release to TxDOT
+//   CDuctGeometry::GeometryType geomType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(nRow,nDuctGeomTypeCol));
+   CDuctGeometry::GeometryType geomType = CDuctGeometry::Parabolic;
    int ductIdx = nRow-1;
    if ( geomType == CDuctGeometry::Linear )
    {
@@ -659,7 +656,9 @@ void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressing
    duct.Pj = ::ConvertToSysUnits(duct.Pj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    duct.LastUserPj       = _tstof(GetCellValue(row,nPjackUserCol));
    duct.LastUserPj = ::ConvertToSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
-   duct.DuctGeometryType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(row,nDuctGeomTypeCol));
+#pragma Reminder("UPDATE: add other duct geometry types") // commented out for alpha release to TxDOT
+//   duct.DuctGeometryType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(row,nDuctGeomTypeCol));
+   duct.DuctGeometryType = CDuctGeometry::Parabolic;
 
    stressingEvent = (EventIndexType)_tstoi(GetCellValue(row,nEventCol));
 }
@@ -678,7 +677,9 @@ void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stre
    SetValueRange(CGXRange(row,nPjackCheckCol),  (LONG)!duct.bPjCalc);
    SetValueRange(CGXRange(row,nPjackCol),       ::ConvertFromSysUnits(duct.Pj,        pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
    SetValueRange(CGXRange(row,nPjackUserCol),   ::ConvertFromSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
-   SetValueRange(CGXRange(row,nDuctGeomTypeCol),(LONG)duct.DuctGeometryType);
+#pragma Reminder("UPDATE: add other duct geometry types") // commented out for alpha release to TxDOT
+   //SetValueRange(CGXRange(row,nDuctGeomTypeCol),(LONG)duct.DuctGeometryType);
+   SetValueRange(CGXRange(row,nDuctGeomTypeCol),0L);
    SetValueRange(CGXRange(row,nEventCol),       (LONG)stressingEvent);
    
    OnCalcPjack(row);

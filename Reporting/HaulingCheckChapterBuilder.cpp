@@ -25,7 +25,6 @@
 #include <Reporting\HaulingCheck.h>
 #include <IFace\Artifact.h>
 
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -62,12 +61,10 @@ rptChapter* CHaulingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
-
-   const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
+   GET_IFACE2(pBroker,IArtifact,pArtifact);
+   const pgsGirderArtifact* pGirderArtifact = pArtifact->GetGirderArtifact(girderKey);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-
    CHaulingCheck check;
    check.Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 

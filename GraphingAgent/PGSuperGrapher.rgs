@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.GraphingAgent.1 = s 'GraphingAgent Class'
 	{
-		CLSID = s '{3DA9045D-7C49-4591-AD14-D560E7D95581}'
+		CLSID = s '{B4639189-ED38-4a68-8A18-38026202E9DE}'
 	}
 	PGSuper.GraphingAgent = s 'GraphingAgent Class'
 	{
-		CLSID = s '{3DA9045D-7C49-4591-AD14-D560E7D95581}'
+		CLSID = s '{B4639189-ED38-4a68-8A18-38026202E9DE}'
 		CurVer = s 'PGSuper.GraphingAgent.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {3DA9045D-7C49-4591-AD14-D560E7D95581} = s 'GraphingAgent Class'
+		ForceRemove {B4639189-ED38-4a68-8A18-38026202E9DE} = s 'GraphingAgent Class'
 		{
 			ProgID = s PGSuper.GraphingAgent.1
 			VersionIndependentProgID = s 'PGSuper.GraphingAgent'

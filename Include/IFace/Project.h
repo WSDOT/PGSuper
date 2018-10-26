@@ -56,6 +56,8 @@ class CTimelineEvent;
 class CStrandData;
 class CHandlingData;
 
+class CBridgeChangedHint;
+
 interface IStructuredLoad;
 interface IStation;
 interface IDirection;
@@ -585,12 +587,22 @@ DESCRIPTION
 #define GCH_LOADING_CHANGED            0x0100
 #define GCH_CONCRETE                   0x0200
 
+
+class CBridgeChangedHint
+{
+public:
+   // Used when a span is added or removed... 
+   PierIndexType PierIdx; // Reference pier where the span is added or removed
+   pgsTypes::PierFaceType PierFace; // Pier face where the span is added or removed
+   bool bAdded; // true if a span was added, false if removed
+};
+
 // {6132E890-719D-11d2-8EF1-006097DF3C68}
 DEFINE_GUID(IID_IBridgeDescriptionEventSink, 
 0x6132e890, 0x719d, 0x11d2, 0x8e, 0xf1, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
 interface IBridgeDescriptionEventSink : IUnknown
 {
-   virtual HRESULT OnBridgeChanged() = 0;
+   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) = 0;
    virtual HRESULT OnGirderFamilyChanged() = 0;
    virtual HRESULT OnGirderChanged(const CGirderKey& girderKey,Uint32 lHint) = 0;
    virtual HRESULT OnLiveLoadChanged() = 0;

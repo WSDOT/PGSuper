@@ -49,7 +49,7 @@ boost::shared_ptr<CReportSpecification> CBridgeAnalysisReportSpecificationBuilde
 
    // Prompt for girder and chapter list
    GET_IFACE(ISelection,pSelection);
-   GirderIndexType gdrIdx = pSelection->GetGirderIdx();
+   GirderIndexType gdrIdx = pSelection->GetGirderIndex();
    gdrIdx = (gdrIdx == INVALID_INDEX ? 0 : gdrIdx );
 
    CBridgeAnalysisReportDlg dlg(m_pBroker,rptDesc,pRptSpec); // span only mode
@@ -60,7 +60,7 @@ boost::shared_ptr<CReportSpecification> CBridgeAnalysisReportSpecificationBuilde
       boost::shared_ptr<CReportSpecification> pRptSpec( new CBridgeAnalysisReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder,dlg.m_bDesign,dlg.m_bRating) );
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      AddChapters(rptDesc,chList,pRptSpec);
+      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
 
       return pRptSpec;
    }

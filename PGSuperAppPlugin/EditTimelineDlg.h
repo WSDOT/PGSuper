@@ -45,7 +45,6 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-   CString GetErrorMessage(int errorCode);
 
    CTimelineGrid m_Grid;
 

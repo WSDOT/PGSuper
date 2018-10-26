@@ -42,7 +42,36 @@
 
 // FORWARD DECLARATIONS
 //
-class pgsHaulingAnalysisArtifact;
+interface IEAFDisplayUnits;
+
+class PGSEXTCLASS pgsHaulingAnalysisArtifact
+{
+public:
+   //------------------------------------------------------------------------
+   // Destructor
+   virtual ~pgsHaulingAnalysisArtifact()
+   {;}
+
+   // GROUP: OPERATIONS
+   virtual bool Passed() const =0;
+   virtual bool PassedStressCheck() const =0;
+   virtual void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const =0;
+
+   virtual Float64 GetLeadingOverhang() const =0;
+   virtual Float64 GetTrailingOverhang() const =0;
+
+   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const =0;
+   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const =0;
+
+   virtual pgsHaulingAnalysisArtifact* Clone() const =0;
+
+#if defined _DEBUG
+   virtual void Dump(dbgDumpContext& os) const =0;
+#endif
+
+   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const =0;
+};
+
 
 // MISCELLANEOUS
 //
@@ -50,7 +79,7 @@ class pgsHaulingAnalysisArtifact;
 
 /*****************************************************************************
 CLASS 
-   pgsHaulingStressAnalysisArtifact
+   pgsWsdotHaulingStressAnalysisArtifact
 
    Artifact that holds Hauling stress check results at a location.
 
@@ -68,7 +97,7 @@ LOG
    rdp : 03.26.1999 : Created file
 *****************************************************************************/
 
-class PGSEXTCLASS pgsHaulingStressAnalysisArtifact
+class PGSEXTCLASS pgsWsdotHaulingStressAnalysisArtifact
 {
 public:
 
@@ -78,25 +107,26 @@ public:
 
    //------------------------------------------------------------------------
    // constructor
-   pgsHaulingStressAnalysisArtifact();
+   pgsWsdotHaulingStressAnalysisArtifact();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   pgsHaulingStressAnalysisArtifact(const pgsHaulingStressAnalysisArtifact& rOther);
+   pgsWsdotHaulingStressAnalysisArtifact(const pgsWsdotHaulingStressAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~pgsHaulingStressAnalysisArtifact();
+   virtual ~pgsWsdotHaulingStressAnalysisArtifact();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   pgsHaulingStressAnalysisArtifact& operator = (const pgsHaulingStressAnalysisArtifact& rOther);
+   pgsWsdotHaulingStressAnalysisArtifact& operator = (const pgsWsdotHaulingStressAnalysisArtifact& rOther);
 
    // GROUP: OPERATIONS
-   bool   Passed() const;
-   bool   CompressionPassed() const;
-   bool   TensionPassed() const;
+
+   bool Passed() const;
+   bool CompressionPassed() const;
+   bool TensionPassed() const;
 
    // GROUP: ACCESS
    Float64 GetEffectiveHorizPsForce() const;
@@ -166,10 +196,10 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const pgsHaulingStressAnalysisArtifact& rOther);
+   void MakeCopy(const pgsWsdotHaulingStressAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsHaulingStressAnalysisArtifact& rOther);
+   void MakeAssignment(const pgsWsdotHaulingStressAnalysisArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -225,7 +255,7 @@ private:
 
 /*****************************************************************************
 CLASS 
-   pgsHaulingCrackingAnalysisArtifact
+   pgsWsdotHaulingCrackingAnalysisArtifact
 
    Artifact that holds Hauling cracking check results at a location.
 
@@ -243,7 +273,7 @@ LOG
    rdp : 03.26.1999 : Created file
 *****************************************************************************/
 
-class PGSEXTCLASS pgsHaulingCrackingAnalysisArtifact
+class PGSEXTCLASS pgsWsdotHaulingCrackingAnalysisArtifact
 {
 public:
    // GROUP: DATA MEMBERS
@@ -252,20 +282,20 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsHaulingCrackingAnalysisArtifact();
+   pgsWsdotHaulingCrackingAnalysisArtifact();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   pgsHaulingCrackingAnalysisArtifact(const pgsHaulingCrackingAnalysisArtifact& rOther);
+   pgsWsdotHaulingCrackingAnalysisArtifact(const pgsWsdotHaulingCrackingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~pgsHaulingCrackingAnalysisArtifact();
+   virtual ~pgsWsdotHaulingCrackingAnalysisArtifact();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   pgsHaulingCrackingAnalysisArtifact& operator = (const pgsHaulingCrackingAnalysisArtifact& rOther);
+   pgsWsdotHaulingCrackingAnalysisArtifact& operator = (const pgsWsdotHaulingCrackingAnalysisArtifact& rOther);
 
    // GROUP: OPERATIONS
    bool   Passed() const;
@@ -313,10 +343,10 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const pgsHaulingCrackingAnalysisArtifact& rOther);
+   void MakeCopy(const pgsWsdotHaulingCrackingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsHaulingCrackingAnalysisArtifact& rOther);
+   void MakeAssignment(const pgsWsdotHaulingCrackingAnalysisArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -348,7 +378,7 @@ private:
 
 /*****************************************************************************
 CLASS 
-   pgsHaulingAnalysisArtifact
+   pgsWsdotHaulingAnalysisArtifact
 
    Artifact which holds the detailed results of a girder Hauling check
 
@@ -366,31 +396,43 @@ LOG
    rdp : 03.25.1999 : Created file
 *****************************************************************************/
 
-class PGSEXTCLASS pgsHaulingAnalysisArtifact
+class PGSEXTCLASS pgsWsdotHaulingAnalysisArtifact : public pgsHaulingAnalysisArtifact
 {
 public:
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsHaulingAnalysisArtifact();
+   pgsWsdotHaulingAnalysisArtifact();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   pgsHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact& rOther);
+   pgsWsdotHaulingAnalysisArtifact(const pgsWsdotHaulingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~pgsHaulingAnalysisArtifact();
+   virtual ~pgsWsdotHaulingAnalysisArtifact();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   pgsHaulingAnalysisArtifact& operator = (const pgsHaulingAnalysisArtifact& rOther);
+   pgsWsdotHaulingAnalysisArtifact& operator = (const pgsWsdotHaulingAnalysisArtifact& rOther);
 
    // GROUP: OPERATIONS
-   bool Passed() const;
-   bool PassedStressCheck() const;
+   // virtual functions
+   virtual bool Passed() const;
+   virtual bool PassedStressCheck() const;
+   virtual void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const;
+
+   virtual Float64 GetLeadingOverhang() const;
+   virtual Float64 GetTrailingOverhang() const;
+
+   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+
+   virtual pgsHaulingAnalysisArtifact* Clone() const;
+
+   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const;
 
    // GROUP: ACCESS
 
@@ -423,8 +465,6 @@ public:
    Float64 GetClearSpanBetweenSupportLocations() const;
    void SetClearSpanBetweenSupportLocations(Float64 val);
 
-   Float64 GetLeadingOverhang() const;
-   Float64 GetTrailingOverhang() const;
    void SetOverhangs(Float64 trailing,Float64 leading);
 
    void SetGirderWeight(Float64 wgt);
@@ -503,7 +543,7 @@ public:
    Float64 GetEqualibriumAngle() const;
    void SetEqualibriumAngle(Float64 val);
 
-   // points of interest used for this lifing analysis
+   // points of interest used for this hauling analysis
    void SetHaulingPointsOfInterest(const std::vector<pgsPointOfInterest>& rPois);
    std::vector<pgsPointOfInterest> GetHaulingPointsOfInterest() const;
 
@@ -530,18 +570,16 @@ public:
    void GetMinMaxHaulingStresses(MaxHaulingStressCollection& rMaxStresses) const;
 
    void AddHaulingStressAnalysisArtifact(Float64 distFromStart,
-                                      const pgsHaulingStressAnalysisArtifact& artifact);
-   const pgsHaulingStressAnalysisArtifact* GetHaulingStressAnalysisArtifact(Float64 distFromStart) const;
+                                      const pgsWsdotHaulingStressAnalysisArtifact& artifact);
+   const pgsWsdotHaulingStressAnalysisArtifact* GetHaulingStressAnalysisArtifact(Float64 distFromStart) const;
 
    void AddHaulingCrackingAnalysisArtifact(Float64 distFromStart,
-                                      const pgsHaulingCrackingAnalysisArtifact& artifact);
-   const pgsHaulingCrackingAnalysisArtifact* GetHaulingCrackingAnalysisArtifact(Float64 distFromStart) const;
+                                      const pgsWsdotHaulingCrackingAnalysisArtifact& artifact);
+   const pgsWsdotHaulingCrackingAnalysisArtifact* GetHaulingCrackingAnalysisArtifact(Float64 distFromStart) const;
 
-   void SetAllowableTensileConcreteStressParameters(double f,bool bMax,double fmax);
-   void SetAllowableCompressionFactor(double c);
-   void SetAlternativeTensileConcreteStressFactor(double f);
-
-   void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const;
+   void SetAllowableTensileConcreteStressParameters(Float64 f,bool bMax,Float64 fmax);
+   void SetAllowableCompressionFactor(Float64 c);
+   void SetAlternativeTensileConcreteStressFactor(Float64 f);
 
    // GROUP: INQUIRY
 
@@ -551,11 +589,21 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const pgsHaulingAnalysisArtifact& rOther);
+   void MakeCopy(const pgsWsdotHaulingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const pgsHaulingAnalysisArtifact& rOther);
+   void MakeAssignment(const pgsWsdotHaulingAnalysisArtifact& rOther);
 
+   // reporting functions
+   bool BuildImpactedStressTable(const CSegmentKey& segmentKey, rptChapter* pChapter,
+                                 IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildInclinedStressTable(const CSegmentKey& segmentKey,rptChapter* pChapter,
+                                 IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildOtherTables(rptChapter* pChapter,
+                         IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+
+   void BuildRebarTable(IBroker* pBroker, rptChapter* pChapter, const CSegmentKey& segmentKey, 
+                        ImpactDir dir) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -596,8 +644,8 @@ private:
    Float64 m_TrailingOverhang;
 
    std::vector<pgsPointOfInterest> m_HaulingPois; // sorted same as below collections
-   std::map<Float64,pgsHaulingStressAnalysisArtifact,Float64_less> m_HaulingStressAnalysisArtifacts;
-   std::map<Float64,pgsHaulingCrackingAnalysisArtifact,Float64_less> m_HaulingCrackingAnalysisArtifacts;
+   std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less> m_HaulingStressAnalysisArtifacts;
+   std::map<Float64,pgsWsdotHaulingCrackingAnalysisArtifact,Float64_less> m_HaulingCrackingAnalysisArtifacts;
 
    Float64 m_GirderWeight; // total girder weight
 
@@ -639,5 +687,4 @@ public:
 
 // EXTERNAL REFERENCES
 //
-
 #endif // INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_

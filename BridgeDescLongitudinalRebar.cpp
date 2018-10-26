@@ -96,7 +96,15 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
 
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
+      if ( idx == CB_ERR )
+      {
+         rebarData.BarType = matRebar::A615;
+         rebarData.BarGrade = matRebar::Grade60;
+      }
+      else
+      {
+         GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
+      }
 
       pParent->m_Segment.LongitudinalRebarData = rebarData;
    }
@@ -173,7 +181,7 @@ BOOL CGirderDescLongitudinalRebar::OnInitDialog()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillMaterialComboBox(pc);
+   FillRebarMaterialComboBox(pc);
 
    CPropertyPage::OnInitDialog();
 	

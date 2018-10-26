@@ -38,7 +38,8 @@
 
 IMPLEMENT_DYNAMIC(CGirderGraphControllerBase,CEAFGraphControlWindow)
 
-CGirderGraphControllerBase::CGirderGraphControllerBase():
+CGirderGraphControllerBase::CGirderGraphControllerBase(bool bAllGroups):
+m_bAllGroups(bAllGroups),
 m_GroupIdx(0),
 m_GirderIdx(0),
 m_IntervalIdx(INVALID_INDEX)
@@ -106,7 +107,7 @@ void CGirderGraphControllerBase::CbnOnGroupChanged()
 {
    CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
    int curSel = pcbGroup->GetCurSel();
-   GroupIndexType grpIdx = (GroupIndexType)curSel;
+   GroupIndexType grpIdx = (GroupIndexType)pcbGroup->GetItemData(curSel);
    
    if ( m_GroupIdx == grpIdx )
       return;
@@ -204,8 +205,19 @@ void CGirderGraphControllerBase::OnIntervalChanged()
 void CGirderGraphControllerBase::FillGroupCtrl()
 {
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);
+   pcbGroup->ResetContent();
+
    GET_IFACE(IDocumentType,pDocType);
    CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
+
+   int idx;
+
+   if ( m_bAllGroups )
+   {
+      idx = pcbGroup->AddString(pDocType->IsPGSuperDocument() ? _T("All Spans") : _T("All Groups"));
+      pcbGroup->SetItemData(idx,ALL_GROUPS);
+   }
+
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -214,7 +226,8 @@ void CGirderGraphControllerBase::FillGroupCtrl()
    {
       CString strItem;
       strItem.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
-      pcbGroup->AddString(strItem);
+      idx = pcbGroup->AddString(strItem);
+      pcbGroup->SetItemData(idx,grpIdx);
    }
 
    pcbGroup->SetCurSel(0);

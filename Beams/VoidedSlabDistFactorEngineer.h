@@ -60,9 +60,9 @@ struct VOIDEDSLAB_LLDFDETAILS : public BASE_LLDFDETAILS
    VOIDEDSLAB_J_VOID  Jvoid;
 };
 
-// {DA437468-B32C-4012-8B8E-51BAE278C170}
+// {E96A0678-F28D-4ac7-B017-2AD1BD203702}
 DEFINE_GUID(CLSID_VoidedSlabDistFactorEngineer, 
-0xda437468, 0xb32c, 0x4012, 0x8b, 0x8e, 0x51, 0xba, 0xe2, 0x78, 0xc1, 0x70);
+0xe96a0678, 0xf28d, 0x4ac7, 0xb0, 0x17, 0x2a, 0xd1, 0xbd, 0x20, 0x37, 0x2);
 
 /////////////////////////////////////////////////////////////////////////////
 // CVoidedSlabDistFactorEngineer

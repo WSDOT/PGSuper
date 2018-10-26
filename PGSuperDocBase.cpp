@@ -96,7 +96,7 @@
 
 #include <ComCat.h>
 
-#include "BridgeLinkCatCom.h"
+#include "BridgeLinkCATID.h"
 
 #include "Hints.h"
 
@@ -111,6 +111,7 @@
 #include "PGSuperDocProxyAgent.h"
 
 // Dialogs
+#include "PGSuperAppPlugin\AboutDlg.h"
 #include "ProjectPropertiesDlg.h"
 #include "EnvironmentDlg.h"
 #include "BridgeDescDlg.h"
@@ -262,8 +263,8 @@ BEGIN_MESSAGE_MAP(CPGSuperDocBase, CEAFBrokerDocument)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SEND_MAIL, OnUpdateFileSendMail)
 
 
-   ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_STATUSCENTER, ID_VIEW_STATUSCENTER3, CEAFBrokerDocument::OnUpdateViewStatusCenter)
-	ON_COMMAND_RANGE(ID_VIEW_STATUSCENTER, ID_VIEW_STATUSCENTER3,OnViewStatusCenter)
+   ON_UPDATE_COMMAND_UI_RANGE(EAFID_VIEW_STATUSCENTER, EAFID_VIEW_STATUSCENTER3, CEAFBrokerDocument::OnUpdateViewStatusCenter)
+	ON_COMMAND_RANGE(EAFID_VIEW_STATUSCENTER, EAFID_VIEW_STATUSCENTER3,OnViewStatusCenter)
 
    ON_UPDATE_COMMAND_UI(ID_VIEW_REPORTS,OnUpdateViewReports)
    ON_UPDATE_COMMAND_UI(ID_VIEW_GRAPHS,OnUpdateViewGraphs)
@@ -272,6 +273,8 @@ BEGIN_MESSAGE_MAP(CPGSuperDocBase, CEAFBrokerDocument)
    ON_COMMAND_RANGE(FIRST_DATA_IMPORTER_PLUGIN,LAST_DATA_IMPORTER_PLUGIN, OnImport)
 	ON_UPDATE_COMMAND_UI(FIRST_DATA_EXPORTER_PLUGIN, OnExportMenu)
    ON_COMMAND_RANGE(FIRST_DATA_EXPORTER_PLUGIN,LAST_DATA_EXPORTER_PLUGIN, OnExport)
+
+   ON_COMMAND(ID_HELP_ABOUT, OnAbout)
 
    // this doesn't work for documents... see OnCmdMsg for handling of WM_NOTIFY
    //ON_NOTIFY(TBN_DROPDOWN,ID_STDTOOLBAR,OnViewReports)
@@ -776,7 +779,7 @@ BOOL CPGSuperDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
    pProgress->UpdateMessage(strMessage);
 
    CFileFind template_finder;
-   BOOL bMoreTemplates = template_finder.FindFile(CString(lpszDir) + _T("\\*.pgt"));
+   BOOL bMoreTemplates = template_finder.FindFile(CString(lpszDir) + _T("\\*") + CString(GetTemplateExtension()));
    while ( bMoreTemplates )
    {
       bMoreTemplates      = template_finder.FindNextFile();
@@ -935,6 +938,11 @@ BOOL CPGSuperDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 
 void CPGSuperDocBase::OnCloseDocument()
 {
+   // Put the main frame icon back the way it was
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   pFrame->SetIcon(m_hMainFrameBigIcon,TRUE);
+   pFrame->SetIcon(m_hMainFrameSmallIcon,FALSE);
+
    CEAFBrokerDocument::OnCloseDocument();
 
    CBeamFamilyManager::Reset();
@@ -1025,6 +1033,24 @@ void CPGSuperDocBase::OnCreateFinalize()
    GET_IFACE(IUIEvents,pUIEvents);
    pEvents->FirePendingEvents(); 
    pUIEvents->HoldEvents(false);
+}
+
+BOOL CPGSuperDocBase::CreateBroker()
+{
+   if ( !CEAFBrokerDocument::CreateBroker() )
+      return FALSE;
+
+   CComQIPtr<ICLSIDMap> clsidMap(m_pBroker);
+   clsidMap->AddCLSID(_T("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),_T("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
+   clsidMap->AddCLSID(_T("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),_T("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
+   clsidMap->AddCLSID(_T("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),_T("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
+   clsidMap->AddCLSID(_T("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),_T("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
+   clsidMap->AddCLSID(_T("{59D50426-265C-11D2-8EB0-006097DF3C68}"),_T("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
+   clsidMap->AddCLSID(_T("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),_T("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
+   clsidMap->AddCLSID(_T("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),_T("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
+   clsidMap->AddCLSID(_T("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),_T("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
+
+   return TRUE;
 }
 
 BOOL CPGSuperDocBase::OnOpenDocument(LPCTSTR lpszPathName)
@@ -1294,6 +1320,14 @@ BOOL CPGSuperDocBase::Init()
    CComPtr<IAppUnitSystem> appUnitSystem;
    pPGSuper->GetAppUnitSystem(&appUnitSystem);
    CreateDocUnitSystem(appUnitSystem,&m_DocUnitSystem);
+
+   // Put our icon on the main frame window
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   m_hMainFrameBigIcon = pFrame->GetIcon(TRUE);
+   m_hMainFrameSmallIcon = pFrame->GetIcon(FALSE);
+   HICON hIcon = AfxGetApp()->LoadIcon(pTemplate->GetResourceID());
+   pFrame->SetIcon(hIcon,TRUE);
+   pFrame->SetIcon(hIcon,FALSE);
 
    return TRUE;
 }
@@ -3118,16 +3152,9 @@ CString CPGSuperDocBase::GetToolbarSectionName()
    CWinApp* pApp = AfxGetApp();
 
    CString strToolbarSection;
-   strToolbarSection.Format(_T("Toolbars\\%s"),pApp->m_pszProfileName);
+   strToolbarSection.Format(_T("%s"),pApp->m_pszProfileName);
 
    return strToolbarSection;
-}
-
-void CPGSuperDocBase::OnUpdateViewAnalysisResults(CCmdUI* pCmdUI)
-{
-#pragma Reminder("OBSOLETE") // and the ON_UPDATE_COMMAND_UI from the message map
-   GET_IFACE(IGraphManager,pGraphMgr);
-   pCmdUI->Enable( 0 < pGraphMgr->GetGraphBuilderCount() );
 }
 
 void CPGSuperDocBase::OnUpdateViewGraphs(CCmdUI* pCmdUI)
@@ -3338,6 +3365,17 @@ void CPGSuperDocBase::OnExport(UINT nID)
    {
       exporter->Export(m_pBroker);
    }
+}
+
+void CPGSuperDocBase::OnAbout()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   UINT resourceID = pTemplate->GetResourceID();
+
+   CAboutDlg dlg(resourceID);
+   dlg.DoModal();
 }
 
 UINT CPGSuperDocBase::GetBridgeEditorSettings() const

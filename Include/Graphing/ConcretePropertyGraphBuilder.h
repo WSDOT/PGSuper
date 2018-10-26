@@ -71,7 +71,9 @@ protected:
 
    CComPtr<IBroker> m_pBroker;
 
-   arvPhysicalConverter* m_pXFormat;
+   unitmgtScalar m_Scalar;
+   arvPhysicalConverter* m_pTimeFormat;
+   arvPhysicalConverter* m_pIntervalFormat;
    arvPhysicalConverter* m_pYFormat;
    grGraphXY m_Graph;
 

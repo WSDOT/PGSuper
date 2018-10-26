@@ -22,13 +22,13 @@
 
 
 #pragma once
-#include <EAF\EAFComponentInfo.h>
+#include "PGSComponentInfo.h"
 #include "resource.h"
 
 class ATL_NO_VTABLE CWSDOTComponentInfo : 
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CWSDOTComponentInfo, &CLSID_WSDOTComponentInfo>,
-   public IEAFComponentInfo
+   public IPGSuperComponentInfo
 {
 public:
    CWSDOTComponentInfo()
@@ -39,7 +39,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_WSDOTCOMPONENTINFO)
 DECLARE_CLASSFACTORY_SINGLETON(CWSDOTComponentInfo)
 
 BEGIN_COM_MAP(CWSDOTComponentInfo)
-   COM_INTERFACE_ENTRY(IEAFComponentInfo)
+   COM_INTERFACE_ENTRY(IPGSuperComponentInfo)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CWSDOTComponentInfo)
@@ -48,9 +48,9 @@ END_CONNECTION_POINT_MAP()
    HRESULT FinalConstruct();
    void FinalRelease();
 
-// IEAFComponentInfo
+// IPGSuperComponentInfo
 public:
-   virtual BOOL Init(CEAFApp* pApp);
+   virtual BOOL Init(CPGSuperDoc* pDoc);
    virtual void Terminate();
    virtual CString GetName();
    virtual CString GetDescription();

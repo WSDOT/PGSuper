@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFamily.IBeam.1 = s 'I-Beam'
 	{
-		CLSID = s '{AB6A4CD6-0F10-4d2f-BB98-4425146B133E}'
+		CLSID = s '{2AAD714F-6974-4fee-A573-4DE9430A742C}'
 	}
 	PGSuperBeamFamily.IBeam = s 'I-Beam'
 	{
-		CLSID = s '{AB6A4CD6-0F10-4d2f-BB98-4425146B133E}'
+		CLSID = s '{2AAD714F-6974-4fee-A573-4DE9430A742C}'
 		CurVer = s 'PGSuperBeamFamily.IBeam.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {AB6A4CD6-0F10-4d2f-BB98-4425146B133E} = s 'I-Beam'
+		ForceRemove {2AAD714F-6974-4fee-A573-4DE9430A742C} = s 'I-Beam'
 		{
 			ProgID = s 'PGSuperBeamFamily.IBeam.1'
 			VersionIndependentProgID = s 'PGSuperBeamFamily.IBeam'

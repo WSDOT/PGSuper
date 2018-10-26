@@ -117,6 +117,8 @@ private:
    SupportIndexType GetTemporarySupportIndex(ROWCOL nRow);
 
    CComPtr<IStation> m_objStation;
+   CComPtr<IAngle> m_objAngle;
+   CComPtr<IDirection> m_objDirection;
 };
 
 /////////////////////////////////////////////////////////////////////////////

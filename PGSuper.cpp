@@ -37,7 +37,6 @@
 #define BRIDGELINK_PLUGIN_COMMAND_COUNT 256 // 256 commands can be added to the main BridgeLink application
 
 #include "MainFrm.h"
-#include "PGSuperDocManager.h"
 
 #include "ScreenSizeDlg.h"
 #include <EAF\EAFAboutDlg.h>
@@ -126,11 +125,6 @@ CEAFSplashScreenInfo CPGSuperApp::GetSplashScreenInfo()
    return info;
 }
 
-CDocManager* CPGSuperApp::CreateDocumentManager()
-{
-   return new CPGSuperDocManager;
-}
-
 LPCTSTR CPGSuperApp::GetRegistryKey()
 {
    return _T("Washington State Department of Transportation");
@@ -207,7 +201,7 @@ BOOL CPGSuperApp::InitInstance()
    // to the main application
    GetPluginCommandManager()->ReserveCommandIDRange(BRIDGELINK_PLUGIN_COMMAND_COUNT);
 
-   // user can double click on a file to open
+   // user can Float64 click on a file to open
    EnableShellOpen();
 
    // Help file defaults to the location of the application
@@ -216,16 +210,24 @@ BOOL CPGSuperApp::InitInstance()
    // Change help file name
    CString strHelpFile(m_pszHelpFilePath);
 #if defined _DEBUG
-   strHelpFile.Replace(_T("RegFreeCOM\\Debug\\"),_T(""));
+#if defined _WIN64
+   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
+#else
+   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
+#endif
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
    // ok... the replace will fail and the string wont be altered.
-   strHelpFile.Replace(_T("RegFreeCOM\\Release\\"),_T(""));
+#if defined _WIN64
+   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
+#else
+   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
+#endif
 #endif
    free((void*)m_pszHelpFilePath);
    m_pszHelpFilePath = _tcsdup(strHelpFile);
 
-   if ( !CEAFApp::InitInstance() )
+   if ( !CEAFPluginApp::InitInstance() )
       return FALSE;
 
 	return TRUE;
@@ -289,12 +291,12 @@ void CPGSuperApp::RegistryInit()
    free((void*)m_pszProfileName);
    m_pszProfileName = _tcsdup(_T("BridgeLink"));
 
-   CEAFApp::RegistryInit();
+   CEAFPluginApp::RegistryInit();
 }
 
 void CPGSuperApp::RegistryExit()
 {
-   CEAFApp::RegistryExit();
+   CEAFPluginApp::RegistryExit();
 }
 
 void CPGSuperApp::OnScreenSize()
@@ -460,10 +462,10 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   CHyperLink m_WSDOT;
-   CHyperLink m_TxDOT;
-   CHyperLink m_KDOT;
-   CHyperLink m_BridgeSight;
+   CMFCLinkCtrl m_WSDOT;
+   CMFCLinkCtrl m_TxDOT;
+   CMFCLinkCtrl m_KDOT;
+   CMFCLinkCtrl m_BridgeSight;
 };
 
 CAboutDlg::CAboutDlg() : CEAFAboutDlg(AfxGetApp()->LoadIcon(IDR_MAINFRAME),IDD_ABOUTBOX)
@@ -494,13 +496,23 @@ BOOL CAboutDlg::OnInitDialog()
 	CEAFAboutDlg::OnInitDialog();
 	
 
-   m_WSDOT.SetURL(_T("http://www.wsdot.wa.gov/"));
-   m_TxDOT.SetURL(_T("http://www.dot.state.tx.us/"));
-   m_KDOT.SetURL(_T("http://www.ksdot.org"));
-   m_BridgeSight.SetURL(_T("http://www.bridgesight.com/"));
+   m_WSDOT.SetURL(_T("http://www.wsdot.wa.gov"));
+   m_WSDOT.SetTooltip(_T("http://www.wsdot.wa.gov"));
+   m_WSDOT.SizeToContent();
 
-	
-	return TRUE;  // return TRUE unless you set the focus to a control
+   m_TxDOT.SetURL(_T("http://www.dot.state.tx.us"));
+   m_TxDOT.SetTooltip(_T("http://www.dot.state.tx.us"));
+   m_TxDOT.SizeToContent();
+
+   m_KDOT.SetURL(_T("http://www.ksdot.org"));
+   m_KDOT.SetTooltip(_T("http://www.ksdot.org"));
+   m_KDOT.SizeToContent();
+
+   m_BridgeSight.SetURL(_T("http://www.bridgesight.com"));
+   m_BridgeSight.SetTooltip(_T("http://www.bridgesight.com"));
+   m_BridgeSight.SizeToContent();
+
+   return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 

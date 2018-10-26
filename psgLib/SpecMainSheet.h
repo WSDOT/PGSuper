@@ -114,7 +114,9 @@ public:
    void ExchangeDescrData(CDataExchange* pDX);
    void ExchangeCyData(CDataExchange* pDX);
    void ExchangeLiftingData(CDataExchange* pDX);
-   void ExchangeHaulingData(CDataExchange* pDX);
+   bool IsHaulingEnabled() const;
+   void ExchangeWsdotHaulingData(CDataExchange* pDX);
+   void ExchangeKdotHaulingData(CDataExchange* pDX);
    void ExchangeBs1Data(CDataExchange* pDX);
    void ExchangeBs2Data(CDataExchange* pDX);
    void ExchangeBsData(CDataExchange* pDX);

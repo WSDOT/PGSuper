@@ -202,7 +202,6 @@ bool CStabilityGraphBuilder::UpdateNow()
    m_PrintSubtitle = std::_tstring(subtitle);
 
    Float64 hp1,hp2;
-   Float64 stepSize = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
    pStrandGeom->GetHarpingPointLocations(segmentKey,&hp1,&hp2);
 
    if ( graphType == GT_LIFTING )
@@ -219,6 +218,7 @@ bool CStabilityGraphBuilder::UpdateNow()
          Float64 FS2 = pGirderLiftingSpecCriteria->GetLiftingFailureFs();
 
          Float64 loc = 0.0;
+         Float64 stepSize = (hp1-loc)/20;
          while ( loc <= hp1 )
          {
             pProgress->UpdateMessage(_T("Working..."));
@@ -238,7 +238,7 @@ bool CStabilityGraphBuilder::UpdateNow()
    else
    {
       GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-      if (pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+      if (pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pGirderHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
       {
          CString strTitle;
          strTitle.Format(_T("Effect of support location - Transportation Stage - %s"),m_PrintSubtitle.c_str());
@@ -250,23 +250,33 @@ bool CStabilityGraphBuilder::UpdateNow()
          Float64 FS1 = pGirderHaulingSpecCriteria->GetHaulingCrackingFs();
          Float64 FS2 = pGirderHaulingSpecCriteria->GetHaulingRolloverFs();
 
-         Float64 loc = pHaulingPoi->GetMinimumOverhang(segmentKey);
+         Float64 loc = min(pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart),
+                           pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metEnd));
+         Float64 stepSize = (hp1-loc)/20;
          while ( loc <= hp1 )
          {
             pProgress->UpdateMessage(_T("Working..."));
-            pgsHaulingAnalysisArtifact artifact;
+
    #pragma Reminder("REVIEW: Equal overhangs")
             // this is probably the best thing to do with this view... but... give it some thought
             // could do the interaction surface that Dave Chapman showed me
-            pArtifact->CreateHaulingAnalysisArtifact(segmentKey,loc,loc,&artifact);
+            const pgsHaulingAnalysisArtifact* artifact_base = pArtifact->CreateHaulingAnalysisArtifact(segmentKey,loc,loc);
+            // Only works for wsdot analysis
+            const pgsWsdotHaulingAnalysisArtifact* pArtifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(artifact_base);
+            if ( pArtifact )
+            {
+               AddGraphPoint(seriesFS1,loc,pArtifact->GetMinFsForCracking());
+               AddGraphPoint(seriesFS2,loc,pArtifact->GetFsRollover());
 
-            AddGraphPoint(seriesFS1,loc,artifact.GetMinFsForCracking());
-            AddGraphPoint(seriesFS2,loc,artifact.GetFsRollover());
+               AddGraphPoint(limitFS1,loc,FS1);
+               AddGraphPoint(limitFS2,loc,FS2);
 
-            AddGraphPoint(limitFS1,loc,FS1);
-            AddGraphPoint(limitFS2,loc,FS2);
-
-            loc += stepSize;
+               loc += stepSize;
+            }
+            else
+            {
+               ATLASSERT(false); // should not happent
+            }
          }
 
       }

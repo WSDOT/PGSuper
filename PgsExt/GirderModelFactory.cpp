@@ -37,7 +37,31 @@ pgsGirderModelFactory::~pgsGirderModelFactory(void)
 {
 }
 
-void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bIncludeCantilevers,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,                            // broker to access PGSuper data
+                                 IntervalIndexType intervalIdx,               // used for looking up section properties and section transition POIs
+                                 const CSegmentKey& segmentKey,               // this is the segment that the modeling is build for
+                                 Float64 leftSupportLoc,                      // distance from the left end of the model to the left support location
+                                 Float64 rightSupportLoc,                     // distance from the right end of the model to the right support location
+                                 Float64 E,                                   // modulus of elasticity
+                                 LoadCaseIDType lcidGirder,                   // load case ID that is to be used to define the girder dead load
+                                 bool bIncludeCantilevers,                    // if true, cantilevers defined by leftSupportLoc and rightSupportLoc are modeled
+                                 const std::vector<pgsPointOfInterest>& vPOI, // vector of PGSuper POIs that are to be modeld in the Fem2d Model
+                                 IFem2dModel** ppModel,                       // the Fem2d Model
+                                 pgsPoiMap* pPoiMap                           // a mapping of PGSuper POIs to Fem2d POIs
+                                 )
+{
+   // use template methods
+   Float64 segmentLength = BuildModel(pBroker, intervalIdx, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
+
+   ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
+
+   ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bIncludeCantilevers, vPOI, ppModel, pPoiMap);
+}
+
+Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,
+                                          Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
+                                          LoadCaseIDType lcidGirder,bool bIncludeCantilevers,
+                                          const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
 {
    if ( *ppModel )
    {
@@ -67,6 +91,7 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,IntervalIndexType
 
    // layout the joints
    JointIDType jntID = 0;
+   Float64 end_loc = 0.0;
    CComPtr<IFem2dJointCollection> joints;
    (*ppModel)->get_Joints(&joints);
    std::vector<pgsPointOfInterest>::iterator jointIter(xsPOI.begin());
@@ -74,7 +99,8 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,IntervalIndexType
    for ( ; jointIter < jointIterEnd; jointIter++ )
    {
       pgsPointOfInterest poi( *jointIter );
-      if ( !bIncludeCantilevers && (poi.GetDistFromStart() < leftSupportLoc || rightSupportLoc < poi.GetDistFromStart()) )
+      Float64 poi_loc = poi.GetDistFromStart();
+      if ( !bIncludeCantilevers && (poi_loc < leftSupportLoc || rightSupportLoc < poi_loc) )
       {
          // location is before or after the left/right support and we arn't modeling
          // the cantilevers... next joint
@@ -82,16 +108,16 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,IntervalIndexType
       }
 
       CComPtr<IFem2dJoint> jnt;
-      joints->Create(jntID++,poi.GetDistFromStart(),0,&jnt);
+      joints->Create(jntID++,poi_loc,0,&jnt);
 
       // set boundary conditions if this is a support joint
-      if ( IsEqual(poi.GetDistFromStart(),leftSupportLoc) )
+      if ( IsEqual(poi_loc,leftSupportLoc) )
       {
          jnt->Support();
          jnt->ReleaseDof(jrtFx);
          jnt->ReleaseDof(jrtMz);
       }
-      else if ( IsEqual(poi.GetDistFromStart(),rightSupportLoc) )
+      else if ( IsEqual(poi_loc,rightSupportLoc) )
       {
          jnt->Support();
          jnt->ReleaseDof(jrtMz);
@@ -104,6 +130,9 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,IntervalIndexType
          if ( jointIter == xsPOI.end() )
             break;
       }
+
+      // capture last location, which is end of beam
+      end_loc = poi_loc;
    }
 
    // create members
@@ -154,6 +183,15 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,IntervalIndexType
       }
    }
 
+
+   return end_loc;
+}
+
+void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
+                                       Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
+                                       bool bIncludeCantilevers,const std::vector<pgsPointOfInterest>& vPOI,
+                                       IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+{
    // apply loads
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CComPtr<IFem2dLoadingCollection> loadings;
@@ -161,16 +199,21 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,IntervalIndexType
    (*ppModel)->get_Loadings(&loadings);
    loadings->Create(lcidGirder,&loading);
 
+   CComPtr<IFem2dMemberCollection> members;
+   (*ppModel)->get_Members(&members);
+
+   CComPtr<IFem2dJointCollection> joints;
+   (*ppModel)->get_Joints(&joints);
+
    std::vector<GirderLoad> gdrLoads;
    std::vector<DiaphragmLoad> diaphLoads;
    pProductLoads->GetGirderSelfWeightLoad(segmentKey,&gdrLoads,&diaphLoads);
 
    // apply girder self weight load
-
    CComPtr<IFem2dDistributedLoadCollection> distributedLoads;
    loading->get_DistributedLoads(&distributedLoads);
    
-   mbrID = 0;
+   MemberIDType mbrID = 0;
    LoadIDType loadID = 0;
    std::vector<GirderLoad>::iterator gdrLoadIter;
    for ( gdrLoadIter = gdrLoads.begin(); gdrLoadIter != gdrLoads.end(); gdrLoadIter++ )
@@ -308,7 +351,13 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,IntervalIndexType
       CComPtr<IFem2dPointLoad> pointLoad;
       pointLoads->Create(loadID++,mbrID,x,0,diaphragmLoad.Load,0,lotMember,&pointLoad);
    }
+}
 
+void pgsGirderModelFactory::ApplyPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,
+                                                  Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
+                                                  bool bIncludeCantilevers,const std::vector<pgsPointOfInterest>& vPOI,
+                                                  IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+{
    // layout poi on fem model
    pPoiMap->Clear();
    std::vector<PoiIDType> poiIDs = pgsGirderModelFactory::AddPointsOfInterest(*ppModel,vPOI);
@@ -398,15 +447,6 @@ PoiIDType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,const pg
       prevLocation = location;
    }
 
-#if defined _DEBUG
-   CComPtr<IFem2dMemberCollection> members;
-   pModel->get_Members(&members);
-   CollectionIndexType nMembers;
-   members->get_Count(&nMembers);
-#pragma warning(suppress: 4018)
-   ATLASSERT( mbrID < nMembers );
-#endif
-
    CComPtr<IFem2dPOI> objPOI;
 
    PoiIDType femID = ms_FemModelPoiID++;
@@ -430,4 +470,142 @@ std::vector<PoiIDType> pgsGirderModelFactory::AddPointsOfInterest(IFem2dModel* p
    }
 
    return femIDs;
+}
+
+/////////////////////////////////////////////////////////////////////
+/////////// class pgsKdotHaulingGirderModelFactory //////////////////
+/////////////////////////////////////////////////////////////////////
+pgsKdotHaulingGirderModelFactory::pgsKdotHaulingGirderModelFactory(Float64 overhangFactor, Float64 interiorFactor):
+m_OverhangFactor(overhangFactor), m_InteriorFactor(interiorFactor)
+{
+}
+
+pgsKdotHaulingGirderModelFactory::~pgsKdotHaulingGirderModelFactory(void)
+{
+}
+
+void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength, 
+                                                  Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
+                                                  bool bIncludeCantilevers,const std::vector<pgsPointOfInterest>& vPOI,
+                                                  IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+{
+   ATLASSERT(bIncludeCantilevers); // kdot method should always include cantilevers
+
+   // apply  loads
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   CComPtr<IFem2dLoadingCollection> loadings;
+   CComPtr<IFem2dLoading> loading;
+   (*ppModel)->get_Loadings(&loadings);
+   loadings->Create(lcidGirder,&loading);
+
+   CComPtr<IFem2dMemberCollection> members;
+   (*ppModel)->get_Members(&members);
+
+   CComPtr<IFem2dJointCollection> joints;
+   (*ppModel)->get_Joints(&joints);
+
+   std::vector<GirderLoad> gdrLoads;
+   std::vector<DiaphragmLoad> diaphLoads;
+   pProductLoads->GetGirderSelfWeightLoad(segmentKey,&gdrLoads,&diaphLoads);
+
+   // apply dynamically factored girder self weight load
+   CComPtr<IFem2dDistributedLoadCollection> distributedLoads;
+   loading->get_DistributedLoads(&distributedLoads);
+   
+   MemberIDType mbrID = 0;
+   LoadIDType loadID = 0;
+   std::vector<GirderLoad>::iterator gdrLoadIter(gdrLoads.begin());
+   std::vector<GirderLoad>::iterator gdrLoadIterEnd(gdrLoads.end());
+   for ( ; gdrLoadIter != gdrLoadIterEnd; gdrLoadIter++ )
+   {
+      GirderLoad& gdrLoad = *gdrLoadIter;
+
+      Float64 wStart = gdrLoad.wStart;
+      Float64 wEnd   = gdrLoad.wEnd;
+      Float64 start  = gdrLoad.StartLoc;
+      Float64 end    = gdrLoad.EndLoc;
+
+      // apply the loading
+      MemberIDType mbrIDStart; // member ID at the start of the load
+      MemberIDType mbrIDEnd;   // member ID at the end of the load
+      Float64 xStart; // distance from start of member mbrIDStart to the start of the load
+      Float64 xEnd;   // distance from start of member mbrIDEnd to end of the load
+      FindMember(*ppModel,start,&mbrIDStart,&xStart);
+      FindMember(*ppModel,end,  &mbrIDEnd,  &xEnd);
+
+      if ( mbrIDStart == mbrIDEnd )
+      {
+         // load is contained on a single member and is all interior
+         wStart *= m_InteriorFactor;
+         wEnd   *= m_InteriorFactor;
+
+         CComPtr<IFem2dDistributedLoad> distLoad;
+         distributedLoads->Create(loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wStart,wEnd,lotMember,&distLoad);
+      }
+      else
+      {
+         // load straddles two or more members
+         for ( MemberIDType mbrID = mbrIDStart; mbrID <= mbrIDEnd; mbrID++ )
+         {
+            Float64 w1,w2; // start and end load intensity on this member
+            Float64 x1,x2; // start and end load location from the start of this member
+
+            Float64 Lmbr;
+            CComPtr<IFem2dMember> mbr;
+            members->Find(mbrID,&mbr);
+            mbr->get_Length(&Lmbr); 
+
+            JointIDType jntIDStart,jntIDEnd;
+            mbr->get_StartJoint(&jntIDStart);
+            mbr->get_EndJoint(&jntIDEnd);
+
+            CComPtr<IFem2dJoint> jntStart, jntEnd;
+            joints->Find(jntIDStart,&jntStart);
+            joints->Find(jntIDEnd,  &jntEnd);
+
+            Float64 xMbrStart, xMbrEnd;
+            jntStart->get_X(&xMbrStart);
+            jntEnd->get_X(&xMbrEnd);
+
+            if ( mbrID == mbrIDStart )
+            {
+               w1 = wStart;
+               x1 = xStart;
+            }
+            else
+            {
+               w1 = ::LinInterp(xMbrStart,wStart,wEnd,end-start);
+               x1 = 0; // start of member
+            }
+
+            if (mbrID == mbrIDEnd )
+            {
+               w2 = wEnd;
+               x2 = xEnd;
+            }
+            else
+            {
+               w2 = ::LinInterp(xMbrEnd,wStart,wEnd,end-start);
+               x2 = Lmbr; // end of member
+            }
+
+            // Factor loads depending on whether they are on cantilever, or interior
+            bool onLeft  = IsLE(xMbrStart, leftSupportLoc)  && IsLE(xMbrEnd, leftSupportLoc);
+            bool onRight = IsLE(rightSupportLoc, xMbrStart) && IsLE(rightSupportLoc, xMbrEnd);
+            if ( onLeft || onRight)
+            {
+               w1 *= this->m_OverhangFactor;
+               w2 *= this->m_OverhangFactor;
+            }
+            else
+            {
+               w1 *= this->m_InteriorFactor;
+               w2 *= this->m_InteriorFactor;
+            }
+
+            CComPtr<IFem2dDistributedLoad> distLoad;
+            distributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,w1,w2,lotMember,&distLoad);
+         }
+      }
+   }
 }

@@ -60,7 +60,8 @@ pgsTendonStressArtifact& pgsTendonStressArtifact::operator= (const pgsTendonStre
 
 bool pgsTendonStressArtifact::Passed() const
 {
-   return false;
+#pragma Reminder("UPDATE: need to do the tendon stress check")
+   return true;
 }
 
 void pgsTendonStressArtifact::MakeCopy(const pgsTendonStressArtifact& rOther)

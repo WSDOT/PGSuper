@@ -124,15 +124,23 @@ public:
    class PGSEXTCLASS ConcreteStrengthDesignState
    {
    public:
+      enum Action {actStress, actShear}; // Concrete strength can be affected by flexural stress or shear stress
+
       ConcreteStrengthDesignState():
+      m_Action(actStress),
       m_MinimumControls(true),
       m_RequiredAdditionalRebar(false),
       m_IntervalIdx(INVALID_INDEX)
       {;}
 
-      void SetState(bool controlledByMin, const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::StressType stressType, 
+      // Conc strength controlled by flexural stress
+      void SetStressState(bool controlledByMin, const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::StressType stressType, 
                     pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation);
 
+      // Conc strength controlled by shear stress
+      void SetShearState(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState);
+
+      Action GetAction() const;
       bool WasControlledByMinimum() const;
       IntervalIndexType Interval() const;
       pgsTypes::StressType StressType() const;
@@ -150,6 +158,7 @@ public:
       void Init() {m_MinimumControls=true;}
 
    private:
+      Action m_Action;
       bool m_MinimumControls;
       bool m_RequiredAdditionalRebar;
       CSegmentKey              m_SegmentKey;

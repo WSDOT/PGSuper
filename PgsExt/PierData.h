@@ -115,8 +115,8 @@ public:
    const CSpanData* GetNextSpan() const;
    const CSpanData* GetSpan(pgsTypes::PierFaceType face) const;
 
-   double GetStation() const;
-   void SetStation(double station);
+   Float64 GetStation() const;
+   void SetStation(Float64 station);
 
    LPCTSTR GetOrientation() const;
    void SetOrientation(LPCTSTR strOrientation);
@@ -142,13 +142,13 @@ public:
    Float64 GetDiaphragmLoadLocation(pgsTypes::PierFaceType face) const;
    void SetDiaphragmLoadLocation(pgsTypes::PierFaceType face,Float64 loc);
 
-   double GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
-   void SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gM);
-   void SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM);
+   Float64 GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
+   void SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gM);
+   void SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM);
 
-   double GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
-   void SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gR);
-   void SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gR);
+   Float64 GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
+   void SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gR);
+   void SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gR);
 
 
    bool IsContinuous() const;
@@ -186,7 +186,7 @@ private:
    Float64 Angle;
 
    PierIndexType m_PierIdx;
-   double m_Station;
+   Float64 m_Station;
    std::_tstring m_strOrientation;
    pgsTypes::PierConnectionType m_ConnectionType;
 
@@ -209,8 +209,8 @@ private:
    // 0 for strength/service limit state, 1 for fatigue limit state
    struct LLDF
    {
-      double gM[2];
-      double gR[2];
+      Float64 gM[2];
+      Float64 gR[2];
 
       LLDF()
       {

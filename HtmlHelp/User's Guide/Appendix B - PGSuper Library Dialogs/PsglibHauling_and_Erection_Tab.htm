@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=2038>
-<meta name=layout-width content=947>
+<meta name=layout-height content=2896>
+<meta name=layout-width content=1234>
 
 
 <!--(Links)=========================================================-->
@@ -51,8 +51,22 @@
 <p class=Tip>Note: All values on this tab are disabled if criteria checking 
  for hauling is disable on the <a HREF="Design_Tab.htm">Design Tab</a></p>
 
-<h2><span style="font-weight: bold;">P</span><span style="font-weight: normal;">arameters 
- - Factors of Safety</span></h2>
+<h2 style="font-weight: bold;">Analysis Method</h2>
+
+<p>PGSuper can perform a hauling analysis and design using either the method 
+ defined by the <span style="font-weight: bold;">Washington State DOT (WSDOT)</span> 
+ <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->or the 
+ <span style="font-weight: bold;">Kansas DOT (KDOT)</span>. <span style="font-style: italic;">Note 
+ that the approaches for each method are very different</span> - Refer 
+ to the <a href="../../Theoretical Manual/Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm">Theoretical 
+ Manual</a> for a description of both methods.</p>
+
+<h2>Washington State DOT Method (WSDOT)</h2>
+
+<p>The WSDOT method accounts for non-linear effects due to long girder 
+ instability. Input parameters for the WSDOT method are as follows:</p>
+
+<h3 style="font-weight: normal;">WSDOT Parameters - Factors of Safety</h3>
 
 <p style="font-weight: bold;"><img src="Psglib00090000.gif"
 									ALT=Psglib00090000.gif
@@ -128,14 +142,15 @@
 	height=17
 	border=0> Impact Factors</span></p>
 
-<p>Enter the factor that force effects are to be increased due to dynamic 
- effects during hauling. For example, a downward factor of 0.5 would increase 
- vertical forces and stresses due to hauling by 50%. An upward factor of 
- 0.3 would decrease vertical forces and stresses due to hauling by 30%. 
- The factor must be between zero and 1.0.</p>
+<p>Enter the factor in percent that force effects are to be increased due 
+ to dynamic effects during hauling. The factor to be applied to the static 
+ load shall be taken as: (1 + IM/100). For example, a downward factor of 
+ 50.0 would increase vertical forces and stresses due to hauling by 50%. 
+ An upward factor of 30.0 would decrease vertical forces and stresses due 
+ to hauling by 30%. The factor must be between zero and 100.0.</p>
 
-<h2><span style="font-weight: bold;">P</span><span style="font-weight: normal;">arameters 
- - Allowable Concrete Stresses</span></h2>
+<h3 style="font-weight: normal;">WSDOT Parameters - Allowable Concrete 
+ Stresses</h3>
 
 <p style="font-weight: bold;"><img src="Psglib00090000.gif"
 									ALT=Psglib00090000.gif
@@ -173,8 +188,7 @@
  for hauling loads. Refer to Section 5.9.4.2.2 in the AASHTO LRFD Specifications 
  for the recommended value.</p>
 
-<h2><span style="font-weight: bold;">P</span><span style="font-weight: normal;">arameters 
- - Hauling Parameters</span></h2>
+<h3 style="font-weight: normal;">WSDOT Parameters - Hauling Parameters</h3>
 
 <p style="font-weight: bold;"><img src="Psglib00090000.gif"
 									ALT=Psglib00090000.gif
@@ -374,7 +388,7 @@
  perform a study to determine a value appropriate in your area.<span style="margin-bottom: 0;">&nbsp; 
  </span></p>
 
-<h2><span style="font-weight: normal;">Parameters - Design</span></h2>
+<h3><span style="font-weight: normal;">WSDOT Parameters - Design</span></h3>
 
 <p><span style="font-weight: bold;"><img src="Psglib00090000.gif"
 										ALT=Psglib00090000.gif
@@ -415,6 +429,136 @@
 <p>Enter the accuracy of the truck support locations. The designer and 
  the fabrication optimization analysis will use this accuracy when locating 
  the truck supports.</p>
+
+<p>&nbsp;</p>
+
+<h2>Kansas DOT Method (KDOT)</h2>
+
+<p>The KDOT method is a simplified approach that accounts for amplified 
+ girder stresses caused by dynamic effects of hauling. Non-linear effects 
+ due to long girder instability are not considered. Input parameters for 
+ the KDOT method are as follows:</p>
+
+<h3 style="font-weight: normal;">KDOT Parameters - Dynamic Load Factors</h3>
+
+<p>Dynamic &quot;g&quot; factors are applied to girder dead loads to simulate 
+ dynamic effects at girder hauling. Typically for KDOT, a dynamic factor 
+ of 3.0 is applied along cantilevers, and a factor of 1.0 is applied between 
+ the cantilever sections. The dynamic affect is only applied downward.</p>
+
+<p style="font-weight: bold;"><img src="Psglib00090000.gif"
+									ALT=Psglib00090000.gif
+									style="width: 12px;
+											height: 17px;
+											margin-top: 0px;
+											margin-bottom: 0px;
+											margin-left: 0px;
+											margin-right: 0px;
+											border-style: none;"
+									width=12
+									height=17
+									border=0> &quot;g&quot; Factor Applied 
+ Along Cantilever</p>
+
+<p>Enter the &quot;g&quot; factor to be applied to girder dead load along 
+ the cantilever (i.e., outside of bunk point support locations). This value 
+ must be greater than or equal to 1.0.</p>
+
+<p style="font-weight: bold;"><span style="font-weight: bold;"><img src="Psglib00090000.gif"
+	ALT=Psglib00090000.gif
+	style="width: 12px;
+			height: 17px;
+			margin-top: 0px;
+			margin-bottom: 0px;
+			margin-left: 0px;
+			margin-right: 0px;
+			border-style: none;"
+	width=12
+	height=17
+	border=0> &quot;g&quot; Factor Applied Between Cantilevers</span></p>
+
+<p>Enter the &quot;g&quot; factor to be applied to girder dead load between 
+ cantilevers (i.e., interior of beam between bunk point support locations). 
+ This value must be greater than or equal to 1.0.</p>
+
+<h3 style="font-weight: normal;">KDOT Parameters - Allowable Concrete Stresses</h3>
+
+<p style="font-weight: bold;"><img src="Psglib00090000.gif"
+									ALT=Psglib00090000.gif
+									style="width: 12px;
+											height: 17px;
+											margin-top: 0px;
+											margin-bottom: 0px;
+											margin-left: 0px;
+											margin-right: 0px;
+											border-style: none;"
+									width=12
+									height=17
+									border=0> Compressive Stress</p>
+
+<p>Enter the multiplier for the maximum allowable concrete compressive 
+ stress for hauling loads. Refer to the KDOT LRFD Bridge Design Specifications 
+ for the recommended value.</p>
+
+<p style="font-weight: bold;"><span style="font-weight: bold;"><img src="Psglib00090000.gif"
+	ALT=Psglib00090000.gif
+	style="width: 12px;
+			height: 17px;
+			margin-top: 0px;
+			margin-bottom: 0px;
+			margin-left: 0px;
+			margin-right: 0px;
+			border-style: none;"
+	width=12
+	height=17
+	border=0> Tensile Stress</span></p>
+
+<p>Enter the multiplier for the maximum allowable concrete tensile stress 
+ for hauling loads. Refer to the KDOT LRFD Bridge Design Specifications 
+ for the recommended value.</p>
+
+<h3><span style="font-weight: normal;">KDOT Parameters - Support Location</span></h3>
+
+<p><span style="font-weight: bold;"><img src="Psglib00090000.gif"
+										ALT=Psglib00090000.gif
+										style="width: 12px;
+												height: 17px;
+												margin-top: 0px;
+												margin-bottom: 0px;
+												margin-left: 0px;
+												margin-right: 0px;
+												border-style: none;"
+										width=12
+										height=17
+										border=0> Minimum Truck Support 
+ Location from ends of girder</span></p>
+
+<p>Enter the minimum truck support location from the ends of the girder. 
+ This value is specified by an exact location, and by an optional fraction 
+ of girder length. </p>
+
+<p>A warning will be reported if either value is exceeded.</p>
+
+<p>The designer will use this as the starting point for design of truck 
+ support locations. </p>
+
+<p><span style="font-weight: bold;"><img src="Psglib00090000.gif"
+										ALT=Psglib00090000.gif
+										style="width: 12px;
+												height: 17px;
+												margin-top: 0px;
+												margin-bottom: 0px;
+												margin-left: 0px;
+												margin-right: 0px;
+												border-style: none;"
+										width=12
+										height=17
+										border=0>Truck Support Location 
+ Accuracy</span></p>
+
+<p>Enter the accuracy of the truck support locations to be used by the 
+ design algorithm. The designer will use this accuracy when locating the 
+ truck supports.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

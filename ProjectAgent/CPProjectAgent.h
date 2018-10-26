@@ -38,6 +38,8 @@
 #define EVT_CONSTRUCTIONLOAD     0x2000
 
 
+
+
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIProjectPropertiesEventSink
 template <class T>
@@ -144,13 +146,14 @@ class CProxyIBridgeDescriptionEventSink : public IConnectionPointImpl<T, &IID_IB
 public:
 
 public:
-	HRESULT Fire_BridgeChanged()
+	HRESULT Fire_BridgeChanged(CBridgeChangedHint* pHint = NULL)
 	{
 		T* pT = (T*)this;
 
       if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_BRIDGE);
+         pT->m_PendingBridgeChangedHints.push_back(pHint);
          return S_OK;
       }
 
@@ -162,10 +165,16 @@ public:
 			if (*pp != NULL)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnBridgeChanged();
+				ret = pEventSink->OnBridgeChanged(pHint);
 			}
 			pp++;
 		}
+      if ( pHint )
+      {
+         delete pHint;
+         pHint = NULL;
+      }
+
 		pT->Unlock();
 		return ret;
 	}

@@ -87,6 +87,15 @@ inline bool EqualDoublePred(Float64 i, Float64 j) {
    return ::IsEqual(i,j);
 }
 
+inline void make_upper( std::_tstring::iterator begin,std::_tstring::iterator end)
+{
+   while ( begin != end )
+   {
+      *begin = toupper(*begin);
+      begin++;
+   }
+}
+
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 // NOTE: This collection must be emptied before the DLL is unloaded. In order to
@@ -173,16 +182,41 @@ m_MaxDebondLengthByHardDistance(-1.0)
    m_DoExtendBarsIntoDeck            = true;
    m_DoBarsActAsConfinement          = true;
    m_LongShearCapacityIncreaseMethod   = isAddingRebar;
+   
+   InitCLSIDMap();
 }
 
 GirderLibraryEntry::GirderLibraryEntry(const GirderLibraryEntry& rOther) :
 libLibraryEntry(rOther)
 {
+   InitCLSIDMap();
    MakeCopy(rOther);
 }
 
 GirderLibraryEntry::~GirderLibraryEntry()
 {
+}
+
+void GirderLibraryEntry::InitCLSIDMap()
+{
+   // Maps the old PGSuper CLSID for the beam factories to the new CLSIDs
+   // This allows us to open old files
+   m_CLSIDMap.insert(std::make_pair(_T("{30962206-2412-4001-AA20-CF359BC60142}"),_T("{EF144A97-4C75-4234-AF3C-71DC89B1C8F8}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{64E8DD89-EC9E-48DD-B4E9-A457F6BFB9B1}"),_T("{9EDBDD8D-ABBB-413A-9B2D-9EB2712BE914}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{F1504E79-8810-4B5C-9797-BCE6C1022C4C}"),_T("{DA3C413D-6413-4485-BD29-E8A419E981AF}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{F008218C-B19B-49A0-9084-253A09D4EA5A}"),_T("{F72BA192-6D82-4D66-92CA-EB13466E6BA9}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{C28FA58A-3D4D-4DF1-8021-2A0BBA90F304}"),_T("{DD999E90-E181-4EC8-BB82-FDFB364B7620}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{9AA6D6FF-2D05-46DB-B3F0-479B182B3193}"),_T("{16CC6372-256E-4828-9BDA-3185C27DC65E}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{0CE7D624-7CC5-4300-8257-0C41A585852F}"),_T("{51CB9247-8200-43E5-BFB0-E386C1E6A0D0}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{71AF6935-2501-4FB7-8FA3-7DDB505D5C63}"),_T("{D8824656-6CB6-45C0-B5F7-13CFFA890F0B}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{FD766540-C635-43E1-B809-06B837EFA752}"),_T("{A367FEEC-9E24-4ED6-9DD3-57F62AD752C9}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{63C3AE0C-ADD3-44F7-AC22-16303D00E303}"),_T("{E6F28403-A396-453B-91BE-15A68D194255}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{A9FC0D19-F6A4-4A9D-835B-FEE2E42F574C}"),_T("{171FC948-C4CB-4920-B9FC-72D729F3E91A}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{73D5A32E-F747-4FFF-8B48-D561A93494AC}"),_T("{B195CB90-CEB0-4495-B91D-7FC6DFBF31CF}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{09D3E8EA-B66F-4D99-8DDE-3F55BBC14D54}"),_T("{B1F474E4-15F7-4AC8-AD2D-7FBD12E3B0EB}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{59BAD0A2-91F0-4E8A-8A90-4241787E9B50}"),_T("{5D6AFD91-84F4-4755-9AF7-B760114A4551}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{AC828108-B982-4C95-867B-B4BF4E37B7EB}"),_T("{2583C7C1-FF57-4113-B45B-702CFA6AD013}")));
+   m_CLSIDMap.insert(std::make_pair(_T("{9C219793-A1F1-402A-B865-0AA6BD22B0A6}"),_T("{DEFA27AD-3D22-481B-9006-627C65D2648F}")));
 }
 
 //======================== OPERATORS  =======================================
@@ -474,6 +508,15 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
+std::_tstring GirderLibraryEntry::TranslateCLSID(const std::_tstring& strCLSID)
+{
+   std::map<std::_tstring,std::_tstring>::iterator found(m_CLSIDMap.find(strCLSID));
+   if ( found == m_CLSIDMap.end() )
+      return strCLSID;
+
+   return found->second;
+}
+
 bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
    USES_CONVERSION;
@@ -509,6 +552,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if (!pLoad->Property(_T("CLSID"),&strCLSID) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
+         make_upper(strCLSID.begin(),strCLSID.end());
+
          std::_tstring strPublisher;
          if ( !pLoad->Property(_T("Publisher"),&strPublisher) )
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -516,6 +561,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          std::_tstring strSectionName;
          if ( !pLoad->Property(_T("SectionName"),&strSectionName) )
             THROW_LOAD(InvalidFileFormat,pLoad);
+
+         strCLSID = TranslateCLSID(strCLSID);
 
          HRESULT hr = CreateBeamFactory(strCLSID);
          if ( FAILED(hr) )
@@ -1428,7 +1475,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          legacy.m_ShearZoneInfo.clear();
          while(pLoad->BeginUnit(_T("ShearZones")))
          {
-            double shear_zone_version = pLoad->GetVersion();
+            Float64 shear_zone_version = pLoad->GetVersion();
 
             if(3 < shear_zone_version )
                THROW_LOAD(BadVersion,pLoad);
@@ -1742,7 +1789,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_AvailableBarSpacings.clear();
          for (IndexType is=0; is<size; is++)
          {
-            double spacing;
+            Float64 spacing;
             if ( !pLoad->Property(_T("Spacing"),&spacing) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1842,7 +1889,7 @@ HRESULT GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
 void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
 {
    CLSID clsid;
-   ::CLSIDFromString(_T("{30962206-2412-4001-AA20-CF359BC60142}"),&clsid);
+   ::CLSIDFromString(_T("{EF144A97-4C75-4234-AF3C-71DC89B1C8F8}"),&clsid);
    m_pBeamFactory.Release();
    HRESULT hr = ::CoCreateInstance(clsid,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&m_pBeamFactory);
 
@@ -3735,3 +3782,15 @@ void GirderLibraryEntry::SetLongShearCapacityIncreaseMethod(LongShearCapacityInc
 
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
+
+static const Float64 TwoInches = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+
+GirderLibraryEntry::HarpedStrandAdjustment::HarpedStrandAdjustment() : 
+m_AllowVertAdjustment(false), 
+m_StrandIncrement(TwoInches),
+m_TopFace(pgsTypes::GirderTop), 
+m_TopLimit(TwoInches),
+m_BottomFace(pgsTypes::GirderBottom), 
+m_BottomLimit(TwoInches)
+{
+}

@@ -315,9 +315,9 @@ struct CREEPCOEFFICIENTDETAILS
    Float64 K1, K2; // 2005 and later, from NCHRP Report 496
 };
 
-#define TIMESTEP_CREEP      0
-#define TIMESTEP_SHRINKAGE  1
-#define TIMESTEP_RELAXATION 2
+#define TIMESTEP_CR  0
+#define TIMESTEP_SH  1
+#define TIMESTEP_PS  2
 
 // This struct holds the computation details for a cross section of a concrete part
 // for a specific interval for a time step loss analysis
@@ -335,13 +335,31 @@ struct TIME_STEP_CONCRETE
    Float64 In;  // Moment of inertia
 
    // Creep Strains during this interval due to loads applied in previous intervals
-   std::vector<Float64> ec; // = (Change in Creep Strain during interval i (de))*(Yce - Ycs)
-   std::vector<Float64> rc; // = (Change in curvature during interval i (dr))*(Yce - Ycs)
+   struct CREEP_STRAIN
+   {
+      Float64 P;
+      Float64 E;
+      Float64 A;
+      Float64 Cs;
+      Float64 Ce;
+      Float64 e;
+   };
+   struct CREEP_CURVATURE
+   {
+      Float64 M;
+      Float64 E;
+      Float64 I;
+      Float64 Cs;
+      Float64 Ce;
+      Float64 r;
+   };
+   std::vector<CREEP_STRAIN> ec;    // = (dN(j)/(AE(j))*[C(i+1/2,j) - C(i-1/2,j)]
+   std::vector<CREEP_CURVATURE> rc; // = (dM(j)/(IE(j))*[C(i+1/2,j) - C(i-1/2,j)]
 
    // Unrestrained deformations due to creep and shrinkage in concrete during this interval
    Float64 esi; // shrinkage
-   Float64 e; // sum of ec vector
-   Float64 r; // sum of rc vector
+   Float64 e; // sum of (dN(j)/(AE(j))*[Y(i+1/2,j) - Y(i-1/2,j)]
+   Float64 r; // sum of (dM(j)/(IE(j))*[Y(i+1/2,j) - Y(i-1/2,j)]
 
    // Restraining force (force required to cause deformations that are
    // equal and opposite to the unrestrained deformations)
@@ -353,33 +371,26 @@ struct TIME_STEP_CONCRETE
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
 
-   // Change in strain and curvature of this concrete part during this interval
-   // due to externally applied loads and restraining forces.
-   // er and rr are the deformation (axial strain and curvature) of the entire
-   // cross section due to extrernally applied loads and restraining forces. er and
-   // rr are found in the parent structure TIME_STEP_DETAILS. Ytr is the centroid
-   // (measured down from the top of the girder) of the transformed section (also found on the TIME_STEP_DETAILS struct)
-   Float64 de; // axial strain = er + rr(Yn-Ytr)
-   Float64 dr; // curvature = rr
+   // Force on this concrete part due to elastic effects during this interval
+   Float64 dP[18]; // index is one of the ProductForceType enum values
+   Float64 dM[18];
 
-   // Force on this concrete part due to deformations during this interval
-   Float64 dP; // = de*Ea*Ag + Pr+Pre
-   Float64 dM; // = dr*Ea*In + Mr+Mre
 
    // Force on this concrete part at the end of this interval
    Float64 P; // = (P in previous interval) + dP;
    Float64 M; // = (M in previous interval) + dM;
 
-   // Change in elastic strains during this interval (used for creep strains in next interval)
-   Float64 dee; // = dP/(Ea*An)
-   Float64 der; // = dM/(Ea*In)
-
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
    // where y is the depth from the top of the concrete part
-   // ---- alternatively ----
-   // Stress at the end of this interval = stress at end of previous interval + (dee + der*y)*Ea
-   Float64 fTop;
-   Float64 fBot;
+   Float64 fTop[18][2]; // first index is one of the ProductForceType enum values
+   Float64 fBot[18][2]; // second index is one of the CombinationType enum values
+
+   // Stress in this due to live load
+   Float64 fTopLLMin;
+   Float64 fBotLLMin;
+
+   Float64 fTopLLMax;
+   Float64 fBotLLMax;
 
    TIME_STEP_CONCRETE()
    {
@@ -397,20 +408,24 @@ struct TIME_STEP_CONCRETE
 
       PrShrinkage = 0;
 
-      de = 0;
-      dr = 0;
-
-      dP = 0;
-      dM = 0;
-
       P = 0;
       M = 0;
 
-      dee = 0;
-      der = 0;
+      for ( int i = 0; i < 18 ; i++ )
+      {
+         dP[i] = 0;
+         dM[i] = 0;
+         fTop[i][0] = 0;
+         fBot[i][0] = 0;
+         fTop[i][1] = 0;
+         fBot[i][1] = 0;
+      }
 
-      fTop = 0;
-      fBot = 0;
+      fTopLLMin = 0;
+      fBotLLMin = 0;
+
+      fTopLLMax = 0;
+      fBotLLMax = 0;
    }
 };
 
@@ -433,7 +448,7 @@ struct TIME_STEP_STRAND
    // Relaxation
    Float64 fr; // prestress loss due to relaxation during this interval
    Float64 er; // apparent deformation due to relaxation (fr/Eps)
-   Float64 Pr; // restraining force (= -Eps*Aps*er)
+   Float64 PrRelaxation; // restraining force (= -Eps*Ap*er = -fr*As)
 
    Float64 Pj;  // jacking force  (includes deductions for anchors set and friction if PT)
    Float64 fpj; // jacking stress (includes deductions for anchors set and friction if PT)
@@ -441,9 +456,7 @@ struct TIME_STEP_STRAND
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 de; // strain at centroid of strand
    Float64 dP; // change in force in strand due to deformations in this interval
-               // dP = de*Eps*Aps + Pr+Pre
    
    Float64 P; // force in strand at end of this interval = (P previous interval + dP)
 
@@ -458,9 +471,13 @@ struct TIME_STEP_STRAND
    Float64 loss; // = loss (previous) + dFps
 
    // Elastic effect of live load on effective prestress
-   Float64 dFll;
-   Float64 fpeLL; // fpe + dFll;
-   Float64 lossLL; // loss + dFll;
+   Float64 dFllMin;
+   Float64 fpeLLMin; // fpe + dFll;
+   Float64 lossLLMin; // loss + dFll;
+
+   Float64 dFllMax;
+   Float64 fpeLLMax; // fpe + dFll;
+   Float64 lossLLMax; // loss + dFll;
 
    // This value can be checked by (-Pj+P) = fpe*Aps
    TIME_STEP_STRAND()
@@ -469,24 +486,25 @@ struct TIME_STEP_STRAND
       As = 0;
       Ys = 0;
       fr = 0;
-      er = 0;
-      Pr = 0;
+      PrRelaxation = 0;
 
-      Pj = 0;
+      Pj  = 0;
       fpj = 0;
 
-      de = 0;
       dP = 0;
-      
-      P = 0;
+      P  = 0;
 
       dFps = 0;
-      fpe = 0;
+      fpe  = 0;
       loss = 0;
 
-      dFll   = 0;
-      fpeLL  = 0;
-      lossLL = 0;
+      dFllMin   = 0;
+      fpeLLMin  = 0;
+      lossLLMin = 0;
+
+      dFllMax   = 0;
+      fpeLLMax  = 0;
+      lossLLMax = 0;
    }
 };
 
@@ -506,8 +524,7 @@ struct TIME_STEP_REBAR
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 de; // change in strain at centroid of rebar
-   Float64 dP; // change in force, dP = de*Eps*Aps
+   Float64 dP; // change in force in bar during this interval
 
    Float64 P; // force in rebar at end of this interval = (P previous interval + dP)
 
@@ -515,7 +532,6 @@ struct TIME_STEP_REBAR
    {
       As = 0;
       Ys = 0;
-      de = 0;
       dP = 0;
       P  = 0;
    }
@@ -536,12 +552,14 @@ struct TIME_STEP_DETAILS
    // Ytr is measured from the top of the girder
    Float64 Atr, Ytr, Itr;
 
-   // Externally applied loads
-   Float64 P, M;
+   // Change in total loading on the section due to externally applied loads during this interval
+   // Array index is one of the ProductForceType enum values
+   // upto and including pftTotalPostTensioning
+   Float64 dP[18], dM[18];
 
-   // Time step parameters for girder and slab
+   // Time step parameters for girder and deck
    TIME_STEP_CONCRETE Girder;
-   TIME_STEP_CONCRETE Slab;
+   TIME_STEP_CONCRETE Deck;
 
    // Time step parameters for strands and tendons
    TIME_STEP_STRAND Strands[3]; // pgsTypes::StrandType (Straight, Harped, Temporary)
@@ -554,19 +572,23 @@ struct TIME_STEP_DETAILS
    std::vector<TIME_STEP_REBAR> GirderRebar;
 
    // Total restraining force in this interval
-   Float64 Pr[3], Mr[3];
+   Float64 Pr[3], Mr[3]; // index is one of the TIMESTEP_XXX constants
 
    // Initial Strains (access array with pgsTypes::Back and pgsTypes::Ahead for left and right side of POI)
-   Float64 e[3][2];
+   Float64 e[3][2]; // index is one of the TIMESTEP_XXX constants
    Float64 r[3][2];
 
    // Section results from analyzing the initial strains
-   Float64 Pre[3];
+   Float64 Pre[3]; // index is one of the TIMESTEP_XXX constants
    Float64 Mre[3];
 
    // Deformation due to externally applied loads and restraining forces in this interval
-   Float64 er; // axial strain
-   Float64 rr; // curvature
+   Float64 der[18]; // axial strain
+   Float64 drr[18]; // curvature
+
+   // Total deformation due to externally applied loads and restraining forces
+   Float64 er[18]; // axial strain
+   Float64 rr[18]; // curvature
 
    // Check equilibrium
    Float64 dPext, dPint;
@@ -585,8 +607,17 @@ struct TIME_STEP_DETAILS
       Ytr = 0;
       Itr = 0;
 
-      P = 0;
-      M = 0;
+      for ( int i = 0; i < 18; i++ )
+      {
+         dP[i] = 0;
+         dM[i] = 0;
+
+         der[i] = 0;
+         drr[i] = 0;
+
+         er[i] = 0;
+         rr[i] = 0;
+      }
 
       for (int i = 0; i < 3; i++)
       {
@@ -601,9 +632,6 @@ struct TIME_STEP_DETAILS
          Pre[i] = 0;
          Mre[i] = 0;
       }
-
-      er = 0;
-      rr = 0;
 
       dPext = 0;
       dPint = 0;

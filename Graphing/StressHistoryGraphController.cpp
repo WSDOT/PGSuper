@@ -42,12 +42,15 @@
 
 IMPLEMENT_DYNCREATE(CStressHistoryGraphController,CEAFGraphControlWindow)
 
-CStressHistoryGraphController::CStressHistoryGraphController()
+CStressHistoryGraphController::CStressHistoryGraphController() :
+m_GirderKey(0,0)
 {
 }
 
 BEGIN_MESSAGE_MAP(CStressHistoryGraphController, CEAFGraphControlWindow)
 	//{{AFX_MSG_MAP(CStressHistoryGraphController)
+   ON_CBN_SELCHANGE( IDC_GROUP, OnGroupChanged )
+   ON_CBN_SELCHANGE( IDC_GIRDER, OnGirderChanged )
    ON_CBN_SELCHANGE( IDC_POI, OnLocationChanged )
    ON_BN_CLICKED(IDC_TIME_LOG,OnXAxis)
    ON_BN_CLICKED(IDC_TIME_LINEAR,OnXAxis)
@@ -61,11 +64,18 @@ BOOL CStressHistoryGraphController::OnInitDialog()
 
    EAFGetBroker(&m_pBroker);
 
+   FillGroupCtrl();
+   FillGirderCtrl();
    FillLocationCtrl();
 
    CheckRadioButton(IDC_TIME,IDC_INTERVALS,IDC_TIME);
 
    return TRUE;
+}
+
+CGirderKey CStressHistoryGraphController::GetGirderKey()
+{
+   return m_GirderKey;
 }
 
 pgsPointOfInterest CStressHistoryGraphController::GetLocation()
@@ -77,6 +87,34 @@ void CStressHistoryGraphController::SetIntervalText(const CString& strText)
 {
    CWnd* pWnd = GetDlgItem(IDC_INTERVAL_LIST);
    pWnd->SetWindowText(strText);
+}
+
+void CStressHistoryGraphController::OnGroupChanged()
+{
+   CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
+   int curSel = pcbGroup->GetCurSel();
+   GroupIndexType grpIdx = (GroupIndexType)(pcbGroup->GetItemData(curSel));
+   if ( grpIdx != m_GirderKey.groupIndex )
+   {
+      m_GirderKey.groupIndex = grpIdx;
+      FillGirderCtrl();
+      FillLocationCtrl();
+      UpdateGraph();
+   }
+}
+
+void CStressHistoryGraphController::OnGirderChanged()
+{
+   CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+   int curSel = pcbGirder->GetCurSel();
+   GirderIndexType gdrIdx = (GirderIndexType)(pcbGirder->GetItemData(curSel));
+   if ( gdrIdx != m_GirderKey.girderIndex )
+   {
+#pragma Reminder("UPDATE: need to worry about the case when the girder index is greater than the number of girders in the current group")
+      m_GirderKey.girderIndex = gdrIdx;
+      FillLocationCtrl();
+      UpdateGraph();
+   }
 }
 
 void CStressHistoryGraphController::OnLocationChanged()
@@ -100,13 +138,71 @@ void CStressHistoryGraphController::OnXAxis()
    UpdateGraph();
 }
 
+void CStressHistoryGraphController::FillGroupCtrl()
+{
+   CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
+   int curSel = pcbGroup->GetCurSel();
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      CString strItem;
+      strItem.Format(_T("Group %d"),LABEL_GROUP(grpIdx));
+      int idx = pcbGroup->AddString(strItem);
+      pcbGroup->SetItemData(idx,(DWORD_PTR)grpIdx);
+   }
+
+   if ( curSel == CB_ERR )
+   {
+      curSel = 0;
+      m_GirderKey.groupIndex = 0;
+   }
+   else if ( nGroups < m_GirderKey.groupIndex )
+   {
+      curSel = pcbGroup->GetCount()-1;
+      m_GirderKey.groupIndex = nGroups-1;
+   }
+
+   pcbGroup->SetCurSel(curSel);
+}
+
+void CStressHistoryGraphController::FillGirderCtrl()
+{
+   CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+   int curSel = pcbGirder->GetCurSel();
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GirderIndexType nGirders = pIBridgeDesc->GetGirderGroup(m_GirderKey.groupIndex)->GetGirderCount();
+   for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+   {
+      CString strItem;
+      strItem.Format(_T("Girder %s"),LABEL_GIRDER(gdrIdx));
+      int idx = pcbGirder->AddString(strItem);
+      pcbGirder->SetItemData(idx,(DWORD_PTR)gdrIdx);
+   }
+
+   if ( curSel == CB_ERR )
+   {
+      curSel = 0;
+      m_GirderKey.girderIndex = 0;
+   }
+   else if ( nGirders < m_GirderKey.girderIndex )
+   {
+      curSel = pcbGirder->GetCount()-1;
+      m_GirderKey.girderIndex = nGirders-1;
+   }
+
+   pcbGirder->SetCurSel(curSel);
+}
+
 void CStressHistoryGraphController::FillLocationCtrl()
 {
    CComboBox* pcbLocation = (CComboBox*)GetDlgItem(IDC_POI);
    int curSel = pcbLocation->GetCurSel();
    
    GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(0,0,ALL_SEGMENTS)));
+   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey,ALL_SEGMENTS)));
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
@@ -128,6 +224,10 @@ void CStressHistoryGraphController::FillLocationCtrl()
    {
       pcbLocation->SetCurSel(0);
       m_Poi = vPoi.front();
+   }
+   else if (m_Poi.GetSegmentKey().groupIndex != m_GirderKey.groupIndex || m_Poi.GetSegmentKey().girderIndex != m_GirderKey.girderIndex)
+   {
+      m_Poi = vPoi[curSel];
    }
 }
 

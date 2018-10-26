@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.AnalysisAgent.1 = s 'AnalysisAgent Class'
 	{
-		CLSID = s '{BE55D0A2-68EC-11D2-883C-006097C68A9C}'
+		CLSID = s '{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}'
 	}
 	PGSuper.AnalysisAgent = s 'AnalysisAgent Class'
 	{
-		CLSID = s '{BE55D0A2-68EC-11D2-883C-006097C68A9C}'
+		CLSID = s '{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}'
 		CurVer = s 'PGSuper.AnalysisAgent.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {BE55D0A2-68EC-11D2-883C-006097C68A9C} = s 'AnalysisAgent Class'
+		ForceRemove {DD1ECB24-F46E-4933-8EE4-1DC0BC67410D} = s 'AnalysisAgent Class'
 		{
 			ProgID = s 'PGSuper.AnalysisAgent.1'
 			VersionIndependentProgID = s 'PGSuper.AnalysisAgent'

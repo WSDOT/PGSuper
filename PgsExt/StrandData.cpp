@@ -265,7 +265,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
    CComVariant var;
 
    pStrLoad->BeginUnit(_T("PrestressData"));  // named this for historical reasons
-   double version;
+   Float64 version;
    pStrLoad->get_Version(&version);
    *pVersion = version;
 

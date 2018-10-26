@@ -40,8 +40,8 @@ static UINT indicators[] =
 {
    ID_SEPARATOR,           // status line indicator
    ID_INDICATOR_ANALYSIS,
-   ID_INDICATOR_STATUS,
-   ID_INDICATOR_MODIFIED,
+   EAFID_INDICATOR_STATUS,
+   EAFID_INDICATOR_MODIFIED,
    ID_INDICATOR_AUTOCALC_ON,
    ID_INDICATOR_CAPS,
    ID_INDICATOR_NUM,
@@ -71,6 +71,12 @@ void CPGSuperStatusBar::GetStatusIndicators(const UINT** lppIDArray,int* pnIDCou
 {
    *lppIDArray = indicators;
    *pnIDCount = sizeof(indicators)/sizeof(UINT);
+}
+
+BOOL CPGSuperStatusBar::SetStatusIndicators(const UINT* lpIDArray, int nIDCount)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return CEAFStatusBar::SetStatusIndicators(lpIDArray,nIDCount);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -146,22 +152,24 @@ void CPGSuperStatusBar::Reset()
    CEAFStatusBar::Reset();
 
    int idx = GetAnalysisModePaneIndex();
-   SetPaneText( idx, _T("") );
+   if ( 0 <= idx )
+      SetPaneText( idx, _T("") );
 
    idx = GetAutoCalcPaneIndex();
-   SetPaneText( idx, _T("") );
+   if ( 0 <= idx )
+      SetPaneText( idx, _T("") );
 }
 
 void CPGSuperStatusBar::AutoCalcEnabled( bool bEnable )
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CString status_text;
-   if ( bEnable )
-      status_text.LoadString(ID_INDICATOR_AUTOCALC_ON);
-   else
-      status_text.LoadString(ID_INDICATOR_AUTOCALC_OFF);
+   VERIFY(status_text.LoadString(bEnable ? ID_INDICATOR_AUTOCALC_ON : ID_INDICATOR_AUTOCALC_OFF));
 
    int idx = GetAutoCalcPaneIndex();
-   SetPaneText(idx, status_text, TRUE);
+   if ( 0 <= idx )
+      SetPaneText(idx, status_text, TRUE);
 }
 
 void CPGSuperStatusBar::SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType)
@@ -181,5 +189,6 @@ void CPGSuperStatusBar::SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType an
    }
 
    int idx = GetAnalysisModePaneIndex();
-   SetPaneText(idx,strAnalysisType,TRUE);
+   if ( 0 <= idx )
+      SetPaneText(idx,strAnalysisType,TRUE);
 }

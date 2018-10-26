@@ -79,6 +79,8 @@ public:
    Float64 nHorzInterfaceBars;
    matRebar::Size ConfinementBarSize;
 
+   bool bWasDesigned; // For use by design algorithm only
+
 private:
    // These values are used only for CShearData version < 9
    matRebar::Size  legacy_HorzBarSize;

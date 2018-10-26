@@ -28,10 +28,9 @@
 #include "resource.h"       // main symbols
 #include <IFace\DistFactorEngineer.h>
 
-
-// {DA437468-B32C-4012-8B8E-51BAE278C170}
+// {E02EA7A6-5E4B-4e2d-91C9-20F4E742F1EC}
 DEFINE_GUID(CLSID_BulbTeeDistFactorEngineer, 
-0xda437468, 0xb32c, 0x4012, 0x8b, 0x8e, 0x51, 0xba, 0xe2, 0x78, 0xc1, 0x70);
+0xe02ea7a6, 0x5e4b, 0x4e2d, 0x91, 0xc9, 0x20, 0xf4, 0xe7, 0x42, 0xf1, 0xec);
 
 /////////////////////////////////////////////////////////////////////////////
 // CBulbTeeDistFactorEngineer

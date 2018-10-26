@@ -34,7 +34,7 @@ library PGSuper
    importlib("WBFLCore.tlb");
 
 	[
-		uuid(EC915470-6E76-11D2-8EEB-006097DF3C68)
+		uuid(F510647E-1F4F-4fef-8257-6914DE7B07C8)
 	]
 	coclass SpecAgent
 	{

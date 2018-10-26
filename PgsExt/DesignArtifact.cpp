@@ -25,6 +25,7 @@
 #include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <PgsExt\GirderLabel.h>
 #include <PgsExt\DesignArtifact.h>
 #include <DesignConfigUtil.h>
 #include <EAF\EAFUtilities.h>
@@ -477,21 +478,35 @@ void pgsDesignArtifact::SetFinalDesignState(const ConcreteStrengthDesignState& s
    m_ConcreteFinalDesignState = state;
 }
 
-
-void pgsDesignArtifact::ConcreteStrengthDesignState::SetState(bool controlledByMin, const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::StressType stressType, 
-              pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
+void pgsDesignArtifact::ConcreteStrengthDesignState::SetStressState(bool controlledByMin, const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::StressType stressType, 
+                    pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
 {
+   m_Action = actStress;
    m_MinimumControls = controlledByMin;
    m_SegmentKey      = segmentKey;
    m_IntervalIdx     = intervalIdx;
-   m_StressType      = stressType;
-   m_LimitState      = limitState;
-   m_StressLocation  = stressLocation;
+   m_StressType = stressType;
+   m_LimitState = limitState;
+   m_StressLocation = stressLocation;
+}
+
+void pgsDesignArtifact::ConcreteStrengthDesignState::SetShearState(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState)
+{
+   m_Action = actShear;
+   m_MinimumControls = false;
+   m_SegmentKey      = segmentKey;
+   m_IntervalIdx     = intervalIdx;
+   m_LimitState = limitState;
 }
 
 bool pgsDesignArtifact::ConcreteStrengthDesignState::WasControlledByMinimum() const
 {
    return m_MinimumControls;
+}
+
+pgsDesignArtifact::ConcreteStrengthDesignState::Action pgsDesignArtifact::ConcreteStrengthDesignState::GetAction() const
+{
+   return m_Action;
 }
 
 IntervalIndexType pgsDesignArtifact::ConcreteStrengthDesignState::Interval() const
@@ -502,7 +517,7 @@ IntervalIndexType pgsDesignArtifact::ConcreteStrengthDesignState::Interval() con
 
 pgsTypes::StressType pgsDesignArtifact::ConcreteStrengthDesignState::StressType() const
 {
-   PRECONDITION(m_MinimumControls==false);
+   PRECONDITION(m_MinimumControls==false && m_Action==actStress);
    return m_StressType;
 }
 
@@ -514,7 +529,7 @@ pgsTypes::LimitState pgsDesignArtifact::ConcreteStrengthDesignState::LimitState(
 
 pgsTypes::StressLocation pgsDesignArtifact::ConcreteStrengthDesignState::StressLocation() const
 {
-   PRECONDITION(m_MinimumControls==false);
+   PRECONDITION(m_MinimumControls==false && m_Action==actStress);
    return m_StressLocation;
 }
 
@@ -579,7 +594,7 @@ inline LPCTSTR StressLocationString(pgsTypes::StressLocation loc)
    case pgsTypes::TopGirder:
       return _T("Top of Girder");
       break;
-   case pgsTypes::TopSlab:
+   case pgsTypes::TopDeck:
       return _T("Top of Slab");
       break;
    default:
@@ -611,11 +626,22 @@ std::_tstring pgsDesignArtifact::ConcreteStrengthDesignState::AsString() const
    {
       return std::_tstring(_T("Minimum"));
    }
-   else
+   else if (m_Action==actStress)
    {
       std::_tostringstream sstr;
-      sstr<< IntervalString(m_IntervalIdx)<<_T(", ")<<LimitStateString(m_LimitState)<<_T(", ")<<StressTypeString(m_StressType)<<_T(", at ")<<StressLocationString(m_StressLocation);
+      sstr<< _T("flexural stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(", ") << LimitStateString(m_LimitState)<<_T(", ") << StressTypeString(m_StressType)<<_T(", at ") << StressLocationString(m_StressLocation);
       return sstr.str();
+   }
+   else if (m_Action==actShear)
+   {
+      std::_tostringstream sstr;
+      sstr<< _T("ultimate shear stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(", ") << LimitStateString(m_LimitState);
+      return sstr.str();
+   }
+   else
+   {
+      ATLASSERT(0);
+      return std::_tstring(_T("unknown design state. "));
    }
 }
 
@@ -630,13 +656,23 @@ bool pgsDesignArtifact::ConcreteStrengthDesignState::operator==(const ConcreteSt
       // both are true
       return true;
    }
+   else if (m_Action != rOther.m_Action)
+   {
+      return false;
+   }
    else
    {
-      return m_IntervalIdx == rOther.m_IntervalIdx && 
-             m_StressType  == rOther.m_StressType &&
-             m_LimitState  == rOther.m_LimitState && 
-             m_StressLocation == rOther.m_StressLocation &&
-             m_RequiredAdditionalRebar == rOther.m_RequiredAdditionalRebar;
+      if (m_Action==actStress)
+      {
+         return m_IntervalIdx==rOther.m_IntervalIdx && m_StressType==rOther.m_StressType &&
+                m_LimitState==rOther.m_LimitState && m_StressLocation==rOther.m_StressLocation &&
+                m_RequiredAdditionalRebar==rOther.m_RequiredAdditionalRebar;
+      }
+      else
+      {
+         ATLASSERT(rOther.m_Action==actShear);
+         return m_IntervalIdx==rOther.m_IntervalIdx && m_LimitState==rOther.m_LimitState;
+      }
    }
 }
 

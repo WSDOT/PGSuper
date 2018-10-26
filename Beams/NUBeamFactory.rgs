@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFactory.NUBeamFactory.1 = s 'Nebraska NU Girder'
 	{
-		CLSID = s '{F1504E79-8810-4b5c-9797-BCE6C1022C4C}'
+		CLSID = s '{DA3C413D-6413-4485-BD29-E8A419E981AF}'
 	}
 	PGSuperBeamFactory.NUBeamFactory = s 'Nebraska NU Girder'
 	{
-		CLSID = s '{F1504E79-8810-4b5c-9797-BCE6C1022C4C}'
+		CLSID = s '{DA3C413D-6413-4485-BD29-E8A419E981AF}'
 		CurVer = s 'PGSuperBeamFactory.NUBeamFactory.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {F1504E79-8810-4b5c-9797-BCE6C1022C4C} = s 'Nebraska NU Girder'
+		ForceRemove {DA3C413D-6413-4485-BD29-E8A419E981AF} = s 'Nebraska NU Girder'
 		{
 			ProgID = s 'PGSuperBeamFactory.NUBeamFactory.1'
 			VersionIndependentProgID = s 'PGSuperBeamFactory.NUBeamFactory'

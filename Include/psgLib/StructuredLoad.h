@@ -103,17 +103,17 @@ public:
 
    //------------------------------------------------------------------------
    // Get the version number of the current unit
-   virtual double GetVersion();
+   virtual Float64 GetVersion();
 
    //------------------------------------------------------------------------
    // Get the version number of the parent to the current unit
-   virtual double GetParentVersion();
+   virtual Float64 GetParentVersion();
 
    virtual std::_tstring GetParentUnit();
 
    //------------------------------------------------------------------------
    // Get the version number of the top-most unit
-   virtual double GetTopVersion();
+   virtual Float64 GetTopVersion();
 
    //------------------------------------------------------------------------
    // Property read routines. All of these calls try to read a property at the

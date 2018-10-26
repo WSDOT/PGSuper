@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.ReportAgent.1 = s 'ReportAgent Class'
 	{
-		CLSID = s '{3D5066F2-27BE-11D2-8EB2-006097DF3C68}'
+		CLSID = s '{1FFED5EC-7A32-4837-A1F1-99481AFF2825}'
 	}
 	PGSuper.ReportAgent = s 'ReportAgent Class'
 	{
-		CLSID = s '{3D5066F2-27BE-11D2-8EB2-006097DF3C68}'
+		CLSID = s '{1FFED5EC-7A32-4837-A1F1-99481AFF2825}'
 		CurVer = s 'PGSuper.ReportAgent.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {3D5066F2-27BE-11D2-8EB2-006097DF3C68} = s 'ReportAgent Class'
+		ForceRemove {1FFED5EC-7A32-4837-A1F1-99481AFF2825} = s 'ReportAgent Class'
 		{
 			ProgID = s 'PGSuper.ReportAgent.1'
 			VersionIndependentProgID = s 'PGSuper.ReportAgent'

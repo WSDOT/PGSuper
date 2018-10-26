@@ -50,7 +50,7 @@ LOG
 class REPORTINGCLASS CCombinedReactionTable
 {
 public:
-   // This class serves double duty. It can report pier reactions or girder bearing reactions.
+   // This class serves Float64 duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
    enum TableType { PierReactionsTable, BearingReactionsTable};
 

@@ -85,12 +85,12 @@ STDMETHODIMP CPGSuperGrapherImp::Init()
    /* Gets done at project load time */
    AGENT_INIT;
 
-   return InitGraphBuilders();
+   return AGENT_S_SECONDPASSINIT;
 }
 
 STDMETHODIMP CPGSuperGrapherImp::Init2()
 {
-   return S_OK;
+   return InitGraphBuilders();
 }
 
 STDMETHODIMP CPGSuperGrapherImp::GetClassID(CLSID* pCLSID)

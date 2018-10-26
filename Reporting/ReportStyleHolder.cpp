@@ -313,15 +313,25 @@ Float64 pgsReportStyleHolder::GetMaxTableWidth()
    return ms_MaxTableWidth;
 }
 
+rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, const std::_tstring& strLabel)
+{
+   return CreateDefaultTable(numColumns,strLabel.c_str());
+}
+
 rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, LPCTSTR lpszLabel)
 {
    rptRcTable* pTable = new rptRcTable( numColumns, 0.0/*pgsReportStyleHolder::GetMaxTableWidth()*/ );
-   if ( lpszLabel != NULL)
+   if (lpszLabel != NULL)
       pTable->TableLabel() << lpszLabel;
 
    pgsReportStyleHolder::ConfigureTable(pTable);
 
    return pTable;
+}
+
+rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, const std::_tstring& strLabel)
+{
+   return CreateTableNoHeading(numColumns,strLabel.c_str());
 }
 
 rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, LPCTSTR lpszLabel)

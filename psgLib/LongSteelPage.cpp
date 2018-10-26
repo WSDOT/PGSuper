@@ -28,6 +28,7 @@
 #include "LongSteelPage.h"
 #include "GirderMainSheet.h"
 #include <psgLib\RebarUIUtils.h>
+#include <psglib\LibraryEditorDoc.h>
 #include "..\htmlhelp\HelpTopics.hh"
 
 #ifdef _DEBUG
@@ -107,12 +108,16 @@ void CLongSteelPage::OnEnableDelete(bool canDelete)
 
 BOOL CLongSteelPage::OnInitDialog() 
 {
-
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    ASSERT(pDad);
 
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   bool bFilterBySpec = true;
+   if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
+      bFilterBySpec = false;
+
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillMaterialComboBox(pc);
+   FillRebarMaterialComboBox(pc,bFilterBySpec);
 
 	CPropertyPage::OnInitDialog();
 	

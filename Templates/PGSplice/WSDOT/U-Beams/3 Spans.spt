@@ -3,9 +3,9 @@
   <Version>3.0.0.0</Version>
   <Broker version="1">
     <Agent version="1">
-      <CLSID>{59D50426-265C-11D2-8EB0-006097DF3C68}</CLSID>
+      <CLSID>{256B5B5B-762C-4693-8802-6B0351290FEA}</CLSID>
       <LIBRARY_MANAGER version="2">
-        <TimeStamp>3542901873</TimeStamp>
+        <TimeStamp>3547829013</TimeStamp>
         <LIBRARY_MANAGER_ENTRY version="1">
           <LIBRARY_NAME>CONCRETE_LIBRARY</LIBRARY_NAME>
           <LIBRARY version="1">
@@ -41,7 +41,7 @@
             <LIBRARY_DISPLAY_NAME>Girders</LIBRARY_DISPLAY_NAME>
             <LIBRARY_ENTRY version="1">
               <ENTRY_KEY>U66PTG6</ENTRY_KEY>
-              <GirderLibraryEntry version="21">
+              <GirderLibraryEntry version="22">
                 <Name>U66PTG6</Name>
                 <CLSID>{6A00C215-C139-4755-8DD5-929EE2DED305}</CLSID>
                 <Publisher>WSDOT</Publisher>
@@ -408,11 +408,11 @@
                   <ShearBarGrade>131072</ShearBarGrade>
                   <AreZonesSymmetrical>-1</AreZonesSymmetrical>
                   <UsePrimaryForSplitting>-1</UsePrimaryForSplitting>
-                  <ZoneCount>5</ZoneCount>
+                  <ZoneCount>6</ZoneCount>
                   <ShearZoneData version="4">
                     <ZoneNum>1</ZoneNum>
                     <ZoneLength>0.038100000000000002</ZoneLength>
-                    <BarSpacing>0.012699999999999999</BarSpacing>
+                    <BarSpacing>0.038099999999999995</BarSpacing>
                     <VertBarSize>4</VertBarSize>
                     <VertBars>4</VertBars>
                     <HorzInterfaceBars>4</HorzInterfaceBars>
@@ -421,7 +421,7 @@
                   <ShearZoneData version="4">
                     <ZoneNum>2</ZoneNum>
                     <ZoneLength>0.53339999999999999</ZoneLength>
-                    <BarSpacing>0.088900000000000007</BarSpacing>
+                    <BarSpacing>0.088899999999999993</BarSpacing>
                     <VertBarSize>4</VertBarSize>
                     <VertBars>4</VertBars>
                     <HorzInterfaceBars>4</HorzInterfaceBars>
@@ -429,8 +429,8 @@
                   </ShearZoneData>
                   <ShearZoneData version="4">
                     <ZoneNum>3</ZoneNum>
-                    <ZoneLength>3.6576</ZoneLength>
-                    <BarSpacing>0.15240000000000001</BarSpacing>
+                    <ZoneLength>3.6576000000000004</ZoneLength>
+                    <BarSpacing>0.15239999999999998</BarSpacing>
                     <VertBarSize>4</VertBarSize>
                     <VertBars>4</VertBars>
                     <HorzInterfaceBars>4</HorzInterfaceBars>
@@ -438,8 +438,8 @@
                   </ShearZoneData>
                   <ShearZoneData version="4">
                     <ZoneNum>4</ZoneNum>
-                    <ZoneLength>0.15240000000000001</ZoneLength>
-                    <BarSpacing>0.15240000000000001</BarSpacing>
+                    <ZoneLength>0.22860000000000003</ZoneLength>
+                    <BarSpacing>0.2286</BarSpacing>
                     <VertBarSize>2</VertBarSize>
                     <VertBars>4</VertBars>
                     <HorzInterfaceBars>4</HorzInterfaceBars>
@@ -447,6 +447,15 @@
                   </ShearZoneData>
                   <ShearZoneData version="4">
                     <ZoneNum>5</ZoneNum>
+                    <ZoneLength>1.143</ZoneLength>
+                    <BarSpacing>0.2286</BarSpacing>
+                    <VertBarSize>2</VertBarSize>
+                    <VertBars>4</VertBars>
+                    <HorzInterfaceBars>4</HorzInterfaceBars>
+                    <ConfinementBarSize>2</ConfinementBarSize>
+                  </ShearZoneData>
+                  <ShearZoneData version="4">
+                    <ZoneNum>6</ZoneNum>
                     <ZoneLength>0</ZoneLength>
                     <BarSpacing>0.4572</BarSpacing>
                     <VertBarSize>2</VertBarSize>
@@ -456,8 +465,8 @@
                   </ShearZoneData>
                   <HorizZoneCount>1</HorizZoneCount>
                   <HorizontalInterfaceZoneData version="1">
-                    <ZoneNum>1</ZoneNum>
-                    <ZoneLength>1.7976931348623157e+308</ZoneLength>
+                    <ZoneNum>0</ZoneNum>
+                    <ZoneLength>0</ZoneLength>
                     <BarSpacing>0</BarSpacing>
                     <BarSize>4095</BarSize>
                     <nBars>0</nBars>
@@ -619,7 +628,7 @@
             <LIBRARY_DISPLAY_NAME>Project Criteria</LIBRARY_DISPLAY_NAME>
             <LIBRARY_ENTRY version="1">
               <ENTRY_KEY>WSDOT - Spliced Girders</ENTRY_KEY>
-              <SpecificationLibraryEntry version="43">
+              <SpecificationLibraryEntry version="44">
                 <Name>WSDOT - Spliced Girders</Name>
                 <Description>AASHTO LRFD Bridge Design Specification, 6th Edition 2012 - US Units, modified to reflect WSDOT design practices</Description>
                 <SpecificationType>AashtoLrfd2012</SpecificationType>
@@ -662,6 +671,7 @@
                 <MaxGirderSweepLifting>0.00051999999999999995</MaxGirderSweepLifting>
                 <EnableHaulingCheck>-1</EnableHaulingCheck>
                 <EnableHaulingDesign>-1</EnableHaulingDesign>
+                <HaulingAnalysisMethod>0</HaulingAnalysisMethod>
                 <MaxGirderSweepHauling>0.001042</MaxGirderSweepHauling>
                 <HaulingSupportDistance>70.103999999999999</HaulingSupportDistance>
                 <MaxHaulingOverhang>4.5720000000000001</MaxHaulingOverhang>
@@ -689,6 +699,10 @@
                 <LiftingPointLocationAccuracy>0.076200000000000004</LiftingPointLocationAccuracy>
                 <MinHaulingSupportLocation>-1</MinHaulingSupportLocation>
                 <HaulingSupportLocationAccuracy>0.15240000000000001</HaulingSupportLocationAccuracy>
+                <UseMinTruckSupportLocationFactor>1</UseMinTruckSupportLocationFactor>
+                <MinTruckSupportLocationFactor>0.1</MinTruckSupportLocationFactor>
+                <OverhangGFactor>3.0</OverhangGFactor>
+                <InteriorGFactor>1.0</InteriorGFactor>
                 <CastingYardTensileStressLimitWithMildRebar>630.18887682959996</CastingYardTensileStressLimitWithMildRebar>
                 <LiftingTensileStressLimitWithMildRebar>498.89952749010001</LiftingTensileStressLimitWithMildRebar>
                 <HaulingTensileStressLimitWithMildRebar>498.89952749010001</HaulingTensileStressLimitWithMildRebar>
@@ -713,7 +727,7 @@
                 <Bs3TensStressServSc>0</Bs3TensStressServSc>
                 <Bs3DoTensStressServScMax>0</Bs3DoTensStressServScMax>
                 <Bs3TensStressServScMax>0</Bs3TensStressServScMax>
-                <MomentCapacity version="3">
+                <MomentCapacity version="2">
                   <Bs3LRFDOverreinforcedMomentCapacity>1</Bs3LRFDOverreinforcedMomentCapacity>
                   <IncludeRebarForCapacity>0</IncludeRebarForCapacity>
                   <IncludeNoncompositeMomentForNegMomentDesign>-1</IncludeNoncompositeMomentForNegMomentDesign>
@@ -828,7 +842,7 @@
                 <EnableSlabOffsetDesign>-1</EnableSlabOffsetDesign>
                 <DesignStrandFillType>1</DesignStrandFillType>
                 <EffectiveFlangeWidthMethod>0</EffectiveFlangeWidthMethod>
-                <Shear version="2">
+                <Shear version="1">
                   <LongReinfShearMethod>0</LongReinfShearMethod>
                   <IncludeRebarForCapacity>-1</IncludeRebarForCapacity>
                   <ShearFlowMethod>1</ShearFlowMethod>
@@ -862,7 +876,7 @@
                 <LiveLoadApplicabilityType>0</LiveLoadApplicabilityType>
                 <LiveLoadConfigurationType>2</LiveLoadConfigurationType>
                 <LaneLoad>2918.7805874412725</LaneLoad>
-                <LaneLoadSpanLength>0</LaneLoadSpanLength>
+                <LaneLoadSpanLength>60.960000000000001</LaneLoadSpanLength>
                 <MaxVariableAxleSpacing>0</MaxVariableAxleSpacing>
                 <VariableAxleIndex>-1</VariableAxleIndex>
                 <Axles version="1">
@@ -898,7 +912,7 @@
                 <LiveLoadApplicabilityType>0</LiveLoadApplicabilityType>
                 <LiveLoadConfigurationType>2</LiveLoadConfigurationType>
                 <LaneLoad>2918.7805874412725</LaneLoad>
-                <LaneLoadSpanLength>0</LaneLoadSpanLength>
+                <LaneLoadSpanLength>60.960000000000001</LaneLoadSpanLength>
                 <MaxVariableAxleSpacing>0</MaxVariableAxleSpacing>
                 <VariableAxleIndex>-1</VariableAxleIndex>
                 <Axles version="1">
@@ -957,8 +971,8 @@
               <ENTRY_KEY>WSDOT</ENTRY_KEY>
               <RatingLibraryEntry version="1">
                 <Name>WSDOT</Name>
-                <Description>AASHTO Manual for Bridge Evaluation, 1st Edition, 2008 with 2010 interim provisions and with WSDOT BDM</Description>
-                <SpecificationVersion>LRFR2010</SpecificationVersion>
+                <Description>AASHTO Manual for Bridge Evaluation with WSDOT BDM</Description>
+                <SpecificationVersion>LRFR2013</SpecificationVersion>
                 <AlwaysRate>0</AlwaysRate>
                 <LiveLoadFactors_Design_Inventory version="1">
                   <LoadFactors version="1">
@@ -978,11 +992,11 @@
                 </LiveLoadFactors_Design_Operating>
                 <LiveLoadFactors_Legal_Routine version="1">
                   <LoadFactors version="1">
-                    <LiveLoadFactorType>1</LiveLoadFactorType>
+                    <LiveLoadFactorType>2</LiveLoadFactorType>
                     <ADTT1>1000</ADTT1>
-                    <LiveLoadFactor1>1.6499999999999999</LiveLoadFactor1>
-                    <LiveLoadFactor2>1.8</LiveLoadFactor2>
-                    <LiveLoadFactorUnknownADTT>1.8</LiveLoadFactorUnknownADTT>
+                    <LiveLoadFactor1>1.3</LiveLoadFactor1>
+                    <LiveLoadFactor2>1.45</LiveLoadFactor2>
+                    <LiveLoadFactorUnknownADTT>1.45</LiveLoadFactorUnknownADTT>
                     <LiveLoadFactor1_Service>1</LiveLoadFactor1_Service>
                     <LiveLoadFactor2_Service>1</LiveLoadFactor2_Service>
                     <LiveLoadFactorUnknownADTT_Service>1</LiveLoadFactorUnknownADTT_Service>
@@ -992,11 +1006,11 @@
                 </LiveLoadFactors_Legal_Routine>
                 <LiveLoadFactors_Legal_Special version="1">
                   <LoadFactors version="1">
-                    <LiveLoadFactorType>1</LiveLoadFactorType>
+                    <LiveLoadFactorType>2</LiveLoadFactorType>
                     <ADTT1>1000</ADTT1>
-                    <LiveLoadFactor1>1.6499999999999999</LiveLoadFactor1>
-                    <LiveLoadFactor2>1.8</LiveLoadFactor2>
-                    <LiveLoadFactorUnknownADTT>1.8</LiveLoadFactorUnknownADTT>
+                    <LiveLoadFactor1>1.3</LiveLoadFactor1>
+                    <LiveLoadFactor2>1.45</LiveLoadFactor2>
+                    <LiveLoadFactorUnknownADTT>1.45</LiveLoadFactorUnknownADTT>
                     <LiveLoadFactor1_Service>1</LiveLoadFactor1_Service>
                     <LiveLoadFactor2_Service>1</LiveLoadFactor2_Service>
                     <LiveLoadFactorUnknownADTT_Service>1</LiveLoadFactorUnknownADTT_Service>
@@ -1006,13 +1020,27 @@
                 </LiveLoadFactors_Legal_Special>
                 <LiveLoadFactors_Permit_Routine version="1">
                   <LoadFactors version="1">
-                    <LiveLoadFactorType>1</LiveLoadFactorType>
-                    <ADTT1>1000</ADTT1>
-                    <LiveLoadFactor1>1.3999999999999999</LiveLoadFactor1>
-                    <LiveLoadFactor2>1.5</LiveLoadFactor2>
-                    <LiveLoadFactorUnknownADTT>1.5</LiveLoadFactorUnknownADTT>
+                    <LiveLoadFactorType>4</LiveLoadFactorType>
+                    <PermitWeightRatio1>29187.805874412723</PermitWeightRatio1>
+                    <PermitWeightRatio2>43781.708811619086</PermitWeightRatio2>
+                    <ADTT1>100</ADTT1>
+                    <LiveLoadFactor1_Lower>1.3</LiveLoadFactor1_Lower>
+                    <LiveLoadFactor1_Middle>1.2</LiveLoadFactor1_Middle>
+                    <LiveLoadFactor1_Upper>1.1499999999999999</LiveLoadFactor1_Upper>
+                    <ADTT2>1000</ADTT2>
+                    <LiveLoadFactor2_Lower>1.3500000000000001</LiveLoadFactor2_Lower>
+                    <LiveLoadFactor2_Middle>1.25</LiveLoadFactor2_Middle>
+                    <LiveLoadFactor2_Upper>1.2</LiveLoadFactor2_Upper>
+                    <ADTT3>5000</ADTT3>
+                    <LiveLoadFactor3_Lower>1.3999999999999999</LiveLoadFactor3_Lower>
+                    <LiveLoadFactor3_Middle>1.3500000000000001</LiveLoadFactor3_Middle>
+                    <LiveLoadFactor3_Upper>1.3</LiveLoadFactor3_Upper>
+                    <LiveLoadFactorUnknownADTT_Lower>1.3999999999999999</LiveLoadFactorUnknownADTT_Lower>
+                    <LiveLoadFactorUnknownADTT_Middle>1.3500000000000001</LiveLoadFactorUnknownADTT_Middle>
+                    <LiveLoadFactorUnknownADTT_Upper>1.3</LiveLoadFactorUnknownADTT_Upper>
                     <LiveLoadFactor1_Service>1</LiveLoadFactor1_Service>
                     <LiveLoadFactor2_Service>1</LiveLoadFactor2_Service>
+                    <LiveLoadFactor3_Service>1</LiveLoadFactor3_Service>
                     <LiveLoadFactorUnknownADTT_Service>1</LiveLoadFactorUnknownADTT_Service>
                     <LiveLoadFactorModifier>0</LiveLoadFactorModifier>
                     <AllowUserOverride>-1</AllowUserOverride>
@@ -1020,43 +1048,25 @@
                 </LiveLoadFactors_Permit_Routine>
                 <LiveLoadFactors_Permit_SingleTripWithEscort version="1">
                   <LoadFactors version="1">
-                    <LiveLoadFactorType>1</LiveLoadFactorType>
-                    <ADTT1>1000</ADTT1>
-                    <LiveLoadFactor1>1.3999999999999999</LiveLoadFactor1>
-                    <LiveLoadFactor2>1.5</LiveLoadFactor2>
-                    <LiveLoadFactorUnknownADTT>1.5</LiveLoadFactorUnknownADTT>
-                    <LiveLoadFactor1_Service>1</LiveLoadFactor1_Service>
-                    <LiveLoadFactor2_Service>1</LiveLoadFactor2_Service>
-                    <LiveLoadFactorUnknownADTT_Service>1</LiveLoadFactorUnknownADTT_Service>
-                    <LiveLoadFactorModifier>0</LiveLoadFactorModifier>
+                    <LiveLoadFactorType>0</LiveLoadFactorType>
+                    <LiveLoadFactor>1.1000000000000001</LiveLoadFactor>
+                    <LiveLoadFactor_Service>1</LiveLoadFactor_Service>
                     <AllowUserOverride>-1</AllowUserOverride>
                   </LoadFactors>
                 </LiveLoadFactors_Permit_SingleTripWithEscort>
                 <LiveLoadFactors_Permit_SingleTripWithTraffic version="1">
                   <LoadFactors version="1">
-                    <LiveLoadFactorType>1</LiveLoadFactorType>
-                    <ADTT1>1000</ADTT1>
-                    <LiveLoadFactor1>1.3999999999999999</LiveLoadFactor1>
-                    <LiveLoadFactor2>1.5</LiveLoadFactor2>
-                    <LiveLoadFactorUnknownADTT>1.5</LiveLoadFactorUnknownADTT>
-                    <LiveLoadFactor1_Service>1</LiveLoadFactor1_Service>
-                    <LiveLoadFactor2_Service>1</LiveLoadFactor2_Service>
-                    <LiveLoadFactorUnknownADTT_Service>1</LiveLoadFactorUnknownADTT_Service>
-                    <LiveLoadFactorModifier>0</LiveLoadFactorModifier>
+                    <LiveLoadFactorType>0</LiveLoadFactorType>
+                    <LiveLoadFactor>1.2</LiveLoadFactor>
+                    <LiveLoadFactor_Service>1</LiveLoadFactor_Service>
                     <AllowUserOverride>-1</AllowUserOverride>
                   </LoadFactors>
                 </LiveLoadFactors_Permit_SingleTripWithTraffic>
                 <LiveLoadFactors_Permit_MultipleTripWithTraffic version="1">
                   <LoadFactors version="1">
-                    <LiveLoadFactorType>1</LiveLoadFactorType>
-                    <ADTT1>1000</ADTT1>
-                    <LiveLoadFactor1>1.3999999999999999</LiveLoadFactor1>
-                    <LiveLoadFactor2>1.5</LiveLoadFactor2>
-                    <LiveLoadFactorUnknownADTT>1.5</LiveLoadFactorUnknownADTT>
-                    <LiveLoadFactor1_Service>1</LiveLoadFactor1_Service>
-                    <LiveLoadFactor2_Service>1</LiveLoadFactor2_Service>
-                    <LiveLoadFactorUnknownADTT_Service>1</LiveLoadFactorUnknownADTT_Service>
-                    <LiveLoadFactorModifier>0</LiveLoadFactorModifier>
+                    <LiveLoadFactorType>0</LiveLoadFactorType>
+                    <LiveLoadFactor>1.3999999999999999</LiveLoadFactor>
+                    <LiveLoadFactor_Service>1</LiveLoadFactor_Service>
                     <AllowUserOverride>-1</AllowUserOverride>
                   </LoadFactors>
                 </LiveLoadFactors_Permit_MultipleTripWithTraffic>
@@ -2238,7 +2248,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -2314,7 +2324,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -2427,7 +2437,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -2503,7 +2513,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -2616,7 +2626,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -2692,7 +2702,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -2805,7 +2815,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -2881,7 +2891,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -2994,7 +3004,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -3176,7 +3186,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -3252,7 +3262,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -3365,7 +3375,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -3441,7 +3451,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -3554,7 +3564,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -3630,7 +3640,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -3743,7 +3753,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -3819,7 +3829,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -3932,7 +3942,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -4114,7 +4124,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -4190,7 +4200,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -4303,7 +4313,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -4379,7 +4389,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -4492,7 +4502,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -4568,7 +4578,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -4681,7 +4691,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -4757,7 +4767,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -4870,7 +4880,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5052,7 +5062,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5128,7 +5138,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5241,7 +5251,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5317,7 +5327,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5430,7 +5440,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5506,7 +5516,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5619,7 +5629,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5695,7 +5705,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5808,7 +5818,7 @@
                       <ConfinementBarSpacing>0</ConfinementBarSpacing>
                       <ConfinementZoneLength>0</ConfinementZoneLength>
                     </ShearData>
-                    <LongitudinalRebar version="3">
+                    <LongitudinalRebar version="4">
                       <BarGrade>131072</BarGrade>
                       <BarType>4096</BarType>
                       <RebarRowCount>0</RebarRowCount>
@@ -5848,12 +5858,18 @@
           <RedundancyLevel>1</RedundancyLevel>
           <RedundancyFactor>1</RedundancyFactor>
         </LoadModifiers>
-        <LoadFactors version="1">
+        <LoadFactors version="2">
           <ServiceI version="1">
             <DCmin>1</DCmin>
             <DCmax>1</DCmax>
             <DWmin>1</DWmin>
             <DWmax>1</DWmax>
+            <CRmin>1</CRmin>
+            <CRmax>1</CRmax>
+            <SHmin>1</SHmin>
+            <SHmax>1</SHmax>
+            <PSmin>1</PSmin>
+            <PSmax>1</PSmax>
             <LLIMmin>1</LLIMmin>
             <LLIMmax>1</LLIMmax>
           </ServiceI>
@@ -5862,6 +5878,12 @@
             <DCmax>0.5</DCmax>
             <DWmin>0.5</DWmin>
             <DWmax>0.5</DWmax>
+            <CRmin>0.5</CRmin>
+            <CRmax>0.5</CRmax>
+            <SHmin>0.5</SHmin>
+            <SHmax>0.5</SHmax>
+            <PSmin>0.5</PSmin>
+            <PSmax>0.5</PSmax>
             <LLIMmin>1</LLIMmin>
             <LLIMmax>1</LLIMmax>
           </ServiceIA>
@@ -5870,6 +5892,12 @@
             <DCmax>1</DCmax>
             <DWmin>1</DWmin>
             <DWmax>1</DWmax>
+            <CRmin>1</CRmin>
+            <CRmax>1</CRmax>
+            <SHmin>1</SHmin>
+            <SHmax>1</SHmax>
+            <PSmin>1</PSmin>
+            <PSmax>1</PSmax>
             <LLIMmin>0.80000000000000004</LLIMmin>
             <LLIMmax>0.80000000000000004</LLIMmax>
           </ServiceIII>
@@ -5878,6 +5906,12 @@
             <DCmax>1.25</DCmax>
             <DWmin>0.65000000000000002</DWmin>
             <DWmax>1.5</DWmax>
+            <CRmin>0.90000000000000002</CRmin>
+            <CRmax>1.25</CRmax>
+            <SHmin>0.90000000000000002</SHmin>
+            <SHmax>1.25</SHmax>
+            <PSmin>0.90000000000000002</PSmin>
+            <PSmax>1.25</PSmax>
             <LLIMmin>1.75</LLIMmin>
             <LLIMmax>1.75</LLIMmax>
           </StrengthI>
@@ -5886,6 +5920,12 @@
             <DCmax>1.25</DCmax>
             <DWmin>0.65000000000000002</DWmin>
             <DWmax>1.5</DWmax>
+            <CRmin>0.90000000000000002</CRmin>
+            <CRmax>1.25</CRmax>
+            <SHmin>0.90000000000000002</SHmin>
+            <SHmax>1.25</SHmax>
+            <PSmin>0.90000000000000002</PSmin>
+            <PSmax>1.25</PSmax>
             <LLIMmin>1.3500000000000001</LLIMmin>
             <LLIMmax>1.3500000000000001</LLIMmax>
           </StrengthII>
@@ -5894,6 +5934,12 @@
             <DCmax>0.5</DCmax>
             <DWmin>0.5</DWmin>
             <DWmax>0.5</DWmax>
+            <CRmin>0.5</CRmin>
+            <CRmax>0.5</CRmax>
+            <SHmin>0.5</SHmin>
+            <SHmax>0.5</SHmax>
+            <PSmin>0.5</PSmin>
+            <PSmax>0.5</PSmax>
             <LLIMmin>1.5</LLIMmin>
             <LLIMmax>1.5</LLIMmax>
           </FatigueI>
@@ -5985,72 +6031,108 @@
           <SystemFactorShear>1</SystemFactorShear>
           <ADTT>-1</ADTT>
           <IncludePedestrianLiveLoad>0</IncludePedestrianLiveLoad>
-          <DesignInventoryRating version="1">
+          <DesignInventoryRating version="2">
             <Enabled>-1</Enabled>
             <DC_StrengthI>1</DC_StrengthI>
             <DW_StrengthI>1</DW_StrengthI>
+            <CR_StrengthI>1.25</CR_StrengthI>
+            <SH_StrengthI>1.25</SH_StrengthI>
+            <PS_StrengthI>1.25</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
             <DC_ServiceIII>1.25</DC_ServiceIII>
             <DW_ServiceIII>1.5</DW_ServiceIII>
+            <CR_ServiceIII>1</CR_ServiceIII>
+            <SH_ServiceIII>1</SH_ServiceIII>
+            <PS_ServiceIII>1</PS_ServiceIII>
             <LL_ServiceIII>-1</LL_ServiceIII>
             <AllowableTensionCoefficient>498.89952749010001</AllowableTensionCoefficient>
             <RateForShear>-1</RateForShear>
           </DesignInventoryRating>
-          <DesignOperatingRating version="1">
+          <DesignOperatingRating version="2">
             <Enabled>-1</Enabled>
             <DC_StrengthI>1</DC_StrengthI>
             <DW_StrengthI>1</DW_StrengthI>
+            <CR_StrengthI>1.25</CR_StrengthI>
+            <SH_StrengthI>1.25</SH_StrengthI>
+            <PS_StrengthI>1.25</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
             <DC_ServiceIII>1</DC_ServiceIII>
             <DW_ServiceIII>1</DW_ServiceIII>
+            <CR_ServiceIII>1</CR_ServiceIII>
+            <SH_ServiceIII>1</SH_ServiceIII>
+            <PS_ServiceIII>1</PS_ServiceIII>
             <LL_ServiceIII>-1</LL_ServiceIII>
             <AllowableTensionCoefficient>498.89952749010001</AllowableTensionCoefficient>
             <RateForShear>-1</RateForShear>
           </DesignOperatingRating>
-          <LegalRoutineRating version="1">
+          <LegalRoutineRating version="2">
             <Enabled>-1</Enabled>
             <DC_StrengthI>1.25</DC_StrengthI>
             <DW_StrengthI>1.5</DW_StrengthI>
+            <CR_StrengthI>1.25</CR_StrengthI>
+            <SH_StrengthI>1.25</SH_StrengthI>
+            <PS_StrengthI>1.25</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
             <DC_ServiceIII>1.5</DC_ServiceIII>
             <DW_ServiceIII>-1</DW_ServiceIII>
+            <CR_ServiceIII>1</CR_ServiceIII>
+            <SH_ServiceIII>1</SH_ServiceIII>
+            <PS_ServiceIII>1</PS_ServiceIII>
             <LL_ServiceIII>498.89952749010001</LL_ServiceIII>
             <AllowableTensionCoefficient>498.89952749010001</AllowableTensionCoefficient>
             <RateForShear>-1</RateForShear>
             <RateForStress>-1</RateForStress>
             <ExcludeLegalLoadLaneLoading>0</ExcludeLegalLoadLaneLoading>
           </LegalRoutineRating>
-          <LegalSpecialRating version="1">
+          <LegalSpecialRating version="2">
             <Enabled>-1</Enabled>
             <DC_StrengthI>1</DC_StrengthI>
             <DW_StrengthI>1</DW_StrengthI>
+            <CR_StrengthI>1.25</CR_StrengthI>
+            <SH_StrengthI>1.25</SH_StrengthI>
+            <PS_StrengthI>1.25</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
             <DC_ServiceIII>1.5</DC_ServiceIII>
             <DW_ServiceIII>-1</DW_ServiceIII>
+            <CR_ServiceIII>-6.2774385622041925e+066</CR_ServiceIII>
+            <SH_ServiceIII>-6.2774385622041925e+066</SH_ServiceIII>
+            <PS_ServiceIII>-6.2774385622041925e+066</PS_ServiceIII>
             <LL_ServiceIII>498.89952749010001</LL_ServiceIII>
             <AllowableTensionCoefficient>498.89952749010001</AllowableTensionCoefficient>
             <RateForShear>-1</RateForShear>
             <RateForStress>-1</RateForStress>
           </LegalSpecialRating>
-          <PermitRoutineRating version="1">
+          <PermitRoutineRating version="2">
             <Enabled>-1</Enabled>
             <DC_StrengthII>1</DC_StrengthII>
             <DW_StrengthII>-1</DW_StrengthII>
+            <CR_StrengthII>1.25</CR_StrengthII>
+            <SH_StrengthII>1.25</SH_StrengthII>
+            <PS_StrengthII>1.25</PS_StrengthII>
             <LL_StrengthII>498.89952749010001</LL_StrengthII>
             <DC_ServiceI>1</DC_ServiceI>
             <DW_ServiceI>-1</DW_ServiceI>
+            <CR_ServiceI>1</CR_ServiceI>
+            <SH_ServiceI>1</SH_ServiceI>
+            <PS_ServiceI>1</PS_ServiceI>
             <LL_ServiceI>498.89952749010001</LL_ServiceI>
             <AllowableYieldStressCoefficient>0.90000000000000002</AllowableYieldStressCoefficient>
             <RateForShear>-1</RateForShear>
             <RateForStress>-1</RateForStress>
           </PermitRoutineRating>
-          <PermitSpecialRating version="1">
+          <PermitSpecialRating version="2">
             <Enabled>-1</Enabled>
             <DC_StrengthII>1.5</DC_StrengthII>
             <DW_StrengthII>-1</DW_StrengthII>
+            <CR_StrengthII>1.25</CR_StrengthII>
+            <SH_StrengthII>1.25</SH_StrengthII>
+            <PS_StrengthII>1.25</PS_StrengthII>
             <LL_StrengthII>498.89952749010001</LL_StrengthII>
             <DC_ServiceI>1.5</DC_ServiceI>
             <DW_ServiceI>-1</DW_ServiceI>
+            <CR_ServiceI>1</CR_ServiceI>
+            <SH_ServiceI>1</SH_ServiceI>
+            <PS_ServiceI>1</PS_ServiceI>
             <LL_ServiceI>498.89952749010001</LL_ServiceI>
             <SpecialPermitType>1</SpecialPermitType>
             <RateForShear>-1</RateForShear>

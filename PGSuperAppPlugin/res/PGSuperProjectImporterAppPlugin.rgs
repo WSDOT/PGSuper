@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.PGSuperProjectImporterAppPlugin.1 = s 'PGSuper Project Importer'
 	{
-		CLSID = s '{552AB673-3D3D-47E6-AFD6-4EA033A8A7F2}'
+		CLSID = s '{73B452CE-0955-4ff5-AB8C-EF54BD1DFB72}'
 	}
 	PGSuper.PGSuperProjectImporterAppPlugin = s 'PGSuper Project Importer'
 	{
-		CLSID = s '{552AB673-3D3D-47E6-AFD6-4EA033A8A7F2}'
+		CLSID = s '{73B452CE-0955-4ff5-AB8C-EF54BD1DFB72}'
 		CurVer = s 'PGSuper.PGSuperProjectImporterAppPlugin.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {552AB673-3D3D-47E6-AFD6-4EA033A8A7F2} = s 'PGSuper Project Importer'
+		ForceRemove {73B452CE-0955-4ff5-AB8C-EF54BD1DFB72} = s 'PGSuper Project Importer'
 		{
 			ProgID = s 'PGSuper.PGSuperProjectImporterAppPlugin.1'
 			VersionIndependentProgID = s 'PGSuper.PGSuperProjectImporterAppPlugin'

@@ -370,7 +370,7 @@ CString CLongSteelGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 
 bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* plsi)
 {
-   double d;
+   Float64 d;
    int i;
 
    plsi->BarLayout = GetLayout(nRow); // bar layout type
@@ -567,7 +567,7 @@ BOOL CLongSteelGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	}
 	else if ((nCol==2 || nCol==3 || nCol==5 || nCol==8)  && !s.IsEmpty( ))
 	{
-      double d;
+      Float64 d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));

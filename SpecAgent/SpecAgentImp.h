@@ -46,6 +46,7 @@ class ATL_NO_VTABLE CSpecAgentImp :
    public ITransverseReinforcementSpec,
    public IPrecastIGirderDetailsSpec,
    public IGirderHaulingSpecCriteria,
+   public IKdotGirderHaulingSpecCriteria,
    public IGirderLiftingSpecCriteria,
    public IDebondLimits,
    public IResistanceFactors
@@ -68,6 +69,7 @@ BEGIN_COM_MAP(CSpecAgentImp)
    COM_INTERFACE_ENTRY(IPrecastIGirderDetailsSpec)
    COM_INTERFACE_ENTRY(IGirderLiftingSpecCriteria)
    COM_INTERFACE_ENTRY(IGirderHaulingSpecCriteria)
+   COM_INTERFACE_ENTRY(IKdotGirderHaulingSpecCriteria)
    COM_INTERFACE_ENTRY(IDebondLimits)
    COM_INTERFACE_ENTRY(IResistanceFactors)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
@@ -159,6 +161,7 @@ public:
 // IGirderHaulingSpecCriteria
 public:
    virtual bool IsHaulingAnalysisEnabled() const;
+   virtual pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const;
    virtual void GetHaulingImpact(Float64* pDownward, Float64* pUpward) const;
    virtual Float64 GetHaulingCrackingFs() const;
    virtual Float64 GetHaulingRolloverFs() const;
@@ -192,6 +195,22 @@ public:
    virtual Float64 GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const;
    virtual Float64 GetHaulingSupportLocationAccuracy() const;
 
+// IKdotGirderHaulingSpecCriteria
+public:
+   // Spec criteria for KDOT analyses
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey);
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey);
+   virtual Float64 GetKdotHaulingAllowableTensionFactor();
+   virtual Float64 GetKdotHaulingAllowableCompressionFactor();
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey);
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor();
+   virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar);
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(Float64 fc);
+   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const;
+   virtual Float64 GetHaulingDesignLocationAccuracy() const;
+   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const;
+
 // IDebondLimits
 public:
    virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey);
@@ -204,6 +223,7 @@ public:
 // IResistanceFactors
 public:
    virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression);
+   virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl);
    virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl);
    virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type);
 

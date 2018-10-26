@@ -483,7 +483,7 @@ BOOL CLLDFGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	   CGXControl* pControl = GetControl(nRow, nCol);
 	   pControl->GetCurrentText(s);
 
-      double d;
+      Float64 d;
       if (!sysTokenizer::ParseDouble(s, &d))
 	   {
 		   SetWarningText (_T("Distribution factor value must be a non-negative number"));

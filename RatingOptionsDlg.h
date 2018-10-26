@@ -45,6 +45,7 @@ public:
    BOOL OnInitDialog();
 
    void GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls);
+   void GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType);
 
 protected:
 	DECLARE_MESSAGE_MAP()

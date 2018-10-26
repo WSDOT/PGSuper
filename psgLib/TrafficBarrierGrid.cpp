@@ -290,7 +290,7 @@ void CTrafficBarrierGrid::UploadData(CDataExchange* pDX, IPoint2dCollection* poi
    CComPtr<IPoint2d> point;
    while ( enum_points->Next(1,&point,NULL) != S_FALSE )
    {
-      double x,y;
+      Float64 x,y;
       point->get_X(&x);
       point->get_Y(&y);
 
@@ -320,7 +320,7 @@ void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* p
    ROWCOL nRow=1;
    for (ROWCOL i = 0; i < nRows; i++)
    {
-      double x,y;
+      Float64 x,y;
       ParseRow(nRow,pDX,&x,&y);
 
       x = ::ConvertToSysUnits(x,pDisplayUnits->ComponentDim.UnitOfMeasure);
@@ -335,7 +335,7 @@ void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* p
    }
 }
 
-void CTrafficBarrierGrid::ParseRow(ROWCOL nRow, CDataExchange* pDX, double* pX,double* pY)
+void CTrafficBarrierGrid::ParseRow(ROWCOL nRow, CDataExchange* pDX, Float64* pX,Float64* pY)
 {
 	CString s = GetCellValue(nRow, 1);
    sysTokenizer::ParseDouble(s, pX);

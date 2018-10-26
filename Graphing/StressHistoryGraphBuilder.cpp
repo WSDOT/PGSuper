@@ -59,7 +59,7 @@ static unitmgtLengthData DUMMY(unitMeasure::Meter);
 static LengthTool    DUMMY_TOOL(DUMMY);
 
 BEGIN_MESSAGE_MAP(CStressHistoryGraphBuilder, CEAFGraphBuilderBase)
-   ON_BN_CLICKED(IDC_TOPSLAB,OnTopSlab)
+   ON_BN_CLICKED(IDC_TOPDECK,OnTopDeck)
    ON_BN_CLICKED(IDC_TOPGIRDER,OnTopGirder)
    ON_BN_CLICKED(IDC_BOTTOMGIRDER,OnBottomGirder)
    ON_BN_CLICKED(IDC_GRID, OnShowGrid)
@@ -69,9 +69,10 @@ END_MESSAGE_MAP()
 CStressHistoryGraphBuilder::CStressHistoryGraphBuilder() :
 CEAFAutoCalcGraphBuilder(),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pXFormat(0),
+m_pTimeFormat(0),
+m_pIntervalFormat(0),
 m_pYFormat(0),
-m_bTopSlab(false),
+m_bTopDeck(false),
 m_bTopGirder(false),
 m_bBottomGirder(false),
 m_XAxisType(X_AXIS_TIME_LOG)
@@ -79,19 +80,28 @@ m_XAxisType(X_AXIS_TIME_LOG)
    m_pGraphController = new CStressHistoryGraphController;
 
    SetName(_T("Stress History"));
+
+   m_Scalar.Width = 5;
+   m_Scalar.Precision = 0;
+   m_Scalar.Format = sysNumericFormatTool::Fixed;
 }
 
 CStressHistoryGraphBuilder::CStressHistoryGraphBuilder(const CStressHistoryGraphBuilder& other) :
 CEAFAutoCalcGraphBuilder(other),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pXFormat(0),
+m_pTimeFormat(0),
+m_pIntervalFormat(0),
 m_pYFormat(0),
-m_bTopSlab(false),
+m_bTopDeck(false),
 m_bTopGirder(false),
 m_bBottomGirder(false),
 m_XAxisType(X_AXIS_TIME_LOG)
 {
    m_pGraphController = new CStressHistoryGraphController;
+
+   m_Scalar.Width = 5;
+   m_Scalar.Precision = 0;
+   m_Scalar.Format = sysNumericFormatTool::Fixed;
 }
 
 CStressHistoryGraphBuilder::~CStressHistoryGraphBuilder()
@@ -102,10 +112,16 @@ CStressHistoryGraphBuilder::~CStressHistoryGraphBuilder()
       m_pGraphController = NULL;
    }
 
-   if ( m_pXFormat != NULL )
+   if ( m_pTimeFormat != NULL )
    {
-      delete m_pXFormat;
-      m_pXFormat = NULL;
+      delete m_pTimeFormat;
+      m_pTimeFormat = NULL;
+   }
+
+   if ( m_pIntervalFormat != NULL )
+   {
+      delete m_pIntervalFormat;
+      m_pIntervalFormat = NULL;
    }
 
    if ( m_pYFormat != NULL )
@@ -153,15 +169,15 @@ int CStressHistoryGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
    m_Graph.SetTitle(_T("Stress History"));
 
    m_pGraphController->CheckDlgButton(IDC_TIME_LOG,BST_CHECKED);
-   m_XAxisType = X_AXIS_TIME_LOG;
 
    // x axis
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtScalar timeUnit = pDisplayUnits->GetScalarFormat();
-   m_pXFormat = new ScalarTool(timeUnit);
-   m_Graph.SetXAxisValueFormat(*m_pXFormat);
-   m_Graph.SetXAxisNumberOfMinorTics(10);
+   m_pTimeFormat = new ScalarTool(timeUnit);
+   m_pIntervalFormat = new ScalarTool(m_Scalar);
+   m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
+   m_XAxisType = X_AXIS_TIME_LOG;
 
    // y axis
    const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
@@ -182,9 +198,9 @@ int CStressHistoryGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
    return 0;
 }
 
-void CStressHistoryGraphBuilder::OnTopSlab()
+void CStressHistoryGraphBuilder::OnTopDeck()
 {
-   m_bTopSlab = !m_bTopSlab;
+   m_bTopDeck = !m_bTopDeck;
    Update();
    GetView()->Invalidate();
 }
@@ -296,17 +312,17 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
       }
       else
       {
-         xEnd   = LABEL_INTERVAL(intervalIdx);
+         xEnd   = (Float64)LABEL_INTERVAL(intervalIdx);
          xStart = xEnd - 1;
       }
 
-      if ( m_bTopSlab )
+      if ( m_bTopDeck )
       {
          Float64 fMin, fMax;
-         pForces->GetStress(pgsTypes::ServiceI,intervalIdx-1,poi,pgsTypes::TopSlab,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
+         pForces->GetStress(pgsTypes::ServiceI,intervalIdx-1,poi,pgsTypes::TopDeck,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
          AddGraphPoint(topSlabDataSeriesMax,xStart,fMax);
 
-         pForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::TopSlab,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
+         pForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::TopDeck,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
          AddGraphPoint(topSlabDataSeriesMax,xEnd,fMax);
       }
 
@@ -335,9 +351,9 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
 void CStressHistoryGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
 {
    // deal with unit conversion
-   arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);
+   const arvPhysicalConverter* pcx = dynamic_cast<const arvPhysicalConverter*>(m_Graph.GetXAxisValueFormat());
    ASSERT(pcx);
-   arvPhysicalConverter* pcy = dynamic_cast<arvPhysicalConverter*>(m_pYFormat);
+   const arvPhysicalConverter* pcy = dynamic_cast<const arvPhysicalConverter*>(m_Graph.GetYAxisValueFormat());
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    Float64 y = pcy->Convert(yval);
@@ -368,17 +384,23 @@ void CStressHistoryGraphBuilder::UpdateXAxis()
       m_Graph.SetXAxisScale(grAxisXY::LINEAR);
       m_Graph.SetXAxisTitle(_T("Time (days)"));
       m_Graph.SetXAxisNiceRange(true);
+      m_Graph.SetXAxisNumberOfMinorTics(10);
+      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    }
    else if ( m_XAxisType == X_AXIS_TIME_LOG )
    {
       m_Graph.SetXAxisScale(grAxisXY::LOGARITHMIC);
       m_Graph.SetXAxisTitle(_T("Time (days)"));
       m_Graph.SetXAxisNiceRange(true);
+      m_Graph.SetXAxisNumberOfMinorTics(10);
+      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    }
    else
    {
-      m_Graph.SetXAxisScale(grAxisXY::LINEAR);
+      m_Graph.SetXAxisScale(grAxisXY::INTEGRAL);
       m_Graph.SetXAxisTitle(_T("Interval"));
       m_Graph.SetXAxisNiceRange(false);
+      m_Graph.SetXAxisNumberOfMinorTics(0);
+      m_Graph.SetXAxisValueFormat(*m_pIntervalFormat);
    }
 }

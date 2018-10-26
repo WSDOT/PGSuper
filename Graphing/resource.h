@@ -28,7 +28,7 @@
 #define IDC_GRID                        3021
 #define IDC_DUCT                        3022
 #define IDC_POI                         3023
-#define IDC_TOPSLAB                     3024
+#define IDC_TOPDECK                     3024
 #define IDC_TOPGIRDER                   3025
 #define IDC_BOTTOMGIRDER                3026
 #define IDC_TIME                        3027
@@ -44,7 +44,7 @@
 #define IDC_AGE_LINEAR                  3040
 #define IDC_AGE_LOG                     3041
 #define IDC_INTERVALS                   3042
-#define IDC_RADIO1                      3043
+#define IDC_COMBO2                      3045
 
 // Next default values for new objects
 // 
@@ -52,7 +52,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3010
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         3044
+#define _APS_NEXT_CONTROL_VALUE         3046
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

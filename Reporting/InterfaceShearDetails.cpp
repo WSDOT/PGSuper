@@ -196,76 +196,67 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
 
    bool spec2007OrOlder = lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType();
+   Float64 fy_max = ::ConvertToSysUnits(60.0,unitMeasure::KSI); // LRFD 2013 5.8.4.1
 
    // general quantities
-   if ( 1 < nSegments )
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      if ( 1 < nSegments )
       {
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-
-         CSegmentKey segmentKey(girderKey,segIdx);
-
-         *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << p_first_artifact[segIdx]->GetFrictionFactor() << rptTab
-                << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetCohesionFactor()) << rptTab;
-
-         if ( spec2007OrOlder )
-         {
-            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << p_first_artifact[segIdx]->GetK1() << rptTab
-                   << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetK2()) << rptTab;
-         }
-
-         *pPara << symbol(phi) << _T(" = ") << p_first_artifact[segIdx]->GetPhi() << rptTab
-                << RPT_FC << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetFc()) << rptTab
-                << RPT_FY << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetFy()) << rptNewLine;
-         *pPara << rptNewLine;
-
-         if ( segIdx < nSegments-1 )
-         {
-            *pPara << _T("Closure Pour ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-
-            const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
-            const pgsStirrupCheckArtifact* pstirrup_artifact= pSegmentArtifact->GetStirrupCheckArtifact();
-            CollectionIndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx,ls);
-            const pgsStirrupCheckAtPoisArtifact* pStirrupAtPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,nArtifacts-1 );
-            ATLASSERT(pStirrupAtPoiArtifact->GetPointOfInterest().HasAttribute(POI_CLOSURE));
-            const pgsHorizontalShearArtifact* pHorizShearArtifact = pStirrupAtPoiArtifact->GetHorizontalShearArtifact();
-            ATLASSERT(pHorizShearArtifact->IsApplicable());
-
-            *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << pHorizShearArtifact->GetFrictionFactor() << rptTab
-                   << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetCohesionFactor()) << rptTab;
-
-            if ( spec2007OrOlder )
-            {
-               *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << pHorizShearArtifact->GetK1() << rptTab
-                      << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetK2()) << rptTab;
-            }
-
-
-            *pPara << symbol(phi) << _T(" = ") << pHorizShearArtifact->GetPhi() << rptTab
-                   << RPT_FC << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetFc()) << rptTab
-                   << RPT_FY << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetFy()) << rptNewLine;
-            *pPara << rptNewLine;
-         }
       }
-   }
-   else
-   {
-      Float64 Es,Fy,Fu;
-      pMaterial->GetSegmentTransverseRebarProperties(CSegmentKey(girderKey,0),&Es,&Fy,&Fu);
 
-      *pPara << _T("Coeff. of Friction (") << symbol(mu)<<_T(") = ") << p_first_artifact[0]->GetFrictionFactor() << rptTab
-             << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(p_first_artifact[0]->GetCohesionFactor()) << rptTab;
+      CSegmentKey segmentKey(girderKey,segIdx);
+
+      *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << p_first_artifact[segIdx]->GetFrictionFactor() << rptTab
+             << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetCohesionFactor()) << rptTab;
 
       if ( spec2007OrOlder )
       {
-         *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << p_first_artifact[0]->GetK1() << rptTab
-                << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[0]->GetK2()) << rptTab;
+         *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << p_first_artifact[segIdx]->GetK1() << rptTab
+                << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetK2()) << rptTab;
       }
 
-      *pPara << symbol(phi)<<_T(" = ")<< p_first_artifact[0]->GetPhi() << rptTab
-             << RPT_FC << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[0]->GetFc()) << rptTab
-             << RPT_FY << _T(" = ") << stress_with_tag.SetValue(Fy) << rptNewLine;
+      *pPara << symbol(phi) << _T(" = ") << p_first_artifact[segIdx]->GetPhi() << rptTab
+             << RPT_FC << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetFc()) << rptTab
+             << RPT_FY << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetFy());
+      if ( p_first_artifact[segIdx]->WasFyLimited() )
+      {
+         *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD 5.8.4.1)");
+      }
+      *pPara << rptNewLine;
+
+      if ( segIdx < nSegments-1 )
+      {
+         *pPara << _T("Closure Pour ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+
+         const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
+         const pgsStirrupCheckArtifact* pstirrup_artifact= pSegmentArtifact->GetStirrupCheckArtifact();
+         CollectionIndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx,ls);
+         const pgsStirrupCheckAtPoisArtifact* pStirrupAtPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,nArtifacts-1 );
+         ATLASSERT(pStirrupAtPoiArtifact->GetPointOfInterest().HasAttribute(POI_CLOSURE));
+         const pgsHorizontalShearArtifact* pHorizShearArtifact = pStirrupAtPoiArtifact->GetHorizontalShearArtifact();
+         ATLASSERT(pHorizShearArtifact->IsApplicable());
+
+         *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << pHorizShearArtifact->GetFrictionFactor() << rptTab
+                << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetCohesionFactor()) << rptTab;
+
+         if ( spec2007OrOlder )
+         {
+            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << pHorizShearArtifact->GetK1() << rptTab
+                   << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetK2()) << rptTab;
+         }
+
+         *pPara << symbol(phi) << _T(" = ") << pHorizShearArtifact->GetPhi() << rptTab
+                << RPT_FC << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetFc()) << rptTab
+                << RPT_FY << _T(" = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetFy());
+         if ( pHorizShearArtifact->WasFyLimited() )
+         {
+            *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD 5.8.4.1)");
+         }
+         *pPara << rptNewLine;
+         *pPara << rptNewLine;
+      }
    }
 
    if ( spec2007OrOlder )

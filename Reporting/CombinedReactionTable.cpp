@@ -171,6 +171,13 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+
+
    GroupIndexType startGroupIdx = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
    GroupIndexType endGroupIdx   = girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx;
    EventIndexType continuityEventIndex = MAX_INDEX;
@@ -249,14 +256,14 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
       else
          (*p_table)(row,0) << _T("Pier ") << LABEL_PIER(pier);
 
-      if ( intervalIdx < castDeckIntervalIdx )
-      {
-         (*p_table)(row,1) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-         pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, thisGirderKey, maxBAT, true, &min, &max );
-         (*p_table)(row,2) << reaction.SetValue( max );
-      }
-      else// if ( intervalIdx == castDeckIntervalIdx )
-      {
+      //if ( intervalIdx < castDeckIntervalIdx )
+      //{
+      //   (*p_table)(row,1) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+      //   pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, thisGirderKey, maxBAT, true, &min, &max );
+      //   (*p_table)(row,2) << reaction.SetValue( max );
+      //}
+      //else// if ( intervalIdx == castDeckIntervalIdx )
+      //{
          ColumnIndexType col = 1;
          if ( analysisType == pgsTypes::Envelope /*&& continuityIntervalIdx == castDeckIntervalIdx*/ )
          {
@@ -264,10 +271,31 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
+
+            if ( bTimeStepMethod )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
+            }
+
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
+
+            if ( bTimeStepMethod )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
+            }
 
             if ( intervalIdx < liveLoadIntervalIdx )
             {
@@ -282,8 +310,23 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
          {
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+
+            if ( bTimeStepMethod )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+            }
+
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
             (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+
+            if ( bTimeStepMethod )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+            }
 
             if ( intervalIdx < liveLoadIntervalIdx )
             {
@@ -291,7 +334,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
                (*p_table)(row,col++) << reaction.SetValue( max );
             }
          }
-      }
+      //}
 #pragma Reminder("OBSOLETE: remove obsolete code")
       //else if ( intervalIdx == compositeDeckIntervalIdx )
       //{

@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.WSDOTComponentInfo.1 = s 'WSDOT Component Information'
 	{
-		CLSID = s '{78D50F7D-4825-4FB0-86CC-CAAF7326B8FB}'
+		CLSID = s '{5656F52E-4DC8-4299-8AD1-23EB3AE46353}'
 	}
 	PGSuper.WSDOTComponentInfo = s 'WSDOT Component Information'
 	{
-		CLSID = s '{78D50F7D-4825-4FB0-86CC-CAAF7326B8FB}'
+		CLSID = s '{5656F52E-4DC8-4299-8AD1-23EB3AE46353}'
 		CurVer = s 'PGSuper.WSDOTComponentInfo.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {78D50F7D-4825-4FB0-86CC-CAAF7326B8FB} = s 'WSDOT Component Information'
+		ForceRemove {5656F52E-4DC8-4299-8AD1-23EB3AE46353} = s 'WSDOT Component Information'
 		{
 			ProgID = s 'PGSuper.WSDOTComponentInfo.1'
 			VersionIndependentProgID = s 'PGSuper.WSDOTComponentInfo'

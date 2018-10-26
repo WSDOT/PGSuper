@@ -97,6 +97,15 @@ CPGSpliceDoc::~CPGSpliceDoc()
 {
 }
 
+BOOL CPGSpliceDoc::Init()
+{
+   GetComponentInfoManager()->SetParent(this);
+   GetComponentInfoManager()->SetCATID(GetComponentInfoCategoryID());
+   GetComponentInfoManager()->LoadPlugins();
+
+   return CPGSuperDocBase::Init();
+}
+
 #ifdef _DEBUG
 void CPGSpliceDoc::AssertValid() const
 {
@@ -598,12 +607,7 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
-
-   GirderIDType gdrID = pGirder->GetID();
-
-   CEditGirderlineDlg dlg(pGirder);
+   CEditGirderlineDlg dlg(girderKey);
 
    if ( dlg.DoModal() == IDOK )
    {

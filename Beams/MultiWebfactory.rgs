@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFactory.MultiWebFactory.1 = s 'Ribbed Girder'
 	{
-		CLSID = s '{0CE7D624-7CC5-4300-8257-0C41A585852F}'
+		CLSID = s '{51CB9247-8200-43e5-BFB0-E386C1E6A0D0}'
    }
 	PGSuperBeamFactory.MultiWebFactory = s 'Ribbed Girder'
 	{
-		CLSID = s '{0CE7D624-7CC5-4300-8257-0C41A585852F}'
+		CLSID = s '{51CB9247-8200-43e5-BFB0-E386C1E6A0D0}'
 		CurVer = s 'PGSuperBeamFactory.MultiWebFactory.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {0CE7D624-7CC5-4300-8257-0C41A585852F} = s 'Ribbed Girder'
+		ForceRemove {51CB9247-8200-43e5-BFB0-E386C1E6A0D0} = s 'Ribbed Girder'
 		{
 			ProgID = s 'PGSuperBeamFactory.MultiWebFactory.1'
 			VersionIndependentProgID = s 'PGSuperBeamFactory.MultiWebFactory'

@@ -55,6 +55,7 @@
 
 class CStructuredLoad;
 class ConflictList;
+class CBridgeChangedHint;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -143,6 +144,7 @@ BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
 END_CONNECTION_POINT_MAP()
 
    StatusCallbackIDType m_scidGirderDescriptionWarning;
+   StatusCallbackIDType m_scidRebarStrengthWarning;
 
 
 // IAgent
@@ -386,9 +388,15 @@ public:
    virtual Float64 GetDeadLoadFactor(pgsTypes::LimitState ls);
    virtual void SetWearingSurfaceFactor(pgsTypes::LimitState ls,Float64 gDW);
    virtual Float64 GetWearingSurfaceFactor(pgsTypes::LimitState ls);
+   virtual void SetCreepFactor(pgsTypes::LimitState ls,Float64 gCR);
+   virtual Float64 GetCreepFactor(pgsTypes::LimitState ls);
+   virtual void SetShrinkageFactor(pgsTypes::LimitState ls,Float64 gSH);
+   virtual Float64 GetShrinkageFactor(pgsTypes::LimitState ls);
+   virtual void SetPrestressFactor(pgsTypes::LimitState ls,Float64 gPS);
+   virtual Float64 GetPrestressFactor(pgsTypes::LimitState ls);
    virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL);
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false);
-   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false);
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false);
    virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t);
    virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType);
    virtual Float64 GetAllowableTension(pgsTypes::LoadRatingType ratingType,const CSegmentKey& segmentKey);
@@ -610,6 +618,9 @@ private:
    Float64 m_SystemFactorShear;
    Float64 m_gDC[12]; // use the IndexFromLimitState to access array
    Float64 m_gDW[12]; // use the IndexFromLimitState to access array
+   Float64 m_gCR[12]; // use the IndexFromLimitState to access array
+   Float64 m_gSH[12]; // use the IndexFromLimitState to access array
+   Float64 m_gPS[12]; // use the IndexFromLimitState to access array
    Float64 m_gLL[12]; // use the IndexFromLimitState to access array
    Float64 m_AllowableTensionCoefficient[6]; // index is load rating type
    bool    m_bRateForStress[6]; // index is load rating type (for permit rating, it means to do the service I checks, otherwise service III)
@@ -732,6 +743,7 @@ private:
    Uint32 m_PendingEvents;
    bool m_bHoldingEvents;
    std::map<CGirderKey,Uint32> m_PendingEventsHash; // girders that have pending events
+   std::vector<CBridgeChangedHint*> m_PendingBridgeChangedHints;
 
    // Callback methods for structured storage map
    static HRESULT SpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
@@ -790,6 +802,8 @@ private:
    void UseGirderLibraryEntries();
    void ReleaseBridgeLibraryEntries();
    void ReleaseGirderLibraryEntries();
+
+   void VerifyRebarGrade();
 
    DECLARE_STRSTORAGEMAP(CProjectAgentImp)
 

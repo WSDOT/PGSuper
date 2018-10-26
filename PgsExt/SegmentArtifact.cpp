@@ -440,8 +440,7 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
 
    if(rOther.m_pHaulingAnalysisArtifact.get() != NULL)
    {
-      m_pHaulingAnalysisArtifact  = std::auto_ptr<pgsHaulingAnalysisArtifact>(new pgsHaulingAnalysisArtifact);
-      *m_pHaulingAnalysisArtifact = *rOther.m_pHaulingAnalysisArtifact;
+      m_pHaulingAnalysisArtifact = std::auto_ptr<pgsHaulingAnalysisArtifact>(rOther.m_pHaulingAnalysisArtifact->Clone());
    }
 
    m_CastingYardAllowable            = rOther.m_CastingYardAllowable;

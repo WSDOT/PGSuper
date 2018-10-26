@@ -24,8 +24,8 @@ public:
 	//{{AFX_DATA(CLiveLoadDlg)
 	enum { IDD = IDD_LIVE_LOAD_ENTRY };
 	CString	m_EntryName;
-	double	m_LaneLoad;
-   double m_LaneLoadSpanLength;
+	Float64	m_LaneLoad;
+   Float64 m_LaneLoadSpanLength;
 	BOOL	m_IsNotional;
 	//}}AFX_DATA
 	LiveLoadLibraryEntry::LiveLoadConfigurationType m_ConfigType;

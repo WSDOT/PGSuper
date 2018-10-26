@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFactory.DoubleTeeFactory.1 = s 'Double Tee'
 	{
-		CLSID = s '{FD766540-C635-43e1-B809-06B837EFA752}'
+		CLSID = s '{A367FEEC-9E24-4ed6-9DD3-57F62AD752C9}'
    }
 	PGSuperBeamFactory.DoubleTeeFactory = s 'Double Tee'
 	{
-		CLSID = s '{FD766540-C635-43e1-B809-06B837EFA752}'
+		CLSID = s '{A367FEEC-9E24-4ed6-9DD3-57F62AD752C9}'
 		CurVer = s 'PGSuperBeamFactory.DoubleTeeFactory.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {FD766540-C635-43e1-B809-06B837EFA752} = s 'Double Tee'
+		ForceRemove {A367FEEC-9E24-4ed6-9DD3-57F62AD752C9} = s 'Double Tee'
 		{
 			ProgID = s 'PGSuperBeamFactory.DoubleTeeFactory.1'
 			VersionIndependentProgID = s 'PGSuperBeamFactory.DoubleTeeFactory'

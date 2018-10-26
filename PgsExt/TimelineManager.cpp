@@ -2029,6 +2029,81 @@ int CTimelineManager::CanRemoveEvent(CTimelineEvent* pTimelineEvent)
    return TLM_SUCCESS;
 }
 
+CString CTimelineManager::GetErrorMessage(int errorCode) const
+{
+   CString strMsg;
+   switch(errorCode)
+   {
+   case TLM_CAST_DECK_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for casting the deck is not included in the timeline");
+      break;
+
+   case TLM_OVERLAY_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for installing the overlay is not included in the timeline");
+      break;
+
+   case TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for installing the railing system is not included in the timeline");
+      break;
+
+   case TLM_LIVELOAD_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for opening the bridge to traffic is not included in the timeline");
+      break;
+
+   case TLM_USER_LOAD_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for applying one or more user defined loads is not included in the timeline");
+      break;
+
+   case TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for constructing one or more segments is not included in the timeline");
+      break;
+
+   case TLM_ERECT_PIERS_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for constructing one or more piers or temporary supports is not included in the timeline");
+      break;
+
+   case TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for erecting one or more segments is not included in the timeline");
+      break;
+
+   case TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for removing one or more temporary supports is not included in the timeline");
+      break;
+
+   case TLM_CAST_CLOSURE_POUR_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for casting one or more closure pours is not included in the timeline");
+      break;
+
+   case TLM_STRESS_TENDONS_ACTIVITY_REQUIRED:
+      strMsg = _T("An activity for stress one or more tendons is not included in the timeline");
+      break;
+
+   case TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR:
+      strMsg = _T("A temporary support has been removed while it is still supporting a segment");
+      break;
+
+   case TLM_SEGMENT_ERECTION_ERROR:
+      strMsg = _T("A segment has been erected before its supporting elements (Pier or Temporary Support) have been erected");
+      break;
+
+   case TLM_CLOSURE_POUR_ERROR:
+      strMsg = _T("A closure pour has been cast before its adjacent segments have been erected");
+      break;
+
+   case TLM_RAILING_SYSTEM_ERROR:
+      strMsg = _T("The traffic barrier/railing system has been installed before the deck was cast");
+      break;
+
+   case TLM_STRESS_TENDON_ERROR:
+      strMsg = _T("A tendon has been stress before the segments and closure pours have been assembled");
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+   return strMsg;
+}
+
 #if defined _DEBUG
 void CTimelineManager::AssertValid() const
 {

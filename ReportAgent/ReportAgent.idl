@@ -42,7 +42,7 @@ library PGSuper
    importlib("WBFLCore.tlb");
 
 	[
-		uuid(3D5066F2-27BE-11D2-8EB2-006097DF3C68),
+		uuid(1FFED5EC-7A32-4837-A1F1-99481AFF2825),
 		helpstring("Reporter Class")
 	]
 	coclass PGSuperReportAgent

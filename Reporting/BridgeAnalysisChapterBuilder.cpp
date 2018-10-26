@@ -49,6 +49,11 @@
 #include <Reporting\VehicularLoadReactionTable.h>
 #include <Reporting\CombinedReactionTable.h>
 
+#include <Reporting\TSRemovalMomentsTable.h>
+#include <Reporting\TSRemovalShearTable.h>
+#include <Reporting\TSRemovalDisplacementsTable.h>
+#include <Reporting\TSRemovalRotationTable.h>
+
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -147,6 +152,8 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       *p << CUserMomentsTable().Build(pBroker,girderKey,m_AnalysisType,pDisplayUnits) << rptNewLine;
    }
 
+   CTSRemovalMomentsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
+
    // Product Shears
    p = new rptParagraph;
    *pChapter << p;
@@ -163,6 +170,8 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       *p << CUserShearTable().Build(pBroker,girderKey,m_AnalysisType,pDisplayUnits) << rptNewLine;
    }
+
+   CTSRemovalShearTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
 
    // Product Reactions
    p = new rptParagraph;
@@ -199,6 +208,9 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
+#pragma Reminder("Report reactions due to temporary support removal")
+   //CTSRemovalReactionsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
+
    // Product Displacements
    p = new rptParagraph;
    *pChapter << p;
@@ -216,6 +228,8 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       *p << CUserDisplacementsTable().Build(pBroker,girderKey,m_AnalysisType,pDisplayUnits) << rptNewLine;
    }
 
+   CTSRemovalDisplacementsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
+
    // Product Rotations
    p = new rptParagraph;
    *pChapter << p;
@@ -232,6 +246,8 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       *p << CUserRotationTable().Build(pBroker,girderKey,m_AnalysisType,pDisplayUnits) << rptNewLine;
    }
+
+   CTSRemovalRotationTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
 
    // Responses from individual live load vehicules
    std::vector<pgsTypes::LiveLoadType> live_load_types;
@@ -366,7 +382,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       CString strName;
-      strName.Format(_T("Combined Results - %s"),pIntervals->GetDescription(intervalIdx));
+      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       p->SetName(strName);
       *p << p->GetName();
 

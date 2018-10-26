@@ -52,9 +52,9 @@ struct BOXBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
    BOXBEAM_J_VOID  Jvoid;
 };
 
-// {DA437468-B32C-4012-8B8E-51BAE278C170}
+// {AF7F923F-3E47-435b-8835-53F68601FE3B}
 DEFINE_GUID(CLSID_BoxBeamDistFactorEngineer, 
-0xda437468, 0xb32c, 0x4012, 0x8b, 0x8e, 0x51, 0xba, 0xe2, 0x78, 0xc1, 0x70);
+0xaf7f923f, 0x3e47, 0x435b, 0x88, 0x35, 0x53, 0xf6, 0x86, 0x1, 0xfe, 0x3b);
 
 /////////////////////////////////////////////////////////////////////////////
 // CBoxBeamDistFactorEngineer

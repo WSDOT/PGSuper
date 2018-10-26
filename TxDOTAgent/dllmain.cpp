@@ -51,30 +51,30 @@ CTxDOTAgentApp theApp;
 BOOL CTxDOTAgentApp::InitInstance()
 {
    // Deal with help file name
-   CString strHelpFile(m_pszHelpFilePath);
+   // Help files are located in the same folder as the main executable
+   // During development, the help files are located at in the \ARP\BridgeLink folder
+   CEAFApp* pParentApp = EAFGetApp();
+   if ( pParentApp )
+   {
+      CString strHelpFile(pParentApp->m_pszHelpFilePath);
 #if defined _DEBUG
 #if defined _WIN64
-   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T("TxDOTAgent\\"));
+      strHelpFile.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
 #else
-   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T("TxDOTAgent\\"));
+      strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
 #endif
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
    // ok... the replace will fail and the string wont be altered.
 #if defined _WIN64
-   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T("TxDOTAgent\\"));
+      strHelpFile.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
 #else
-   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T("TxDOTAgent\\"));
+      strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
 #endif
 #endif
-   
-   // rename the file itself
-   int loc = strHelpFile.ReverseFind(_T('\\'));
-   strHelpFile = strHelpFile.Left(loc+1);
-   strHelpFile += _T("TOGA.chm");
-
-   free((void*)m_pszHelpFilePath);
-   m_pszHelpFilePath = _tcsdup(strHelpFile);
+      free((void*)m_pszHelpFilePath);
+      m_pszHelpFilePath = _tcsdup(strHelpFile);
+   }
 
    // pretty sure this is required
    EnableHtmlHelp();

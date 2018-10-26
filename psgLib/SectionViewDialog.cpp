@@ -104,7 +104,7 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    for (IndexType is=0; is<num_shapes; is++)
    {
       CComPtr<IShape> rshape;
-      double slope;
+      Float64 slope;
       config->GetRegion(is, &rshape, &slope);
       m_RegionShapes.push_back(rshape);
    }
@@ -168,7 +168,7 @@ void CSectionViewDialog::OnPaint()
 
    CComPtr<IRect2d> bbox;
    m_pShape->get_BoundingBox(&bbox);
-   double left,right,top,bottom;
+   Float64 left,right,top,bottom;
    bbox->get_Left(&left);
    bbox->get_Right(&right);
    bbox->get_Top(&top);

@@ -35,7 +35,7 @@ void CTxDOTComponentInfo::FinalRelease()
 {
 }
 
-BOOL CTxDOTComponentInfo::Init(CEAFApp* pApp)
+BOOL CTxDOTComponentInfo::Init(CPGSuperDoc* pDoc)
 {
    return TRUE;
 }

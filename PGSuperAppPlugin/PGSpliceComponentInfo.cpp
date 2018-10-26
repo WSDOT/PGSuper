@@ -26,6 +26,9 @@
 #include "resource.h"
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
+#include <EAF\EAFDocument.h>
+#include "AboutDlg.h"
+#include "PGSpliceDoc.h"
 
 HRESULT CPGSpliceComponentInfo::FinalConstruct()
 {
@@ -52,11 +55,12 @@ CString CPGSpliceComponentInfo::GetName()
 
 CString CPGSpliceComponentInfo::GetDescription()
 {
-   CString strExe = EAFGetApp()->m_pszExeName;
-   strExe += _T(".exe");
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString strDLL = AfxGetApp()->m_pszExeName;
+   strDLL += _T(".dll");
 
    CVersionInfo verInfo;
-   verInfo.Load(strExe);
+   VERIFY(verInfo.Load(strDLL));
    CString strVersion = verInfo.GetFileVersionAsString();
    CString strCopyright = verInfo.GetLegalCopyright();
 
@@ -73,9 +77,12 @@ HICON CPGSpliceComponentInfo::GetIcon()
 
 bool CPGSpliceComponentInfo::HasMoreInfo()
 {
-   return false;
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   return (pEAFDoc == NULL ? false : pEAFDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? true : false);
 }
 
 void CPGSpliceComponentInfo::OnMoreInfo()
 {
-}
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CAboutDlg dlg(IDR_PGSPLICE);
+   dlg.DoModal();}

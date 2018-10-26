@@ -26,6 +26,9 @@
 #include "resource.h"
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
+#include <EAF\EAFDocument.h>
+#include "AboutDlg.h"
+#include "PGSuperDoc.h"
 
 HRESULT CPGSuperComponentInfo::FinalConstruct()
 {
@@ -52,11 +55,12 @@ CString CPGSuperComponentInfo::GetName()
 
 CString CPGSuperComponentInfo::GetDescription()
 {
-   CString strExe = EAFGetApp()->m_pszExeName;
-   strExe += _T(".exe");
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString strDLL = AfxGetApp()->m_pszExeName;
+   strDLL += _T(".dll");
 
    CVersionInfo verInfo;
-   verInfo.Load(strExe);
+   VERIFY(verInfo.Load(strDLL));
    CString strVersion = verInfo.GetFileVersionAsString();
    CString strCopyright = verInfo.GetLegalCopyright();
 
@@ -68,14 +72,18 @@ CString CPGSuperComponentInfo::GetDescription()
 HICON CPGSuperComponentInfo::GetIcon()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return AfxGetApp()->LoadIcon(IDI_PGSUPER);
+   return AfxGetApp()->LoadIcon(IDR_PGSUPER);
 }
 
 bool CPGSuperComponentInfo::HasMoreInfo()
 {
-   return false;
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   return (pEAFDoc == NULL ? false : pEAFDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? true : false);
 }
 
 void CPGSuperComponentInfo::OnMoreInfo()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CAboutDlg dlg(IDR_PGSUPER);
+   dlg.DoModal();
 }

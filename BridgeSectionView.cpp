@@ -860,8 +860,8 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       }
    
 
-      // Register an event sink with the girder display object so that we can handle double clicks
-      // on the girder differently then a general double click
+      // Register an event sink with the girder display object so that we can handle Float64 clicks
+      // on the girder differently then a general Float64 click
       CBridgeSectionViewGirderDisplayObjectEvents* pEvents = new CBridgeSectionViewGirderDisplayObjectEvents(girderKey,nGroups,nGirders,m_pFrame); // ref count = 1
       IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents); // ref count = 1
       CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk); // ref count = 2
@@ -1267,7 +1267,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
       socket1.Release();
       socket2.Release();
 
-      double left_icb_offset, right_icb_offset;
+      Float64 left_icb_offset, right_icb_offset;
       left_icb_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
       right_icb_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
 
@@ -1889,7 +1889,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    // Interior overlay width
    if (doLeftTB && pBridge->HasOverlay())
    {
-      double left_icb_offset, right_icb_offset;
+      Float64 left_icb_offset, right_icb_offset;
       left_icb_offset  = pBridge->GetLeftOverlayToeOffset(distFromStartOfBridge);
       right_icb_offset = pBridge->GetRightOverlayToeOffset(distFromStartOfBridge);
 

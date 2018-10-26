@@ -31,6 +31,7 @@ public:
    CStressHistoryGraphController();
    DECLARE_DYNCREATE(CStressHistoryGraphController);
 
+   CGirderKey GetGirderKey();
    pgsPointOfInterest GetLocation();
    int GetXAxisType();
 
@@ -40,17 +41,22 @@ protected:
    virtual BOOL OnInitDialog();
 
 	//{{AFX_MSG(CStressHistoryGraphController)
+   afx_msg void OnGroupChanged();
+   afx_msg void OnGirderChanged();
    afx_msg void OnLocationChanged();
    afx_msg void OnXAxis();
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
 
+   void FillGroupCtrl();
+   void FillGirderCtrl();
    void FillLocationCtrl();
    void UpdateGraph();
 
    CComPtr<IBroker> m_pBroker;
 
+   CGirderKey m_GirderKey;
    pgsPointOfInterest m_Poi;
 
 #ifdef _DEBUG

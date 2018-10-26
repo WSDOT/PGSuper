@@ -1852,6 +1852,8 @@ void CBridgeDescription2::Clear()
 
 
    ClearGirderGroups();
+
+   m_TimelineManager.Clear();
 }
 
 Float64 CBridgeDescription2::GetLength() const

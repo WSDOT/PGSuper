@@ -53,7 +53,7 @@ protected:
    CStressHistoryGraphController* m_pGraphController;
 
    afx_msg void OnShowGrid();
-   afx_msg void OnTopSlab();
+   afx_msg void OnTopDeck();
    afx_msg void OnTopGirder();
    afx_msg void OnBottomGirder();
 
@@ -61,11 +61,13 @@ protected:
 
    CComPtr<IBroker> m_pBroker;
 
-   arvPhysicalConverter* m_pXFormat;
+   unitmgtScalar m_Scalar;
+   arvPhysicalConverter* m_pTimeFormat;
+   arvPhysicalConverter* m_pIntervalFormat;
    arvPhysicalConverter* m_pYFormat;
    grGraphXY m_Graph;
 
-   bool m_bTopSlab;
+   bool m_bTopDeck;
    bool m_bTopGirder;
    bool m_bBottomGirder;
 

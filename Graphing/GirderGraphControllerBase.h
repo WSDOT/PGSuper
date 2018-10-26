@@ -27,7 +27,7 @@
 class CGirderGraphControllerBase : public CEAFGraphControlWindow
 {
 public:
-   CGirderGraphControllerBase();
+   CGirderGraphControllerBase(bool bAllGroups=true);
    DECLARE_DYNCREATE(CGirderGraphControllerBase);
 
    virtual IndexType GetGraphCount() = 0;
@@ -63,6 +63,8 @@ protected:
    void FillIntervalCtrl();
 
    void UpdateGraph();
+
+   bool m_bAllGroups;
 
    // control variables
    GroupIndexType         m_GroupIdx;

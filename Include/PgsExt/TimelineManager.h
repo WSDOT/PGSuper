@@ -203,6 +203,7 @@ public:
    void SetLiveLoadEventByID(EventIDType ID);
 
    int Validate() const;
+   CString GetErrorMessage(int errorCode) const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
@@ -221,6 +222,7 @@ protected:
    static EventIDType ms_ID;
 
    friend CTimelineEvent;
+   friend CBridgeDescription2;
 
 #if defined _DEBUG
    void AssertValid() const;

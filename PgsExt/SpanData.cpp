@@ -650,14 +650,14 @@ void CSpanData::SetGirderSpacing(pgsTypes::PierFaceType pierFace,const CGirderSp
    SetGirderSpacing(PIER_FACE_TO_SPAN_END(pierFace),spacing);
 }
 
-void CSpanData::SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gPM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
 }
 
-void CSpanData::SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM)
 {
    GirderIndexType ngdrs = GetGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -675,21 +675,21 @@ void CSpanData::SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Limi
 }
 
 
-double CSpanData::GetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CSpanData::GetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    const LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gPM[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CSpanData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gNM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
 }
 
-void CSpanData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM)
 {
    GirderIndexType ngdrs = GetGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -706,21 +706,21 @@ void CSpanData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Limi
    }
 }
 
-double CSpanData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CSpanData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    const LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gNM[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CSpanData::SetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gV)
+void CSpanData::SetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gV)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gV[ls == pgsTypes::FatigueI ? 1 : 0] = gV;
 }
 
-void CSpanData::SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM)
 {
    GirderIndexType ngdrs = GetGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -737,14 +737,14 @@ void CSpanData::SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitSta
    }
 }
 
-double CSpanData::GetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CSpanData::GetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    const LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gV[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-double CSpanData::GetSpanLength() const
+Float64 CSpanData::GetSpanLength() const
 {
    return m_pNextPier->GetStation() - m_pPrevPier->GetStation();
 }

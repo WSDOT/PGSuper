@@ -86,6 +86,15 @@ CPGSuperDoc::~CPGSuperDoc()
 {
 }
 
+BOOL CPGSuperDoc::Init()
+{
+   GetComponentInfoManager()->SetParent(this);
+   GetComponentInfoManager()->SetCATID(GetComponentInfoCategoryID());
+   GetComponentInfoManager()->LoadPlugins();
+
+   return CPGSuperDocBase::Init();
+}
+
 #ifdef _DEBUG
 void CPGSuperDoc::AssertValid() const
 {

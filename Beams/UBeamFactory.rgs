@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFactory.UBeamFactory.1 = s 'Precast U-Beam (WSDOT)'
 	{
-		CLSID = s '{F008218C-B19B-49A0-9084-253A09D4EA5A}'
+		CLSID = s '{F72BA192-6D82-4d66-92CA-EB13466E6BA9}'
 	}
 	PGSuperBeamFactory.UBeamFactory = s 'Precast U-Beam (WSDOT)'
 	{
-		CLSID = s '{F008218C-B19B-49A0-9084-253A09D4EA5A}'
+		CLSID = s '{F72BA192-6D82-4d66-92CA-EB13466E6BA9}'
 		CurVer = s 'PGSuperBeamFactory.UBeamFactory.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {F008218C-B19B-49A0-9084-253A09D4EA5A} = s 'Precast U-Beam (WSDOT)'
+		ForceRemove {F72BA192-6D82-4d66-92CA-EB13466E6BA9} = s 'Precast U-Beam (WSDOT)'
 		{
 			ProgID = s 'PGSuperBeamFactory.UBeamFactory.1'
 			VersionIndependentProgID = s 'PGSuperBeamFactory.UBeamFactory'

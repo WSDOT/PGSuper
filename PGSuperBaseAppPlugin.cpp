@@ -145,7 +145,7 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
 
    // defaults
    CString strVersion = theApp.GetVersion(true);
-   CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/bridge/Software/BridgeLink"));
+   CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/bridge/Software/"));
    CString strDefaultMasterLibraryURL;
    strDefaultMasterLibraryURL.Format(_T("%s/Version_%s/WSDOT.lbr"),strFTPServer,strVersion);
    CString strDefaultWorkgroupTemplateFolderURL;
@@ -605,7 +605,17 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
       {
          // Catalog server does the work here
          const CPGSuperCatalogServer* pserver = m_CatalogServers.GetServer(m_CurrentCatalogServer);
-         bUpdatesPending = pserver->CheckForUpdates(m_Publisher, NULL, GetCacheFolder());
+         if (pserver!=NULL)
+         {
+            bUpdatesPending = pserver->CheckForUpdates(m_Publisher, NULL, GetCacheFolder());
+         }
+         else
+         {
+            CString msg;
+            msg.Format(_T("Error - currently selected catalog server not found. Name was: %s"),m_CurrentCatalogServer);
+            CCatalogServerException exc(CCatalogServerException::ceServerNotFound, msg);
+            throw exc;
+         }
       }
       catch(...)
       {

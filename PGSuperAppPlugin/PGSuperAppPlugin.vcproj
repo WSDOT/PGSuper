@@ -21,7 +21,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -34,6 +34,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
+				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -58,7 +62,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm111"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -87,7 +91,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -117,7 +121,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -130,6 +134,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
+				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -153,7 +161,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm111"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -182,7 +190,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -212,7 +220,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -226,6 +234,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
+				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -253,7 +265,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -280,7 +292,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="false"
 				SubSystem="2"
@@ -313,7 +325,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -327,6 +339,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
+				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -353,7 +369,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -380,7 +396,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="false"
 				SubSystem="2"
@@ -413,7 +429,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|Win32"
-			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -427,6 +443,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
+				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -454,7 +474,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -480,7 +500,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -513,7 +533,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|x64"
-			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -527,6 +547,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
+				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -553,7 +577,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -579,7 +603,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -621,6 +645,10 @@
 			>
 			<File
 				RelativePath="..\AASHTOConcretePage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AboutDlg.cpp"
 				>
 			</File>
 			<File
@@ -1642,6 +1670,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AboutDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ACIConcretePage.h"
 				>
 			</File>
@@ -2154,7 +2186,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PGSComponentInfo.h"
+				>
+			</File>
+			<File
 				RelativePath="..\PGSpliceAppPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PGSpliceCatCom.h"
 				>
 			</File>
 			<File
@@ -2211,6 +2251,10 @@
 			</File>
 			<File
 				RelativePath="..\PGSuperCommandLineInfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
@@ -2536,6 +2580,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\bss.ico"
+				>
+			</File>
+			<File
 				RelativePath="..\res\bss.ico"
 				>
 			</File>
@@ -2712,11 +2760,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -2737,6 +2785,10 @@
 			</File>
 			<File
 				RelativePath="..\res\Hinges.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\KDOT.ico"
 				>
 			</File>
 			<File
@@ -2793,6 +2845,10 @@
 			</File>
 			<File
 				RelativePath=".\res\PGSpliceComponentInfo.rgs"
+				>
+			</File>
+			<File
+				RelativePath="..\res\PGSpliceDoc.ico"
 				>
 			</File>
 			<File
@@ -2912,11 +2968,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\txdot.ico"
+				>
+			</File>
+			<File
 				RelativePath="..\res\warning2.ico"
 				>
 			</File>
 			<File
 				RelativePath="..\res\Wsdot.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>
@@ -3439,6 +3503,10 @@
 				</File>
 			</Filter>
 		</Filter>
+		<File
+			RelativePath="..\PGSuper.tip"
+			>
+		</File>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>

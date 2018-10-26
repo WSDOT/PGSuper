@@ -45,6 +45,9 @@
 #include <Reporting\CombinedReactionTable.h>
 
 #include <Reporting\TSRemovalMomentsTable.h>
+#include <Reporting\TSRemovalShearTable.h>
+#include <Reporting\TSRemovalDisplacementsTable.h>
+#include <Reporting\TSRemovalRotationTable.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -217,6 +220,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          *p << CUserShearTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
       }
 
+      CTSRemovalShearTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
+
       // Product Reactions
       p = new rptParagraph;
       *pChapter << p;
@@ -255,6 +260,9 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          }
       }
 
+#pragma Reminder("Report reactions due to temporary support removal")
+      //CTSRemovalReactionsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
+
       // Product Displacements
       if ( bDesign )
       {
@@ -274,6 +282,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             *p << CUserDisplacementsTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
          }
 
+         CTSRemovalDisplacementsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
+
          // Product Rotations
          p = new rptParagraph;
          *pChapter << p;
@@ -291,6 +301,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             *p << CUserRotationTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
          }
 
+         CTSRemovalRotationTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
 
          if (pSpecEntry->GetDoEvaluateLLDeflection())
          {
@@ -326,11 +337,11 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       CString strName;
-      strName.Format(_T("Combined Results - %s"),pIntervals->GetDescription(intervalIdx));
+      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       p->SetName(strName);
       *p << p->GetName();
 
-      if ( liveLoadIntervalIdx <= intervalIdx )
+      if ( liveLoadIntervalIdx == intervalIdx )
       {
          CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,girderKey,pDisplayUnits);
       }
@@ -345,7 +356,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,CCombinedReactionTable::BearingReactionsTable, bDesign, bRating);
          }
 
-         if ( liveLoadIntervalIdx <= intervalIdx )
+         if ( intervalIdx == nIntervals-1 )
          {
             p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << p;

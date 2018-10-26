@@ -31,6 +31,8 @@
 #include <IFace\Intervals.h>
 #include <IFace\Selection.h>
 
+#include <Hints.h>
+
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
 
@@ -39,7 +41,7 @@
 IMPLEMENT_DYNCREATE(CTendonStressGraphController,CGirderGraphControllerBase)
 
 CTendonStressGraphController::CTendonStressGraphController():
-CGirderGraphControllerBase(),
+CGirderGraphControllerBase(false/*don't use ALL_GROUPS*/),
 m_DuctIdx(INVALID_INDEX)
 {
 }
@@ -55,9 +57,6 @@ BOOL CTendonStressGraphController::OnInitDialog()
    CGirderGraphControllerBase::OnInitDialog();
 
    FillDuctCtrl();
-   CComboBox* pcbDuct = (CComboBox*)GetDlgItem(IDC_DUCT);
-   pcbDuct->SetCurSel(0);
-   m_DuctIdx = 0;
 
    return TRUE;
 }
@@ -67,9 +66,31 @@ IndexType CTendonStressGraphController::GetGraphCount()
    return 1;
 }
 
+void CTendonStressGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   if ( lHint == HINT_BRIDGECHANGED )
+   {
+      // The bridge changed, so reset the controls
+      FillGroupCtrl();
+      FillGirderCtrl();
+      FillIntervalCtrl();
+      FillDuctCtrl();
+   }
+}
+
 DuctIndexType CTendonStressGraphController::GetDuct()
 {
    return m_DuctIdx;
+}
+
+void CTendonStressGraphController::OnGroupChanged()
+{
+   FillDuctCtrl();
+}
+
+void CTendonStressGraphController::OnGirderChanged()
+{
+   FillDuctCtrl();
 }
 
 void CTendonStressGraphController::OnDuctChanged()
@@ -108,11 +129,22 @@ void CTendonStressGraphController::FillDuctCtrl()
 
    if ( curSel != CB_ERR && curSel < nDucts)
    {
-      pcbDuct->SetCurSel(curSel);
+      curSel = pcbDuct->SetCurSel(curSel);
    }
    else
    {
-      pcbDuct->SetCurSel(0);
+      curSel = pcbDuct->SetCurSel(0);
+   }
+
+   if ( curSel == CB_ERR )
+   {
+      m_DuctIdx = INVALID_INDEX;
+      pcbDuct->EnableWindow(FALSE);
+   }
+   else
+   {
+      m_DuctIdx = (DuctIndexType)curSel;
+      pcbDuct->EnableWindow(TRUE);
    }
 }
 

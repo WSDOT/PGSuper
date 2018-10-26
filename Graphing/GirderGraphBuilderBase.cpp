@@ -232,7 +232,7 @@ void CGirderGraphBuilderBase::GetXValues(const std::vector<pgsPointOfInterest>& 
       {
          // group is changing
          ATLASSERT(segmentKey.groupIndex == poi.GetSegmentKey().groupIndex-1); // better be next group
-         graphStartOffset += pBridge->GetGirderLayoutLength(segmentKey); // segment key can double as a girder key
+         graphStartOffset += pBridge->GetGirderLayoutLength(segmentKey); // segment key can Float64 as a girder key
          segmentKey = poi.GetSegmentKey();
       }
 
@@ -247,7 +247,9 @@ void CGirderGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector
    std::vector<Float64>::const_iterator xIter, yIter;
    for ( xIter = xvals.begin(), yIter = yvals.begin(); xIter != xvals.end() && yIter != yvals.end(); xIter++, yIter++ )
    {
-      AddGraphPoint(series,*xIter,*yIter);
+      Float64 X = *xIter;
+      Float64 Y = *yIter;
+      AddGraphPoint(series,X,Y);
    }
 }
 

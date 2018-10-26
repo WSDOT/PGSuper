@@ -47,9 +47,15 @@ class PGSEXTCLASS CLoadFactors
 public:
    Float64 DCmin[6];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
    Float64 DWmin[6];
+   Float64 CRmin[6];
+   Float64 SHmin[6];
+   Float64 PSmin[6];
    Float64 LLIMmin[6];
    Float64 DCmax[6];
    Float64 DWmax[6];
+   Float64 CRmax[6];
+   Float64 SHmax[6];
+   Float64 PSmax[6];
    Float64 LLIMmax[6];
 
    CLoadFactors();

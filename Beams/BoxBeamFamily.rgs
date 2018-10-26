@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFamily.BoxBeam.1 = s 'Box Beam'
 	{
-		CLSID = s '{CE4BA8B3-9AD3-4fa0-8EF0-F0E58D3CF432}'
+		CLSID = s '{69938984-AAD1-426f-89E2-6154B0A79E9A}'
 	}
 	PGSuperBeamFamily.BoxBeam = s 'Box Beam'
 	{
-		CLSID = s '{CE4BA8B3-9AD3-4fa0-8EF0-F0E58D3CF432}'
+		CLSID = s '{69938984-AAD1-426f-89E2-6154B0A79E9A}'
 		CurVer = s 'PGSuperBeamFamily.BoxBeam.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {CE4BA8B3-9AD3-4fa0-8EF0-F0E58D3CF432} = s 'Box Beam'
+		ForceRemove {69938984-AAD1-426f-89E2-6154B0A79E9A} = s 'Box Beam'
 		{
 			ProgID = s 'PGSuperBeamFamily.BoxBeam.1'
 			VersionIndependentProgID = s 'PGSuperBeamFamily.BoxBeam'

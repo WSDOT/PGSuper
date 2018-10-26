@@ -40,7 +40,7 @@ library TxDOTAgentLib
 {
 	importlib("stdole2.tlb");
 	[
-		uuid(360F7694-BE5B-4E97-864F-EF3575689C6E),
+		uuid(3700B253-8489-457c-8A6D-D174F95C457C),
 		helpstring("TxDOTAgent Class")
 	]
 	coclass TxDOTAgent
@@ -49,7 +49,7 @@ library TxDOTAgentLib
 	};
 
    [
-      uuid(F106BA9D-6C17-40b9-BF97-A43103CABECF),
+      uuid(9274354C-D0B7-437c-A5B3-3FFBFB17ADE3),
       helpstring("TxDOTCadExporter Class")
    ]
    coclass TxDOTCadExporter
@@ -58,7 +58,7 @@ library TxDOTAgentLib
    };
 
 	[
-		uuid(FB446ED8-EBFA-46a0-9D84-8E5DC53A371F),
+		uuid(F4629B75-7EF8-4159-A09A-9F4F30B60501),
 		helpstring("TxDOTAppPlugin Class")
 	]
 	coclass TxDOTAppPlugin
@@ -67,7 +67,7 @@ library TxDOTAgentLib
    };
 
    [
-      uuid(539E5AB9-4302-45f9-9FAD-B8E2DB6867F1)
+      uuid(785F2ACE-127B-4647-8062-ED49537E962C)
    ]
    coclass TxDOTComponentInfo
    {

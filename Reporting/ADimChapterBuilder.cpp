@@ -210,6 +210,8 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(". (Top Slab Elevation - Top Girder Elevation)") << rptNewLine;
       }
 
+      comp.ShowUnitTag(true);
+
       pPara = new rptParagraph;
       *pChapter << pPara;
 

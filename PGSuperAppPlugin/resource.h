@@ -2,8 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by PGSuperAppPlugin.rc
 //
-#define ID_INDICATOR_MODIFIED           1
-#define ID_INDICATOR_STATUS             2
+#define EAFID_INDICATOR_MODIFIED        1
+#define EAFID_INDICATOR_STATUS          2
 #define ID_INDICATOR_ANALYSIS           3
 #define ID_INDICATOR_AUTOCALC_ON        4
 #define ID_INDICATOR_AUTOCALC_OFF       5
@@ -16,6 +16,7 @@
 #define IDS_NWC_MESSAGE                 12
 #define EAF_TOOLBAR_MENU_COUNT          40
 #define EAF_REPORT_MENU_COUNT           50
+#define EAF_GRAPH_MENU_COUNT            50
 #define IDS_PROJNAME                    100
 #define IDR_PGSUPERAPPPLUGIN            101
 #define IDR_PGSUPERCOMPONENTINFO        102
@@ -82,6 +83,8 @@
 #define IDD_LICENSEWIZ_1                187
 #define IDD_SECTION_CUT_DIALOG_EX       188
 #define IDD_LICENSEWIZ_2                189
+#define IDI_WSDOT                       190
+#define IDI_BSS                         191
 #define IDR_LEGAL                       192
 #define IDD_DESIGN_OUTCOME              194
 #define IDD_STABILITY_BAR               195
@@ -121,6 +124,7 @@
 #define IDD_BRIDGEDESCR_GIRDER_MATERIALS 236
 #define IDD_GIRDERDESC_GENERAL          237
 #define IDD_BRIDGEDESC_DECKREINFORCEMENT 238
+#define IDI_TXDOT                       239
 #define IDD_BRIDGEDESC_LONGITUDINAL_REBAR 240
 #define IDD_GIRDERDESC_LONGITUDINAL_REBAR 241
 #define IDD_PIER_CONNECTIONS            242
@@ -159,6 +163,7 @@
 #define IDD_MANAGE_PLUGINS              307
 #define IDD_CONSTRUCTION_LOADS          308
 #define IDB_GIRDERDESIGNER              309
+#define IDI_KDOT                        310
 #define IDI_EDIT_BRIDGE                 311
 #define IDM_NEWLOADS                    312
 #define IDR_NEWLOADS                    312
@@ -208,20 +213,25 @@
 #define IDD_GIRDER_SELECT_STRANDS       390
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDR_PGSPLICE_TEMPLATE_ICON      501
+#define IDD_ABOUTBOX                    999
 #define IDC_BRIDGE                      1000
 #define IDC_BULB                        1001
+#define IDC_VERSION                     1002
 #define IDC_BRIDGEID                    1002
+#define IDC_COPYRIGHT                   1003
 #define IDC_JOBNUMBER                   1004
+#define IDC_APPICON                     1005
 #define IDC_END_DISTANCE                1005
 #define IDC_ENGINEER                    1006
 #define IDC_BEARING_OFFSET              1006
 #define IDC_COMPANY                     1007
 #define IDC_RIGHT_BEARING_OFFSET        1007
 #define IDC_RIGHT_END_DISTANCE          1008
-#define IDC_FC                          1009
 #define IDC_DESCRIPTION                 1009
+#define IDC_FC                          1009
 #define IDC_COMMENTS                    1010
 #define IDC_DS                          1011
+#define IDC_MOREINFO                    1013
 #define IDC_MILD_STEEL_SELECTOR         1013
 #define IDC_DW                          1014
 #define IDC_RADIO2                      1015
@@ -1159,6 +1169,7 @@
 #define IDC_STATION_LOCATION_LABEL      1640
 #define IDC_RIGHT_PRISMATIC_FLANGE_DEPTH_UNIT 1640
 #define IDC_HARPED                      1640
+#define IDC_SPAN_COUNT                  1640
 #define IDC_LOCAL_STATIC                1641
 #define IDC_LINE_GROUP                  1641
 #define IDC_LEFT_PRISMATIC_LABEL        1641
@@ -1203,12 +1214,16 @@
 #define IDC_SEGMENT_SPACING_NOTE        1664
 #define IDS_E_LOWRESOURCES              1665
 #define IDC_SPACING_MEASUREMENT         1665
+#define IDC_WSDOT                       1666
 #define IDC_SPACING_GRID                1666
 #define IDS_DLG_STATIONFMT_SI           1667
 #define IDC_CONSTANT_SPACING_NOTE       1667
+#define IDC_TXDOT                       1668
 #define IDC_REF_GIRDER_FROM             1668
+#define IDC_KDOT                        1669
 #define IDS_DLG_STATIONFMT_US           1669
 #define IDC_SLAB_OFFSET                 1669
+#define IDC_BRIDGESIGHT                 1670
 #define IDC_SLAB_OFFSET_LABEL           1670
 #define IDS_DLG_ORIENTATIONFMT          1671
 #define IDC_SLAB_OFFSET_UNIT            1671
@@ -1365,6 +1380,7 @@
 #define IDC_START_SLAB_OFFSET_LABEL     1787
 #define IDC_END_SLAB_OFFSET_LABEL       1788
 #define IDC_NWC_NOTE                    1789
+#define IDC_APPLIST                     3333
 #define IDR_PGSUPER_STDTOOLBAR          12129
 #define IDR_LIBTOOLBAR                  12130
 #define IDR_HELPTOOLBAR                 12131
@@ -1377,15 +1393,14 @@
 #define IDS_INCOMPATIBLE_BEARING_MSG    13100
 #define IDS_INCOMPATIBLE_BEARING_MSG2   13101
 #define EAF_RESERVED_COMMAND_BASE       0x8000
-#define ID_VIEW_STATUSCENTER            32768
-#define ID_VIEW_STATUSCENTER2           32769
-#define ID_VIEW_STATUSCENTER3           32770
-#define ID_APP_LEGAL                    32771
-#define ID_UNITS_SI                     32772
-#define ID_UNITS_US                     32773
-#define ID_EDIT_UNITS                   32774
-#define ID_TIPOFTHEDAY                  32775
-#define EAF_FIRST_USER_COMMAND          0x80FF
+#define EAFID_VIEW_STATUSCENTER         32768
+#define EAFID_VIEW_STATUSCENTER2        32769
+#define EAFID_VIEW_STATUSCENTER3        32770
+#define EAFID_APP_LEGAL                 32771
+#define EAFID_UNITS_SI                  32772
+#define EAFID_UNITS_US                  32773
+#define EAFID_EDIT_UNITS                32774
+#define EAFID_TIPOFTHEDAY               32775
 #define ID_HELP_JOINARPLIST             33024
 #define ID_EDIT_SEGMENT                 33025
 #define ID_HELP_INET_ARP                33025
@@ -1519,13 +1534,14 @@
 #define ID_PROJECT_LOSSES               36987
 #define ID_VIEW_GRAPHS                  36988
 #define ID_GRAPHS_                      36989
+#define ID_HELP_ABOUT            36990
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        362
-#define _APS_NEXT_COMMAND_VALUE         36990
+#define _APS_NEXT_COMMAND_VALUE         36991
 #define _APS_NEXT_CONTROL_VALUE         1758
 #define _APS_NEXT_SYMED_VALUE           113
 #endif

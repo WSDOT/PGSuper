@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\TSRemovalMomentsTable.h>
 #include <Reporting\ReportNotes.h>
+#include <Reporting\ProductMomentsTable.h>
 
 #include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -75,9 +76,8 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue,     moment,   pDisplayUnits->GetMomentUnit(),     false );
 
-//   bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-//   GroupIndexType startGroup, nGroups;
-//   IntervalIndexType continuity_interval;
+   bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   IntervalIndexType continuity_interval;
    GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -136,12 +136,13 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
       {
          IntervalIndexType tsrIntervalIdx = *iter;
 
-         ColumnIndexType nCols = 5;//GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_interval,&startGroup,&nGroups);
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_interval,&startGroup,&nGroups);
+         bPedLoading = false;
+         bPermit     = false;
 
-         std::_tostringstream os;
-         os << _T("Temporary Support Removal - Interval ") << LABEL_INTERVAL(tsrIntervalIdx) << _T(" - Moments") << std::endl;
-
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,os.str().c_str());
+         CString strLabel;
+         strLabel.Format(_T("Moment due to removal of temporary supports in Interval %d"),LABEL_INTERVAL(tsrIntervalIdx));
+         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
 
          rptParagraph* p = new rptParagraph;
          *pChapter << p;
@@ -155,15 +156,9 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         //RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,
-         //                                                                                        bPermit,bRating,analysisType,continuity_interval,
-         //                                                                                        pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
-         (*p_table)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         (*p_table)(0,1) << COLHDR(_T("Girder"),    rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
-         (*p_table)(0,2) << COLHDR(_T("Diaphragm"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
-         (*p_table)(0,3) << COLHDR(_T("Slab"),      rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
-         (*p_table)(0,4) << COLHDR(_T("Haunch"),    rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
-         RowIndexType row = p_table->GetNumberOfHeaderRows();
+         RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,false,bPedLoading,
+                                                                                                 bPermit,false,analysisType,continuity_interval,
+                                                                                                 pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
 
          CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
@@ -181,127 +176,44 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
          maxSlabPad = pForces2->GetMoment( tsrIntervalIdx, pftSlabPad, vPoi, maxBAT );
          minSlabPad = pForces2->GetMoment( tsrIntervalIdx, pftSlabPad, vPoi, minBAT );
 
-         //std::vector<Float64> minDeckPanel, maxDeckPanel;
-         //if ( bDeckPanels )
-         //{
-         //   maxDeckPanel = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT );
-         //   minDeckPanel = pForces2->GetMoment( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT );
-         //}
+         std::vector<Float64> minDeckPanel, maxDeckPanel;
+         if ( bDeckPanels )
+         {
+            maxDeckPanel = pForces2->GetMoment( tsrIntervalIdx, pftSlabPanel, vPoi, maxBAT );
+            minDeckPanel = pForces2->GetMoment( tsrIntervalIdx, pftSlabPanel, vPoi, minBAT );
+         }
 
-         //std::vector<Float64> minConstruction, maxConstruction;
-         //if ( bConstruction )
-         //{
-         //   maxConstruction = pForces2->GetMoment( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT );
-         //   minConstruction = pForces2->GetMoment( castDeckIntervalIdx, pftConstruction, vPoi, minBAT );
-         //}
+         std::vector<Float64> minConstruction, maxConstruction;
+         if ( bConstruction )
+         {
+            maxConstruction = pForces2->GetMoment( tsrIntervalIdx, pftConstruction, vPoi, maxBAT );
+            minConstruction = pForces2->GetMoment( tsrIntervalIdx, pftConstruction, vPoi, minBAT );
+         }
 
-         //std::vector<Float64> dummy;
-         //std::vector<Float64> minOverlay, maxOverlay;
-         //std::vector<Float64> minTrafficBarrier, maxTrafficBarrier;
-         //std::vector<Float64> minSidewalk, maxSidewalk;
-         //std::vector<Float64> minShearKey, maxShearKey;
-         //std::vector<Float64> minPedestrian, maxPedestrian;
-         //std::vector<Float64> minDesignLL, maxDesignLL;
-         //std::vector<Float64> minFatigueLL, maxFatigueLL;
-         //std::vector<Float64> minPermitLL, maxPermitLL;
-         //std::vector<Float64> minLegalRoutineLL, maxLegalRoutineLL;
-         //std::vector<Float64> minLegalSpecialLL, maxLegalSpecialLL;
-         //std::vector<Float64> minPermitRoutineLL, maxPermitRoutineLL;
-         //std::vector<Float64> minPermitSpecialLL, maxPermitSpecialLL;
+         std::vector<Float64> minOverlay, maxOverlay;
+         std::vector<Float64> minTrafficBarrier, maxTrafficBarrier;
+         std::vector<Float64> minSidewalk, maxSidewalk;
+         std::vector<Float64> minShearKey, maxShearKey;
 
-         //std::vector<VehicleIndexType> dummyTruck;
-         //std::vector<VehicleIndexType> minDesignLLtruck;
-         //std::vector<VehicleIndexType> maxDesignLLtruck;
-         //std::vector<VehicleIndexType> minFatigueLLtruck;
-         //std::vector<VehicleIndexType> maxFatigueLLtruck;
-         //std::vector<VehicleIndexType> minPermitLLtruck;
-         //std::vector<VehicleIndexType> maxPermitLLtruck;
-         //std::vector<VehicleIndexType> minLegalRoutineLLtruck;
-         //std::vector<VehicleIndexType> maxLegalRoutineLLtruck;
-         //std::vector<VehicleIndexType> minLegalSpecialLLtruck;
-         //std::vector<VehicleIndexType> maxLegalSpecialLLtruck;
-         //std::vector<VehicleIndexType> minPermitRoutineLLtruck;
-         //std::vector<VehicleIndexType> maxPermitRoutineLLtruck;
-         //std::vector<VehicleIndexType> minPermitSpecialLLtruck;
-         //std::vector<VehicleIndexType> maxPermitSpecialLLtruck;
+         if ( bSidewalk )
+         {
+            maxSidewalk = pForces2->GetMoment( tsrIntervalIdx, pftSidewalk, vPoi, maxBAT );
+            minSidewalk = pForces2->GetMoment( tsrIntervalIdx, pftSidewalk, vPoi, minBAT );
+         }
 
-         //if ( bSidewalk )
-         //{
-         //   maxSidewalk = pForces2->GetMoment( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT );
-         //   minSidewalk = pForces2->GetMoment( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT );
-         //}
+         if ( bShearKey )
+         {
+            maxShearKey = pForces2->GetMoment( tsrIntervalIdx, pftShearKey, vPoi, maxBAT );
+            minShearKey = pForces2->GetMoment( tsrIntervalIdx, pftShearKey, vPoi, minBAT );
+         }
 
-         //if ( bShearKey )
-         //{
-         //   maxShearKey = pForces2->GetMoment( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT );
-         //   minShearKey = pForces2->GetMoment( castDeckIntervalIdx, pftShearKey, vPoi, minBAT );
-         //}
-
-         //maxTrafficBarrier = pForces2->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT );
-         //minTrafficBarrier = pForces2->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT );
-         //if ( overlayIntervalIdx != INVALID_INDEX )
-         //{
-         //   maxOverlay = pForces2->GetMoment( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT );
-         //   minOverlay = pForces2->GetMoment( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT );
-         //}
-
-         //if ( bPedLoading )
-         //{
-         //   pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, maxBAT, true, true, &dummy, &maxPedestrian );
-         //   pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, minBAT, true, true, &minPedestrian, &dummy );
-         //}
-
-         //if ( bDesign )
-         //{
-         //   pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-         //   pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
-
-         //   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         //   {
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
-         //   }
-
-         //   if ( bPermit )
-         //   {
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
-         //   }
-         //}
-
-         //if ( bRating )
-         //{
-         //   if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-         //   {
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
-         //   }
-
-         //   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-         //   {
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
-         //   }
-
-         //   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-         //   {
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck );
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck );
-         //   }
-
-         //   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-         //   {
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
-         //   }
-
-         //   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-         //   {
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
-         //      pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
-         //   }
-         //}
-
+         maxTrafficBarrier = pForces2->GetMoment( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT );
+         minTrafficBarrier = pForces2->GetMoment( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT );
+         if ( overlayIntervalIdx != INVALID_INDEX )
+         {
+            maxOverlay = pForces2->GetMoment( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT );
+            minOverlay = pForces2->GetMoment( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT );
+         }
 
          // write out the results
          std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
@@ -320,224 +232,85 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
             (*p_table)(row,col++) << moment.SetValue( girder[index] );
             (*p_table)(row,col++) << moment.SetValue( diaphragm[index] );
 
-            //if ( bShearKey )
-            //{
-            //   if ( analysisType == pgsTypes::Envelope )
-            //   {
-            //      (*p_table)(row,col++) << moment.SetValue( maxShearKey[index] );
-            //      (*p_table)(row,col++) << moment.SetValue( minShearKey[index] );
-            //   }
-            //   else
-            //   {
-            //      (*p_table)(row,col++) << moment.SetValue( maxShearKey[index] );
-            //   }
-            //}
+            if ( bShearKey )
+            {
+               if ( analysisType == pgsTypes::Envelope )
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxShearKey[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minShearKey[index] );
+               }
+               else
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxShearKey[index] );
+               }
+            }
 
-            //if ( bConstruction )
-            //{
-            //   if ( analysisType == pgsTypes::Envelope && continuity_interval == castDeckIntervalIdx )
-            //   {
-            //      (*p_table)(row,col++) << moment.SetValue( maxConstruction[index] );
-            //      (*p_table)(row,col++) << moment.SetValue( minConstruction[index] );
-            //   }
-            //   else
-            //   {
-            //      (*p_table)(row,col++) << moment.SetValue( maxConstruction[index] );
-            //   }
-            //}
+            if ( bConstruction )
+            {
+               if ( analysisType == pgsTypes::Envelope && continuity_interval == castDeckIntervalIdx )
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxConstruction[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minConstruction[index] );
+               }
+               else
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxConstruction[index] );
+               }
+            }
 
-            //if ( analysisType == pgsTypes::Envelope && continuity_interval == castDeckIntervalIdx )
-            //{
-            //   (*p_table)(row,col++) << moment.SetValue( maxSlab[index] );
-            //   (*p_table)(row,col++) << moment.SetValue( minSlab[index] );
+            if ( analysisType == pgsTypes::Envelope && continuity_interval == castDeckIntervalIdx )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxSlab[index] );
+               (*p_table)(row,col++) << moment.SetValue( minSlab[index] );
 
-            //   (*p_table)(row,col++) << moment.SetValue( maxSlabPad[index] );
-            //   (*p_table)(row,col++) << moment.SetValue( minSlabPad[index] );
-            //}
-            //else
+               (*p_table)(row,col++) << moment.SetValue( maxSlabPad[index] );
+               (*p_table)(row,col++) << moment.SetValue( minSlabPad[index] );
+            }
+            else
             {
                (*p_table)(row,col++) << moment.SetValue( maxSlab[index] );
 
                (*p_table)(row,col++) << moment.SetValue( maxSlabPad[index] );
             }
 
-            //if ( bDeckPanels )
-            //{
-            //   if ( analysisType == pgsTypes::Envelope && continuity_interval == castDeckIntervalIdx )
-            //   {
-            //      (*p_table)(row,col++) << moment.SetValue( maxDeckPanel[index] );
-            //      (*p_table)(row,col++) << moment.SetValue( minDeckPanel[index] );
-            //   }
-            //   else
-            //   {
-            //      (*p_table)(row,col++) << moment.SetValue( maxDeckPanel[index] );
-            //   }
-            //}
+            if ( bDeckPanels )
+            {
+               if ( analysisType == pgsTypes::Envelope && continuity_interval == castDeckIntervalIdx )
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDeckPanel[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minDeckPanel[index] );
+               }
+               else
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxDeckPanel[index] );
+               }
+            }
 
-            //if ( analysisType == pgsTypes::Envelope )
-            //{
-            //   if ( bSidewalk )
-            //   {
-            //      (*p_table)(row,col++) << moment.SetValue( maxSidewalk[index] );
-            //      (*p_table)(row,col++) << moment.SetValue( minSidewalk[index] );
-            //   }
+            if ( analysisType == pgsTypes::Envelope )
+            {
+               if ( bSidewalk )
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxSidewalk[index] );
+                  (*p_table)(row,col++) << moment.SetValue( minSidewalk[index] );
+               }
 
-            //   (*p_table)(row,col++) << moment.SetValue( maxTrafficBarrier[index] );
-            //   (*p_table)(row,col++) << moment.SetValue( minTrafficBarrier[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxTrafficBarrier[index] );
+               (*p_table)(row,col++) << moment.SetValue( minTrafficBarrier[index] );
 
-            //   (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
-            //   (*p_table)(row,col++) << moment.SetValue( minOverlay[index] );
-            //}
-            //else
-            //{
-            //   if ( bSidewalk )
-            //   {
-            //      (*p_table)(row,col++) << moment.SetValue( maxSidewalk[index] );
-            //   }
+               (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
+               (*p_table)(row,col++) << moment.SetValue( minOverlay[index] );
+            }
+            else
+            {
+               if ( bSidewalk )
+               {
+                  (*p_table)(row,col++) << moment.SetValue( maxSidewalk[index] );
+               }
 
-            //   (*p_table)(row,col++) << moment.SetValue( maxTrafficBarrier[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxTrafficBarrier[index] );
 
-            //   (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
-            //}
-
-            //if ( bPedLoading )
-            //{
-            //   (*p_table)(row,col++) << moment.SetValue( maxPedestrian[index] );
-            //   (*p_table)(row,col++) << moment.SetValue( minPedestrian[index] );
-            //}
-
-            //if ( bDesign )
-            //{
-            //   (*p_table)(row,col) << moment.SetValue( maxDesignLL[index] );
-
-            //   if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
-            //      (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << _T(")");
-
-            //   col++;
-
-            //   (*p_table)(row,col) << moment.SetValue( minDesignLL[index] );
-            //   
-            //   if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size() )
-            //      (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << _T(")");
-
-            //   col++;
-
-            //   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-            //   {
-            //      (*p_table)(row,col) << moment.SetValue( maxFatigueLL[index] );
-
-            //      if ( bIndicateControllingLoad && 0 < maxFatigueLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << maxFatigueLLtruck[index] << _T(")");
-
-            //      col++;
-
-            //      (*p_table)(row,col) << moment.SetValue( minFatigueLL[index] );
-            //      
-            //      if ( bIndicateControllingLoad && 0 < minFatigueLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minFatigueLLtruck[index] << _T(")");
-
-            //      col++;
-            //   }
-
-            //   if ( bPermit )
-            //   {
-            //      (*p_table)(row,col) << moment.SetValue( maxPermitLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < maxPermitLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitLLtruck[index] << _T(")");
-
-            //      col++;
-
-            //      (*p_table)(row,col) << moment.SetValue( minPermitLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < minPermitLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitLLtruck[index] << _T(")");
-
-            //      col++;
-            //   }
-            //}
-
-            //if ( bRating )
-            //{
-            //   if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-            //   {
-            //      (*p_table)(row,col) << moment.SetValue( maxDesignLL[index] );
-
-            //      if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << _T(")");
-
-            //      col++;
-
-            //      (*p_table)(row,col) << moment.SetValue( minDesignLL[index] );
-            //      
-            //      if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << _T(")");
-
-            //      col++;
-            //   }
-
-            //   // Legal - Routine
-            //   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            //   {
-            //      (*p_table)(row,col) << moment.SetValue( maxLegalRoutineLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < maxLegalRoutineLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxLegalRoutineLLtruck[index] << _T(")");
-
-            //      col++;
-
-            //      (*p_table)(row,col) << moment.SetValue( minLegalRoutineLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < minLegalRoutineLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minLegalRoutineLLtruck[index] << _T(")");
-
-            //      col++;
-            //   }
-
-            //   // Legal - Special
-            //   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            //   {
-            //      (*p_table)(row,col) << moment.SetValue( maxLegalSpecialLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < maxLegalSpecialLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxLegalSpecialLLtruck[index] << _T(")");
-
-            //      col++;
-
-            //      (*p_table)(row,col) << moment.SetValue( minLegalSpecialLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < minLegalSpecialLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << _T(")");
-
-            //      col++;
-            //   }
-
-            //   // Permit Rating - Routine
-            //   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            //   {
-            //      (*p_table)(row,col) << moment.SetValue( maxPermitRoutineLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < maxPermitRoutineLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxPermitRoutineLLtruck[index] << _T(")");
-
-            //      col++;
-
-            //      (*p_table)(row,col) << moment.SetValue( minPermitRoutineLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < minPermitRoutineLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minPermitRoutineLLtruck[index] << _T(")");
-
-            //      col++;
-            //   }
-
-            //   // Permit Rating - Special
-            //   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            //   {
-            //      (*p_table)(row,col) << moment.SetValue( maxPermitSpecialLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < maxPermitSpecialLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxPermitSpecialLLtruck[index] << _T(")");
-
-            //      col++;
-
-            //      (*p_table)(row,col) << moment.SetValue( minPermitSpecialLL[index] );
-            //      if ( bIndicateControllingLoad && 0 < minPermitSpecialLLtruck.size() )
-            //         (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minPermitSpecialLLtruck[index] << _T(")");
-
-            //      col++;
-            //   }
-            //}
+               (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
+            }
 
             row++;
          } // next poi

@@ -39,9 +39,9 @@ DEFINE_GUID(IID_ISelection,
 0xa37216c6, 0xe800, 0x4ac9, 0x89, 0x9d, 0x25, 0x18, 0x40, 0x7e, 0x8, 0x1c);
 interface ISelection : IUnknown
 {
-   virtual PierIndexType GetPierIdx() = 0;
-   virtual SpanIndexType GetSpanIdx() = 0;
-   virtual GirderIndexType GetGirderIdx() = 0;
+   virtual PierIndexType GetPierIndex() = 0;
+   virtual SpanIndexType GetSpanIndex() = 0;
+   virtual GirderIndexType GetGirderIndex() = 0;
    virtual void SelectPier(PierIndexType pierIdx) = 0;
    virtual void SelectSpan(SpanIndexType spanIdx) = 0;
    virtual void SelectGirder(const CGirderKey& girderKey) = 0;

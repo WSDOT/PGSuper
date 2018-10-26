@@ -31,6 +31,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include "HtmlHelp\HelpTopics.hh"
+#include <PsgLib\RebarUIUtils.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -89,13 +90,13 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
 
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      pParent->GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
+      GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
 
       pSegment->LongitudinalRebarData = rebarData;
    }
    else
    {
-      int idx = pParent->GetStirrupMaterialIndex(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade);
+      int idx = GetStirrupMaterialIndex(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
 
       CLongitudinalRebarData rebarData;
@@ -157,7 +158,7 @@ BOOL CGirderSegmentLongitudinalRebarPage::OnInitDialog()
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   pParent->FillMaterialComboBox(pc);
+   FillRebarMaterialComboBox(pc);
 
    CPropertyPage::OnInitDialog();
 	

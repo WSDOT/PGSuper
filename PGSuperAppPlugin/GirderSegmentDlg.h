@@ -51,10 +51,6 @@ public:
    //void RestoreTransverseReinfocementToLibraryDefaults();
    //void RestoreLongitudinalReinfocementToLibraryDefaults();
 
-   void FillMaterialComboBox(CComboBox* pCB);
-   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
-   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
-
    CGirderSegmentStirrupsPage m_Stirrups;
 
    bool m_bCopyToAll; // if true, the data from this dialog is applied to all segments at this position in this group

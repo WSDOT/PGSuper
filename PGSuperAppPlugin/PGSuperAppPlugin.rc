@@ -96,6 +96,10 @@ IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSuperProject
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_PGSUPER             ICON                    "..\\res\\PGSuperDoc.ico"
+IDI_BSS                 ICON                    "res\\bss.ico"
+IDI_WSDOT               ICON                    "res\\Wsdot.ico"
+IDI_TXDOT               ICON                    "res\\txdot.ico"
+IDI_KDOT                ICON                    "res\\KDOT.ico"
 IDR_PGSPLICE            ICON                    "..\\res\\PGSpliceDoc.ico"
 IDR_PGSUPER_TEMPLATE_ICON ICON                    "..\\res\\PGSuperTemplate.ico"
 IDR_PGSPLICE_TEMPLATE_ICON ICON                    "..\\res\\PGSpliceTemplate.ico"
@@ -149,8 +153,8 @@ BEGIN
     BUTTON      ID_FILE_SAVE
     BUTTON      ID_FILE_PRINT_DIRECT
     SEPARATOR
-    BUTTON      ID_UNITS_SI
-    BUTTON      ID_UNITS_US
+    BUTTON      EAFID_UNITS_SI
+    BUTTON      EAFID_UNITS_US
     SEPARATOR
     BUTTON      ID_DELETE
     BUTTON      ID_EDIT_UNDO
@@ -171,9 +175,9 @@ BEGIN
     BUTTON      ID_VIEW_GRAPHS
     BUTTON      ID_VIEW_REPORTS
     SEPARATOR
-    BUTTON      ID_VIEW_STATUSCENTER
-    BUTTON      ID_VIEW_STATUSCENTER2
-    BUTTON      ID_VIEW_STATUSCENTER3
+    BUTTON      EAFID_VIEW_STATUSCENTER
+    BUTTON      EAFID_VIEW_STATUSCENTER2
+    BUTTON      EAFID_VIEW_STATUSCENTER3
     SEPARATOR
     BUTTON      ID_PROJECT_DESIGNGIRDER
     SEPARATOR
@@ -187,8 +191,8 @@ BEGIN
     BUTTON      ID_FILE_SAVE
     BUTTON      ID_FILE_PRINT_DIRECT
     SEPARATOR
-    BUTTON      ID_UNITS_SI
-    BUTTON      ID_UNITS_US
+    BUTTON      EAFID_UNITS_SI
+    BUTTON      EAFID_UNITS_US
     SEPARATOR
     BUTTON      ID_DELETE
     BUTTON      ID_EDIT_UNDO
@@ -210,9 +214,9 @@ BEGIN
     BUTTON      ID_VIEW_GRAPHS
     BUTTON      ID_VIEW_REPORTS
     SEPARATOR
-    BUTTON      ID_VIEW_STATUSCENTER
-    BUTTON      ID_VIEW_STATUSCENTER2
-    BUTTON      ID_VIEW_STATUSCENTER3
+    BUTTON      EAFID_VIEW_STATUSCENTER
+    BUTTON      EAFID_VIEW_STATUSCENTER2
+    BUTTON      EAFID_VIEW_STATUSCENTER3
     SEPARATOR
     BUTTON      ID_PROJECT_UPDATENOW
 END
@@ -298,7 +302,7 @@ BEGIN
     BEGIN
         MENUITEM "Update &Now\tF5",             ID_PROJECT_UPDATENOW
         MENUITEM SEPARATOR
-        MENUITEM "&Units...",                   ID_EDIT_UNITS
+        MENUITEM "&Units...",                   EAFID_EDIT_UNITS
         MENUITEM "&Project Criteria...",        ID_PROJECT_SPEC
         MENUITEM "&Load Rating Options...",     ID_RATING_SPEC
         MENUITEM "En&vironment...",             ID_PROJECT_ENVIRONMENT
@@ -355,7 +359,7 @@ BEGIN
             MENUITEM "This is a placeholder",       ID_REPORTS_
         END
         MENUITEM SEPARATOR
-        MENUITEM "Status &Center",              ID_VIEW_STATUSCENTER
+        MENUITEM "Status &Center",              EAFID_VIEW_STATUSCENTER
         MENUITEM SEPARATOR
         POPUP "&View Settings"
         BEGIN
@@ -382,9 +386,10 @@ BEGIN
             MENUITEM "&Alternate Route Project Home Page", ID_HELP_INET_ARP
         END
         MENUITEM SEPARATOR
-        MENUITEM "&Tip of the Day...",          ID_TIPOFTHEDAY
-        MENUITEM "&Legal Notices...",           ID_APP_LEGAL
-        MENUITEM "&About PGSuper...",           ID_APP_ABOUT
+        MENUITEM "&Tip of the Day...",          EAFID_TIPOFTHEDAY
+        MENUITEM "&Legal Notices...",           EAFID_APP_LEGAL
+        MENUITEM "&About BridgeLink...",        ID_APP_ABOUT
+        MENUITEM "About &PGSplice...",          ID_HELP_ABOUT
     END
 END
 
@@ -443,7 +448,7 @@ BEGIN
         MENUITEM MFT_SEPARATOR
         MENUITEM "Update &Now\tF5",             ID_PROJECT_UPDATENOW,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
-        MENUITEM "&Units...",                   ID_EDIT_UNITS,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Units...",                   EAFID_EDIT_UNITS,MFT_STRING,MFS_ENABLED
         MENUITEM "Structural Analysis &Method...", ID_PROJECT_ANALYSIS,MFT_STRING,MFS_ENABLED
         MENUITEM "&Project Criteria...",        ID_PROJECT_SPEC,MFT_STRING,MFS_ENABLED
         MENUITEM "&Load Rating Options...",     ID_RATING_SPEC,MFT_STRING,MFS_ENABLED
@@ -502,7 +507,7 @@ BEGIN
             MENUITEM "This is a placeholder",       ID_REPORTS_,MFT_STRING,MFS_ENABLED
         END
         MENUITEM MFT_SEPARATOR
-        MENUITEM "Status &Center",              ID_VIEW_STATUSCENTER,MFT_STRING,MFS_ENABLED
+        MENUITEM "Status &Center",              EAFID_VIEW_STATUSCENTER,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
         POPUP "&View Settings",                 65535,MFT_STRING,MFS_ENABLED
         BEGIN
@@ -529,9 +534,10 @@ BEGIN
             MENUITEM "&Alternate Route Project Home Page", ID_HELP_INET_ARP,MFT_STRING,MFS_ENABLED
         END
         MENUITEM MFT_SEPARATOR
-        MENUITEM "&Tip of the Day...",          ID_TIPOFTHEDAY,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Legal Notices...",           ID_APP_LEGAL,MFT_STRING,MFS_ENABLED
-        MENUITEM "&About PGSuper...",           ID_APP_ABOUT,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Tip of the Day...",          EAFID_TIPOFTHEDAY,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Legal Notices...",           EAFID_APP_LEGAL,MFT_STRING,MFS_ENABLED
+        MENUITEM "&About BridgeLink...",        ID_APP_ABOUT,MFT_STRING,MFS_ENABLED
+        MENUITEM "About &PGSuper...",           ID_HELP_ABOUT,MFT_STRING,MFS_ENABLED
     END
 END
 
@@ -850,6 +856,36 @@ END
 //
 // Dialog
 //
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 443, 336
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About PGSuper"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    ICON            IDR_PGSUPER,IDC_APPICON,7,7,21,20
+    LTEXT           "PGSuper Version 1.0",IDC_VERSION,36,7,371,8,SS_NOPREFIX
+    LTEXT           "Copyright ©",IDC_COPYRIGHT,36,19,353,8
+    GROUPBOX        "Developed by",IDC_STATIC,7,32,191,110
+    ICON            IDI_WSDOT,IDC_STATIC,11,46,21,20
+    PUSHBUTTON      "Washington State Department of Transportation",IDC_WSDOT,34,49,164,14,BS_LEFT
+    ICON            IDI_TXDOT,IDC_STATIC,11,70,21,20
+    PUSHBUTTON      "Texas Department of Transportation",IDC_TXDOT,34,70,164,14,BS_LEFT
+    ICON            IDI_KDOT,IDC_STATIC,11,91,21,20
+    PUSHBUTTON      "Kansas Department of Transportation",IDC_KDOT,33,93,164,14,BS_LEFT
+    LTEXT           "Consulting services provided by",IDC_STATIC,11,112,100,8
+    ICON            IDI_BSS,IDC_STATIC,11,120,21,20
+    PUSHBUTTON      "BridgeSight Software",IDC_BRIDGESIGHT,34,124,164,14,BS_LEFT
+    GROUPBOX        "Credits",IDC_STATIC,209,32,227,109
+    LTEXT           "Richard Brice, PE - WSDOT\n\tSoftware Architect and Lead Programmer",IDC_STATIC,214,46,171,17
+    LTEXT           "Richard Pickings, PE - BridgeSight Software\n\tConsulting and Professional Programming Services",IDC_STATIC,214,66,214,18
+    LTEXT           "Installed Components",IDC_STATIC,7,150,68,8
+    LISTBOX         IDC_APPLIST,7,165,361,59,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Component Description",IDC_STATIC,7,228,74,8
+    LTEXT           "Static",IDC_DESCRIPTION,7,240,362,52,WS_BORDER
+    PUSHBUTTON      "More Information",IDC_MOREINFO,377,239,59,14
+    LTEXT           "This software is licenced under the terms and conditions of the Alternate Route Open Source License. Individual components may be licensed under different terms and conditions. Click on the components listed above for more information.",IDC_STATIC,7,302,358,25
+    DEFPUSHBUTTON   "OK",IDOK,386,313,50,14,WS_GROUP
+END
 
 IDD_PROJECTPROPERTIES DIALOG  0, 0, 241, 231
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -1531,8 +1567,8 @@ BEGIN
     LTEXT           "Engineer",IDC_STATIC,258,60,65,8
     LTEXT           "Company",IDC_STATIC,258,90,69,8
     LTEXT           "Check for library and template updates:",IDC_UPDATES_STATIC,33,233,174,8
-    LTEXT           "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,49,220,155,10
-    ICON            IDI_EARTH,IDC_STATIC_EARTH,27,214,21,20
+    PUSHBUTTON      "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,48,216,155,14
+    ICON            IDI_EARTH,IDC_STATIC_EARTH,27,214,20,20
 END
 
 IDD_BRIDGEDESC_DECKDETAILS DIALOGEX 0, 0, 415, 305
@@ -2386,6 +2422,7 @@ BEGIN
     LTEXT           "to",IDC_STATIC,83,3,8,8
     EDITTEXT        IDC_END_SPAN_EDIT,90,1,32,12,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
     CONTROL         "",IDC_END_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,111,1,10,12
+    LTEXT           "of n Spans",IDC_SPAN_COUNT,124,3,76,8
 END
 
 IDD_LINEAR_DUCT DIALOGEX 0, 0, 316, 209
@@ -3102,8 +3139,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,0
- PRODUCTVERSION 3,0,0,0
+ FILEVERSION 3,0,0,1
+ PRODUCTVERSION 3,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3120,12 +3157,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.0"
+            VALUE "FileVersion", "3.0.0.1"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.0"
+            VALUE "ProductVersion", "3.0.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -3143,6 +3180,13 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 436
+        BOTTOMMARGIN, 327
+    END
+
     IDD_PROJECTPROPERTIES, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -3959,7 +4003,7 @@ EA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\EA_BrgAlo
 
 IDD_GIRDERDESC_SHEAR_STEEL DLGINIT
 BEGIN
-    IDC_MILD_STEEL_SELECTOR, 0x403, 29, 0
+    IDC_MOREINFO, 0x403, 29, 0
 0x4141, 0x4853, 0x4f54, 0x4d20, 0x3133, 0x2820, 0x3641, 0x3531, 0x2029, 
 0x202d, 0x7247, 0x6461, 0x2065, 0x3036, "\000" 
     0
@@ -4099,8 +4143,8 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_PGSUPER             "\n\n\n\n\n\n"
-    IDR_BRIDGEMODELEDITOR   "Bridge Model View\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
+    IDR_PGSUPER             "\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
+    IDR_BRIDGEMODELEDITOR   "Bridge Model View\n\n\n\n\n\n"
     IDR_PROJECTIMPORTER     "Bridge Model View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
     IDR_GIRDERMODELEDITOR   "Girder View\n\n\n\n\n\n"
     IDR_ANALYSISMODELEDITOR "Analysis Model Editor\n\n\n\n\n\n"
@@ -4300,12 +4344,14 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_VIEW_STATUSCENTER    "View Status Center Window\nView Status Center Window"
-    ID_VIEW_STATUSCENTER2   "View Status Center Window\nView Status Center Window"
-    ID_VIEW_STATUSCENTER3   "View Status Center Window\nView Status Center Window"
-    ID_APP_LEGAL            "Display PGSuper Legal Notices"
-    ID_UNITS_SI             "Change units to SI\nSI Units"
-    ID_UNITS_US             "Change units to US\nUS Units"
+    EAFID_VIEW_STATUSCENTER "View Status Center Window\nView Status Center Window"
+    EAFID_VIEW_STATUSCENTER2 
+                            "View Status Center Window\nView Status Center Window"
+    EAFID_VIEW_STATUSCENTER3 
+                            "View Status Center Window\nView Status Center Window"
+    EAFID_APP_LEGAL         "Display PGSuper Legal Notices"
+    EAFID_UNITS_SI          "Change units to SI\nSI Units"
+    EAFID_UNITS_US          "Change units to US\nUS Units"
 END
 
 STRINGTABLE 
@@ -4406,6 +4452,8 @@ END
 
 STRINGTABLE 
 BEGIN
+    EAFID_INDICATOR_MODIFIED "Modified"
+    EAFID_INDICATOR_STATUS  "OK"
     ID_INDICATOR_ANALYSIS   "CONTINUOUS"
     ID_INDICATOR_AUTOCALC_ON "AutoCalc : On"
     ID_INDICATOR_AUTOCALC_OFF "AutoCalc : Off"

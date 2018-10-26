@@ -1173,7 +1173,7 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
             if ( (leftZoneHeight[pgsTypes::LeftPrismatic] < leftZoneHeight[pgsTypes::RightPrismatic]) &&
                  (rightZoneHeight[pgsTypes::LeftPrismatic] > rightZoneHeight[pgsTypes::RightPrismatic]) )
             {
-               // variation will be a double-type
+               // variation will be a Float64-type
                pLeftSegment->SetVariationType( leftVariation == pgsTypes::Linear ? pgsTypes::DoubleLinear : pgsTypes::DoubleParabolic );
 
                Float64 leftTaperLength = leftSegmentLength-leftZoneLength[pgsTypes::LeftPrismatic]-leftZoneLength[pgsTypes::RightPrismatic];
@@ -1372,7 +1372,7 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          pLeftSegment->SetVariationParameters(pgsTypes::LeftPrismatic,newLeftSegmentLength,leftPrismaticHeight,leftPrismaticBottomFlangeDepth);
          pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,0,leftPrismaticHeight,leftPrismaticBottomFlangeDepth);
 
-         // right is double linear/parabolic
+         // right is Float64 linear/parabolic
          pRightSegment->SetVariationType(leftVariation);
          pRightSegment->SetVariationParameters(pgsTypes::LeftPrismatic,leftPrismaticLength-newLeftSegmentLength,leftPrismaticHeight,leftPrismaticBottomFlangeDepth);
          pRightSegment->SetVariationParameters(pgsTypes::LeftTapered,leftTaperedLength,leftTaperedHeight,leftTaperedBottomFlangeDepth);
@@ -1391,7 +1391,7 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          pLeftSegment->SetVariationType(leftVariation == pgsTypes::DoubleLinear ? pgsTypes::Linear : pgsTypes::Parabolic);
          pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
 
-         // right segment becomes double linear/parabolic
+         // right segment becomes Float64 linear/parabolic
          pRightSegment->SetVariationType(leftVariation);
          pRightSegment->SetVariationParameters(pgsTypes::LeftPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
          pRightSegment->SetVariationParameters(pgsTypes::LeftTapered,leftPrismaticLength + leftTaperedLength - newLeftSegmentLength,leftTaperedHeight,leftTaperedBottomFlangeDepth);

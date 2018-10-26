@@ -30,9 +30,10 @@
 #include "WSDOTAgent_i.h"
 #include "dllmain.h"
 
-#include "BridgeLinkCatCom.h"
+#include "BridgeLinkCATID.h"
 #include "PGSuperCatCom.h"
 #include <System\ComCatMgr.h>
+#include "PGSComponentInfo.h"
 
 // interfaces used in this DLL.... resolves symbols for the linker
 #include <WBFLCore_i.c>
@@ -49,6 +50,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 
+#include <Plugins\BeamFamilyCLSID.h>
 
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)
@@ -72,7 +74,7 @@ HRESULT RegisterAgent(bool bRegister)
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_BridgeLinkComponents,bRegister);
+   hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_PGSuperComponentInfo,bRegister);
    if ( FAILED(hr) )
       return hr;
 

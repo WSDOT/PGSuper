@@ -43,6 +43,7 @@
 #include "PGSuperCommandLineInfo.h"
 #include "PGSuperPluginMgr.h"
 
+
 #define EPD_GENERAL        0
 #define EPD_CONNECTION     1
 #define EPD_SPACING        2
@@ -203,6 +204,9 @@ public:
 protected:
    CString m_strAppProfileName;
 
+   HICON m_hMainFrameBigIcon;
+   HICON m_hMainFrameSmallIcon;
+
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 
    IDType m_ViewCallbackID;
@@ -238,6 +242,7 @@ protected:
    virtual void OnCreateFinalize();
 
    virtual LPCTSTR GetTemplateExtension() = 0;
+   virtual CATID GetComponentInfoCategoryID() = 0;
 
    virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
    virtual BOOL OpenTheDocument(LPCTSTR lpszPathName);
@@ -264,6 +269,8 @@ protected:
 
    virtual void BrokerShutDown();
    virtual void OnStatusChanged();
+
+   virtual BOOL CreateBroker();
 
    BOOL UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir);
 
@@ -312,12 +319,13 @@ protected:
    afx_msg void OnUpdateViewGraphs(CCmdUI* pCmdUI);
    afx_msg BOOL OnViewGraphs(NMHDR* pnmtb,LRESULT* plr);
    afx_msg void OnUpdateViewReports(CCmdUI* pCmdUI);
-   afx_msg void OnUpdateViewAnalysisResults(CCmdUI* pCmdUI);
    afx_msg BOOL OnViewReports(NMHDR* pnmtb,LRESULT* plr);
    afx_msg void OnImport(UINT nID);
    afx_msg void OnExport(UINT nID);
    afx_msg void OnImportMenu(CCmdUI* pCmdUI);
    afx_msg void OnExportMenu(CCmdUI* pCmdUI);
+
+   afx_msg void OnAbout();
 
 public:
 	afx_msg void OnViewBridgeModelEditor();

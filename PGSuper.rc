@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include <PGSuperCommandIDs.h>
 #include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -97,7 +98,7 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Manage"
         BEGIN
-            MENUITEM "Manage Application Components...", ID_MANAGE_APP_PLUGINS
+            MENUITEM "Manage Application Components...", EAFID_MANAGE_APP_PLUGINS
         END
         MENUITEM SEPARATOR
         MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
@@ -121,8 +122,8 @@ BEGIN
             MENUITEM "&PGSuper Home Page",          ID_HELP_INET_PGSUPER
         END
         MENUITEM SEPARATOR
-        MENUITEM "&Tip of the Day...",          ID_TIPOFTHEDAY
-        MENUITEM "&Legal Notices...",           ID_APP_LEGAL
+        MENUITEM "&Tip of the Day...",          EAFID_TIPOFTHEDAY
+        MENUITEM "&Legal Notices...",           EAFID_APP_LEGAL
         MENUITEM "&About PGSuper...",           ID_APP_ABOUT
     END
 END
@@ -213,8 +214,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,0
- PRODUCTVERSION 3,0,0,0
+ FILEVERSION 3,0,0,1
+ PRODUCTVERSION 3,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -231,11 +232,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.0"
+            VALUE "FileVersion", "3.0.0.1"
             VALUE "InternalName", "PGSuper"
             VALUE "OriginalFilename", "PGSuper.EXE"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.0"
+            VALUE "ProductVersion", "3.0.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -382,13 +383,6 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_INDICATOR_ANALYSIS   "CONTINUOUS"
-    ID_INDICATOR_AUTOCALC_ON "AutoCalc : On"
-    ID_INDICATOR_AUTOCALC_OFF "AutoCalc : Off"
-END
-
-STRINGTABLE 
-BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
     AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
@@ -412,7 +406,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_APP_LEGAL            "Display PGSuper Legal Notices"
+    EAFID_APP_LEGAL            "Display PGSuper Legal Notices"
 END
 
 STRINGTABLE 
@@ -439,6 +433,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
+    IDS_E_ONLINERESOURCES   "Sorry, but an error occured while attempting to connect to the Internet"
 END
 
 #endif    // English (U.S.) resources

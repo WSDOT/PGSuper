@@ -84,6 +84,14 @@ interface IShearCapacity : IUnknown
    virtual Float64 GetFpc(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
    virtual void GetFpcDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,FPCDETAILS* pmcd) = 0;
 
+   // Returns the index of the critical section zone in which the specified poi lies. Returns INVALID_INDEX
+   // if the poi is not in a critical section zone.
+   virtual ZoneIndexType GetCriticalSectionZoneIndex(pgsTypes::LimitState limitState,const pgsPointOfInterest& poi) = 0;
+
+   // Returns the start and end of a critical section zone in Girder Coordinates
+   virtual void GetCriticalSectionZoneBoundary(pgsTypes::LimitState ls,const CSegmentKey& segmentKey,ZoneIndexType csZoneIdx,Float64* pStart,Float64* pEnd) = 0;
+
+   // Returns the location of the critical sections in Girder Coordinates
    virtual std::vector<Float64> GetCriticalSections(pgsTypes::LimitState limitState,const CGirderKey& girderKey) = 0;
    virtual std::vector<Float64> GetCriticalSections(pgsTypes::LimitState limitState,const CGirderKey& girderKey,const GDRCONFIG& config) = 0;
    virtual const std::vector<CRITSECTDETAILS>& GetCriticalSectionDetails(pgsTypes::LimitState limitState,const CGirderKey& girderKey) = 0;

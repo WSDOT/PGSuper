@@ -101,7 +101,7 @@ BOOL CInsertSpanDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CComboBox* pPiers = (CComboBox*)GetDlgItem(IDC_LOCATION);
+   CComboBox* pcbPiers = (CComboBox*)GetDlgItem(IDC_LOCATION);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -113,17 +113,35 @@ BOOL CInsertSpanDlg::OnInitDialog()
       CString strItem;
       strItem.Format(_T("Before Pier %d\n"),LABEL_PIER(pierIdx));
       m_Keys.push_back( std::make_pair(pierIdx,pgsTypes::Back) );
-      pPiers->AddString(strItem);
+      pcbPiers->AddString(strItem);
 
       strItem.Format(_T("After Pier %d\n"),LABEL_PIER(pierIdx));
       m_Keys.push_back( std::make_pair(pierIdx,pgsTypes::Ahead) );
-      pPiers->AddString(strItem);
+      pcbPiers->AddString(strItem);
+   }
+
+   // Use the current selection to guide the defaults
+   GET_IFACE2(pBroker,ISelection,pSelection);
+   PierIndexType selectedPierIdx = pSelection->GetPierIndex();
+   SpanIndexType selectedSpanIdx = pSelection->GetSpanIndex();
+
+   if ( selectedPierIdx != INVALID_INDEX )
+   {
+      m_RefPierIdx = selectedPierIdx;
+   }
+   else if ( selectedSpanIdx != INVALID_INDEX )
+   {
+      m_RefPierIdx = (PierIndexType)selectedSpanIdx;
+   }
+   else
+   {
+      m_RefPierIdx = INVALID_INDEX;
    }
 
    if ( m_RefPierIdx == INVALID_INDEX )
-      m_LocationIdx = pPiers->GetCount()-1;
+      m_LocationIdx = pcbPiers->GetCount()-1;
    else
-      m_LocationIdx = (int)m_RefPierIdx;
+      m_LocationIdx = (int)2*m_RefPierIdx+1;
 
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
@@ -137,6 +155,27 @@ BOOL CInsertSpanDlg::OnInitDialog()
    }
 
    FillEventList();
+
+   // Use adjacent span as the default span length
+   const CSpanData2* pSpan;
+   if ( selectedSpanIdx != INVALID_INDEX )
+   {
+      pSpan = m_pBridgeDesc->GetSpan(selectedSpanIdx);
+   }
+   else
+   {
+      if ( m_RefPierIdx == INVALID_INDEX )
+      {
+         pSpan = m_pBridgeDesc->GetSpan(m_pBridgeDesc->GetSpanCount()-1);
+      }
+      else
+      {
+         pSpan = m_pBridgeDesc->GetSpan(m_RefPierIdx-1);
+         if ( pSpan == NULL )
+            pSpan = m_pBridgeDesc->GetSpan(m_RefPierIdx);
+      }
+   }
+   m_SpanLength = pSpan->GetSpanLength();
 
    CDialog::OnInitDialog();
 

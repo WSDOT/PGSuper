@@ -1072,12 +1072,12 @@ const CSpanData* CPierData::GetSpan(pgsTypes::PierFaceType face) const
    return (face == pgsTypes::Ahead ? m_pNextSpan : m_pPrevSpan);
 }
 
-double CPierData::GetStation() const
+Float64 CPierData::GetStation() const
 {
    return m_Station;
 }
 
-void CPierData::SetStation(double station)
+void CPierData::SetStation(Float64 station)
 {
    m_Station = station;
 }
@@ -1178,21 +1178,21 @@ void CPierData::SetDiaphragmLoadLocation(pgsTypes::PierFaceType face,Float64 loc
    m_DiaphragmLoadLocation[face] = loc;
 }
 
-double CPierData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CPierData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CPierData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gM)
+void CPierData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gM)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
 }
 
-void CPierData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM)
+void CPierData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM)
 {
    GirderIndexType ngdrs = GetLldfGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -1209,21 +1209,21 @@ void CPierData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Limi
    }
 }
 
-double CPierData::GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CPierData::GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CPierData::SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gR)
+void CPierData::SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gR)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0] = gR;
 }
 
-void CPierData::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM)
+void CPierData::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM)
 {
    GirderIndexType ngdrs = GetLldfGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)

@@ -151,7 +151,7 @@ HRESULT CShearData2::Load(sysIStructuredLoad* pStrLoad)
    HRESULT hr = S_OK;
 
    pStrLoad->BeginUnit(_T("ShearData"));  // named this for historical reasons
-   double version = pStrLoad->GetVersion();
+   Float64 version = pStrLoad->GetVersion();
 
    if ( 5.0 <= version && version < 7)
    {

@@ -504,7 +504,7 @@ public:
    std::vector<pgsPointOfInterest> GetLiftingPointsOfInterest() const;
 
    // returns the top and bottom girder stresses for the supplied vector of locations
-   void GetGirderStress(std::vector<double> locs,bool bMin,bool bIncludePrestress,std::vector<double>& fTop,std::vector<double>& fBot) const;
+   void GetGirderStress(std::vector<Float64> locs,bool bMin,bool bIncludePrestress,std::vector<Float64>& fTop,std::vector<Float64>& fBot) const;
 
    void GetMinMaxStresses(Float64* minStress, Float64* maxStress,Float64* minDistFromStart,Float64* maxDistFromStart) const;
 

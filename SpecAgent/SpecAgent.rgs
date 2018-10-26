@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuper.SpecAgent.1 = s 'SpecAgent Class'
 	{
-		CLSID = s '{EC915470-6E76-11D2-8EEB-006097DF3C68}'
+		CLSID = s '{F510647E-1F4F-4fef-8257-6914DE7B07C8}'
 	}
 	PGSuper.SpecAgent = s 'SpecAgent Class'
 	{
-		CLSID = s '{EC915470-6E76-11D2-8EEB-006097DF3C68}'
+		CLSID = s '{F510647E-1F4F-4fef-8257-6914DE7B07C8}'
 		CurVer = s 'PGSuper.SpecAgent.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {EC915470-6E76-11D2-8EEB-006097DF3C68} = s 'SpecAgent Class'
+		ForceRemove {F510647E-1F4F-4fef-8257-6914DE7B07C8} = s 'SpecAgent Class'
 		{
 			ProgID = s 'PGSuper.SpecAgent.1'
 			VersionIndependentProgID = s 'PGSuper.SpecAgent'

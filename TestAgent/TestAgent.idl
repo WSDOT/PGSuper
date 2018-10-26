@@ -34,7 +34,7 @@ library PGSuper
    importlib("WBFLCore.tlb");
 
 	[
-		uuid(433B5860-71BF-11D3-ADC5-00105A9AF985)
+		uuid(7D692AAD-39D0-4e73-842C-854457EA0EE6)
 	]
 	coclass TestAgent
 	{

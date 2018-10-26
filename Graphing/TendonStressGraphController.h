@@ -34,9 +34,15 @@ public:
    virtual IndexType GetGraphCount();
    DuctIndexType GetDuct();
 
+   // called by the framework when the view's OnUpdate method is called
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+
 protected:
 
    virtual BOOL OnInitDialog();
+
+   virtual void OnGroupChanged();
+   virtual void OnGirderChanged();
 
 	//{{AFX_MSG(CTendonStressGraphController)
    afx_msg void OnDuctChanged();

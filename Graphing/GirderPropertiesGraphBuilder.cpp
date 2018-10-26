@@ -241,7 +241,10 @@ void CGirderPropertiesGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Girde
    CString strInterval( pIntervals->GetDescription(intervalIdx) );
 
    CString strGraphTitle;
-   strGraphTitle.Format(_T("Group %d Girder %s - %s - %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),strInterval);
+   if ( grpIdx == ALL_GROUPS )
+      strGraphTitle.Format(_T("Girder %s - %s - %s"),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),strInterval);
+   else
+      strGraphTitle.Format(_T("Group %d Girder %s - %s - %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),strInterval);
    
    m_Graph.SetTitle(std::_tstring(strGraphTitle));
 }
@@ -359,32 +362,42 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
    int colorIdx = 0;
    int nColors = 4;
 
+   GET_IFACE(IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx+1);
+
+
    GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++,colorIdx++ )
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      if (nColors <= colorIdx )
-         colorIdx = 0;
-
-      CString strLabel;
-      strLabel.Format(_T("Tendon %d"),LABEL_DUCT(ductIdx));
-      IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,1,colors[colorIdx]);
-
-      std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      std::vector<Float64>::const_iterator xIter(xVals.begin());
-      for ( ; iter != end; iter++, xIter++ )
+      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
+      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++,colorIdx++ )
       {
-         const pgsPointOfInterest& poi = *iter;
-         Float64 value;
-         if ( propertyType == TendonEccentricity )
-            value = pTendonGeom->GetEccentricity(intervalIdx,poi,ductIdx);
-         else
-            value = pTendonGeom->GetDuctOffset(intervalIdx,poi,ductIdx);
+         if (nColors <= colorIdx )
+            colorIdx = 0;
 
-         Float64 X = *xIter;
+         CString strLabel;
+         strLabel.Format(_T("Tendon %d"),LABEL_DUCT(ductIdx));
+         IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,1,colors[colorIdx]);
 
-         AddGraphPoint(dataSeries,X,value);
+         std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+         std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+         std::vector<Float64>::const_iterator xIter(xVals.begin());
+         for ( ; iter != end; iter++, xIter++ )
+         {
+            const pgsPointOfInterest& poi = *iter;
+            Float64 value;
+            if ( propertyType == TendonEccentricity )
+               value = pTendonGeom->GetEccentricity(intervalIdx,poi,ductIdx);
+            else
+               value = pTendonGeom->GetDuctOffset(intervalIdx,poi,ductIdx);
+
+            Float64 X = *xIter;
+
+            AddGraphPoint(dataSeries,X,value);
+         }
       }
    }
 }

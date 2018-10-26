@@ -26,7 +26,7 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=7967>
+<meta name=layout-height content=7983>
 <meta name=layout-width content=1234>
 
 
@@ -427,7 +427,7 @@
 	valign=top
 	width=401.4pt>
 <p style="margin-bottom: 0;">Moment arm – Distance from C.G. of diaphragm 
- to C.L. Bearing as defined in the Connection library entry</td></tr>
+ to C.L. Bearing. This distance is computed based on the connection geometry.</td></tr>
 </table>
 
 &nbsp; 
@@ -1028,18 +1028,19 @@
 		height=232
 		border=0></p>
 
-<p>The cantilever portions of the load are:<br>
-<span style="vertical-align: sub; vertical-align: sub;"><img src="image044.gif"
-															style="margin-top: 0px;
-	margin-bottom: 0px;
-	margin-left: 0px;
-	margin-right: 0px;
-	width: 122px;
-	height: 24px;
-	border-style: none;"
-															width=122
-															height=24
-															border=0></span></p>
+<p>The cantilever portions of the load are:<span style="vertical-align: sub; vertical-align: sub;"><br>
+<img src="image044.gif"
+	style="margin-top: 0px;
+			margin-bottom: 0px;
+			margin-left: 0px;
+			margin-right: 0px;
+			width: 122px;
+			height: 24px;
+			border-style: none;
+			border-style: none;"
+	width=122
+	height=24
+	border=0></span></p>
 
 <p>&nbsp;</p>
 
@@ -1050,6 +1051,7 @@
 	margin-right: 0px;
 	width: 102px;
 	height: 27px;
+	border-style: none;
 	border-style: none;"
 															width=102
 															height=27
@@ -1715,7 +1717,9 @@ The exterior edge of the overlay terminates at the interior-most of:</p>
  input in the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/PsglibBridge_Site_Tab.htm">Bridge 
  Site 3</a> Project Criteria tab. The pedestrian live load is distributed 
  to girders using the same distribution as the sidewalk dead load. The 
- pedestrian live load is applied concurrently with the vehicular live loads.</p>
+ response from the pedestrian live load can be applied concurrently (summed) 
+ with the vehicular live loads, or it can be enveloped with the vehicular 
+ live loads.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

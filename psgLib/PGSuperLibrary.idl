@@ -19,7 +19,7 @@ library PGSuperLibrary
 	importlib("stdole2.tlb");
 
 	[
-		uuid(E67716CF-F63C-472c-8FF9-3C959A736097),
+		uuid(E96DEDC8-4D09-47ea-98E9-9731692D40AB),
 		helpstring("LibraryAppPlugin Class")
 	]
 	coclass LibraryAppPlugin

@@ -34,7 +34,7 @@ library PGSuper
    importlib("WBFLCore.tlb");
 
 	[
-		uuid(B455A760-6DAF-11D2-8EE9-006097DF3C68)
+		uuid(73922319-9243-4974-BA54-CF22593EC9C4)
 	]
 	coclass EngAgent
 	{

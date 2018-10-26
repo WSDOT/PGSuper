@@ -94,7 +94,6 @@ void CPGSuperDocProxyAgent::SetDocument(CPGSuperDocBase* pDoc)
 
 void CPGSuperDocProxyAgent::CreateStatusBar()
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CPGSuperStatusBar* pStatusBar = new CPGSuperStatusBar();
    pStatusBar->Create(pFrame);
@@ -107,7 +106,6 @@ void CPGSuperDocProxyAgent::CreateStatusBar()
 
 void CPGSuperDocProxyAgent::ResetStatusBar()
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    pFrame->SetStatusBar(NULL);
 }
@@ -117,7 +115,6 @@ void CPGSuperDocProxyAgent::CreateAcceleratorKeys()
    GET_IFACE(IEAFAcceleratorTable,pAccelTable);
    pAccelTable->AddAccelKey(FVIRTKEY,           VK_F5, ID_PROJECT_UPDATENOW,NULL);
    pAccelTable->AddAccelKey(FCONTROL | FVIRTKEY,VK_U,  ID_PROJECT_UPDATENOW,NULL);
-   //pAccelTable->AddAccelKey(FCONTROL | FALT | FVIRTKEY, VK_L, ID_DUMP_LBAM,NULL);
 }
 
 void CPGSuperDocProxyAgent::RemoveAcceleratorKeys()
@@ -125,7 +122,6 @@ void CPGSuperDocProxyAgent::RemoveAcceleratorKeys()
    GET_IFACE(IEAFAcceleratorTable,pAccelTable);
    pAccelTable->RemoveAccelKey(FVIRTKEY,           VK_F5);
    pAccelTable->RemoveAccelKey(FCONTROL | FVIRTKEY,VK_U );
-   //pAccelTable->RemoveAccelKey(FCONTROL | FALT | FVIRTKEY, VK_L);
 }
 
 void CPGSuperDocProxyAgent::CreateToolBars()
@@ -393,21 +389,21 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
       switch(pStatusCenter->GetSeverity())
       {
       case eafTypes::statusOK:
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER, NULL, FALSE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER2,NULL, TRUE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER3,NULL, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, NULL, FALSE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,NULL, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,NULL, TRUE);
          break;
 
       case eafTypes::statusWarning:
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER, NULL, TRUE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER2,NULL, FALSE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER3,NULL, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, NULL, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,NULL, FALSE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,NULL, TRUE);
          break;
 
       case eafTypes::statusError:
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER, NULL, TRUE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER2,NULL, TRUE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER3,NULL, FALSE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, NULL, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,NULL, TRUE);
+         pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,NULL, FALSE);
          break;
       }
    }
@@ -447,13 +443,12 @@ STDMETHODIMP CPGSuperDocProxyAgent::Init()
 {
    AGENT_INIT;
 
-   AdviseEventSinks();
-
-   return S_OK;
+   return AGENT_S_SECONDPASSINIT;
 }
 
 STDMETHODIMP CPGSuperDocProxyAgent::Init2()
 {
+   AdviseEventSinks();
    return S_OK;
 }
 
@@ -505,7 +500,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
 
 ////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
-HRESULT CPGSuperDocProxyAgent::OnBridgeChanged()
+HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    //
@@ -558,8 +553,18 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged()
       m_pMyDocument->ClearSelection();
 
    m_pMyDocument->SetModifiedFlag();
-   boost::shared_ptr<CObject> pnull;
-   FireEvent( 0, HINT_BRIDGECHANGED, pnull );
+
+   boost::shared_ptr<CBridgeHint> pBridgeHint;
+   if ( pHint )
+   {
+      pBridgeHint = boost::shared_ptr<CBridgeHint>(new CBridgeHint);
+      pBridgeHint->PierIdx = pHint->PierIdx;
+      pBridgeHint->PierFace = pHint->PierFace;
+      pBridgeHint->bAdded = pHint->bAdded;
+   }
+
+   boost::shared_ptr<CObject> pObjHint = boost::shared_dynamic_cast<CObject,CBridgeHint>(pBridgeHint);
+   FireEvent( 0, HINT_BRIDGECHANGED, pObjHint );
 
    return S_OK;
 }
@@ -711,21 +716,21 @@ HRESULT CPGSuperDocProxyAgent::OnLibraryConflictResolved()
 
 ////////////////////////////////////////////////////////////////////
 // ISelection
-PierIndexType CPGSuperDocProxyAgent::GetPierIdx()
+PierIndexType CPGSuperDocProxyAgent::GetPierIndex()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    CSelection selection = m_pMyDocument->GetSelection();
    return selection.PierIdx;
 }
 
-SpanIndexType CPGSuperDocProxyAgent::GetSpanIdx()
+SpanIndexType CPGSuperDocProxyAgent::GetSpanIndex()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    CSelection selection = m_pMyDocument->GetSelection();
    return selection.SpanIdx;
 }
 
-GirderIndexType CPGSuperDocProxyAgent::GetGirderIdx()
+GirderIndexType CPGSuperDocProxyAgent::GetGirderIndex()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    CSelection selection = m_pMyDocument->GetSelection();

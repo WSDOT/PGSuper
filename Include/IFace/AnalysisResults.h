@@ -59,19 +59,20 @@ enum ProductForceType
    pftSlabPanel, 
    pftDiaphragm, 
    pftOverlay,
-   pftOverlayRating,
    pftSidewalk,
    pftTrafficBarrier, 
    pftUserDC, 
    pftUserDW, 
    pftUserLLIM,
    pftShearKey,
+   pftPrestress,
    pftTotalPostTensioning,
-   pftPrimaryPostTensioning,
-   pftSecondaryEffects,
    pftCreep,
    pftShrinkage,
-   pftRelaxation
+   pftRelaxation,
+   pftPrimaryPostTensioning,
+   pftSecondaryEffects,
+   pftOverlayRating
 };
 
 enum LoadingCombination
@@ -80,7 +81,7 @@ enum LoadingCombination
    lcDW,
    lcDWRating,
    lcCR,
-   lcSR,
+   lcSH,
    lcPS
 };
 
@@ -763,6 +764,26 @@ interface IBearingDesign : IUnknown
                                              Float64* pRightRmin,Float64* pRightRmax)=0;
 };
 
+
+/*****************************************************************************
+INTERFACE
+   IInfluenceResults
+
+   Interface to get influence lines are related information.
+
+DESCRIPTION
+   Interface to get influence lines are related information.
+*****************************************************************************/
+// {4C72198B-4DA4-424d-BD6F-12AD394D84B6}
+DEFINE_GUID(IID_IInfluenceResults, 
+0x4c72198b, 0x4da4, 0x424d, 0xbd, 0x6f, 0x12, 0xad, 0x39, 0x4d, 0x84, 0xb6);
+interface IInfluenceResults : IUnknown
+{
+   // Returns the moments due to a unit load applied at unitLoadPOI
+   virtual std::vector<Float64> GetUnitLoadMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitLoadPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx) = 0;
+
+   // Other methods for getting influence lines will be added later
+};
 
 #endif // INCLUDED_IFACE_ANALYSISRESULTS_H_
 

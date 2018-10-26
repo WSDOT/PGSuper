@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFamily.UBeam.1 = s 'U-Beam'
 	{
-		CLSID = s '{917D405F-8752-4bfc-BF6B-9CE7BC2E4C80}'
+		CLSID = s '{34F855F9-08CF-45b0-B2F5-B74F84A74A43}'
 	}
 	PGSuperBeamFamily.UBeam = s 'U-Beam'
 	{
-		CLSID = s '{917D405F-8752-4bfc-BF6B-9CE7BC2E4C80}'
+		CLSID = s '{34F855F9-08CF-45b0-B2F5-B74F84A74A43}'
 		CurVer = s 'PGSuperBeamFamily.UBeam.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {917D405F-8752-4bfc-BF6B-9CE7BC2E4C80} = s 'U-Beam'
+		ForceRemove {34F855F9-08CF-45b0-B2F5-B74F84A74A43} = s 'U-Beam'
 		{
 			ProgID = s 'PGSuperBeamFamily.UBeam.1'
 			VersionIndependentProgID = s 'PGSuperBeamFamily.UBeam'

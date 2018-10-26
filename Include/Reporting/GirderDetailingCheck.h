@@ -109,6 +109,9 @@ private:
                             IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                             IEAFDisplayUnits* pDisplayUnits) const;
 
+   void BuildStirrupLayoutCheck(rptChapter* pChapter,
+                                IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

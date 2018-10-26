@@ -75,7 +75,9 @@ inline bool flexure_stress_failures(IBroker* pBroker,const CSegmentKey& segmentK
    for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
    {
       const pgsFlexuralStressArtifact* pFlexure = pArtifact->GetFlexuralStressArtifact( intervalIdx,ls,stressType,idx );
-
+      if( !pFlexure->Passed() )
+         return true;
+/*
       if ( liveLoadIntervalIdx <= intervalIdx && ls == pgsTypes::ServiceIII )
       {
 	      if( !pFlexure->BottomPassed() )
@@ -91,6 +93,7 @@ inline bool flexure_stress_failures(IBroker* pBroker,const CSegmentKey& segmentK
 	      if( !pFlexure->Passed() )
             return true;
       }
+*/
    }
 
    return false;
@@ -101,6 +104,14 @@ inline void list_stress_failures(IBroker* pBroker, FailureList& rFailures,
                            const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+
+   const pgsTendonStressArtifact* pTendonStress = pGirderArtifact->GetTendonStressArtifact();
+   if ( !pTendonStress->Passed() )
+   {
+#pragma Reminder("UPDATE: need to do a better job reporting tendon stress failures")
+      // There are several reasons
+      rFailures.push_back(_T("Stresses in the tendons are too high."));
+   }
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -453,10 +464,10 @@ inline void list_various_failures(IBroker* pBroker,FailureList& rFailures,const 
          rFailures.push_back(_T("Global Girder Stability check failed"));
       }
 
-   if ( !pConstruct->RebarGeometryCheckPassed() )
-   {
-      rFailures.push_back(_T("Rebars are located outside of the girder section. Rebar geometry check failed"));
-   }
+      if ( !pConstruct->RebarGeometryCheckPassed() )
+      {
+         rFailures.push_back(_T("Rebars are located outside of the girder section. Rebar geometry check failed"));
+      }
 
       // Lifting
       const pgsLiftingAnalysisArtifact* pLifting = pArtifact->GetLiftingAnalysisArtifact();

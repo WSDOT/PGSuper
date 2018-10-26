@@ -76,6 +76,8 @@ CBridgeDescFramingGrid::CBridgeDescFramingGrid()
 {
 //   RegisterClass();
    HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
+   hr = m_objAngle.CoCreateInstance(CLSID_Angle);
+   hr = m_objDirection.CoCreateInstance(CLSID_Direction);
 }
 
 CBridgeDescFramingGrid::~CBridgeDescFramingGrid()
@@ -1115,15 +1117,11 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	if (nCol==1)
 	{
       // station
-      CComPtr<IStation> objStation;
-      HRESULT hr = objStation.CoCreateInstance(CLSID_Station);
-      ASSERT(SUCCEEDED(hr));
-
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-      hr = objStation->FromString( CComBSTR(s), (UnitModeType)(pDisplayUnits->GetUnitMode()));
+      HRESULT hr = m_objStation->FromString( CComBSTR(s), (UnitModeType)(pDisplayUnits->GetUnitMode()));
       if ( FAILED(hr) )
       {
 			SetWarningText (_T("Invalid Station Value"));
@@ -1149,13 +1147,11 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       if ( strOrientation == _T("NORMAL") || (strOrientation.GetLength() == 1 && strOrientation[0] == 'N') )
          return TRUE;
 
-      CComPtr<IAngle> angle;
-      angle.CoCreateInstance(CLSID_Angle);
-      HRESULT hr_angle = angle->FromString(CComBSTR(strOrientation));
+      HRESULT hr_angle = m_objAngle->FromString(CComBSTR(strOrientation));
       if ( SUCCEEDED(hr_angle) )
       {
          Float64 value;
-         angle->get_Value(&value);
+         m_objAngle->get_Value(&value);
          if ( value < -MAX_SKEW_ANGLE || MAX_SKEW_ANGLE < value )
          {
    		   SetWarningText (_T("Skew angle must be less than 88 deg"));
@@ -1167,9 +1163,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          }
       }
 
-      CComPtr<IDirection> direction;
-      direction.CoCreateInstance(CLSID_Direction);
-      HRESULT hr_direction = direction->FromString(CComBSTR( strOrientation ));
+      HRESULT hr_direction = m_objDirection->FromString(CComBSTR( strOrientation ));
       if ( SUCCEEDED(hr_direction) )
       {
          return TRUE;

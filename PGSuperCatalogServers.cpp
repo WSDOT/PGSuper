@@ -37,6 +37,7 @@ CPGSuperCatalogServers::CPGSuperCatalogServers()
 
 CPGSuperCatalogServers::~CPGSuperCatalogServers()
 {
+   m_Servers.clear();
 }
 
 void CPGSuperCatalogServers::SetTemplateFileExtenstion(const CString& strExt)

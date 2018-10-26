@@ -62,15 +62,15 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    std::_tostringstream os;
    os << "Interval: " << LABEL_INTERVAL(intervalIdx) << _T(", ") <<  pIntervals->GetDescription(intervalIdx);
 
    ColumnIndexType nCol;
-   if ( intervalIdx < castDeckIntervalIdx )
+   if ( intervalIdx < compositeDeckIntervalIdx )
       nCol = 12;
-   else if ( pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->IsCompositeDeck() && castDeckIntervalIdx <= intervalIdx)
+   else if ( pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->IsCompositeDeck() && compositeDeckIntervalIdx <= intervalIdx)
       nCol = 15;
    else
       nCol = 12; // BS2 or BS3 and noncomposite deck
@@ -92,7 +92,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    (*xs_table)(0,col++) << COLHDR(RPT_IY,               rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_YTOP,             rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
 
-   if ( castDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
+   if ( compositeDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
    {
       (*xs_table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("t")) << _T("") << rptNewLine << _T("Girder"), rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
    }
@@ -100,7 +100,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    (*xs_table)(0,col++) << COLHDR(RPT_YBOT, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_STOP, rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
    
-   if ( castDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
+   if ( compositeDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
    {
       (*xs_table)(0,col++) << COLHDR(Sub2(_T("S"),_T("t")) << _T("") << rptNewLine << _T("Girder"), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
    }
@@ -109,7 +109,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    (*xs_table)(0,col++) << Sub2(_T("k"),_T("t")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Top") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
    (*xs_table)(0,col++) << Sub2(_T("k"),_T("b")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Bottom") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
 
-   if ( castDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
+   if ( compositeDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
    {
       (*xs_table)(0,col++) << COLHDR(Sub2(_T("Q"),_T("slab")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
       (*xs_table)(0,col++) << COLHDR(_T("Effective") << rptNewLine << _T("Flange") << rptNewLine << _T("Width"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -147,7 +147,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       const CSegmentKey& segKey = poi.GetSegmentKey();
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(segKey);
-      if ( intervalIdx < castDeckIntervalIdx )
+      if ( intervalIdx < compositeDeckIntervalIdx )
          end_size = 0;
 
       Float64 Yt, Yb, depth;
@@ -155,7 +155,6 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       Yb = pSectProp->GetYb(intervalIdx,poi);
       depth = Yt + Yb;
 
-#pragma Reminder("UPDATE: poi location reference")
       (*xs_table)(row,col++) << location.SetValue( POI_RELEASED_SEGMENT, poi, end_size );
       (*xs_table)(row,col++) << l2.SetValue(pSectProp->GetAg(intervalIdx,poi));
       (*xs_table)(row,col++) << l1.SetValue(depth);
@@ -163,7 +162,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetIy(intervalIdx,poi));
       (*xs_table)(row,col++) << l1.SetValue(Yt);
 
-      if ( castDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
+      if ( compositeDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
       {
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetYtGirder(intervalIdx,poi));
       }
@@ -171,7 +170,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       (*xs_table)(row,col++) << l1.SetValue(Yb);
       (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetSt(intervalIdx,poi));
 
-      if ( castDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
+      if ( compositeDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
       {
          (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetStGirder(intervalIdx,poi));
       }
@@ -180,7 +179,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       (*xs_table)(row,col++) << l1.SetValue(fabs(pSectProp->GetKt(intervalIdx,poi)));
       (*xs_table)(row,col++) << l1.SetValue(fabs(pSectProp->GetKb(intervalIdx,poi)));
 
-      if ( castDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
+      if ( compositeDeckIntervalIdx <= intervalIdx && pBridge->IsCompositeDeck() )
       {
          (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetQSlab(poi));
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetEffectiveFlangeWidth(poi));

@@ -59,19 +59,19 @@ interface DummyBeamFactory : IUnknown
 interface IConfigureStrandMover : IUnknown
 {
    // offset limits and default increments for harped strands
-   [helpstring("method SetHarpedStrandOffsetBounds")] HRESULT SetHarpedStrandOffsetBounds([in]double topGirderElevation, 
-																						  [in]double topHpElevationBoundary,[in]double botHpElevationBoundary,
-																						  [in]double topEndElevationBoundary,[in]double botEndElevationBoundary,
-																						  [in]double endIncrement,[in]double hpIncrement);
+   [helpstring("method SetHarpedStrandOffsetBounds")] HRESULT SetHarpedStrandOffsetBounds([in]Float64 topGirderElevation, 
+																						  [in]Float64 topHpElevationBoundary,[in]Float64 botHpElevationBoundary,
+																						  [in]Float64 topEndElevationBoundary,[in]Float64 botEndElevationBoundary,
+																						  [in]Float64 endIncrement,[in]Float64 hpIncrement);
    // remove all regions
    [helpstring("method ClearAll")] HRESULT ClearAll();
    // Add a shape that is to be tested for PointInShape, and arcSlope (x/y) that a strand
    // point is to be moved along
-   [helpstring("method AddRegion")] HRESULT AddRegion([in]IShape* shape,[in]double arcSlope);
+   [helpstring("method AddRegion")] HRESULT AddRegion([in]IShape* shape,[in]Float64 arcSlope);
 
    // methods to help debugging
    [propget, helpstring("NumRegions")] HRESULT NumRegions([out,retval]CollectionIndexType* pNum);
-   [helpstring("method GetRegion")] HRESULT GetRegion([in]CollectionIndexType index, [out]IShape** shape,[out]double* arcSlope);
+   [helpstring("method GetRegion")] HRESULT GetRegion([in]CollectionIndexType index, [out]IShape** shape,[out]Float64* arcSlope);
 };
 
 
@@ -85,7 +85,7 @@ library PGSuperBeamFactory
 	importlib("stdole2.tlb");
 
 	[
-		uuid(30962206-2412-4001-AA20-CF359BC60142)
+		uuid(EF144A97-4C75-4234-AF3C-71DC89B1C8F8)
 	]
 	coclass WFBeamFactory
 	{
@@ -93,7 +93,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(64E8DD89-EC9E-48dd-B4E9-A457F6BFB9B1)
+		uuid(9EDBDD8D-ABBB-413a-9B2D-9EB2712BE914)
 	]
 	coclass TaperedIBeamFactory
 	{
@@ -101,7 +101,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(F1504E79-8810-4b5c-9797-BCE6C1022C4C)
+		uuid(DA3C413D-6413-4485-BD29-E8A419E981AF)
 	]
 	coclass NUBeamFactory
 	{
@@ -109,7 +109,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(F008218C-B19B-49A0-9084-253A09D4EA5A)
+		uuid(F72BA192-6D82-4d66-92CA-EB13466E6BA9)
 	]
 	coclass UBeamFactory
 	{
@@ -117,7 +117,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(C28FA58A-3D4D-4df1-8021-2A0BBA90F304)
+		uuid(DD999E90-E181-4ec8-BB82-FDFB364B7620)
 	]
 	coclass UBeam2Factory
 	{
@@ -125,7 +125,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(9AA6D6FF-2D05-46db-B3F0-479B182B3193)
+		uuid(16CC6372-256E-4828-9BDA-3185C27DC65E)
 	]
 	coclass BulbTeeFactory
 	{
@@ -133,7 +133,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(0CE7D624-7CC5-4300-8257-0C41A585852F)
+		uuid(51CB9247-8200-43e5-BFB0-E386C1E6A0D0)
 	]
 	coclass MultiWebFactory
 	{
@@ -141,7 +141,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(71AF6935-2501-4fb7-8FA3-7DDB505D5C63)
+		uuid(D8824656-6CB6-45c0-B5F7-13CFFA890F0B)
 	]
 	coclass MultiWeb2Factory
 	{
@@ -149,7 +149,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(FD766540-C635-43e1-B809-06B837EFA752)
+		uuid(A367FEEC-9E24-4ed6-9DD3-57F62AD752C9)
 	]
 	coclass DoubleTeeFactory
 	{
@@ -157,7 +157,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(63C3AE0C-ADD3-44f7-AC22-16303D00E303)
+		uuid(E6F28403-A396-453b-91BE-15A68D194255)
 	]
 	coclass VoidedSlabFactory
 	{
@@ -165,7 +165,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(A9FC0D19-F6A4-4a9d-835B-FEE2E42F574C)
+		uuid(171FC948-C4CB-4920-B9FC-72D729F3E91A)
 	]
 	coclass VoidedSlab2Factory
 	{
@@ -173,7 +173,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(73D5A32E-F747-4fff-8B48-D561A93494AC)
+		uuid(B195CB90-CEB0-4495-B91D-7FC6DFBF31CF)
 	]
 	coclass BoxBeamFactory
 	{
@@ -181,7 +181,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(09D3E8EA-B66F-4d99-8DDE-3F55BBC14D54)
+		uuid(B1F474E4-15F7-4ac8-AD2D-7FBD12E3B0EB)
 	]
 	coclass BoxBeamFactory2
 	{
@@ -189,7 +189,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(59BAD0A2-91F0-4E8A-8A90-4241787E9B50),
+		uuid(5D6AFD91-84F4-4755-9AF7-B760114A4551),
 		helpstring("StrandMoverImpl Class")
 	]
 	coclass StrandMoverImpl
@@ -198,7 +198,7 @@ library PGSuperBeamFactory
       interface IConfigureStrandMover;
 	};
 	[
-		uuid(AC828108-B982-4C95-867B-B4BF4E37B7EB),
+		uuid(2583C7C1-FF57-4113-B45B-702CFA6AD013),
 	]
 	coclass TxDotDoubleTFactory
 	{
@@ -206,7 +206,7 @@ library PGSuperBeamFactory
 	};
 
 	[
-		uuid(9C219793-A1F1-402a-B865-0AA6BD22B0A6)
+		uuid(DEFA27AD-3D22-481b-9006-627C65D2648F)
 	]
 	coclass DeckedSlabBeamFactory
 	{

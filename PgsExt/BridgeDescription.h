@@ -127,8 +127,8 @@ public:
    void SetRefGirderOffsetType(pgsTypes::OffsetMeasurementType offsetDatum);
    pgsTypes::OffsetMeasurementType GetRefGirderOffsetType() const;
 
-   void SetAlignmentOffset(double alignmentOffset);
-   double GetAlignmentOffset() const;
+   void SetAlignmentOffset(Float64 alignmentOffset);
+   Float64 GetAlignmentOffset() const;
 
    // set/get the slab offset type
    void SetSlabOffsetType(pgsTypes::SlabOffsetType slabOffsetType);
@@ -206,10 +206,10 @@ private:
 
    pgsTypes::DistributionFactorMethod m_LLDFMethod;
 
-   bool MoveBridge(PierIndexType pierIdx,double newStation);
-   bool MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,double newStation);
-   bool MoveBridgeAdjustNextSpan(PierIndexType pierIdx,double newStation);
-   bool MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,double newStation);
+   bool MoveBridge(PierIndexType pierIdx,Float64 newStation);
+   bool MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64 newStation);
+   bool MoveBridgeAdjustNextSpan(PierIndexType pierIdx,Float64 newStation);
+   bool MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Float64 newStation);
 
    void RenumberSpans();
 

@@ -65,11 +65,16 @@ END_MESSAGE_MAP()
 CConcretePropertyGraphBuilder::CConcretePropertyGraphBuilder() :
 CEAFAutoCalcGraphBuilder(),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pXFormat(0),
+m_pTimeFormat(0),
+m_pIntervalFormat(0),
 m_pYFormat(0),
 m_XAxisType(X_AXIS_TIME_LOG)
 {
    m_pGraphController = new CConcretePropertyGraphController;
+
+   m_Scalar.Width = 5;
+   m_Scalar.Precision = 0;
+   m_Scalar.Format = sysNumericFormatTool::Fixed;
 
    SetName(_T("Concrete Properties"));
 }
@@ -77,11 +82,16 @@ m_XAxisType(X_AXIS_TIME_LOG)
 CConcretePropertyGraphBuilder::CConcretePropertyGraphBuilder(const CConcretePropertyGraphBuilder& other) :
 CEAFAutoCalcGraphBuilder(other),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pXFormat(0),
+m_pTimeFormat(0),
+m_pIntervalFormat(0),
 m_pYFormat(0),
 m_XAxisType(X_AXIS_TIME_LOG)
 {
    m_pGraphController = new CConcretePropertyGraphController;
+
+   m_Scalar.Width = 5;
+   m_Scalar.Precision = 0;
+   m_Scalar.Format = sysNumericFormatTool::Fixed;
 }
 
 CConcretePropertyGraphBuilder::~CConcretePropertyGraphBuilder()
@@ -92,10 +102,16 @@ CConcretePropertyGraphBuilder::~CConcretePropertyGraphBuilder()
       m_pGraphController = NULL;
    }
 
-   if ( m_pXFormat != NULL )
+   if ( m_pTimeFormat != NULL )
    {
-      delete m_pXFormat;
-      m_pXFormat = NULL;
+      delete m_pTimeFormat;
+      m_pTimeFormat = NULL;
+   }
+
+   if ( m_pIntervalFormat != NULL )
+   {
+      delete m_pIntervalFormat;
+      m_pIntervalFormat = NULL;
    }
 
    if ( m_pYFormat != NULL )
@@ -145,9 +161,9 @@ int CConcretePropertyGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
    // x axis
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtScalar& timeUnit = pDisplayUnits->GetScalarFormat();
-   m_pXFormat = new ScalarTool(timeUnit);
-   m_Graph.SetXAxisValueFormat(*m_pXFormat);
-   m_Graph.SetXAxisNumberOfMinorTics(10);
+   m_pTimeFormat = new ScalarTool(timeUnit);
+   m_pIntervalFormat = new ScalarTool(m_Scalar);
+   m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
    m_pGraphController->CheckDlgButton(IDC_AGE_LOG,BST_CHECKED);
    m_XAxisType = X_AXIS_AGE_LOG;
@@ -213,30 +229,39 @@ void CConcretePropertyGraphBuilder::UpdateXAxis()
       m_Graph.SetXAxisScale(grAxisXY::LINEAR);
       m_Graph.SetXAxisTitle(_T("Time (days)"));
       m_Graph.SetXAxisNiceRange(true);
+      m_Graph.SetXAxisNumberOfMinorTics(10);
+      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    }
    else if ( m_XAxisType == X_AXIS_TIME_LOG )
    {
       m_Graph.SetXAxisScale(grAxisXY::LOGARITHMIC);
       m_Graph.SetXAxisTitle(_T("Time (days)"));
       m_Graph.SetXAxisNiceRange(true);
+      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    }
    else if ( m_XAxisType == X_AXIS_AGE_LINEAR )
    {
       m_Graph.SetXAxisScale(grAxisXY::LINEAR);
       m_Graph.SetXAxisTitle(_T("Age (days)"));
       m_Graph.SetXAxisNiceRange(true);
+      m_Graph.SetXAxisNumberOfMinorTics(10);
+      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    }
    else if ( m_XAxisType == X_AXIS_AGE_LOG )
    {
       m_Graph.SetXAxisScale(grAxisXY::LOGARITHMIC);
       m_Graph.SetXAxisTitle(_T("Age (days)"));
       m_Graph.SetXAxisNiceRange(true);
+      m_Graph.SetXAxisNumberOfMinorTics(10);
+      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    }
    else
    {
-      m_Graph.SetXAxisScale(grAxisXY::LINEAR);
+      m_Graph.SetXAxisScale(grAxisXY::INTEGRAL);
       m_Graph.SetXAxisTitle(_T("Interval"));
       m_Graph.SetXAxisNiceRange(false);
+      m_Graph.SetXAxisNumberOfMinorTics(0);
+      m_Graph.SetXAxisValueFormat(*m_pIntervalFormat);
    }
 }
 
@@ -344,7 +369,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       }
       else
       {
-         xMiddle = LABEL_INTERVAL(intervalIdx);
+         xMiddle = (Float64)LABEL_INTERVAL(intervalIdx);
       }
 
       // this is value at middle of interval...
@@ -389,9 +414,9 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
 void CConcretePropertyGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
 {
    // deal with unit conversion
-   arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);
+   const arvPhysicalConverter* pcx = dynamic_cast<const arvPhysicalConverter*>(m_Graph.GetXAxisValueFormat());
    ASSERT(pcx);
-   arvPhysicalConverter* pcy = dynamic_cast<arvPhysicalConverter*>(m_pYFormat);
+   const arvPhysicalConverter* pcy = dynamic_cast<const arvPhysicalConverter*>(m_Graph.GetYAxisValueFormat());
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    Float64 y = pcy->Convert(yval);

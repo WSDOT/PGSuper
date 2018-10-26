@@ -59,7 +59,7 @@ class CPGSuperApp : public CEAFPluginApp
 public:
 	CPGSuperApp();
 
-// CEAFApp overrides
+// CEAFPluginApp overrides
 public:
    virtual OLECHAR* GetAppPluginCategoryName();
    virtual CATID GetAppPluginCategoryID();
@@ -68,7 +68,6 @@ protected:
    virtual CEAFSplashScreenInfo GetSplashScreenInfo();
    virtual LPCTSTR GetRegistryKey();
    virtual CMDIFrameWnd* CreateMainFrame();
-   virtual CDocManager* CreateDocumentManager();
    virtual CATID GetComponentInfoCategoryID();
    virtual CString GetProductCode();
 

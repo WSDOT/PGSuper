@@ -36,6 +36,7 @@
 
 #include "PGSuperCatCom.h"
 #include <WBFLReportManagerAgent_i.c>
+#include <WBFLGraphManagerAgent_i.c>
 
 #include <EAF\EAFMainFrame.h>
 #include <EAF\EAFAutoProgress.h>
@@ -180,7 +181,7 @@ HRESULT CTxDOTOptionalDesignDoc::LoadThePGSuperDocument(IStructuredLoad* pStrLoa
    if ( FAILED(hr) )
       return hr;
 
-   double ver;
+   Float64 ver;
    pStrLoad->get_Version(&ver);
    if ( 1.0 < ver )
    {
@@ -335,7 +336,7 @@ BOOL CTxDOTOptionalDesignDoc::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
       return hr;
 
    // we want to use some special agents
-   CLSID clsid[] = {CLSID_SysAgent,CLSID_ReportManagerAgent};
+   CLSID clsid[] = {CLSID_SysAgent,CLSID_ReportManagerAgent,CLSID_GraphManagerAgent};
    if ( !LoadAgents(pBrokerInit, clsid, sizeof(clsid)/sizeof(CLSID) ) )
       return FALSE;
 
@@ -387,6 +388,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
          UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
          m_pMyToolBar = pFrame->GetToolBar(tbID);
          m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
+         m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
       }
 
       // use our status bar

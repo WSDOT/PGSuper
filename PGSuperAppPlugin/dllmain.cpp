@@ -10,7 +10,7 @@
 #include <EAF\EAFComponentInfo.h>
 #include <EAF\EAFUIIntegration.h>
 #include <System\ComCatMgr.h>
-#include <BridgeLinkCatCom.h>
+#include <BridgeLinkCATID.h>
 #include <PGSuperCatCom.h>
 #include <PGSpliceCatCom.h>
 #include <Plugins\PGSuperIEPlugin.h>
@@ -45,6 +45,7 @@ BOOL CPGSuperAppPluginApp::InitInstance()
    sysComCatMgr::CreateCategory(L"PGSuper Project Importer Plugin", CATID_PGSuperProjectImporter);
    sysComCatMgr::CreateCategory(L"PGSuper Data Importer Plugin",    CATID_PGSuperDataImporter);
    sysComCatMgr::CreateCategory(L"PGSuper Data Exporter Plugin",    CATID_PGSuperDataExporter);
+   sysComCatMgr::CreateCategory(L"PGSuper Component Information",   CATID_PGSuperComponentInfo);
 
    sysComCatMgr::CreateCategory(L"PGSplice Agent",                   CATID_PGSpliceAgent);
    sysComCatMgr::CreateCategory(L"PGSplice Extension Agent",         CATID_PGSpliceExtensionAgent);
@@ -52,13 +53,31 @@ BOOL CPGSuperAppPluginApp::InitInstance()
    sysComCatMgr::CreateCategory(L"PGSplice Project Importer Plugin", CATID_PGSpliceProjectImporter);
    sysComCatMgr::CreateCategory(L"PGSplice Data Importer Plugin",    CATID_PGSpliceDataImporter);
    sysComCatMgr::CreateCategory(L"PGSplice Data Exporter Plugin",    CATID_PGSpliceDataExporter);
+   sysComCatMgr::CreateCategory(L"PGSplice Component Information",   CATID_PGSpliceComponentInfo);
 
-   // Use the same help file as the parent application for our local help file setting
+   // Help files are located in the same folder as the main executable
+   // During development, the help files are located at in the \ARP\BridgeLink folder
    CEAFApp* pParentApp = EAFGetApp();
    if ( pParentApp )
    {
+      CString strHelpFile(pParentApp->m_pszHelpFilePath);
+#if defined _DEBUG
+#if defined _WIN64
+      strHelpFile.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
+#else
+      strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
+#endif
+#else
+   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
+   // ok... the replace will fail and the string wont be altered.
+#if defined _WIN64
+      strHelpFile.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
+#else
+      strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
+#endif
+#endif
       free((void*)m_pszHelpFilePath);
-      m_pszHelpFilePath = _tcsdup(pParentApp->m_pszHelpFilePath);
+      m_pszHelpFilePath = _tcsdup(strHelpFile);
    }
 
    EnableHtmlHelp();
@@ -253,11 +272,11 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 
 HRESULT Register(bool bRegister)
 {
-   HRESULT hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_BridgeLinkComponents,bRegister);
+   HRESULT hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_BridgeLinkComponents,bRegister);
+   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
    if ( FAILED(hr) )
       return hr;
 

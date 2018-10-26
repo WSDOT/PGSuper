@@ -39,10 +39,6 @@ public:
 	CClosurePourDlg(LPCTSTR pszCaption, const CSegmentKey& closureKey,const CClosurePourData* pClosurePour, EventIndexType eventIdx,bool bEditingInGirder,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 	virtual ~CClosurePourDlg();
 
-   void FillMaterialComboBox(CComboBox* pCB);
-   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
-   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
-
    EventIndexType m_EventIdx; // cast closure pour stage
    CClosurePourData m_ClosurePour; // does not have association with temporary support, segments, or spliced girder
    CSegmentKey m_ClosureKey; // segmentIndex is the closure pour index

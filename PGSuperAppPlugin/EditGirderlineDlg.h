@@ -15,15 +15,16 @@ class CEditGirderlineDlg : public CDialog, public IGirderSegmentDataSource
 	DECLARE_DYNAMIC(CEditGirderlineDlg)
 
 public:
-	CEditGirderlineDlg(const CSplicedGirderData* pGirder,CWnd* pParent = NULL);   // standard constructor
+	CEditGirderlineDlg(const CGirderKey& girderKey,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CEditGirderlineDlg();
 
 // Dialog Data
 	enum { IDD = IDD_GIRDERLINE };
 
+   mutable CBridgeDescription2 m_BridgeDescription;
+   mutable CSplicedGirderData m_Girder;
    CGirderKey m_GirderKey;
    GirderIDType m_GirderID;
-   mutable CSplicedGirderData m_Girder;
    std::vector<EventIndexType> m_TendonStressingEvent; // index is duct index, value is event when tendon is stressed
    std::vector<EventIndexType> m_CastClosureEvent;
 

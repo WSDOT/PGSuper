@@ -215,7 +215,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    Uint16 row = 1;
    (*pTable)(row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
 
-   double D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MINTIME);
+   Float64 D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MINTIME);
    if ( D_orig < 0 )
    {
       (*pTable)(row,1) << color(Red) << disp.SetValue( D_orig ) << color(Black);
@@ -227,7 +227,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
       (*pTable)(row,2) << dispft.SetValue( D_orig );
    }
 
-   double D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MINTIME);
+   Float64 D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MINTIME);
    if ( D_fabr < 0 )
    {
       (*pTable)(row,3) << color(Red) << disp.SetValue( D_fabr ) << color(Black);
@@ -322,7 +322,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    row++;
 
    (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
-   double excess_camber = pCamber->GetExcessCamber(poi_orig,CREEP_MAXTIME);
+   Float64 excess_camber = pCamber->GetExcessCamber(poi_orig,CREEP_MAXTIME);
    if ( excess_camber < 0 )
    {
       (*pTable)(row,1) << color(Red) << disp.SetValue( excess_camber ) << color(Black);

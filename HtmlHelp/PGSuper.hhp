@@ -16,7 +16,7 @@ Binary TOC=No
 Flat=No
 
 [WINDOWS]
-NewWindow="PGSuper","PGSuper.hhc","PGSuper.hhk","","",,,,,0x420,0,0x200e,[0,0,800,600],0x0,0x0,,0,0,0
+NewWindow="PGSuper","PGSuper.hhc","PGSuper.hhk","","",,,,,0x420,0,0x200e,[0,0,1000,750],0x0,0x0,,0,0,0
 
 [FILES]
 Tutorial\GeneralFeatures\Wrapping_Up.htm
@@ -321,6 +321,7 @@ Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000036.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000037.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORSystem_Minimize_Command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000026.htm
+Dialogs\Direct_Selection_of_Strand_Fill.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Shear_Design_Tab.htm
 Dialogs\Effective_Flange_Width.htm
 Dialogs\Fill_Live_Load_Distribution_Factors_With_Computed_Values.htm

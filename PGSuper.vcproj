@@ -914,10 +914,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\PGSuperDocManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath="ScreenSizeDlg.cpp"
 				>
 				<FileConfiguration
@@ -1065,7 +1061,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperDocManager.h"
+				RelativePath=".\PGSuperCommandIDs.h"
 				>
 			</File>
 			<File
@@ -1246,11 +1242,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00002.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
+				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -1274,15 +1270,15 @@
 				>
 			</File>
 			<File
+				RelativePath="LibraryEditor\res\ico00005.ico"
+				>
+			</File>
+			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00005.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\ico00005.ico"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\res\ico00005.ico"
 				>
 			</File>
 			<File
@@ -1619,14 +1615,6 @@
 			</File>
 			<File
 				RelativePath="hlp\Scmin.bmp"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="My Amplifier Results"
-			>
-			<File
-				RelativePath=".\My Amplifier Results\r028hs\r028hs.ampl"
 				>
 			</File>
 		</Filter>

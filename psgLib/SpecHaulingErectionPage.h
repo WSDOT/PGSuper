@@ -28,6 +28,9 @@
 #endif // _MSC_VER >= 1000
 // SpecHaulingErectionPage.h : header file
 //
+#include "resource.h"
+#include "WsdotHaulingDlg.h"
+#include "KdotHaulingDlg.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecHaulingErectionPage dialog
@@ -43,7 +46,7 @@ public:
 
 // Dialog Data
 	//{{AFX_DATA(CSpecHaulingErectionPage)
-	enum { IDD = IDD_SPEC_HAULING_ERECTION };
+	enum { IDD = IDD_SPEC_HAULING_ERECTIOND };
 		// NOTE - ClassWizard will add data members here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
@@ -60,25 +63,34 @@ public:
 public:
    void HideControls(bool hide);
 
+public:
    bool m_IsHaulingEnabled;
+   pgsTypes::HaulingAnalysisMethod m_HaulingAnalysisMethod;
+
+private:
+   // Embedded dialogs
+   CWsdotHaulingDlg m_WsdotHaulingDlg;
+   CKdotHaulingDlg  m_KdotHaulingDlg;
+
+   bool m_BeforeInit; // true 'til after oninitdialog
 
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSpecHaulingErectionPage)
-	afx_msg void OnCheckHaulingTensMax();
-	virtual BOOL OnInitDialog();
-	afx_msg void OnLumpSumMethod();
-	afx_msg void OnPerAxleMethod();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
-	void DoCheckMax();
+   virtual BOOL OnInitDialog();
+   virtual BOOL OnSetActive();
+   virtual BOOL OnKillActive();
 
-   void EnableLumpSumMethod(BOOL bEnable);
    static BOOL CALLBACK EnableWindows(HWND hwnd,LPARAM lParam);
+public:
+   afx_msg void OnCbnSelchangeHaulingMethod();
 
+   void SwapDialogs();
 };
 
 //{{AFX_INSERT_LOCATION}}

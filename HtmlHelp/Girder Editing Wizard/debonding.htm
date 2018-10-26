@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1106>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=1296>
+<meta name=layout-width content=993>
 
 
 <!--(Links)=========================================================-->
@@ -38,44 +38,43 @@
 
 <body>
 
-<h1>Girder Description - Debonding</h1>
+<h1>Girder Description - Strand Extensions/Debonding</h1>
 
-<p>This tab is used to define debonding of straight strands in the girder. 
- </p>
+<p>This tab is used to define extended straight strands and debonding of 
+ straight strands in the girder. The name of this tab will be &quot;Strand 
+ Extensions&quot; when only strands can be extended (no debonding). The 
+ name will be &quot;Debonding&quot; if any strands can be debonded.</p>
 
 <p><img src="Debond.bmp"
 		x-maintain-ratio=TRUE
 		style="border: none;
-				border-style: none;
-				width: 667px;
-				height: 550px;
 				float: none;
-				border-style: none;"
-		width=667
-		height=550
+				border-style: none;
+				border-style: none;
+				width: 682px;
+				height: 689px;"
+		width=682
+		height=689
 		border=0></p>
 
-<p>Debonded strands are shown in red in the schematic picture and in the 
- Girder View.</p>
+<p>Debonded strands are shown in red in the picture and in the Girder View. 
+ This tab shows the location and numbering of actual strands.</p>
 
-<p class=Tip>This tab will only be shown if debondable permanent straight 
- strands exist in the currently selected <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/Harped Strands Tab.htm">Girder 
- Library</a> entry.</p>
-
-<h2>Use of the Debonding Grid:</h2>
+<h2>Describing Debonded Strands</h2>
 
 <ol style="list-style: decimal;"
 	type=1>
 	
-	<li class=kadov-p><p>Click on the Insert or Delete buttons to add or 
- remove debonding of the current strands.</p></li>
-	
-	<li class=kadov-p><p>Select the strands to be debonded using the drop 
- down combo box in the Strand column of the grid.</p></li>
+	<li class=kadov-p><p>Click on the check box in the Debond column to 
+ designate a strand as debonded. If a strand cannot be debonded, there 
+ will not be a check box.</p></li>
 	
 	<li class=kadov-p><p>Define the distance(s) from the end of the girder 
  to the debond location by typing it into the Debond Length column of the 
  grid.</p></li>
+	
+	<li class=kadov-p><p>Check the Symmetrical Debonding box to make the 
+ debond length the same at both ends of the girder</p></li>
 </ol>
 
 <p class=Tip>Debond lengths cannot exceed one-half of the girder length.</p>
@@ -84,11 +83,20 @@
  This happens when the strand is not allowed to be debonded in the girder 
  library entry.</p>
 
-<h2>Symmetric Debonding</h2>
+<h2>Describing Extended Strands</h2>
 
-<p>Select this option if debond lengths are the same on both ends of the 
- girder. If not, the grid expands to allow different debond lengths at 
- the left and right ends of the girder.</p>
+<ol style="list-style: decimal;"
+	type=1>
+	
+	<li class=kadov-p><p>Strands that are not debonded may be designated 
+ as extended by checking the box in the Extend Left and Extend Right columns.</p></li>
+</ol>
+
+<p class=Tip>Note: Extending Strands is only available if the Allow Strand 
+ Extensions options is enabled in the Project Criteria.</p>
+
+<p class=tip>Note: Extended strands are considered to be 100% developed 
+ along their entire length at the Strength limit states.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

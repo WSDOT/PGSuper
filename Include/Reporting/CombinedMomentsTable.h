@@ -610,35 +610,47 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
 
    RowIndexType nRows = 0;
 
    ColumnIndexType col1 = 0;
    ColumnIndexType col2 = 0;
-   ColumnIndexType nCols;
+   ColumnIndexType nCols = 0;
 
    rptRcTable* pTable;
-   if ( intervalIdx < castDeckIntervalIdx )
-   {
-      nCols = 3;
-      pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
+   //if ( intervalIdx < castDeckIntervalIdx )
+   //{
+   //   nCols = (bTimeStepMethod ? 6 : 3);
+   //   pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
 
-      if ( !bPierTable )
-         (*pTable)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      else
-         (*pTable)(0,col1++) << _T("");
+   //   if ( !bPierTable )
+   //      (*pTable)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   //   else
+   //      (*pTable)(0,col1++) << _T("");
 
-      (*pTable)(0,col1++) << COLHDR(_T("DC"),          M, unitT );
-      (*pTable)(0,col1++) << COLHDR(_T("Service I"),   M, unitT );
-      nRows = 1;
-   }
-   else
-   {
-      nCols = 6;
+   //   (*pTable)(0,col1++) << COLHDR(_T("DC"), M, unitT );
+
+   //   if ( bTimeStepMethod )
+   //   {
+   //      (*pTable)(0,col1++) << COLHDR(_T("CR"), M, unitT );
+   //      (*pTable)(0,col1++) << COLHDR(_T("SH"), M, unitT );
+   //      (*pTable)(0,col1++) << COLHDR(_T("PS"), M, unitT );
+   //   }
+
+   //   (*pTable)(0,col1++) << COLHDR(_T("Service I"), M, unitT );
+   //   nRows = 1;
+   //}
+   //else
+   //{
+      nCols = (bTimeStepMethod ? 12 : 6);
 
       if ( analysisType == pgsTypes::Envelope )
       {
-         nCols += 5;
+         nCols += (bTimeStepMethod ? 11 : 5);
       }
 
       if ( liveLoadIntervalIdx <= intervalIdx )
@@ -682,6 +694,24 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
          (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
 
+         if ( bTimeStepMethod )
+         {
+            pTable->SetColumnSpan(0,col1,2);
+            (*pTable)(0,col1++) << symbol(SUM) << _T("CR");
+            (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+            (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+
+            pTable->SetColumnSpan(0,col1,2);
+            (*pTable)(0,col1++) << symbol(SUM) << _T("SH");
+            (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+            (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+
+            pTable->SetColumnSpan(0,col1,2);
+            (*pTable)(0,col1++) << symbol(SUM) << _T("PS");
+            (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+            (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+         }
+
          if ( intervalIdx < liveLoadIntervalIdx )
          {
             pTable->SetColumnSpan(0,col1,2);
@@ -699,8 +729,23 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
 
          (*pTable)(0,col1++) << COLHDR(_T("DC"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(_T("DW"),          M, unitT );
+
+         if ( bTimeStepMethod )
+         {
+            (*pTable)(0,col1++) << COLHDR(_T("CR"),          M, unitT );
+            (*pTable)(0,col1++) << COLHDR(_T("SH"),          M, unitT );
+            (*pTable)(0,col1++) << COLHDR(_T("PS"),          M, unitT );
+         }
+
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          M, unitT );
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          M, unitT );
+
+         if ( bTimeStepMethod )
+         {
+            (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("CR"),          M, unitT );
+            (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("SH"),          M, unitT );
+            (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("PS"),          M, unitT );
+         }
 
          if ( intervalIdx < liveLoadIntervalIdx )
          {
@@ -709,7 +754,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
 
          nRows = 1;
       }
-   }
+   //}
    //else if ( intervalIdx == compositeDeckIntervalIdx )
    //{
    //   nCols = 6;
@@ -886,7 +931,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       {
          nCols += 2;
 
-         // we have a double-width table (except for location and ped)
+         // we have a Float64-width table (except for location and ped)
          nCols += nCols-3;
       }
    }

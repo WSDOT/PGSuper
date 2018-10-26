@@ -29,6 +29,8 @@
 #include "SpecMainSheet.h"
 #include "..\htmlhelp\HelpTopics.hh"
 
+#include <MFCTools\MFCTools.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -40,7 +42,8 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CSpecHaulingErectionPage, CPropertyPage)
 
-CSpecHaulingErectionPage::CSpecHaulingErectionPage() : CPropertyPage(CSpecHaulingErectionPage::IDD,IDS_HAULING_ERECTION)
+CSpecHaulingErectionPage::CSpecHaulingErectionPage() : CPropertyPage(CSpecHaulingErectionPage::IDD,IDS_HAULING_ERECTION),
+m_BeforeInit(true)
 {
 	//{{AFX_DATA_INIT(CSpecHaulingErectionPage)
 		// NOTE: the ClassWizard will add member initialization here
@@ -58,14 +61,44 @@ void CSpecHaulingErectionPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
    // dad is a friend of the entry. use him to transfer data.
-   pDad->ExchangeHaulingData(pDX);
+   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+
+   if (m_BeforeInit)
+   {
+      // First time through we must fill both dialogs with data
+      ATLASSERT(!pDX->m_bSaveAndValidate);
+
+      DDX_CBEnum(pDX,IDC_HAULING_METHOD, m_HaulingAnalysisMethod);
+
+      CDataExchange DxDlgW(&m_WsdotHaulingDlg, pDX->m_bSaveAndValidate);
+      pDad->ExchangeWsdotHaulingData(&DxDlgW);
+
+      CDataExchange DxDlgK(&m_KdotHaulingDlg, pDX->m_bSaveAndValidate);
+      pDad->ExchangeKdotHaulingData(&DxDlgK);
+   }
+
+   SwapDialogs();
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      // On way out - save data from approprate dialog
+      if (m_HaulingAnalysisMethod == pgsTypes::hmWSDOT)
+      {
+         CDataExchange DxDlg(&m_WsdotHaulingDlg, pDX->m_bSaveAndValidate);
+         pDad->ExchangeWsdotHaulingData(&DxDlg);
+      }
+      else
+      {
+         CDataExchange DxDlg(&m_KdotHaulingDlg, pDX->m_bSaveAndValidate);
+         pDad->ExchangeKdotHaulingData(&DxDlg);
+      }
+   }
 
    if (!pDX->m_bSaveAndValidate)
    {
       CEdit* pnote = (CEdit*)GetDlgItem(IDC_ENABLE_NOTE);
-      if (!m_IsHaulingEnabled)
+      if (!pDad->IsHaulingEnabled())
       {
          HideControls(true);
          pnote->SetWindowText(_T("Hauling Check is Disabled on Design Tab"));
@@ -74,15 +107,6 @@ void CSpecHaulingErectionPage::DoDataExchange(CDataExchange* pDX)
       {
          HideControls(false);
          pnote->SetWindowText(_T("Hauling Check is Enabled on Design Tab"));
-
-	      DoCheckMax();
-
-         int method = GetCheckedRadioButton(IDC_LUMPSUM_METHOD,IDC_PERAXLE_METHOD);
-         if ( method == IDC_LUMPSUM_METHOD )
-            OnLumpSumMethod();
-         else
-            OnPerAxleMethod();
-
       }
    }
 }
@@ -90,12 +114,10 @@ void CSpecHaulingErectionPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSpecHaulingErectionPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecHaulingErectionPage)
-	ON_BN_CLICKED(IDC_CHECK_HAULING_TENS_MAX, OnCheckHaulingTensMax)
-	ON_BN_CLICKED(IDC_LUMPSUM_METHOD, OnLumpSumMethod)
-	ON_BN_CLICKED(IDC_PERAXLE_METHOD, OnPerAxleMethod)
 	ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+   ON_CBN_SELCHANGE(IDC_HAULING_METHOD, &CSpecHaulingErectionPage::OnCbnSelchangeHaulingMethod)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -106,57 +128,50 @@ LRESULT CSpecHaulingErectionPage::OnCommandHelp(WPARAM, LPARAM lParam)
    return TRUE;
 }
 
-
-void CSpecHaulingErectionPage::OnCheckHaulingTensMax() 
-{
-	DoCheckMax();
-	
-}
-
-void CSpecHaulingErectionPage::DoCheckMax()
-{
-   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_HAULING_TENS_MAX);
-   ASSERT(pchk);
-   BOOL ischk = pchk->GetCheck();
-
-   CWnd* pwnd = GetDlgItem(IDC_HAULING_TENS_MAX);
-   ASSERT(pchk);
-   pwnd->EnableWindow(ischk);
-   pwnd = GetDlgItem(IDC_HAULING_TENS_MAX_UNITS);
-   ASSERT(pchk);
-   pwnd->EnableWindow(ischk);
-}
-
 BOOL CSpecHaulingErectionPage::OnInitDialog() 
 {
+   // Some initial data
+   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+   m_HaulingAnalysisMethod = pDad->m_Entry.GetHaulingAnalysisMethod();
+
+   // Embed dialogs for wsdot/kdot editing into current. A discription may be found at
+   // http://www.codeproject.com/KB/dialog/embedded_dialog.aspx
+   CWnd* pBox = GetDlgItem(IDC_STATIC_BOUNDS);
+   pBox->ShowWindow(SW_HIDE);
+
+   CRect boxRect;
+   pBox->GetWindowRect(&boxRect);
+   ScreenToClient(boxRect);
+
+   // m_WsdotHaulingDlg.Init(
+   VERIFY(m_WsdotHaulingDlg.Create(CWsdotHaulingDlg::IDD, this));
+   VERIFY(m_WsdotHaulingDlg.SetWindowPos( GetDlgItem(IDC_STATIC_BOUNDS), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
+
+   VERIFY(m_KdotHaulingDlg.Create(CKdotHaulingDlg::IDD, this));
+   VERIFY(m_KdotHaulingDlg.SetWindowPos( GetDlgItem(IDC_STATIC_BOUNDS), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
+
 	CPropertyPage::OnInitDialog();
-	
-	
+
+   m_BeforeInit = false;
+
+   HideControls( !pDad->IsHaulingEnabled() );
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CSpecHaulingErectionPage::OnLumpSumMethod() 
+void CSpecHaulingErectionPage::SwapDialogs()
 {
-   EnableLumpSumMethod(TRUE);
-}
-
-void CSpecHaulingErectionPage::OnPerAxleMethod() 
-{
-   EnableLumpSumMethod(FALSE);
-}
-
-void CSpecHaulingErectionPage::EnableLumpSumMethod(BOOL bEnable)
-{
-   GetDlgItem(IDC_ROLL_STIFFNESS)->EnableWindow(bEnable);
-   GetDlgItem(IDC_ROLL_STIFFNESS_UNITS)->EnableWindow(bEnable);
-
-   GetDlgItem(IDC_AXLE_WEIGHT)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_AXLE_WEIGHT_UNITS)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_AXLE_STIFFNESS)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_AXLE_STIFFNESS_UNITS)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_MIN_ROLL_STIFFNESS)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_MIN_ROLL_STIFFNESS_UNITS)->EnableWindow(!bEnable);
+   if (m_HaulingAnalysisMethod == pgsTypes::hmWSDOT)
+   {
+      m_WsdotHaulingDlg.ShowWindow(SW_SHOW);
+      m_KdotHaulingDlg.ShowWindow(SW_HIDE);
+   }
+   else
+   {
+      m_WsdotHaulingDlg.ShowWindow(SW_HIDE);
+      m_KdotHaulingDlg.ShowWindow(SW_SHOW);
+   }
 }
 
 BOOL CSpecHaulingErectionPage::EnableWindows(HWND hwnd,LPARAM lParam)
@@ -167,25 +182,11 @@ BOOL CSpecHaulingErectionPage::EnableWindows(HWND hwnd,LPARAM lParam)
 
 void CSpecHaulingErectionPage::HideControls(bool hide)
 {
-   bool enable = !hide;
+   CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_HAULING_METHOD);
+   pBox->EnableWindow(hide?FALSE:TRUE);
 
-   // disable all of the windows
-   EnumChildWindows(GetSafeHwnd(),CSpecHaulingErectionPage::EnableWindows,(LPARAM)enable);
-
-
-   // if controls are enabled, then get the lump sup/per axle roll stiffness parameters enabled connrctly
-   if (enable)
-   {
-      int method = GetCheckedRadioButton(IDC_LUMPSUM_METHOD,IDC_PERAXLE_METHOD);
-      if ( method == IDC_LUMPSUM_METHOD )
-         OnLumpSumMethod();
-      else
-         OnPerAxleMethod();
-   }
-
-   // always enable these two notes
-   GetDlgItem(IDC_ENABLE_NOTE)->EnableWindow(TRUE);
-   GetDlgItem(IDC_LOSSES_NOTE)->EnableWindow(TRUE);
+   m_WsdotHaulingDlg.HideControls(hide);
+   m_KdotHaulingDlg.HideControls(hide);
 }
 
 HBRUSH CSpecHaulingErectionPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
@@ -198,4 +199,31 @@ HBRUSH CSpecHaulingErectionPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor
    }	
 
 	return hbr;
+}
+
+BOOL CSpecHaulingErectionPage::OnSetActive()
+{
+   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+
+   bool is_enabled = pDad->IsHaulingEnabled();
+   m_WsdotHaulingDlg.m_IsHaulingEnabled = is_enabled;
+   m_KdotHaulingDlg.m_IsHaulingEnabled = is_enabled;
+
+   return CPropertyPage::OnSetActive();
+}
+
+BOOL CSpecHaulingErectionPage::OnKillActive()
+{
+   // TODO: Add your specialized code here and/or call the base class
+
+   return CPropertyPage::OnKillActive();
+}
+
+void CSpecHaulingErectionPage::OnCbnSelchangeHaulingMethod()
+{
+   CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_HAULING_METHOD);
+   int idx = pBox->GetCurSel();
+   m_HaulingAnalysisMethod = (pgsTypes::HaulingAnalysisMethod)idx;
+
+   SwapDialogs();
 }

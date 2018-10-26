@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFamily.VoidedSlab.1 = s 'Voided Slab'
 	{
-		CLSID = s '{07BDEB00-D913-4c67-8393-61263E065DC6}'
+		CLSID = s '{B6BA3A08-82BA-43d5-8196-A3DBC3E98689}'
 	}
 	PGSuperBeamFamily.VoidedSlab = s 'Voided Slab'
 	{
-		CLSID = s '{07BDEB00-D913-4c67-8393-61263E065DC6}'
+		CLSID = s '{B6BA3A08-82BA-43d5-8196-A3DBC3E98689}'
 		CurVer = s 'PGSuperBeamFamily.VoidedSlab.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {07BDEB00-D913-4c67-8393-61263E065DC6} = s 'Voided Slab'
+		ForceRemove {B6BA3A08-82BA-43d5-8196-A3DBC3E98689} = s 'Voided Slab'
 		{
 			ProgID = s 'PGSuperBeamFamily.VoidedSlab.1'
 			VersionIndependentProgID = s 'PGSuperBeamFamily.VoidedSlab'
