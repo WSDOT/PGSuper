@@ -1,0 +1,9 @@
+; ProjectAgent.def : Declares the module parameters.
+
+LIBRARY      "PGSuperProjectAgent.DLL"
+
+EXPORTS
+	DllCanUnloadNow     PRIVATE
+	DllGetClassObject   PRIVATE
+	DllRegisterServer   PRIVATE
+	DllUnregisterServer	PRIVATE

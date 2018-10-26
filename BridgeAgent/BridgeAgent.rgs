@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.BridgeAgent.1 = s 'BridgeAgent Class'
+	{
+		CLSID = s '{59753CA0-3B7B-11d2-8EC5-006097DF3C68}'
+	}
+	PGSuper.BridgeAgent = s 'BridgeAgent Class'
+	{
+		CLSID = s '{59753CA0-3B7B-11d2-8EC5-006097DF3C68}'
+		CurVer = s 'PGSuper.BridgeAgent.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {59753CA0-3B7B-11d2-8EC5-006097DF3C68} = s 'BridgeAgent Class'
+		{
+			ProgID = s 'PGSuper.BridgeAgent.1'
+			VersionIndependentProgID = s 'PGSuper.BridgeAgent'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{22C18BFF-4D70-4677-824E-ACD08F89F575}'
+		}
+	}
+}

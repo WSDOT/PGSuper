@@ -1,0 +1,114 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Library Entry Conflict</title>
+
+<!--(Meta)==========================================================-->
+
+<meta name="template" content="PageTemplate.htt">
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=topic-status content="In Progress">
+<meta name=topic-priority content=0>
+<meta name=topic-time-estimate content=0>
+<meta name=topic-comment content>
+<meta name=topic-id content>
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=923>
+<meta name=layout-width content=695>
+
+
+ <meta name="topic-check-list" content="Ran Smart Index"><!--(Links)=========================================================-->
+
+<link REL="StyleSheet" HREF="..\default.css">
+
+
+
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<h1>Library Entry Conflict</h1>
+
+<p>When reading your project file, PGSuper found that the project file 
+ contains a library entry that has the same name as an entry in the Master 
+ Library, but has different data values. Before PGSuper can proceed, this 
+ conflict must be resolved.</p>
+
+<p>Before discussing conflict resolution options, let's take a few moments 
+ to understand what a Library Entry Conflict is. When you load a project, 
+ PGSuper uses two different types of library entries: Project Library Entries 
+ that are unique to the current project file, and Master Library Entries 
+ that are defined in the Master Library File.</p>
+
+<p>However, for safety reasons, every library entry used in a PGSuper Project 
+ is copied into the project file. This way, if you send your file to a 
+ colleague on the other side of the world who doesn't have a copy of your 
+ Master Library, they can still use your project. But what happens if your 
+ colleague has an entry in his Master Library that has the same name as, 
+ but different data values than, one of the entries in your project's library? 
+ Or, in a more common scenario, what happens if the data values of the 
+ entries in your PGSuper Master Library have changed?</p>
+
+<p>We leave it up to you, the user, to resolve the conflict. At this point 
+ you have two options:</p>
+
+<h3><span style="font-weight: bold;">Rename Entry</span></h3>
+
+<p><span style="font-weight: normal;">Press this button to rename the entry 
+ in the project that is in conflict. All references to this library entry 
+ will be updated to refer to the renamed entry. By selection this option, 
+ all data remained unchanged (except for the entry's name)</span></p>
+
+<h3><span style="font-weight: bold;">Overwrite</span></h3>
+
+<p>Press this button to overwrite the library entry in your project file 
+ with the one from the Master Library. This updates your project file to 
+ match the data in the Master Library.</p>
+
+<h2>Remarks</h2>
+
+<p>There are several situations where you will encounter a Library Entry 
+ Conflict. Two typical scenarios are described below.</p>
+
+<ul>
+	
+	<li class=kadov-p><p>You are currently working on a precast girder 
+ design. The last time you worked with your PGSuper project, everything 
+ was fine. This time, you open the project and you get a Library Entry 
+ Conflict. For some reason your PGSuper Administrator has updated the Master 
+ Library (maybe your office practice changed or there was an error in the 
+ library data). You will probably want to ask the Administrator why the 
+ entry has changed. If you want to use the latest data from the Master 
+ Library, press the Overwrite button. If you want to keep your PGSuper 
+ project the way it was the last time you were working on it, press the 
+ Rename Entry button.</p></li>
+	
+	<li class=kadov-p><p>You retrieve a PGSuper project file from a backup 
+ tape. The project file is several years old. When you open the project 
+ file you get a Library Entry Conflict. Depending on your reason for revisiting 
+ this old project, you may or may not what to update the data. If you want 
+ to analyze the data as it was when the project was archived, press the 
+ Rename Entry button. If you are using the old project as a template for 
+ a new project, you might want to press the Overwrite button to update 
+ the old library entries so they match the current Master Library.</p></li>
+</ul>
+
+<!--kadov_tag{{<placeholder id="footer">}}-->
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+; ReportAgent.def : Declares the module parameters.
+
+LIBRARY      "PGSuperReportAgent.DLL"
+
+EXPORTS
+	DllCanUnloadNow     PRIVATE
+	DllGetClassObject   PRIVATE
+	DllRegisterServer   PRIVATE
+	DllUnregisterServer	PRIVATE

@@ -1,0 +1,1028 @@
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE   1
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  GEOMETRICS  ***         
+      GENERAL GEOMETRY PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENT - PamplinFM92    J
+                                     GENERAL GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X (EAST)    Y (NORTH)  RADIUS,OFFSET  ELEV   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     ****Pamplin Creek                               
+
+     ****FM 92 Taylor Co                             
+
+     ****Control 1238-02-004                         
+
+     PONT     2    0    0    0     0       0.0000       0.0000       0.0000             0  0  0.00  
+                                           0.0000       0.0000       0.0000    0.00     0  0  0.00    SP    2
+
+     TRVS     2    3    0    0     0       0.0000       0.0000    1326.1500         N  30  5 24.01 E
+                                         664.8783    1147.4366       0.0000    0.00     0  0  0.00    SP    3
+
+     TRVS     2    3    4    0     0       0.0000       0.0000    1326.1500           249 32 59.44 L
+                                        -177.9394    2171.3175       0.0000    0.00     0  0  0.00    SP    4
+
+     ****Horizontal, Vertical and Template           
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE   2
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  DESIGN DATA ***         
+      DESIGN DATA LIST PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENTS - PamplinFM92    J
+                              POINTS STORED OR USED BY ALIGNMENTS
+
+
+
+               PI  2, ROADWAY H IS DEFINED BY STORED POINT    2 ( X=      0.0000, Y=       0.0000)
+
+               PI  3, ROADWAY H IS DEFINED BY STORED POINT    3 ( X=    664.8783, Y=    1147.4366)
+
+               PI  4, ROADWAY H IS DEFINED BY STORED POINT    4 ( X=   -177.9394, Y=    2171.3175)
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE   3
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  DESIGN DATA ***         
+      HORIZONTAL ALIGNMENT PROCESS                                                une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENTS - PamplinFM92    J
+                                   HORIZONTAL ALIGNMENT LIST
+                                         FOR ROADWAY H
+  COMPUTATIONS BASED ON ARC DEFINITION
+
+
+ P.I.                                                        X             Y
+
+        436+48.7525 PC    3  0  0.00 D    1326.1475 T        0.0013        0.0022
+   3    449+74.9000 PI   69 32 59.44 LT   2318.3281 L      664.8783     1147.4366
+        459+67.0807 PT     1909.8593 R                    -177.9378     2171.3155
+                       N 39 27 35.43 W    1326.1500 FT.
+   4    459+67.0832                                       -177.9394     2171.3175
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE   4
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  DESIGN DATA ***         
+      DESIGN DATA LIST PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENTS - PamplinFM92    J
+                                      SORTED DESIGN DATA
+
+
+      CARD TYPE RD05       H O R I Z O N T A L    A L I G N M E N T
+
+           R  P.I.                   DEGREE        RADIUS                                         ROUND
+           O   N              BEG.                             SPIRAL
+           A   U                       OF            OR                                            BRNG
+           D   M    STATION   STA.                            LENGTHS       P.I. COORDINATES
+           W   B                     CURVE        FORWARD                                           OR
+           A   E              I.D.
+           Y   R                                  TANGENT                                          HOLD
+                                   DEG MIN  SEC                IN   OUT        X             Y
+
+
+
+           H   2   436+38.7500  PC   0  0  0.00       0.0000    0.   0.       -5.0136       -8.6524   0
+           H   3   449+74.9000       3  0  0.00    1909.8593    0.   0.      664.8783     1147.4366    
+           H   4   459+67.0832       0  0  0.00       0.0000    0.   0.     -177.9394     2171.3175    
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE   5
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  DESIGN DATA ***         
+      DESIGN DATA LIST PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENTS - PamplinFM92    J
+                                      SORTED DESIGN DATA
+
+
+      CARD TYPE RD10              P R O F I L E    G R A D E
+
+        R  P.I.                              FIRST       SECOND                                          NATURAL       OFFSET
+        O   N      VERTICAL
+        A   U                               VERTICAL    VERTICAL   ELEVATION                             GROUND         FROM
+        D   M        P.I.         P.I.                                           EXTERNAL    GRADE
+        W   B                                CURVE       CURVE    CORRECTION                            REFERENCE     REFERENCE
+        A   E      STATION     ELEVATION
+        Y   R                                LENGTH      LENGTH                                           LINE          LINE
+
+
+        H   2     442+05.00     139.44         0.          0.        0.00                                                  
+        H   3     446+30.00     121.04       850.          0.        0.00        6.6475  -0.043294                         
+        H   4     450+55.00     129.23         0.          0.        0.00                 0.019271                         
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE   6
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  DESIGN DATA ***         
+      DESIGN DATA LIST PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENTS - PamplinFM92    J
+                                      SORTED DESIGN DATA
+
+
+      CARD TYPE RD30                    T E M P L A T E
+
+                                   R
+                                   O                TEMPLATE
+                                   A
+                                   D     STATION     STORE/
+                                   W                 RECALL
+                                   A
+                                   Y                   NO.
+
+
+                                   H       0+00.00      1
+                                   H   99999+00.00      1
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE   7
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  DESIGN DATA ***         
+      DESIGN DATA LIST PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENTS - PamplinFM92    J
+                                      SORTED DESIGN DATA
+
+
+      CARD TYPE RD30             T E M P L A T E    T A B L E
+
+ TEMP S SURF. PROF. CENTR LEFT  RIGHT                SEGMENT        SEGMENT        SEGMENT        SEGMENT
+  NO  / DEPTH GRADE LINE  PIVOT PIVOT A  B  C  D  O              O              O              O
+      F       POINT POINT POINT POINT             P SLOPE  DIST  P SLOPE  DIST  P SLOPE  DIST  P SLOPE  DIST
+                                                  T              T              T              T
+
+
+   1  F  0.00   2     2     2     2   0  0  0  0    0.0800 30.0    0.0800 30.0
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE   8
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  GEOMETRICS  ***         
+      GENERAL GEOMETRY PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENT - PamplinFM92    J
+                                     GENERAL GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X (EAST)    Y (NORTH)  RADIUS,OFFSET  ELEV   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     ****BRIDGE COMMANDS                             
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE   9
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                     BRIDGE GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X(EAST)    Y(NORTH)    RADIUS,OFFSET  ELEV.   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     NAME     5   22 HL93 BRIG  H  0   44520.0000   45060.0000 Pamplin Creek Bridge                   STR   1
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  10
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  GEOMETRICS  ***         
+      ALIGNMENT PLOT PROCESS                                                      une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENTS - PamplinFM92    J
+
+                         * * * ALIGNMENT PLOT DATA FOR ROADWAY H * * *
+
+ ALIGNMENT  ELEMENT    BEGINNING        EAST (X)      NORTH (Y)         BEARING          RADIUS,
+  ELEMENT    TYPE       STATION        BEGINNING      BEGINNING                      SPIRAL LENGTH,
+  NUMBER              OR STA. BACK                                                    STA. FORWARD
+
+    1      ARC         445+20.00         252.8333       825.8807    N  3 57  9.28 E       1909.86   
+    2      END STA     450+60.00         213.9088      1362.6743    N 12 14 50.72 W                 
+
+
+
+
+                    * * * TABLE OF CENTERS FOR ALIGNMENT ELEMENTS AND OFFSETS * * *
+
+      ALIGNMENT      OFFSET    PARALLEL TO     EAST (X)        NORTH (Y)
+       ELEMENT        LINE      ALIGNMENT
+       NUMBER        NUMBER    ELEMENT NO.
+
+
+          1                                    -1652.4833         957.5288
+
+
+
+
+                   * * * CURVE FIT DATA FOR ALL ALIGNMENT ELEMENTS AND OFFSETS * * *
+
+  POINT       STATION              EAST (X)          NORTH (Y)       --------- S O U R C E ---------
+                                                                      ALIGNMENT    OFFSET    INTERIOR
+                                                                       ELEMENT      LINE       POINT
+
+
+     1     445+20.00              252.8333           825.8807             1                       
+
+     2     447+90.00              252.3746          1095.6555             1                      *
+
+     3     450+60.00              213.9088          1362.6743             2                       
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  11
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  GEOMETRICS  ***         
+      ALIGNMENT PLOT PROCESS                                                      une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENTS - PamplinFM92    J
+
+                         * * * ALIGNMENT PLOT DATA FOR ROADWAY H * * *
+
+          THE PLOT SCALE FACTOR IS   1.0 FEET PER FOOT.
+
+          TICK MARKS WILL BE DRAWN EVERY  50 FEET ALONG THE CENTERLINE.
+
+          STATION VALUES WILL BE LABELED EVERY   50 FEET ALONG THE CENTERLINE.
+
+          NOW FITTING A LINE TO POINTS   1 THROUGH   3
+
+          THIS PLOT WILL COVER A DISTANCE OF    538.20 FEET.
+
+
+          THE BEARING OF THE CURVE-FIT LINE IS N  4   8  25.72 W
+
+          THIS SEGMENT WILL START AT ALIGNMENT ELEMENT  1 AND CONTINUE UP TO ELEMENT  2.
+
+          REFERENCE COORDINATES ARE     -4727.8148 X,       465.3264 Y.
+
+          ORIGIN COORDINATES ARE      5246.0854 X,      1187.3474 Y.
+
+          NOW PLOTTING ELEMENTS  1 TO  2.
+
+     ****Elevations at Centerline Bents              
+
+     ZPNT   101    0    0    0  H  0       0.0000   44620.0000       0.0000             0  0  0.00  
+                                         257.1120     925.7777       0.0000    0.00     0  0  0.00    SP  101
+                                           0.0000   44620.0000       0.0000  127.81     0  0  0.00    NS    0
+
+     ZPNT   102    0    0    0  H  0       0.0000   44710.0000       0.0000             0  0  0.00  
+                                         256.4878    1015.7672       0.0000    0.00     0  0  0.00    SP  102
+                                           0.0000   44710.0000       0.0000  126.96     0  0  0.00    NS    0
+
+     ZPNT   103    0    0    0  H  0       0.0000   44790.0000       0.0000             0  0  0.00  
+                                         252.3746    1095.6555       0.0000    0.00     0  0  0.00    SP  103
+                                           0.0000   44790.0000       0.0000  126.71     0  0  0.00    NS    0
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  12
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  GEOMETRICS  ***         
+      GENERAL GEOMETRY PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENT - PamplinFM92    J
+                                     GENERAL GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X (EAST)    Y (NORTH)  RADIUS,OFFSET  ELEV   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     ZPNT   104    0    0    0  H  0       0.0000   44870.0000       0.0000             0  0  0.00  
+                                         244.9195    1175.3015       0.0000    0.00     0  0  0.00    SP  104
+                                           0.0000   44870.0000       0.0000  126.92     0  0  0.00    NS    0
+
+     ZPNT   105    0    0    0  H  0       0.0000   44960.0000       0.0000             0  0  0.00  
+                                         232.5547    1264.4397       0.0000    0.00     0  0  0.00    SP  105
+                                           0.0000   44960.0000       0.0000  127.73     0  0  0.00    NS    0
+
+     ****DEFINE BENTS AND SKEW ANGLE                 
+
+     BENT     0    0    0    1    AB       0.0000   44620.0000       0.0000         L  30  0  0.00 F
+                                         257.1120     925.7777   44620.0000    0.00 N  59  2 50.72 W         
+
+     BENT     0    0    0    2    IN       0.0000   44710.0000       0.0000         L  30  0  0.00 F
+                                         256.4878    1015.7672   44710.0000    0.00 N  61 44 50.72 W         
+
+     BENT     0    0    0    3    IN       0.0000   44790.0000       0.0000         L  30  0  0.00 F
+                                         252.3746    1095.6555   44790.0000    0.00 N  64  8 50.72 W         
+
+     BENT     0    0    0    4    IN       0.0000   44870.0000       0.0000         L  30  0  0.00 F
+                                         244.9195    1175.3015   44870.0000    0.00 N  66 32 50.72 W         
+
+     BENT     0    0    0    5    AB       0.0000   44960.0000       0.0000         L  30  0  0.00 F
+                                         232.5547    1264.4397   44960.0000    0.00 N  69 14 50.72 W         
+
+     ****SLAB DEPTH AND OVERHANG DEPTH               
+
+     PSLB     1    0    0    0     0       0.0000       0.0000     -23.0000             0  0  0.00  
+
+     PSLB     2    0    0    0     0       0.0000       0.0000     -21.0000             0  0  0.00  
+
+     PSLB     3    0    0    0     0       0.0000       0.0000      21.0000             0  0  0.00  
+
+     PSLB     4    0    0    0     0       0.0000       0.0000      23.0000             0  0  0.00  
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  13
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+     SLAB     1    2    1    4  2  3       8.0000       8.0000                        B B        
+
+                                                   SLAB REPORT
+
+                                                     SPAN  1
+
+                              SEG.    SEGMENT      SEGMENT         CHORD     RADIUS    ACCUMULATED  DISTANCE
+                              NO.     LENGTH       OR CHORD        LENGTH                SEGMENT    TO RADIAL
+                                                   BEARING                               LENGTHS    INTERSECT
+
+      LEFT EDGE    (PSLB  1)   1      88.9162  N  0 45 57.18 W    88.9079   1886.8593    88.9162     64.9553                         
+ 
+      RIGHT EDGE   (PSLB  4)   1      91.0838  N  0  2 17.86 W    91.0754   1932.8593    91.0838     24.5450                         
+ 
+
+                              SEG.    SEGMENT      SEGMENT         SKEW     DISTANCE TO     RADIAL
+                              NO.     LENGTH       BEARING         ANGLE    STATION LINE   DISTANCE
+
+                               1        2.000  N 89 24 57.18 W
+      BACK EDGE    (BENT  1)   2      48.4987  N 59  2 50.72 W  30  0  0.00    24.2938      44.0000
+                               3        2.000  N 88 41 17.86 W
+ 
+                               1        2.000  S 87 53  2.82 W
+      FORWARD EDGE (BENT  2)   2      48.4987  N 61 44 50.72 W  30  0  0.00    24.2938      44.0000
+                               3        2.000  S 88 36 42.14 W
+ 
+      SLAB DEPTH =  8.00 IN., OVERHANG DEPTH =  8.00 IN.
+      SLAB AREA =   4140.0000 SQ. FT. =   460.0000 SQ. YDS.
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  14
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+     SLAB     2    3    1    4  2  3       8.0000       8.0000                        B B        
+
+                                                   SLAB REPORT
+
+                                                     SPAN  2
+
+                              SEG.    SEGMENT      SEGMENT         CHORD     RADIUS    ACCUMULATED  DISTANCE
+                              NO.     LENGTH       OR CHORD        LENGTH                SEGMENT    TO RADIAL
+                                                   BEARING                               LENGTHS    INTERSECT
+
+      LEFT EDGE    (PSLB  1)   1      79.0366  N  3 18 57.18 W    79.0308   1886.8593    79.0366     55.0757                         
+ 
+      RIGHT EDGE   (PSLB  4)   1      80.9634  N  2 35 17.86 W    80.9575   1932.8593    80.9634     24.5450                         
+ 
+
+                              SEG.    SEGMENT      SEGMENT         SKEW     DISTANCE TO     RADIAL
+                              NO.     LENGTH       BEARING         ANGLE    STATION LINE   DISTANCE
+
+                               1        2.000  S 87 53  2.82 W
+      BACK EDGE    (BENT  2)   2      48.4987  N 61 44 50.72 W  30  0  0.00    24.2938      44.0000
+                               3        2.000  S 88 36 42.14 W
+ 
+                               1        2.000  S 85 29  2.82 W
+      FORWARD EDGE (BENT  3)   2      48.4987  N 64  8 50.72 W  30  0  0.00    24.2938      44.0000
+                               3        2.000  S 86 12 42.14 W
+ 
+      SLAB DEPTH =  8.00 IN., OVERHANG DEPTH =  8.00 IN.
+      SLAB AREA =   3680.0000 SQ. FT. =   408.8889 SQ. YDS.
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  15
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+     SLAB     3    4    1    4  2  3       8.0000       8.0000                        B B        
+
+                                                   SLAB REPORT
+
+                                                     SPAN  3
+
+                              SEG.    SEGMENT      SEGMENT         CHORD     RADIUS    ACCUMULATED  DISTANCE
+                              NO.     LENGTH       OR CHORD        LENGTH                SEGMENT    TO RADIAL
+                                                   BEARING                               LENGTHS    INTERSECT
+
+      LEFT EDGE    (PSLB  1)   1      79.0366  N  5 42 57.18 W    79.0308   1886.8593    79.0366     55.0757                         
+ 
+      RIGHT EDGE   (PSLB  4)   1      80.9634  N  4 59 17.86 W    80.9575   1932.8593    80.9634     24.5450                         
+ 
+
+                              SEG.    SEGMENT      SEGMENT         SKEW     DISTANCE TO     RADIAL
+                              NO.     LENGTH       BEARING         ANGLE    STATION LINE   DISTANCE
+
+                               1        2.000  S 85 29  2.82 W
+      BACK EDGE    (BENT  3)   2      48.4987  N 64  8 50.72 W  30  0  0.00    24.2938      44.0000
+                               3        2.000  S 86 12 42.14 W
+ 
+                               1        2.000  S 83  5  2.82 W
+      FORWARD EDGE (BENT  4)   2      48.4987  N 66 32 50.72 W  30  0  0.00    24.2938      44.0000
+                               3        2.000  S 83 48 42.14 W
+ 
+      SLAB DEPTH =  8.00 IN., OVERHANG DEPTH =  8.00 IN.
+      SLAB AREA =   3680.0000 SQ. FT. =   408.8889 SQ. YDS.
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  16
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+     SLAB     4    5    1    4  2  3       8.0000       8.0000                        B B        
+
+                                                   SLAB REPORT
+
+                                                     SPAN  4
+
+                              SEG.    SEGMENT      SEGMENT         CHORD     RADIUS    ACCUMULATED  DISTANCE
+                              NO.     LENGTH       OR CHORD        LENGTH                SEGMENT    TO RADIAL
+                                                   BEARING                               LENGTHS    INTERSECT
+
+      LEFT EDGE    (PSLB  1)   1      88.9162  N  8 15 57.18 W    88.9079   1886.8593    88.9162     64.9553                         
+ 
+      RIGHT EDGE   (PSLB  4)   1      91.0838  N  7 32 17.86 W    91.0754   1932.8593    91.0838     24.5450                         
+ 
+
+                              SEG.    SEGMENT      SEGMENT         SKEW     DISTANCE TO     RADIAL
+                              NO.     LENGTH       BEARING         ANGLE    STATION LINE   DISTANCE
+
+                               1        2.000  S 83  5  2.82 W
+      BACK EDGE    (BENT  4)   2      48.4987  N 66 32 50.72 W  30  0  0.00    24.2938      44.0000
+                               3        2.000  S 83 48 42.14 W
+ 
+                               1        2.000  S 80 23  2.82 W
+      FORWARD EDGE (BENT  5)   2      48.4987  N 69 14 50.72 W  30  0  0.00    24.2938      44.0000
+                               3        2.000  S 81  6 42.14 W
+ 
+      SLAB DEPTH =  8.00 IN., OVERHANG DEPTH =  8.00 IN.
+      SLAB AREA =   4140.0000 SQ. FT. =   460.0000 SQ. YDS.
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  17
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  GEOMETRICS  ***         
+      GENERAL GEOMETRY PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENT - PamplinFM92    J
+                                     GENERAL GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X (EAST)    Y (NORTH)  RADIUS,OFFSET  ELEV   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     ****LOCATE CL OF BEARING SEATS                  
+
+     BRNG     0    0    0    1  4 FD       8.5000       2.0000       5.7500                 0.0000  
+
+     BRNG     0    0    0    2  3 BK       8.5000       2.0000       5.7500                 0.0000  
+
+     BRNG     0    0    0    2  3 FD       8.5000       2.0000       5.6875                 0.0000  
+
+     BRNG     0    0    0    3  3 BO       8.5000       2.0000       5.6875                 0.0000  
+
+     BRNG     0    0    0    4  3 BK       8.5000       2.0000       5.6875                 0.0000  
+
+     BRNG     0    0    0    4  3 FD       8.5000       2.0000       5.7500                 0.0000  
+
+     BRNG     0    0    0    5  4 BK       8.5000       2.0000       5.7500                 0.0000  
+
+     ****DEFINE BEAM LINES RELATIVE TO PGL           
+
+     BEAM     0    0    0    0     1       0.0000       0.0000     -20.0000             0  0  0.00  
+
+     BEAM     0    0    0    0     2       0.0000       0.0000     -12.0000             0  0  0.00  
+
+     BEAM     0    0    0    0     3       0.0000       0.0000      -4.0000             0  0  0.00  
+
+     BEAM     0    0    0    0     4       0.0000       0.0000       4.0000             0  0  0.00  
+
+     BEAM     0    0    0    0     5       0.0000       0.0000      12.0000             0  0  0.00  
+
+     BEAM     0    0    0    0     6       0.0000       0.0000      20.0000             0  0  0.00  
+
+     ****FRAME BRIDGE WITH FRAME OPTION 5            
+
+     FOPT     1    5    1    6  5  6       0.0000       0.0000                                     1
+                                H      44620.0000   44960.0000
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  18
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                                   BENT REPORT
+
+                                           BENT NO.  1  (N 59  2 50.72 W)
+
+      DISTANCE BETWEEN STATION LINE AND BEAM 1,   23.1349 L
+
+
+                         BEAM SPAC.     BEAM ANGLE       DIST CL BENT TO CL BRNG     DIST CL BENT TO END OF BM
+                         (CL BENT)       D  M   S         PERP TO        ALONG         PERP TO        ALONG
+                                                          CL BENT       CL BEAM        CL BENT       CL BEAM
+
+      SPAN  1  BEAM  1     0.0000       58 17 57.49        0.7083        0.8325         0.1667        0.1959
+               BEAM  2     9.2378       58 26 24.80        0.7083        0.8313         0.1667        0.1956
+               BEAM  3     9.2378       58 34 47.87        0.7083        0.8300         0.1667        0.1953
+               BEAM  4     9.2378       58 43  6.73        0.7083        0.8288         0.1667        0.1950
+               BEAM  5     9.2378       58 51 21.44        0.7083        0.8276         0.1667        0.1947
+               BEAM  6     9.2378       58 59 32.04        0.7083        0.8264         0.1667        0.1945
+                TOTAL     46.1892
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  19
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                               COORDINATES AT CENTERLINE OF BENTS AND BEARINGS, SPAN    1
+
+                             COORDINATES, BENT  1        SURFACE          COORDINATES, BENT  2        SURFACE
+                              X               Y         ELEVATION          X               Y         ELEVATION
+
+      BEAM  1 (BENT)        237.2717        937.6766     126.0673        236.1090       1026.7183     125.2955
+              (BRG.)        237.2608        938.5091     126.0558        236.1183       1026.0100     125.2980
+
+      BEAM  2 (BENT)        245.1940        932.9253     126.7622        244.2463       1022.3455     125.9593
+              (BRG.)        245.1852        933.7566     126.7504        244.2538       1021.6372     125.9620
+
+      BEAM  3 (BENT)        253.1163        928.1740     127.4591        252.3837       1017.9727     126.6253
+              (BRG.)        253.1095        929.0041     127.4470        252.3894       1017.2644     126.6283
+
+      BEAM  4 (BENT)        261.0386        923.4228     128.1579        260.5210       1013.5998     127.2936
+              (BRG.)        261.0339        924.2516     128.1458        260.5251       1012.8915     127.2967
+
+      BEAM  5 (BENT)        268.9609        918.6715     128.8588        268.6583       1009.2270     127.9641
+              (BRG.)        268.9582        919.4991     128.8463        268.6607       1008.5187     127.9675
+
+      BEAM  6 (BENT)        276.8832        913.9202     129.5615        276.7956       1004.8542     128.6368
+              (BRG.)        276.8824        914.7466     129.5489        276.7963       1004.1459     128.6403
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  20
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                                BEAM REPORT, SPAN  1
+
+                               HORIZONTAL DISTANCE    TRUE DISTANCE     BEAM
+                             C-C BENT      C-C BRG.   BOT. BM. FLG.     SLOPE         BEAM BEARING
+
+                 BEAM  1      89.0493       87.5084       88.6900     -0.00866      N  0 44 53.23 W
+                 BEAM  2      89.4252       87.8856       89.0665     -0.00897      N  0 36 25.91 W
+                 BEAM  3      89.8016       88.2632       89.4435     -0.00928      N  0 28  2.85 W
+                 BEAM  4      90.1786       88.6414       89.8210     -0.00958      N  0 19 43.98 W
+                 BEAM  5      90.5561       89.0201       90.1991     -0.00987      N  0 11 29.28 W
+                 BEAM  6      90.9341       89.3993       90.5776     -0.01016      N  0  3 18.68 W
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  21
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                                   BENT REPORT
+
+                                           BENT NO.  2  (N 61 44 50.72 W)
+
+      DISTANCE BETWEEN STATION LINE AND BEAM 1,   23.1349 L
+
+
+                         BEAM SPAC.     BEAM ANGLE       DIST CL BENT TO CL BRNG     DIST CL BENT TO END OF BM
+                         (CL BENT)       D  M   S         PERP TO        ALONG         PERP TO        ALONG
+                                                          CL BENT       CL BEAM        CL BENT       CL BEAM
+
+      SPAN  1  BEAM  1     0.0000       60 59 57.49        0.6195        0.7083         0.1458        0.1667
+               BEAM  2     9.2378       61  8 24.80        0.6204        0.7083         0.1460        0.1667
+               BEAM  3     9.2378       61 16 47.87        0.6212        0.7083         0.1462        0.1667
+               BEAM  4     9.2378       61 25  6.73        0.6220        0.7083         0.1464        0.1667
+               BEAM  5     9.2378       61 33 21.44        0.6228        0.7083         0.1465        0.1667
+               BEAM  6     9.2378       61 41 32.04        0.6236        0.7083         0.1467        0.1667
+                TOTAL     46.1892
+
+
+      SPAN  2  BEAM  1     0.0000       58 26 57.49        0.6036        0.7083         0.1420        0.1667
+               BEAM  2     9.2378       58 35 24.80        0.6045        0.7083         0.1422        0.1667
+               BEAM  3     9.2378       58 43 47.87        0.6054        0.7083         0.1425        0.1667
+               BEAM  4     9.2378       58 52  6.73        0.6063        0.7083         0.1427        0.1667
+               BEAM  5     9.2378       59  0 21.44        0.6072        0.7083         0.1429        0.1667
+               BEAM  6     9.2378       59  8 32.04        0.6081        0.7083         0.1431        0.1667
+                TOTAL     46.1892
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  22
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                               COORDINATES AT CENTERLINE OF BENTS AND BEARINGS, SPAN    2
+
+                             COORDINATES, BENT  2        SURFACE          COORDINATES, BENT  3        SURFACE
+                              X               Y         ELEVATION          X               Y         ELEVATION
+
+      BEAM  1 (BENT)        236.1090       1026.7183     125.2955        231.5551       1105.7436     125.1101
+              (BRG.)        236.0683       1027.4254     125.2906        231.5958       1105.0365     125.1084
+
+      BEAM  2 (BENT)        244.2463       1022.3455     125.9593        239.8683       1101.7154     125.7461
+              (BRG.)        244.2073       1023.0527     125.9541        239.9074       1101.0082     125.7448
+
+      BEAM  3 (BENT)        252.3837       1017.9727     126.6253        248.1816       1097.6872     126.3847
+              (BRG.)        252.3464       1018.6800     126.6200        248.2189       1096.9798     126.3836
+
+      BEAM  4 (BENT)        260.5210       1013.5998     127.2936        256.4949       1093.6590     127.0258
+              (BRG.)        260.4854       1014.3073     127.2880        256.5305       1092.9515     127.0249
+
+      BEAM  5 (BENT)        268.6583       1009.2270     127.9641        264.8082       1089.6307     127.6693
+              (BRG.)        268.6244       1009.9346     127.9583        264.8421       1088.9232     127.6687
+
+      BEAM  6 (BENT)        276.7956       1004.8542     128.6368        273.1215       1085.6025     128.3152
+              (BRG.)        276.7634       1005.5618     128.6307        273.1537       1084.8949     128.3148
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  23
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                                BEAM REPORT, SPAN  2
+
+                               HORIZONTAL DISTANCE    TRUE DISTANCE     BEAM
+                             C-C BENT      C-C BRG.   BOT. BM. FLG.     SLOPE         BEAM BEARING
+
+                 BEAM  1      79.1565       77.7398       78.8233     -0.00234      N  3 17 53.23 W
+                 BEAM  2      79.4906       78.0739       79.1575     -0.00268      N  3  9 25.91 W
+                 BEAM  3      79.8252       78.4085       79.4922     -0.00301      N  3  1  2.85 W
+                 BEAM  4      80.1603       78.7436       79.8274     -0.00334      N  2 52 43.98 W
+                 BEAM  5      80.4958       79.0792       80.1630     -0.00366      N  2 44 29.28 W
+                 BEAM  6      80.8318       79.4152       80.4992     -0.00398      N  2 36 18.68 W
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  24
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                                   BENT REPORT
+
+                                           BENT NO.  3  (N 64  8 50.72 W)
+
+      DISTANCE BETWEEN STATION LINE AND BEAM 1,   23.1349 L
+
+
+                         BEAM SPAC.     BEAM ANGLE       DIST CL BENT TO CL BRNG     DIST CL BENT TO END OF BM
+                         (CL BENT)       D  M   S         PERP TO        ALONG         PERP TO        ALONG
+                                                          CL BENT       CL BEAM        CL BENT       CL BEAM
+
+      SPAN  2  BEAM  1     0.0000       60 50 57.49        0.6186        0.7083         0.1456        0.1667
+               BEAM  2     9.2378       60 59 24.80        0.6195        0.7083         0.1458        0.1667
+               BEAM  3     9.2378       61  7 47.87        0.6203        0.7083         0.1460        0.1667
+               BEAM  4     9.2378       61 16  6.73        0.6211        0.7083         0.1461        0.1667
+               BEAM  5     9.2378       61 24 21.44        0.6219        0.7083         0.1463        0.1667
+               BEAM  6     9.2378       61 32 32.04        0.6227        0.7083         0.1465        0.1667
+                TOTAL     46.1892
+
+
+      SPAN  3  BEAM  1     0.0000       58 26 57.49        0.6036        0.7083         0.1420        0.1667
+               BEAM  2     9.2378       58 35 24.80        0.6045        0.7083         0.1422        0.1667
+               BEAM  3     9.2378       58 43 47.87        0.6054        0.7083         0.1425        0.1667
+               BEAM  4     9.2378       58 52  6.73        0.6063        0.7083         0.1427        0.1667
+               BEAM  5     9.2378       59  0 21.44        0.6072        0.7083         0.1429        0.1667
+               BEAM  6     9.2378       59  8 32.04        0.6081        0.7083         0.1431        0.1667
+                TOTAL     46.1892
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  25
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                               COORDINATES AT CENTERLINE OF BENTS AND BEARINGS, SPAN    3
+
+                             COORDINATES, BENT  3        SURFACE          COORDINATES, BENT  4        SURFACE
+                              X               Y         ELEVATION          X               Y         ELEVATION
+
+      BEAM  1 (BENT)        231.5551       1105.7436     125.1101        223.6958       1184.5090     125.3956
+              (BRG.)        231.4847       1106.4485     125.1093        223.7662       1183.8041     125.3898
+
+      BEAM  2 (BENT)        239.8683       1101.7154     125.7461        232.1705       1180.8324     126.0040
+              (BRG.)        239.7998       1102.4204     125.7452        232.2391       1180.1274     125.9985
+
+      BEAM  3 (BENT)        248.1816       1097.6872     126.3847        240.6452       1177.1558     126.6152
+              (BRG.)        248.1148       1098.3924     126.3835        240.7121       1176.4507     126.6099
+
+      BEAM  4 (BENT)        256.4949       1093.6590     127.0258        249.1199       1173.4793     127.2291
+              (BRG.)        256.4298       1094.3643     127.0244        249.1851       1172.7739     127.2241
+
+      BEAM  5 (BENT)        264.8082       1089.6307     127.6693        257.5946       1169.8027     127.8456
+              (BRG.)        264.7448       1090.3362     127.6677        257.6581       1169.0972     127.8409
+
+      BEAM  6 (BENT)        273.1215       1085.6025     128.3152        266.0693       1166.1261     128.4648
+              (BRG.)        273.0597       1086.3082     128.3133        266.1311       1165.4205     128.4603
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  26
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                                BEAM REPORT, SPAN  3
+
+                               HORIZONTAL DISTANCE    TRUE DISTANCE     BEAM
+                             C-C BENT      C-C BRG.   BOT. BM. FLG.     SLOPE         BEAM BEARING
+
+                 BEAM  1      79.1565       77.7398       78.8236      0.00361      N  5 41 53.23 W
+                 BEAM  2      79.4906       78.0739       79.1577      0.00324      N  5 33 25.91 W
+                 BEAM  3      79.8252       78.4085       79.4922      0.00289      N  5 25  2.85 W
+                 BEAM  4      80.1603       78.7436       79.8272      0.00254      N  5 16 43.98 W
+                 BEAM  5      80.4958       79.0792       80.1627      0.00219      N  5  8 29.28 W
+                 BEAM  6      80.8318       79.4152       80.4987      0.00185      N  5  0 18.68 W
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  27
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                                   BENT REPORT
+
+                                           BENT NO.  4  (N 66 32 50.72 W)
+
+      DISTANCE BETWEEN STATION LINE AND BEAM 1,   23.1349 L
+
+
+                         BEAM SPAC.     BEAM ANGLE       DIST CL BENT TO CL BRNG     DIST CL BENT TO END OF BM
+                         (CL BENT)       D  M   S         PERP TO        ALONG         PERP TO        ALONG
+                                                          CL BENT       CL BEAM        CL BENT       CL BEAM
+
+      SPAN  3  BEAM  1     0.0000       60 50 57.49        0.6186        0.7083         0.1456        0.1667
+               BEAM  2     9.2378       60 59 24.80        0.6195        0.7083         0.1458        0.1667
+               BEAM  3     9.2378       61  7 47.87        0.6203        0.7083         0.1460        0.1667
+               BEAM  4     9.2378       61 16  6.73        0.6211        0.7083         0.1461        0.1667
+               BEAM  5     9.2378       61 24 21.44        0.6219        0.7083         0.1463        0.1667
+               BEAM  6     9.2378       61 32 32.04        0.6227        0.7083         0.1465        0.1667
+                TOTAL     46.1892
+
+
+      SPAN  4  BEAM  1     0.0000       58 17 57.49        0.6027        0.7083         0.1418        0.1667
+               BEAM  2     9.2378       58 26 24.80        0.6036        0.7083         0.1420        0.1667
+               BEAM  3     9.2378       58 34 47.87        0.6045        0.7083         0.1422        0.1667
+               BEAM  4     9.2378       58 43  6.73        0.6054        0.7083         0.1424        0.1667
+               BEAM  5     9.2378       58 51 21.44        0.6062        0.7083         0.1426        0.1667
+               BEAM  6     9.2378       58 59 32.04        0.6071        0.7083         0.1428        0.1667
+                TOTAL     46.1892
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  28
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                               COORDINATES AT CENTERLINE OF BENTS AND BEARINGS, SPAN    4
+
+                             COORDINATES, BENT  4        SURFACE          COORDINATES, BENT  5        SURFACE
+                              X               Y         ELEVATION          X               Y         ELEVATION
+
+      BEAM  1 (BENT)        223.6958       1184.5090     125.3956        210.9208       1272.6371     126.2800
+              (BRG.)        223.5942       1185.2100     125.3990        211.0370       1271.8356     126.2677
+
+      BEAM  2 (BENT)        232.1705       1180.8324     126.0040        219.5593       1269.3639     126.8573
+              (BRG.)        232.0706       1181.5337     126.0072        219.6733       1268.5632     126.8454
+
+      BEAM  3 (BENT)        240.6452       1177.1558     126.6152        228.1978       1266.0906     127.4376
+              (BRG.)        240.5470       1177.8573     126.6180        228.3097       1265.2907     127.4261
+
+      BEAM  4 (BENT)        249.1199       1173.4793     127.2291        236.8362       1262.8173     128.0210
+              (BRG.)        249.0234       1174.1810     127.2317        236.9461       1262.0182     128.0097
+
+      BEAM  5 (BENT)        257.5946       1169.8027     127.8456        245.4747       1259.5441     128.6070
+              (BRG.)        257.4998       1170.5047     127.8480        245.5825       1258.7457     128.5961
+
+      BEAM  6 (BENT)        266.0693       1166.1261     128.4648        254.1132       1256.2708     129.1961
+              (BRG.)        265.9762       1166.8283     128.4669        254.2190       1255.4732     129.1856
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  29
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                                BEAM REPORT, SPAN  4
+
+                               HORIZONTAL DISTANCE    TRUE DISTANCE     BEAM
+                             C-C BENT      C-C BRG.   BOT. BM. FLG.     SLOPE         BEAM BEARING
+
+                 BEAM  1      89.0493       87.5311       88.6964      0.00992      N  8 14 53.23 W
+                 BEAM  2      89.4252       87.9081       89.0723      0.00954      N  8  6 25.91 W
+                 BEAM  3      89.8016       88.2856       89.4486      0.00915      N  7 58  2.85 W
+                 BEAM  4      90.1786       88.6636       89.8256      0.00877      N  7 49 43.98 W
+                 BEAM  5      90.5561       89.0421       90.2030      0.00840      N  7 41 29.28 W
+                 BEAM  6      90.9341       89.4212       90.5810      0.00804      N  7 33 18.68 W
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  30
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                                   BENT REPORT
+
+                                           BENT NO.  5  (N 69 14 50.72 W)
+
+      DISTANCE BETWEEN STATION LINE AND BEAM 1,   23.1349 L
+
+
+                         BEAM SPAC.     BEAM ANGLE       DIST CL BENT TO CL BRNG     DIST CL BENT TO END OF BM
+                         (CL BENT)       D  M   S         PERP TO        ALONG         PERP TO        ALONG
+                                                          CL BENT       CL BEAM        CL BENT       CL BEAM
+
+      SPAN  4  BEAM  1     0.0000       60 59 57.49        0.7083        0.8099         0.1667        0.1906
+               BEAM  2     9.2378       61  8 24.80        0.7083        0.8088         0.1667        0.1903
+               BEAM  3     9.2378       61 16 47.87        0.7083        0.8077         0.1667        0.1900
+               BEAM  4     9.2378       61 25  6.73        0.7083        0.8066         0.1667        0.1898
+               BEAM  5     9.2378       61 33 21.44        0.7083        0.8056         0.1667        0.1895
+               BEAM  6     9.2378       61 41 32.04        0.7083        0.8045         0.1667        0.1893
+                TOTAL     46.1892
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  31
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  GEOMETRICS  ***         
+      GENERAL GEOMETRY PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENT - PamplinFM92    J
+                                     GENERAL GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X (EAST)    Y (NORTH)  RADIUS,OFFSET  ELEV   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     ****Checking Haunch                             
+
+     VCLR     0    0    0    4  H  1
+
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  32
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+      VERTICAL CLEARANCE BETWEEN SPAN  1 OF ROADWAY H WITH ROADWAY H
+
+                0.00 L  0.25 L  0.50 L  0.75 L  1.00 L
+      BEAM  1    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  2    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  3    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  4    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  5    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  6    -5.75   -5.66   -5.64   -5.66   -5.75
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  33
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                     BRIDGE GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X(EAST)    Y(NORTH)    RADIUS,OFFSET  ELEV.   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     VCLR     0    0    0    4  H  2
+
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  34
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+      VERTICAL CLEARANCE BETWEEN SPAN  2 OF ROADWAY H WITH ROADWAY H
+
+                0.00 L  0.25 L  0.50 L  0.75 L  1.00 L
+      BEAM  1    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  2    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  3    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  4    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  5    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  6    -5.69   -5.62   -5.60   -5.62   -5.69
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  35
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                     BRIDGE GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X(EAST)    Y(NORTH)    RADIUS,OFFSET  ELEV.   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     VCLR     0    0    0    4  H  3
+
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  36
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+      VERTICAL CLEARANCE BETWEEN SPAN  3 OF ROADWAY H WITH ROADWAY H
+
+                0.00 L  0.25 L  0.50 L  0.75 L  1.00 L
+      BEAM  1    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  2    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  3    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  4    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  5    -5.69   -5.62   -5.60   -5.62   -5.69
+      BEAM  6    -5.69   -5.62   -5.60   -5.62   -5.69
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  37
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                     BRIDGE GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X(EAST)    Y(NORTH)    RADIUS,OFFSET  ELEV.   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     VCLR     0    0    0    4  H  4
+
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  38
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+      VERTICAL CLEARANCE BETWEEN SPAN  4 OF ROADWAY H WITH ROADWAY H
+
+                0.00 L  0.25 L  0.50 L  0.75 L  1.00 L
+      BEAM  1    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  2    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  3    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  4    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  5    -5.75   -5.67   -5.64   -5.67   -5.75
+      BEAM  6    -5.75   -5.66   -5.64   -5.66   -5.75
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  39
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                     BRIDGE GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X(EAST)    Y(NORTH)    RADIUS,OFFSET  ELEV.   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     VCLR     0    0    0    4  H  5
+
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  40
+                                  BRIDGE GEOMETRY SYSTEM (BGS)                 ***  GEOMETRICS  ***         
+      GENERAL GEOMETRY PROCESS                                                    une29,2006      10:45   
+      IDENTIFICATION                                                          COMMENT - PamplinFM92    J
+                                     GENERAL GEOMETRY LIST
+
+ CD COMMAND  A    B    C    D   E  F    X (EAST)    Y (NORTH)  RADIUS,OFFSET  ELEV   BEAR,AZ,SKEW     STORE
+ NO                                 OR CORRECTION  OR STATION  DISTANCE,ETC.           D   M   S
+
+     ****Checking Clearance at CR3725 at CL of FM92  
+
+     ZPNT   110    0    0    0  H  0       0.0000   44660.0000       0.0000             0  0  0.00  
+                                         257.3582     965.7762       0.0000    0.00     0  0  0.00    SP  110
+                                           0.0000   44660.0000       0.0000  127.36     0  0  0.00    NS    0
+
+     ZPNT   111    0    0    0  H  0       0.0000   44670.0000       0.0000             0  0  0.00  
+                                         257.2888     975.7759       0.0000    0.00     0  0  0.00    SP  111
+                                           0.0000   44670.0000       0.0000  127.27     0  0  0.00    NS    0
+
+     ZPNT   112    0    0    0  H  0       0.0000   44680.0000       0.0000             0  0  0.00  
+                                         257.1671     985.7752       0.0000    0.00     0  0  0.00    SP  112
+                                           0.0000   44680.0000       0.0000  127.18     0  0  0.00    NS    0
+
+     ZPNT   113    0    0    0  H  0       0.0000   44690.0000       0.0000             0  0  0.00  
+                                         256.9930     995.7736       0.0000    0.00     0  0  0.00    SP  113
+                                           0.0000   44690.0000       0.0000  127.10     0  0  0.00    NS    0
+
+     ZPNT   114    0    0    0  H  0       0.0000   44700.0000       0.0000             0  0  0.00  
+                                         256.7666    1005.7711       0.0000    0.00     0  0  0.00    SP  114
+                                           0.0000   44700.0000       0.0000  127.03     0  0  0.00    NS    0
+
+                              TEXAS DEPARTMENT OF TRANSPORTATION                PC TEXAS V 8.1   
+                                                                                                      PAGE  41
+                                  BRIDGE GEOMETRY SYSTEM (BGS)              ***  BRIDGE GEOMETRICS  ***     
+      Pamplin Creek Bridge                                                           une29,2006      10:45   
+      CONTROL      SECTION                                                 COUNTY & HIGHWAY - PamplinFM92    J
+
+                                              BEARING SEAT ELEVATIONS
+
+
+                        BEAM  1    BEAM  2    BEAM  3    BEAM  4    BEAM  5    BEAM  6
+      BENT  1 (FWD)     120.306    121.000    121.697    122.396    123.096    123.799
+
+
+                        BEAM  1    BEAM  2    BEAM  3    BEAM  4    BEAM  5    BEAM  6
+      BENT  2 (BK)      119.548    120.212    120.878    121.547    122.217    122.890
+              (FWD)     119.603    120.267    120.932    121.601    122.271    122.943
+
+
+                        BEAM  1    BEAM  2    BEAM  3    BEAM  4    BEAM  5    BEAM  6
+      BENT  3 (BK)      119.421    120.057    120.696    121.337    121.981    122.627
+              (FWD)     119.422    120.058    120.696    121.337    121.980    122.626
+
+
+                        BEAM  1    BEAM  2    BEAM  3    BEAM  4    BEAM  5    BEAM  6
+      BENT  4 (BK)      119.702    120.311    120.922    121.537    122.153    122.773
+              (FWD)     119.649    120.257    120.868    121.482    122.098    122.717
+
+
+                        BEAM  1    BEAM  2    BEAM  3    BEAM  4    BEAM  5    BEAM  6
+      BENT  5 (BK)      120.518    121.095    121.676    122.260    122.846    123.436
+

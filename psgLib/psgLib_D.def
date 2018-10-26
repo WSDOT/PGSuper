@@ -1,0 +1,7 @@
+; psgLib.def : Declares the module parameters for the DLL.
+
+LIBRARY      "psgLib10D"
+
+EXPORTS
+    ; Explicit exports can go here
+   UnitTest @1

@@ -1,0 +1,179 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 2002  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// CreepAtHaulingTable.cpp : Implementation of CCreepAtHaulingTable
+#include "stdafx.h"
+#include "CreepAtHaulingTable.h"
+#include <IFace\Bridge.h>
+#include <IFace\Project.h>
+#include <PsgLib\SpecLibraryEntry.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+CCreepAtHaulingTable::CCreepAtHaulingTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnit) :
+rptRcTable(NumColumns,0)
+{
+   DEFINE_UV_PROTOTYPE( spanloc,     pDispUnit->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( gdrloc,      pDispUnit->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( offset,      pDispUnit->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( mod_e,       pDispUnit->GetModEUnit(),            false );
+   DEFINE_UV_PROTOTYPE( force,       pDispUnit->GetGeneralForceUnit(),    false );
+   DEFINE_UV_PROTOTYPE( area,        pDispUnit->GetAreaUnit(),            false );
+   DEFINE_UV_PROTOTYPE( mom_inertia, pDispUnit->GetMomentOfInertiaUnit(), false );
+   DEFINE_UV_PROTOTYPE( ecc,         pDispUnit->GetComponentDimUnit(),    false );
+   DEFINE_UV_PROTOTYPE( moment,      pDispUnit->GetMomentUnit(),          false );
+   DEFINE_UV_PROTOTYPE( stress,      pDispUnit->GetStressUnit(),          false );
+   DEFINE_UV_PROTOTYPE( time,        pDispUnit->GetLongTimeUnit(),        false );
+
+   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetWidth(6);
+   scalar.SetPrecision(2);
+
+   strain.SetFormat( sysNumericFormatTool::Automatic );
+   strain.SetWidth(6);
+   strain.SetPrecision(3);
+}
+
+CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+{
+   GET_IFACE2(pBroker,IGirderData,pGirderData);
+   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   std::string strSpecName = pSpec->GetSpecification();
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+
+   // Create and configure the table
+   ColumnIndexType numColumns = 5;
+   if ( bTemporaryStrands )
+      numColumns += 3;
+
+   CCreepAtHaulingTable* table = new CCreepAtHaulingTable( numColumns, pDispUnit );
+   pgsReportStyleHolder::ConfigureTable(table);
+
+   table->m_bTemporaryStrands = bTemporaryStrands;
+   table->m_GirderData = girderData;
+
+   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   
+   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << pParagraph;
+   
+   *pParagraph << "[5.9.5.4.2b] Creep of Girder Concrete : " << symbol(DELTA) << Sub2("f","pCRH") << rptNewLine;
+
+   if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpCRH_PT.gif") << rptNewLine;
+   else
+      *pParagraph << rptRcImage(strImagePath + "Delta_FpCRH.gif") << rptNewLine;
+
+   pParagraph = new rptParagraph;
+   *pChapter << pParagraph;
+
+   table->time.ShowUnitTag(true);
+   *pParagraph << Sub2("k","td") << " = " << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetKtd()) << rptNewLine;
+   *pParagraph << Sub2("t","i")  << " = " << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge())   << rptNewLine;
+   *pParagraph << Sub2("t","h")  << " = " << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling()) << rptNewLine;
+   *pParagraph << Sub2(symbol(psi),"b") << "(" << Sub2("t","h") << "," << Sub2("t","i") << ")" << " = " << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
+   table->time.ShowUnitTag(false);
+
+   *pParagraph << table << rptNewLine;
+
+   ColumnIndexType col = 0;
+   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
+
+   if ( bTemporaryStrands )
+   {
+      table->SetNumberOfHeaderRows(2);
+
+      table->SetRowSpan(0,0,2);
+      table->SetRowSpan(0,1,2);
+      table->SetRowSpan(1,0,-1);
+      table->SetRowSpan(1,1,-1);
+
+      table->SetColumnSpan(0,2,3);
+      (*table)(0,col++) << "Permanent Strands";
+
+      table->SetColumnSpan(0,3,3);
+      (*table)(0,col++) << "Temporary Strands";
+
+      for ( ColumnIndexType i = col; i < numColumns; i++ )
+         table->SetColumnSpan(0,i,-1);
+
+
+      col = 2;
+      if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
+         (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      else
+         (*table)(1,col++) << COLHDR(Sub2("f","cgp") << " + " << symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+
+
+      (*table)(1,col++) << Sub2("K","ih");
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+
+      if ( bTemporaryStrands )
+      {
+         (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+         (*table)(1,col++) << Sub2("K","ih");
+         (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      }
+   }
+   else
+   {
+      if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
+         (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      else
+         (*table)(0,col++) << COLHDR(Sub2("f","cgp") << " + " << symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+
+      (*table)(0,col++) << Sub2("K","ih");
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+   }
+
+   return table;
+}
+
+void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+{
+   ColumnIndexType col = 2;
+   int rowOffset = GetNumberOfHeaderRows()-1;
+
+   if ( m_GirderData.TempStrandUsage == pgsTypes::ttsPretensioned )
+      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp());
+   else
+      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp() + details.pLosses->GetDeltaFpp());
+
+   (*this)(row+rowOffset,col++) << scalar.SetValue(details.RefinedLosses2005.GetPermanentStrandKih());
+   (*this)(row+rowOffset,col++) << stress.SetValue(details.RefinedLosses2005.PermanentStrand_CreepLossAtShipping());
+
+   if ( m_bTemporaryStrands )
+   {
+      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().TemporaryStrand_Fcgp());
+      (*this)(row+rowOffset,col++) << scalar.SetValue(details.RefinedLosses2005.GetTemporaryStrandKih());
+      (*this)(row+rowOffset,col++) << stress.SetValue(details.RefinedLosses2005.TemporaryStrand_CreepLossAtShipping());
+   }
+}

@@ -1,0 +1,263 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Defining the Piers</title>
+
+<!--(Meta)==========================================================-->
+
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=topic-status content="In Progress">
+<meta name=topic-priority content=0>
+<meta name=topic-time-estimate content=0>
+<meta name=topic-comment content>
+<meta name=topic-id content>
+<meta name=topic-check-list content="Ran Smart Index">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=6020>
+<meta name=layout-width content=963>
+
+
+<!--(Links)=========================================================-->
+
+<link REL=StyleSheet HREF="..\..\default.css">
+
+
+
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<h1>Framing</h1>
+
+<p>The Framing tab is used to frame the bridge starting with the lay out 
+ of the spans and piers. Each span and pier can be &quot;drilled into&quot; 
+ to further define connections, boundary conditions, and girder spacing.</p>
+
+<p>In the grid, enter the pier station and orientation. The pier-to-pier 
+ span length is computed and shown in the Span rows. </p>
+
+<p><img src="piers.bmp"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				border-style: none;
+				float: none;
+				width: 685px;
+				height: 527px;"
+		width=685
+		height=527
+		border=0></p>
+
+<h2>Pier Layout</h2>
+
+<p>Piers are described by their station and orientation. The orientation 
+ can be a bearing (e.g. N 34 23 32.1 W), a skew angle (e.g. &quot;-35&quot;, 
+ or &quot;12 02 34.5 R&quot;), or the word &quot;Normal&quot;. Skew angles 
+ are defined as left (L) or right (R) looking up station. Positive skews 
+ are counterclockwise.</p>
+
+<p><img src="..\..\Bridge Description\Skew.jpg"
+		style="width: 367px;
+				height: 195px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				border-style: none;"
+		width=367
+		height=195
+		border=0></p>
+
+<p>The buttons below the grid can be used to add spans, remove spans, and 
+ to layout the spans by span length.</p>
+
+<p>The Edit Details buttons in the grid open a dialog for further editing 
+ the spans and piers.</p>
+
+<h2>Alignment Offset</h2>
+
+<p>The bridge reference line can be offset from the alignment. Typically 
+ the bridge reference line is the centerline of the bridge, but it can 
+ be any convenient line. The bridge reference line is a constant distance 
+ from and parallels the alignment.</p>
+
+<p><img src="AlignmentOffset.gif"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				width: 584px;
+				height: 268px;
+				float: none;"
+		width=584
+		height=268
+		border=0></p>
+
+<h2>Edit Pier Details</h2>
+
+<p>Pier details are grouped into three categories. The general layout of 
+ the pier is given on the General tab. This the same information that is 
+ entered into the framing grid. Options are provided for adjusting the 
+ bridge geometry when the station of a pier changes. The bridge can be 
+ simply moved or the length of the adjacent spans can be adjusted.</p>
+
+<h3>General</h3>
+
+<p><img src="Pier_General.bmp"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				border-style: none;
+				float: none;
+				width: 577px;
+				height: 624px;"
+		width=577
+		height=624
+		border=0></p>
+
+<h3>Connections</h3>
+
+<p>The connection geometry and boundary conditions on each side of the 
+ pier are described on the Connections tab. The Connection geometry is 
+ a connection object taken from the Connections library. It describes among 
+ other things, the location of the centerline bearing measured from the 
+ centerline of pier and the distance from the centerline of bearing to 
+ the end of the girder.</p>
+
+<p>The connection boundary conditions describes the connectivity between 
+ spans.</p>
+
+<p>The connection geometry and boundary conditions can be constrained to 
+ be the same on both sides of the pier or each side of the pier may have 
+ a different connection configuration.</p>
+
+<p class=Tip>NOTE: The connection boundary conditions are ignored if the 
+ analysis mode is set to Simple Span. See <a HREF="../AnalysisControls/AnalysisControls.htm">Chapter 
+ 7</a> for more details.</p>
+
+<p><img src="Pier_Connections.bmp"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				border-style: none;
+				float: none;
+				width: 577px;
+				height: 548px;
+				border-style: none;"
+		width=577
+		height=548
+		border=0></p>
+
+<h3>Girder Spacing</h3>
+
+<p>The number of girder, girder spacing, and transverse position of the 
+ girders are described on the Girder Spacing tab.</p>
+
+<p>The input for the number of girders and girder spacing disabled when 
+ they are constant for the entire bridge. You can either go back to the 
+ General tab of the Bridge Description dialog and select the options to 
+ permit span-by-span definition or you can click on the hyperlinks adjacent 
+ to the controls. Likewise, you can change to defining these properties 
+ for the entire bridge by clicking on the hyperlinks.</p>
+
+<p><img src="Pier_GirderSpacing.bmp"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				border-style: none;
+				float: none;
+				width: 577px;
+				height: 624px;"
+		width=577
+		height=624
+		border=0></p>
+
+<h2>Edit Span Details</h2>
+
+<h3>General</h3>
+
+<p>Span details are grouped into three categories as well. The pier-to-pier 
+ span length is described on the General tab. When you change the span 
+ length, only the length of this span is changed. The stations of all piers 
+ after this span are adjusted to maintain the other span lengths.</p>
+
+<p><img src="Span_General.bmp"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				width: 623px;
+				height: 506px;
+				float: none;
+				border-style: none;
+				border-style: none;"
+		width=623
+		height=506
+		border=0></p>
+
+<h3>Connections</h3>
+
+<p>Connection geometry and boundary conditions are described on the Connections 
+ tab. These boundary conditions are for the start and end of the span. 
+ If the boundary conditions are the same for both sides of a pier, changing 
+ them here will cause them to change on the other side of the pier as well. 
+ A message will be shown alerting you of changes that occur because of 
+ changes made here.</p>
+
+<p><img src="Span_Connections.bmp"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				float: none;
+				border-style: none;
+				width: 664px;
+				height: 506px;
+				border-style: none;"
+		width=664
+		height=506
+		border=0></p>
+
+<h3>Girders</h3>
+
+<p>The number of girders, girder type, girder spacing, and transverse position 
+ of the girders are all defined on the Girders tab.</p>
+
+<p><img src="Span_Girders.bmp"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				border-style: none;
+				float: none;
+				width: 664px;
+				height: 566px;"
+		width=664
+		height=566
+		border=0></p>
+
+<p>Girder names and spacing can be grouped as needed. In the example above 
+ there are three spacing groups; one between girders A and B, one between 
+ B and F, and one between F and G.</p>
+
+<p>To create groupings:</p>
+
+<p>1) Click on a column heading</p>
+
+<p>2) Right click and choose the Expand command. This will expand a grouping 
+ such that there is a column for every member of the group.</p>
+
+<p>3) Select a group of adjacent columns, right click, and choose the Join 
+ command. This will group the columns together.</p>
+
+<p>As you can see from the example above, grouping is a good way to minimize 
+ input. Only three girder spacings needed to be input for the six actual 
+ spaces.</p>
+
+</body>
+
+</html>

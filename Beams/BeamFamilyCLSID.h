@@ -1,0 +1,54 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 2009  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+/////////////////////////////////////////////////////////////////////////////
+// Beam family CLSIDs
+
+// {AB6A4CD6-0F10-4d2f-BB98-4425146B133E}
+DEFINE_GUID(CLSID_WFBeamFamily, 
+0xab6a4cd6, 0xf10, 0x4d2f, 0xbb, 0x98, 0x44, 0x25, 0x14, 0x6b, 0x13, 0x3e);
+
+// {917D405F-8752-4bfc-BF6B-9CE7BC2E4C80}
+DEFINE_GUID(CLSID_UBeamFamily, 
+0x917d405f, 0x8752, 0x4bfc, 0xbf, 0x6b, 0x9c, 0xe7, 0xbc, 0x2e, 0x4c, 0x80);
+
+// {CE4BA8B3-9AD3-4fa0-8EF0-F0E58D3CF432}
+DEFINE_GUID(CLSID_BoxBeamFamily, 
+0xce4ba8b3, 0x9ad3, 0x4fa0, 0x8e, 0xf0, 0xf0, 0xe5, 0x8d, 0x3c, 0xf4, 0x32);
+
+// {F89E7939-C179-4337-8CC8-BAD7F910B9A6}
+DEFINE_GUID(CLSID_DeckBulbTeeBeamFamily, 
+0xf89e7939, 0xc179, 0x4337, 0x8c, 0xc8, 0xba, 0xd7, 0xf9, 0x10, 0xb9, 0xa6);
+
+// {8167A722-A9CD-404f-BEDE-CF57D5305871}
+DEFINE_GUID(CLSID_DoubleTeeBeamFamily, 
+0x8167a722, 0xa9cd, 0x404f, 0xbe, 0xde, 0xcf, 0x57, 0xd5, 0x30, 0x58, 0x71);
+
+// {FACA64B5-C2E6-4335-89E2-F488D1B271BD}
+DEFINE_GUID(CLSID_RibbedBeamFamily, 
+0xfaca64b5, 0xc2e6, 0x4335, 0x89, 0xe2, 0xf4, 0x88, 0xd1, 0xb2, 0x71, 0xbd);
+
+// {07BDEB00-D913-4c67-8393-61263E065DC6}
+DEFINE_GUID(CLSID_SlabBeamFamily, 
+0x7bdeb00, 0xd913, 0x4c67, 0x83, 0x93, 0x61, 0x26, 0x3e, 0x6, 0x5d, 0xc6);

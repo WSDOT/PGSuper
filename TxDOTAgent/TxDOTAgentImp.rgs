@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.TxDOTAgent.1 = s 'TxDOTAgent Class'
+	{
+		CLSID = s '{360F7694-BE5B-4E97-864F-EF3575689C6E}'
+	}
+	PGSuper.TxDOTAgent = s 'TxDOTAgent Class'
+	{
+		CLSID = s '{360F7694-BE5B-4E97-864F-EF3575689C6E}'
+		CurVer = s 'PGSuper.TxDOTAgent.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {360F7694-BE5B-4E97-864F-EF3575689C6E} = s 'TxDOTAgent Class'
+		{
+			ProgID = s 'PGSuper.TxDOTAgent.1'
+			VersionIndependentProgID = s 'PGSuper.TxDOTAgent'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{17D09C05-E1AC-42D5-9CFE-B72414564E26}'
+		}
+	}
+}

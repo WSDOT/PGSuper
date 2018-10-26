@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.BoxBeamFactory.1 = s 'Box Beam'
+	{
+		CLSID = s '{73D5A32E-F747-4fff-8B48-D561A93494AC}'
+	}
+	PGSuperBeamFactory.BoxBeamFactory = s 'Box Beam'
+	{
+		CLSID = s '{73D5A32E-F747-4fff-8B48-D561A93494AC}'
+		CurVer = s 'PGSuperBeamFactory.BoxBeamFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {73D5A32E-F747-4fff-8B48-D561A93494AC} = s 'Box Beam'
+		{
+			ProgID = s 'PGSuperBeamFactory.BoxBeamFactory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.BoxBeamFactory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

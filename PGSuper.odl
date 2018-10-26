@@ -1,0 +1,91 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// PGSuper.odl : type library source for PGSuper.exe
+
+// This file will be processed by the MIDL compiler to produce the
+// type library (PGSuper.tlb).
+
+[ uuid(59D503E5-265C-11D2-8EB0-006097DF3C68), version(1.0) ]
+library PGSuper
+{
+	importlib("stdole32.tlb");
+	
+
+	//  Primary dispatch interface for CPGSuperDoc
+	
+	[ uuid(59D503E6-265C-11D2-8EB0-006097DF3C68) ]
+	dispinterface IPGSuper
+	{
+		properties:
+			// NOTE - ClassWizard will maintain property information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_PROP(CPGSuperDoc)
+			//}}AFX_ODL_PROP
+			
+		methods:
+			// NOTE - ClassWizard will maintain method information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_METHOD(CPGSuperDoc)
+			//}}AFX_ODL_METHOD
+
+	};
+
+	//  Class information for CPGSuperDoc
+	
+	[ uuid(59D503E4-265C-11D2-8EB0-006097DF3C68) ]
+	coclass Document
+	{
+		[default] dispinterface IPGSuper;
+	};
+
+
+	//  Primary dispatch interface for CAlignmentDisplayObjectEvents
+	
+	[ uuid(FFE71FAC-2B2D-4310-9AD1-BD00A9EA2EEB) ]
+	dispinterface IAlignmentDisplayObjectEvents
+	{
+		properties:
+			// NOTE - ClassWizard will maintain property information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_PROP(CAlignmentDisplayObjectEvents)
+			//}}AFX_ODL_PROP
+			
+		methods:
+			// NOTE - ClassWizard will maintain method information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_METHOD(CAlignmentDisplayObjectEvents)
+			//}}AFX_ODL_METHOD
+
+	};
+
+	//  Class information for CAlignmentDisplayObjectEvents
+
+	[ uuid(06714A34-9B5E-498F-A640-C370EB1926F2) ]
+	coclass AlignmentDisplayObjectEvents
+	{
+		[default] dispinterface IAlignmentDisplayObjectEvents;
+	};
+
+	//{{AFX_APPEND_ODL}}
+	//}}AFX_APPEND_ODL}}
+};

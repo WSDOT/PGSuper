@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.UBeamFactory.1 = s 'Precast U-Beam (WSDOT)'
+	{
+		CLSID = s '{F008218C-B19B-49A0-9084-253A09D4EA5A}'
+	}
+	PGSuperBeamFactory.UBeamFactory = s 'Precast U-Beam (WSDOT)'
+	{
+		CLSID = s '{F008218C-B19B-49A0-9084-253A09D4EA5A}'
+		CurVer = s 'PGSuperBeamFactory.UBeamFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {F008218C-B19B-49A0-9084-253A09D4EA5A} = s 'Precast U-Beam (WSDOT)'
+		{
+			ProgID = s 'PGSuperBeamFactory.UBeamFactory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.UBeamFactory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

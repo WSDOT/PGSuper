@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.MultiWeb2Factory.1 = s 'Double Tee (WSDOT)'
+	{
+		CLSID = s '{71AF6935-2501-4fb7-8FA3-7DDB505D5C63}'
+   }
+	PGSuperBeamFactory.MultiWeb2Factory = s 'Double Tee (WSDOT)'
+	{
+		CLSID = s '{71AF6935-2501-4fb7-8FA3-7DDB505D5C63}'
+		CurVer = s 'PGSuperBeamFactory.MultiWeb2Factory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {71AF6935-2501-4fb7-8FA3-7DDB505D5C63} = s 'Double Tee (WSDOT)'
+		{
+			ProgID = s 'PGSuperBeamFactory.MultiWeb2Factory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.MultiWeb2Factory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

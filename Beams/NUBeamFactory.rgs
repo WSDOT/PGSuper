@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.NUBeamFactory.1 = s 'Nebraska NU Girder'
+	{
+		CLSID = s '{F1504E79-8810-4b5c-9797-BCE6C1022C4C}'
+	}
+	PGSuperBeamFactory.NUBeamFactory = s 'Nebraska NU Girder'
+	{
+		CLSID = s '{F1504E79-8810-4b5c-9797-BCE6C1022C4C}'
+		CurVer = s 'PGSuperBeamFactory.NUBeamFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {F1504E79-8810-4b5c-9797-BCE6C1022C4C} = s 'Nebraska NU Girder'
+		{
+			ProgID = s 'PGSuperBeamFactory.NUBeamFactory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.NUBeamFactory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

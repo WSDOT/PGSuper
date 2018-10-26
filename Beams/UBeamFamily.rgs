@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFamily.UBeam.1 = s 'U-Beam'
+	{
+		CLSID = s '{917D405F-8752-4bfc-BF6B-9CE7BC2E4C80}'
+	}
+	PGSuperBeamFamily.UBeam = s 'U-Beam'
+	{
+		CLSID = s '{917D405F-8752-4bfc-BF6B-9CE7BC2E4C80}'
+		CurVer = s 'PGSuperBeamFamily.UBeam.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {917D405F-8752-4bfc-BF6B-9CE7BC2E4C80} = s 'U-Beam'
+		{
+			ProgID = s 'PGSuperBeamFamily.UBeam.1'
+			VersionIndependentProgID = s 'PGSuperBeamFamily.UBeam'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.VoidedSlabFactory.1 = s 'Voided Slab'
+	{
+		CLSID = s '{63C3AE0C-ADD3-44f7-AC22-16303D00E303}'
+	}
+	PGSuperBeamFactory.VoidedSlabFactory = s 'Voided Slab'
+	{
+		CLSID = s '{63C3AE0C-ADD3-44f7-AC22-16303D00E303}'
+		CurVer = s 'PGSuperBeamFactory.VoidedSlabFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {63C3AE0C-ADD3-44f7-AC22-16303D00E303} = s 'Voided Slab'
+		{
+			ProgID = s 'PGSuperBeamFactory.VoidedSlabFactory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.VoidedSlabFactory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

@@ -1,0 +1,328 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Lifting of Long Prestressed Girders</title>
+
+<!--(Meta)==========================================================-->
+
+<meta name="template" content="PageTemplate.htt">
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=topic-status content="In Progress">
+<meta name=topic-priority content=0>
+<meta name=topic-time-estimate content=0>
+<meta name=topic-comment content>
+<meta name=topic-id content>
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=2575>
+<meta name=layout-width content=924>
+
+
+ <meta name="topic-check-list" content="Ran Smart Index"><!--(Links)=========================================================-->
+
+<link REL="StyleSheet" HREF="..\default.css">
+
+
+
+<!--(Style Sheet)===================================================-->
+
+<style>
+<!--
+
+body {
+	background-color: #ffffff;
+}
+
+-->
+</style>
+
+
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<h1>Lifting of Long Prestressed Girders</h1>
+
+<p>One of the critical stages in the life of a prestressed girder is when 
+ it is first lifted from the casting bed in the casting yard. When the 
+ forms are stripped from the girder, the prestressing is higher and the 
+ concrete strength is lower than at any other time in the life of the girder. 
+ Analyses must be performed for this condition to insure that the girder 
+ will not be overstressed, will not crack, and will not fail due to instability.</p>
+
+<p><img src="Lifting Schematic.gif"
+		style="width: 489px;
+				height: 180px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				border-style: none;"
+		width=489
+		height=180
+		border=0></p>
+
+<h3>Calculation of Lifting Stresses</h3>
+
+<p>For most girders, critical stresses will occur either at the lifting 
+ locations or at the harping points. PGSuper calculates stresses at these 
+ points and at tenth-points along the length of the girder.</p>
+
+<p>If the inclination angle <font style="font-family: Symbol;"
+									face=Symbol>q</font>, of the lifting 
+ cables is small, this can induce significant compressive force and a concentrated 
+ moment into the girder. PGSuper accounts for this effect in the lifting 
+ analysis.</p>
+
+<h3>Factor of Safety Against Failure - Roll Equlibrium</h3>
+
+<p>When a beam hangs from flexible cables, it is free to roll. The roll 
+ center is where the cable attaches to the rigid body, which may be a lifting 
+ bracket or simply a loop at the top of the beam.</p>
+
+<p><img src="LiftingRollEqulibrium.gif"
+		style="margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				width: 446px;
+				height: 155px;
+				border-style: none;"
+		width=446
+		height=155
+		border=0></p>
+
+<p>If the beam was perfectly straight and the lifting points were placed 
+ exactly over the C.G. of the beam, it would hang perfectly plumb. However, 
+ imperfections in the beam (sweep tolerances), and slight misplacement 
+ of the lifting loops will always cause C.G. of the beam to be slightly 
+ misaligned with the roll center making the beam tip by a small angle <font 
+ style="font-family: Symbol;"
+	face=Symbol>q</font><span style="vertical-align: sub;">i</span>, where:</p>
+
+<ol style="list-style: circle;"
+	type=circle>
+	
+	<p><font style="font-family: Symbol;"
+			face=Symbol>q</font>i = initial roll angle in radians = e<span 
+ style="vertical-align: sub;">i</span>/y<span style="vertical-align: sub;">r</span>, 
+ assuming small angles<br>
+	e<span style="vertical-align: sub;">i</span> = intial eccentricity 
+ of the C.G. from the roll axis<br>
+	y<span style="vertical-align: sub;">r</span> = vertical distance from 
+ the roll center to the C.G.</p>
+</ol>
+
+<p><font style="font-family: Symbol;"
+		face=Symbol>q</font>i will cause a component of the beam's weight 
+ to be applied toward the weak axis of the beam which will cause it to 
+ deflect. This weak axis deflection will cause the C.G. to further shift 
+ increasing the weak axis force and so on. If the beam has adequate stiffness, 
+ this mechanism will reach a final equilibrium position as shown in the 
+ Figure below. If not, the beam will be destroyed.</p>
+
+<p><img src="LiftingEqulibrium.gif"
+		style="margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				width: 733px;
+				height: 396px;
+				border-style: none;"
+		width=733
+		height=396
+		border=0></p>
+
+<p>The factor of safety may be defined as the ratio of the resisting moment 
+ arm c<span style="vertical-align: sub;">r</span>, to the applied moment 
+ arm c<span style="vertical-align: sub;">a</span> as shown in the figure 
+ above assuming small angles:</p>
+
+<p style="text-align: center;"
+	align=center><img src="LiftingFS.gif"
+						style="margin-top: 0px;
+								margin-bottom: 0px;
+								margin-left: 0px;
+								margin-right: 0px;
+								border-style: none;
+								width: 149px;
+								height: 52px;
+								border-style: none;"
+						width=149
+						height=52
+						border=0></p>
+
+<p>The equlibrium equation, again assuming small angles, may be written 
+ as:</p>
+
+<p style="text-align: center;"
+	align=center><img src="LiftingEqulibriumEquation.gif"
+						style="margin-top: 0px;
+								margin-bottom: 0px;
+								margin-left: 0px;
+								margin-right: 0px;
+								border-style: none;
+								width: 467px;
+								height: 62px;
+								border-style: none;"
+						width=467
+						height=62
+						border=0></p>
+
+<p>Where z<span style="vertical-align: sub;">o</span> is the theoretical 
+ deflection of the center of mass of the beam assuming that the full weight 
+ of the beam is applied about the weak axis. Note that this is not the 
+ maximum deflection, but the deflection of the center of mass of the entire 
+ beam.</p>
+
+<p style="text-align: center;"
+	align=center><img src="LiftingZEquation.gif"
+						style="margin-top: 0px;
+								margin-bottom: 0px;
+								margin-left: 0px;
+								margin-right: 0px;
+								border-style: none;
+								width: 318px;
+								height: 57px;
+								border-style: none;"
+						width=318
+						height=57
+						border=0></p>
+
+<p>This relationship is correct assuming that the beam does not crack prior 
+ to failure. In reality, at failure the beam will crack. Test data shows 
+ that the effective stiffness will be reduced as <font style="font-family: Symbol;"
+														face=Symbol>q</font> 
+ increases, and the effective z'<span style="vertical-align: sub;">o</span> 
+ may be written as: z'<span style="vertical-align: sub;">o</span> = z<span 
+ style="vertical-align: sub;">o</span>(1 + 2.5 <font style="font-family: Symbol;"
+													face=Symbol>q</font>). 
+ Substituting into the FS equation, we get.</p>
+
+<p style="text-align: center;"
+	align=center><img src="LiftingFSFailureIntermediate.gif"
+						style="margin-top: 0px;
+								margin-bottom: 0px;
+								margin-left: 0px;
+								margin-right: 0px;
+								border-style: none;
+								width: 229px;
+								height: 56px;
+								border-style: none;"
+						width=229
+						height=56
+						border=0></p>
+
+<p>We can differentiate this relationship to find the tilt angle at which 
+ the maximum FS occurs.</p>
+
+<p style="text-align: center;"
+	align=center><img src="LiftingThetaMax.gif"
+						style="margin-top: 0px;
+								margin-bottom: 0px;
+								margin-left: 0px;
+								margin-right: 0px;
+								border-style: none;
+								width: 152px;
+								height: 49px;
+								border-style: none;"
+						width=152
+						height=49
+						border=0></p>
+
+<p>Substituting back into the original equation for FS, we find that the 
+ maximum factor of safety against failure is:</p>
+
+<p style="text-align: center;"
+	align=center><img src="LiftingFSFailure.jpg"
+						style="margin-top: 0px;
+								margin-bottom: 0px;
+								margin-left: 0px;
+								margin-right: 0px;
+								border-style: none;
+								width: 151px;
+								height: 58px;
+								border-style: none;"
+						width=151
+						height=58
+						border=0></p>
+
+<p>It is important to note z'<span style="vertical-align: sub;">o</span> 
+ is derived, in part, from the experimental relationship I<span style="vertical-align: sub;">eff</span> 
+ = I<span style="vertical-align: sub;">g</span>(1 + 2.5 <font style="font-family: Symbol;"
+	face=Symbol>q</font>). This relationship conservatively predicts the 
+ effective moment of interia about the vertical axis of the beam as a function 
+ of the gross moment of inertia and tilt angle. This is a lower bound relationship 
+ for beams having an gross moment of inertia about of the vertical axis 
+ of at least 25x10<span style="vertical-align: super;">3</span> in<span 
+ style="vertical-align: super;">4</span>. For beams with larger moments 
+ of inertia, the predicted factors of safety are conservative. For a more 
+ complete discussion of the effective stiffness of cracked beams, see Mast 
+ 1993.</p>
+
+<h3>Factor of Safety for Cracking</h3>
+
+<p>For cracking, we can take the original equation for FS:</p>
+
+<p style="text-align: center;"
+	align=center><img src="LiftingFS.gif"
+						style="margin-top: 0px;
+								margin-bottom: 0px;
+								margin-left: 0px;
+								margin-right: 0px;
+								border-style: none;
+								width: 149px;
+								height: 52px;
+								border-style: none;"
+						width=149
+						height=52
+						border=0></p>
+
+<p>And substitute the tilt angle <font style="font-family: Symbol;"
+										face=Symbol>q</font><span style="vertical-align: sub;">max</span> 
+ at which cracking is expected. Substituting <font style="font-family: Symbol;"
+													face=Symbol>q</font><span 
+ style="vertical-align: sub;">i</span>y<span style="vertical-align: sub;">r</span> 
+ = e<span style="vertical-align: sub;">i</span> and simplifying, we get:</p>
+
+<p style="text-align: center;"
+	align=center><img src="LiftingFSCracking.jpg"
+						style="margin-top: 0px;
+								margin-bottom: 0px;
+								margin-left: 0px;
+								margin-right: 0px;
+								border-style: none;
+								width: 201px;
+								height: 58px;
+								border-style: none;"
+						width=201
+						height=58
+						border=0></p>
+
+<p>Finally, note that the girder cannot fail if it does not crack. Therefore, 
+ if <span style="font-style: italic;">FS<span style="vertical-align: sub;">f</span> 
+ &lt; FS<span style="vertical-align: sub;">cr</span></span> then <span 
+ style="font-style: italic;">FS<span style="vertical-align: sub;">f</span> 
+ = FS<span style="vertical-align: sub;">cr</span></span>.&nbsp;</p>
+
+<!--kadov_tag{{<placeholder id="footer">}}-->
+</body>
+
+</html>

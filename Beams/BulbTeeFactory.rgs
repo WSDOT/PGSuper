@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.BulbTeeFactory.1 = s 'Deck Bulb Tee'
+	{
+		CLSID = s '{9AA6D6FF-2D05-46db-B3F0-479B182B3193}'
+	}
+	PGSuperBeamFactory.BulbTeeFactory = s 'Deck Bulb Tee'
+	{
+		CLSID = s '{9AA6D6FF-2D05-46db-B3F0-479B182B3193}'
+		CurVer = s 'PGSuperBeamFactory.BulbTeeFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {9AA6D6FF-2D05-46db-B3F0-479B182B3193} = s 'Deck Bulb Tee'
+		{
+			ProgID = s 'PGSuperBeamFactory.BulbTeeFactory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.BulbTeeFactory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

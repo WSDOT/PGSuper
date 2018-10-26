@@ -1,0 +1,206 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+#include "StdAfx.h"
+#include <Reporting\ContinuityCheck.h>
+
+#include <IFace\DisplayUnits.h>
+#include <IFace\AnalysisResults.h>
+#include <IFace\Bridge.h>
+#include <IFace\Project.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/****************************************************************************
+CLASS
+   CContinuityCheck
+****************************************************************************/
+
+
+////////////////////////// PUBLIC     ///////////////////////////////////////
+
+//======================== LIFECYCLE  =======================================
+CContinuityCheck::CContinuityCheck()
+{
+}
+
+CContinuityCheck::CContinuityCheck(const CContinuityCheck& rOther)
+{
+   MakeCopy(rOther);
+}
+
+CContinuityCheck::~CContinuityCheck()
+{
+}
+
+//======================== OPERATORS  =======================================
+CContinuityCheck& CContinuityCheck::operator= (const CContinuityCheck& rOther)
+{
+   if( this != &rOther )
+   {
+      MakeAssignment(rOther);
+   }
+
+   return *this;
+}
+
+//======================== OPERATIONS =======================================
+void CContinuityCheck::Build(rptChapter* pChapter,
+                              IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                              IDisplayUnits* pDispUnits) const
+{
+   GET_IFACE2(pBroker,IContinuity,pContinuity);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+
+   long nSpans = pBridge->GetSpanCount();
+
+   // if there is only one span or if this is simple span analysis, get the heck outta here
+   pgsTypes::AnalysisType analysis_type = pSpec->GetAnalysisType();
+   if ( nSpans == 1 || analysis_type == pgsTypes::Simple )
+      return;
+
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress, pDispUnits->GetStressUnit(), false );
+
+   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << pTitle;
+   pTitle->SetName("Continuity");
+   *pTitle << "Continuity [5.14.1.4.5]";
+
+   rptParagraph* pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,"");
+   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   *pPara << pTable;
+
+   (*pTable)(0,0) << "";
+   (*pTable)(0,1) << COLHDR(RPT_FBOT, rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*pTable)(0,2) << "Boundary Condition";
+   (*pTable)(0,3) << "Is Compressive?";
+
+   PierIndexType nPiers = pBridge->GetPierCount();
+   RowIndexType row = 1;
+   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+   {
+      double fBottom = pContinuity->GetContinuityStressLevel(pierIdx,girder);
+
+      if ( pierIdx == 0 || pierIdx == nPiers-1 )
+         (*pTable)(row,0) << "Abutment " << (long)(pierIdx+1);
+      else
+         (*pTable)(row,0) << "Pier " << (long)(pierIdx+1);
+
+      (*pTable)(row,1) << stress.SetValue(fBottom);
+
+      bool bContinuousLeft, bContinuousRight;
+      pBridge->IsContinuousAtPier(pierIdx,&bContinuousLeft,&bContinuousRight);
+      
+      bool bIntegralLeft, bIntegralRight;
+      pBridge->IsIntegralAtPier(pierIdx,&bIntegralLeft,&bIntegralRight);
+
+      if ( bContinuousLeft || bContinuousRight )
+         (*pTable)(row,2) << "Continuous";
+      else if ( bIntegralLeft || bIntegralRight )
+         (*pTable)(row,2) << "Integral";
+      else
+         (*pTable)(row,2) << "Hinged";
+
+      fBottom = IsZero(fBottom) ? 0 : fBottom;
+      (*pTable)(row,3) << (fBottom < 0 ? "Yes" : "No");
+
+      row++;
+   }
+
+   pPara = new rptParagraph;
+   *pPara << RPT_FBOT << " is the calcuated stress at the bottom of the continuity diaphragm for the combination of superimposed permanent loads and 50% live load" << rptNewLine;
+   *pChapter << pPara;
+
+   bool bEffective = pContinuity->IsContinuityFullyEffective(girder);
+   if ( bEffective )
+   {
+      *pPara << "Continuous connections are fully effective." << rptNewLine;
+      *pPara << "Continuity is accounted for in Service and Strength Limit States." << rptNewLine;
+   }
+   else
+   {
+      *pPara << "Continuous connections are not fully effective." << rptNewLine;
+      *pPara << "Continuity is accounted for only in Strength Limit States." << rptNewLine;
+   }
+}
+
+//======================== ACCESS     =======================================
+//======================== INQUIRY    =======================================
+
+////////////////////////// PROTECTED  ///////////////////////////////////////
+
+//======================== LIFECYCLE  =======================================
+//======================== OPERATORS  =======================================
+//======================== OPERATIONS =======================================
+void CContinuityCheck::MakeCopy(const CContinuityCheck& rOther)
+{
+   // Add copy code here...
+}
+
+void CContinuityCheck::MakeAssignment(const CContinuityCheck& rOther)
+{
+   MakeCopy( rOther );
+}
+
+//======================== ACCESS     =======================================
+//======================== INQUIRY    =======================================
+
+////////////////////////// PRIVATE    ///////////////////////////////////////
+
+//======================== LIFECYCLE  =======================================
+//======================== OPERATORS  =======================================
+//======================== OPERATIONS =======================================
+//======================== ACCESS     =======================================
+//======================== INQUERY    =======================================
+
+//======================== DEBUG      =======================================
+#if defined _DEBUG
+bool CContinuityCheck::AssertValid() const
+{
+   return true;
+}
+
+void CContinuityCheck::Dump(dbgDumpContext& os) const
+{
+   os << "Dump for CContinuityCheck" << endl;
+}
+#endif // _DEBUG
+
+#if defined _UNITTEST
+bool CContinuityCheck::TestMe(dbgLog& rlog)
+{
+   TESTME_PROLOGUE("CContinuityCheck");
+
+   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CContinuityCheck");
+
+   TESTME_EPILOG("LiveLoadDistributionFactorTable");
+}
+#endif // _UNITTEST

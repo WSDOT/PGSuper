@@ -1,0 +1,186 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+4 TEXTINCLUDE 
+BEGIN
+    "1 TYPELIB ""Beams.tlb""\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,2,2,0
+ PRODUCTVERSION 2,2,2,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "A member of the Alternate Route Project"
+            VALUE "CompanyName", "Washington State Department of Transportation"
+            VALUE "FileDescription", "Beams Module for PGSuper"
+            VALUE "FileVersion", "2.2.2.0"
+            VALUE "InternalName", "Beams"
+            VALUE "LegalCopyright", "Copyright © 2000-2009, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "OriginalFilename", "Beams.DLL"
+            VALUE "ProductName", "PGSuper"
+            VALUE "ProductVersion", "2.2.2.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// METAFILE
+//
+
+IBEAM                   METAFILE                "res\\IBeam.emf"
+UBEAM                   METAFILE                "res\\UBeam.emf"
+UBEAM2                  METAFILE                "res\\UBeam2.emf"
+NUBEAM                  METAFILE                "res\\NUBeam.emf"
+BULBTEE                 METAFILE                "res\\BulbTee.emf"
+MULTIWEB                METAFILE                "res\\MultiWeb.emf"
+DOUBLETEE               METAFILE                "res\\DoubleTee.emf"
+VOIDEDSLAB              METAFILE                "res\\VoidedSlab.emf"
+VOIDEDSLAB2             METAFILE                "res\\VoidedSlab2.emf"
+BOXBEAM                 METAFILE                "res\\BoxBeam.emf"
+MULTIWEB2               METAFILE                "res\\MultiWeb2.emf"
+TXDOTDOUBLET            METAFILE                "res\\txdotdou.emf"
+TAPEREDIBEAM            METAFILE                "res\\TaperedIBeam.emf"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_IBEAMFACTORY        REGISTRY                "IBeamFactory.rgs"
+IDR_UBEAMFACTORY        REGISTRY                "UBeamFactory.rgs"
+IDR_UBEAM2FACTORY       REGISTRY                "UBeam2Factory.rgs"
+IDR_NUBEAMFACTORY       REGISTRY                "NUBeamFactory.rgs"
+IDR_BULBTEEFACTORY      REGISTRY                "BulbTeeFactory.rgs"
+IDR_MULTIWEBFACTORY     REGISTRY                "MultiWebFactory.rgs"
+IDR_MULTIWEB2FACTORY    REGISTRY                "MultiWeb2Factory.rgs"
+IDR_DOUBLETEEFACTORY    REGISTRY                "DoubleTeeFactory.rgs"
+IDR_VOIDEDSLABFACTORY   REGISTRY                "VoidedSlabFactory.rgs"
+IDR_VOIDEDSLAB2FACTORY  REGISTRY                "VoidedSlabFactory2.rgs"
+IDR_BOXBEAMFACTORY      REGISTRY                "BoxBeamFactory.rgs"
+IDR_TXDOTDOUBLETFACTORY REGISTRY                "TxDotDoubleTFactory.rgs"
+IDR_TAPEREDIBEAMFACTORY REGISTRY                "TaperedIBeamFactory.rgs"
+IDR_STRANDMOVERIMPL     REGISTRY                "StrandMoverImpl.rgs"
+IDR_IBEAMFAMILY         REGISTRY                "IBeamFamily.rgs"
+IDR_UBEAMFAMILY         REGISTRY                "UBeamFamily.rgs"
+IDR_BOXBEAMFAMILY       REGISTRY                "BoxBeamFamily.rgs"
+IDR_DECKBULBTEEBEAMFAMILY REGISTRY                "BulbTeeFamily.rgs"
+IDR_DOUBLETEEBEAMFAMILY REGISTRY                "DoubleTeeFamily.rgs"
+IDR_RIBBEDBEAMFAMILY    REGISTRY                "MultiWebFamily.rgs"
+IDR_SLABBEAMFAMILY      REGISTRY                "VoidedSlabFamily.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_IBEAM               ICON                    "res\\icon1.ico"
+IDI_NUBEAM              ICON                    "res\\ico00001.ico"
+IDI_UBEAM               ICON                    "res\\ico00002.ico"
+IDI_MULTIWEB            ICON                    "res\\ico00003.ico"
+IDI_MULTIWEB2           ICON                    "res\\ico00004.ico"
+IDI_DOUBLETEE           ICON                    "res\\ico00004.ico"
+IDI_VOIDEDSLAB          ICON                    "res\\voided_slab.ico"
+IDI_BULBTEE             ICON                    "res\\bulb_tee.ico"
+IDI_TEXASU              ICON                    "res\\texas_u.ico"
+IDI_BOXBEAM             ICON                    "res\\boxbeam.ico"
+IDI_TXDOTDOUBLET        ICON                    "res\\txdotdou.ico"
+IDI_VOIDEDSLAB2         ICON                    "Res\\voided_slab2.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_PROJNAME            "Beams"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

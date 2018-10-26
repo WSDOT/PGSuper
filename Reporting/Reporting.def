@@ -1,0 +1,6 @@
+; Reporting.def : Declares the module parameters for the DLL.
+
+LIBRARY      "PGSuperReporting.dll"
+
+EXPORTS
+    ; Explicit exports can go here

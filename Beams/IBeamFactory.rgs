@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.WFBeamFactory.1 = s 'Precast I-Beam'
+	{
+		CLSID = s '{30962206-2412-4001-AA20-CF359BC60142}'
+	}
+	PGSuperBeamFactory.WFBeamFactory = s 'Precast I-Beam'
+	{
+		CLSID = s '{30962206-2412-4001-AA20-CF359BC60142}'
+		CurVer = s 'PGSuperBeamFactory.WFBeamFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {30962206-2412-4001-AA20-CF359BC60142} = s 'Precast I-Beam'
+		{
+			ProgID = s 'PGSuperBeamFactory.WFBeamFactory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.WFBeamFactory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

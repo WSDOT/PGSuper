@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFamily.IBeam.1 = s 'I-Beam'
+	{
+		CLSID = s '{AB6A4CD6-0F10-4d2f-BB98-4425146B133E}'
+	}
+	PGSuperBeamFamily.IBeam = s 'I-Beam'
+	{
+		CLSID = s '{AB6A4CD6-0F10-4d2f-BB98-4425146B133E}'
+		CurVer = s 'PGSuperBeamFamily.IBeam.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {AB6A4CD6-0F10-4d2f-BB98-4425146B133E} = s 'I-Beam'
+		{
+			ProgID = s 'PGSuperBeamFamily.IBeam.1'
+			VersionIndependentProgID = s 'PGSuperBeamFamily.IBeam'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

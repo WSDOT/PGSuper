@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFamily.DoubleTee.1 = s 'Double Tee'
+	{
+		CLSID = s '{8167A722-A9CD-404f-BEDE-CF57D5305871}'
+	}
+	PGSuperBeamFamily.DoubleTee = s 'Double Tee'
+	{
+		CLSID = s '{8167A722-A9CD-404f-BEDE-CF57D5305871}'
+		CurVer = s 'PGSuperBeamFamily.DoubleTee.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {8167A722-A9CD-404f-BEDE-CF57D5305871} = s 'Double Tee'
+		{
+			ProgID = s 'PGSuperBeamFamily.DoubleTee.1'
+			VersionIndependentProgID = s 'PGSuperBeamFamily.DoubleTee'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

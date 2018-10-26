@@ -1,0 +1,161 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Girder Connection Dialog</title>
+
+<!--(Meta)==========================================================-->
+
+<meta name="template" content="PageTemplate.htt">
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=topic-status content="In Progress">
+<meta name=topic-priority content=0>
+<meta name=topic-time-estimate content=0>
+<meta name=topic-comment content>
+<meta name=topic-id content>
+<meta name=topic-check-list content="Ran Smart Index">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=1422>
+<meta name=layout-width content=963>
+
+
+<!--(Links)=========================================================-->
+
+<link REL="StyleSheet" HREF="..\..\default.css">
+
+
+
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<h1>Girder Connection Dialog</h1>
+
+<p>The Girder Connection Dialog allows you to edit the description of the 
+ connection between the end of the girder and the substructure.</p>
+
+<h2><span><span style="font-weight: normal;">Entry Name</span></span></h2>
+
+<p>Each girder connection entry must have a unique name. The name may contain 
+ any characters and can be up to 32 characters in length.</p>
+
+<h2><span style="font-weight: normal;">Connection Properties</span></h2>
+
+<h3><span style="font-weight: bold;">Bearing Offset</span></h3>
+
+<p>The bearing offset is the distance from the pier or abutment reference 
+ line to the point of bearing on the girder (See Figure in Dialog). The 
+ bearing offset may be measured normal to the centerline of pier or along 
+ the centerline of the girder. The centerline of bearing is always parallel 
+ to the centerline of pier.</p>
+
+<h3><span style="font-weight: bold;"><span><span style="font-weight: bold;">E</span></span>nd 
+ Distance</span></h3>
+
+<p>The girder end distance locates the end of the girder and can be measured 
+ by the following:</p>
+
+<ul style="list-style: disc;"
+	type=disc>
+	
+	<li class=kadov-p><p>From the centerline of the pier, along the centerline 
+ of the girder</p></li>
+	
+	<li class=kadov-p><p>From the centerline of the pier, normal to the 
+ centerline of the pier</p></li>
+	
+	<li class=kadov-p><p>From the bearing, along the centerline of the 
+ girder</p></li>
+	
+	<li class=kadov-p><p>From the bearing, normal to the centerline of 
+ the girder</p></li>
+</ul>
+
+<p class=Tip>Note that the value of End Distance can never be larger than 
+ the Bearing offset. However, if there is a large skew, it is still possible 
+ to input valid library entry values, but have the bearings located off 
+ of the girder. For example: In the figure below, with a Bearing Offset 
+ = 9” measured along alignment; and End Distance =9” measured from CL pier, 
+ normal to CL pier. For this case a zero skew would place the bearing at 
+ the end of the girder, a valid condition. However, any non-zero skew would 
+ cause the bearing to be beyond the end of the girder – negative cantilever 
+ - Not Good:</p>
+
+<p class=Tip><img src="BearingEndDistanceError.gif"
+					x-maintain-ratio=TRUE
+					style="border: none;
+							float: none;
+							border-style: none;
+							border-style: none;"
+					border=0></p>
+
+<p class=Tip>PGSuper will issue an error message when this condition occurs. 
+ The issue can be fixed by increasing the end distance, or reducing the 
+ girder skew angle.</p>
+
+<h3>Support Width</h3>
+
+<p>The width of the support, centered on the centerline of bearing. Half 
+ the support width defines the distance from the centerline of bearing 
+ to the face of support. Support width is measured along the centerline 
+ of girder.</p>
+
+<h2>End Diaphragm Dimensions</h2>
+
+<p><span><span style="font-weight: normal;">End diaphragm dimensions, along 
+ with the weight density for the currently-selected slab concrete type, 
+ and the girder spacing/overhang width are used for calculating end diaphragm 
+ loads. Diaphragms are assumed to be rectangular.</span></span></p>
+
+<h3><span style="font-weight: bold;">Diaphragm Height</span></h3>
+
+<p>Enter the height of end diaphragms.</p>
+
+<h3><span style="font-weight: bold;">Diaphragm Width</span></h3>
+
+<p>Enter the width of end diaphragms.</p>
+
+<h2>Application of Diaphragm Loads</h2>
+
+<p>PGSuper gives three options for applying end diaphragm loads to girders.</p>
+
+<h3><span style="font-weight: bold;">Apply Weight of Diaphragm Directly 
+ Over C.L. Bearing</span></h3>
+
+<p><span><span style="font-weight: normal;">This option causes the weight 
+ of the diaphragm to be applied directly over the center of the girder 
+ bearing and does not induce moment into the girder. The effects of the 
+ load are included in the girder reaction.</span></span></p>
+
+<h3><span style="font-weight: bold;">Apply Weight of Diaphragm to Girder</span></h3>
+
+<p><span>Apply the weight of the diaphragm to the girder at the specified 
+ location. The location of the load (C.G. location) is measured from, and 
+ normal to, the centerline of the abutment/pier and must be a positive 
+ value. Moments due to offset of the load from the bearing are applied 
+ to the girder.</span></p>
+
+<h3><span style="font-weight: bold;">Do Not Use Weight of Diaphragm in 
+ Analysis</span></h3>
+
+<p><span>I</span><span>gnore the effects of the diaphragm in the analysis. 
+ Diaphragm loads are not applied to the girder or the reactions.</span></p>
+
+<!--kadov_tag{{<placeholder id="footer">}}-->
+</body>
+
+</html>

@@ -1,0 +1,26 @@
+HKCR
+{
+	WBFLBeams.StrandMoverImpl.1 = s 'StrandMoverImpl Class'
+	{
+		CLSID = s '{59BAD0A2-91F0-4E8A-8A90-4241787E9B50}'
+	}
+	WBFLBeams.StrandMoverImpl = s 'StrandMoverImpl Class'
+	{
+		CLSID = s '{59BAD0A2-91F0-4E8A-8A90-4241787E9B50}'
+		CurVer = s 'WBFLBeams.StrandMoverImpl.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {59BAD0A2-91F0-4E8A-8A90-4241787E9B50} = s 'StrandMoverImpl Class'
+		{
+			ProgID = s 'WBFLBeams.StrandMoverImpl.1'
+			VersionIndependentProgID = s 'WBFLBeams.StrandMoverImpl'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{DC4B56B3-455B-41be-9509-289950E62190}'
+		}
+	}
+}

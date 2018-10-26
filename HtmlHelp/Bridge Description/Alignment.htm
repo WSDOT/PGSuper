@@ -1,0 +1,120 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Horizontal Alignment</title>
+
+<!--(Meta)==========================================================-->
+
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=topic-status content="In Progress">
+<meta name=topic-priority content=0>
+<meta name=topic-time-estimate content=0>
+<meta name=topic-comment content>
+<meta name=topic-id content>
+<meta name="template" content="PageTemplate.htt">
+<meta name=topic-check-list content="Ran Smart Index">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=1063>
+<meta name=layout-width content=963>
+
+
+<!--(Links)=========================================================-->
+
+<link REL="StyleSheet" HREF="..\default.css">
+
+
+
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<h1>Alignment Description - Horizontal</h1>
+
+<p>The geometry of the roadway affects the geometry and loads on the structure. 
+ Data in the Alignment Description Dialog describes the horizontal alignment, 
+ the vertical profile, and super elevations.</p>
+
+<h2>Horizontal Alignment</h2>
+
+<p><span>The horizontal alignment can be either straight or curved. </span></p>
+
+<h3><span style="font-weight: bold;">Straight Alignment</span></h3>
+
+<p><span style="font-weight: normal;">Enter the direction of the alignment 
+ as a bearing in the direction of increasing station in the Initial Direction 
+ field. Leave the Curve Table empty.</span></p>
+
+<p><img src="Straight Alignment.jpg"
+		style="width: 217px;
+				height: 200px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				border-style: none;"
+		width=217
+		height=200
+		border=0></p>
+
+<p class=Tip><span style="font-weight: normal;">Note: Bearing data must 
+ be entered using the standard surveying format of N/S dd mm ss.ss E/W 
+ . Trailing zero data need not be entered. For example &quot;N 45 W&quot; 
+ is the same as &quot;N 45 00 00.0 W&quot;.</span></p>
+
+<h3><span style="font-weight: bold;">Curved Alignment</span></h3>
+
+<p><span style="font-weight: normal;">Enter the initial direction of the 
+ alignment in the Initial Direction field. For each horizontal curve in 
+ the alignment, add a curve to the Curve Table. Describe each curve with 
+ its PI Station, Forward Tangent Bearing or Delta Angle, Radius of the 
+ circular curve, and the Entry and Exit lengths of spirals (if present). 
+ The initial direction is used as the back tangent of the first curve. 
+ The forward tangent of the previous curve is used as the back tangent 
+ of the next curve.</span></p>
+
+<p><span style="font-weight: normal;"><img src="Horizontal Curve.jpg"
+											style="width: 375px;
+													height: 137px;
+													margin-top: 0px;
+													margin-bottom: 0px;
+													margin-left: 0px;
+													margin-right: 0px;
+													border-style: none;
+													border-style: none;"
+											width=375
+											height=137
+											border=0></span></p>
+
+<h3><span>Horizontal Alignment Control Point</span></h3>
+
+<p>The bridge geometry is modeled in a COGO system within PGSuper. The 
+ horizontal alignment control point defined the Northing and Easting of 
+ a specific point on the alignment.</p>
+
+<p>Station: Station where the horizontal control point is defined.<br>
+East (X): The East/X value of the control point<br>
+North (Y): The North/Y value of the control point</p>
+
+<p class=Tip>NOTE: Coordinates at the start and end of the girders and 
+ the points of bearing are given in the Bridge Geometry Report</p>
+
+<!--kadov_tag{{<placeholder id="footer">}}-->
+</body>
+
+</html>

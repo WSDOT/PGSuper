@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.ReportAgent.1 = s 'ReportAgent Class'
+	{
+		CLSID = s '{3D5066F2-27BE-11D2-8EB2-006097DF3C68}'
+	}
+	PGSuper.ReportAgent = s 'ReportAgent Class'
+	{
+		CLSID = s '{3D5066F2-27BE-11D2-8EB2-006097DF3C68}'
+		CurVer = s 'PGSuper.ReportAgent.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {3D5066F2-27BE-11D2-8EB2-006097DF3C68} = s 'ReportAgent Class'
+		{
+			ProgID = s 'PGSuper.ReportAgent.1'
+			VersionIndependentProgID = s 'PGSuper.ReportAgent'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '03D55510-27CC-11d2-8EB2-006097DF3C68'
+		}
+	}
+}

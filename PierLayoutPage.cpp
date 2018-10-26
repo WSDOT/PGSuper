@@ -1,0 +1,310 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// PierLayoutPage.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "pgsuper.h"
+#include "PGSuperUnits.h"
+#include "PierLayoutPage.h"
+#include "PierDetailsDlg.h"
+#include <MfcTools\MfcTools.h>
+
+#include "HtmlHelp\HelpTopics.hh"
+
+#include <IFace\DisplayUnits.h>
+#include <IFace\Project.h>
+#include <IFace\Bridge.h>
+#include <PgsExt\BridgeDescription.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CPierLayoutPage property page
+
+IMPLEMENT_DYNCREATE(CPierLayoutPage, CPropertyPage)
+
+CPierLayoutPage::CPierLayoutPage() : CPropertyPage(CPierLayoutPage::IDD)
+{
+	//{{AFX_DATA_INIT(CPierLayoutPage)
+		// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
+   m_MovePierOption = pgsTypes::MoveBridge;
+}
+
+CPierLayoutPage::~CPierLayoutPage()
+{
+}
+
+void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
+{
+	CPropertyPage::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CPierLayoutPage)
+		// NOTE: the ClassWizard will add DDX and DDV calls here
+	//}}AFX_DATA_MAP
+
+   CComPtr<IBroker> pBroker;
+   AfxGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+
+   DDX_Station(pDX,IDC_STATION,m_Station,pDispUnits->GetStationFormat());
+
+   DDX_CBItemData(pDX,IDC_MOVE_PIER,m_MovePierOption);
+
+   DDX_String(pDX,IDC_ORIENTATION,m_strOrientation);
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      pDX->PrepareEditCtrl(IDC_ORIENTATION);
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      Float64 skewAngle;
+      bool bSuccess = pBridge->GetSkewAngle(m_Station,m_strOrientation.c_str(),&skewAngle);
+      if ( !bSuccess )
+      {
+         AfxMessageBox("Invalid pier orientation");
+         pDX->Fail();
+      }
+      else if ( bSuccess && IsLT(fabs(skewAngle),0.0) || IsGE(MAX_SKEW_ANGLE,fabs(skewAngle)) )
+      {
+         AfxMessageBox("Pier skew must be less than 88°\r\nPier skew is measured from the alignment normal");
+         pDX->Fail();
+      }
+   }
+}
+
+
+BEGIN_MESSAGE_MAP(CPierLayoutPage, CPropertyPage)
+	//{{AFX_MSG_MAP(CPierLayoutPage)
+	ON_EN_CHANGE(IDC_STATION, OnChangeStation)
+	ON_EN_KILLFOCUS(IDC_STATION, OnKillfocusStation)
+	ON_CBN_SETFOCUS(IDC_MOVE_PIER, OnSetfocusMovePier)
+	ON_COMMAND(ID_HELP, OnHelp)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CPierLayoutPage message handlers
+
+BOOL CPierLayoutPage::OnInitDialog() 
+{
+   // move options are not available until the station changes
+   CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
+   pOptions->EnableWindow(FALSE);
+
+	CPropertyPage::OnInitDialog();
+
+   UpdateMoveOptionList();
+
+   
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+
+   CString strPierLabel;
+   strPierLabel.Format("%s %d",
+      pParent->m_pPrevSpan == NULL || pParent->m_pNextSpan == NULL ? "Abutment" : "Pier",
+      m_PierIdx+1);
+
+   GetDlgItem(IDC_PIER_LABEL)->SetWindowText(strPierLabel);
+	
+   CComPtr<IBroker> pBroker;
+   AfxGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   
+   CString fmt;
+   fmt.LoadString(( pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US ));
+   GetDlgItem(IDC_STATION_FORMAT)->SetWindowText( fmt );
+
+   fmt.LoadString( IDS_DLG_ORIENTATIONFMT );
+   GetDlgItem(IDC_ORIENTATION_FORMAT)->SetWindowText( fmt );
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CPierLayoutPage::Init(const CPierData* pPier)
+{
+   m_PierIdx = pPier->GetPierIndex();
+
+   const CBridgeDescription* pBridgeDesc = pPier->GetBridgeDescription();
+   m_nSpans = pBridgeDesc->GetSpanCount();
+
+   m_Station = pPier->GetStation();
+   m_FromStation = m_Station; // keep a copy of this for the "move" note
+
+   if ( m_PierIdx != 0 )
+      m_PrevPierStation = pBridgeDesc->GetPier(m_PierIdx-1)->GetStation();
+   else
+      m_PrevPierStation = -DBL_MAX;
+
+   if ( m_PierIdx != m_nSpans )
+      m_NextPierStation = pBridgeDesc->GetPier(m_PierIdx+1)->GetStation();
+   else
+      m_NextPierStation = -DBL_MAX;
+
+   m_strOrientation = pPier->GetOrientation();
+}
+
+void CPierLayoutPage::OnChangeStation() 
+{
+   GetDlgItem(IDC_MOVE_PIER)->EnableWindow(TRUE);
+
+   UpdateMoveOptionList();
+}
+
+void CPierLayoutPage::UpdateMoveOptionList()
+{
+
+   // Get the current value for station
+   CDataExchange dx(this,TRUE);
+
+   CComPtr<IBroker> pBroker;
+   AfxGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+
+   // read the current value of the station edit
+   double toStation;
+   try
+   {
+      DDX_Station(&dx,IDC_STATION,toStation,pDispUnits->GetStationFormat());
+   }
+   catch(...)
+   {
+      CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
+      pOptions->EnableWindow(FALSE);
+
+      CEdit* pEdit = (CEdit*)GetDlgItem(IDC_STATION);
+      pEdit->SetSel(-1,0);
+      return;
+   }
+
+   // get the current selection
+   CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
+   int curSel = _cpp_max(pOptions->GetCurSel(),0);
+
+   pOptions->ResetContent();
+
+   CString strName = (m_PierIdx == 0 || m_PierIdx == m_nSpans ? "Abutment" : "Pier");
+
+
+   CWnd* pMove = GetDlgItem(IDC_MOVE_LABEL);
+   CString strMove;
+   strMove.Format("Move %s %d from %s to %s",
+                  strName,
+                  m_PierIdx+1,
+                  FormatStation(pDispUnits->GetStationFormat(),m_FromStation),
+                  FormatStation(pDispUnits->GetStationFormat(),toStation)
+                  );
+   pMove->SetWindowText(strMove);
+
+   CString strOptions[4];
+   pgsTypes::MovePierOption options[4];
+   strOptions[0].Format("Move bridge retaining all span lengths");
+   options[0] = pgsTypes::MoveBridge;
+
+   int nOptions = 1;
+
+   if ( 1 < m_nSpans &&  // must have more than one span... moving an interior pier
+        m_PierIdx != 0 && m_PierIdx != m_nSpans &&  // can't be first or last pier
+        m_PrevPierStation < toStation && toStation < m_NextPierStation ) // can't move pier beyond adjacent piers
+   {
+      options[nOptions] = pgsTypes::AdjustAdjacentSpans;
+      strOptions[nOptions++].Format("Adjust the length of Spans %d and %d",
+                                    m_PierIdx,m_PierIdx+1);
+   }
+
+   if ( m_PierIdx == 0 && toStation < m_NextPierStation )
+   {
+      // adjust length of first span only
+      options[nOptions] = pgsTypes::AdjustNextSpan;
+      if ( m_nSpans == 1 )
+      {
+         strOptions[nOptions++].Format("Adjust the length of Span %d by moving %s %d",
+                                       m_PierIdx+1,strName,m_PierIdx+1);
+      }
+      else
+      {
+         strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
+                                       m_PierIdx+1);
+      }
+   }
+   else if ( m_PierIdx == m_nSpans && m_PrevPierStation < toStation )
+   {
+      // adjust length of last span only
+      options[nOptions] = pgsTypes::AdjustPrevSpan;
+      if ( m_nSpans == 1 )
+      {
+         strOptions[nOptions++].Format("Adjust the length of Span %d by moving %s %d",
+                                       m_PierIdx,strName,m_PierIdx+1);
+      }
+      else
+      {
+         strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
+                                       m_PierIdx);
+      }
+   }
+   else if ( 0 < m_PierIdx && m_PierIdx < m_nSpans )
+   {
+      if ( m_PrevPierStation < toStation )
+      {
+         // adjust length of previous span only
+         options[nOptions] = pgsTypes::AdjustPrevSpan;
+         strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
+                                       m_PierIdx);
+      }
+
+      if ( toStation < m_NextPierStation )
+      {
+         // adjust length of next span only
+         options[nOptions] = pgsTypes::AdjustNextSpan;
+         strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
+                                       m_PierIdx+1);
+      }
+   }
+
+   for ( int i = 0; i < nOptions; i++ )
+   {
+      int idx = pOptions->AddString(strOptions[i]); 
+      pOptions->SetItemData(idx,(DWORD)options[i]);
+   }
+   pOptions->SetCurSel(curSel);
+}
+
+void CPierLayoutPage::OnKillfocusStation() 
+{
+   UpdateMoveOptionList();
+}
+
+void CPierLayoutPage::OnSetfocusMovePier() 
+{
+   UpdateMoveOptionList();
+}
+
+void CPierLayoutPage::OnHelp() 
+{
+   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PIERDETAILS_GENERAL );
+}

@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.UBeam2Factory.1 = s 'Precast U-Beam (TXDOT)'
+	{
+		CLSID = s '{C28FA58A-3D4D-4df1-8021-2A0BBA90F304}'
+	}
+	PGSuperBeamFactory.UBeam2Factory = s 'Precast U-Beam (TXDOT)'
+	{
+		CLSID = s '{C28FA58A-3D4D-4df1-8021-2A0BBA90F304}'
+		CurVer = s 'PGSuperBeamFactory.UBeam2Factory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {C28FA58A-3D4D-4df1-8021-2A0BBA90F304} = s 'Precast U-Beam (TXDOT)'
+		{
+			ProgID = s 'PGSuperBeamFactory.UBeam2Factory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.UBeam2Factory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

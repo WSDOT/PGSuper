@@ -1,0 +1,132 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+#ifndef INCLUDED_PGSEXT_DECKDESCRIPTION_H_
+#define INCLUDED_PGSEXT_DECKDESCRIPTION_H_
+
+// SYSTEM INCLUDES
+//
+#include <WBFLCore.h>
+
+#if !defined INCLUDED_MATHEX_H_
+#include <MathEx.h>
+#endif
+
+// PROJECT INCLUDES
+//
+#if !defined INCLUDED_PGSEXTEXP_H_
+#include <PgsExt\PgsExtExp.h>
+#endif
+
+#include <PGSuperTypes.h>
+#include <PgsExt\DeckPoint.h>
+#include <PgsExt\DeckRebarData.h>
+
+//#include <StrData.h>
+
+// LOCAL INCLUDES
+//
+
+// FORWARD DECLARATIONS
+//
+
+// MISCELLANEOUS
+//
+
+class CBridgeDescription;
+
+/*****************************************************************************
+CLASS 
+   CDeckDescription
+
+   Utility class for describing the deck.
+
+DESCRIPTION
+   Utility class for describing the deck.
+
+COPYRIGHT
+   Copyright © 1997-2008
+   Washington State Department Of Transportation
+   All Rights Reserved
+
+LOG
+   rab : 04.30.2008 : Created file
+*****************************************************************************/
+
+class PGSEXTCLASS CDeckDescription
+{
+public:
+   CDeckDescription();
+   CDeckDescription(const CDeckDescription& rOther);
+   ~CDeckDescription();
+
+   CDeckDescription& operator = (const CDeckDescription& rOther);
+   bool operator == (const CDeckDescription& rOther) const;
+   bool operator != (const CDeckDescription& rOther) const;
+
+   HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pgsTypes::SlabOffsetType* pSlabOffsetType,double* pSlabOffset);
+   HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+
+   void SetBridgeDescription(const CBridgeDescription* pBridge);
+   const CBridgeDescription* GetBridgeDescription() const;
+
+   pgsTypes::SupportedDeckType DeckType;
+   pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity; // only used if SupportedBeamSpacing==sbsUniformAdjacent or sbsGeneralAdjacent
+   Float64 GrossDepth; // Cast Depth if SIP
+   pgsTypes::DeckOverhangTaper OverhangTaper;
+   Float64 OverhangEdgeDepth; // depth of overhang at edge of slab
+   Float64 Fillet;
+   Float64 PanelDepth; // depth of SIP panel
+   Float64 PanelSupport; // Width of SIP panel support (deduct this from roughened surface width
+                         // for horizontal shear capacity)
+
+   // Slab Concrete Material
+   Float64 SlabFc;
+   Float64 SlabWeightDensity;
+   Float64 SlabStrengthDensity;
+   Float64 SlabMaxAggregateSize;
+   Float64 SlabK1;
+   Float64 SlabEc;
+   bool    SlabUserEc;
+
+   // Wearing Sutface
+   pgsTypes::WearingSurfaceType WearingSurface;
+   Float64 OverlayWeight; // if bInputAsDepthAndDesity is true, this value is computed from OverlayDepth and OverlayDensity and is always valid
+   Float64 OverlayDepth;  // undefined if bInputAsDepthAndDensity is false
+   Float64 OverlayDensity;// undefined if bInputAsDepthAndDensity is false
+   bool bInputAsDepthAndDensity; // indicates if the input is by depth and density (true) or pressure load/OverlayWeight (false)
+   Float64 SacrificialDepth; 
+
+   CDeckRebarData DeckRebarData;
+
+   std::vector<CDeckPoint> DeckEdgePoints;
+
+
+protected:
+   void MakeCopy(const CDeckDescription& rOther);
+   void MakeAssignment(const CDeckDescription& rOther);
+
+   const CBridgeDescription* m_pBridgeDesc;
+};
+
+
+#endif // INCLUDED_PGSEXT_DECKDESCRIPTION_H_

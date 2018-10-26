@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.AnalysisAgent.1 = s 'AnalysisAgent Class'
+	{
+		CLSID = s '{BE55D0A2-68EC-11D2-883C-006097C68A9C}'
+	}
+	PGSuper.AnalysisAgent = s 'AnalysisAgent Class'
+	{
+		CLSID = s '{BE55D0A2-68EC-11D2-883C-006097C68A9C}'
+		CurVer = s 'PGSuper.AnalysisAgent.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {BE55D0A2-68EC-11D2-883C-006097C68A9C} = s 'AnalysisAgent Class'
+		{
+			ProgID = s 'PGSuper.AnalysisAgent.1'
+			VersionIndependentProgID = s 'PGSuper.AnalysisAgent'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{7CC15E7F-A66C-4dd0-9DFB-285C037290B3}'
+		}
+	}
+}
