@@ -288,16 +288,19 @@ interface IBridgeMaterial : IUnknown
    virtual const matPsStrand* GetStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
 
    // Properties of Girder Longitudinal Rebar
-   virtual void GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy) = 0;
+   virtual void GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy,Float64* pFu) = 0;
    virtual std::_tstring GetLongitudinalRebarName(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual void GetLongitudinalRebarMaterial(SpanIndexType spanIdx,GirderIndexType gdrIdx,matRebar::Type& type,matRebar::Grade& grade) = 0;
 
    // Properties of Girder Transverse Rebar
-   virtual void GetTransverseRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy) = 0;
+   virtual void GetTransverseRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy,Float64* pFu) = 0;
    virtual std::_tstring GetTransverseRebarName(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual void GetTransverseRebarMaterial(SpanIndexType spanIdx,GirderIndexType gdrIdx,matRebar::Type& type,matRebar::Grade& grade) = 0;
 
    // Rebar properties for design
-   virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy) = 0;
+   virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu) = 0;
    virtual std::_tstring GetDeckRebarName() = 0;
+   virtual void GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade) = 0;
 
    virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1) = 0; /// obsolete
 
@@ -418,8 +421,8 @@ DEFINE_GUID(IID_IStirrupGeometry,
 0x1ffe79be, 0x9545, 0x11d2, 0xac, 0x7b, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
 interface IStirrupGeometry : IUnknown
 {
-   virtual BarSizeType GetVertStirrupBarSize(const pgsPointOfInterest& poi) = 0;
-   virtual BarSizeType GetHorzStirrupBarSize(const pgsPointOfInterest& poi) = 0;
+   virtual matRebar::Size GetVertStirrupBarSize(const pgsPointOfInterest& poi) = 0;
+   virtual matRebar::Size GetHorzStirrupBarSize(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetVertStirrupBarNominalDiameter(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetHorzStirrupBarNominalDiameter(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetVertStirrupBarArea(const pgsPointOfInterest& poi) = 0;
@@ -428,14 +431,14 @@ interface IStirrupGeometry : IUnknown
    virtual Uint32 GetHorzStirrupBarCount(const pgsPointOfInterest& poi)=0; // number of horizontal stirrup bars in the splitting plane
    virtual Float64 GetS(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetAlpha(const pgsPointOfInterest& poi) = 0; // stirrup angle=90 for vertical
-   virtual BarSizeType GetConfinementBarSize(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual matRebar::Size GetConfinementBarSize(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual Float64 GetLengthOfConfinementZone(SpanIndexType span,GirderIndexType gdr)=0;
 
    virtual bool DoStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr) = 0;
 
    // Top flange stirrups for horizontal interface shear
    // Assume two legs per stirrup - always (for top flange bars)
-   virtual BarSizeType GetTopFlangeBarSize(const pgsPointOfInterest& poi) = 0;
+   virtual matRebar::Size GetTopFlangeBarSize(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetTopFlangeBarArea(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetTopFlangeS(const pgsPointOfInterest& poi) = 0;
 
@@ -446,8 +449,8 @@ interface IStirrupGeometry : IUnknown
    virtual Uint32 GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0;
    virtual Float64 GetZoneStart(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0; // dist from start of girder
    virtual Float64 GetZoneEnd(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0; // dist from start of girder
-   virtual BarSizeType GetVertStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) = 0;
-   virtual BarSizeType GetHorzStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) = 0;
+   virtual matRebar::Size GetVertStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) = 0;
+   virtual matRebar::Size GetHorzStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) = 0;
    virtual Uint32 GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
    virtual Uint32 GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
    virtual Float64 GetS(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;

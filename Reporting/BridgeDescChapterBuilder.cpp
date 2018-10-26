@@ -39,7 +39,8 @@
 #include <PgsExt\PierData.h>
 #include <PgsExt\GirderLabel.h>
 
-#include <Material\PsStrand.h>
+#include <Material\Material.h>
+#include <LRFD\LRFD.h>
 
 #include <WBFLCogo.h>
 
@@ -1645,7 +1646,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   *pPara << _T("Reinforcement: ") << deckRebar.strRebarMaterial << rptNewLine;
+   *pPara << _T("Reinforcement: ") << lrfdRebarPool::GetMaterialName(deckRebar.TopRebarType,deckRebar.TopRebarGrade).c_str() << rptNewLine;
    *pPara << _T("Top Mat Cover: ") << cover.SetValue(deckRebar.TopCover) << rptNewLine;
    *pPara << _T("Bottom Mat Cover: ") << cover.SetValue(deckRebar.BottomCover) << rptNewLine;
 
@@ -1662,19 +1663,13 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    (*pTable)(0,3) << COLHDR(_T("Lump Sum"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    (*pTable)(1,0) << _T("Top");
-   if ( deckRebar.TopRebarKey == INVALID_BAR_SIZE )
-      (*pTable)(1,1) << _T("None @ ") << spacing.SetValue( deckRebar.TopSpacing );
-   else
-      (*pTable)(1,1) << _T("#") << deckRebar.TopRebarKey << _T(" @ ") << spacing.SetValue( deckRebar.TopSpacing );
+   (*pTable)(1,1) << lrfdRebarPool::GetBarSize(deckRebar.TopRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.TopSpacing );
 
    (*pTable)(1,2) << _T("AND");
    (*pTable)(1,3) << As.SetValue( deckRebar.TopLumpSum );
 
    (*pTable)(2,0) << _T("Bottom");
-   if ( deckRebar.BottomRebarKey == INVALID_BAR_SIZE )
-      (*pTable)(2,1) << _T("None @ ") << spacing.SetValue( deckRebar.BottomSpacing );
-   else
-      (*pTable)(2,1) << _T("#") << deckRebar.BottomRebarKey << _T(" @ ") << spacing.SetValue( deckRebar.BottomSpacing );
+   (*pTable)(2,1) << lrfdRebarPool::GetBarSize(deckRebar.BottomRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.BottomSpacing );
 
    (*pTable)(2,2) << _T("AND");
    (*pTable)(2,3) << As.SetValue( deckRebar.BottomLumpSum );
@@ -1709,11 +1704,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
          (*pTable)(row,0) << (negMomentRebar.PierIdx+1L);
          (*pTable)(row,1) << (negMomentRebar.Mat == CDeckRebarData::TopMat ? _T("Top") : _T("Bottom"));
          (*pTable)(row,2) << As.SetValue(negMomentRebar.LumpSum);
-         if ( negMomentRebar.RebarKey < 0 )
-            (*pTable)(row,3) << _T("None"); 
-         else
-            (*pTable)(row,3) << _T("#") << negMomentRebar.RebarKey; 
-
+         (*pTable)(row,3) << lrfdRebarPool::GetBarSize(negMomentRebar.RebarSize);
          (*pTable)(row,4) << spacing.SetValue(negMomentRebar.Spacing);
          (*pTable)(row,5) << cutoff.SetValue(negMomentRebar.LeftCutoff);
          (*pTable)(row,6) << cutoff.SetValue(negMomentRebar.RightCutoff);

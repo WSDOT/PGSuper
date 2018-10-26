@@ -30,6 +30,9 @@
 #include "..\htmlhelp\HelpTopics.hh"
 #include <MfcTools\CustomDDX.h>
 
+#include <Material\Rebar.h>
+#include <LRFD\RebarPool.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -63,6 +66,38 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
 
+   if ( pDX->m_bSaveAndValidate )
+   {
+      int idx;
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+      matRebar::Type type;
+      matRebar::Grade grade;
+      pDad->GetStirrupMaterial(idx,type,grade);
+      pDad->m_Entry.SetShearSteelMaterial(type,grade);
+
+      matRebar::Size size;
+      DDX_CBItemData(pDX,IDC_TF_BAR_SIZE,size);
+      pDad->m_Entry.SetTopFlangeShearBarSize(size);
+
+      DDX_CBItemData(pDX,IDC_BAR_SIZE,size);
+      pDad->m_Entry.SetConfinementBarSize(size);
+   }
+   else
+   {
+      matRebar::Type type;
+      matRebar::Grade grade;
+      pDad->m_Entry.GetShearSteelMaterial(type,grade);
+      int idx = pDad->GetStirrupMaterialIndex(type,grade);
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+
+
+      matRebar::Size size = pDad->m_Entry.GetTopFlangeShearBarSize();
+      DDX_CBItemData(pDX,IDC_TF_BAR_SIZE,size);
+      
+      size = pDad->m_Entry.GetConfinementBarSize();
+      DDX_CBItemData(pDX,IDC_BAR_SIZE,size);
+   }
+
 	DDV_GXGridWnd(pDX, &m_Grid);
 
    // dad is a friend of the entry. use him to transfer data.
@@ -90,9 +125,15 @@ void CShearSteelPage::OnEnableDelete(bool canDelete)
 
 BOOL CShearSteelPage::OnInitDialog() 
 {
-
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    ASSERT(pDad);
+
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
+   pDad->FillMaterialComboBox(pCB);
+
+   FillBarComboBox((CComboBox*)GetDlgItem(IDC_TF_BAR_SIZE));
+   FillBarComboBox((CComboBox*)GetDlgItem(IDC_BAR_SIZE));
+
 
 	CPropertyPage::OnInitDialog();
 	
@@ -103,11 +144,6 @@ BOOL CShearSteelPage::OnInitDialog()
    CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);
    ASSERT(pdel);
    pdel->EnableWindow(FALSE);
-
-   // select the one and only material
-   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   ASSERT(pc);
-   pc->SetCurSel(0);
 
    // set data in grids - would be nice to be able to do this in DoDataExchange,
    // but mfc sucks.
@@ -167,7 +203,7 @@ void CShearSteelPage::FillLastZone(int siz)
 {
    CString tmp;
    m_LastZone.ResetContent();
-   m_LastZone.AddString(_T("none"));
+   m_LastZone.AddString(_T("None"));
    for (int i=1; i<=siz; i++)
    {
       tmp.Format(_T("Zone %d"),i);
@@ -181,3 +217,20 @@ LRESULT CShearSteelPage::OnCommandHelp(WPARAM, LPARAM lParam)
    return TRUE;
 }
 
+void CShearSteelPage::FillBarComboBox(CComboBox* pCB)
+{
+   int idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bsNone).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bsNone);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs3).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs3);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs4).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs4);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs5).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs5);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs6).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs6);
+}

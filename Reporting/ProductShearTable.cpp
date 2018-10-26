@@ -207,8 +207,8 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
 
          maxTrafficBarrier = pForces2->GetShear( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope );
          minTrafficBarrier = pForces2->GetShear( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MinSimpleContinuousEnvelope );
-         maxOverlay = pForces2->GetShear( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope );
-         minOverlay = pForces2->GetShear( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope );
+         maxOverlay = pForces2->GetShear( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope );
+         minOverlay = pForces2->GetShear( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope );
 
          if ( bPedLoading )
          {
@@ -277,7 +277,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
          }
 
          maxTrafficBarrier = pForces2->GetShear( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         maxOverlay = pForces2->GetShear( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+         maxOverlay = pForces2->GetShear( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
 
          if ( bPedLoading )
          {

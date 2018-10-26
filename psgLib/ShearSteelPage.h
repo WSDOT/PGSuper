@@ -75,6 +75,8 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   void FillBarComboBox(CComboBox* pCB);
+
 public:
    void OnEnableDelete(bool canDelete);
    void FillLastZone(int siz);

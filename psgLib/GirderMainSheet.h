@@ -119,6 +119,10 @@ public:
    void MiscOnFractional();
    void MiscOnAbsolute();
 
+   void FillMaterialComboBox(CComboBox* pCB);
+   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
+   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
+
 private:
    void Init();
 

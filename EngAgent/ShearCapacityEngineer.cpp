@@ -473,8 +473,8 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
 
    // stirrup properties
    GET_IFACE(IStirrupGeometry,pStirrups);
-   double Es, fy;
-   pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy);
+   Float64 Es, fy, fu;
+   pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
 
    Uint32 nl = pStirrups->GetVertStirrupBarCount(poi);
    pscd->Av = pStirrups->GetVertStirrupBarArea(poi)*nl;
@@ -490,7 +490,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    else
       pscd->As = pLongRebarGeometry->GetAsTopHalf(poi,true);
 
-   pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fy);
+   pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fy,&fu);
    pscd->Es = Es;
 
    // areas on tension side of axis

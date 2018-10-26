@@ -36,6 +36,8 @@
 
 #include <StrData.h>
 
+#include <Material\Rebar.h>
+
 // LOCAL INCLUDES
 //
 
@@ -71,8 +73,13 @@ public:
    double TopCover;
    double BottomCover;
 
-   BarSizeType TopRebarKey;
-   BarSizeType BottomRebarKey;
+   matRebar::Type TopRebarType;
+   matRebar::Grade TopRebarGrade;
+   matRebar::Size TopRebarSize;
+
+   matRebar::Type BottomRebarType;
+   matRebar::Grade BottomRebarGrade;
+   matRebar::Size BottomRebarSize;
 
    double TopSpacing;
    double BottomSpacing;
@@ -80,15 +87,16 @@ public:
    double TopLumpSum;
    double BottomLumpSum;
 
-   std::_tstring strRebarMaterial;
-
    enum RebarMat { TopMat, BottomMat };
    struct NegMomentRebarData
    {
+      matRebar::Type RebarType;
+      matRebar::Grade RebarGrade;
+      matRebar::Size RebarSize;
+
       PierIndexType PierIdx;
       RebarMat Mat;
       double LumpSum;
-      BarSizeType RebarKey;
       double Spacing;
       double LeftCutoff;
       double RightCutoff;

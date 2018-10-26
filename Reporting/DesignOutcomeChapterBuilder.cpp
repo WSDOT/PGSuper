@@ -488,9 +488,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          }
 
          // confinement
-         BarSizeType cbs = pArtifact->GetConfinementBarSize();
-         const matRebar* pcrb = pool->GetRebar(cbs);
-         *pParagraph<<_T("Confinement rebar size is ")<<pcrb->GetName()<<rptNewLine;
+         *pParagraph<<_T("Confinement rebar size is ")<< lrfdRebarPool::GetBarSize(pArtifact->GetConfinementBarSize()).c_str()<<rptNewLine;
          *pParagraph<<_T("Confinement rebar ends in zone ")<<(pArtifact->GetLastConfinementZone()+1)<<rptNewLine;
       }
       else
@@ -533,10 +531,10 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             else
                (*pTables)(row,1) << _T("Mid-Girder");
 
-            BarSizeType barSize = pStirrupGeometry->GetVertStirrupBarSize(span,gdr,i);
-            if ( barSize != 0 )
+            matRebar::Size barSize = pStirrupGeometry->GetVertStirrupBarSize(span,gdr,i);
+            if ( barSize != matRebar::bsNone )
             {
-               (*pTables)(row,2) << _T("#") << barSize;
+               (*pTables)(row,2) << lrfdRebarPool::GetBarSize(barSize).c_str();
                (*pTables)(row,3) << length.SetValue(pStirrupGeometry->GetS(span,gdr,i));
             }
             else
@@ -548,10 +546,10 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
          // confinement
          Uint32 lz   = pStirrupGeometry->GetNumConfinementZones(span,gdr);
-         BarSizeType size = pStirrupGeometry->GetConfinementBarSize(span,gdr);
-         if (lz!=0 && size!=0)
+         matRebar::Size size = pStirrupGeometry->GetConfinementBarSize(span,gdr);
+         if (lz != 0 && size != matRebar::bsNone )
          {
-            *pParagraph << _T("Confinement rebar size is #") << size << rptNewLine;
+            *pParagraph << _T("Confinement rebar size is ") << lrfdRebarPool::GetBarSize(size).c_str() << rptNewLine;
             *pParagraph << _T("Confinement rebar ends in zone ") << lz << rptNewLine;
          }
          else

@@ -44,6 +44,8 @@
 
 #include <MathEx.h>
 
+#include <Material\Rebar.h>
+
 // LOCAL INCLUDES
 //
 
@@ -183,7 +185,7 @@ public:
    struct ShearZoneInfo
    {
       Float64     ZoneLength;
-      BarSizeType VertBarSize, HorzBarSize;
+      matRebar::Size VertBarSize, HorzBarSize;
       Float64     StirrupSpacing;
       Uint32      nVertBars, nHorzBars;
       bool operator==(const ShearZoneInfo& rOther) const
@@ -203,7 +205,7 @@ public:
    struct LongSteelInfo
    {
       GirderFace  Face;
-      Int32       BarSize;
+      matRebar::Size BarSize;
       Int32       NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
@@ -523,12 +525,12 @@ public:
    Float64 GetHPStrandIncrement() const;
 
    //------------------------------------------------------------------------
-   // Set material for shear steel
-   void SetShearSteelMaterial(const std::_tstring& name);
+   // Set material for shear steel, top flange, and confinement bars
+   void SetShearSteelMaterial(matRebar::Type type,matRebar::Grade grade);
 
    //------------------------------------------------------------------------
    // Get material name for shear steel
-   std::_tstring GetShearSteelMaterial() const;
+   void GetShearSteelMaterial(matRebar::Type& type,matRebar::Grade& grade) const;
 
    //------------------------------------------------------------------------
    // Set vector of shear zone information. Note that zones are stored in
@@ -541,12 +543,12 @@ public:
    ShearZoneInfoVec GetShearZoneInfo() const;
 
    //------------------------------------------------------------------------
-   // Set bar size for shear stirrups
-   void SetShearSteelBarSize(BarSizeType size);
+   // Set bar size for confinement bars
+   void SetConfinementBarSize(matRebar::Size size);
 
    //------------------------------------------------------------------------
    // Get bar size for shear stirrups
-   BarSizeType GetShearSteelBarSize() const;
+   matRebar::Size GetConfinementBarSize() const;
 
    //------------------------------------------------------------------------
    // Set last zone containing confinement steel
@@ -566,11 +568,11 @@ public:
 
    //------------------------------------------------------------------------
    // Set material for Long steel
-   void SetLongSteelMaterial(const std::_tstring& name);
+   void SetLongSteelMaterial(matRebar::Type type,matRebar::Grade grade);
 
    //------------------------------------------------------------------------
    // Get material name for Long steel
-   std::_tstring GetLongSteelMaterial() const;
+   void GetLongSteelMaterial(matRebar::Type& type,matRebar::Grade& grade) const;
 
    //------------------------------------------------------------------------
    // Set the location of the harping point as a ratio of span length
@@ -604,11 +606,11 @@ public:
    //------------------------------------------------------------------------
    // Set bar size for top flange interface shear stirrups
    // zero means no bars
-   void SetTopFlangeShearBarSize(BarSizeType size);
+   void SetTopFlangeShearBarSize(matRebar::Size size);
 
    //------------------------------------------------------------------------
    // Get size for top flange interface shear stirrups
-   BarSizeType GetTopFlangeShearBarSize() const;
+   matRebar::Size GetTopFlangeShearBarSize() const;
 
    //------------------------------------------------------------------------
    // Set bar Spacing for top flange interface shear stirrups
@@ -685,14 +687,17 @@ private:
 
    bool m_bUseDifferentHarpedGridAtEnds;
 
-   std::_tstring m_ShearSteelMaterial;
-   BarSizeType m_ShearSteelBarSize;
+   // grade and type for all stirrups, confinement, and extra top flange bars
+   matRebar::Type m_StirrupBarType;
+   matRebar::Grade m_StirrupBarGrade;
+   matRebar::Size m_ConfinementBarSize; 
+   matRebar::Size m_TopFlangeShearBarSize;
    Uint16 m_LastConfinementZone;
    bool m_bStirrupsEngageDeck;
    bool m_bIsRoughenedSurface;
-   BarSizeType m_TopFlangeShearBarSize;
+   matRebar::Type m_LongitudinalBarType;
+   matRebar::Grade m_LongitudinalBarGrade;
    Float64 m_TopFlangeShearBarSpacing;
-   std::_tstring m_LongSteelMaterial;
    Float64 m_HarpingPointLocation;
    Float64 m_MinHarpingPointLocation;
    bool m_bMinHarpingPointLocation;

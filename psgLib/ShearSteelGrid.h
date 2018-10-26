@@ -72,6 +72,9 @@ protected:
    BOOL OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+
+   matRebar::Size GetBarSize(ROWCOL row,ROWCOL col);
+
 public:
    // custom stuff for grid
    void CustomInit();

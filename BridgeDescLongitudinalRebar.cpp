@@ -62,7 +62,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 	DDV_GXGridWnd(pDX, &m_Grid);
 
-   DDX_CBStringExactCase(pDX,IDC_MILD_STEEL_SELECTOR,m_RebarData.strRebarMaterial);
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    // longitudinal steel information from grid and store it
    CComPtr<IBroker> pBroker;
@@ -86,12 +86,20 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          }
       }
       m_RebarData = rebarData;
+
+      int idx;
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+      pParent->GetStirrupMaterial(idx,m_RebarData.BarType,m_RebarData.BarGrade);
    }
    else
    {
+      int idx = pParent->GetStirrupMaterialIndex(m_RebarData.BarType,m_RebarData.BarGrade);
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+
       CLongitudinalRebarData rebardata;
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter;
-      for ( iter = m_RebarData.RebarRows.begin(); iter != m_RebarData.RebarRows.end(); iter++ )
+      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(m_RebarData.RebarRows.begin());
+      std::vector<CLongitudinalRebarData::RebarRow>::iterator iterEnd(m_RebarData.RebarRows.end());
+      for ( ; iter != iterEnd; iter++ )
       {
          CLongitudinalRebarData::RebarRow row = *iter;
          row.BarSpacing = ::ConvertFromSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -149,13 +157,12 @@ BOOL CGirderDescLongitudinalRebar::OnInitDialog()
 	m_Grid.SubclassDlgItem(IDC_LONG_GRID, this);
    m_Grid.CustomInit();
 
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
+   pParent->FillMaterialComboBox(pc);
+
    CPropertyPage::OnInitDialog();
 	
-   // select the one and only material
-   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   ASSERT(pc);
-   pc->SetCurSel(0);
-
 	// TODO: Add extra initialization here
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

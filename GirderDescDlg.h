@@ -78,6 +78,10 @@ public:
 	virtual ~CGirderDescDlg();
    void DoUpdate();
 
+   void FillMaterialComboBox(CComboBox* pCB);
+   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
+   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
+
 	// Generated message map functions
 protected:
    void Init();

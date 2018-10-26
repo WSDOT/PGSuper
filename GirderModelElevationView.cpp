@@ -1715,10 +1715,10 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDoc* pDoc, IB
       Float64 end     = pStirrupGeom->GetZoneEnd(span,girder,zoneIdx);
       Float64 spacing = pStirrupGeom->GetS(span,girder,zoneIdx);
 
-      BarSizeType barSize = pStirrupGeom->GetVertStirrupBarSize(span,girder,zoneIdx);
+      matRebar::Size barSize = pStirrupGeom->GetVertStirrupBarSize(span,girder,zoneIdx);
       Uint32 nStirrups = pStirrupGeom->GetVertStirrupBarCount(span,girder,zoneIdx);
 
-      if ( barSize != 0 && nStirrups != 0 )
+      if ( barSize != matRebar::bsNone && nStirrups != 0 )
       {
          Uint32 nStirrupsInZone = Uint32(floor((end - start)/spacing));
          spacing = (end-start)/nStirrupsInZone;

@@ -62,6 +62,25 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTestAgentImp
+int GetBarSize(matRebar::Size size)
+{
+   switch(size)
+   {
+   case matRebar::bs3: return 3;
+   case matRebar::bs4: return 4;
+   case matRebar::bs5: return 5;
+   case matRebar::bs6: return 6;
+   case matRebar::bs7: return 7;
+   case matRebar::bs8: return 8;
+   case matRebar::bs9: return 9;
+   case matRebar::bs10:return 10;
+   case matRebar::bs11:return 11;
+   case matRebar::bs14:return 14;
+   case matRebar::bs18:return 18;
+   }
+
+   return -1;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // IAgent
@@ -1354,7 +1373,7 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pArtifact->GetLeftLiftingLocation(), unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pArtifact->GetLeadingOverhang(), unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
 
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124015, ")<<loc<<_T(", ")<<pArtifact->GetConfinementBarSize()<<   _T(", 102, ")<<gdr<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124015, ")<<loc<<_T(", ")<<GetBarSize(pArtifact->GetConfinementBarSize())<<   _T(", 102, ")<<gdr<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124016, ")<<loc<<_T(", ")<<pArtifact->GetLastConfinementZone()<<   _T(", 102, ")<<gdr<<std::endl;
 
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124017, ")<<loc<<_T(", ")<<pArtifact->GetNumberOfStirrupZonesDesigned()<<   _T(", 102, ")<<gdr<<std::endl;
@@ -1365,7 +1384,7 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    {
       CShearZoneData zd = pArtifact->GetShearZoneData(zoneIdx);
 
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<<zd.VertBarSize<<   _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<<GetBarSize(zd.VertBarSize)<<   _T(", 102, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zd.BarSpacing, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zd.ZoneLength, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< zd.nVertBars <<   _T(", 102, ")<<gdr<<std::endl;

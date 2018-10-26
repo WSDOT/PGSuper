@@ -117,17 +117,8 @@ rptRcTable* CConfinementCheckTable::Build(IBroker* pBroker,SpanIndexType span,Gi
       {
          (*table)(row,2) << dim.SetValue(pArtifact->GetS());
          (*table)(row,3) << dim.SetValue(pArtifact->GetSMax() );
-         BarSizeType bs= pArtifact->GetBarSize();
-         if (bs!=0)
-            (*table)(row,4) << pool->GetRebar(bs)->GetName();
-         else
-            (*table)(row,4) << _T("none");
-
-         bs= pArtifact->GetMinBarSize();
-         if (bs!=0)
-            (*table)(row,5) << pool->GetRebar(bs)->GetName();
-         else
-            (*table)(row,5) << _T("none");
+         (*table)(row,4) << lrfdRebarPool::GetBarSize(pArtifact->GetBar()->GetSize()).c_str();
+         (*table)(row,5) << lrfdRebarPool::GetBarSize(pArtifact->GetMinBar()->GetSize()).c_str();
 
          if ( pArtifact->Passed() )
             (*table)(row,6) << RPT_PASS;

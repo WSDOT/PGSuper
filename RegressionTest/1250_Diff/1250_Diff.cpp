@@ -11,7 +11,7 @@
 
 #include <System\tokenizer.h>
 
-typedef std::set< std::string > StringSet;
+typedef std::set< std::_tstring > StringSet;
 
  
 // this class is the brains of the operation
@@ -28,10 +28,10 @@ public:
    }
 
    // process line information and determine next state
-   State Process( int lineNum, bool fileStatD, bool fileStatT, std::string& lineD, std::string& lineT);
+   State Process( int lineNum, bool fileStatD, bool fileStatT, std::_tstring& lineD, std::_tstring& lineT);
 
    // dump out internally stored string (the diff information)
-   std::string DumpString();
+   std::_tstring DumpString();
 
    // return number of lines that were different
    int NumDiffs()
@@ -40,7 +40,7 @@ public:
    }
 
    // constructor
-   StateManager(double percentDiff, double zeroTol, const char* datum, const char* test):
+   StateManager(double percentDiff, double zeroTol, LPCTSTR datum, LPCTSTR test):
    m_PercentDiff(percentDiff),
    m_ZeroTol(zeroTol),
    m_DatumFileName(datum),
@@ -61,29 +61,29 @@ private:
 
    double         m_PercentDiff;
    double         m_ZeroTol;
-   std::string    m_DatumFileName;
-   std::string    m_TestFileName;
+   std::_tstring    m_DatumFileName;
+   std::_tstring    m_TestFileName;
    int            m_MaxDiffLines;// max number of lines to dump at a time when a diff
 
    int            m_CurrDiffLine; // number of lines stored in buffer
    int            m_NumDiffs;
 
-   std::ostringstream m_osd;
-   std::ostringstream m_ost;
+   std::_tostringstream m_osd;
+   std::_tostringstream m_ost;
 
    StateManager();
-   bool CompareLines( std::string& lineD, std::string& lineT);
+   bool CompareLines( std::_tstring& lineD, std::_tstring& lineT);
 
 };
 
-int main(int argc, char* argv[])
+int main(int argc, TCHAR* argv[])
 {
-   std::cout<< "NCRHP 12-50 File Diff Engine..."<<std::endl;
+   std::_tcout<< _T("NCRHP 12-50 File Diff Engine...")<<std::endl;
    if (argc<3)
    {
-      std::cout<< "Syntax is..\n"<<std::endl;
-      std::cout<< "1250_Diff datumFile testFile <percentDiff> <ZeroTolerance>"<<std::endl;
-      std::cout<< "Report ID's to Ignore are read from 'ignore.txt'"<<std::endl;
+      std::_tcout<< _T("Syntax is..\n")<<std::endl;
+      std::_tcout<< _T("1250_Diff datumFile testFile <percentDiff> <ZeroTolerance>")<<std::endl;
+      std::_tcout<< _T("Report ID's to Ignore are read from 'ignore.txt'")<<std::endl;
       return 1;
    }
 
@@ -98,13 +98,13 @@ int main(int argc, char* argv[])
       }
       else
       {
-         std::cout<< "Error Parsing Percent Difference"<<std::endl;
+         std::_tcout<< _T("Error Parsing Percent Difference")<<std::endl;
          return 1;
       }
 
       if (pd_max<0.0 || pd_max>=100)
       {
-         std::cout<< "Error - percent difference out of range"<<std::endl;
+         std::_tcout<< _T("Error - percent difference out of range")<<std::endl;
       }
    }
 
@@ -112,39 +112,39 @@ int main(int argc, char* argv[])
    {
       if (!sysTokenizer::ParseDouble(argv[4], &zero_tol))
       {
-         std::cout<< "Error Parsing Zero Tolerance"<<std::endl;
+         std::_tcout<< _T("Error Parsing Zero Tolerance")<<std::endl;
          return 1;
       }
 
       if (zero_tol<0.0)
       {
-         std::cout<< "Error - zero tolerance difference out of range. Must be positive"<<std::endl;
+         std::_tcout<< _T("Error - zero tolerance difference out of range. Must be positive")<<std::endl;
       }
    }
 
-   std::ifstream datum_file;
+   std::_tifstream datum_file;
    datum_file.open(argv[1]);
    if (!datum_file.is_open())
    {
-      std::cout<< "Error - opening datum file"<<std::endl;
+      std::_tcout<< _T("Error - opening datum file")<<std::endl;
       return 1;
    }
 
-   std::ifstream test_file;
+   std::_tifstream test_file;
    test_file.open(argv[2]);
    if (!test_file.is_open())
    {
-      std::cout<< "Error - opening test file"<<std::endl;
+      std::_tcout<< _T("Error - opening test file")<<std::endl;
       return 1;
    }
 
    // load up report id's to igmore
    StringSet ignore_list;
-   std::ifstream ignore_file;
-   ignore_file.open("ignore.txt");
+   std::_tifstream ignore_file;
+   ignore_file.open(_T("ignore.txt"));
    if (ignore_file.is_open())
    {
-      std::string line;
+      std::_tstring line;
       while( std::getline(ignore_file, line))
       {
          if (!line.empty())
@@ -152,25 +152,25 @@ int main(int argc, char* argv[])
       }
    }
 
-   std::cout<< "Datum File is: "<<argv[1]<<std::endl;
-   std::cout<< "Test File is: "<<argv[2]<<std::endl;
-   std::cout<< "Max percent difference is "<<pd_max*100<<" Zero tolerance is "<<zero_tol<<std::endl;
+   std::_tcout<< _T("Datum File is: ")<<argv[1]<<std::endl;
+   std::_tcout<< _T("Test File is: ")<<argv[2]<<std::endl;
+   std::_tcout<< _T("Max percent difference is ")<<pd_max*100<<_T(" Zero tolerance is ")<<zero_tol<<std::endl;
    if (!ignore_list.empty())
    {
-      std::cout<< "The following ReportID's will be ignored:"<<std::endl;
+      std::_tcout<< _T("The following ReportID's will be ignored:")<<std::endl;
       for (StringSet::iterator it=ignore_list.begin(); it!=ignore_list.end(); it++)
       {
-         std::cout<<*it<<std::endl;
+         std::_tcout<<*it<<std::endl;
       }
    }
-   std::cout<< "*******************************************************************"<<std::endl;
+   std::_tcout<< _T("*******************************************************************")<<std::endl;
 
    // set up our state manager
    StateManager manager(pd_max, zero_tol, argv[1], argv[2]);
    manager.m_IgnoreList = ignore_list;
 
    int st = 0;
-   std::string lined, linet;
+   std::_tstring lined, linet;
    bool std, stt;
    int line_num=0;
    StateManager::State state = manager.GetInitialState();
@@ -187,19 +187,19 @@ int main(int argc, char* argv[])
             break;
 
          case StateManager::FilesDifferentLength:
-            std::cout<< "Files Are Different Length - Cannot Continue - Quit in Error" <<std::endl;
+            std::_tcout<< _T("Files Are Different Length - Cannot Continue - Quit in Error") <<std::endl;
             state=StateManager::Error;
             break;
 
          case StateManager::Dump:
-            std::cout<< manager.DumpString() <<std::endl;
+            std::_tcout<< manager.DumpString() <<std::endl;
             break;
 
          case StateManager::Quit:
             break;
 
          default:
-            std::cout<< "Invalid State - Quit in Error" <<std::endl;
+            std::_tcout<< _T("Invalid State - Quit in Error") <<std::endl;
             state=StateManager::Error;
             break;
       }
@@ -220,18 +220,18 @@ int main(int argc, char* argv[])
    int nd = manager.NumDiffs();
    if (nd>0)
    {
-      std::cout<<" Files are different - Number of differences was "<<nd<<std::endl;
+      std::_tcout<<_T(" Files are different - Number of differences was ")<<nd<<std::endl;
    }
    else
    {
-      std::cout<<" Files are identical within tolerances"<<std::endl;
+      std::_tcout<<_T(" Files are identical within tolerances")<<std::endl;
    }
 
 	return st;
 }
 
 
-StateManager::State StateManager::Process( int lineNum, bool fileStatD, bool fileStatT, std::string& lineD, std::string& lineT)
+StateManager::State StateManager::Process( int lineNum, bool fileStatD, bool fileStatT, std::_tstring& lineD, std::_tstring& lineT)
 {
    State state = Error; // assume the worst
 
@@ -258,8 +258,8 @@ StateManager::State StateManager::Process( int lineNum, bool fileStatD, bool fil
             if (m_InternalState==Happy)
             {
                // our first difference - write to our internal strings
-               m_osd <<"*** "<<m_DatumFileName<<" ***"<<std::endl;
-               m_ost <<"*** "<<m_TestFileName<<" ***"<<std::endl;
+               m_osd <<_T("*** ")<<m_DatumFileName<<_T(" ***")<<std::endl;
+               m_ost <<_T("*** ")<<m_TestFileName<<_T(" ***")<<std::endl;
                m_CurrDiffLine = 1;
 
                state = ReadTD;
@@ -273,8 +273,8 @@ StateManager::State StateManager::Process( int lineNum, bool fileStatD, bool fil
                   state = ReadTD;
             }
 
-            m_osd <<std::setw(4)<<lineNum<<": "<<lineD<<std::endl;
-            m_ost <<std::setw(4)<<lineNum<<": "<<lineT<<std::endl;
+            m_osd <<std::setw(4)<<lineNum<<_T(": ")<<lineD<<std::endl;
+            m_ost <<std::setw(4)<<lineNum<<_T(": ")<<lineT<<std::endl;
             m_NumDiffs++;
          }
       }
@@ -299,8 +299,8 @@ StateManager::State StateManager::Process( int lineNum, bool fileStatD, bool fil
    else if (m_LastState==Dump)
    {
       // last time through we dumped
-      m_osd.str(std::string());
-      m_ost.str(std::string());
+      m_osd.str(std::_tstring());
+      m_ost.str(std::_tstring());
       m_CurrDiffLine = 0;
       m_InternalState = Happy;
 
@@ -317,7 +317,7 @@ StateManager::State StateManager::Process( int lineNum, bool fileStatD, bool fil
    {
       // outer loop should have quit before getting here
       // this error is probably in the calling code
-      std::cout<< "A State Transition Error Occured in StateManager::Process"<<std::endl;
+      std::_tcout<< _T("A State Transition Error Occured in StateManager::Process")<<std::endl;
       state = Error;
    }
 
@@ -325,17 +325,17 @@ StateManager::State StateManager::Process( int lineNum, bool fileStatD, bool fil
    return state;
 }
 
-std::string StateManager::DumpString()
+std::_tstring StateManager::DumpString()
 {
    m_osd << m_ost.str();
    return m_osd.str();
 }
 
-bool StateManager::CompareLines( std::string& lineD, std::string& lineT)
+bool StateManager::CompareLines( std::_tstring& lineD, std::_tstring& lineT)
 {
 
    // break each string into tokens
-   const char *delims[] = {","," ", 0};
+   LPCTSTR delims[] = {_T(","),_T(" "), 0};
    sysTokenizer tokizerd(delims);
    tokizerd.push_back(lineD);
    sysTokenizer tokizert(delims);
@@ -361,8 +361,8 @@ bool StateManager::CompareLines( std::string& lineD, std::string& lineT)
       // 12 - 50 file. compare tokens
       for (sysTokenizer::size_type i=0; i<npd; i++)
       {
-         std::string sd = tokizerd[i];
-         std::string st = tokizert[i];
+         std::_tstring sd = tokizerd[i];
+         std::_tstring st = tokizert[i];
 
          if (i==rpt_id_loc)
          {
@@ -384,13 +384,13 @@ bool StateManager::CompareLines( std::string& lineD, std::string& lineT)
             double dd, dt;
             if (!sysTokenizer::ParseDouble(sd.c_str(), &dd) )
             {
-               std::cout <<" ****** Error Parsing Double ***********"<<std::endl;
+               std::_tcout <<_T(" ****** Error Parsing Double ***********")<<std::endl;
                return false;
             }
 
             if (!sysTokenizer::ParseDouble(st.c_str(), &dt) )
             {
-               std::cout <<" ****** Error Parsing Double ***********"<<std::endl;
+               std::_tcout <<_T(" ****** Error Parsing Double ***********")<<std::endl;
                return false;
             }
 

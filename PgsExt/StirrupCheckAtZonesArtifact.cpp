@@ -362,6 +362,8 @@ CLASS
 pgsConfinementArtifact::pgsConfinementArtifact():
 m_IsApplicable(false)
 {
+   m_pRebar = NULL;
+   m_pMinRebar = NULL;
 }
 
 pgsConfinementArtifact::pgsConfinementArtifact(const pgsConfinementArtifact& rOther)
@@ -384,6 +386,75 @@ pgsConfinementArtifact& pgsConfinementArtifact::operator= (const pgsConfinementA
 }
 
 //======================== OPERATIONS =======================================
+bool pgsConfinementArtifact::IsApplicable() const 
+{
+   return m_IsApplicable;
+}
+
+void pgsConfinementArtifact::SetApplicability(bool isAp)
+{ 
+   m_IsApplicable = isAp;
+}
+
+Float64 pgsConfinementArtifact::GetApplicableZoneLength() const 
+{
+   return m_ApplicableZoneLength;
+}
+
+void pgsConfinementArtifact::SetApplicableZoneLength(Float64 zl)
+{
+   m_ApplicableZoneLength = zl;
+}
+
+Float64 pgsConfinementArtifact::GetZoneEnd() const 
+{
+   return m_ZoneEnd;
+}
+
+void pgsConfinementArtifact::SetZoneEnd(Float64 zl)
+{
+   m_ZoneEnd=zl;
+}
+
+const matRebar* pgsConfinementArtifact::GetBar() const 
+{
+   return m_pRebar;
+}
+
+void pgsConfinementArtifact::SetBar(const matRebar* pRebar)
+{ 
+   m_pRebar = pRebar;
+}
+
+Float64 pgsConfinementArtifact::GetS() const 
+{
+   return m_S;
+}
+
+void pgsConfinementArtifact::SetS(Float64 s) 
+{
+   m_S = s;
+}
+
+const matRebar* pgsConfinementArtifact::GetMinBar() const 
+{
+   return m_pMinRebar;
+}
+
+void pgsConfinementArtifact::SetMinBar(const matRebar* pBar)
+{ 
+   m_pMinRebar = pBar;
+}
+
+Float64 pgsConfinementArtifact::GetSMax() const 
+{
+   return m_SMax;
+}
+
+void pgsConfinementArtifact::SetSMax(Float64 smax)
+{
+   m_SMax = smax;
+}
 
 bool pgsConfinementArtifact::Passed() const
 {
@@ -391,19 +462,12 @@ bool pgsConfinementArtifact::Passed() const
       return true;
 
    // min bar size
-   if (m_MinBarSize>0)
+   if (m_pMinRebar != NULL)
    {
-      if (m_BarSize==0)
+      if (m_pRebar == NULL)
          return false;
 
-      lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-      CHECK(pool!=0);
-      const matRebar* bs = pool->GetRebar(m_BarSize);
-      CHECK(bs!=0);
-      const matRebar* mnbs = pool->GetRebar(m_MinBarSize);
-      CHECK(mnbs!=0);
-
-      if (bs->GetNominalDimension() < mnbs->GetNominalDimension())
+      if (m_pRebar->GetNominalDimension() < m_pMinRebar->GetNominalDimension())
          return false;
    }
       
@@ -441,10 +505,11 @@ void pgsConfinementArtifact::MakeCopy(const pgsConfinementArtifact& rOther)
    m_IsApplicable = rOther.m_IsApplicable;
    m_ApplicableZoneLength = rOther.m_ApplicableZoneLength;
    m_ZoneEnd = rOther.m_ZoneEnd;
-   m_BarSize = rOther.m_BarSize;
    m_S = rOther.m_S;
-   m_MinBarSize = rOther.m_MinBarSize;
    m_SMax = rOther.m_SMax;
+
+   m_pRebar = rOther.m_pRebar;
+   m_pMinRebar = rOther.m_pMinRebar;
 }
 
 void pgsConfinementArtifact::MakeAssignment(const pgsConfinementArtifact& rOther)

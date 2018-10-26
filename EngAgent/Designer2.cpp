@@ -995,8 +995,8 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
-   double Es, fy;
-   pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fy);
+   double Es, fy, fu;
+   pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fy,&fu);
    Float64 fs = 0.5*fy;
    Float64 fsMax = (bUnitsSI ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
    if ( fsMax < fs )
@@ -1725,8 +1725,8 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    Float64 s = 0.0;
    GET_IFACE(IStirrupGeometry, pStirrupGeometry);
    GET_IFACE(IBridgeMaterial,pMaterial);
-   BarSizeType size = pStirrupGeometry->GetVertStirrupBarSize(poi);
-   if ( size != 0 )
+   matRebar::Size size = pStirrupGeometry->GetVertStirrupBarSize(poi);
+   if ( size != matRebar::bsNone )
    {
       Uint32 nl = pStirrupGeometry->GetVertStirrupBarCount(poi);
       Float64 Av = pStirrupGeometry->GetVertStirrupBarArea(poi)*nl; 
@@ -1784,7 +1784,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
 
    // min bar spacing
    Float64 s_min = 0.0;
-   if ( size != 0 )
+   if ( size != matRebar::bsNone )
    {
       Float64 db = pStirrupGeometry->GetVertStirrupBarNominalDiameter(poi);
       Float64 as = pMaterial->GetMaxAggrSizeGdr(poi.GetSpan(),poi.GetGirder());
@@ -2085,6 +2085,8 @@ void pgsDesigner2::CheckConfinement( SpanIndexType span,GirderIndexType gdr, Uin
    GET_IFACE(IStrandGeometry,pStrandGeometry);
    GET_IFACE(IStirrupGeometry, pStirrupGeometry);
    GET_IFACE(IGirder,pGdr);
+   GET_IFACE(IBridgeMaterial,pMaterial);
+
 
    // determine if we even need to check this
    Float64 gird_length  = pBridge->GetGirderLength(span, gdr);
@@ -2115,7 +2117,7 @@ void pgsDesigner2::CheckConfinement( SpanIndexType span,GirderIndexType gdr, Uin
    pArtifact->SetApplicability(is_app);
 
    // determine current stirrup config
-   BarSizeType rbsiz=0;
+   matRebar::Size rbsiz = matRebar::bsNone;
    Float64 s =0.0;
    if ( pStirrupGeometry->IsConfinementZone(span,gdr,zoneNum) )
    {
@@ -2124,10 +2126,13 @@ void pgsDesigner2::CheckConfinement( SpanIndexType span,GirderIndexType gdr, Uin
       CHECKX(s!=0,_T("S should not be zero - GUI should be checking this"));
    }
    pArtifact->SetS(s);
-   pArtifact->SetBarSize(rbsiz);
+   matRebar::Grade grade;
+   matRebar::Type type;
+   pMaterial->GetTransverseRebarMaterial(span,gdr,type,grade);
+   pArtifact->SetBar(lrfdRebarPool::GetInstance()->GetRebar(type,grade,rbsiz));
 
    // get spec constraints
-   BarSizeType szmin = 0;
+   matRebar::Size szmin = matRebar::bsNone;
    Float64 smax = 0.0;
    if (is_app)
    {
@@ -2135,7 +2140,7 @@ void pgsDesigner2::CheckConfinement( SpanIndexType span,GirderIndexType gdr, Uin
       szmin = pTransverseReinforcementSpec->GetMinConfinmentBarSize();
       smax  = pTransverseReinforcementSpec->GetMaxConfinmentBarSpacing();
    }
-   pArtifact->SetMinBarSize(szmin);
+   pArtifact->SetMinBar(lrfdRebarPool::GetInstance()->GetRebar(type,grade,szmin));
    pArtifact->SetSMax(smax);
 }
 
@@ -2264,8 +2269,8 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::S
    Float64 fc_girder = pMaterial->GetFcGdr(span,gdr);
    pstirrup_artifact->SetFc(fc_girder);
    
-   double Es, fy;
-   pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy);
+   double Es, fy, fu;
+   pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
    pstirrup_artifact->SetFy(fy);
 
    GET_IFACE(ISpecification,pSpec);
@@ -2406,8 +2411,8 @@ void pgsDesigner2::CheckSplittingZone(SpanIndexType span,GirderIndexType gdr,pgs
    pArtifact->SetLossesAfterTransfer(dFpT);
 
    // Compute Splitting resistance
-   Float64 Es, fy;
-   pMat->GetTransverseRebarProperties(span,gdr,&Es,&fy);
+   Float64 Es, fy, fu;
+   pMat->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
    Float64 fs = pTransverseReinforcementSpec->GetMaxSplittingStress(fy);
    pArtifact->SetFs(fs);
 
@@ -6364,6 +6369,11 @@ void pgsDesigner2::DetailStirrupZones(pgsTypes::Stage stage,
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    GET_IFACE(IGirder,pGdr);
+   GET_IFACE(IBridgeMaterial,pMaterial);
+
+   matRebar::Grade barGrade;
+   matRebar::Type barType;
+   pMaterial->GetTransverseRebarMaterial(span,gdr,barType,barGrade);
 
    // get some basic information
    Float64 gird_length = pBridge->GetGirderLength(span,gdr);
@@ -6421,7 +6431,7 @@ void pgsDesigner2::DetailStirrupZones(pgsTypes::Stage stage,
    // now we can start designing zones
    CShearZoneData zone_data[MAX_ZONES];
    Float64 zone_start=0.0, zone_end=0.0;
-   BarSizeType bar_size;
+   matRebar::Size bar_size;
    Float64 bar_spacing, zone_length;
 
    // confinement steel lives in zones 1 and 2, so it will control spacing requirements
@@ -6439,7 +6449,7 @@ void pgsDesigner2::DetailStirrupZones(pgsTypes::Stage stage,
 //      // Splitting zone extends into span
 //      zone_end = lbz;
 
-   if (!GetStirrupsForAvs(span, gdr, avs_burst, s_confine, &bar_size, &bar_spacing))
+   if (!GetStirrupsForAvs(span, gdr, avs_burst, s_confine, barType, barGrade, &bar_size, &bar_spacing))
    {
       pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqd);
       m_DesignerOutcome.AbortDesign();
@@ -6480,7 +6490,7 @@ void pgsDesigner2::DetailStirrupZones(pgsTypes::Stage stage,
       zone2_ended_at_cs = true;
    }
 
-   if (!GetStirrupsForAvs(span, gdr, avs_cs, s_confine, &bar_size, &bar_spacing))
+   if (!GetStirrupsForAvs(span, gdr, avs_cs, s_confine, barType, barGrade, &bar_size, &bar_spacing))
    {
       pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqd);
       m_DesignerOutcome.AbortDesign();
@@ -6586,7 +6596,7 @@ void pgsDesigner2::DetailStirrupZones(pgsTypes::Stage stage,
    if (zone2_ended_at_cs)
       avs_zone3 = avs_cs;
 
-   if (!GetStirrupsForAvs(span, gdr, avs_zone3, s_zone3, &bar_size, &bar_spacing))
+   if (!GetStirrupsForAvs(span, gdr, avs_zone3, s_zone3, barType, barGrade, &bar_size, &bar_spacing))
    {
       pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqd);
       m_DesignerOutcome.AbortDesign();
@@ -6626,7 +6636,7 @@ void pgsDesigner2::DetailStirrupZones(pgsTypes::Stage stage,
    Float64 avs_right_z4 = avs_envelope.Evaluate(gird_length-zone_start);
    Float64 avs_zone4 = max(avs_left_z4,avs_right_z4);
 
-   if (!GetStirrupsForAvs(span, gdr, avs_zone4, s_under_limit, &bar_size, &bar_spacing))
+   if (!GetStirrupsForAvs(span, gdr, avs_zone4, s_under_limit, barType, barGrade, &bar_size, &bar_spacing))
    {
       pArtifact->SetOutcome(pgsDesignArtifact::TooManyStirrupsReqd);
       m_DesignerOutcome.AbortDesign();
@@ -6681,13 +6691,13 @@ static Float64 GetBarSpacingForAvs(SpanIndexType span,GirderIndexType gdr, const
 }
 
 
-bool pgsDesigner2::GetStirrupsForAvs(SpanIndexType span,GirderIndexType gdr, Float64 avs, Float64 sMax, BarSizeType* pBarSize, Float64 *pSpacing)
+bool pgsDesigner2::GetStirrupsForAvs(SpanIndexType span,GirderIndexType gdr, Float64 avs, Float64 sMax, matRebar::Type barType,matRebar::Grade barGrade,matRebar::Size* pBarSize, Float64 *pSpacing)
 {
    ATLASSERT(0.0 <= avs);
    ATLASSERT(0.0 <  sMax);
 
    const Uint16 NBARSIZES = 3;
-   const BarSizeType barSizes[NBARSIZES]={3,4,5}; // first bar is smallest
+   const matRebar::Size barSizes[NBARSIZES]={matRebar::bs3,matRebar::bs4,matRebar::bs5}; // first bar is smallest
 
    // if no demand, return smallest bar size at max spacing
    if (avs == 0.0)
@@ -6718,21 +6728,21 @@ bool pgsDesigner2::GetStirrupsForAvs(SpanIndexType span,GirderIndexType gdr, Flo
    bool smallest_bar = true;
    for (Uint16 barSizeIdx = 0; barSizeIdx < NBARSIZES; barSizeIdx++)
    {
-      BarSizeType barsize = barSizes[barSizeIdx];
-      const matRebar* pRebar = pool->GetRebar(barsize);
+      matRebar::Size barSize = barSizes[barSizeIdx];
+      const matRebar* pRebar = pool->GetRebar(barType,barGrade,barSize);
       ATLASSERT(pRebar);
       Float64 s = GetBarSpacingForAvs(span, gdr, pRebar, avs, round_to, this->m_pBroker);
 
       if (s <= sMax)
       {
-         *pBarSize = barsize;
+         *pBarSize = barSize;
          *pSpacing = s;
 
          // take a shot at using the next largest bar
          if (barSizeIdx < NBARSIZES-1)
          {
-            BarSizeType next_barsize = barSizes[barSizeIdx+1];
-            const matRebar* pNextRebar = pool->GetRebar(next_barsize);
+            matRebar::Size next_barsize = barSizes[barSizeIdx+1];
+            const matRebar* pNextRebar = pool->GetRebar(barType,barGrade,next_barsize);
             ATLASSERT(pNextRebar);
             Float64 s_next = GetBarSpacingForAvs(span, gdr, pNextRebar, avs, round_to, this->m_pBroker);
             if (s_next <= sMax)
@@ -6749,7 +6759,7 @@ bool pgsDesigner2::GetStirrupsForAvs(SpanIndexType span,GirderIndexType gdr, Flo
       {
          if (sMax < s)
          {
-            *pBarSize = barsize;
+            *pBarSize = barSize;
             *pSpacing = sMax;
             return true;
          }
@@ -6883,8 +6893,8 @@ void pgsDesigner2::DesignForVerticalShear(SpanIndexType span,GirderIndexType gdr
    if ( IsZero(fy) )
    {
       GET_IFACE(IBridgeMaterial,pMaterial);
-      Float64 Es;
-      pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy);
+      Float64 Es,fu;
+      pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
       CHECK(fy!=0.0);
    }
 
@@ -6958,8 +6968,8 @@ void pgsDesigner2::DesignForHorizontalShear(const pgsPointOfInterest& poi, Float
    GET_IFACE(IBridgeMaterialEx,pMaterial);
    if ( IsZero(fy) )
    {
-      Float64 Es;
-      pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy);
+      Float64 Es,fu;
+      pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
       CHECK(fy!=0.0);
    }
 
@@ -7031,8 +7041,8 @@ Float64 pgsDesigner2::CalcAvsForSplittingZone(SpanIndexType span,GirderIndexType
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
 
    // max stress in rebar
-   Float64 Es, fy;
-   pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy);
+   Float64 Es, fy, fu;
+   pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
    Float64 fs = pTransverseReinforcementSpec->GetMaxSplittingStress(fy);
 
    // area of strands and pjack

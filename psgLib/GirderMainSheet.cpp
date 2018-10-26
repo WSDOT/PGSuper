@@ -33,6 +33,8 @@
 
 #include <EAF\EAFApp.h>
 
+#include <Lrfd\RebarPool.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -490,61 +492,19 @@ void CGirderMainSheet::ExchangeTransverseData(CDataExchange* pDX)
       }
       m_Entry.SetShearZoneInfo(vec);
 
-      // shear bar material
-      CString mn;
-      m_ShearSteelPage.m_MaterialName.GetWindowText(mn);
-      m_Entry.SetShearSteelMaterial((LPCTSTR)mn);
-
-      // bar size in confinement zone.
-      CString bs;
-      m_ShearSteelPage.m_BarSize.GetWindowText(bs);
-      bs.TrimLeft();
-      if (bs==_T("none"))
-         m_Entry.SetShearSteelBarSize(0);
-      else
-      {
-         int l = bs.GetLength();
-         CString s2 = bs.Right(l-1);
-         int i = _tstoi(s2);
-         if (bs.IsEmpty() || (i==0&&bs[0]!=_T('0')))
-         {
-            ASSERT(0);
-            m_Entry.SetShearSteelBarSize(0);
-         }
-         else
-            m_Entry.SetShearSteelBarSize(i);
-      }
-
       // last confinement zone
       int siz = vec.size();
       int iz = m_ShearSteelPage.m_LastZone.GetCurSel();
       if (iz==CB_ERR)
+      {
          m_Entry.SetLastConfinementZone(iz);
+      }
       else
       {
          ASSERT(iz<=siz);
          m_Entry.SetLastConfinementZone(iz);
       }
 
-      // bar size in top flange
-      
-      m_ShearSteelPage.m_TfBarSize.GetWindowText(bs);
-      bs.TrimLeft();
-      if (bs==_T("none"))
-         m_Entry.SetTopFlangeShearBarSize(0);
-      else
-      {
-         int l = bs.GetLength();
-         CString s2 = bs.Right(l-1);
-         int i = _tstoi(s2);
-         if (bs.IsEmpty() || (i==0&&bs[0]!=_T('0')))
-         {
-            ASSERT(0);
-            m_Entry.SetTopFlangeShearBarSize(0);
-         }
-         else
-            m_Entry.SetTopFlangeShearBarSize(i);
-      }
       // top flange bar spacing
       m_Entry.SetTopFlangeShearBarSpacing(m_TfBarSpacing);
    }
@@ -568,50 +528,18 @@ void CGirderMainSheet::UploadTransverseData()
    }
    m_ShearSteelPage.m_Grid.FillGrid(vec);
 
-   // shear material name
-   m_ShearSteelPage.m_MaterialName.ResetContent();
-   int sel = m_ShearSteelPage.m_MaterialName.AddString(m_Entry.GetShearSteelMaterial().c_str());
-   CHECK(sel!=CB_ERR);
-   m_ShearSteelPage.m_MaterialName.SetCurSel(sel);
-
-   // bar size in confinement zone.
-   Int32 siz = m_Entry.GetShearSteelBarSize();
-   if (siz>0)
-   {
-      CString tmp;
-      tmp.Format(_T("#%d"),siz);
-      int idx = m_ShearSteelPage.m_BarSize.SelectString(0,tmp);
-      if (idx==CB_ERR)
-         m_ShearSteelPage.m_BarSize.SetCurSel(0);
-   }
-   else
-      m_ShearSteelPage.m_BarSize.SetCurSel(0);
-
    // last confinement zone
-   siz = vec.size();
-   m_ShearSteelPage.FillLastZone(siz);
-   sel = m_Entry.GetNumConfinementZones();
-   if (sel <= siz)
+   m_ShearSteelPage.FillLastZone(vec.size());
+   int sel = m_Entry.GetNumConfinementZones();
+   if (sel <= vec.size())
+   {
       m_ShearSteelPage.m_LastZone.SetCurSel(sel);
+   }
    else
    {
       ASSERT(0); // Shear zone from data file out of range
       m_ShearSteelPage.m_LastZone.SetCurSel(0);
    }
-
-   // bar size in top flange
-   siz = m_Entry.GetTopFlangeShearBarSize();
-   if (siz>0)
-   {
-      CString tmp;
-      tmp.Format(_T("#%d"),siz);
-      int idx = m_ShearSteelPage.m_TfBarSize.SelectString(0,tmp);
-      if (idx==CB_ERR)
-         m_ShearSteelPage.m_TfBarSize.SetCurSel(0);
-   }
-   else
-      m_ShearSteelPage.m_TfBarSize.SetCurSel(0);
-
 }
 
 void CGirderMainSheet::ExchangeDiaphragmData(CDataExchange* pDX)
@@ -812,4 +740,54 @@ void CGirderMainSheet::MiscOnAbsolute()
 
    CDataExchange dx(&m_HarpPointPage,FALSE);
    DDX_Tag(&dx, IDC_HARP_LOCATION_TAG, pDisplayUnits->SpanLength );
+}
+
+void CGirderMainSheet::FillMaterialComboBox(CComboBox* pCB)
+{
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade40).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade75).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade80).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade60).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade80).c_str() );
+}
+
+void CGirderMainSheet::GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade)
+{
+   switch(idx)
+   {
+   case 0:  type = matRebar::A615; grade = matRebar::Grade40; break;
+   case 1:  type = matRebar::A615; grade = matRebar::Grade60; break;
+   case 2:  type = matRebar::A615; grade = matRebar::Grade75; break;
+   case 3:  type = matRebar::A615; grade = matRebar::Grade80; break;
+   case 4:  type = matRebar::A706; grade = matRebar::Grade60; break;
+   case 5:  type = matRebar::A706; grade = matRebar::Grade80; break;
+   default:
+      ATLASSERT(false); // should never get here
+   }
+}
+
+int CGirderMainSheet::GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade)
+{
+   if ( type == matRebar::A615 )
+   {
+      if ( grade == matRebar::Grade40 )
+         return 0;
+      else if ( grade == matRebar::Grade60 )
+         return 1;
+      else if ( grade == matRebar::Grade75 )
+         return 2;
+      else if ( grade == matRebar::Grade80 )
+         return 3;
+   }
+   else
+   {
+      if ( grade == matRebar::Grade60 )
+         return 4;
+      else if ( grade == matRebar::Grade80 )
+         return 5;
+   }
+
+   ATLASSERT(false); // should never get here
+   return -1;
 }

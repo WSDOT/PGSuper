@@ -199,8 +199,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    (*av_table)(0,5)  << COLHDR(_T("a") << Sub(_T("vf"))<<rptNewLine<<_T("Composite") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    // general quantities
-   double Es,Fy;
-   pMaterial->GetTransverseRebarProperties(span,girder,&Es,&Fy);
+   Float64 Es,Fy,Fu;
+   pMaterial->GetTransverseRebarProperties(span,girder,&Es,&Fy,&Fu);
 
    *pPara << _T("Coeff. of Friction (")<<symbol(mu)<<_T(") = ")<< p_first_artifact->GetFrictionFactor()<<rptNewLine;
    *pPara << _T("Cohesion Factor (c) = ")<< stress_with_tag.SetValue(p_first_artifact->GetCohesionFactor())<<rptNewLine;

@@ -732,15 +732,16 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
       GET_IFACE(IBridgeMaterial,pMaterial);
       Float64 Eg = pMaterial->GetEcGdr(spanIdx,gdrIdx);
 
-      Float64 Es, fy;
+      Float64 Es, fy, fu;
       if ( bPositiveMoment )
       {
          Es = pMaterial->GetStrand(spanIdx,gdrIdx,pgsTypes::Permanent)->GetE();
          fy = pMaterial->GetStrand(spanIdx,gdrIdx,pgsTypes::Permanent)->GetYieldStrength();
+         fu = pMaterial->GetStrand(spanIdx,gdrIdx,pgsTypes::Permanent)->GetUltimateStrength();
       }
       else
       {
-         pMaterial->GetDeckRebarProperties(&Es,&fy);
+         pMaterial->GetDeckRebarProperties(&Es,&fy,&fu);
       }
 
       // Get allowable

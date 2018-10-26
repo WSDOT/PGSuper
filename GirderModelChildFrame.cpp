@@ -773,12 +773,7 @@ void CGirderModelChildFrame::OnSync()
    if ( DoSyncWithBridgeModelView() )
    {
       settings |= IDG_SV_SYNC_GIRDER;
-
-      CSelection selection = pDoc->GetSelection();
-      if ( selection.Type == CSelection::Girder )
-      {
-         SelectSpanAndGirder(selection.SpanIdx,selection.GirderIdx,true);
-      }
+      pDoc->SelectGirder(m_CurrentSpanIdx,m_CurrentGirderIdx);
    }
    else
    {

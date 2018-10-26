@@ -135,7 +135,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(1,3) << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge());
    (*pParamTable)(1,4) << table->time.SetValue(details.RefinedLosses2005.GetFinalAge());
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
+   pParamTable = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    pParamTable->SetNumberOfHeaderRows(2);
    pParamTable->SetRowSpan(0,0,2);
@@ -144,29 +144,35 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    pParamTable->SetRowSpan(0,1,2);
    pParamTable->SetRowSpan(1,1,-1);
    (*pParamTable)(0,1) << COLHDR(Sub2(_T("E"),_T("ci")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   pParamTable->SetColumnSpan(0,2,3);
+   pParamTable->SetColumnSpan(0,2,5);
    pParamTable->SetColumnSpan(0,3,-1);
    pParamTable->SetColumnSpan(0,4,-1);
+   pParamTable->SetColumnSpan(0,5,-1);
+   pParamTable->SetColumnSpan(0,6,-1);
    (*pParamTable)(0,2) << _T("Shrinkage");
    (*pParamTable)(1,2) << Sub2(_T("K"),_T("1"));
    (*pParamTable)(1,3) << Sub2(_T("K"),_T("2"));
-   (*pParamTable)(1,4) << Sub2(symbol(epsilon),_T("bdf")) << _T("x 1000");
-   pParamTable->SetColumnSpan(0,5,3);
-   pParamTable->SetColumnSpan(0,6,-1);
-   pParamTable->SetColumnSpan(0,7,-1);
-   (*pParamTable)(0,5) << _T("Creep");
-   (*pParamTable)(1,5) << Sub2(_T("K"),_T("1"));
-   (*pParamTable)(1,6) << Sub2(_T("K"),_T("2"));
-   (*pParamTable)(1,7) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
+   (*pParamTable)(1,4) << Sub2(symbol(epsilon),_T("bif")) << _T("x1000");
+   (*pParamTable)(1,5) << Sub2(symbol(epsilon),_T("bid")) << _T("x1000");
+   (*pParamTable)(1,6) << Sub2(symbol(epsilon),_T("bdf")) << _T("x1000");
+   pParamTable->SetColumnSpan(0,7,3);
+   pParamTable->SetColumnSpan(0,8,-1);
+   pParamTable->SetColumnSpan(0,9,-1);
+   (*pParamTable)(0,7) << _T("Creep");
+   (*pParamTable)(1,7) << Sub2(_T("K"),_T("1"));
+   (*pParamTable)(1,8) << Sub2(_T("K"),_T("2"));
+   (*pParamTable)(1,9) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
 
    (*pParamTable)(2,0) << table->mod_e.SetValue(details.RefinedLosses2005.GetEp());
    (*pParamTable)(2,1) << table->mod_e.SetValue(details.RefinedLosses2005.GetEci());
    (*pParamTable)(2,2) << details.RefinedLosses2005.GetGdrK1Shrinkage();
    (*pParamTable)(2,3) << details.RefinedLosses2005.GetGdrK2Shrinkage();
-   (*pParamTable)(2,4) << table->strain.SetValue(details.RefinedLosses2005.Get_ebdf() * 1000);
-   (*pParamTable)(2,5) << details.RefinedLosses2005.GetGdrK1Creep();
-   (*pParamTable)(2,6) << details.RefinedLosses2005.GetGdrK2Creep();
-   (*pParamTable)(2,7) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(2,4) << table->strain.SetValue(details.RefinedLosses2005.Get_ebif() * 1000);
+   (*pParamTable)(2,5) << table->strain.SetValue(details.RefinedLosses2005.Get_ebid() * 1000);
+   (*pParamTable)(2,6) << table->strain.SetValue(details.RefinedLosses2005.Get_ebdf() * 1000);
+   (*pParamTable)(2,7) << details.RefinedLosses2005.GetGdrK1Creep();
+   (*pParamTable)(2,8) << details.RefinedLosses2005.GetGdrK2Creep();
+   (*pParamTable)(2,9) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetCreepCoefficient());
 
    // intermediate results
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));

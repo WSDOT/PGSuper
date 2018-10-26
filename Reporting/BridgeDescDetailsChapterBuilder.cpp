@@ -55,7 +55,7 @@ static void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 static void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
 static void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
 static void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
-static void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr);
 static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
 static void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType gdr);
 void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, SpanIndexType span,GirderIndexType gdr);
@@ -206,10 +206,10 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
          if ( 0 < pStrand->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
             write_strand_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx, pgsTypes::Temporary );
 
+         write_rebar_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx);
       } // gdrIdx
    } // spanIdx
-   write_rebar_details( pBroker, pDisplayUnits, pChapter, level);
-
+   
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -796,7 +796,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    row++;
 }
 
-void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
+void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
@@ -806,22 +806,75 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   // KLUDGE: Rebar is system-wide for now
-   lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-   const matRebar* pbar = prp->GetRebar(4);
-   PRECONDITION(pbar!=0);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Mild Steel (Rebar) Material"));
-   *pPara << pTable << rptNewLine;
+   lrfdRebarPool* pPool = lrfdRebarPool::GetInstance();
 
-   Int16 row = 0;
+   const matRebar* pDeckRebar = NULL;
+   if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+      pDeckRebar = pPool->GetRebar(pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarType,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarGrade,matRebar::bs3);
 
-   (*pTable)(row,0) << RPT_FPU;
-   (*pTable)(row,1) << stress.SetValue( pbar->GetUltimateStrength() );
-   row++;
+   const CGirderData& girderData = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderData(gdrIdx);
+   const matRebar* pShearRebar = pPool->GetRebar(girderData.ShearData.ShearBarType,girderData.ShearData.ShearBarGrade,matRebar::bs3);
+   const matRebar* pLongRebar  = pPool->GetRebar(girderData.LongitudinalRebarData.BarType,girderData.LongitudinalRebarData.BarGrade,matRebar::bs3);
 
-   (*pTable)(row,0) << RPT_FPY;
-   (*pTable)(row,1) << stress.SetValue( pbar->GetYieldStrength() );
+   if ( pDeckRebar )
+   {
+      rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Deck Reinforcing Material"));
+      *pPara << pTable << rptNewLine;
+
+      Int16 row = 0;
+
+      (*pTable)(row,0) << _T("Type");
+      (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pDeckRebar->GetType(),pDeckRebar->GetGrade()).c_str();
+      row++;
+
+      (*pTable)(row,0) << RPT_FY;
+      (*pTable)(row,1) << stress.SetValue( pDeckRebar->GetYieldStrength() );
+      row++;
+
+      (*pTable)(row,0) << RPT_FU;
+      (*pTable)(row,1) << stress.SetValue( pDeckRebar->GetUltimateStrength() );
+   }
+
+   if ( pShearRebar )
+   {
+      rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Transverse Reinforcing Material (Stirrups, Confinement, and Horizontal Interface Shear Bars)"));
+      *pPara << pTable << rptNewLine;
+
+      Int16 row = 0;
+
+      (*pTable)(row,0) << _T("Type");
+      (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pShearRebar->GetType(),pShearRebar->GetGrade()).c_str();
+      row++;
+
+      (*pTable)(row,0) << RPT_FY;
+      (*pTable)(row,1) << stress.SetValue( pShearRebar->GetYieldStrength() );
+      row++;
+
+      (*pTable)(row,0) << RPT_FU;
+      (*pTable)(row,1) << stress.SetValue( pShearRebar->GetUltimateStrength() );
+   }
+
+   if ( pLongRebar )
+   {
+      rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Longitudinal Girder Reinforcing Material"));
+      *pPara << pTable << rptNewLine;
+
+      Int16 row = 0;
+
+      (*pTable)(row,0) << _T("Type");
+      (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pLongRebar->GetType(),pLongRebar->GetGrade()).c_str();
+      row++;
+
+      (*pTable)(row,0) << RPT_FY;
+      (*pTable)(row,1) << stress.SetValue( pLongRebar->GetYieldStrength() );
+      row++;
+
+      (*pTable)(row,0) << RPT_FU;
+      (*pTable)(row,1) << stress.SetValue( pLongRebar->GetUltimateStrength() );
+   }
 }
 
 void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType girder)

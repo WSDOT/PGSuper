@@ -127,12 +127,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
       const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
 
       (*table)(row,0) << location.SetValue( stage, poi, end_size );
-
-      BarSizeType bs= pArtifact->GetBarSize();
-      if (bs!=0)
-         (*table)(row,1) << pool->GetRebar(bs)->GetName();
-      else
-         (*table)(row,1) << _T("none");
+      (*table)(row,1) << lrfdRebarPool::GetBarSize(pArtifact->GetBarSize()).c_str();
 
       Float64 s = pArtifact->GetS();
       if (s>0)

@@ -144,7 +144,9 @@ void CMultiGirderSelectGrid::CustomInit(const SpanGirderOnCollection& spanGirder
 {
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
-// in OnInitialUpdate.
+// in OnInitialUpdate. 
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+
 	Initialize( );
 
 	GetParam( )->EnableUndo(FALSE);
@@ -429,6 +431,13 @@ UINT CMultiGirderSelectGrid::OnGetDlgCode()
    // Make it so Tab key navigates to next control on containing dialog
  	return CWnd::OnGetDlgCode() | DLGC_WANTARROWS | DLGC_WANTCHARS;
 }
+
+void CMultiGirderSelectGrid::OnDrawItem(CDC *pDC, ROWCOL nRow, ROWCOL nCol, const CRect& rectItem, const CGXStyle& style)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());  
+   CGXGridCore::OnDrawItem(pDC, nRow, nCol, rectItem, style);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 

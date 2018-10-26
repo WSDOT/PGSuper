@@ -82,18 +82,18 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    // top flange horizontal interface stirrups
    pgsPointOfInterest poi(span,girder,0.0);
-   BarSizeType size = pStirrupGeometry->GetTopFlangeBarSize(poi);
+   matRebar::Size size = pStirrupGeometry->GetTopFlangeBarSize(poi);
    Float64 tfs = pStirrupGeometry->GetTopFlangeS(poi);
-   if (size!=0)
-      *pPara <<_T("Top flange stirrups are #")<<size<<_T(" at ")<<dim_u.SetValue(tfs)<<_T(" spacing.")<<rptNewLine;
+   if (size != matRebar::bsNone)
+      *pPara <<_T("Top flange stirrups are ")<<lrfdRebarPool::GetBarSize(size).c_str()<<_T(" at ")<<dim_u.SetValue(tfs)<<_T(" spacing.")<<rptNewLine;
    else
       *pPara <<_T("Top flange stirrups not present")<<rptNewLine;
 
    // bottom flange confinement steel
    size = pStirrupGeometry->GetConfinementBarSize(span,girder);
    Uint32 lz = pStirrupGeometry->GetNumConfinementZones(span,girder);
-   if (lz!=0 && size!=0)
-      *pPara <<_T("Bottom flange confinement stirrups are #")<<size<<_T(" ending in Zone ")<<lz<<rptNewLine;
+   if (lz != 0 && size != matRebar::bsNone)
+      *pPara <<_T("Bottom flange confinement stirrups are ")<<lrfdRebarPool::GetBarSize(size).c_str()<<_T(" ending in Zone ")<<lz<<rptNewLine;
    else
       *pPara<<_T("Bottom flange confinement steel not present")<<rptNewLine;
 
@@ -118,10 +118,10 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*p_table)(row,2) << loc.SetValue(pStirrupGeometry->GetZoneEnd(span,girder,iz));
       (*p_table)(row,3) << dim.SetValue(pStirrupGeometry->GetS(span,girder,iz));
 
-      BarSizeType barSize = pStirrupGeometry->GetVertStirrupBarSize(span,girder,iz);
-      if (barSize != 0)
+      matRebar::Size barSize = pStirrupGeometry->GetVertStirrupBarSize(span,girder,iz);
+      if (barSize != matRebar::bsNone)
       {
-         (*p_table)(row,4) << _T("#") << barSize;
+         (*p_table)(row,4) << lrfdRebarPool::GetBarSize(barSize).c_str();
          (*p_table)(row,5) << pStirrupGeometry->GetVertStirrupBarCount(span,girder,iz);
       }
       else
@@ -132,9 +132,9 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
 
       barSize = pStirrupGeometry->GetHorzStirrupBarSize(span,girder,iz);
-      if (barSize != 0)
+      if (barSize != matRebar::bsNone)
       {
-         (*p_table)(row,6) << _T("#") << barSize;
+         (*p_table)(row,6) << lrfdRebarPool::GetBarSize(barSize).c_str();
          (*p_table)(row,7) << pStirrupGeometry->GetHorzStirrupBarCount(span,girder,iz);
       }
       else

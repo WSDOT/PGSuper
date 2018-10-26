@@ -54,6 +54,8 @@ public:
 	//{{AFX_VIRTUAL(CMultiGirderSelectGrid)
 	//}}AFX_VIRTUAL
 
+	GRID_API virtual void OnDrawItem(CDC *pDC, ROWCOL nRow, ROWCOL nCol, const CRect& rectDraw, const CGXStyle& style);
+
 // Implementation
 public:
 	virtual ~CMultiGirderSelectGrid();
