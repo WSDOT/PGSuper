@@ -148,8 +148,16 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Ahead]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Back]);
 
-   DDX_UnitValueAndTag(pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDispUnits->GetComponentDimUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_END_SLAB_OFFSET,   IDC_END_SLAB_OFFSET_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDispUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_START_SLAB_OFFSET_UNIT, pDispUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_END_SLAB_OFFSET_UNIT,   pDispUnits->GetComponentDimUnit() );
+   if ( pParent->m_pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   {
+      if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_SlabOffsetType == pgsTypes::sotSpan) )
+      {
+         DDX_UnitValueAndTag(pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDispUnits->GetComponentDimUnit() );
+         DDX_UnitValueAndTag(pDX, IDC_END_SLAB_OFFSET,   IDC_END_SLAB_OFFSET_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDispUnits->GetComponentDimUnit() );
+      }
+   }
 }
 
 
@@ -352,14 +360,6 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
       m_SpacingGrid[pgsTypes::Ahead].SetLinkedGrid(&m_SpacingGrid[pgsTypes::Back]);
    }
 
-
-   GetDlgItem(IDC_START_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
-   GetDlgItem(IDC_END_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
-   if ( m_SlabOffsetType == pgsTypes::sotGirder )
-   {
-      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(_T(""));
-      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(_T(""));
-   }
   
    UpdateChildWindowState();
 
@@ -1042,7 +1042,17 @@ LRESULT CSpanGirderLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 BOOL CSpanGirderLayoutPage::OnSetActive() 
 {
    UpdateChildWindowState();
-	return CPropertyPage::OnSetActive();
+	BOOL bResult = CPropertyPage::OnSetActive();
+
+   GetDlgItem(IDC_START_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
+   GetDlgItem(IDC_END_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
+   if ( m_SlabOffsetType == pgsTypes::sotGirder )
+   {
+      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(_T(""));
+      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(_T(""));
+   }
+
+   return bResult;
 }
 
 void CSpanGirderLayoutPage::UpdateChildWindowState()
@@ -1060,12 +1070,16 @@ void CSpanGirderLayoutPage::UpdateChildWindowState()
    {
       bEnable = TRUE;
    }
+
    GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_START_SLAB_OFFSET)->EnableWindow(bEnable);
    GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
    GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_END_SLAB_OFFSET)->EnableWindow(bEnable);
    GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
+
+   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+   m_SlabOffsetHyperLink.EnableWindow( pParent->m_pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone ? FALSE : TRUE );
 }
 
 void CSpanGirderLayoutPage::ToggleGirderSpacingType()

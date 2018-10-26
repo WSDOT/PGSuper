@@ -108,6 +108,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
       // girder spacing
+      DDX_Tag(pDX,IDC_SPACING_UNIT,pDispUnits->GetXSectionDimUnit());
       if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && (m_GirderSpacingType == pgsTypes::sbsUniform || m_GirderSpacingType == pgsTypes::sbsConstantAdjacent)) )
       {
          DDX_UnitValueAndTag(pDX,IDC_SPACING,IDC_SPACING_UNIT,m_GirderSpacing,pDispUnits->GetXSectionDimUnit());
@@ -116,6 +117,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    else
    {
       // joint spacing
+      DDX_Tag(pDX,IDC_SPACING_UNIT,pDispUnits->GetComponentDimUnit());
       if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_GirderSpacingType == pgsTypes::sbsUniformAdjacent) )
          DDX_UnitValueAndTag(pDX,IDC_SPACING,IDC_SPACING_UNIT,m_GirderSpacing,pDispUnits->GetComponentDimUnit());
    }

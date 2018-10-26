@@ -3299,13 +3299,26 @@ Int32 CAnalysisAgentImp::AddPointOfInterest(ModelData* pModelData,const pgsPoint
    if ( poi.GetDistFromStart() < start_offset || (start_offset+span_length) < poi.GetDistFromStart() )
       return -1;
 
+   CComPtr<ISpans> spans;
+   pModelData->m_Model->get_Spans(&spans);
+
+   CComPtr<ISpan> lbamSpan;
+   spans->get_Item(span,&lbamSpan);
+
+   Float64 length;
+   lbamSpan->get_Length(&length);
+
    // Create a LBAM POI
    CComPtr<IPOI> objPOI;
    objPOI.CoCreateInstance(CLSID_POI);
    objPOI->put_ID(poiID);
    objPOI->put_MemberType(mtSpan);
    objPOI->put_MemberID(span);
-   objPOI->put_Location(poi.GetDistFromStart() - start_offset); // distance from start bearing
+   Float64 location = poi.GetDistFromStart() - start_offset;
+   if ( IsEqual(location,length) )
+      location = length;
+
+   objPOI->put_Location(location); // distance from start bearing
 
    // Assign stress points to the POI for each stage
    // each stage will have three stress points. Bottom of Girder, Top of Girder, Top of Slab
@@ -3340,41 +3353,6 @@ Int32 CAnalysisAgentImp::AddPointOfInterest(ModelData* pModelData,const pgsPoint
 
    // Record the LBAM poi in the POI map
    pModelData->PoiMap.AddMap( poi, poiID );
-
-#if defined _DEBUG
-   // verify the LBAM poi actually falls within the LBAM span
-   CComPtr<ISpans> spans;
-   pModelData->m_Model->get_Spans(&spans);
-
-   CComPtr<ISpan> lbamSpan;
-   spans->get_Item(span,&lbamSpan);
-
-   Float64 length;
-   lbamSpan->get_Length(&length);
-
-   Float64 location;
-   objPOI->get_Location(&location);
-
-   ATLASSERT( location <= length );
-
-   if ( pModelData->m_ContinuousModel )
-   {
-      spans.Release();
-      lbamSpan.Release();
-
-      pModelData->m_ContinuousModel->get_Spans(&spans);
-
-      spans->get_Item(span,&lbamSpan);
-
-      Float64 length;
-      lbamSpan->get_Length(&length);
-
-      Float64 location;
-      objPOI->get_Location(&location);
-
-      ATLASSERT( location <= length );
-   }
-#endif
 
    return poiID;
 }
@@ -3577,7 +3555,7 @@ void CAnalysisAgentImp::GetGirderSelfWeightLoad(SpanIndexType spanIdx,GirderInde
 {
    // get all the cross section changes
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE,POIFIND_OR);
 
    GET_IFACE(IBridgeMaterial,pMaterial);
    Float64 density = pMaterial->GetWgtDensityGdr(spanIdx,gdrIdx);
@@ -3586,24 +3564,24 @@ void CAnalysisAgentImp::GetGirderSelfWeightLoad(SpanIndexType spanIdx,GirderInde
    // compute distributed load intensity at each section change
    GET_IFACE(ISectProp2,pSectProp2);
    std::vector<pgsPointOfInterest>::iterator iter = xsPOI.begin();
-   const pgsPointOfInterest& poi = *iter++;
-   Float64 prevAg = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
-   Float64 prevW  = -prevAg*density*g;
-   Float64 prevLoc = poi.GetDistFromStart();
+   pgsPointOfInterest prevPoi = *iter++;
    for ( ; iter != xsPOI.end(); iter++ )
    {
-      const pgsPointOfInterest& poi = *iter;
+      pgsPointOfInterest currPoi = *iter;
+
+      pgsPointOfInterest poi(currPoi.GetSpan(),currPoi.GetGirder(),(currPoi.GetDistFromStart() + prevPoi.GetDistFromStart())/2);
+
       Float64 Ag = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
-      Float64 Loc = poi.GetDistFromStart();
+
       GirderLoad load;
-      load.StartLoc = prevLoc;
-      load.EndLoc   = Loc;
-      load.wStart   = prevW;
+      load.StartLoc = prevPoi.GetDistFromStart();
+      load.EndLoc   = currPoi.GetDistFromStart();
+      load.wStart   = -Ag*density*g;
       load.wEnd     = -Ag*density*g;
 
       pDistLoad->push_back(load);
-      prevW   = load.wEnd;
-      prevLoc = load.EndLoc;
+
+      prevPoi = currPoi;
    }
 
    // get point loads for precast diaphragms
@@ -8984,6 +8962,12 @@ void CAnalysisAgentImp::GetStraightStrandEquivLoading(SpanIndexType spanIdx,Gird
    CComPtr<IFem2dPointLoadCollection> ptLoads;
    loading->get_PointLoads(&ptLoads);
 
+   CComPtr<IFem2dMemberCollection> members;
+   model.Model->get_Members(&members);
+
+   CComPtr<IFem2dJointCollection> joints;
+   model.Model->get_Joints(&joints);
+
    CollectionIndexType nPtLoads;
    ptLoads->get_Count(&nPtLoads);
    for ( CollectionIndexType idx = 0; idx < nPtLoads; idx++ )
@@ -8992,8 +8976,26 @@ void CAnalysisAgentImp::GetStraightStrandEquivLoading(SpanIndexType spanIdx,Gird
       ptLoads->get_Item(idx,&ptLoad);
       Float64 M,X;
       ptLoad->get_Mz(&M);
-      ptLoad->get_Location(&X);
-      loads->push_back( std::make_pair(M,X) );
+      ptLoad->get_Location(&X); // location from start of member
+
+      // get start of member location..
+      // use the x value of the start joint
+      MemberIDType mbrID;
+      ptLoad->get_MemberID(&mbrID);
+
+      CComPtr<IFem2dMember> objMember;
+      members->Find(mbrID,&objMember);
+
+      JointIDType startJointID;
+      objMember->get_StartJoint(&startJointID);
+
+      CComPtr<IFem2dJoint> objStartJnt;
+      joints->Find(startJointID,&objStartJnt);
+
+      Float64 x;
+      objStartJnt->get_X(&x);
+
+      loads->push_back( std::make_pair(M,X+x) );
    }
 }
 

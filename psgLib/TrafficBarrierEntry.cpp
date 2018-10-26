@@ -41,6 +41,7 @@ CLASS
 #include <WBFLGenericBridge.h>
 
 #include <LRFD\ConcreteUtil.h>
+#include <LRFD\VersionMgr.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,7 +70,11 @@ m_CurbOffset(0)
 
    Float64 fc = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
    Float64 density = ::ConvertToSysUnits(155.0,unitMeasure::LbmPerFeet3);
+
+   lrfdVersionMgr::Units old_units = lrfdVersionMgr::GetUnits();
+   lrfdVersionMgr::SetUnits(lrfdVersionMgr::US);
    m_Ec = lrfdConcreteUtil::ModE(fc,density,false);
+   lrfdVersionMgr::SetUnits(old_units);
 }
 
 TrafficBarrierEntry::TrafficBarrierEntry(const TrafficBarrierEntry& rOther) :

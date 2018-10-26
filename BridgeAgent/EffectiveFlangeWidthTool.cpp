@@ -682,8 +682,8 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   pgsTypes::SupportedBeamSpacing beamSpacing = pBridgeDesc->GetGirderSpacingType();
 
+   bool use_tributary_width = DoUseTributaryWidth( pBridgeDesc);
 
    rptRcTable* table;
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -694,7 +694,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
 
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
-   if ( m_bUseTribWidth || IsAdjacentSpacing(beamSpacing) || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   if ( use_tributary_width )
    {
       *pPara << "Effective flange width is taken as one-half the distance to the adjacent girder on each side of the component" << rptNewLine;
       table = pgsReportStyleHolder::CreateDefaultTable(4,"");
@@ -733,7 +733,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
 
    (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",   rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
 
-   if ( m_bUseTribWidth || IsAdjacentSpacing(beamSpacing) || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   if ( use_tributary_width )
    {
       (*table)(0,1) << COLHDR("Left Spacing",rptLengthUnitTag,pDispUnits->GetComponentDimUnit());
       (*table)(0,2) << COLHDR("Right Spacing",rptLengthUnitTag,pDispUnits->GetComponentDimUnit());
@@ -961,7 +961,13 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
    bool bLeftGirder = (gdr == 0 ? true : false);
 
-   if ( m_bUseTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   bool use_tributary_width = DoUseTributaryWidth( pBridgeDesc);
+
+
+   if ( use_tributary_width )
    {
        *pPara << "Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width" << rptNewLine;
    }
@@ -983,7 +989,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
    rptRcTable* table;
-   if ( m_bUseTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   if ( use_tributary_width )
    {
       EffFlangeWidth efw;
       EffectiveFlangeWidthDetails(bridge,span,gdr,0.00,&efw);
@@ -1048,8 +1054,10 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
       int col = 0;
       (*table)(row,col++) << location.SetValue( poi, end_size );
-      if ( efw.m_Details )
+      if ( !use_tributary_width )
       {
+         ATLASSERT(efw.m_Details);
+
          EffFlangeWidth adjacent_efw;
          EffectiveFlangeWidthDetails(bridge,poi.GetSpan(),poi.GetGirder() + (bLeftGirder ? 1 : -1),poi.GetDistFromStart(),&adjacent_efw);
 
@@ -1122,7 +1130,12 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnits)
 {
-   if ( m_bUseTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   bool use_tributary_width = DoUseTributaryWidth( pBridgeDesc);
+
+   if ( use_tributary_width )
    {
       ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(pBroker,bridge,span,gdr,pChapter,pDispUnits);
       return;
@@ -1221,7 +1234,12 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnits)
 {
-   if ( m_bUseTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   bool use_tributary_width = DoUseTributaryWidth( pBridgeDesc);
+
+   if ( use_tributary_width )
    {
       ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(pBroker,bridge,span,gdr,pChapter,pDispUnits);
       return;
@@ -1345,4 +1363,11 @@ void CEffectiveFlangeWidthTool::GetBeamFactory(IBroker* pBroker,SpanIndexType sp
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
    const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    pGdrEntry->GetBeamFactory(factory);
+}
+
+bool CEffectiveFlangeWidthTool::DoUseTributaryWidth(const CBridgeDescription* pBridgeDesc)
+{
+   pgsTypes::SupportedBeamSpacing beamSpacing = pBridgeDesc->GetGirderSpacingType();
+
+   return m_bUseTribWidth || IsAdjacentSpacing(beamSpacing) || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion();
 }
