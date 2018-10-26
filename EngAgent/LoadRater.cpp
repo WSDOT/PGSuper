@@ -735,8 +735,8 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
       Float64 Es, fy;
       if ( bPositiveMoment )
       {
-         Es = pMaterial->GetStrand(spanIdx,gdrIdx)->GetE();
-         fy = pMaterial->GetStrand(spanIdx,gdrIdx)->GetYieldStrength();
+         Es = pMaterial->GetStrand(spanIdx,gdrIdx,pgsTypes::Permanent)->GetE();
+         fy = pMaterial->GetStrand(spanIdx,gdrIdx,pgsTypes::Permanent)->GetYieldStrength();
       }
       else
       {

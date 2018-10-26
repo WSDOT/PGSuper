@@ -478,6 +478,7 @@ void CGirderDescGeneralPage::UpdateConcreteControls()
    CDataExchange dx(this,FALSE);
    ExchangeConcreteData(&dx);
    UpdateEc();
+   UpdateEci();
 
    BOOL bEnable = m_ctrlEcCheck.GetCheck();
    GetDlgItem(IDC_EC)->EnableWindow(bEnable);

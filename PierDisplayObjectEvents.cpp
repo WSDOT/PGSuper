@@ -184,6 +184,10 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject*
       pThis->m_pFrame->SelectGirder(spanIdx,0);
       return true;
    }
+   else if ( nChar == VK_DELETE )
+   {
+      ::PostMessage(pThis->m_pFrame->GetSafeHwnd(),WM_COMMAND,ID_DELETE,0);
+   }
 
    return false;
 }

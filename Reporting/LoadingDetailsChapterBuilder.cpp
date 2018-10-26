@@ -1504,36 +1504,25 @@ CChapterBuilder* CLoadingDetailsChapterBuilder::Clone() const
 
 static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::SupportedDeckType deckType)
 {
-   bool is_pad = deckType==pgsTypes::sdtCompositeSIP;
+   bool is_panel = deckType==pgsTypes::sdtCompositeSIP ? true : false;
 
-   Float64 main_load;
-   Float64 panel_load;
-   Float64 pad_load;
-
-   bool first=true;
-   for ( std::vector<SlabLoad>::const_iterator i = slabLoads.begin(); i != slabLoads.end(); i++ )
+   std::vector<SlabLoad>::const_iterator i1,i2;
+   i1 = slabLoads.begin();
+   i2 = slabLoads.begin()+1;
+   for ( ; i2 != slabLoads.end(); i1++, i2++ )
    {
-      const SlabLoad& slab_load = *i;
+      const SlabLoad& slab_load_1 = *i1;
+      const SlabLoad& slab_load_2 = *i2;
 
-      if (first)
-      {
-         main_load  = slab_load.MainSlabLoad;
-         panel_load = slab_load.PanelLoad;
-         pad_load   = slab_load.PadLoad;
-         first = false;
-      }
-      else
-      {
-         // only takes one difference to be nonuniform
-         if (!IsEqual(main_load, slab_load.MainSlabLoad))
-            return false;
+      // only takes one difference to be nonuniform
+      if ( !IsEqual(slab_load_1.MainSlabLoad,slab_load_2.MainSlabLoad) )
+         return false;
 
-         if (!IsEqual(panel_load, slab_load.PanelLoad))
-            return false;
+      if ( is_panel && !IsEqual(slab_load_1.PanelLoad,slab_load_2.PanelLoad) )
+         return false;
 
-         if (is_pad && !IsEqual(pad_load, slab_load.PadLoad))
-            return false;
-      }
+      if ( !IsEqual(slab_load_1.PadLoad,slab_load_2.PadLoad) )
+         return false;
    }
 
    return true;
@@ -1541,59 +1530,43 @@ static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::
 
 static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
 {
-   Float64 loadval;
-
-   bool first=true;
-   for ( std::vector<OverlayLoad>::const_iterator i = overlayLoads.begin(); i != overlayLoads.end(); i++ )
+   std::vector<OverlayLoad>::const_iterator i1,i2;
+   i1 = overlayLoads.begin();
+   i2 = overlayLoads.begin()+1;
+   for ( ; i2 != overlayLoads.end(); i1++, i2++ )
    {
-      const OverlayLoad& load = *i;
+      const OverlayLoad& load_1 = *i1;
+      const OverlayLoad& load_2 = *i2;
 
-      if (first)
-      {
-         loadval = load.StartLoad;
-         first = false;
-      }
-      else
-      {
-         // only takes one difference to be nonuniform
-         if (!IsEqual(loadval, load.StartLoad))
-            return false;
-      }
+      // only takes one difference to be nonuniform
+      if ( !IsEqual(load_1.StartLoad,load_2.StartLoad) )
+         return false;
 
-      if (!IsEqual(loadval, load.EndLoad))
+      if ( !IsEqual(load_1.EndLoad,load_2.EndLoad) )
          return false;
    }
-
 
    return true;
 }
 
 static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
 {
-   Float64 loadval, unifval;
-
-   bool first=true;
-   for ( std::vector<ShearKeyLoad>::const_iterator i = loads.begin(); i != loads.end(); i++ )
+   std::vector<ShearKeyLoad>::const_iterator i1,i2;
+   i1 = loads.begin();
+   i2 = loads.begin()+1;
+   for ( ; i2 != loads.end(); i1++, i2++ )
    {
-      const ShearKeyLoad& load = *i;
+      const ShearKeyLoad& load_1 = *i1;
+      const ShearKeyLoad& load_2 = *i2;
 
-      if (first)
-      {
-         loadval = load.StartJointLoad;
-         unifval = load.UniformLoad;
-         first = false;
-      }
-      else
-      {
-         // only takes one difference to be nonuniform
-         if (!IsEqual(loadval, load.StartJointLoad))
-            return false;
+      // only takes one difference to be nonuniform
+      if ( !IsEqual(load_1.UniformLoad,load_2.UniformLoad) )
+         return false;
 
-         if (!IsEqual(unifval, load.UniformLoad))
-            return false;
-      }
+      if ( !IsEqual(load_1.StartJointLoad,load_2.StartJointLoad) )
+         return false;
 
-      if (!IsEqual(loadval, load.EndJointLoad))
+      if ( !IsEqual(load_1.EndJointLoad,load_2.EndJointLoad) )
          return false;
    }
 
@@ -1602,27 +1575,19 @@ static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
 
 static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads)
 {
-   Float64 loadval;
-
-   bool first=true;
-   for ( std::vector<ConstructionLoad>::const_iterator i = loads.begin(); i != loads.end(); i++ )
+   std::vector<ConstructionLoad>::const_iterator i1,i2;
+   i1 = loads.begin();
+   i2 = loads.begin()+1;
+   for ( ; i2 != loads.end(); i1++, i2++ )
    {
-      const ConstructionLoad& load = *i;
+      const ConstructionLoad& load_1 = *i1;
+      const ConstructionLoad& load_2 = *i2;
 
-      if (first)
-      {
-         loadval = load.StartLoad;
-         first = false;
-      }
-      else
-      {
-         // only takes one difference to be nonuniform
-         if (!IsEqual(loadval, load.StartLoad))
-            return false;
+      // only takes one difference to be nonuniform
+      if ( !IsEqual(load_1.StartLoad,load_2.StartLoad) )
+         return false;
 
-      }
-
-      if (!IsEqual(loadval, load.EndLoad))
+      if ( !IsEqual(load_1.EndLoad,load_2.EndLoad) )
          return false;
    }
 

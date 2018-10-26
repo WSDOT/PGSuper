@@ -157,6 +157,10 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnKeyDown(i
       pThis->m_pFrame->SelectGirder(pThis->m_SpanIdx,0);
       return true;
    }
+   else if ( nChar == VK_DELETE )
+   {
+      ::PostMessage(pThis->m_pFrame->GetSafeHwnd(),WM_COMMAND,ID_DELETE,0);
+   }
 
    return false;
 }
@@ -353,6 +357,10 @@ STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnKeyDow
    {
       pThis->m_pFrame->SelectGirder(pThis->m_SpanIdx,0);
       return true;
+   }
+   else if ( nChar == VK_DELETE )
+   {
+      ::PostMessage(pThis->m_pFrame->GetSafeHwnd(),WM_COMMAND,ID_DELETE,0);
    }
 
    return false;

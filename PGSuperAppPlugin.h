@@ -93,6 +93,7 @@ public:
 
 protected:
    void Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo);
+   void ProcessLibrarySetUp(const CPGSuperCommandLineInfo& rCmdInfo);
 
 // IEAFAppPlugin
 public:

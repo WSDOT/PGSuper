@@ -84,7 +84,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    
-   *pParagraph << "[5.9.5.4.2b] Creep of Girder Concrete : " << symbol(DELTA) << Sub2("f","pCRH") << rptNewLine;
+   *pParagraph << "[5.9.5.4.2b] Creep of Girder Concrete : " << symbol(DELTA) << RPT_STRESS("pCRH") << rptNewLine;
 
    if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
       *pParagraph << rptRcImage(strImagePath + "Delta_FpCRH_PT.png") << rptNewLine;
@@ -130,30 +130,30 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 
       col = 2;
       if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
-         (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
-         (*table)(1,col++) << COLHDR(Sub2("f","cgp") << " + " << symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(RPT_STRESS("cgp") << " + " << symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
       (*table)(1,col++) << Sub2("K","ih");
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) <<RPT_STRESS("pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( bTemporaryStrands )
       {
-         (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(1,col++) << Sub2("K","ih");
-         (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
    }
    else
    {
       if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
-         (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(0,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
-         (*table)(0,col++) << COLHDR(Sub2("f","cgp") << " + " << symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(0,col++) << COLHDR(RPT_STRESS("cgp") << " + " << symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       (*table)(0,col++) << Sub2("K","ih");
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    return table;

@@ -194,17 +194,19 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, long statusGroupID, pgsDe
    InitDebondData();
 
    // Get area of an individual prestressing strand
-   const matPsStrand* pstrand = pGirderMaterial->pStrandMaterial;
-   CHECK(pstrand!=0);
-   m_Aps = pstrand->GetNominalArea();
+   m_Aps[pgsTypes::Straight]  = pGirderMaterial->pStrandMaterial[pgsTypes::Straight]->GetNominalArea();
+   m_Aps[pgsTypes::Harped]    = pGirderMaterial->pStrandMaterial[pgsTypes::Harped]->GetNominalArea();
+   m_Aps[pgsTypes::Temporary] = pGirderMaterial->pStrandMaterial[pgsTypes::Temporary]->GetNominalArea();
 
-   m_GirderLength = pBridge->GetGirderLength(m_Span,m_Girder);
-   m_SpanLength   = pBridge->GetSpanLength(m_Span,m_Girder);
+   m_GirderLength          = pBridge->GetGirderLength(m_Span,m_Girder);
+   m_SpanLength            = pBridge->GetSpanLength(m_Span,m_Girder);
    m_StartConnectionLength = pBridge->GetGirderStartConnectionLength(m_Span,m_Girder);
-   m_XFerLength =  pPrestressForce->GetXferLength(m_Span,m_Girder);
+   m_XFerLength[pgsTypes::Straight]  = pPrestressForce->GetXferLength(m_Span,m_Girder,pgsTypes::Straight);
+   m_XFerLength[pgsTypes::Harped]    = pPrestressForce->GetXferLength(m_Span,m_Girder,pgsTypes::Harped);
+   m_XFerLength[pgsTypes::Temporary] = pPrestressForce->GetXferLength(m_Span,m_Girder,pgsTypes::Temporary);
 
    // harped offsets, hold-down and max strand slopes
-   InitHarpedPhysicalBounds(pstrand);
+   InitHarpedPhysicalBounds(pGirderMaterial->pStrandMaterial[pgsTypes::Harped]);
 
    // Compute and Cache mid-zone boundaries
    ComputeMidZoneBoundaries();
@@ -685,12 +687,16 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,p
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 neff;
-   return pStrandGeom->GetEccentricity(poi, guess, (eccStage<pgsTypes::BridgeSite1), &neff);
+   bool bIncTemp = (eccStage < pgsTypes::BridgeSite1 ? true : false);
+   return pStrandGeom->GetEccentricity(poi, guess, bIncTemp, &neff);
 }
 
-Float64 pgsStrandDesignTool::GetTransferLength() const
+Float64 pgsStrandDesignTool::GetTransferLength(pgsTypes::StrandType strandType) const
 {
-   return m_XFerLength;
+   if ( strandType == pgsTypes::Permanent )
+      strandType = pgsTypes::Straight;
+
+   return m_XFerLength[strandType];
 }
 
 StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,Float64 Force)
@@ -715,15 +721,15 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
    {
       GET_IFACE(IPrestressForce,pPrestressForce);
 
-      guess.Pjack[pgsTypes::Straight]  = pPrestressForce->GetPjackMax(m_Span,m_Girder,ns);
-      guess.Pjack[pgsTypes::Harped]    = pPrestressForce->GetPjackMax(m_Span,m_Girder,nh);
-      guess.Pjack[pgsTypes::Temporary] = pPrestressForce->GetPjackMax(m_Span,m_Girder,nt);
+      guess.Pjack[pgsTypes::Straight]  = pPrestressForce->GetPjackMax(m_Span,m_Girder,pgsTypes::Straight,ns);
+      guess.Pjack[pgsTypes::Harped]    = pPrestressForce->GetPjackMax(m_Span,m_Girder,pgsTypes::Harped,nh);
+      guess.Pjack[pgsTypes::Temporary] = pPrestressForce->GetPjackMax(m_Span,m_Girder,pgsTypes::Temporary,nt);
       
       PjMax                            = guess.Pjack[pgsTypes::Straight] + 
                                          guess.Pjack[pgsTypes::Harped]   + 
                                          guess.Pjack[pgsTypes::Temporary];
 
-      fpjMax                           = PjMax/(m_Aps*(ns+nh+nt));
+      fpjMax                           = PjMax/(m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh + m_Aps[pgsTypes::Temporary]*nt);
    }
 
    LOG("Maximum jacking stress for this strand configuration = " << ::ConvertFromSysUnits(fpjMax,unitMeasure::KSI) << " KSI");
@@ -756,10 +762,11 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
    else
       Aps = -Force/fstrand; // Total required area of prestressing
 
-   LOG("Strand Area = " << ::ConvertFromSysUnits(m_Aps,unitMeasure::Inch2) << " in^2 per strand");
+   LOG("Strand Area = " << ::ConvertFromSysUnits(m_Aps[pgsTypes::Straight],unitMeasure::Inch2) << " in^2 per strand");
    LOG("Required area of prestressing = " << ::ConvertFromSysUnits(Aps,unitMeasure::Inch2) << " in^2");
 
-   Float64 fN = Aps/m_Aps;
+   ATLASSERT(IsEqual(m_Aps[pgsTypes::Straight],m_Aps[pgsTypes::Harped])); // must be the same for this algorithm to work
+   Float64 fN = Aps/m_Aps[pgsTypes::Straight];
    StrandIndexType N = (StrandIndexType)ceil(fN);
    N = max(N,1); // Must be zero or more strands
 
@@ -804,9 +811,9 @@ void pgsStrandDesignTool::UpdateJackingForces()
    GET_IFACE(IPrestressForce,pPrestressForce);
 
    Float64 PjS, PjH, PjT;
-   PjS  = pPrestressForce->GetPjackMax(m_Span,m_Girder,GetNs() );
-   PjH  = pPrestressForce->GetPjackMax(m_Span,m_Girder,GetNh() );
-   PjT  = pPrestressForce->GetPjackMax(m_Span,m_Girder,GetNt() );
+   PjS  = pPrestressForce->GetPjackMax(m_Span,m_Girder,pgsTypes::Straight, GetNs());
+   PjH  = pPrestressForce->GetPjackMax(m_Span,m_Girder,pgsTypes::Harped,   GetNh());
+   PjT  = pPrestressForce->GetPjackMax(m_Span,m_Girder,pgsTypes::Temporary,GetNt());
 
    // Save the initial design in the design artifact.
    m_pArtifact->SetPjackStraightStrands( PjS );
@@ -957,9 +964,9 @@ void pgsStrandDesignTool::ComputeMinStrands()
          Float64 neff;
          Float64 ecc = pStrandGeom->GetEccentricity(mid_pois[0],config,false,&neff);
          LOG("Computed ecc = "<<ecc<<" for ns="<<ns<<" nh="<<nh);
-         if (ecc>0.)
+         if (0. < ecc)
          {
-            if (nIter==0)
+            if (nIter == 0)
             {
                // Setting strand to a minimal number seems to give optimal results for cases without top strands
                m_MinPermanentStrands = 1;
@@ -980,7 +987,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
             ns_prev = ns_curr;
             ns_curr = GetNextNumPermanentStrands(ns_prev);
 
-            if (ns_curr<0)
+            if (ns_curr < 0)
             {
                LOG("**WARNING: Could not find number of strands to create positive eccentricity. The end is likely near...");
             }
@@ -1250,7 +1257,7 @@ bool pgsStrandDesignTool::AddTempStrands()
       LOG("Adding " << (nextNt - Nt) << " temporary strands");
       LOG("** Successfully added strands -> Nt = " << nextNt);
       m_pArtifact->SetNumTempStrands( nextNt );
-      m_pArtifact->SetPjackTempStrands( pPrestressForce->GetPjackMax(m_Span,m_Girder,nextNt) );
+      m_pArtifact->SetPjackTempStrands( pPrestressForce->GetPjackMax(m_Span,m_Girder,pgsTypes::Temporary,nextNt) );
       m_pArtifact->SetUsedMaxPjackTempStrands( true );
 
       return true;
@@ -1888,13 +1895,14 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    LOG("Compute total prestessing force at Release in end-zone for the current configuration at " << ::ConvertFromSysUnits(distFromStart, unitMeasure::Feet) << " ft along girder");
 
    Float64 xFerFactor;
-   if (distFromStart<m_XFerLength)
+   Float64 xferLength = GetTransferLength(pgsTypes::Permanent);
+   if (distFromStart < xferLength)
    {
-      xFerFactor = distFromStart/m_XFerLength;
+      xFerFactor = distFromStart/xferLength;
    }
-   else if (m_GirderLength-distFromStart<m_XFerLength)
+   else if (m_GirderLength-distFromStart < xferLength)
    {
-      xFerFactor = (m_GirderLength-distFromStart)/m_XFerLength;
+      xFerFactor = (m_GirderLength-distFromStart)/xferLength;
    }
    else
    {
@@ -1918,7 +1926,8 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
                   guess.Pjack[pgsTypes::Harped]   + 
                   guess.Pjack[pgsTypes::Temporary];
 
-   Float64 fpj =  pj/(m_Aps*np);
+   Float64 Aps = m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh + m_Aps[pgsTypes::Temporary]*nt;
+   Float64 fpj =  pj/Aps;
 
    LOG("Average jacking stress for this strand configuration = " << ::ConvertFromSysUnits(fpj,unitMeasure::KSI) << " KSI");
 
@@ -1952,8 +1961,11 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
 //   if (ss < Float64_Max)
 //      hz = ss/sqrt(1*1 + ss*ss);
 
-   Float64 force = fstrand * m_Aps * (ns + nh*hz + nt) * xFerFactor;
-   LOG("Total force at lifting = (" << ::ConvertFromSysUnits(fstrand,unitMeasure::KSI) << " ksi)(" << ::ConvertFromSysUnits(m_Aps,unitMeasure::Inch2) << " in^2)[" << ns << " + (" << hz << ")(" << nh << ") + " << nt << "] = " << ::ConvertFromSysUnits(force,unitMeasure::Kip) << " kip");
+   Float64 force = fstrand * xFerFactor * (m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh*hz + m_Aps[pgsTypes::Temporary]*nt);
+   LOG("Total force at lifting = (" << ::ConvertFromSysUnits(fstrand,unitMeasure::KSI) << " ksi)(" << xFerFactor << ")"
+      << "[" << ::ConvertFromSysUnits(m_Aps[pgsTypes::Straight],unitMeasure::Inch2) << " in^2)(" << ns << ") + (" 
+      << ::ConvertFromSysUnits(m_Aps[pgsTypes::Harped],unitMeasure::Inch2) << " in^2)(" << hz << ")(" << nh << ") + " 
+      << ::ConvertFromSysUnits(m_Aps[pgsTypes::Temporary],unitMeasure::Inch2) << "in^2)(" << nt << ")] = " << ::ConvertFromSysUnits(force,unitMeasure::Kip) << " kip");
 
    return force;
 }
@@ -1984,7 +1996,8 @@ Float64 pgsStrandDesignTool::GetPrestressForceMz(pgsTypes::Stage stage,const pgs
       pj += guess.Pjack[pgsTypes::Temporary];
    }
 
-   Float64 fpj =  pj/(m_Aps*(ns+nh+nt));
+   Float64 Aps = m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh + m_Aps[pgsTypes::Temporary]*nt;
+   Float64 fpj =  pj/Aps;
 
    LOG("Average jacking stress for this strand configuration = " << ::ConvertFromSysUnits(fpj,unitMeasure::KSI) << " KSI");
 
@@ -2012,7 +2025,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMz(pgsTypes::Stage stage,const pgs
    Float64 fstrand = fpj - loss;
    LOG("average strand stress after losses = " << ::ConvertFromSysUnits(fstrand,unitMeasure::KSI) << " KSI");
 
-   Float64 force = fstrand * m_Aps * (ns + nh + nt);
+   Float64 force = fstrand*Aps;
    LOG("Total force at final = " << ::ConvertFromSysUnits(force,unitMeasure::Kip) << " kip");
 
    return force;
@@ -2046,8 +2059,13 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
    Float64 neff = neff_ss + neff_hs + neff_ts;
    ATLASSERT(neff>0.0);
 
-   Float64 ecc_p1 = (neff_ss*ecc_ss + neff_ts*ecc_ts + neff_hs*ecc_hs_p1)/neff;
-   Float64 ecc_m1 = (neff_ss*ecc_ss + neff_ts*ecc_ts + neff_hs*ecc_hs_m1)/neff;
+   Float64 as_straight  = m_Aps[pgsTypes::Straight]*neff_ss;
+   Float64 as_harped    = m_Aps[pgsTypes::Harped]*neff_hs;
+   Float64 as_temporary = m_Aps[pgsTypes::Temporary]*neff_ts;
+   Float64 as = (as_straight + as_harped + as_temporary);
+
+   Float64 ecc_p1 = (as_straight*ecc_ss + as_temporary*ecc_ts + as_harped*ecc_hs_p1)/as;
+   Float64 ecc_m1 = (as_straight*ecc_ss + as_temporary*ecc_ts + as_harped*ecc_hs_m1)/as;
 
    mathCoordMapper1d mapper(-1.0, ecc_m1, 1.0, ecc_p1);
 
@@ -2095,8 +2113,13 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
       Float64 neff = neff_ss + neff_hs + neff_ts;
       ATLASSERT(neff>0.0);
 
-      Float64 ecc_p1 = (neff_ss*ecc_ss + neff_ts*ecc_ts + neff_hs*ecc_hs_p1)/neff;
-      Float64 ecc_m1 = (neff_ss*ecc_ss + neff_ts*ecc_ts + neff_hs*ecc_hs_m1)/neff;
+      Float64 as_straight  = m_Aps[pgsTypes::Straight]*neff_ss;
+      Float64 as_harped    = m_Aps[pgsTypes::Harped]*neff_hs;
+      Float64 as_temporary = include_temp ? m_Aps[pgsTypes::Temporary]*neff_ts : 0;
+      Float64 as = (as_straight + as_harped + as_temporary);
+
+      Float64 ecc_p1 = (as_straight*ecc_ss + as_temporary*ecc_ts + as_harped*ecc_hs_p1)/as;
+      Float64 ecc_m1 = (as_straight*ecc_ss + as_temporary*ecc_ts + as_harped*ecc_hs_m1)/as;
 
       mathCoordMapper1d mapper(-1.0, ecc_m1, 1.0, ecc_p1);
 
@@ -2577,7 +2600,8 @@ pgsPointOfInterest pgsStrandDesignTool::GetDebondSamplingPOI(pgsTypes::Stage sta
    m_PoiMgr.GetPointsOfInterest(m_Span, m_Girder, stage, POI_ALL, POIMGR_OR, &vPoi);
 
    // grab first poi past transfer length
-   Float64 bound = max( m_XFerLength, ::ConvertToSysUnits(2.0,unitMeasure::Inch)); // value is fairly arbitrary, we just don't want end poi
+   Float64 xferLength = GetTransferLength(pgsTypes::Permanent);
+   Float64 bound = max( xferLength, ::ConvertToSysUnits(2.0,unitMeasure::Inch)); // value is fairly arbitrary, we just don't want end poi
 
    for (std::vector<pgsPointOfInterest>::iterator it=vPoi.begin(); it!=vPoi.end(); it++)
    {
@@ -2783,7 +2807,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
 
       const PoiAttributeType attrib_xfer = POI_ALLACTIONS | POI_ALLOUTPUT | POI_PSXFER;
 
-      Float64 xfer_length = pPrestress->GetXferLength(m_Span,m_Girder);
+      Float64 xfer_length = pPrestress->GetXferLength(m_Span,m_Girder,pgsTypes::Permanent);
 
       Float64 start_conn = pBridge->GetGirderStartConnectionLength(m_Span,m_Girder);
       if (xfer_length < start_conn )
@@ -2841,7 +2865,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       GET_IFACE(IPrestressForce,pPrestress);
       GET_IFACE(IStrandGeometry,pStrandGeometry);
 
-      Float64 xfer_length = pPrestress->GetXferLength(m_Span,m_Girder);
+      Float64 xfer_length = pPrestress->GetXferLength(m_Span,m_Girder,pgsTypes::Permanent);
 
       Float64 start_supp = pBridge->GetGirderStartConnectionLength(m_Span,m_Girder);
       Float64 end_supp   = m_GirderLength - pBridge->GetGirderEndConnectionLength(m_Span,m_Girder);
@@ -2955,7 +2979,7 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       // k = 2.0  (from 5.11.4.3)
       // We get:
       // ld = 2.0(fps - 2/3 * fps/2.0)db   = 4/3(fpu)db
-      const matPsStrand* pstrand = pGirderData->GetStrandMaterial(m_Span,m_Girder);
+      const matPsStrand* pstrand = pGirderData->GetStrandMaterial(m_Span,m_Girder,pgsTypes::Permanent);
       CHECK(pstrand!=0);
 
       // use US units
@@ -3953,7 +3977,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(Float64 psForcePerStrand, 
             // location is so close to outboard section - call it fully transferred so we don't need inboard debonding
             *pInboardLevel = 0;
          }
-         else if (outboardDistance < m_XFerLength)
+         else if (outboardDistance < GetTransferLength(pgsTypes::Permanent))
          {
             // Location is between outboard section and transfer length. See if we can use next lower
             // level at inboard section location.
@@ -3966,7 +3990,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(Float64 psForcePerStrand, 
                // Stress relief (alleviation) provided by next-lower level
                Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(psForcePerStrand, Yb, Ag, St);
 
-               Float64 transfer_provided = 1.0-(outboardDistance / m_XFerLength);
+               Float64 transfer_provided = 1.0-(outboardDistance / GetTransferLength(pgsTypes::Permanent));
             
                Float64 allev_provided = inb_allev + transfer_provided*(outb_allev-inb_allev);
 
@@ -4046,7 +4070,7 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(Float64 psForcePerS
             // location is so close to outboard section - call it fully transferred so we don't need inboard debonding
             *pInboardLevel = 0;
          }
-         else if (outboardDistance < m_XFerLength)
+         else if (outboardDistance < GetTransferLength(pgsTypes::Permanent))
          {
             // Location is between outboard section and transfer length. See if we can use next lower
             // level at inboard section location.
@@ -4059,7 +4083,7 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(Float64 psForcePerS
                // Stress relief (alleviation) provided by next-lower level
                Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(psForcePerStrand, Yb, Ag, Sb);
 
-               Float64 transfer_provided = 1.0-(outboardDistance / m_XFerLength);
+               Float64 transfer_provided = 1.0-(outboardDistance / GetTransferLength(pgsTypes::Permanent));
             
                Float64 allev_provided = inb_allev + transfer_provided*(outb_allev-inb_allev);
 

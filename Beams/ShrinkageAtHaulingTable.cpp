@@ -87,7 +87,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "[5.9.5.4.2a] Shrinkage of Girder Concrete : " << symbol(DELTA) << Sub2("f","pSRH") << rptNewLine;
+   *pParagraph << "[5.9.5.4.2a] Shrinkage of Girder Concrete : " << symbol(DELTA) << RPT_STRESS("pSRH") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -266,18 +266,18 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
       col -= 2;
       (*table)(1,col++) << COLHDR(Sub2("e","p"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*table)(1,col++) << Sub2("K","ih");
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pSRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pSRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       // temp
       (*table)(1,col++) << COLHDR(Sub2("e","t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*table)(1,col++) << Sub2("K","ih");
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pSRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pSRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
       (*table)(0,col++) << COLHDR(Sub2("e","p"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*table)(0,col++) << Sub2("K","ih");
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pSRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pSRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    return table;

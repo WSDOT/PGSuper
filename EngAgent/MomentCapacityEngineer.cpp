@@ -124,7 +124,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
    GET_IFACE(IPrestressForce, pPrestressForce);
    GET_IFACE(IBridgeMaterial,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
+   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
 
    Float64 Eps = pStrand->GetE();
    Float64 fpe = 0.0; // effective prestress after all losses
@@ -151,7 +151,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
    GET_IFACE(IPrestressForce, pPrestressForce);
    GET_IFACE(IBridgeMaterial,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
+   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
 
    Float64 Eps = pStrand->GetE();
    Float64 fpe = 0.0; // effective prestress after all losses
@@ -1005,7 +1005,7 @@ void pgsMomentCapacityEngineer::MakeAssignment(const pgsMomentCapacityEngineer& 
 void pgsMomentCapacityEngineer::CreateStrandMaterial(SpanIndexType span,GirderIndexType gdr,IStressStrain** ppSS)
 {
    GET_IFACE(IBridgeMaterial,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
+   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
 
    StrandGradeType grade = pStrand->GetGrade() == matPsStrand::Gr1725 ? sgtGrade250 : sgtGrade270;
    ProductionMethodType type = pStrand->GetType() == matPsStrand::LowRelaxation ? pmtLowRelaxation : pmtStressRelieved;
@@ -1185,7 +1185,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    if ( bPositiveMoment ) // only model strands for positive moment
    {
       // strands
-      const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
+      const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
       Float64 aps = pStrand->GetNominalArea();
       Float64 dps = pStrand->GetNominalDiameter();
       for ( int i = 0; i < 2; i++ ) // straight and harped strands

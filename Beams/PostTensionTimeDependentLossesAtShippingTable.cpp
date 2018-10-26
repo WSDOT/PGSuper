@@ -79,11 +79,11 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
 
       (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
       (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-      (*table)(0,2) << COLHDR(symbol(DELTA) << Sub2("f","pF"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,3) << COLHDR(symbol(DELTA) << Sub2("f","pA"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,4) << COLHDR(symbol(DELTA) << Sub2("f","pt avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,5) << COLHDR(symbol(DELTA) << Sub2("f","pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,6) << COLHDR(symbol(DELTA) << Sub2("f","ptH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS("pF"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pA"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS("pt avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,5) << COLHDR(symbol(DELTA) << RPT_STRESS("pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS("ptH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       *pParagraph << rptRcImage(strImagePath + "PTLossAtHauling.png") << rptNewLine;
    }

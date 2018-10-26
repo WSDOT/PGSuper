@@ -167,15 +167,14 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
       (*pTable)(0,0) << "Level";
       (*pTable)(0,1) << "Description";
 
+      // Don't allow duplicate strings in table
+      std::set<std::string> messages;
+
       row = 1;
       CString strSeverityType[] = { "Info", "Warning", "Error" };
       for ( CollectionIndexType i = 0; i < nItems; i++ )
       {
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
-
-         eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
-
-         (*pTable)(row,0) << strSeverityType[severity];
 
          // Trim span/girder information. TOGA doesn't want this
          // Blasts anything left of the first ":"
@@ -184,7 +183,14 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
          if (loc != std::string::npos)
             msg.erase(0,loc+1);
 
-         (*pTable)(row++,1) << msg;
+         std::pair< std::set<std::string>::iterator, bool > it = messages.insert(msg);
+         if (it.second) // no dup's
+         {
+            eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
+
+            (*pTable)(row,0) << strSeverityType[severity];
+            (*pTable)(row++,1) << msg;
+         }
       }
    }
 

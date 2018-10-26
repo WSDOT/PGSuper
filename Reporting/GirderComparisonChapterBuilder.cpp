@@ -240,7 +240,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
 
       ColumnIndexType col = 0;
       (*p_table)(row,col++) << LABEL_GIRDER(ig);
-      (*p_table)(row,col++) << girderData.Material.pStrandMaterial->GetName();
+      (*p_table)(row,col++) << girderData.Material.pStrandMaterial[pgsTypes::Straight]->GetName();
       (*p_table)(row,col) << girderData.Nstrands[pgsTypes::Straight];
 
       long nd = pStrandGeometry->GetNumDebondedStrands(span,ig,pgsTypes::Straight);
@@ -252,10 +252,15 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       col++;
 
       (*p_table)(row,col++) << force.SetValue(girderData.Pjack[pgsTypes::Straight]);
+
+      if ( girderData.Material.pStrandMaterial[pgsTypes::Straight] != girderData.Material.pStrandMaterial[pgsTypes::Harped] )
+         (*p_table)(row,col++) << girderData.Material.pStrandMaterial[pgsTypes::Harped]->GetName();
+
       (*p_table)(row,col++) << girderData.Nstrands[pgsTypes::Harped];
       (*p_table)(row,col++) << force.SetValue(girderData.Pjack[pgsTypes::Harped]);
       if ( bTempStrands )
       {
+         (*p_table)(row,col++) << girderData.Material.pStrandMaterial[pgsTypes::Temporary]->GetName();
          (*p_table)(row,col++) << girderData.Nstrands[pgsTypes::Temporary];
          (*p_table)(row,col++) << force.SetValue(girderData.Pjack[pgsTypes::Temporary]);
       }

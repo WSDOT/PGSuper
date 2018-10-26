@@ -549,7 +549,8 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
                   );
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   const matPsStrand* pStrand = pBridgeMaterial->GetStrand(span,girder);
+   const matPsStrand* pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Permanent);
+   const matPsStrand* pTempStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Temporary);
 
    StrandIndexType Ns, Nh, Nt, Nsd;
    Ns = pStrandGeom->GetNumStrands(span,girder,pgsTypes::Straight);
@@ -562,13 +563,13 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    {
       if ( Nsd == 0 )
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n# Temporary: %2d",
-                         pStrand->GetName().c_str(),Ns,Nh,Nt);
+         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+                         pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
       }
       else
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n# Temporary: %2d",
-                         pStrand->GetName().c_str(),Ns,Nsd,Nh,Nt);
+         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+                         pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
       }
    }
    else

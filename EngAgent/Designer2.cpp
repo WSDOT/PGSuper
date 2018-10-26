@@ -950,19 +950,19 @@ void pgsDesigner2::CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pg
       pgsTypes::StrandType strandType = *iter;
 
       if ( pAllow->CheckStressAtJacking() )
-         pArtifact->SetCheckAtJacking( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::Jacking), pAllow->GetAllowableAtJacking(span,gdr) );
+         pArtifact->SetCheckAtJacking( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::Jacking), pAllow->GetAllowableAtJacking(span,gdr,strandType) );
 
       if ( pAllow->CheckStressBeforeXfer() )
-         pArtifact->SetCheckBeforeXfer( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::BeforeXfer), pAllow->GetAllowableBeforeXfer(span,gdr) );
+         pArtifact->SetCheckBeforeXfer( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::BeforeXfer), pAllow->GetAllowableBeforeXfer(span,gdr,strandType) );
 
       if ( pAllow->CheckStressAfterXfer() )
-         pArtifact->SetCheckAfterXfer( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::AfterXfer), pAllow->GetAllowableAfterXfer(span,gdr) );
+         pArtifact->SetCheckAfterXfer( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::AfterXfer), pAllow->GetAllowableAfterXfer(span,gdr,strandType) );
 
       //vPOI = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite1,span,gdr,POI_MIDSPAN);
       //poi = *vPOI.begin();
 
       if ( pAllow->CheckStressAfterLosses() && strandType != pgsTypes::Temporary )
-         pArtifact->SetCheckAfterLosses( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::AfterLosses), pAllow->GetAllowableAfterLosses(span,gdr) );
+         pArtifact->SetCheckAfterLosses( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::AfterLosses), pAllow->GetAllowableAfterLosses(span,gdr,strandType) );
    }
 }
 
@@ -2389,13 +2389,10 @@ void pgsDesigner2::CheckSplittingZone(SpanIndexType span,GirderIndexType gdr,pgs
       Ntd = 0;
    }
 
-   const matPsStrand* pStrand = pMat->GetStrand(span,gdr);
-   Float64 aps = pStrand->GetNominalArea();
-
-
-   StrandIndexType nStrands  = Ns  + Nh  + Nt;
    StrandIndexType nDebonded = Nsd + Nhd + Ntd;
-   Float64 Aps = aps*(nStrands-nDebonded);
+   Float64 Aps = (Ns - nDebonded)*pMat->GetStrand(span,gdr,pgsTypes::Straight)->GetNominalArea();
+   Aps += Nh*pMat->GetStrand(span,gdr,pgsTypes::Harped)->GetNominalArea();
+   Aps += Nt*pMat->GetStrand(span,gdr,pgsTypes::Temporary)->GetNominalArea();
 
 
    pArtifact->SetAps(Aps);
@@ -2520,7 +2517,7 @@ void pgsDesigner2::CheckStrandSlope(SpanIndexType span,GirderIndexType gdr,pgsSt
    pSpecEntry->GetMaxStrandSlope(&bCheck,&bDesign,&s50,&s60,&s70);
    pArtifact->IsApplicable( bCheck );
 
-   const matPsStrand* pStrand = pMat->GetStrand(span,gdr);
+   const matPsStrand* pStrand = pMat->GetStrand(span,gdr,pgsTypes::Permanent);
    Float64 capacity;
    Float64 demand;
 
@@ -5413,7 +5410,7 @@ std::vector<Int16> pgsDesigner2::DesignDebondingForLifting(HANDLINGCONFIG& liftC
       m_StrandDesignTool.GetMidZoneBoundaries(&lft_end, &rgt_end);
 
       // we'll pick strand force at location just past transfer length
-      Float64 xfer_length = m_StrandDesignTool.GetTransferLength();
+      Float64 xfer_length = m_StrandDesignTool.GetTransferLength(pgsTypes::Permanent);
 
       // Build stress demand
       std::vector<pgsStrandDesignTool::StressDemand> stress_demands;
@@ -5708,7 +5705,7 @@ std::vector<Int16> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pPro
       m_StrandDesignTool.GetMidZoneBoundaries(&lft_end, &rgt_end);
 
       // we'll pick strand force at location just past transfer length
-      Float64 xfer_length = m_StrandDesignTool.GetTransferLength();
+      Float64 xfer_length = m_StrandDesignTool.GetTransferLength(pgsTypes::Permanent);
 
       // Build stress demand
       std::vector<pgsStrandDesignTool::StressDemand> stress_demands;
@@ -6996,9 +6993,8 @@ Float64 pgsDesigner2::CalcAvsForSplittingZone(SpanIndexType span,GirderIndexType
    Float64 fs = pTransverseReinforcementSpec->GetMaxSplittingStress(fy);
 
    // area of strands and pjack
-   const matPsStrand* pstrand = pMaterial->GetStrand(span,gdr);
-   Float64 astrand = pstrand->GetNominalArea();
-   Float64 aps   = astrand*(rArtifact.GetNumHarpedStrands()+rArtifact.GetNumStraightStrands());
+   Float64 aps   = pMaterial->GetStrand(span,gdr,pgsTypes::Straight)->GetNominalArea()*rArtifact.GetNumStraightStrands() +
+                   pMaterial->GetStrand(span,gdr,pgsTypes::Harped  )->GetNominalArea()*rArtifact.GetNumHarpedStrands();
    Float64 pjack = rArtifact.GetPjackHarpedStrands() + rArtifact.GetPjackStraightStrands();
 
    GET_IFACE(ILosses,pLosses);

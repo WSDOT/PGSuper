@@ -385,8 +385,8 @@ DEFINE_GUID(IID_IGirderData,
 0x61d8c8f0, 0x58b9, 0x11d2, 0x8e, 0xd3, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
 interface IGirderData : IUnknown
 {
-   virtual const matPsStrand* GetStrandMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
-   virtual void SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,const matPsStrand* pmat)=0;
+   virtual const matPsStrand* GetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) const = 0;
+   virtual void SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,const matPsStrand* pmat)=0;
    virtual CGirderData GetGirderData(SpanIndexType span,GirderIndexType gdr) const = 0;
    virtual bool SetGirderData(const CGirderData& data,SpanIndexType span,GirderIndexType gdr) = 0;
    virtual const CGirderMaterial* GetGirderMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
@@ -894,20 +894,6 @@ interface IBridgeDescription : IUnknown
    virtual void SetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 start, Float64 end) = 0;
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() = 0;
    virtual void GetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64* pStart, Float64* pEnd) = 0;
-
-   //// POST-TENSIONING
-
-   //// returns true if the bridge configuration is adequate to model post-tensioning
-   //virtual bool CanModelPostTensioning() = 0;
-
-   //// returns true if post-tensioning is actually modeled in the bridge
-   //virtual bool IsPostTensioningModeled() = 0;
-
-   //// alters the bridge configuration so that post-tensioning can be modeled
-   //virtual void ConfigureBridgeForPostTensioning() = 0;
-
-   //// returns true if the girder can have post-tensionng
-   //virtual bool CanBePostTensioned(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
 };
 
 #endif // INCLUDED_IFACE_PROJECT_H_

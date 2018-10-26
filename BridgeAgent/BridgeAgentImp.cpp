@@ -30,6 +30,7 @@
 #include "DeckEdgeBuilder.h"
 
 #include "StatusItems.h"
+#include "PGSuperUnits.h"
 
 #include <PsgLib\LibraryManager.h>
 #include <PsgLib\GirderLibraryEntry.h>
@@ -770,6 +771,21 @@ bool CBridgeAgentImp::ValidateConcrete()
             strMsg = os.str();
 
             pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::AggSize,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pStatusCenter->Add(pStatusItem);
+
+            bThrow = false;
+         }
+
+         if ( m_pGdrConc[key]->GetE() < m_pGdrReleaseConc[key]->GetE() )
+         {
+            std::ostringstream os;
+            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": Ec (" 
+               << FormatDimension(m_pGdrConc[key]->GetE(), pDisplayUnits->GetModEUnit()) << ") is less that Eci ("
+               << FormatDimension(m_pGdrReleaseConc[key]->GetE(),pDisplayUnits->GetModEUnit()) << ")";
+
+            strMsg = os.str();
+
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::Modulus,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
 
             bThrow = false;
@@ -3322,7 +3338,7 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(SpanIndexType span,Gir
 
    // add in the pois
    GET_IFACE(IPrestressForce,pPrestress);
-   Float64 xfer_length = pPrestress->GetXferLength(span,gdr);
+   Float64 xfer_length = pPrestress->GetXferLength(span,gdr,pgsTypes::Permanent);
    
    Float64 length = GetGirderLength(span,gdr);
 
@@ -6315,10 +6331,10 @@ Float64 CBridgeAgentImp::GetEcRailing(pgsTypes::TrafficBarrierOrientation orient
    return m_pRailingConc[orientation]->GetE();
 }
 
-const matPsStrand* CBridgeAgentImp::GetStrand(SpanIndexType span,GirderIndexType gdr)
+const matPsStrand* CBridgeAgentImp::GetStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
 {
    GET_IFACE(IGirderData,pGirderData);
-   return pGirderData->GetStrandMaterial(span,gdr);
+   return pGirderData->GetStrandMaterial(span,gdr,strandType);
 }
 
 
@@ -6925,7 +6941,7 @@ Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi)
 
    Float64 Aps = GetApsTopHalf(poi,false);
 
-   const matPsStrand* pstrand = GetStrand(span,gdr);
+   const matPsStrand* pstrand = GetStrand(span,gdr,pgsTypes::Permanent);
    CHECK(pstrand!=0);
    Float64 fps = pstrand->GetYieldStrength();
    CHECK(fps>0.0);
@@ -6959,7 +6975,7 @@ Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi,const GDRCO
 
    Float64 Aps = GetApsTopHalf(poi,config,false);
 
-   const matPsStrand* pstrand = GetStrand(span,gdr);
+   const matPsStrand* pstrand = GetStrand(span,gdr,pgsTypes::Permanent);
    CHECK(pstrand!=0);
    Float64 fps = pstrand->GetYieldStrength();
    CHECK(fps>0.0);
@@ -6992,7 +7008,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi)
 
    Float64 Aps = GetApsBottomHalf(poi,false);
 
-   const matPsStrand* pstrand = GetStrand(span,gdr);
+   const matPsStrand* pstrand = GetStrand(span,gdr,pgsTypes::Permanent);
    CHECK(pstrand!=0);
    Float64 fps = pstrand->GetYieldStrength();
    CHECK(fps>0.0);
@@ -7025,7 +7041,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
 
    Float64 Aps = GetApsBottomHalf(poi,config,false);
 
-   const matPsStrand* pstrand = GetStrand(span,gdr);
+   const matPsStrand* pstrand = GetStrand(span,gdr,pgsTypes::Permanent);
    CHECK(pstrand!=0);
    Float64 fps = pstrand->GetYieldStrength();
    CHECK(fps>0.0);
@@ -7725,8 +7741,11 @@ bool CBridgeAgentImp::GetShearZoneAtPoi(ZoneIndexType* pzone, const pgsPointOfIn
 Float64 CBridgeAgentImp::GetEccentricity(const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands)
 {
    VALIDATE( GIRDER );
+   SpanIndexType spanIdx = poi.GetSpan();
+   GirderIndexType gdrIdx = poi.GetGirder();
+
    CComPtr<IPrecastGirder> girder;
-   GetGirder(poi.GetSpan(),poi.GetGirder(),&girder);
+   GetGirder(spanIdx,gdrIdx,&girder);
 
    Float64 nStraight  = 0;
    Float64 nHarped    = 0;
@@ -7741,15 +7760,20 @@ Float64 CBridgeAgentImp::GetEccentricity(const pgsPointOfInterest& poi,bool bInc
    ecc_straight = GetSsEccentricity(poi,&nStraight);
    ecc_harped   = GetHsEccentricity(poi,&nHarped);
 
+   Float64 asStraight  = GetStrand(spanIdx,gdrIdx,pgsTypes::Straight)->GetNominalArea()*nStraight;
+   Float64 asHarped    = GetStrand(spanIdx,gdrIdx,pgsTypes::Harped)->GetNominalArea()*nHarped;
+   Float64 asTemporary = 0;
+
    if ( bIncTemp )
    {
       ecc_temporary = GetTempEccentricity(poi,&nTemporary);
+      asTemporary = GetStrand(spanIdx,gdrIdx,pgsTypes::Temporary)->GetNominalArea()*nTemporary;
    }
 
    *nEffectiveStrands = nStraight + nHarped + nTemporary;
    if ( *nEffectiveStrands > 0.0)
    {
-      ecc = (ecc_straight*nStraight + ecc_harped*nHarped + ecc_temporary*nTemporary) / *nEffectiveStrands;
+      ecc = (asStraight*ecc_straight + asHarped*ecc_harped + asTemporary*ecc_temporary) / (asStraight + asHarped + asTemporary);
    }
    else
    {
@@ -7809,7 +7833,7 @@ Float64 CBridgeAgentImp::GetHsEccentricity(const pgsPointOfInterest& poi, Float6
       Float64 bond_factor = 1.0;
 
       GET_IFACE(IPrestressForce,pPrestress);
-      Float64 xfer_length = pPrestress->GetXferLength(span,gdr);
+      Float64 xfer_length = pPrestress->GetXferLength(span,gdr,pgsTypes::Harped);
 
       if (poi_loc>0.0 && poi_loc<xfer_length)
       {
@@ -7911,7 +7935,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, Float6
       {
          // at the girder interior, must deal with partial bonding
          GET_IFACE(IPrestressForce,pPrestress);
-         Float64 xfer_length = pPrestress->GetXferLength(span,gdr);
+         Float64 xfer_length = pPrestress->GetXferLength(span,gdr,pgsTypes::Straight);
 
          for (StrandIndexType strandIndex = 0; strandIndex < num_strands; strandIndex++)
          {
@@ -7987,7 +8011,7 @@ Float64 CBridgeAgentImp::GetTempEccentricity(const pgsPointOfInterest& poi, Floa
       Float64 bond_factor = 1.0;
 
       GET_IFACE(IPrestressForce,pPrestress);
-      Float64 xfer_length = pPrestress->GetXferLength(span,gdr);
+      Float64 xfer_length = pPrestress->GetXferLength(span,gdr,pgsTypes::Temporary);
 
       if (poi_loc>0.0 && poi_loc<xfer_length)
       {
@@ -8086,7 +8110,7 @@ Float64 CBridgeAgentImp::GetHsEccentricity(const pgsPointOfInterest& poi, const 
       Float64 bond_factor = 1.0;
 
       GET_IFACE(IPrestressForce,pPrestress);
-      Float64 xfer_length = pPrestress->GetXferLength(span,gdr);
+      Float64 xfer_length = pPrestress->GetXferLength(span,gdr,pgsTypes::Harped);
 
       if (poi_loc>0.0 && poi_loc<xfer_length)
       {
@@ -8176,7 +8200,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const 
 
       // transfer
       GET_IFACE(IPrestressForce,pPrestress);
-      Float64 xfer_length = pPrestress->GetXferLength(span,gdr);
+      Float64 xfer_length = pPrestress->GetXferLength(span,gdr,pgsTypes::Straight);
 
       // debonding - Let's set up a mapping data structure to make dealing with debonding easier (eliminate searching)
       const DebondInfoCollection& rdebonds = rconfig.Debond[pgsTypes::Straight];
@@ -8371,7 +8395,7 @@ Float64 CBridgeAgentImp::GetTempEccentricity(const pgsPointOfInterest& poi, cons
       Float64 bond_factor = 1.0;
 
       GET_IFACE(IPrestressForce,pPrestress);
-      Float64 xfer_length = pPrestress->GetXferLength(span,gdr);
+      Float64 xfer_length = pPrestress->GetXferLength(span,gdr,pgsTypes::Temporary);
 
       if (poi_loc>0.0 && poi_loc<xfer_length)
       {
@@ -8427,8 +8451,11 @@ Float64 CBridgeAgentImp::GetTempEccentricity(const pgsPointOfInterest& poi, cons
 Float64 CBridgeAgentImp::GetEccentricity(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, bool bIncTemp, Float64* nEffectiveStrands)
 {
    VALIDATE( GIRDER );
+   SpanIndexType spanIdx = poi.GetSpan();
+   GirderIndexType gdrIdx = poi.GetGirder();
+
    CComPtr<IPrecastGirder> girder;
-   GetGirder(poi.GetSpan(),poi.GetGirder(),&girder);
+   GetGirder(spanIdx,gdrIdx,&girder);
 
    Float64 dns = 0.0;
    Float64 dnh = 0.0;
@@ -8436,18 +8463,24 @@ Float64 CBridgeAgentImp::GetEccentricity(const pgsPointOfInterest& poi, const GD
 
    Float64 eccs = this->GetSsEccentricity(poi, rconfig, &dns);
    Float64 ecch = this->GetHsEccentricity(poi, rconfig, &dnh);
-
    Float64 ecct = 0.0;
+
+   Float64 aps[3];
+   aps[pgsTypes::Straight]  = GetStrand(spanIdx,gdrIdx,pgsTypes::Straight)->GetNominalArea() * dns;
+   aps[pgsTypes::Harped]    = GetStrand(spanIdx,gdrIdx,pgsTypes::Harped)->GetNominalArea()   * dnh;
+   aps[pgsTypes::Temporary] = 0;
+
    if (bIncTemp)
    {
       ecct = this->GetTempEccentricity(poi, rconfig, &dnt);
+      aps[pgsTypes::Temporary] = GetStrand(spanIdx,gdrIdx,pgsTypes::Temporary)->GetNominalArea()* dnt;
    }
 
    Float64 ecc=0.0;
-   *nEffectiveStrands = dns+dnh+dnt;
+   *nEffectiveStrands = dns + dnh + dnt;
    if (*nEffectiveStrands > 0)
    {
-      ecc = (eccs*dns + ecch*dnh + ecct*dnt)/(*nEffectiveStrands);
+      ecc = (aps[pgsTypes::Straight]*eccs + aps[pgsTypes::Harped]*ecch + aps[pgsTypes::Temporary]*ecct)/(aps[pgsTypes::Straight] + aps[pgsTypes::Harped] + aps[pgsTypes::Temporary]);
    }
 
    return ecc;
@@ -8597,7 +8630,7 @@ StrandIndexType CBridgeAgentImp::GetMaxStrands(const char* strGirderName,pgsType
 Float64 CBridgeAgentImp::GetStrandArea(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type)
 {
    long Ns = GetNumStrands(span,gdr,type);
-   const matPsStrand* pStrand = GetStrand(span,gdr);
+   const matPsStrand* pStrand = GetStrand(span,gdr,type);
 
    Float64 aps = pStrand->GetNominalArea();
    Float64 Aps = aps * Ns;
@@ -13207,7 +13240,7 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   const matPsStrand* pStrand = GetStrand(span,gdr);
+   const matPsStrand* pStrand = GetStrand(span,gdr,pgsTypes::Straight);
    Float64 aps = pStrand->GetNominalArea();
 
    Float64 dist_from_start = poi.GetDistFromStart();
@@ -13247,6 +13280,9 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
    }
 
    // harped strands
+   pStrand = GetStrand(span,gdr,pgsTypes::Harped);
+   aps = pStrand->GetNominalArea();
+
    StrandIndexType Nh = (bUseConfig ? config.Nstrands[pgsTypes::Harped] : pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Harped));
 
    strand_fill.Release();

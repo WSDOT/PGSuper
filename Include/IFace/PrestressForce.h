@@ -69,10 +69,10 @@ DEFINE_GUID(IID_IPrestressForce,
 0x381e19e0, 0x6e82, 0x11d2, 0x8e, 0xeb, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
 interface IPrestressForce : IUnknown
 {
-   virtual Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands) = 0;
+   virtual Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType,StrandIndexType nStrands) = 0;
    virtual Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,const matPsStrand& strand,StrandIndexType nStrands) = 0;
 
-   virtual Float64 GetXferLength(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual Float64 GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded) = 0;
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded) = 0;
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;

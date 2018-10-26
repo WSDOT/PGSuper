@@ -82,13 +82,13 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
 
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(symbol(DELTA) << Sub2("f","pSD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR(symbol(DELTA) << Sub2("f","pCD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR(symbol(DELTA) << Sub2("f","pR2"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(symbol(DELTA) << Sub2("f","pSS"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,5) << COLHDR(symbol(DELTA) << "f" << subscript(ON) << "pLT" << subscript(ON) << "df" << subscript(OFF) << subscript(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,1) << COLHDR(symbol(DELTA) << RPT_STRESS("pSD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS("pCD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pR2"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS("pSS"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,5) << COLHDR(symbol(DELTA) << italic(ON) << "f" << subscript(ON) << "pLT" << subscript(ON) << "df" << subscript(OFF) << subscript(OFF) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   *pParagraph << symbol(DELTA) << "f" << subscript(ON) << "pLT" << subscript(ON) << "df" << subscript(OFF) << subscript(OFF) << " = " << symbol(DELTA) << Sub2("f","pSD") << " + " << symbol(DELTA) << Sub2("f","pCD") << " + " << symbol(DELTA) << Sub2("f","pR2") << " - " << symbol(DELTA) << Sub2("f","pSS") << rptNewLine;
+   *pParagraph << symbol(DELTA) << italic(ON) << "f" << subscript(ON) << "pLT" << subscript(ON) << "df" << subscript(OFF) << subscript(OFF) << italic(OFF) << " = " << symbol(DELTA) << RPT_STRESS("pSD") << " + " << symbol(DELTA) << RPT_STRESS("pCD") << " + " << symbol(DELTA) << RPT_STRESS("pR2") << " - " << symbol(DELTA) << RPT_STRESS("pSS") << rptNewLine;
 
    return table;
 }

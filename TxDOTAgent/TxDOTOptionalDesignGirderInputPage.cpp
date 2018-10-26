@@ -146,6 +146,16 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_OPT_FCI, IDC_OPT_FCI_UNITS, m_OptFci, pDisplayUnits->GetStressUnit() );
    DDV_UnitValueRange( pDX,IDC_OPT_FCI,m_OptFci,min_fc, max_fci, pDisplayUnits->GetStressUnit() );
 
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (m_OptFc < m_OptFci)
+      {
+         ::AfxMessageBox("f'ci may not be larger than f'c",MB_OK | MB_ICONEXCLAMATION);
+         pDX->PrepareCtrl(IDC_OPT_FCI);
+         pDX->Fail();
+      }
+   }
+
    // original
    DDX_Check(pDX, IDC_ORIG_STANDARD_FILL, m_OrigIsStandardFill);
    DDX_Check(pDX, IDC_ORIG_USE_DEPRESSED, m_OrigUseDepressed);
@@ -156,6 +166,15 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_ORIG_FCI, IDC_ORIG_FCI_UNITS, m_OrigFci, pDisplayUnits->GetStressUnit() );
    DDV_UnitValueRange( pDX,IDC_ORIG_FCI,m_OrigFci,min_fc, max_fci, pDisplayUnits->GetStressUnit() );
 
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (m_OrigFc < m_OrigFci)
+      {
+         ::AfxMessageBox("f'ci may not be larger than f'c",MB_OK | MB_ICONEXCLAMATION);
+         pDX->PrepareCtrl(IDC_ORIG_FCI);
+         pDX->Fail();
+      }
+   }
 
    if (pDX->m_bSaveAndValidate)
    {

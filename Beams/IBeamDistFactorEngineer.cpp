@@ -606,8 +606,8 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
                else if ( df_method == LLDF_TXDOT )
                   (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
 
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_K_SI.gif" : "mg_2_ME_Type_K_US.gif")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_K_SI.gif" : "mg_2_MI_Type_K_US.gif")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_K_SI.png" : "mg_2_ME_Type_K_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_K_SI.png" : "mg_2_MI_Type_K_US.png")) << rptNewLine;
                (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
 
                (*pPara) << "e = " << scalar.SetValue(gM2.EqnData.e) << rptNewLine;

@@ -230,8 +230,14 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
    if (NumPermStrandsType != rOther.NumPermStrandsType)
          ct |= ctPrestress;
 
-   if ( Material.pStrandMaterial != rOther.Material.pStrandMaterial )
-         ct |= ctStrand;
+   for ( int i = 0; i < 3; i++ )
+   {
+      if ( Material.pStrandMaterial[i] != rOther.Material.pStrandMaterial[i] )
+      {
+            ct |= ctStrand;
+            break;
+      }
+   }
 
    // first check if prestressing changed
    Uint16 i = 0;
@@ -629,10 +635,12 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
 
    if ( version < 9 )
    {
-      Material.pStrandMaterial = 0; // not used in pre-version 9 of this data block
+      Material.pStrandMaterial[pgsTypes::Straight]  = 0; // not used in pre-version 9 of this data block
+      Material.pStrandMaterial[pgsTypes::Harped]    = 0; // not used in pre-version 9 of this data block
+      Material.pStrandMaterial[pgsTypes::Temporary] = 0; // not used in pre-version 9 of this data block
       // the Project Agent will set this value later
    }
-   else
+   else if ( version < 11 )
    {
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
@@ -640,8 +648,28 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
       var.vt = VT_I4;
       pStrLoad->get_Property("StrandMaterialKey",&var);
       Int32 key = var.lVal;
-      Material.pStrandMaterial = pPool->GetStrand(key);
-      ATLASSERT(Material.pStrandMaterial != 0);
+      Material.pStrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
+      ATLASSERT(Material.pStrandMaterial[pgsTypes::Straight] != 0);
+      Material.pStrandMaterial[pgsTypes::Harped] = Material.pStrandMaterial[pgsTypes::Straight];
+      Material.pStrandMaterial[pgsTypes::Temporary] = Material.pStrandMaterial[pgsTypes::Straight];
+   }
+   else
+   {
+      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+
+      var.Clear();
+      var.vt = VT_I4;
+      pStrLoad->get_Property("StraightStrandMaterialKey",&var);
+      Int32 key = var.lVal;
+      Material.pStrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
+
+      pStrLoad->get_Property("HarpedStrandMaterialKey",&var);
+      key = var.lVal;
+      Material.pStrandMaterial[pgsTypes::Harped] = pPool->GetStrand(key);
+
+      pStrLoad->get_Property("TemporaryStrandMaterialKey",&var);
+      key = var.lVal;
+      Material.pStrandMaterial[pgsTypes::Temporary] = pPool->GetStrand(key);
    }
 
    if ( parentVersion < 3 )
@@ -749,7 +777,7 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("PrestressData",10.0);
+   pStrSave->BeginUnit("PrestressData",11.0);
 
    pStrSave->put_Property("HsoEndMeasurement", CComVariant(HsoEndMeasurement));
    pStrSave->put_Property("HpOffsetAtEnd", CComVariant(HpOffsetAtEnd));
@@ -811,10 +839,16 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    }
    pStrSave->EndUnit(); // TemporaryStrandDebonding
 
-   ///////////////// Added with data block version 9
+   ///////////////// Added with data block version 11
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 key = pPool->GetStrandKey(Material.pStrandMaterial);
-   pStrSave->put_Property("StrandMaterialKey",CComVariant(key));
+   Int32 key = pPool->GetStrandKey(Material.pStrandMaterial[pgsTypes::Straight]);
+   pStrSave->put_Property("StraightStrandMaterialKey",CComVariant(key));
+   
+   key = pPool->GetStrandKey(Material.pStrandMaterial[pgsTypes::Harped]);
+   pStrSave->put_Property("HarpedStrandMaterialKey",CComVariant(key));
+   
+   key = pPool->GetStrandKey(Material.pStrandMaterial[pgsTypes::Temporary]);
+   pStrSave->put_Property("TemporaryStrandMaterialKey",CComVariant(key));
 
    // moved out of this data block in version 10 for this data block and version 3 of parent
    //pStrSave->put_Property("Fci", CComVariant(Material.Fci ));
@@ -922,7 +956,9 @@ void CGirderData::CopyPrestressingFrom(const CGirderData& rOther)
    LongitudinalRebarData = rOther.LongitudinalRebarData;
    HandlingData          = rOther.HandlingData;
 
-   Material.pStrandMaterial = rOther.Material.pStrandMaterial;
+   Material.pStrandMaterial[pgsTypes::Straight]  = rOther.Material.pStrandMaterial[pgsTypes::Straight];
+   Material.pStrandMaterial[pgsTypes::Harped]    = rOther.Material.pStrandMaterial[pgsTypes::Harped];
+   Material.pStrandMaterial[pgsTypes::Temporary] = rOther.Material.pStrandMaterial[pgsTypes::Temporary];
 }
 
 void CGirderData::CopyMaterialFrom(const CGirderData& rOther)

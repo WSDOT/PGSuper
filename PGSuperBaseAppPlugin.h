@@ -97,6 +97,8 @@ protected:
    CString GetCacheFolder();
    CString GetSaveCacheFolder();
 
+   const CPGSuperCatalogServers* GetCatalogServers() const;
+
 private:
    CPGSuperCatalogServers m_CatalogServers;
    CComPtr<IAppUnitSystem> m_AppUnitSystem;

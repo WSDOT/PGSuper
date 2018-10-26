@@ -333,7 +333,7 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
 
 
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
-   const matPsStrand* pStrand = pBridgeMaterial->GetStrand(span,girder);
+   const matPsStrand* pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Straight);
    double diameter = pStrand->GetNominalDiameter();
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
@@ -385,6 +385,9 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
    ATLASSERT(pHarpedDL);
    pHarpedDL->Clear();
 
+   pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Harped);
+   diameter = pStrand->GetNominalDiameter();
+
    points.Release();
    pStrandGeom->GetStrandPositions(poi, pgsTypes::Harped,&points);
    points->get_Count(&nStrandPoints);
@@ -407,6 +410,9 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
    pDispMgr->FindDisplayList(TEMP_STRAND_LIST,&pTempDL);
    ATLASSERT(pTempDL);
    pTempDL->Clear();
+
+   pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Temporary);
+   diameter = pStrand->GetNominalDiameter();
 
    points.Release();
    pStrandGeom->GetStrandPositions(poi, pgsTypes::Temporary,&points);

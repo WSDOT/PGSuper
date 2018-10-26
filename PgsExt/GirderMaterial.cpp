@@ -66,7 +66,9 @@ CGirderMaterial::CGirderMaterial()
    bHasFct = false;
    Fct = 0;
 
-   pStrandMaterial = 0;
+   pStrandMaterial[pgsTypes::Straight]  = 0;
+   pStrandMaterial[pgsTypes::Harped]    = 0;
+   pStrandMaterial[pgsTypes::Temporary] = 0;
 }  
 
 CGirderMaterial::CGirderMaterial(const CGirderMaterial& rOther)
@@ -145,7 +147,13 @@ bool CGirderMaterial::operator==(const CGirderMaterial& rOther) const
    if ( bHasFct && !IsEqual(Fct,rOther.Fct) )
       return false;
 
-   if ( pStrandMaterial != rOther.pStrandMaterial )
+   if ( pStrandMaterial[pgsTypes::Straight] != rOther.pStrandMaterial[pgsTypes::Straight] )
+      return false;
+
+   if ( pStrandMaterial[pgsTypes::Harped] != rOther.pStrandMaterial[pgsTypes::Harped] )
+      return false;
+
+   if ( pStrandMaterial[pgsTypes::Temporary] != rOther.pStrandMaterial[pgsTypes::Temporary] )
       return false;
 
    return true;
@@ -165,7 +173,9 @@ bool CGirderMaterial::operator!=(const CGirderMaterial& rOther) const
 //======================== OPERATIONS =======================================
 void CGirderMaterial::MakeCopy(const CGirderMaterial& rOther)
 {
-   pStrandMaterial = rOther.pStrandMaterial;
+   pStrandMaterial[pgsTypes::Straight]  = rOther.pStrandMaterial[pgsTypes::Straight];
+   pStrandMaterial[pgsTypes::Harped]    = rOther.pStrandMaterial[pgsTypes::Harped];
+   pStrandMaterial[pgsTypes::Temporary] = rOther.pStrandMaterial[pgsTypes::Temporary];
 
    Type              = rOther.Type;
    Fci               = rOther.Fci;

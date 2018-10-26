@@ -148,7 +148,7 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
    else
    {
       // Not a flag, just a regular parameter
-      if ( m_Count == 0 )
+      if ( m_Count == 0 && !bLast )
       {
          // first parameter must be a flag
          m_bError = true;

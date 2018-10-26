@@ -272,7 +272,7 @@ public:
    virtual Float64 GetMaxAggrSizeSlab();
    virtual Float64 GetDensityRailing(pgsTypes::TrafficBarrierOrientation orientation);
    virtual Float64 GetEcRailing(pgsTypes::TrafficBarrierOrientation orientation);
-   virtual const matPsStrand* GetStrand(SpanIndexType span,GirderIndexType gdr);
+   virtual const matPsStrand* GetStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
    virtual void GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy);
    virtual std::string GetLongitudinalRebarName(SpanIndexType span,GirderIndexType gdr);
    virtual void GetTransverseRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy);

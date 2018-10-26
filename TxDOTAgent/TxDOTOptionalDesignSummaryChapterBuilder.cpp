@@ -192,7 +192,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row,0) << "Beam Type";
    (*p_table)(row++,1) << pProjectData->GetBeamType();
 
-   (*p_table)(row,0) << "Span Length, CL Bearing to CL Bearing" ;
+   (*p_table)(row,0) << "Span Length (CL Bearings)" ;
    (*p_table)(row++,1) << length.SetValue(pBridge->GetSpanLength(TOGA_SPAN,TOGA_FABR_GDR));
 
    ASSERT(pgsTypes::sbsUniform == pBridgeDesc->GetGirderSpacingType());
@@ -219,7 +219,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row,0) << RPT_EC <<" Beam";
    (*p_table)(row++,1) << modE.SetValue( pMaterial->GetEcGdr(TOGA_SPAN,TOGA_FABR_GDR) );
 
-   (*p_table)(row,0) << "Slab Compressive Strength";
+   (*p_table)(row,0) << RPT_FC <<"Slab";
    (*p_table)(row++,1) << stress.SetValue( pMaterial->GetFcSlab() );
 
    (*p_table)(row,0) << "Live Load";
@@ -252,22 +252,22 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    *p << p_table << rptNewLine;
 
    RowIndexType row = 0;
-   (*p_table)(row,0) << RPT_FTOP <<", Design Load Compressive Stress (Top C.L.)";
+   (*p_table)(row,0) << RPT_FTOP <<", Design Load Compressive Stress, Top CL";
    (*p_table)(row++,1) << stress.SetValue( pProjectData->GetFt() );
 
-   (*p_table)(row,0) <<RPT_FBOT<< ", Design Load Tensile Stress (Bottom C.L.)";
+   (*p_table)(row,0) <<RPT_FBOT<< ", Design Load Tensile Stress, Bottom CL";
    (*p_table)(row++,1) << stress.SetValue( pProjectData->GetFb() );
 
    (*p_table)(row,0) <<"M"<<Sub("u")<< ", Required Ultimate Moment Capacity";
    (*p_table)(row++,1) << moment.SetValue( pProjectData->GetMu() );
 
-   (*p_table)(row,0) << "w"<<Sub("DC")<<" non-comp";
+   (*p_table)(row,0) << "w"<<Sub("non-comp DC");
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWNonCompDc());
 
-   (*p_table)(row,0) << "w"<<Sub("DC")<<" comp";
+   (*p_table)(row,0) << "w"<<Sub("comp DC");
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWCompDc());
 
-   (*p_table)(row,0) << "w"<<Sub("DW")<<" comp";
+   (*p_table)(row,0) << "w"<<Sub("Overlay");
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWCompDw());
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -275,7 +275,7 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    Float64 allow_stf = pSpecEntry->GetCyCompStressService();
-   (*p_table)(row,0) << "Allowable release compression stress factor";
+   (*p_table)(row,0) << "Allowable Compressive Stress Factor at Release";
    (*p_table)(row++,1) << allow_stf << RPT_FCI;
 
    *p <<Bold("Note:")<<" Values in the above table reflect the following sign convention: Compressive stress is positive. Tensile stress is negative.";
@@ -308,7 +308,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    (*p_table)(row,0) << RPT_FC;
    (*p_table)(row++,1) << stress.SetValue( pGirderData->GetFc() );
 
-   const matPsStrand* pstrand = pMaterial->GetStrand(TOGA_SPAN,gdr);
+   const matPsStrand* pstrand = pMaterial->GetStrand(TOGA_SPAN,gdr,pgsTypes::Permanent);
 
    (*p_table)(row,0) << "Prestressing Strands";
    (*p_table)(row++,1) << get_strand_size(pstrand->GetSize()) <<", "
@@ -333,7 +333,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    {
       if (pGirderData->GetStandardStrandFill())
       {
-         (*p_table)(row,0) << "Yb of Topmost Depressed Strand(s) @ End";
+         (*p_table)(row,0) << "Girder Bottom to Topmost Strand (To)";
          (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
       }
 

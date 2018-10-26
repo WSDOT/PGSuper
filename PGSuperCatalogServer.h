@@ -72,7 +72,8 @@ public:
       ceParsingURL,
       ceMissingMd5Deep,
       ceFindingFile,
-      ceDownloadingFile
+      ceDownloadingFile,
+      ceServerNotFound
    };
 
    CCatalogServerException(ErrorType error, const CString& msg = CString()):

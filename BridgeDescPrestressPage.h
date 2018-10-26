@@ -60,9 +60,8 @@ public:
 	//{{AFX_DATA(CGirderDescPrestressPage)
 	enum { IDD = IDD_GIRDERDESC_PRESTRESS };
 
-   int		m_Grade;
-	int		m_Type;
 	int		m_StrandSizeIdx;
+	int		m_TempStrandSizeIdx;
 	//}}AFX_DATA
 
 // Overrides
@@ -74,8 +73,8 @@ public:
 	//}}AFX_VIRTUAL
 
 public:
-   Float64 GetMaxPjack(StrandIndexType nStrands); // allowable by spec
-   Float64 GetUltPjack(StrandIndexType nStrands); // breaking strength
+   Float64 GetMaxPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType); // allowable by spec
+   Float64 GetUltPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType); // breaking strength
 
 private:
    StrandIndexType GetStraightStrandCount();
@@ -99,6 +98,7 @@ protected:
 	afx_msg void OnDropdownHpComboHp();
 	afx_msg void OnDropdownHpComboEnd();
    afx_msg void OnStrandTypeChanged();
+   afx_msg void OnTempStrandTypeChanged();
 	//}}AFX_MSG
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
@@ -133,7 +133,7 @@ protected:
    bool m_AllowEndAdjustment;
 
 
-   void UpdateStrandList(matPsStrand::Grade grade,matPsStrand::Type type);
+   void UpdateStrandList(UINT nIDC);
 
    CString m_strTip;
 };

@@ -126,23 +126,23 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
       (*pPara) << strName << " Dimension: h = " << length.SetValue(pArtifact->GetH()) << rptNewLine;
       (*pPara) << strName << " Length: h/" << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << " = " << length.SetValue(pArtifact->GetSplittingZoneLength()) << rptNewLine;
       (*pPara) << strName << " Direction: " << (pArtifact->GetSplittingDirection() == pgsTypes::sdVertical ? "Vertical" : "Horizontal") << rptNewLine;
-      (*pPara) << strName << " Force: P = 0.04(A" << Sub("ps") << ")(f" << Sub("pj") << " - " ;
+      (*pPara) << strName << " Force: P = 0.04(A" << Sub("ps") << ")(" << RPT_FPJ << " - " ;
       
       if ( bInitialRelaxation )
       {
          if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 )
-            (*pPara) << symbol(DELTA) << Sub2("f","pR1") << " - ";
+            (*pPara) << symbol(DELTA) << RPT_STRESS("pR1") << " - ";
          else
-            (*pPara) << symbol(DELTA) << Sub2("f","pR0") << " - ";
+            (*pPara) << symbol(DELTA) << RPT_STRESS("pR0") << " - ";
       }
       
-      (*pPara) << symbol(DELTA) << Sub2("f","pES")  << ") = ";
+      (*pPara) << symbol(DELTA) << RPT_STRESS("pES")  << ") = ";
       (*pPara) << "0.04(" << area.SetValue(pArtifact->GetAps()) << ")(" << stress.SetValue(pArtifact->GetFpj()) << " - ";
       (*pPara) << stress.SetValue(pArtifact->GetLossesAfterTransfer()) << " ) ";
 
       (*pPara) << " = " << force.SetValue(pArtifact->GetSplittingForce()) << rptNewLine;
       (*pPara) << strName << " Resistance: P" << Sub("r") << " = "
-               << Sub2("f","s") << Sub2("A","s") << " = "
+               << RPT_STRESS("s") << Sub2("A","s") << " = "
                << "(" << stress.SetValue(pArtifact->GetFs()) << ")(" << area.SetValue(pArtifact->GetAvs()) << ") = "
                << force.SetValue(pArtifact->GetSplittingResistance()) << rptNewLine;
    }

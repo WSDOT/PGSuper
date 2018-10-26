@@ -129,10 +129,10 @@ void pgsPsForceEng::ComputeLosses(const pgsPointOfInterest& poi,const GDRCONFIG&
    *pLosses = m_LossEngineer->ComputeLossesForDesign(poi,config);
 }
 
-Float64 pgsPsForceEng::GetPjackMax(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands)
+Float64 pgsPsForceEng::GetPjackMax(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType,StrandIndexType nStrands)
 {
    GET_IFACE(IGirderData,pGirderData);
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr,strandType);
    CHECK(pstrand!=0);
 
    return GetPjackMax( span, gdr, *pstrand, nStrands);
@@ -197,7 +197,7 @@ Float64 pgsPsForceEng::GetPjackMax(SpanIndexType span,GirderIndexType gdr,const 
    return Pjack;
 }
 
-Float64 pgsPsForceEng::GetXferLength(SpanIndexType span,GirderIndexType gdr)
+Float64 pgsPsForceEng::GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
 { 
    // Make sure our computation type is valid before we try to use it
    if ( (pgsTypes::PrestressTransferComputationType)-1 == m_PrestressTransferComputationType)
@@ -222,7 +222,7 @@ Float64 pgsPsForceEng::GetXferLength(SpanIndexType span,GirderIndexType gdr)
    else
    {
       GET_IFACE(IGirderData,pGirderData);
-      const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr);
+      const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr,strandType);
       ATLASSERT(pstrand!=0);
 
       return lrfdPsStrand::GetXferLength( *pstrand );
@@ -250,7 +250,7 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgs
 
    // Compute a scaling factor to apply to the basic prestress force to adjust for transfer length
    // and debonded strands
-   Float64 xfer_length = GetXferLength(span,gdr);
+   Float64 xfer_length = GetXferLength(span,gdr,strandType);
 
    GET_IFACE(IBridge,pBridge);
    Float64 gdr_length;
@@ -359,7 +359,7 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,
 
    // Compute a scaling factor to apply to the basic prestress force to adjust for transfer length
    // and debonded strands
-   Float64 xfer_length = GetXferLength(span,gdr);
+   Float64 xfer_length = GetXferLength(span,gdr,strandType);
 
    GET_IFACE(IBridge,pBridge);
    Float64 gdr_length;
@@ -476,7 +476,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    GirderIndexType gdrIdx = poi.GetGirder();
 
    GET_IFACE(IGirderData,pGirderData);
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    GET_IFACE(IGirder,pGirder);
    double mbrDepth = pGirder->GetHeight(poi);
@@ -494,7 +494,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.fps = mcd.fps;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pstrand, details.fps, details.fpe, mbrDepth, bDebonded );
-   details.lt = GetXferLength(spanIdx,gdrIdx);
+   details.lt = GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    return details;
 }
@@ -505,7 +505,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    GirderIndexType gdrIdx = poi.GetGirder();
 
    GET_IFACE(IGirderData,pGirderData);
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    GET_IFACE(IGirder,pGirder);
    double mbrDepth = pGirder->GetHeight(poi);
@@ -516,7 +516,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.fps = fps;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pstrand, details.fps, details.fpe, mbrDepth, bDebonded );
-   details.lt = GetXferLength(spanIdx,gdrIdx);
+   details.lt = GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    return details;
 }
@@ -527,7 +527,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    GirderIndexType gdrIdx = poi.GetGirder();
 
    GET_IFACE(IGirderData,pGirderData);
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    GET_IFACE(IGirder,pGirder);
    double mbrDepth = pGirder->GetHeight(poi);
@@ -545,7 +545,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.fps = mcd.fps;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pstrand, details.fps, details.fpe, mbrDepth, bDebonded );
-   details.lt = GetXferLength(spanIdx,gdrIdx);
+   details.lt = GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    return details;
 }
@@ -556,7 +556,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    GirderIndexType gdrIdx = poi.GetGirder();
 
    GET_IFACE(IGirderData,pGirderData);
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    GET_IFACE(IGirder,pGirder);
    double mbrDepth = pGirder->GetHeight(poi);
@@ -567,7 +567,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.fps = fps;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pstrand, details.fps, details.fpe, mbrDepth, bDebonded );
-   details.lt = GetXferLength(spanIdx,gdrIdx);
+   details.lt = GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent);
 
    return details;
 }
@@ -766,7 +766,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
 
    GET_IFACE(IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
-   const matPsStrand* pstrand = girderData.Material.pStrandMaterial;
+   const matPsStrand* pstrand = girderData.Material.pStrandMaterial[strandType == pgsTypes::Permanent ? pgsTypes::Straight : strandType];
    CHECK(pstrand!=0);
    
    // Get the strand stress
@@ -833,7 +833,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
    GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IGirderData,pGirderData);
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr,strandType);
    CHECK(pstrand!=0);
    
    // Get the strand stress
@@ -890,7 +890,7 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
    // Get the prestressing input information
    GET_IFACE(ILosses,pLosses);
    GET_IFACE(IGirderData, pGirderData );
-   const matPsStrand* pStrand = pGirderData->GetStrandMaterial(span,gdr);
+   const matPsStrand* pStrand = pGirderData->GetStrandMaterial(span,gdr,strandType);
 
    Float64 Pj;
    StrandIndexType N;
@@ -995,7 +995,7 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
    GET_IFACE(IBridge,pBridge);
    Float64 Lgirder = pBridge->GetGirderLength(span,gdr);
    Float64 lpx = (poi.GetDistFromStart() < Lgirder/2 ? poi.GetDistFromStart() : Lgirder - poi.GetDistFromStart());
-   Float64 lt = GetXferLength(span,gdr);
+   Float64 lt = GetXferLength(span,gdr,strandType);
    Float64 adjust = (lpx < lt ? lpx/lt : 1.0);
    ATLASSERT( 0.0 <= adjust && adjust <= 1.0 );
    adjust = ::ForceIntoRange(0.0,adjust,1.0);

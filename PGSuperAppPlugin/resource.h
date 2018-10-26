@@ -274,6 +274,8 @@
 #define IDC_STRESSREL                   1111
 #define IDC_STRAND_SIZE                 1112
 #define IDC_XFERTIME                    1113
+#define IDC_STRAND_SIZE2                1113
+#define IDC_TEMP_STRAND_SIZE            1113
 #define IDC_XFERTIME_SPIN               1114
 #define IDC_XFERTIME_UNIT               1115
 #define IDC_HPOFFSET_END                1116
@@ -837,6 +839,7 @@
 #define IDC_LEFT_SIDEWALK_LEFT_DEPTH_LABEL 1604
 #define IDC_REF_GIRDER_OFFSET_TYPE_LABEL 1604
 #define IDC_RIGHT_INTERIOR_BARRIER      1605
+#define IDC_TEMP_STRAND_SIZE_LABEL      1605
 #define IDC_LEFT_SIDEWALK_RIGHT_DEPTH_LABEL 1606
 #define IDC_RIGHT_SIDEWALK_WIDTH        1607
 #define IDC_GIRDERNAME_NOTE             1608
@@ -1131,7 +1134,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        317
 #define _APS_NEXT_COMMAND_VALUE         33235
-#define _APS_NEXT_CONTROL_VALUE         1605
+#define _APS_NEXT_CONTROL_VALUE         1606
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

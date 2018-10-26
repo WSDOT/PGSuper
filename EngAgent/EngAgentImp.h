@@ -141,10 +141,10 @@ public:
 
 // IPrestressForce
 public:
-   virtual Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands);
+   virtual Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType,StrandIndexType nStrands);
    virtual Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,const matPsStrand& strand,StrandIndexType nStrands);
 
-   virtual Float64 GetXferLength(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
    virtual Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded);
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded);
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType);

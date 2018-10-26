@@ -137,13 +137,13 @@ bool CSpecAgentImp::CheckStressAfterLosses()
 //   return true;
 }
 
-Float64 CSpecAgentImp::GetAllowableAtJacking(SpanIndexType span,GirderIndexType gdr)
+Float64 CSpecAgentImp::GetAllowableAtJacking(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
 {
    if ( !CheckStressAtJacking() )
       return 0.0;
 
    GET_IFACE(IBridgeMaterial,pMat);
-   const matPsStrand* pStrand = pMat->GetStrand(span,gdr);
+   const matPsStrand* pStrand = pMat->GetStrand(span,gdr,strandType);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
@@ -155,13 +155,13 @@ Float64 CSpecAgentImp::GetAllowableAtJacking(SpanIndexType span,GirderIndexType 
 //   return lrfdPsStrand::GetStressLimit( pStrand->GetGrade(), pStrand->GetType(), lrfdPsStrand::Jacking );
 }
 
-Float64 CSpecAgentImp::GetAllowableBeforeXfer(SpanIndexType span,GirderIndexType gdr)
+Float64 CSpecAgentImp::GetAllowableBeforeXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
 {
    if ( !CheckStressBeforeXfer() )
       return 0.0;
 
    GET_IFACE(IBridgeMaterial,pMat);
-   const matPsStrand* pStrand = pMat->GetStrand(span,gdr);
+   const matPsStrand* pStrand = pMat->GetStrand(span,gdr,strandType);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
@@ -173,13 +173,13 @@ Float64 CSpecAgentImp::GetAllowableBeforeXfer(SpanIndexType span,GirderIndexType
 //   return lrfdPsStrand::GetStressLimit( pStrand->GetGrade(), pStrand->GetType(), lrfdPsStrand::BeforeTransfer );
 }
 
-Float64 CSpecAgentImp::GetAllowableAfterXfer(SpanIndexType span,GirderIndexType gdr)
+Float64 CSpecAgentImp::GetAllowableAfterXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
 {
    if ( !CheckStressAfterXfer() )
       return 0.0;
 
    GET_IFACE(IBridgeMaterial,pMat);
-   const matPsStrand* pStrand = pMat->GetStrand(span,gdr);
+   const matPsStrand* pStrand = pMat->GetStrand(span,gdr,strandType);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
@@ -191,13 +191,13 @@ Float64 CSpecAgentImp::GetAllowableAfterXfer(SpanIndexType span,GirderIndexType 
 //   return lrfdPsStrand::GetStressLimit( pStrand->GetGrade(), pStrand->GetType(), lrfdPsStrand::AfterTransfer );
 }
 
-Float64 CSpecAgentImp::GetAllowableAfterLosses(SpanIndexType span,GirderIndexType gdr)
+Float64 CSpecAgentImp::GetAllowableAfterLosses(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
 {
    if ( !CheckStressAfterLosses() )
       return 0.0;
 
    GET_IFACE(IBridgeMaterial,pMat);
-   const matPsStrand* pStrand = pMat->GetStrand(span,gdr);
+   const matPsStrand* pStrand = pMat->GetStrand(span,gdr,strandType);
 
    Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 

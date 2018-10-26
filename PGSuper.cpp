@@ -222,7 +222,7 @@ BOOL CPGSuperApp::InitInstance()
    m_pszHelpFilePath = _tcsdup(_T(strHelpFile));
 
 
-   if ( !CEAFApp::InitInstance() )
+  if ( !CEAFApp::InitInstance() )
       return FALSE;
 
 	return TRUE;

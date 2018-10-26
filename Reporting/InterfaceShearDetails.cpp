@@ -217,13 +217,13 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
    {
-      *pPara << Sub2("v","ni")<<" = min( c" << Sub2("a","cv")<<" + "<<symbol(mu)<<"[ " << Sub2("a","vf")<< Sub2("f","y")<<" + " << Sub2("p","c")<<"], "
+      *pPara << Sub2("v","ni")<<" = min( c" << Sub2("a","cv")<<" + "<<symbol(mu)<<"[ " << Sub2("a","vf")<< RPT_FY <<" + " << Sub2("p","c")<<"], "
                                        << Sub2("K","1") << RPT_FC << Sub2("a","cv")<<", " << Sub2("K","2") << Sub2("a","cv")<<" )"<<rptNewLine;
    }
    else
    {
-      *pPara << Sub2("v","ni")<<" = min( ca"<<Sub("cv")<<" + "<<symbol(mu)<<"[ a"<<Sub("vf ")<<"f"<<Sub("y")<<" + p"<<Sub("c")<<"], "
-                                       <<"0.2 f'"<<Sub("c")<<"a"<<Sub("cv")<<", ";
+      *pPara << Sub2("v","ni")<<" = min( ca"<<Sub("cv")<<" + "<<symbol(mu)<<"[ a"<<Sub("vf ")<<RPT_FY<<" + p"<<Sub("c")<<"], "
+                                       <<"0.2 " << RPT_FC <<"a"<<Sub("cv")<<", ";
 
       if ( IS_SI_UNITS(pDisplayUnits) )
          *pPara<<" 5.5 a"<<Sub("cv")<<" )"<<rptNewLine;
@@ -384,9 +384,9 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    else
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         (*table)(0,3)<<COLHDR(Sub2("a","vf min") << " = " << Sub2("0.35a","cv") <<"/" << Sub2("f","y") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+         (*table)(0,3)<<COLHDR(Sub2("a","vf min") << " = " << Sub2("0.35a","cv") <<"/" << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
       else
-         (*table)(0,3)<<COLHDR(Sub2("a","vf min") << " = " << Sub2("0.05a","cv") <<"/" << Sub2("f","y") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+         (*table)(0,3)<<COLHDR(Sub2("a","vf min") << " = " << Sub2("0.05a","cv") <<"/" << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    }
 
    (*table)(0,4)  << COLHDR(Sub2("v","ni") << "/" << Sub2("a","cv"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );

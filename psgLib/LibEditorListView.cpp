@@ -98,6 +98,7 @@ void CLibEditorListView::OnDraw(CDC* pDC)
 #ifdef _DEBUG
 void CLibEditorListView::AssertValid() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CListView::AssertValid();
 }
 

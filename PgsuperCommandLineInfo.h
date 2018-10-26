@@ -24,6 +24,7 @@
 
 #include <PgsExt\PgsExtExp.h>
 #include <EAF\EAFCommandLineInfo.h>
+#include "PGSuperCatalogServer.h"
 
 /*****************************************************************************
 CLASS 
@@ -69,6 +70,10 @@ public:
 
    bool   m_bDo1250Test;
    long   m_SubdomainId;
+
+   bool m_bSetUpdateLibrary;
+   CString m_CatalogServerName;
+   CString m_PublisherName;
 
    Uint32 m_Count; // parameter number
 

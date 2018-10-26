@@ -521,7 +521,6 @@ END
 
 IDR_BRIDGEMODELEDITOR ACCELERATORS 
 BEGIN
-    VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_INSERT,              VIRTKEY, NOINVERT
@@ -657,12 +656,10 @@ BEGIN
     COMBOBOX        IDC_STRAND_INPUT_TYPE,125,17,161,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "#Harped, #Straight",IDC_HARP_STRAIGHT,27,41,111,8
     GROUPBOX        "Prestressing Strand Type",IDC_STATIC,7,193,347,43
-    CONTROL         "Grade 1725",IDC_GRADE1725,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,205,51,10
-    CONTROL         "Grade 1860",IDC_GRADE1860,"Button",BS_AUTORADIOBUTTON,15,217,51,10
-    CONTROL         "Low Relaxation",IDC_LOWRELAX,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,69,205,62,10
-    CONTROL         "Stress Relieved",IDC_STRESSREL,"Button",BS_AUTORADIOBUTTON,69,217,64,10
-    LTEXT           "Size",IDC_STATIC,145,205,21,8
-    COMBOBOX        IDC_STRAND_SIZE,145,216,104,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Permanent",IDC_STATIC,13,206,97,8
+    COMBOBOX        IDC_STRAND_SIZE,13,217,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Temporary",IDC_TEMP_STRAND_SIZE_LABEL,182,206,97,8
+    COMBOBOX        IDC_TEMP_STRAND_SIZE,182,217,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPECIFICATION DIALOG  0, 0, 278, 65
@@ -2058,8 +2055,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,4,0,2
- PRODUCTVERSION 2,4,0,2
+ FILEVERSION 2,4,0,3
+ PRODUCTVERSION 2,4,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2076,12 +2073,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.4.0.2"
+            VALUE "FileVersion", "2.4.0.3"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.4.0.2"
+            VALUE "ProductVersion", "2.4.0.3"
         END
     END
     BLOCK "VarFileInfo"

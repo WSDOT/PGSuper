@@ -90,7 +90,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << "[5.9.5.4.3b] Creep of Girder Concrete : " << symbol(DELTA) << Sub2("f","pCD") << rptNewLine;
+   *pParagraph << "[5.9.5.4.3b] Creep of Girder Concrete : " << symbol(DELTA) << RPT_STRESS("pCD") << rptNewLine;
 
    
    pParagraph = new rptParagraph;
@@ -178,19 +178,19 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,col++) << Sub2("K","df");
 
-  (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+  (*table)(0,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( 0 < NtMax &&  girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    if ( 0 < NtMax )
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","cd"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("cd"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pCD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

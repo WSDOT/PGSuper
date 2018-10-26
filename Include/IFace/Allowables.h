@@ -70,10 +70,10 @@ interface IAllowableStrandStress : IUnknown
    virtual bool CheckStressAfterXfer() = 0;
    virtual bool CheckStressAfterLosses() = 0;
 
-   virtual Float64 GetAllowableAtJacking(SpanIndexType span,GirderIndexType gdr) = 0;
-   virtual Float64 GetAllowableBeforeXfer(SpanIndexType span,GirderIndexType gdr) = 0;
-   virtual Float64 GetAllowableAfterXfer(SpanIndexType span,GirderIndexType gdr) = 0;
-   virtual Float64 GetAllowableAfterLosses(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual Float64 GetAllowableAtJacking(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetAllowableBeforeXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetAllowableAfterXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetAllowableAfterLosses(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
 };
 
 

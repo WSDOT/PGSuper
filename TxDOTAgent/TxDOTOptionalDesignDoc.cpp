@@ -1209,28 +1209,16 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 
    pUserDefinedLoadData->AddDistributedLoad(wcdc);
 
-   // w comp, dw
+   // w overlay 
+   // Hack: Apply this as a user-defined future overlay
    w = m_ProjectData.GetWCompDw();
-   w = w==0.0 ? SMALL_LOAD : w; 
-   CDistributedLoadData wcdw;
-   wcdw.m_Description = "w comp, dw";
-   wcdw.m_Type = UserLoads::Uniform;
-   wcdw.m_WStart = w;
-   wcdw.m_Stage = UserLoads::BridgeSite2;
-   wcdw.m_LoadCase = UserLoads::DW;
-   wcdw.m_Fractional = true;
-   wcdw.m_StartLocation = 0.0;
-   wcdw.m_EndLocation = -1.0;
-   wcdw.m_Span = 0;
+   Float64 wl = w / spacing;
 
-   // first load original girder, then fab'd
-   wcdw.m_Girder = TOGA_ORIG_GDR;
+   pDeck->DeckType = pgsTypes::sdtCompositeCIP;
+   pDeck->WearingSurface = pgsTypes::wstFutureOverlay;
+   pDeck->bInputAsDepthAndDensity = false;
+   pDeck->OverlayWeight = wl;
 
-   pUserDefinedLoadData->AddDistributedLoad(wcdw);
-
-   wcdw.m_Girder = TOGA_FABR_GDR;
-
-   pUserDefinedLoadData->AddDistributedLoad(wcdw);
 
    // Tricky: Could write a lot of brittle logic here to make sure seed data is copied to girders and that 
    //         all editing information is translated properly. However, bridge data already has something like
@@ -1304,8 +1292,11 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    pOdGirderData->GetStrandData(&grade, &type,&size);
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   rGirderData.Material.pStrandMaterial = pPool->GetStrand(grade,type,size);
-   ASSERT(rGirderData.Material.pStrandMaterial);
+   for ( int i = 0; i < 3; i++ )
+   {
+      rGirderData.Material.pStrandMaterial[i] = pPool->GetStrand(grade,type,size);
+      ASSERT(rGirderData.Material.pStrandMaterial[i]);
+   }
 
    // Set seed data
    rGirderData.ShearData.CopyGirderEntryData( *pGdrEntry );
@@ -1493,9 +1484,9 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    rGirderData.bPjackCalculated[pgsTypes::Straight] = true;
    rGirderData.bPjackCalculated[pgsTypes::Harped] = true;
 
-   rGirderData.Pjack[pgsTypes::Permanent] = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial), rGirderData.Nstrands[pgsTypes::Permanent]);
-   rGirderData.Pjack[pgsTypes::Straight]  = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial), rGirderData.Nstrands[pgsTypes::Straight]);;
-   rGirderData.Pjack[pgsTypes::Harped]    = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial), rGirderData.Nstrands[pgsTypes::Harped]);;
+   rGirderData.Pjack[pgsTypes::Permanent] = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial[pgsTypes::Straight]), rGirderData.Nstrands[pgsTypes::Permanent]);
+   rGirderData.Pjack[pgsTypes::Straight]  = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial[pgsTypes::Straight]), rGirderData.Nstrands[pgsTypes::Straight]);
+   rGirderData.Pjack[pgsTypes::Harped]    = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial[pgsTypes::Harped]), rGirderData.Nstrands[pgsTypes::Harped]);
 }
 
 void CTxDOTOptionalDesignDoc::VerifyPgsuperTemplateData(CBridgeDescription& bridgeDesc)

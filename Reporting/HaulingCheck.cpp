@@ -153,7 +153,7 @@ void CHaulingCheck::Build(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
    t = pSpecEntry->GetHaulingModulusOfRuptureCoefficient(pMaterial->GetGdrConcreteType(span,girder));
-   *p <<"Maximum allowable concrete tensile stress, inclined girder without impact = " << Sub2("f","r") << " = " << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
+   *p <<"Maximum allowable concrete tensile stress, inclined girder without impact = " << RPT_STRESS("r") << " = " << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
    *p << " = " << stress.SetValue(pHaulArtifact->GetModRupture())<< " " <<
       stress.GetUnitTag()<< rptNewLine;
 

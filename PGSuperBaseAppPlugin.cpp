@@ -562,7 +562,17 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
       {
          // Catalog server does the work here
          const CPGSuperCatalogServer* pserver = m_CatalogServers.GetServer(m_CurrentCatalogServer);
-         bUpdatesPending = pserver->CheckForUpdates(m_Publisher, NULL, GetCacheFolder());
+         if (pserver!=NULL)
+         {
+            bUpdatesPending = pserver->CheckForUpdates(m_Publisher, NULL, GetCacheFolder());
+         }
+         else
+         {
+            CString msg;
+            msg.Format("Error - currently selected catalog server not found. Name was: %s",m_CurrentCatalogServer);
+            CCatalogServerException exc(CCatalogServerException::ceServerNotFound, msg);
+            throw exc;
+         }
       }
       catch(...)
       {
@@ -636,12 +646,23 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
       try
       {
          const CPGSuperCatalogServer* pserver = m_CatalogServers.GetServer(m_CurrentCatalogServer);
-         bSuccessful = pserver->PopulateCatalog(m_Publisher,progress,GetCacheFolder());
 
-         m_MasterLibraryFileURL = pserver->GetMasterLibraryURL(m_Publisher);
+         if (pserver!=NULL)
+         {
+            bSuccessful = pserver->PopulateCatalog(m_Publisher,progress,GetCacheFolder());
 
-         if ( m_MasterLibraryFileURL == "" )
-            m_MasterLibraryFileCache = "";
+            m_MasterLibraryFileURL = pserver->GetMasterLibraryURL(m_Publisher);
+
+            if ( m_MasterLibraryFileURL == "" )
+               m_MasterLibraryFileCache = "";
+         }
+         else
+         {
+            CString msg;
+            msg.Format("Error: Cannot perform update - Currently selected catalog server is not in server list. Name is %s",m_CurrentCatalogServer);
+            AfxMessageBox(msg,MB_ICONEXCLAMATION);
+            bSuccessful = false;
+         }
       }
       catch(CCatalogServerException exp)
       {
@@ -755,4 +776,9 @@ CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()
       return pApp->GetAppLocation() + CString("SaveCache\\");
    else
       return CString(buffer) + CString("\\PGSuper_Save\\");
+}
+
+const CPGSuperCatalogServers* CPGSuperBaseAppPlugin::GetCatalogServers() const
+{
+   return &m_CatalogServers;
 }

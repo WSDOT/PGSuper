@@ -50,55 +50,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
-CString get_strand_size( bool bUnitsSI, matPsStrand::Size size )
-{
-   CString sz;
-   switch( size )
-   {
-   case matPsStrand::D635:
-      sz = ( !bUnitsSI ? "1/4\"" : "6.35mm" );
-      break;
-
-   case matPsStrand::D794:
-      sz = ( !bUnitsSI ? "5/16\"" : "7.94mm" );
-      break;
-
-   case matPsStrand::D953:
-      sz = ( !bUnitsSI ? "3/8\"" : "9.53mm" );
-      break;
-
-   case matPsStrand::D1111:
-      sz = ( !bUnitsSI ? "7/16\"" : "11.11mm" );
-      break;
-
-   case matPsStrand::D1270:
-      sz = ( !bUnitsSI ? "1/2\"" : "12.70mm" );
-      break;
-
-   case matPsStrand::D1320:
-      sz = ( !bUnitsSI ? "1/2\" Special (0.52\")" : "1/2\" Special (13.20mm)" );
-      break;
-
-   case matPsStrand::D1524:
-      sz = ( !bUnitsSI ? "0.6\"" : "15.24mm" );
-      break;
-
-   case matPsStrand::D1575:
-      sz = ( !bUnitsSI ? "0.62\"" : "15.75mm" );
-      break;
-
-   case matPsStrand::D1778:
-      sz = ( !bUnitsSI ? "0.7\"" : "17.78mm" );
-      break;
-
-   default:
-      ATLASSERT(false); // should never get here (unless there is a new strand type)
-   }
-
-   return sz;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescPrestressPage property page
 
@@ -108,9 +59,8 @@ CGirderDescPrestressPage::CGirderDescPrestressPage() :
 CPropertyPage(CGirderDescPrestressPage::IDD)
 {
 	//{{AFX_DATA_INIT(CGirderDescPrestressPage)
-	m_Grade = -1;
-	m_Type = -1;
 	m_StrandSizeIdx = -1;
+	m_TempStrandSizeIdx = -1;
 	//}}AFX_DATA_INIT
 }
 
@@ -156,13 +106,13 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          // value is dialog is chopped. recompute to get full precision
          if (pParent->m_GirderData.bPjackCalculated[pgsTypes::Permanent])
          {
-            pParent->m_GirderData.Pjack[pgsTypes::Permanent] = GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Permanent] );
+            pParent->m_GirderData.Pjack[pgsTypes::Permanent] = GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Permanent], pgsTypes::Permanent );
          }
          else
          {
             DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Permanent],   pDisplayUnits->GetGeneralForceUnit() );
          }
-         DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Permanent], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Permanent] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
+         DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Permanent], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Permanent], pgsTypes::Permanent ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
       }
 
       // compute number of straight and harped based on num permanent for possible later use below
@@ -184,14 +134,14 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       if (pDX->m_bSaveAndValidate && pParent->m_GirderData.bPjackCalculated[pgsTypes::Harped])
       {
-         pParent->m_GirderData.Pjack[pgsTypes::Harped] = GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Harped] );
+         pParent->m_GirderData.Pjack[pgsTypes::Harped] = GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Harped], pgsTypes::Harped );
       }
       else
       {
          DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Harped],   pDisplayUnits->GetGeneralForceUnit() );
       }
 
-      DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Harped], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Harped] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s");
+      DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Harped], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Harped], pgsTypes::Harped ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s");
 
 
 	   DDX_Text(pDX, IDC_NUM_SS, pParent->m_GirderData.Nstrands[pgsTypes::Straight]);
@@ -199,14 +149,14 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       if (pDX->m_bSaveAndValidate && pParent->m_GirderData.bPjackCalculated[pgsTypes::Straight])
       {
-         pParent->m_GirderData.Pjack[pgsTypes::Straight] = GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Straight] );
+         pParent->m_GirderData.Pjack[pgsTypes::Straight] = GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Straight], pgsTypes::Straight );
       }
       else
       {
          DDX_UnitValueAndTag( pDX, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Straight], pDisplayUnits->GetGeneralForceUnit() );
       }
 
-      DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Straight], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Straight] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
+      DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Straight], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Straight], pgsTypes::Straight ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
    }
 
 	DDX_Text(pDX, IDC_NUM_TEMP, pParent->m_GirderData.Nstrands[pgsTypes::Temporary]);
@@ -215,14 +165,14 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate && pParent->m_GirderData.bPjackCalculated[pgsTypes::Temporary])
    {
-      pParent->m_GirderData.Pjack[pgsTypes::Temporary] = GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Temporary] );
+      pParent->m_GirderData.Pjack[pgsTypes::Temporary] = GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Temporary], pgsTypes::Temporary );
    }
    else
    {
       DDX_UnitValueAndTag( pDX, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Temporary],  pDisplayUnits->GetGeneralForceUnit() );
    }
 
-   DDV_UnitValueLimitOrLess( pDX, IDC_TEMP_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Temporary], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Temporary] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
+   DDV_UnitValueLimitOrLess( pDX, IDC_TEMP_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Temporary], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Temporary], pgsTypes::Temporary ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
 
    // Set up pjack controls - values that are auto-computed will be refreshed
    UpdateStrandControls();
@@ -393,9 +343,8 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    }
 
 
-	DDX_Radio(pDX, IDC_GRADE1725, m_Grade);
-	DDX_Radio(pDX, IDC_LOWRELAX, m_Type);
 	DDX_CBIndex(pDX, IDC_STRAND_SIZE, m_StrandSizeIdx);
+	DDX_CBIndex(pDX, IDC_TEMP_STRAND_SIZE, m_TempStrandSizeIdx);
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -403,7 +352,12 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
       CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
       Int32 key = pList->GetItemData( m_StrandSizeIdx );
-      pParent->m_GirderData.Material.pStrandMaterial = pPool->GetStrand( key );
+      pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Straight] = pPool->GetStrand( key );
+      pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Harped] = pPool->GetStrand( key );
+
+      pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
+      key = pList->GetItemData( m_TempStrandSizeIdx );
+      pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Temporary] = pPool->GetStrand( key );
    }
 }
 
@@ -424,11 +378,8 @@ BEGIN_MESSAGE_MAP(CGirderDescPrestressPage, CPropertyPage)
 	ON_WM_CTLCOLOR()
 	ON_CBN_DROPDOWN(IDC_HP_COMBO_HP, OnDropdownHpComboHp)
 	ON_CBN_DROPDOWN(IDC_HP_COMBO_END, OnDropdownHpComboEnd)
-	ON_BN_CLICKED(IDC_GRADE1725, OnStrandTypeChanged)
-   ON_BN_CLICKED(IDC_GRADE1860, OnStrandTypeChanged)
-	ON_BN_CLICKED(IDC_LOWRELAX, OnStrandTypeChanged)
-	ON_BN_CLICKED(IDC_STRESSREL, OnStrandTypeChanged)
 	ON_CBN_SELCHANGE(IDC_STRAND_SIZE, OnStrandTypeChanged)
+	ON_CBN_SELCHANGE(IDC_TEMP_STRAND_SIZE, OnTempStrandTypeChanged)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -441,11 +392,12 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    // Fill the strand size combo box.
-   UpdateStrandList(pParent->m_GirderData.Material.pStrandMaterial->GetGrade(),pParent->m_GirderData.Material.pStrandMaterial->GetType());
+   UpdateStrandList(IDC_STRAND_SIZE);
+   UpdateStrandList(IDC_TEMP_STRAND_SIZE);
 
    // Select the strand size
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 target_key = pPool->GetStrandKey(pParent->m_GirderData.Material.pStrandMaterial );
+   Int32 target_key = pPool->GetStrandKey(pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Straight] );
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
    int cStrands = pList->GetCount();
    for ( int i = 0; i < cStrands; i++ )
@@ -458,24 +410,18 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
       }
    }
 
-   // Select the grade and type radio buttons based on strand type
-   m_Grade = pParent->m_GirderData.Material.pStrandMaterial->GetGrade() == matPsStrand::Gr1725 ? 0 : 1;
-	m_Type  = pParent->m_GirderData.Material.pStrandMaterial->GetType()  == matPsStrand::LowRelaxation ? 0 : 1;
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
-
-   // Set text for Grade radio buttons
-   CWnd* pBtn;
-   pBtn = GetDlgItem( IDC_GRADE1725 );
-   ASSERT( pBtn );
-   pBtn->SetWindowText( CString((LPCSTR)(bUnitsSI ? IDS_GRADE1725_SI : IDS_GRADE1725_US)) );
-	
-   pBtn = GetDlgItem( IDC_GRADE1860 );
-   ASSERT( pBtn );
-   pBtn->SetWindowText( CString((LPCSTR)(bUnitsSI ? IDS_GRADE1860_SI : IDS_GRADE1860_US)) );
+   target_key = pPool->GetStrandKey(pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Temporary] );
+   pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
+   cStrands = pList->GetCount();
+   for ( int i = 0; i < cStrands; i++ )
+   {
+      Int32 key = pList->GetItemData( i );
+      if ( key == target_key )
+      {
+         m_TempStrandSizeIdx = i;
+         break;
+      }
+   }
 
    // All this work has to be done before CPropertyPage::OnInitDialog().
    // This code sets up the "current" selections which must be done prior to
@@ -502,6 +448,8 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetMaxStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx,pgsTypes::Temporary);
    if ( Nt == 0 )
@@ -515,6 +463,8 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
       GetDlgItem(IDC_TEMP_JACK_FORCE)->ShowWindow(FALSE);
       GetDlgItem(IDC_TEMP_JACK_FORCE_UNIT)->ShowWindow(FALSE);
       GetDlgItem(IDC_TTS_USE)->ShowWindow(FALSE);
+      GetDlgItem(IDC_TEMP_STRAND_SIZE)->ShowWindow(FALSE);
+      GetDlgItem(IDC_TEMP_STRAND_SIZE_LABEL)->ShowWindow(FALSE);
    }
 
    OnDropdownHpComboHp();
@@ -624,7 +574,7 @@ void CGirderDescPrestressPage::OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESUL
    Float64 Pjack;
    if ( bCalcPsForce || nStrands == 0 )
    {
-      Pjack = GetMaxPjack( nStrands );
+      Pjack = GetMaxPjack( nStrands, pgsTypes::Straight );
    }
    else
    {
@@ -666,7 +616,7 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
    Float64 Pjack;
    if ( bCalcPsForce || nStrands == 0)
    {
-      Pjack = GetMaxPjack( nStrands );
+      Pjack = GetMaxPjack( nStrands, pgsTypes::Harped );
    }
    else
    {
@@ -749,7 +699,7 @@ void CGirderDescPrestressPage::OnNumTempStrandsChanged(NMHDR* pNMHDR, LRESULT* p
    Float64 Pjack;
    if ( bCalcPsForce || nStrands == 0)
    {
-      Pjack = GetMaxPjack( nStrands );
+      Pjack = GetMaxPjack( nStrands, pgsTypes::Temporary );
    }
    else
    {
@@ -815,12 +765,12 @@ void CGirderDescPrestressPage::InitPjackEditEx( UINT nCheckBox )
          {
             if (cursel==NPS_TOTAL_NUMBER)
             {
-               pParent->m_GirderData.Pjack[pgsTypes::Permanent] = GetMaxPjack(nStrands);
+               pParent->m_GirderData.Pjack[pgsTypes::Permanent] = GetMaxPjack(nStrands,pgsTypes::Harped);
                Pjack = pParent->m_GirderData.Pjack[pgsTypes::Permanent];
             }
             else
             {
-               pParent->m_GirderData.Pjack[pgsTypes::Harped] = GetMaxPjack(nStrands);
+               pParent->m_GirderData.Pjack[pgsTypes::Harped] = GetMaxPjack(nStrands,pgsTypes::Harped);
                Pjack = pParent->m_GirderData.Pjack[pgsTypes::Harped];
             }
             DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
@@ -828,13 +778,13 @@ void CGirderDescPrestressPage::InitPjackEditEx( UINT nCheckBox )
          break;
 
       case IDC_SS_JACK:
-         pParent->m_GirderData.Pjack[pgsTypes::Straight] = GetMaxPjack(nStrands);
+         pParent->m_GirderData.Pjack[pgsTypes::Straight] = GetMaxPjack(nStrands,pgsTypes::Straight);
          Pjack = pParent->m_GirderData.Pjack[pgsTypes::Straight];
          DDX_UnitValueAndTag( &dx, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
          break;
 
       case IDC_TEMP_JACK:
-         pParent->m_GirderData.Pjack[pgsTypes::Temporary] = GetMaxPjack(nStrands);
+         pParent->m_GirderData.Pjack[pgsTypes::Temporary] = GetMaxPjack(nStrands,pgsTypes::Temporary);
          Pjack = pParent->m_GirderData.Pjack[pgsTypes::Temporary];
          DDX_UnitValueAndTag( &dx, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
          break;
@@ -929,7 +879,7 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
             if (cursel==NPS_TOTAL_NUMBER)
             {
                pParent->m_GirderData.LastUserPjack[pgsTypes::Permanent] = Pjack;
-               Pjack = GetMaxPjack(nStrands);
+               Pjack = GetMaxPjack(nStrands,pgsTypes::Harped);
             }
             else
             {
@@ -961,7 +911,7 @@ Float64 CGirderDescPrestressPage::GetMaxPjackStraight()
    CWnd* pEdit = GetDlgItem( IDC_NUM_SS );
    pEdit->GetWindowText( txt );
    StrandIndexType nStrands = (StrandIndexType)atoi( txt );
-   return GetMaxPjack( nStrands );
+   return GetMaxPjack( nStrands, pgsTypes::Straight );
 }
 
 Float64 CGirderDescPrestressPage::GetMaxPjackHarped()
@@ -970,7 +920,7 @@ Float64 CGirderDescPrestressPage::GetMaxPjackHarped()
    CWnd* pEdit = GetDlgItem( IDC_NUM_HS );
    pEdit->GetWindowText( txt );
    StrandIndexType nStrands = (StrandIndexType)atoi( txt );
-   return GetMaxPjack( nStrands );
+   return GetMaxPjack( nStrands, pgsTypes::Harped );
 }
 
 
@@ -980,23 +930,29 @@ Float64 CGirderDescPrestressPage::GetMaxPjackTemp()
    CWnd* pEdit = GetDlgItem( IDC_NUM_TEMP );
    pEdit->GetWindowText( txt );
    StrandIndexType nStrands = (StrandIndexType)atoi( txt );
-   return GetMaxPjack( nStrands );
+   return GetMaxPjack( nStrands, pgsTypes::Temporary );
 }
 
-Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands)
+Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, IPrestressForce, pPrestress );
 
+   if ( strandType == pgsTypes::Permanent )
+      strandType = pgsTypes::Straight;
+
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   return pPrestress->GetPjackMax(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,*pParent->m_GirderData.Material.pStrandMaterial, nStrands);
+   return pPrestress->GetPjackMax(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,*pParent->m_GirderData.Material.pStrandMaterial[strandType], nStrands);
 }
 
-Float64 CGirderDescPrestressPage::GetUltPjack(StrandIndexType nStrands)
+Float64 CGirderDescPrestressPage::GetUltPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
+   if ( strandType == pgsTypes::Permanent )
+      strandType = pgsTypes::Straight;
+
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   const matPsStrand& strand = *(pParent->m_GirderData.Material.pStrandMaterial);
+   const matPsStrand& strand = *(pParent->m_GirderData.Material.pStrandMaterial[strandType]);
 
    // Ultimate strength of strand group
    Float64 ult = strand.GetUltimateStrength();
@@ -1590,7 +1546,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       Float64 jack_straight = 0;
       if (calc_straight)
       {
-         jack_straight = GetMaxPjack(numStraight);
+         jack_straight = GetMaxPjack(numStraight,pgsTypes::Straight);
       }
       else
       {
@@ -1606,7 +1562,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       Float64 jack_harped = 0;
       if (calc_harped)
       {
-         jack_harped = GetMaxPjack(numHarped);
+         jack_harped = GetMaxPjack(numHarped,pgsTypes::Harped);
       }
       else
       {
@@ -1719,22 +1675,14 @@ void CGirderDescPrestressPage::OnDropdownHpComboEnd()
    m_OldEndMeasureType = (HarpedStrandOffsetType)box->GetItemData(cursel);
 }
 
-void CGirderDescPrestressPage::UpdateStrandList(matPsStrand::Grade grade,matPsStrand::Type  type)
+void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
 {
+   CComboBox* pList = (CComboBox*)GetDlgItem(nIDC);
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
-   CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
-
-   // Retain information about the current selection so we can attempt to re-select the
-   // same size after the combo box is updated.
+   // capture the current selection, if any
    int cur_sel = pList->GetCurSel();
-   matPsStrand::Size cur_size = matPsStrand::D635;
+   matPsStrand::Size cur_size = matPsStrand::D1270;
    if ( cur_sel != CB_ERR )
    {
       Int32 cur_key = pList->GetItemData( cur_sel );
@@ -1743,57 +1691,60 @@ void CGirderDescPrestressPage::UpdateStrandList(matPsStrand::Grade grade,matPsSt
    }
 
    pList->ResetContent();
-   lrfdStrandIter iter( grade, type );
+
    int sel_count = 0;  // Keep count of the number of strings added to the combo box
    int new_cur_sel = -1; // This will be in index of the string we want to select.
-   for ( iter.Begin(); iter; iter.Next() )
+   for ( int i = 0; i < 2; i++ )
    {
-      const matPsStrand* pStrand = iter.GetCurrentStrand();
-      CString size = get_strand_size( bUnitsSI, pStrand->GetSize() );
-      int idx = pList->AddString( size );
+      matPsStrand::Grade grade = (i == 0 ? matPsStrand::Gr1725 : matPsStrand::Gr1860);
+      for ( int j = 0; j < 2; j++ )
+      {
+         matPsStrand::Type type = (j == 0 ? matPsStrand::LowRelaxation : matPsStrand::StressRelieved);
 
-      if ( idx != CB_ERR )
-      { 
-         // if there wasn't an error adding the size, add a data item
-         Int32 key;
-         key = pPool->GetStrandKey( pStrand );
+         lrfdStrandIter iter(grade,type);
 
-         if ( pList->SetItemData( idx, key ) == CB_ERR )
+         for ( iter.Begin(); iter; iter.Next() )
          {
-            // if there was an error adding the data item, remove the size
-            idx = pList->DeleteString( idx );
-            ASSERT( idx != CB_ERR ); // make sure it got removed.
-         }
-         else
-         {
-            // data item added successfully.
-            if ( pStrand->GetSize() == cur_size )
-            {
-               // We just found the one we want to select.
-               new_cur_sel = sel_count;
+            const matPsStrand* pStrand = iter.GetCurrentStrand();
+            int idx = pList->AddString( pStrand->GetName().c_str() );
+
+            if ( idx != CB_ERR )
+            { 
+               // if there wasn't an error adding the size, add a data item
+               Int32 key;
+               key = pPool->GetStrandKey( pStrand );
+
+               if ( pList->SetItemData( idx, key ) == CB_ERR )
+               {
+                  // if there was an error adding the data item, remove the size
+                  idx = pList->DeleteString( idx );
+                  ASSERT( idx != CB_ERR ); // make sure it got removed.
+               }
+               else
+               {
+                  // data item added successfully.
+                  if ( pStrand->GetSize() == cur_size )
+                  {
+                     // We just found the one we want to select.
+                     new_cur_sel = sel_count;
+                  }
+               }
             }
+
+            sel_count++;
          }
       }
-
-      sel_count++;
    }
 
    // Attempt to re-select the strand.
-   if ( new_cur_sel >= 0 )
+   if ( 0 <= new_cur_sel )
       pList->SetCurSel( new_cur_sel );
    else
       pList->SetCurSel( pList->GetCount()-1 );
 }
 
-
 void CGirderDescPrestressPage::OnStrandTypeChanged() 
 {
-	// TODO: Add your control notification handler code here
-   matPsStrand::Grade grade = ( GetCheckedRadioButton( IDC_GRADE250, IDC_GRADE270)  == IDC_GRADE250 ? matPsStrand::Gr1725 : matPsStrand::Gr1860 );
-   matPsStrand::Type  type  = ( GetCheckedRadioButton( IDC_LOWRELAX, IDC_STRESSREL) == IDC_LOWRELAX ? matPsStrand::LowRelaxation : matPsStrand::StressRelieved );
-
-   UpdateStrandList( grade, type );	
-
    // Very tricky code here - Update the strand material in order to compute new jacking forces
    // Strand material comes out of the strand pool
    CDataExchange DX(this,true);
@@ -1803,7 +1754,25 @@ void CGirderDescPrestressPage::OnStrandTypeChanged()
    Int32 key = pList->GetItemData( m_StrandSizeIdx );
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_GirderData.Material.pStrandMaterial = pPool->GetStrand( key );
+   pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Straight] = pPool->GetStrand( key );
+   pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Harped]   = pPool->GetStrand( key );
+
+   // Now we can update pjack values in dialog
+   InitPjackEdits();
+}
+
+void CGirderDescPrestressPage::OnTempStrandTypeChanged() 
+{
+   // Very tricky code here - Update the strand material in order to compute new jacking forces
+   // Strand material comes out of the strand pool
+   CDataExchange DX(this,true);
+	DDX_CBIndex(&DX, IDC_TEMP_STRAND_SIZE, m_TempStrandSizeIdx);
+   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   CComboBox* pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
+   Int32 key = pList->GetItemData( m_TempStrandSizeIdx );
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Temporary] = pPool->GetStrand( key );
 
    // Now we can update pjack values in dialog
    InitPjackEdits();

@@ -378,15 +378,15 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,col++) << Sub2("f","r");
+   (*table)(0,col++) << RPT_STRESS("r");
    (*table)(0,col++) << Sub2(symbol(gamma),"DC");
-   (*table)(0,col++) << COLHDR(Sub2("f","DC"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("f","PS"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS("DC"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS("PS"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),"DW");
-   (*table)(0,col++) << COLHDR(Sub2("f","DW"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS("DW"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),"LL");
    (*table)(0,col++) << "gM";
-   (*table)(0,col++) << COLHDR(Sub2("f","LL+IM"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS("LL+IM"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << "RF";
 
    pgsRatingArtifact::StressRatings artifacts = pRatingArtifact->GetStressRatings();
@@ -480,13 +480,13 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    (*table)(0,col++) << COLHDR(Sub2("d","ps"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,col++) << COLHDR("c", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,col++) << COLHDR(Sub2("I","cr"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("f","bcr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS("pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS("bcr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(Sub2("E","s"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(Sub2("E","g"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("f","s"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("f","r"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << "Stress" << rptNewLine << "Ratio" << rptNewLine << Sub2("f","r") << "/" << Sub2("f","s");
+   (*table)(0,col++) << COLHDR(RPT_STRESS("s"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS("r"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << "Stress" << rptNewLine << "Ratio" << rptNewLine << RPT_STRESS("r") << "/" << RPT_STRESS("s");
 
    pgsRatingArtifact::YieldStressRatios artifacts = pRatingArtifact->GetYieldStressRatios(bPositiveMoment);
 

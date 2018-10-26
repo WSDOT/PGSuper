@@ -159,16 +159,15 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
             *pPara << "Permanent Strands: " << RPT_APS << " = " << area.SetValue(pStrandGeom->GetStrandArea(spanIdx,gdrIdx,pgsTypes::Permanent)) << rptNewLine;
             *pPara << "Temporary Strands: " << RPT_APS << " = " << area.SetValue(pStrandGeom->GetStrandArea(spanIdx,gdrIdx,pgsTypes::Temporary)) << rptNewLine;
             *pPara << "Total Strand Area: " << RPT_APS << " = " << area.SetValue( pStrandGeom->GetAreaPrestressStrands(spanIdx,gdrIdx,true)) << rptNewLine;
+            *pPara << "Prestress Transfer Length (Permanent) = " << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent) ) << rptNewLine;
+            *pPara << "Prestress Transfer Length (Temporary) = " << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx,pgsTypes::Temporary) ) << rptNewLine;
          }
          else
          {
             *pPara << RPT_APS << " = " << area.SetValue( pStrandGeom->GetAreaPrestressStrands(spanIdx,gdrIdx,false)) << rptNewLine;
             *pPara << Sub2("P","jack") << " = " << force.SetValue( pStrandGeom->GetPjack(spanIdx,gdrIdx,false)) << rptNewLine;
+            *pPara << "Prestress Transfer Length = " << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent) ) << rptNewLine;
          }
-
-         *pPara << "Prestress Transfer Length = " << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx) ) << rptNewLine;
-         //*pPara << "Prestress Development Length (bonded strands) = " << len.SetValue( pPrestressForce->GetDevLength(spanIdx,gdrIdx,false) ) << rptNewLine;
-         //*pPara << "Prestress Development Length (debonded strands) = " << len.SetValue( pPrestressForce->GetDevLength(spanIdx,gdrIdx,true) ) << rptNewLine;
 
          // Write out strand forces and stresses at the various stages of prestress loss
          pPara = new rptParagraph;

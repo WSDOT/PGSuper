@@ -423,7 +423,8 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    
    // Get the interfaces
    GET_IFACE2( pBroker, IBridgeMaterial, pMat );
-   const matPsStrand* pStrand = pMat->GetStrand(span,girder);
+   const matPsStrand* pStrand = pMat->GetStrand(span,girder,pgsTypes::Permanent);
+   const matPsStrand* pTempStrand = pMat->GetStrand(span,girder,pgsTypes::Temporary);
 
    GET_IFACE2( pBroker, IStrandGeometry, pStrandGeom );
    GET_IFACE2( pBroker, ISectProp2, pSectProp2 );
@@ -484,6 +485,9 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
 
    // Populate the table
    Int16 row = 0;
+   (*pTable)(row,0) << "Permanent Strands";
+   row++;
+
    (*pTable)(row,0) << "Nominal Strand Diameter";
    (*pTable)(row,1) << component.SetValue( pStrand->GetNominalDiameter() );
    row++;
@@ -539,6 +543,17 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
 
    if (0 <  pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) )
    {
+      (*pTable)(row,0) << "Temporary Strands";
+      row++;
+
+      (*pTable)(row,0) << "Nominal Strand Diameter";
+      (*pTable)(row,1) << component.SetValue( pTempStrand->GetNominalDiameter() );
+      row++;
+
+      (*pTable)(row,0) << "Nominal Strand Area";
+      (*pTable)(row,1) << area.SetValue( pTempStrand->GetNominalArea() );
+      row++;
+
       (*pTable)(row,0) << "Number of Temporary Strands";
       switch ( girderData.TempStrandUsage )
       {

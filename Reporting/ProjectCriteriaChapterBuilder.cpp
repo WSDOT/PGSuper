@@ -980,32 +980,32 @@ void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
    {
       *pPara << rptNewLine;
       *pPara << "Stress Limit at Jacking" << rptNewLine;
-      *pPara << "- Stress Relieved Strand = " << pSpecEntry->GetStrandStressCoefficient(AT_JACKING,STRESS_REL) << Sub2("f","pu") << rptNewLine;
-      *pPara << "- Low Relaxation Strand = " << pSpecEntry->GetStrandStressCoefficient(AT_JACKING,LOW_RELAX) << Sub2("f","pu") << rptNewLine;
+      *pPara << "- Stress Relieved Strand = " << pSpecEntry->GetStrandStressCoefficient(AT_JACKING,STRESS_REL) << RPT_STRESS("pu") << rptNewLine;
+      *pPara << "- Low Relaxation Strand = " << pSpecEntry->GetStrandStressCoefficient(AT_JACKING,LOW_RELAX) << RPT_STRESS("pu") << rptNewLine;
    }
 
    if ( pSpecEntry->CheckStrandStress(BEFORE_TRANSFER) )
    {
       *pPara << rptNewLine;
       *pPara << "Stress Limit Immediately Prior to Transfer" << rptNewLine;
-      *pPara << "- Stress Relieved Strand = " << pSpecEntry->GetStrandStressCoefficient(BEFORE_TRANSFER,STRESS_REL) << Sub2("f","pu") << rptNewLine;
-      *pPara << "- Low Relaxation Strand = " << pSpecEntry->GetStrandStressCoefficient(BEFORE_TRANSFER,LOW_RELAX) << Sub2("f","pu") << rptNewLine;
+      *pPara << "- Stress Relieved Strand = " << pSpecEntry->GetStrandStressCoefficient(BEFORE_TRANSFER,STRESS_REL) << RPT_STRESS("pu") << rptNewLine;
+      *pPara << "- Low Relaxation Strand = " << pSpecEntry->GetStrandStressCoefficient(BEFORE_TRANSFER,LOW_RELAX) << RPT_STRESS("pu") << rptNewLine;
    }
 
    if ( pSpecEntry->CheckStrandStress(AFTER_TRANSFER) )
    {
       *pPara << rptNewLine;
       *pPara << "Stress Limit Immediately After Transfer" << rptNewLine;
-      *pPara << "- Stress Relieved Strand = " << pSpecEntry->GetStrandStressCoefficient(AFTER_TRANSFER,STRESS_REL) << Sub2("f","pu") << rptNewLine;
-      *pPara << "- Low Relaxation Strand = " << pSpecEntry->GetStrandStressCoefficient(AFTER_TRANSFER,LOW_RELAX) << Sub2("f","pu") << rptNewLine;
+      *pPara << "- Stress Relieved Strand = " << pSpecEntry->GetStrandStressCoefficient(AFTER_TRANSFER,STRESS_REL) << RPT_STRESS("pu") << rptNewLine;
+      *pPara << "- Low Relaxation Strand = " << pSpecEntry->GetStrandStressCoefficient(AFTER_TRANSFER,LOW_RELAX) << RPT_STRESS("pu") << rptNewLine;
    }
 
    if ( pSpecEntry->CheckStrandStress(AFTER_ALL_LOSSES) )
    {
       *pPara << rptNewLine;
       *pPara << "Stress Limit at service limit state after all losses" << rptNewLine;
-      *pPara << "- Stress Relieved Strand = " << pSpecEntry->GetStrandStressCoefficient(AFTER_ALL_LOSSES,STRESS_REL) << Sub2("f","py") << rptNewLine;
-      *pPara << "- Low Relaxation Strand = " << pSpecEntry->GetStrandStressCoefficient(AFTER_ALL_LOSSES,LOW_RELAX) << Sub2("f","py") << rptNewLine;
+      *pPara << "- Stress Relieved Strand = " << pSpecEntry->GetStrandStressCoefficient(AFTER_ALL_LOSSES,STRESS_REL) << RPT_STRESS("py") << rptNewLine;
+      *pPara << "- Low Relaxation Strand = " << pSpecEntry->GetStrandStressCoefficient(AFTER_ALL_LOSSES,LOW_RELAX) << RPT_STRESS("py") << rptNewLine;
    }
 }
 

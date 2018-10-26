@@ -273,7 +273,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
       *p << color(Red) <<"Note: A Non-Standard Strand Fill Was Used For This Design" << color(Black) << rptNewLine;
    }
 
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,girder);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,girder,pgsTypes::Permanent);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, ecc,    pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dia,    pDisplayUnits->GetComponentDimUnit(), true );
@@ -377,10 +377,10 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    (*p_table)(++row,0) << Bold("Concrete");
    (*p_table)(row,1) << Bold("");
 
-   (*p_table)(++row,0) << "Release Strength f'"<<Sub("ci");
+   (*p_table)(++row,0) << "Release Strength "<<RPT_FCI;
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFciGdr(span,girder));
 
-   (*p_table)(++row,0) << "Minimum 28 day compressive strength f'"<<Sub("c");
+   (*p_table)(++row,0) << "Minimum 28 day compressive strength "<<RPT_FC;
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFcGdr(span,girder));
 
    (*p_table)(++row,0) << Bold("Optional Design");

@@ -80,8 +80,8 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    table->offset.ShowUnitTag(false);
 
    table->stress.ShowUnitTag(true);
-   *pParagraph << symbol(DELTA) << Sub2("f","pFT") << " = " << table->stress.SetValue(details.pLosses->TotalFrictionLoss() ) << rptNewLine;
-   *pParagraph << symbol(DELTA) << Sub2("f","pAT") << " = " << table->stress.SetValue(details.pLosses->TotalAnchorSetLoss() ) << rptNewLine;
+   *pParagraph << symbol(DELTA) << RPT_STRESS("pFT") << " = " << table->stress.SetValue(details.pLosses->TotalFrictionLoss() ) << rptNewLine;
+   *pParagraph << symbol(DELTA) << RPT_STRESS("pAT") << " = " << table->stress.SetValue(details.pLosses->TotalAnchorSetLoss() ) << rptNewLine;
    table->stress.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;
@@ -90,8 +90,8 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,2) << COLHDR("x",rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,3) << COLHDR(symbol(DELTA) << Sub2("f","pF") << " @ x" , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(symbol(DELTA) << Sub2("f","pA") << " @ x" , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pF") << " @ x" , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS("pA") << " @ x" , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

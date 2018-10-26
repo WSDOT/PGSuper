@@ -390,7 +390,7 @@ rptParagraph* create_table1_design(IBroker* pBroker,
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    (*table)(0,1)  << COLHDR(Sub2("A","s"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,2)  << COLHDR("f"<<Sub("y") << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2)  << COLHDR(RPT_FY << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,3)  << COLHDR(Sub2("A","ps"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,4)  << COLHDR("f"<<Sub("ps") << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,5)  << COLHDR("M"<<Sub("u"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
@@ -610,9 +610,9 @@ rptParagraph* create_table1_rating(IBroker* pBroker,
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    (*table)(0,1)  << COLHDR(Sub2("A","s"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,2)  << COLHDR("f"<<Sub("y") << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2)  << COLHDR(RPT_FY << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,3)  << COLHDR(Sub2("A","ps"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,4)  << COLHDR("f"<<Sub("ps") << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4)  << COLHDR(RPT_FPS << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,5)  << COLHDR("M"<<Sub("u"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,6)  << COLHDR("d"<<Sub("v"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,7)  << "Flexure" << rptNewLine << Sub2(symbol(phi),"f");

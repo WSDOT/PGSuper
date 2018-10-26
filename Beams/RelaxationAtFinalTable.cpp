@@ -75,7 +75,7 @@ CRelaxationAtFinalTable* CRelaxationAtFinalTable::PrepareTable(rptChapter* pChap
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << "[5.9.5.4.3c] Relaxation of Prestressing Strands : " << symbol(DELTA) << Sub2("f","pR2") << rptNewLine;
+   *pParagraph << "[5.9.5.4.3c] Relaxation of Prestressing Strands : " << symbol(DELTA) << RPT_STRESS("pR2") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -83,7 +83,7 @@ CRelaxationAtFinalTable* CRelaxationAtFinalTable::PrepareTable(rptChapter* pChap
 
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(symbol(DELTA) << Sub2("f","pR2"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,1) << COLHDR(symbol(DELTA) << RPT_STRESS("pR2"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

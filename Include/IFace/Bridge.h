@@ -278,7 +278,7 @@ interface IBridgeMaterial : IUnknown
    virtual Float64 GetEcRailing(pgsTypes::TrafficBarrierOrientation orientation) = 0;
 
    // Prestressing Strand
-   virtual const matPsStrand* GetStrand(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual const matPsStrand* GetStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
 
    // Properties of Girder Longitudinal Rebar
    virtual void GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy) = 0;

@@ -93,10 +93,10 @@ public:
    virtual bool CheckStressBeforeXfer();
    virtual bool CheckStressAfterXfer();
    virtual bool CheckStressAfterLosses();
-   virtual Float64 GetAllowableAtJacking(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetAllowableBeforeXfer(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetAllowableAfterXfer(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetAllowableAfterLosses(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetAllowableAtJacking(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
+   virtual Float64 GetAllowableBeforeXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
+   virtual Float64 GetAllowableAfterXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
+   virtual Float64 GetAllowableAfterLosses(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
 
 // IAllowableConcreteStress
 public:
