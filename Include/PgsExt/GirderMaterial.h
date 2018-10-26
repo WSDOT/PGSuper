@@ -91,7 +91,7 @@ public:
    Float64 Fct;
 
    // strand
-   const matPsStrand* pStrandMaterial;
+   const matPsStrand* pStrandMaterial[3]; // (straight, harped, temporary)
 
 
    // GROUP: LIFECYCLE

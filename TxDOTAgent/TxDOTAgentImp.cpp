@@ -213,7 +213,7 @@ BOOL CTxDOTAgentImp::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
    }
    else if (txCmdInfo.m_DoTogaTest && !txCmdInfo.m_bError)
    {
-      ATLASSERT(true);
+      ProcessTOGAReport(txCmdInfo);
       return TRUE;
    }
 
@@ -670,4 +670,114 @@ void CTxDOTAgentImp::SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,co
    GET_IFACE(IGirderHauling,pHauling);
    pHauling->SetTruckSupportLocations(span, gdr,pArtifact->GetTrailingOverhang(),pArtifact->GetLeadingOverhang());
 
+}
+
+
+void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
+{
+   ASSERT(rCmdInfo.m_DoTogaTest);
+
+   CString errfile;
+   CreateTxDOTFileNames(rCmdInfo.m_TxOutputFile, &errfile);
+
+   try
+   {
+      if ( !DoTOGAReport(rCmdInfo.m_TxOutputFile, rCmdInfo) )
+      {
+         CString msg = CString("Error - Running test on file")+rCmdInfo.m_strFileName;
+         ::AfxMessageBox(msg);
+      }
+   }
+   catch(const sysXBase& e)
+   {
+      std::string msg;
+      e.GetErrorMessage(&msg);
+      std::ofstream os;
+      os.open(errfile);
+      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< msg;
+   }
+   catch(CException* pex)
+   {
+      TCHAR   szCause[255];
+      CString strFormatted;
+      pex->GetErrorMessage(szCause, 255);
+      std::ofstream os;
+      os.open(errfile);
+      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+      delete pex;
+   }
+   catch(CException& ex)
+   {
+      TCHAR   szCause[255];
+      CString strFormatted;
+      ex.GetErrorMessage(szCause, 255);
+      std::ofstream os;
+      os.open(errfile);
+      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+   }
+   catch(const std::exception* pex)
+   {
+      std::string strMsg(pex->what());
+      std::ofstream os;
+      os.open(errfile);
+      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+      delete pex;
+   }
+   catch(const std::exception& ex)
+   {
+       std::string strMsg(ex.what());
+      std::ofstream os;
+      os.open(errfile);
+      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+   }
+   catch(...)
+   {
+      std::ofstream os;
+      os.open(errfile);
+      os <<"Unknown Error running TOGAreport for input file: "<<rCmdInfo.m_strFileName;
+   }
+}
+
+bool CTxDOTAgentImp::DoTOGAReport(const CString& outputFileName, const CTxDOTCommandLineInfo& rCmdInfo)
+{
+   // Called from the command line processing in the Application object
+
+   // Open/create the specified output file 
+   FILE	*fp;
+   errno_t result;
+   if (rCmdInfo.m_DoAppendToFile)
+   {
+      result = fopen_s(&fp, LPCTSTR (outputFileName), "a+");
+   }
+   else
+   {
+      result = fopen_s(&fp, LPCTSTR (outputFileName), "w+");
+   }
+
+   if (result != 0 || fp == NULL)
+   {
+      CString errfile;
+      CreateTxDOTFileNames(rCmdInfo.m_TxOutputFile, &errfile);
+      std::ofstream err_file(errfile);
+      err_file<<"Error: Output file could not be Created."<<std::endl;
+	   return false;
+   }
+
+   GET_IFACE(IProgress,pProgress);
+   CEAFAutoProgress ap(pProgress);
+
+   // Write data to file
+   if (CAD_SUCCESS != TxDOT_WriteTOGAReportToFile(fp, this->m_pBroker))
+   {
+      CString errfile;
+      CreateTxDOTFileNames(rCmdInfo.m_TxOutputFile, &errfile);
+      std::ofstream err_file(errfile);
+      err_file <<"Warning: An error occured while writing to File"<<std::endl;
+      return false;
+   }
+
+   /* Close the open text file */
+   fclose (fp);
+
+   return true;
 }

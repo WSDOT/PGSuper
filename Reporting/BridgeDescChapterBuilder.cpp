@@ -728,7 +728,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),"w"), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
    (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),"s"), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
    (*pTable)(row,col++) << COLHDR(Sub2("D","agg"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(row,col++) << COLHDR(Sub2("f","ct"),  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,col++) << COLHDR(RPT_STRESS("ct"),  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( bK1 )
    {
       pTable->SetNumberOfHeaderRows(2);
@@ -858,7 +858,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    (*pPara) << Sub2(symbol(gamma),"w") << " =  Unit weight including reinforcement (used for dead load calculations)" << rptNewLine;
    (*pPara) << Sub2(symbol(gamma),"s") << " =  Unit weight (used to compute " << Sub2("E","c") << ")" << rptNewLine;
    (*pPara) << Sub2("D","agg") << " =  Maximum aggregate size" << rptNewLine;
-   (*pPara) << Sub2("f","ct") << " =  Average splitting tensile strength of lightweight aggregate concrete" << rptNewLine;
+   (*pPara) << RPT_STRESS("ct") << " =  Average splitting tensile strength of lightweight aggregate concrete" << rptNewLine;
    if ( bK1 )
    {
       (*pPara) << Sub2("K","1") << " = Correction factor for aggregate type in predicting average value" << rptNewLine;
@@ -1310,10 +1310,10 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pTable)(row,1) << stress.SetValue( girderData.Material.Fc );
          row++;
 
-         const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx);
+         const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Straight);
          CHECK(pstrand!=0);
 
-         (*pTable)(row,0) << "Prestressing Strand";
+         (*pTable)(row,0) << "Prestressing Strand (Permanent)";
          if ( IS_SI_UNITS(pDisplayUnits) )
          {
             (*pTable)(row,1) << dia.SetValue(pstrand->GetNominalDiameter()) << " Dia.";
@@ -1345,6 +1345,46 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,1) << strData;
          }
          row++;
+
+
+         if ( 0 < pStrand->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
+         {
+            const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Temporary);
+            CHECK(pstrand!=0);
+
+            (*pTable)(row,0) << "Prestressing Strand (Temporary)";
+            if ( IS_SI_UNITS(pDisplayUnits) )
+            {
+               (*pTable)(row,1) << dia.SetValue(pstrand->GetNominalDiameter()) << " Dia.";
+               std::string strData;
+
+               strData += " ";
+               strData += (pstrand->GetGrade() == matPsStrand::Gr1725 ? "Grade 1725" : "Grade 1860");
+               strData += " ";
+               strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? "Low Relaxation" : "Stress Relieved");
+
+               (*pTable)(row,1) << strData;
+            }
+            else
+            {
+               Float64 diam = pstrand->GetNominalDiameter();
+
+               // special designator for 1/2" special (as per High concrete)
+               if (IsEqual(diam,0.013208))
+                  (*pTable)(row,1) << " 1/2\" Special, ";
+
+               (*pTable)(row,1) << dia.SetValue(diam) << " Dia.";
+               std::string strData;
+
+               strData += " ";
+               strData += (pstrand->GetGrade() == matPsStrand::Gr1725 ? "Grade 250" : "Grade 270");
+               strData += " ";
+               strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? "Low Relaxation" : "Stress Relieved");
+
+               (*pTable)(row,1) << strData;
+            }
+            row++;
+         }
 
          switch ( girderData.TempStrandUsage )
          {

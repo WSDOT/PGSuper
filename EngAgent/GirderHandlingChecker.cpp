@@ -565,7 +565,7 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
    pArtifact->SetGirderWeight(total_weight);
 
    GET_IFACE(IPrestressForce,pPrestressForce);
-   Float64 XFerLength =  pPrestressForce->GetXferLength(span,gdr);
+   Float64 XFerLength =  pPrestressForce->GetXferLength(span,gdr,pgsTypes::Permanent);
    pArtifact->SetXFerLength(XFerLength);
 
    Float64 span_len = girder_length - Loh - Roh;
@@ -1184,6 +1184,7 @@ void pgsGirderHandlingChecker::ComputeHaulingStresses(SpanIndexType span,GirderI
                                                       pgsHaulingAnalysisArtifact* pArtifact)
 {
    GET_IFACE(IPrestressForce,pPrestressForce);
+   GET_IFACE(IBridgeMaterial,pMaterial);
    GET_IFACE(IStrandGeometry,pStrandGeometry);
    GET_IFACE(ISectProp2,pSectProp2);
    GET_IFACE(IGirder,pGdr);
@@ -1252,10 +1253,21 @@ void pgsGirderHandlingChecker::ComputeHaulingStresses(SpanIndexType span,GirderI
 
       Float64 total_ps_force = hps_force + sps_force + tps_force;
       Float64 total_e=0.0;
-      if (total_ps_force>0)
+      if (0 < total_ps_force)
+      {
          total_e = (hps_force*he + sps_force*se + tps_force*te) / total_ps_force;
-      else if (nfh + nfs + nft > 0)
-         total_e = (he*nfh + se*nfs + te*nft) / (nfh + nfs + nft);
+      }
+      else if (0 < nfh + nfs + nft)
+      {
+         Float64 Aps[3];
+         Aps[pgsTypes::Straight] = nfs*pMaterial->GetStrand(span,gdr,pgsTypes::Straight)->GetNominalArea();
+         Aps[pgsTypes::Harped]   = nfh*pMaterial->GetStrand(span,gdr,pgsTypes::Harped)->GetNominalArea();
+         Aps[pgsTypes::Temporary]= nft*pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetNominalArea();
+
+         Float64 aps = Aps[pgsTypes::Straight] + Aps[pgsTypes::Harped] + Aps[pgsTypes::Temporary];
+
+         total_e = (he*Aps[pgsTypes::Harped] + se*Aps[pgsTypes::Straight] + te*Aps[pgsTypes::Temporary]) / aps;
+      }
 
       haul_artifact.SetEffectiveHorizPsForce(total_ps_force);
       haul_artifact.SetEccentricityPsForce(total_e);

@@ -42,7 +42,8 @@ static char THIS_FILE[] = __FILE__;
 CPGSuperCommandLineInfo::CPGSuperCommandLineInfo() :
 CEAFCommandLineInfo(),
 m_bDo1250Test(false),
-m_SubdomainId(0)
+m_SubdomainId(0),
+m_bSetUpdateLibrary(false)
 {
    m_Count=0;
 }
@@ -87,6 +88,36 @@ void CPGSuperCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLa
             bMyParameter       = true;
          }
       }
+      else if ( strParam.Left(6).CompareNoCase("SetLib") == 0 )
+      {
+         // Set to server/library and update
+         // parse server and publisher name
+         int nch = strParam.GetLength();
+         CString rght = strParam.Right(nch-7);
+
+         int curPos = 0;
+         m_CatalogServerName = rght.Tokenize(_T(":"), curPos);
+         if (m_CatalogServerName.IsEmpty())
+         {
+            m_bError = TRUE;
+         }
+
+         m_PublisherName = rght.Tokenize(_T(":"), curPos);
+         if (m_PublisherName.IsEmpty())
+         {
+            m_bError = TRUE;
+         }
+
+         if (m_bError==TRUE)
+         {
+            AfxMessageBox("Error parsing SetLib command - correct format is /SetLib=ServerName:PublisherName");
+            return;
+         }
+
+         m_bSetUpdateLibrary = true;
+         m_bCommandLineMode = true;
+         bMyParameter       = true;
+      }
    }
 
    if ( !bMyParameter )
@@ -106,6 +137,7 @@ CString CPGSuperCommandLineInfo::GetErrorMessage()
    strMsg.Format("PGSuper was started with invalid command line options. Valid command line options are:\n%s\n%s\n\n%s",
       "PGSuper filename.pgs",
       "PGSuper /TestR filename.pgs",
+      "PGSuper /SetLib=ServerName:PublisherName",
       "See Command Line Options in the PGSuper User Guide for more information");
    return strMsg;
 }

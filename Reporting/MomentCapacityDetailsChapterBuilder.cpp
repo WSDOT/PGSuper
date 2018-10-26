@@ -287,9 +287,9 @@ void write_moment_data_table(IBroker* pBroker,
    (*table)(0,col++) << COLHDR("d" << Sub("t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    if ( bPositiveMoment )
    {
-      (*table)(0,col++) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(RPT_STRESS("pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,col++) << Sub2(symbol(epsilon),"psi") << rptNewLine << "x 1000";
-      (*table)(0,col++) << COLHDR("f" << Sub("ps,avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(RPT_STRESS("ps,avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,col++) << "PPR";
    }
    (*table)(0,col++) << symbol(phi);
@@ -412,14 +412,14 @@ void write_crack_moment_data_table(IBroker* pBroker,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR( Sub2("f","r"), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2)  << COLHDR( Sub2("f","cpe"), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,1)  << COLHDR( RPT_STRESS("r"), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2)  << COLHDR( RPT_STRESS("cpe"), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,3)  << COLHDR( Sub2("S","nc"), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
    (*table)(0,4)  << COLHDR( Sub2("S","c"), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
    (*table)(0,5)  << COLHDR( Sub2("M","dnc"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,6)  << COLHDR( Sub2("M","cr"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    if ( bAfter2002 )
-      (*table)(0,7)  << COLHDR(Sub2("S","c") << Sub2("f","r"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,7)  << COLHDR(Sub2("S","c") << RPT_STRESS("r"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
@@ -466,9 +466,9 @@ void write_crack_moment_data_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
-   *pParagraph << Sub2("f","r") << " = " << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
+   *pParagraph << RPT_STRESS("r") << " = " << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
 
-   *pParagraph << Sub2("f","cpe") << " = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads." << rptNewLine;
+   *pParagraph << RPT_STRESS("cpe") << " = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads." << rptNewLine;
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fcpe.png") << rptNewLine;
    *pParagraph << Sub2("S","nc") << " = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads" << rptNewLine;
    *pParagraph << Sub2("S","c") << " = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads" << rptNewLine;

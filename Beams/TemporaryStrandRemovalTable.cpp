@@ -58,7 +58,7 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
 
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
    double Ec  = pMaterial->GetEcGdr(span,gdr);
-   double Ep  = pMaterial->GetStrand(span,gdr)->GetE();
+   double Ep  = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    double nEffectiveStrands;
@@ -127,8 +127,8 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    (*table)(0,2) << COLHDR(Sub2("A","g"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
    (*table)(0,3) << COLHDR(Sub2("I","g"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
    (*table)(0,4) << COLHDR(Sub2("e","perm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*table)(0,5) << COLHDR(Sub2("f","ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,6) << COLHDR(symbol(DELTA) << Sub2("f","ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,5) << COLHDR(RPT_STRESS("ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS("ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

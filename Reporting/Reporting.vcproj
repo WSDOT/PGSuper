@@ -129,7 +129,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories=".\;..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;"
-				PreprocessorDefinitions="BUILDREPORTINGLIB;xIGNORE_2007_CHANGES;WIN32;_WINDOWS;NDEBUG;_USRDLL"
+				PreprocessorDefinitions="BUILDREPORTINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"

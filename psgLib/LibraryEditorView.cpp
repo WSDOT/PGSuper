@@ -287,6 +287,7 @@ void CLibraryEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 void CLibraryEditorView::OnDestroy()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
+   m_LibraryImages.DeleteImageList();
+   m_StateImages.DeleteImageList();
    CTreeView::OnDestroy();
 }

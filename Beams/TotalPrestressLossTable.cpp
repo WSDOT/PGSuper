@@ -163,25 +163,25 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    if ( !bIgnoreInitialRelaxation )
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if ( 0 < NtMax && girderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    if ( 0 < NtMax )
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if ( !bIgnoreElasticGain )
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pED"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pED"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pLT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pLT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << "% Loss";
 
    table->m_NtMax = NtMax;

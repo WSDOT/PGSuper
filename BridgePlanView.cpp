@@ -567,7 +567,8 @@ void CBridgePlanView::UpdateGirderTooltips()
                         FormatDimension(fc, pDisplayUnits->GetStressUnit())
                         );
 
-         const matPsStrand* pStrand = pBridgeMaterial->GetStrand(spanIdx,girderIdx);
+         const matPsStrand* pStrand = pBridgeMaterial->GetStrand(spanIdx,girderIdx,pgsTypes::Permanent);
+         const matPsStrand* pTempStrand = pBridgeMaterial->GetStrand(spanIdx,girderIdx,pgsTypes::Temporary);
 
          StrandIndexType Ns, Nh, Nt, Nsd;
          Ns = pStrandGeom->GetNumStrands(spanIdx,girderIdx,pgsTypes::Straight);
@@ -580,13 +581,13 @@ void CBridgePlanView::UpdateGirderTooltips()
          {
             if ( Nsd == 0 )
             {
-               strMsg4.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n# Temporary: %2d",
-                               pStrand->GetName().c_str(),Ns,Nh,Nt);
+               strMsg4.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+                               pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
             }
             else
             {
-               strMsg4.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n# Temporary: %2d",
-                               pStrand->GetName().c_str(),Ns,Nsd,Nh,Nt);
+               strMsg4.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+                               pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
             }
          }
          else

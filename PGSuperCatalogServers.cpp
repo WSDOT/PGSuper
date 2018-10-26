@@ -60,8 +60,16 @@ const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(const CString& st
 {
    ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus")));
    Servers::const_iterator found = m_Servers.find( target );
-   ATLASSERT(found != m_Servers.end());
-   return ( found == m_Servers.end() ? m_Servers.begin()->get() : found->get() );
+
+   if(found == m_Servers.end())
+   {
+      ATLASSERT(0);
+      return NULL;
+   }
+   else
+   {
+      return ( found == m_Servers.end() ? m_Servers.begin()->get() : found->get() );
+   }
 }
 
 void CPGSuperCatalogServers::RemoveServer(long index)

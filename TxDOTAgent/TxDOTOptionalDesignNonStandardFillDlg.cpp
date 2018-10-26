@@ -191,7 +191,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::UpdateNoStrandsCtrls()
    if (clnos==0)
       msg.Format("No. Strands = %d", clnos);
    else
-      msg.Format("No. Strands = %d\nEcc = %.3f in", clnos,m_yBottom-clcg);
+      msg.Format("No. Strands = %d\ne = %.3f in", clnos,m_yBottom-clcg);
 
    m_CLNoStrandsCtrl.SetWindowTextA(msg);
 
@@ -202,7 +202,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::UpdateNoStrandsCtrls()
    if (endnos==0)
       msg.Format("No. Strands = %d", endnos);
    else
-      msg.Format("No. Strands = %d\nEcc = %.3f in", endnos,m_yBottom-endcg);
+      msg.Format("No. Strands = %d\ne = %.3f in", endnos,m_yBottom-endcg);
 
    m_EndsNoStrandsCtrl.SetWindowTextA(msg);
 }

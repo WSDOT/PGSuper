@@ -43,8 +43,12 @@ if (st!=0)
 var currSpan="All";
 var currGirder="EI";
 
-var OldCacheLibraryPathRegistrySetting = new String;
-var NewLibraryPathRegistrySetting = new String(PGSuperDrive+"\\Arp\\PGSuper\\RegressionTest\\PGSuperRegTestLibrary.lbr");
+var OldCatalogServer = new String;
+var NewCatalogServer = new String("Regression");
+var OldCatalogPublisher = new String;
+var NewCatalogPublisher = new String("Regression");
+
+var OldTxDOTAgentState = new String;
 
 var Application = PGSuperDrive+"\\ARP\\PGSuper\\RegFreeCOM\\"+PGSuperVersion+"\\PGSuper.exe ";
 var StartFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest" );
@@ -61,19 +65,9 @@ if (!FSO.FileExists(Application))
    WScript.Quit(1);
 }
 
-if (!FSO.FileExists(NewLibraryPathRegistrySetting))
-{
-   DisplayMessage("Error - Library File: "+NewLibraryPathRegistrySetting+" does not exist - Script Terminated");
-   CleanUpTest();
-   WScript.Quit(1);
-}
-
 // First clean up results from any old runs and set up environment
 var CurrentFolder = StartFolderSpec;
-if (ExecuteCommands)
-{
-    InitTest(CurrentFolder);
-}
+InitTest(CurrentFolder);
 
 var CurrCommand="TestR";
 // DisplayMessage("Before RunTest, Command is " + CurrCommand);
@@ -82,8 +76,9 @@ RunTest(CurrentFolder,CurrCommand);
 if(ExecuteCommands)
 {
     CheckResults(CurrentFolder);
-    CleanUpTest();
 }
+
+CleanUpTest();
 
 var st = 0;
 if (!ErrorsExist)
@@ -120,58 +115,123 @@ function RunTest (currFolder, currCommand)
 
       // Need to parse current command here if in folder name
       var newCommand = ParseCommandFromFolderName(currCommand, subFolder.Name);
-
-      var fc = new Enumerator(subFolder.Files);
-      for (; !fc.atEnd(); fc.moveNext())
+      
+      if (newCommand!="TxToga")
       {
-        s = new String(fc.item());
+          // Not TOGA - get pgsuper files
+          var fc = new Enumerator(subFolder.Files);
+          for (; !fc.atEnd(); fc.moveNext())
+          {
+             s = new String(fc.item());
+            
+            idx = s.indexOf(".pgs");
+            if (-1 != idx)
+            {
+               // Get span and girder from file name
+               var newSG = new SpanGirder();
+               newSG = ParseGirderFromFileName(s, currSpan, currGirder);
 
-        idx = s.indexOf(".pgs");
-        if (-1 != idx)
-        {
-           // Get span and girder from file name
-           var newSG = new SpanGirder();
-           newSG = ParseGirderFromFileName(s, currSpan, currGirder);
+               var outFile= new String;
+               if (newCommand!="TestR")
+               {
+                  outFile = s.substring(0,idx) + "@" + newCommand + "_" + newSG.m_Span + "_" + newSG.m_Girder + ".Test";
+                  cmd = Application + " /" + newCommand + " " + s + " " + outFile + " " + newSG.m_Span + " " + newSG.m_Girder;
+               }
+               else
+               {
+                  // Strip output file name when 1250 is used (1250's generate their own file names)
+                  outFile = "";
+                  cmd = Application + " /" + newCommand + " " + s; 
+               }
 
-           var outFile= new String;
-           if (newCommand!="TestR")
-           {
-              outFile = s.substring(0,idx) + "@" + newCommand + "_" + newSG.m_Span + "_" + newSG.m_Girder + ".Test";
-              cmd = Application + " /" + newCommand + " " + s + " " + outFile + " " + newSG.m_Span + " " + newSG.m_Girder;
-           }
-           else
-           {
-              // Strip output file name when 1250 is used (1250's generate their own file names)
-              outFile = "";
-              cmd = Application + " /" + newCommand + " " + s; 
-           }
+               if(ExecuteCommands)
+               {
+                   DisplayMessage("Running: "+ cmd);
+                   DisplayMessage("");
+                   st = wsShell.Run(cmd,1,"TRUE");
+               }
+               else
+               {
+                   DisplayMessage(cmd);
+               }
+            }
+         }   
+     }
+     else
+     {
+         // testing TOGA - need to set library to txdot
+         SetPGSuperLibrary("TxDOT", "TxDOT");
+          
+         var fc = new Enumerator(subFolder.Files);
+         for (; !fc.atEnd(); fc.moveNext())
+         {
+            s = new String(fc.item());
+         
+            idx = s.indexOf(".toga");
+            if (-1 != idx)
+            {
+               var outFile= new String;
+               outFile = s.substring(0,idx) + "@" + newCommand + ".Test";
+               cmd = Application + " /" + newCommand + " " + s + " " + outFile;
 
-           if(ExecuteCommands)
-           {
-               DisplayMessage("Running: "+ cmd);
-               DisplayMessage("");
-               st = wsShell.Run(cmd,1,"TRUE");
-           }
-           else
-           {
-               DisplayMessage(cmd);
-           }
-        }
+               if(ExecuteCommands)
+               {
+                   DisplayMessage("Running: "+ cmd);
+                   DisplayMessage("");
+                   st = wsShell.Run(cmd,1,"TRUE");
+               }
+               else
+               {
+                   DisplayMessage(cmd);
+               }
+            }
+         }
+         
+         // Back to current testing library
+         SetPGSuperLibrary(NewCatalogServer, NewCatalogPublisher);
      }
 
+     // Recurse
      RunTest(subFolder,newCommand);
    }
 }
 
 function InitTest (currFolder) 
 {
-   // clean up temporary files 
-   CleanFolder(currFolder);
+    if (ExecuteCommands)
+    {
+       // clean up temporary files - only when actual test
+       CleanFolder(currFolder);
+    }
    
-   // get current path for master library and replace it with local value
-   OldCacheLibraryPathRegistrySetting = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryCache");
-   wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryCache",
-                    NewLibraryPathRegistrySetting);
+   // Save initial server and publisher
+   OldCatalogServer = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\CatalogServer");
+   OldCatalogPublisher = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\Publisher");
+   
+   // Run PGSuper to set new server and publisher
+   SetPGSuperLibrary(NewCatalogServer, NewCatalogPublisher);
+
+   // Ensure TxDOT Extension Agent is enabled. It is required for the /Tx commands
+   OldTxDOTAgentState = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}");
+   if ( OldTxDOTAgentState != "Enabled" )
+        wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}","Enabled","REG_SZ");
+}
+
+function SetPGSuperLibrary(server, publisher)
+{
+   var cmd = new String;
+   cmd = Application + " /SetLib=" + server + ":" + publisher;
+
+   if(ExecuteCommands)
+   {
+       DisplayMessage("Running: "+ cmd);
+       DisplayMessage("");
+       st = wsShell.Run(cmd,1,"TRUE");
+   }
+   else
+   {
+       DisplayMessage(cmd);
+   }
 }
 
 function CleanFolder(currFolder)
@@ -209,12 +269,12 @@ function CleanFolder(currFolder)
 
 function CleanUpTest() 
 {
-   var wsHShell
-   wsShell = new ActiveXObject("WScript.Shell");
-   
-   // restore registry to where it was before we started
-   wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryCache",
-                OldCacheLibraryPathRegistrySetting);
+   // Restore registry to where it was before we started
+   // Run PGSuper to set new server and publisher
+   SetPGSuperLibrary(OldCatalogServer, OldCatalogPublisher);
+
+   // TxDOT Extension Agent
+   wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}", OldTxDOTAgentState, "REG_SZ");
 }
 
 function CheckResults(currFolder) 
@@ -296,6 +356,10 @@ function ParseCommandFromFolderName(currCommand, folderName)
      else if (s3=="125")
      {
         cmd = "TestR"; // only full regression for now
+     }
+     else if (s=="TXTOGA")
+     {
+        cmd = "TxToga";
      }
      else
      {

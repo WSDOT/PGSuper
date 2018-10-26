@@ -1,0 +1,4 @@
+ ftinp  ftcalc ftfact fbinp  fbcalc fbfact  muinp    muorig   mufabr  fciinp fcireq fc inp fc req cbr orig cbr fabr Shear
+ ------ ------ ------ ------ ------ ------ -------- -------- -------- ------ ------ ------ ------ -------- -------- ------- 
+   0.92   0.90   1.02  -1.09  -1.02   1.07  2284.00  2282.09  2347.71   4.00   4.00   5.00   5.00   0.0597   0.0501      Ok 
+

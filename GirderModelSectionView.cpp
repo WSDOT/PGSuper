@@ -349,7 +349,7 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSuperDoc* pDoc,IBroke
 
 
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
-   const matPsStrand* pStrand = pBridgeMaterial->GetStrand(span,girder);
+   const matPsStrand* pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Straight);
    double diameter = pStrand->GetNominalDiameter();
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
@@ -401,6 +401,9 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSuperDoc* pDoc,IBroke
    ATLASSERT(pHarpedDL);
    pHarpedDL->Clear();
 
+   pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Harped);
+   diameter = pStrand->GetNominalDiameter();
+
    points.Release();
    pStrandGeom->GetStrandPositions(poi, pgsTypes::Harped,&points);
    points->get_Count(&nStrandPoints);
@@ -423,6 +426,9 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSuperDoc* pDoc,IBroke
    pDispMgr->FindDisplayList(TEMP_STRAND_LIST,&pTempDL);
    ATLASSERT(pTempDL);
    pTempDL->Clear();
+
+   pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Temporary);
+   diameter = pStrand->GetNominalDiameter();
 
    points.Release();
    pStrandGeom->GetStrandPositions(poi, pgsTypes::Temporary,&points);

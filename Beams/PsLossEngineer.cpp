@@ -1685,7 +1685,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
       (*table)(0,0) << "t" << rptNewLine << "(Days)";
       (*table)(0,1) << COLHDR(RPT_FPJ, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,2) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,3) << COLHDR(symbol(DELTA) << Sub2("f","pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       (*table)(1,0) << ::ConvertFromSysUnits( pLosses->GetInitialAge(), unitMeasure::Day );
       (*table)(1,1) << stress.SetValue( pLosses->GetFpjTemporary() );
@@ -1699,7 +1699,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
    (*table)(0,0) << "t" << rptNewLine << "(Days)";
    (*table)(0,1) << COLHDR(RPT_FPJ, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,2) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR(symbol(DELTA) << Sub2("f","pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    (*table)(1,0) << ::ConvertFromSysUnits( pLosses->GetInitialAge(), unitMeasure::Day );
    (*table)(1,1) << stress.SetValue( pLosses->GetFpjPermanent() );
@@ -1765,11 +1765,11 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
       if ( shipping_losses < 0 )
       {
          // % of long term
-         *pParagraph << symbol(DELTA) << Sub2("f","pLTH") << " = " << -1*shipping_losses << "(" << symbol(DELTA) << Sub2("f","pLT") << ")" << rptNewLine;
+         *pParagraph << symbol(DELTA) << RPT_STRESS("pLTH") << " = " << -1*shipping_losses << "(" << symbol(DELTA) << RPT_STRESS("pLT") << ")" << rptNewLine;
       }
 
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          true );
-      *pParagraph << symbol(DELTA) << Sub2("f","pLTH") << " = " << stress.SetValue(details.pLosses->PermanentStrand_TimeDependentLossesAtShipping()) << rptNewLine;
+      *pParagraph << symbol(DELTA) << RPT_STRESS("pLTH") << " = " << stress.SetValue(details.pLosses->PermanentStrand_TimeDependentLossesAtShipping()) << rptNewLine;
    }
    else
    {
@@ -1794,11 +1794,11 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
       (*table)(0,1) << Sub2(symbol(gamma),"st");
       (*table)(0,2) << "Relative" << rptNewLine << "Humidity (%)";
       (*table)(0,3) << Sub2(symbol(gamma),"h");
-      (*table)(0,4) << COLHDR(Sub2("f","pi"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,4) << COLHDR(RPT_STRESS("pi"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,5) << COLHDR(Sub2("A","ps"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
       (*table)(0,6) << COLHDR(Sub2("A","g"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,7) << COLHDR(symbol(DELTA) << Sub2("f","pR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,8) << COLHDR(symbol(DELTA) << Sub2("f","pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS("pR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS("pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       (*table)(1,0) << stress.SetValue( details.pLosses->GetFci() );
       (*table)(1,1) << scalar.SetValue( details.ApproxLosses2005.GetStrengthFactor() );
@@ -1885,7 +1885,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          true );
       *pParagraph << RPT_FC << " = " << stress.SetValue(details.pLosses->GetFc() ) << rptNewLine;
       *pParagraph << "PPR = " << details.ApproxLosses.GetPPR() << rptNewLine;
-      *pParagraph << symbol(DELTA) << Sub2("f","pLT") << " = " << stress.SetValue( details.pLosses->TimeDependentLosses() ) << rptNewLine;
+      *pParagraph << symbol(DELTA) << RPT_STRESS("pLT") << " = " << stress.SetValue( details.pLosses->TimeDependentLosses() ) << rptNewLine;
    }
    else
    {
@@ -1909,11 +1909,11 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       (*table)(0,1) << Sub2(symbol(gamma),"st");
       (*table)(0,2) << "Relative" << rptNewLine << "Humidity (%)";
       (*table)(0,3) << Sub2(symbol(gamma),"h");
-      (*table)(0,4) << COLHDR(Sub2("f","pi"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,4) << COLHDR(RPT_STRESS("pi"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,5) << COLHDR(Sub2("A","ps"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
       (*table)(0,6) << COLHDR(Sub2("A","g"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,7) << COLHDR(symbol(DELTA) << Sub2("f","pR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,8) << COLHDR(symbol(DELTA) << Sub2("f","pLT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS("pR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS("pLT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       (*table)(1,0) << stress.SetValue( details.pLosses->GetFci() );
       (*table)(1,1) << scalar.SetValue( details.ApproxLosses2005.GetStrengthFactor() );
@@ -2017,11 +2017,15 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *pPjT = config.Pjack[pgsTypes::Temporary];
    *pNt  = config.Nstrands[pgsTypes::Temporary];
 
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr,pgsTypes::Straight);
    CHECK(pstrand);
    *pGrade = pstrand->GetGrade();
    *pType  = pstrand->GetType();
    *paps   = pstrand->GetNominalArea();
+   Float64 Aps[3];
+   Aps[pgsTypes::Straight] = *paps;
+   Aps[pgsTypes::Harped]   = pGirderData->GetStrandMaterial(span,gdr,pgsTypes::Harped)->GetNominalArea();
+   Aps[pgsTypes::Temporary]= pGirderData->GetStrandMaterial(span,gdr,pgsTypes::Temporary)->GetNominalArea();
 
    *pGirderLength = pBridge->GetGirderLength( span, gdr);
    *pSpanLength   = pBridge->GetSpanLength( span, gdr );
@@ -2054,8 +2058,8 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
          + pBridge->GetStructuralSlabDepth(poi)/2;
    *ped *= -1;
 
-   *pApsPerm = (*pNs+*pNh)*(*paps);
-   *pApsTTS  = (*pNt)*(*paps);
+   *pApsPerm = Aps[pgsTypes::Straight]*(*pNs) + Aps[pgsTypes::Harped]*(*pNh);
+   *pApsTTS  = Aps[pgsTypes::Temporary]*(*pNt);
 
    *pGdrCreepK1 = pMaterial->GetCreepK1Gdr(span,gdr);
    *pGdrCreepK2 = pMaterial->GetCreepK2Gdr(span,gdr);

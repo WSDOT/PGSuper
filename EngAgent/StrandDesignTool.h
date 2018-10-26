@@ -169,7 +169,7 @@ public:
 
    Float64 ComputeEccentricity(const pgsPointOfInterest& poi, pgsTypes::Stage eccStage);
 
-   Float64 GetTransferLength() const;
+   Float64 GetTransferLength(pgsTypes::StrandType strandType) const;
 
    // Set end zone strand configuration to maximize debonding or harping depending on design type
    bool ResetEndZoneStrandConfig();
@@ -373,11 +373,11 @@ private:
    Float64                m_MinSlabOffset;
 
    // values cached for performance
-   Float64 m_Aps;
+   Float64 m_Aps[3]; // area of straight, harped, and temporary strand (use pgsTypes::StrandType enum)
    Float64 m_GirderLength;
    Float64 m_SpanLength;
    Float64 m_StartConnectionLength;
-   Float64 m_XFerLength;
+   Float64 m_XFerLength[3];
 
    // mid-zone locations
    Float64 m_lftMz;

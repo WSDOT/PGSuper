@@ -60,7 +60,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
    double Ec = pMaterial->GetEcGdr(span,gdr);
-   double Ep = pMaterial->GetStrand(span,gdr)->GetE();
+   double Ep = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent)->GetE();
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -80,15 +80,15 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    *pParagraph << table << rptNewLine;
 
    (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR("M" << Sub("Slab") << " + M" << Sub("Dia"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,2) << COLHDR("M" << Sub("sidl"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,3) << COLHDR("e" << Sub("perm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR("I" << Sub("g"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,5) << COLHDR("I" << Sub("c"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,6) << COLHDR("Y" << Sub("bc"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,7) << COLHDR("Y" << Sub("bg"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,8) << COLHDR(symbol(DELTA) << "f'" << Sub("cd"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,9) << COLHDR(symbol(DELTA) << "f" << Sub("pED"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,1) << COLHDR(Sub2("M","Slab") << " + " << Sub2("M","Dia"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,2) << COLHDR(Sub2("M","sidl"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,3) << COLHDR(Sub2("e","perm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4) << COLHDR(Sub2("I","g"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,5) << COLHDR(Sub2("I","c"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,6) << COLHDR(Sub2("Y","bc"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,7) << COLHDR(Sub2("Y","bg"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,8) << COLHDR(symbol(DELTA) << italic(ON) << Sub2("f'","cd") << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,9) << COLHDR(symbol(DELTA) << RPT_STRESS("pED"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    return table;
 }

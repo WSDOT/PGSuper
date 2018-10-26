@@ -184,19 +184,19 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          pTable->SetColumnSpan(0,12,-1);
          (*pTable)(0,7) << "Debonded Strands " << symbol(kappa) << " = " << debonded_details.k;
 
-         (*pTable)(1,1) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,2) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,1) << COLHDR(RPT_STRESS("ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,2) << COLHDR(RPT_STRESS("pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*pTable)(1,3) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          (*pTable)(1,4) << COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          (*pTable)(1,5) << COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,6) << Sub2("f","px") << "/" << Sub2("f","ps");
+         (*pTable)(1,6) << RPT_STRESS("px") << "/" << RPT_STRESS("ps");
 
-         (*pTable)(1,7) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,8) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,7) << COLHDR(RPT_STRESS("ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,8) << COLHDR(RPT_STRESS("pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*pTable)(1,9) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          (*pTable)(1,10)<< COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          (*pTable)(1,11)<< COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,12)<< Sub2("f","px") << "/" << Sub2("f","ps");
+         (*pTable)(1,12)<< RPT_STRESS("px") << "/" << RPT_STRESS("ps");
 
          GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
@@ -258,7 +258,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
          (*pChapter) << pParagraph;
-         (*pParagraph) << Sub2("f","px") << "/" << Sub2("f","ps") << " = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)" << rptNewLine;
+         (*pParagraph) << RPT_STRESS("px") << "/" << RPT_STRESS("ps") << " = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)" << rptNewLine;
       }
    }
 

@@ -75,7 +75,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "[5.9.5.4.3a] Shrinkage of Girder Concrete : " << symbol(DELTA) << Sub2("f","pSD") << rptNewLine;
+   *pParagraph << "[5.9.5.4.3a] Shrinkage of Girder Concrete : " << symbol(DELTA) << RPT_STRESS("pSD") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -202,7 +202,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*table)(0,3) << COLHDR(Sub2("I","c"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
    (*table)(0,4) << COLHDR(Sub2("e","pc"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*table)(0,5) << Sub2("K","df");
-   (*table)(0,6) << COLHDR(symbol(DELTA) << Sub2("f","pSD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS("pSD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

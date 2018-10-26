@@ -140,7 +140,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
    if ( bAfter1999 )
    {
       GET_IFACE(IBridgeMaterial,pMaterial);
-      const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
+      const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
 
       GET_IFACE(IPrestressForce,pPSForce);
       //double xfer = pPSForce->GetXferLengthAdjustment(poi);
@@ -467,7 +467,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    pscd->fc = pMaterial->GetFcGdr(span,gdr);
    pscd->Ec = pMaterial->GetEcGdr(span,gdr);
 
-   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
+   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
    ATLASSERT(pStrand!=0);
    pscd->Ep = pStrand->GetE();
 

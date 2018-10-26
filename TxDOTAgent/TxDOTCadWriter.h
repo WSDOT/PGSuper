@@ -65,6 +65,7 @@ static const int BF_SIZ=256; // buffer size
 // Main External functions that write the file
 int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, TxDOTCadExportFormatType format, bool designSucceeded);
 int TxDOT_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr);
+int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker);
 
 
 // Local utility class that does the real writing

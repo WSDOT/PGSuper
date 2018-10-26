@@ -148,7 +148,15 @@ void CTxDOTOptionalDesignView::OnInitialUpdate()
    // height of menus,toolbars, other stuff
    int rjunk = rthis.top - rframe.top; // (rframe.Height() - rthis.Height());
 
-   pFrame->SetWindowPos(NULL,0,0,rects.Width(),rects.Height()+rjunk,SWP_NOMOVE | SWP_NOZORDER);
+   // Minimum size so we fit
+   int minWid = rects.Width();
+   int minHgt = rects.Height()+rjunk;
+
+   // Don't shrink window, only grow
+   minWid = max(minWid, rframe.Width());
+   minHgt = max(minHgt, rframe.Height());
+
+   pFrame->SetWindowPos(NULL,0,0,minWid,minHgt,SWP_NOMOVE | SWP_NOZORDER);
 
    // no scrolling
    this->SetScaleToFitSize(CSize(1,1));

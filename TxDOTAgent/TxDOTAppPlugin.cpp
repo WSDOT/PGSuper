@@ -124,7 +124,8 @@ BOOL CTxDOTAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 
    // If we get this far and there is one parameter and it isn't a file name and it isn't handled -OR-
    // if there is more than one parameter and it isn't handled there is something wrong
-   if ( ((1 == txCmdInfo.m_Count && txCmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen) || (1 <  txCmdInfo.m_Count)) && !bHandled )
+   if ( (1 == txCmdInfo.m_Count && txCmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen) || 
+        (1 <  txCmdInfo.m_Count && !bHandled ) )
    {
       cmdInfo.m_bError = TRUE;
       bHandled = TRUE;

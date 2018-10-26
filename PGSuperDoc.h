@@ -242,7 +242,7 @@ protected:
    virtual void HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName );
    virtual void HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName );
 
-   virtual long ConvertTheDocument(LPCTSTR lpszPathName, CString* realFileName);
+   virtual HRESULT ConvertTheDocument(LPCTSTR lpszPathName, CString* realFileName);
    virtual void HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName );
 
    virtual CString GetRootNodeName();

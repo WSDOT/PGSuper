@@ -1551,9 +1551,9 @@ void CEngAgentImp::ClearDesignLosses()
 // IPrestressForce
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetPjackMax(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands)
+Float64 CEngAgentImp::GetPjackMax(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType,StrandIndexType nStrands)
 {
-   return m_PsForceEngineer.GetPjackMax(span,gdr,nStrands);
+   return m_PsForceEngineer.GetPjackMax(span,gdr,strandType,nStrands);
 }
 
 //-----------------------------------------------------------------------------
@@ -1563,9 +1563,9 @@ Float64 CEngAgentImp::GetPjackMax(SpanIndexType span,GirderIndexType gdr,const m
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetXferLength(SpanIndexType span,GirderIndexType gdr)
+Float64 CEngAgentImp::GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
 {
-   return m_PsForceEngineer.GetXferLength(span,gdr);
+   return m_PsForceEngineer.GetXferLength(span,gdr,strandType);
 }
 
 //-----------------------------------------------------------------------------

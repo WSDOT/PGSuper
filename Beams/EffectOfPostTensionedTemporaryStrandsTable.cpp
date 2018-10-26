@@ -65,7 +65,7 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
    // gather some data
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
    double Eci = (tempStrandUsage == pgsTypes::ttsPTBeforeShipping ? pMaterial->GetEcGdr(span,gdr) : pMaterial->GetEciGdr(span,gdr));
-   double Ep  = pMaterial->GetStrand(span,gdr)->GetE();
+   double Ep  = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    double nEffectiveStrands;
@@ -110,13 +110,13 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
    (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,2) << COLHDR("x",rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,3) << COLHDR(Sub2("f","pt max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(Sub2("f","pt min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,5) << COLHDR(Sub2("f","pt avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR(RPT_STRESS("pt max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4) << COLHDR(RPT_STRESS("pt min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,5) << COLHDR(RPT_STRESS("pt avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,6) << COLHDR(Sub2("P","pt avg"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
    (*table)(0,7) << COLHDR(Sub2("e","perm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,8) << COLHDR(Sub2("f","cgpp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,9) << COLHDR(symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,8) << COLHDR(RPT_STRESS("cgpp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,9) << COLHDR(symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

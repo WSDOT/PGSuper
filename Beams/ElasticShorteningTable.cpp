@@ -70,7 +70,8 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
    double Eci = pMaterial->GetEciGdr(span,gdr);
-   double Ep  = pMaterial->GetStrand(span,gdr)->GetE();
+   double Epp = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent)->GetE();
+   double Ept = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -94,7 +95,15 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       *pParagraph << Sub2("I","g") << " = " << table->mom_inertia.SetValue(Ig) << rptNewLine;
    }
 
-   *pParagraph << Sub2("E","p") << " = " << table->mod_e.SetValue(Ep) << rptNewLine;
+   if ( bTemporaryStrands )
+   {
+      *pParagraph << Sub2("E","p") << " (Permanent) = " << table->mod_e.SetValue(Epp) << rptNewLine;
+      *pParagraph << Sub2("E","p") << " (Temporary) = " << table->mod_e.SetValue(Ept) << rptNewLine;
+   }
+   else
+   {
+      *pParagraph << Sub2("E","p") << " = " << table->mod_e.SetValue(Epp) << rptNewLine;
+   }
    *pParagraph << Sub2("E","ci") << " = " << table->mod_e.SetValue(Eci) << rptNewLine;
    table->mod_e.ShowUnitTag(false);
    table->area.ShowUnitTag(false);
@@ -157,19 +166,19 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       // perm
       col -= 2;
       (*table)(1,col++) << COLHDR(Sub2("e","p"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       // temp
       (*table)(1,col++) << COLHDR(Sub2("e","t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
       (*table)(0,col++) << COLHDR(Sub2("e","p"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -187,13 +196,13 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       if ( bTemporaryStrands )
       {
          *pParagraph << "P is the prestressing force at transfer" << " : "
-                     << "P = " << Sub2("A","p") << "(" << Sub2("f","pjp") << " - " << symbol(DELTA) << Sub2("f","pR0p") << " - " << symbol(DELTA) << Sub2("f","pESp") << ")"
-                     << "  + " << Sub2("A","t") << "(" << Sub2("f","pjt") << " - " << symbol(DELTA) << Sub2("f","pR0t") << " - " << symbol(DELTA) << Sub2("f","pESt") << ")" << rptNewLine;
+                     << "P = " << Sub2("A","p") << "(" << RPT_STRESS("pjp") << " - " << symbol(DELTA) << RPT_STRESS("pR0p") << " - " << symbol(DELTA) << RPT_STRESS("pESp") << ")"
+                     << "  + " << Sub2("A","t") << "(" << RPT_STRESS("pjt") << " - " << symbol(DELTA) << RPT_STRESS("pR0t") << " - " << symbol(DELTA) << RPT_STRESS("pESt") << ")" << rptNewLine;
       }
       else
       {
          *pParagraph << "P is the prestressing force at transfer" << " : "
-                     << "P = " << Sub2("A","ps") << "(" << Sub2("f","pj") << " - " << symbol(DELTA) << Sub2("f","pR0") << " - " << symbol(DELTA) << Sub2("f","pES") << ")" << rptNewLine;
+                     << "P = " << Sub2("A","ps") << "(" << RPT_STRESS("pj") << " - " << symbol(DELTA) << RPT_STRESS("pR0") << " - " << symbol(DELTA) << RPT_STRESS("pES") << ")" << rptNewLine;
       }
       *pParagraph << rptNewLine;
    }
@@ -205,13 +214,13 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       if ( bTemporaryStrands )
       {
          *pParagraph << "P is the prestressing force at transfer" << " : "
-                     << "P = " << Sub2("A","p") << "(" << Sub2("f","pjp") << " - " << symbol(DELTA) << Sub2("f","pESp") << ")"
-                     << "  + " << Sub2("A","t") << "(" << Sub2("f","pjt") << " - " << symbol(DELTA) << Sub2("f","pESt") << ")" << rptNewLine;
+                     << "P = " << Sub2("A","p") << "(" << RPT_STRESS("pjp") << " - " << symbol(DELTA) << RPT_STRESS("pESp") << ")"
+                     << "  + " << Sub2("A","t") << "(" << RPT_STRESS("pjt") << " - " << symbol(DELTA) << RPT_STRESS("pESt") << ")" << rptNewLine;
       }
       else
       {
          *pParagraph << "P is the prestressing force at transfer" << " : "
-                     << "P = " << Sub2("A","ps") << "(" << Sub2("f","pj") << " - " << symbol(DELTA) << Sub2("f","pES") << ")" << rptNewLine;
+                     << "P = " << Sub2("A","ps") << "(" << RPT_STRESS("pj") << " - " << symbol(DELTA) << RPT_STRESS("pES") << ")" << rptNewLine;
       }
       *pParagraph << rptNewLine;
    }

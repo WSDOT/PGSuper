@@ -1062,8 +1062,7 @@ BOOL CPGSuperDoc::OpenTheDocument(LPCTSTR lpszPathName)
    return TRUE;
 }
 
-
-long CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFileName)
+HRESULT CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFileName)
 {
    // Open the document and look at the second line
    // If the version tag is 0.80, then the document needs to be converted
@@ -1101,9 +1100,8 @@ long CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFileNam
             ::SysFreeString(bstrPathName);
             ::SysFreeString(bstrRealName);
             return E_FAIL;
-            return -1;
          }
-         else if (convert_status==1)
+         else if (convert_status == 1)
          {
             // file was converted
             ::SysFreeString(bstrPathName);
@@ -2164,9 +2162,9 @@ void CPGSuperDoc::OnImportProjectLibrary()
       GET_IFACE( IImportProjectLibrary, pImport );
 
       CString real_file_name; // name of actual file to be read may be different than lpszPathName
-      long convert_status = ConvertTheDocument(rPath, &real_file_name);
+      HRESULT convert_status = ConvertTheDocument(rPath, &real_file_name);
       // convert document. if file was converted, then we need to delete the converted file at the end
-      if ( -1== convert_status)
+      if ( FAILED(convert_status) )
       {
          HandleOpenDocumentError( STRLOAD_E_INVALIDFORMAT, rPath );
          ASSERT(FALSE);
@@ -2219,7 +2217,7 @@ void CPGSuperDoc::OnImportProjectLibrary()
          }
       }
 
-      if (convert_status==1)
+      if (convert_status == S_OK)
       {
          // file was converted and written to a temporary file. delete the temp file
          CFile::Remove(real_file_name);

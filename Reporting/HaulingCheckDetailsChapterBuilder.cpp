@@ -132,8 +132,8 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    *p << "Downward Impact during Hauling = "<<pHaul->GetDownwardImpact()<<rptNewLine;
    *p << "Sweep tolerance = "<<pHaul->GetSweepTolerance()<<loc.GetUnitTag()<<"/"<<" "<<loc.GetUnitTag()<<rptNewLine;
    *p << Sub2("e","truck")<<" = tolerance in placement of supports ="<<dim.SetValue(pHaul->GetSupportPlacementTolerance())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << Sub2("f","c") << " = concrete strength = " << stress.SetValue(pHaul->GetConcreteStrength()) << " " << stress.GetUnitTag() << rptNewLine;
-   *p << Sub2("f","r")<<" = modulus of rupture at Hauling = "<<stress.SetValue(pHaul->GetModRupture())<<" "<<stress.GetUnitTag()<<rptNewLine;
+   *p << RPT_STRESS("c") << " = concrete strength = " << stress.SetValue(pHaul->GetConcreteStrength()) << " " << stress.GetUnitTag() << rptNewLine;
+   *p << RPT_STRESS("r")<<" = modulus of rupture at Hauling = "<<stress.SetValue(pHaul->GetModRupture())<<" "<<stress.GetUnitTag()<<rptNewLine;
    *p << "Elastic modulus of girder concrete at Hauling = "<<mod_e.SetValue(pHaul->GetElasticModulusOfGirderConcrete())<<" "<<mod_e.GetUnitTag()<<rptNewLine;
    *p << Sub2("e","s")<<" = eccentricity due to sweep = "<<dim.SetValue(pHaul->GetEccentricityDueToSweep())<<" "<<dim.GetUnitTag()<<rptNewLine;
    *p << Sub2("F","o")<<" = offset factor = " << "(" << Sub2("l","l") << "/" << Sub2("l","g") << ")" << Super("2") << " - 1/3 = " << pHaul->GetOffsetFactor()<<rptNewLine;
@@ -219,17 +219,17 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    rptRcTable* p_table2 = pgsReportStyleHolder::CreateDefaultTable(7,"Hauling Stresses - Tilted Girder");
    *p << p_table2;
-   *p << Sub2(symbol(sigma),"tu") << " = top fiber stress, uphill side" << rptNewLine;
-   *p << Sub2(symbol(sigma),"td") << " = top fiber stress, downhill side" << rptNewLine;
-   *p << Sub2(symbol(sigma),"bu") << " = bottom fiber stress, uphill side" << rptNewLine;
-   *p << Sub2(symbol(sigma),"bd") << " = bottom fiber stress, downhill side" << rptNewLine;
+   *p << RPT_STRESS("tu") << " = top fiber stress, uphill side" << rptNewLine;
+   *p << RPT_STRESS("td") << " = top fiber stress, downhill side" << rptNewLine;
+   *p << RPT_STRESS("bu") << " = bottom fiber stress, uphill side" << rptNewLine;
+   *p << RPT_STRESS("bd") << " = bottom fiber stress, downhill side" << rptNewLine;
    (*p_table2)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*p_table2)(0,1) << COLHDR(Sub2("M","vert"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*p_table2)(0,2) << COLHDR(Sub2("M","lat"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table2)(0,3) << COLHDR(Sub2(symbol(sigma),"tu"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table2)(0,4) << COLHDR(Sub2(symbol(sigma),"td"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table2)(0,5) << COLHDR(Sub2(symbol(sigma),"bu"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table2)(0,6) << COLHDR(Sub2(symbol(sigma),"bd"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,3) << COLHDR(RPT_STRESS("tu"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,4) << COLHDR(RPT_STRESS("td"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,5) << COLHDR(RPT_STRESS("bu"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,6) << COLHDR(RPT_STRESS("bd"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
    rptRcTable* p_table3 = pgsReportStyleHolder::CreateDefaultTable(5,"Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2]");
@@ -328,10 +328,10 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    // FS Cracking
    p_table = pgsReportStyleHolder::CreateDefaultTable(7,"Factor of Safety Against Cracking");
    *p << p_table << rptNewLine;
-   *p << Sub2("f","t") << " = governing tension stress"<<rptNewLine;
+   *p << RPT_STRESS("t") << " = governing tension stress"<<rptNewLine;
 
    (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR(Sub2("f","t"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,1) << COLHDR(RPT_STRESS("t"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*p_table)(0,2) << "Governing" << rptNewLine << "Flange";
    (*p_table)(0,3) << COLHDR(Sub2("M","lat"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*p_table)(0,4) << COLHDR(Sub2("M","vert"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );

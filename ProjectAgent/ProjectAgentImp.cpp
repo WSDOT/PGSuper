@@ -1850,8 +1850,12 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
          // Set it now
          if ( pStrandMaterial != 0 )
          {
-            ATLASSERT(girder_data.Material.pStrandMaterial == 0);
-            girder_data.Material.pStrandMaterial = pStrandMaterial;
+            ATLASSERT(girder_data.Material.pStrandMaterial[pgsTypes::Straight]  == 0);
+            ATLASSERT(girder_data.Material.pStrandMaterial[pgsTypes::Harped]    == 0);
+            ATLASSERT(girder_data.Material.pStrandMaterial[pgsTypes::Temporary] == 0);
+            girder_data.Material.pStrandMaterial[pgsTypes::Straight]  = pStrandMaterial;
+            girder_data.Material.pStrandMaterial[pgsTypes::Harped]    = pStrandMaterial;
+            girder_data.Material.pStrandMaterial[pgsTypes::Temporary] = pStrandMaterial;
          }
 
          if (span<nspans)
@@ -3159,12 +3163,28 @@ void CProjectAgentImp::UseGirderLibraryEntries()
                                   girderLibrary);
 
                CGirderData& girderData = girderTypes.GetGirderData(gdrIdx);
-               if ( girderData.Material.pStrandMaterial == NULL )
+               if ( girderData.Material.pStrandMaterial[pgsTypes::Straight] == NULL )
                {
                   // make sure the girder data has strand
-                  girderData.Material.pStrandMaterial = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,
-                                                                                                 matPsStrand::StressRelieved,
-                                                                                                 matPsStrand::D635 );
+                  girderData.Material.pStrandMaterial[pgsTypes::Straight] = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,
+                                                                                                                     matPsStrand::StressRelieved,
+                                                                                                                     matPsStrand::D635 );
+               }
+
+               if ( girderData.Material.pStrandMaterial[pgsTypes::Harped] == NULL )
+               {
+                  // make sure the girder data has strand
+                  girderData.Material.pStrandMaterial[pgsTypes::Harped] = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,
+                                                                                                                     matPsStrand::StressRelieved,
+                                                                                                                     matPsStrand::D635 );
+               }
+
+               if ( girderData.Material.pStrandMaterial[pgsTypes::Temporary] == NULL )
+               {
+                  // make sure the girder data has strand
+                  girderData.Material.pStrandMaterial[pgsTypes::Temporary] = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,
+                                                                                                                     matPsStrand::StressRelieved,
+                                                                                                                     matPsStrand::D635 );
                }
             }
 
@@ -4627,23 +4647,35 @@ pgsTypes::MeasurementLocation  CProjectAgentImp::GetMeasurementLocation()
 ////////////////////////////////////////////////////////////////////////
 // IGirderData Methods
 //
-const matPsStrand* CProjectAgentImp::GetStrandMaterial(SpanIndexType span,GirderIndexType gdr) const
+const matPsStrand* CProjectAgentImp::GetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) const
 {
+   if ( type == pgsTypes::Permanent )
+   {
+      ATLASSERT(m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).Material.pStrandMaterial[pgsTypes::Straight] == m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).Material.pStrandMaterial[pgsTypes::Harped]);
+      type = pgsTypes::Straight;
+   }
+
    const CGirderData& girder_data = m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr);
-   return girder_data.Material.pStrandMaterial;
+   return girder_data.Material.pStrandMaterial[type];
 }
 
-void CProjectAgentImp::SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,const matPsStrand* pmat)
+void CProjectAgentImp::SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,const matPsStrand* pmat)
 {
    CHECK(pmat!=0);
+
+   if ( type == pgsTypes::Permanent )
+   {
+      ATLASSERT(m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).Material.pStrandMaterial[pgsTypes::Straight] == m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).Material.pStrandMaterial[pgsTypes::Harped]);
+      type = pgsTypes::Straight;
+   }
 
    CSpanData* pSpan = m_BridgeDescription.GetSpan(span);
    CGirderTypes girderTypes = *pSpan->GetGirderTypes();
    CGirderData& girder_data = girderTypes.GetGirderData(gdr);
 
-   if ( pmat != girder_data.Material.pStrandMaterial )
+   if ( pmat != girder_data.Material.pStrandMaterial[type] )
    {
-      girder_data.Material.pStrandMaterial = pmat;
+      girder_data.Material.pStrandMaterial[type] = pmat;
       pSpan->SetGirderTypes(girderTypes);
 
       m_bUpdateJackingForce = true;
@@ -4652,10 +4684,13 @@ void CProjectAgentImp::SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,
    }
 }
 
-Float64 CProjectAgentImp::GetMaxPjack(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands) const
+Float64 CProjectAgentImp::GetMaxPjack(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,StrandIndexType nStrands) const
 {
+   if ( type == pgsTypes::Permanent )
+      type = pgsTypes::Straight;
+
    GET_IFACE(IPrestressForce,pPrestress);
-   return pPrestress->GetPjackMax(span,gdr,*GetStrandMaterial(span,gdr),nStrands);
+   return pPrestress->GetPjackMax(span,gdr,*GetStrandMaterial(span,gdr,type),nStrands);
 }
 
 Float64 CProjectAgentImp::GetMaxPjack(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands,const matPsStrand* pStrand) const
@@ -5771,7 +5806,7 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
    // Get the lookup key for the strand material based on the current units
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
-   std::map<SpanGirderHashType,Int32> keys; // map "key" is span/girder, map "value" is strand pool key
+   std::map<SpanGirderHashType,Int32> keys[3]; // map "key" is span/girder, map "value" is strand pool key
    SpanIndexType nSpans;
    nSpans   = m_BridgeDescription.GetSpanCount();
 
@@ -5783,11 +5818,15 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
       {
          SpanGirderHashType hash = HashSpanGirder(spanIdx, gdrIdx);
 
-         const matPsStrand* pStrandMaterial = GetStrandMaterial(spanIdx,gdrIdx);
-         
-         Int32 strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
+         for ( int i = 0; i < 3; i++ )
+         {
+            pgsTypes::StrandType type = (pgsTypes::StrandType)i;
+            const matPsStrand* pStrandMaterial = GetStrandMaterial(spanIdx,gdrIdx,type);
+            
+            Int32 strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
 
-         keys.insert(std::make_pair(hash,strand_pool_key));
+            keys[type].insert(std::make_pair(hash,strand_pool_key));
+         }
       }
    }
 
@@ -5810,8 +5849,11 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
          // the jacking force to be updated
          CGirderData& girderData = girderTypes.GetGirderData(gdrIdx);
          
-         Int32 strand_pool_key = keys[hash];
-         girderData.Material.pStrandMaterial = pPool->GetStrand(strand_pool_key);
+         for ( int i = 0; i < 3; i++ )
+         {
+            Int32 strand_pool_key = keys[i][hash];
+            girderData.Material.pStrandMaterial[i] = pPool->GetStrand(strand_pool_key);
+         }
       }
 
       pSpan->SetGirderTypes(girderTypes);
@@ -6749,7 +6791,7 @@ void CProjectAgentImp::UpdateJackingForce() const
          for ( Uint16 i = 0; i < 4; i++ )
          {
             if ( girderData.bPjackCalculated[i] )
-               girderData.Pjack[i] = GetMaxPjack( spanIdx, gdrIdx, girderData.Nstrands[i] );
+               girderData.Pjack[i] = GetMaxPjack( spanIdx, gdrIdx, pgsTypes::StrandType(i), girderData.Nstrands[i] );
          }
       }
 
@@ -6768,7 +6810,7 @@ void CProjectAgentImp::UpdateJackingForce(SpanIndexType span,GirderIndexType gdr
    for ( Uint16 i = 0; i < 4; i++ )
    {
       if ( girderData.bPjackCalculated[i] )
-         girderData.Pjack[i] = GetMaxPjack(span,gdr,girderData.Nstrands[i]);
+         girderData.Pjack[i] = GetMaxPjack(span,gdr,pgsTypes::StrandType(i),girderData.Nstrands[i]);
    }
 
    DoSetGirderData(girderData,span,gdr);
@@ -6802,7 +6844,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 
          const GirderLibraryEntry* pGdrEntry = girderTypes.GetGirderLibraryEntry(gdrIdx);
 
-         Float64 xfer_length = pPrestress->GetXferLength(spanIdx,gdrIdx);
+         Float64 xfer_length = pPrestress->GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent);
          Float64 min_xfer = pGdrEntry->GetMinDebondSectionLength(); 
 
          if (min_xfer < xfer_length)

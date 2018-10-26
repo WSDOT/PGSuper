@@ -62,7 +62,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
 
    GET_IFACE2(pBroker, IGirderData,      pGirderData );
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr,pgsTypes::Permanent);
    CHECK(pstrand);
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());

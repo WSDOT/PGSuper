@@ -54,7 +54,7 @@ static void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplay
 static void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
 static void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
 static void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
-static void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr);
+static void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
 static void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
 static void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType gdr);
@@ -154,6 +154,8 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   GET_IFACE2(pBroker,IStrandGeometry,pStrand);
+
    write_connection_details( pBroker, pDisplayUnits, pChapter, level);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -199,7 +201,10 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
          *pHead<<"Materials"<<rptNewLine;
          write_concrete_details( pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
 
-         write_strand_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx);
+         write_strand_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx, pgsTypes::Permanent );
+
+         if ( 0 < pStrand->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
+            write_strand_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx, pgsTypes::Temporary );
 
       } // gdrIdx
    } // spanIdx
@@ -746,7 +751,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    }
 }
 
-void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)
+void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
@@ -756,8 +761,13 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
+   if ( strandType == pgsTypes::Temporary )
+      *pPara << "Temporary Strand" << rptNewLine;
+   else
+      *pPara << "Permanent Strand" << rptNewLine;
+
    GET_IFACE2(pBroker, IGirderData, pGirderData);
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr);
+   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr,strandType);
    CHECK(pstrand!=0);
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,pstrand->GetName());

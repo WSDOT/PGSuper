@@ -75,7 +75,7 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
    (*table)(0,5) << COLHDR(Sub2("Y","bc"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,6) << COLHDR(Sub2("I","g"),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
    (*table)(0,7) << COLHDR(Sub2("I","c"),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,8) << COLHDR(symbol(DELTA) << Sub2("f","cdp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS("cdp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pParagraph;

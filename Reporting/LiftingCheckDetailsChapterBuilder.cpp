@@ -130,8 +130,8 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    *p << "Downward Impact during lifting = "<<pLift->GetDownwardImpact()<<rptNewLine;
    *p << "Sweep tolerance = "<<pLift->GetSweepTolerance()<<loc.GetUnitTag()<<"/"<<" "<<loc.GetUnitTag()<<rptNewLine;
    *p << "Tolerance in placement of lifting device ="<<dim.SetValue(pLift->GetLiftingDeviceTolerance())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << "f" << Sub("ci") << " = concrete strength = " << stress.SetValue(pLift->GetConcreteStrength()) << " " << stress.GetUnitTag() << rptNewLine;
-   *p << "f"<<Sub("r")<<" = modulus of rupture at lifting = "<<stress.SetValue(pLift->GetModRupture())<<" "<<stress.GetUnitTag()<<rptNewLine;
+   *p << RPT_FCI << " = concrete strength = " << stress.SetValue(pLift->GetConcreteStrength()) << " " << stress.GetUnitTag() << rptNewLine;
+   *p << RPT_STRESS("r")<<" = modulus of rupture at lifting = "<<stress.SetValue(pLift->GetModRupture())<<" "<<stress.GetUnitTag()<<rptNewLine;
    *p << "Elastic modulus of girder concrete at lifting = "<<mod_e.SetValue(pLift->GetElasticModulusOfGirderConcrete())<<" "<<mod_e.GetUnitTag()<<rptNewLine;
    *p << "Additional axial compressive force due to inclination of lifting cables = "<<force.SetValue(pLift->GetAxialCompressiveForceDueToInclinationOfLiftingCables())<<" "<<force.GetUnitTag()<<rptNewLine;
    *p << "Additional moment in girder due to inclination of lifting cables = "<<moment.SetValue(pLift->GetMomentInGirderDueToInclinationOfLiftingCables())<<" "<<moment.GetUnitTag()<<rptNewLine;
@@ -290,13 +290,13 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    p_table = pgsReportStyleHolder::CreateDefaultTable(7,"Factor of Safety Against Cracking");
    *p << p_table << rptNewLine;
-   *p << Sub2("f","t") << " = governing tension stress"<<rptNewLine;
+   *p << RPT_STRESS("t") << " = governing tension stress"<<rptNewLine;
    *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mlat.png" )<<rptNewLine;
    *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaMax.png" )<<rptNewLine;
    *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FScrLifting.png" )<<rptNewLine;
 
    (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Pick Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR("f"<<Sub("t"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,1) << COLHDR(RPT_STRESS("t"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*p_table)(0,2) << "Governing" << rptNewLine << "Flange";
    (*p_table)(0,3) << COLHDR(Sub2("M","lat"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*p_table)(0,4) << COLHDR(Sub2("M","vert"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );

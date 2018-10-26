@@ -76,7 +76,7 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << "[5.9.5.4.3d] Shrinkage of Deck Concrete : " << symbol(DELTA) << Sub2("f","pSS") << rptNewLine;
+   *pParagraph << "[5.9.5.4.3d] Shrinkage of Deck Concrete : " << symbol(DELTA) << RPT_STRESS("pSS") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -177,8 +177,8 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    (*table)(0,3) << COLHDR( Sub2("e","d"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,4) << COLHDR( Sub2("A","c"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,5) << COLHDR( Sub2("I","c"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,6) << COLHDR( symbol(DELTA) << Sub2("f","cdf"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,7) << COLHDR( symbol(DELTA) << Sub2("f","pSS"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,6) << COLHDR( symbol(DELTA) << RPT_STRESS("cdf"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,7) << COLHDR( symbol(DELTA) << RPT_STRESS("pSS"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
 #if defined IGNORE_2007_CHANGES
    table->m_Sign = -1;

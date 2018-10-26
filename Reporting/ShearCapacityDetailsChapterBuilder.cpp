@@ -664,11 +664,11 @@ void write_fpc_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IStageMap,pStageMap);
    if ( shear_capacity_method == scmVciVcw )
    {
-      *pParagraph << Sub2("f","pc") << " [for use in Eqn 5.8.3.4.3-3] - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
+      *pParagraph << RPT_STRESS("pc") << " [for use in Eqn 5.8.3.4.3-3] - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
    }
    else
    {
-      *pParagraph << Sub2("f","pc") << " [for use in Eqn C5.8.3.4.2-1] - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
+      *pParagraph << RPT_STRESS("pc") << " [for use in Eqn C5.8.3.4.2-1] - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
    }
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Fpc Pic.jpg") << rptNewLine;
@@ -697,7 +697,7 @@ void write_fpc_table(IBroker* pBroker,
    (*table)(0,4) << COLHDR(Sub2("I","g"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
    (*table)(0,5) << COLHDR("c",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,6) << COLHDR(Sub2("M","DC") << " + " << Sub2("M","DW"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,7) << COLHDR(Sub2("f","pc"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,7) << COLHDR(RPT_STRESS("pc"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,  location, pDisplayUnits->GetSpanLengthUnit(),      false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,   force,    pDisplayUnits->GetGeneralForceUnit(),    false );
@@ -772,8 +772,8 @@ void write_fpce_table(IBroker* pBroker,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR( Sub2("f","r"),   rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2)  << COLHDR( Sub2("f","cpe"), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,1)  << COLHDR( RPT_STRESS("r"),   rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2)  << COLHDR( RPT_STRESS("cpe"), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,3)  << COLHDR( Sub2("S","nc"),  rptLength3UnitTag,  pDisplayUnits->GetSectModulusUnit() );
    (*table)(0,4)  << COLHDR( Sub2("S","c"),   rptLength3UnitTag,  pDisplayUnits->GetSectModulusUnit() );
    (*table)(0,5)  << COLHDR( Sub2("M","dnc"), rptMomentUnitTag,   pDisplayUnits->GetMomentUnit() );
@@ -817,9 +817,9 @@ void write_fpce_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
-   *pParagraph << Sub2("f","r") << " = " << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
+   *pParagraph << RPT_STRESS("r") << " = " << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
 
-   *pParagraph << Sub2("f","cpe") << " = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads." << rptNewLine;
+   *pParagraph << RPT_STRESS("cpe") << " = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads." << rptNewLine;
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fcpe.png") << rptNewLine;
    *pParagraph << Sub2("S","nc") << " = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads" << rptNewLine;
    *pParagraph << Sub2("S","c") << " = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads" << rptNewLine;
@@ -846,7 +846,7 @@ void write_fpo_table(IBroker* pBroker,
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << Sub2("f","po");
+   *pParagraph << RPT_STRESS("po");
 
    if ( !bAfter1999 )
       *pParagraph << " [Eqn C5.8.3.4.2-1]";
@@ -864,14 +864,14 @@ void write_fpo_table(IBroker* pBroker,
    if ( bAfter1999 )
    {
       GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-      const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
+      const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
 
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,   pDisplayUnits->GetStressUnit(),    true );
 
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
 
-      *pParagraph << Sub2("f","po") << " = " << stress.SetValue(0.7*pStrand->GetUltimateStrength()) << rptNewLine;
+      *pParagraph << RPT_STRESS("po") << " = " << stress.SetValue(0.7*pStrand->GetUltimateStrength()) << rptNewLine;
    }
    else
    {
@@ -1610,7 +1610,7 @@ void write_Vc_table(IBroker* pBroker,
    (*table)(0,colIdx++) << COLHDR( RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if ( concType != pgsTypes::Normal && bHasAggSplittingStrength )
-      (*table)(0,colIdx++) << COLHDR( Sub2("f","ct"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,colIdx++) << COLHDR( RPT_STRESS("ct"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    (*table)(0,colIdx++) << COLHDR( Sub2("b","v"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,colIdx++) << COLHDR( Sub2("d","v"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -1864,7 +1864,7 @@ void write_Vcw_table(IBroker* pBroker,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1) << COLHDR(Sub2("f","pc"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,1) << COLHDR(RPT_STRESS("pc"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,2) << COLHDR(Sub2("b","v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,3) << COLHDR(Sub2("d","v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,4) << COLHDR(Sub2("V","p"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
@@ -1970,7 +1970,7 @@ void write_theta_table(IBroker* pBroker,
 
    (*table)(0,1) << COLHDR(Sub2("V","ci"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,2) << COLHDR(Sub2("V","cw"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,3) << COLHDR(Sub2("f","pc"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR(RPT_STRESS("pc"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,4) << "cot " << symbol(theta);
    (*table)(0,5) << COLHDR(symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
 
@@ -2223,7 +2223,7 @@ void write_Avs_table(IBroker* pBroker,
       (*table)(0,col++) << COLHDR( Sub2("V","p"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    (*table)(0,col++) << COLHDR( Sub2("V","s") << " *", rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
-   (*table)(0,col++) << COLHDR( Sub2("f","y"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR( RPT_FY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR( Sub2("d","v"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,col++) << COLHDR( symbol(theta), rptAngleUnitTag,  pDisplayUnits->GetAngleUnit() );
    (*table)(0,col++) << COLHDR( Sub2("A","v") << "/S", rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );

@@ -240,8 +240,8 @@ public:
 
 // IGirderData
 public:
-   virtual const matPsStrand* GetStrandMaterial(SpanIndexType span,GirderIndexType gdr) const;
-   virtual void SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,const matPsStrand* pmat);
+   virtual const matPsStrand* GetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) const;
+   virtual void SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,const matPsStrand* pmat);
    virtual CGirderData GetGirderData(SpanIndexType span,GirderIndexType gdr) const;
    virtual bool SetGirderData(const CGirderData& data,SpanIndexType span,GirderIndexType gdr);
    virtual const CGirderMaterial* GetGirderMaterial(SpanIndexType span,GirderIndexType gdr) const;
@@ -629,7 +629,7 @@ private:
    HRESULT BuildDummyBridge();
    void ValidateStrands(SpanIndexType span,GirderIndexType girder,CGirderData& girder_data,bool fromLibrary);
 
-   Float64 GetMaxPjack(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands) const;
+   Float64 GetMaxPjack(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,StrandIndexType nStrands) const;
    Float64 GetMaxPjack(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands,const matPsStrand* pStrand) const;
 
    bool ResolveLibraryConflicts(const ConflictList& rList);

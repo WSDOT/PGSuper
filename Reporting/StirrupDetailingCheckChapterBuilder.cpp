@@ -150,7 +150,7 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
 
    if ( concType != pgsTypes::Normal && bHasAggSplittingStrength )
    {
-      *pParagraph << Sub2("f","ct") << " = "<<stress.SetValue(pMaterial->GetGdrConcreteAggSplittingStrength(span,girder))<<" "<< stress.GetUnitTag()<<rptNewLine;
+      *pParagraph << RPT_STRESS("ct") << " = "<<stress.SetValue(pMaterial->GetGdrConcreteAggSplittingStrength(span,girder))<<" "<< stress.GetUnitTag()<<rptNewLine;
    }
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(3,"");
@@ -258,9 +258,9 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
    bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
 
    if ( bAfter1999 )
-      (*petable)(1,0) << "if V"<<Sub("u")<<" < 0.125 f'"<<Sub("c")<<"b"<<Sub("v")<<"d"<<Sub("v")<<" : ";
+      (*petable)(1,0) << "if V"<<Sub("u")<<" < 0.125 " << RPT_FC <<"b"<<Sub("v")<<"d"<<Sub("v")<<" : ";
    else
-      (*petable)(1,0) << "if V"<<Sub("u")<<" < 0.1 f'"<<Sub("c")<<"b"<<Sub("v")<<"d"<<Sub("v")<<" : ";
+      (*petable)(1,0) << "if V"<<Sub("u")<<" < 0.1 " << RPT_FC <<"b"<<Sub("v")<<"d"<<Sub("v")<<" : ";
 
    (*petable)(1,1) << " S"<<Sub("max")<<"= min(0.8 d"<<Sub("v")<<", "<<dim.SetValue(s_under)<<dim.GetUnitTag()<<")";
    (*petable)(2,0) <<"Else : ";
@@ -277,9 +277,9 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
    (*table)(0,1)  << COLHDR("V"<<Sub("u"),       rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    if ( bAfter1999 )
-      (*table)(0,2)  << COLHDR("0.125 f'"<<Sub("c")<<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+      (*table)(0,2)  << COLHDR("0.125 " << RPT_FC <<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    else
-      (*table)(0,2)  << COLHDR("0.1 f'"<<Sub("c")<<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+      (*table)(0,2)  << COLHDR("0.1 " << RPT_FC <<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    (*table)(0,3)  << COLHDR("b"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,4)  << COLHDR("d"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );

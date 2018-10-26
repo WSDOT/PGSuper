@@ -179,6 +179,7 @@ CString CPGSuperAppPlugin::GetUsageMessage()
 
 BOOL CPGSuperAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    // cmdInfo is the command line information from the application. The application
    // doesn't know about this plug-in at the time the command line parameters are parsed
    //
@@ -187,10 +188,19 @@ BOOL CPGSuperAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
    EAFGetApp()->ParseCommandLine(pgsCmdInfo);
    cmdInfo = pgsCmdInfo;
 
-   if (pgsCmdInfo.m_bDo1250Test)
+   if (pgsCmdInfo.m_bError)
+   {
+      return FALSE;
+   }
+   else if (pgsCmdInfo.m_bDo1250Test)
    {
       Process1250Testing(pgsCmdInfo);
       return TRUE; // command line parameters handled
+   }
+   else if (pgsCmdInfo.m_bSetUpdateLibrary)
+   {
+      ProcessLibrarySetUp(pgsCmdInfo);
+      return TRUE;
    }
 
    BOOL bHandled = FALSE;
@@ -201,9 +211,9 @@ BOOL CPGSuperAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
       bHandled = pDoc->ProcessCommandLineOptions(cmdInfo);
    }
 
-   // If we get this far and there is one parameter and it isn't a file name and it isn't handled -OR-
-   // if there is more than one parameter and it isn't handled there is something wrong
-   if ( ((1 == pgsCmdInfo.m_Count && pgsCmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen) || (1 <  pgsCmdInfo.m_Count)) && !bHandled )
+   // If we get this far and there is one parameter and it isn't a file name and it isn't handled,
+   // then something is wrong
+   if ( 1 == pgsCmdInfo.m_Count && pgsCmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen )
    {
       cmdInfo.m_bError = TRUE;
       bHandled = TRUE;
@@ -364,7 +374,40 @@ void CPGSuperAppPlugin::OnProgramSettings()
    UpdateProgramSettings(FALSE);
 }
 
+void CPGSuperAppPlugin::ProcessLibrarySetUp(const CPGSuperCommandLineInfo& rCmdInfo)
+{
+   ASSERT(rCmdInfo.m_bSetUpdateLibrary);
 
+   // Set library to parsed names and attempt an update
+   SharedResourceType        original_type = m_SharedResourceType;
+   CacheUpdateFrequency      original_freq = m_CacheUpdateFrequency;
+   CString                 original_server = m_CurrentCatalogServer;
+   CString              original_publisher = m_Publisher;
+
+   // find our server
+   const CPGSuperCatalogServer* pserver = GetCatalogServers()->GetServer(rCmdInfo.m_CatalogServerName);
+   if (pserver != NULL)
+   {
+      m_SharedResourceType   = pserver->GetServerType();
+
+      m_CurrentCatalogServer = rCmdInfo.m_CatalogServerName;
+      m_Publisher            = rCmdInfo.m_PublisherName ;
+
+      if (!this->DoCacheUpdate())
+      {
+         // DoCacheUpdate will restore the cache, we need also to restore local data
+         m_SharedResourceType   = original_type;
+         m_CurrentCatalogServer = original_server;
+         m_Publisher            = original_publisher;
+      }
+   }
+   else
+   {
+      CString msg;
+      msg.Format("Error - The catalog server \"%s\" was not found. Could not update catalog", rCmdInfo.m_CatalogServerName);
+      AfxMessageBox(msg);
+   }
+}
 
 void CPGSuperAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo)
 {

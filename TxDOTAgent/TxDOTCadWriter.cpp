@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 
 #include "TxDOTCadWriter.h"
+#include "TxDOTOptionalDesignData.h"
+#include "TxDOTOptionalDesignUtilities.h"
 
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
@@ -199,7 +201,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
 	/* 6. STRAND SIZE */
 	char    strandSize[4+1];
-	const matPsStrand* strandMatP = pGirderData->GetStrandMaterial(span, gdr);
+   const matPsStrand* strandMatP = pGirderData->GetStrandMaterial(span, gdr,pgsTypes::Permanent);
    value = strandMatP->GetNominalDiameter();
    value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
@@ -853,4 +855,75 @@ std::string MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfIntere
    }
 
    return os.str();
+}
+
+//////// TOGA Report
+int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker)
+{
+   // Use our worker bee to write results
+   CadWriterWorkerBee workerB(true);
+
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
+   const CTxDOTOptionalDesignData* pProjectData = pGetTogaData->GetTogaData();
+
+   // Compressive stress - top
+   Float64 stress_val_calc, stress_fac, stress_loc;
+   pGetTogaResults->GetControllingCompressiveStress(&stress_val_calc, &stress_fac, &stress_loc);
+
+   Float64 stress_val_input = ::ConvertFromSysUnits( pProjectData->GetFt(), unitMeasure::KSI );
+   stress_val_calc = ::ConvertFromSysUnits( -stress_val_calc, unitMeasure::KSI );
+
+   workerB.WriteFloat64(stress_val_input, "ftinp ",6,"%6.2f",true);
+   workerB.WriteFloat64(stress_val_calc, "ftcalc",6,"%6.2f",true);
+   workerB.WriteFloat64(stress_fac, "ftfact",6,"%6.2f",true);
+
+   // Tensile stress - bottom
+   pGetTogaResults->GetControllingTensileStress(&stress_val_calc, &stress_fac, &stress_loc);
+
+   stress_val_input = ::ConvertFromSysUnits( pProjectData->GetFb(), unitMeasure::KSI );
+   stress_val_calc = ::ConvertFromSysUnits( -stress_val_calc, unitMeasure::KSI );
+
+   workerB.WriteFloat64(stress_val_input, "fbinp ",6,"%6.2f",true);
+   workerB.WriteFloat64(stress_val_calc, "fbcalc",6,"%6.2f",true);
+   workerB.WriteFloat64(stress_fac, "fbfact",6,"%6.2f",true);
+
+   // Ultimate moment
+   Float64 mu_input = ::ConvertFromSysUnits( pProjectData->GetMu(), unitMeasure::KipFeet);
+   Float64 mu_orig  = ::ConvertFromSysUnits( pGetTogaResults->GetRequiredUltimateMoment(), unitMeasure::KipFeet );
+   Float64 mu_fabr  = ::ConvertFromSysUnits( pGetTogaResults->GetUltimateMomentCapacity(), unitMeasure::KipFeet );
+
+   workerB.WriteFloat64(mu_input," muinp  ",8,"%8.2f",true);
+   workerB.WriteFloat64(mu_orig, " muorig ",8,"%8.2f",true);
+   workerB.WriteFloat64(mu_fabr, " mufabr ",8,"%8.2f",true);
+
+   // Required concrete strengths
+   Float64 input_fci = ::ConvertFromSysUnits(pProjectData->GetPrecasterDesignGirderData()->GetFci(), unitMeasure::KSI );
+   Float64 reqd_fci  = ::ConvertFromSysUnits(pGetTogaResults->GetRequiredFci(), unitMeasure::KSI );
+
+   workerB.WriteFloat64(input_fci,"fciinp",6,"%6.2f",true);
+   workerB.WriteFloat64(reqd_fci, "fcireq",6,"%6.2f",true);
+
+   Float64 input_fc = ::ConvertFromSysUnits(pProjectData->GetPrecasterDesignGirderData()->GetFc(), unitMeasure::KSI );
+   Float64 reqd_fc =  ::ConvertFromSysUnits(pGetTogaResults->GetRequiredFc(), unitMeasure::KSI );
+
+   workerB.WriteFloat64(input_fc,"fc inp",6,"%6.2f",true);
+   workerB.WriteFloat64(reqd_fc, "fc req",6,"%6.2f",true);
+
+   // Camber
+   Float64 cbr_orig = ::ConvertFromSysUnits(pGetTogaResults->GetMaximumCamber(), unitMeasure::Feet );
+   Float64 cbr_fabr = ::ConvertFromSysUnits(pGetTogaResults->GetFabricatorMaximumCamber(), unitMeasure::Feet );
+
+   workerB.WriteFloat64(cbr_orig,"cbr orig",8,"%8.4f",true);
+   workerB.WriteFloat64(cbr_fabr,"cbr fabr",8,"%8.4f",true);
+
+   // Shear check
+   bool passed = pGetTogaResults->ShearPassed();
+   workerB.WriteString(passed?"Ok\0":"Fail\n","Shear",7,"%7s",true);
+
+   workerB.WriteToFile(fp);
+
+   fprintf(fp, "\n");
+
+   return CAD_SUCCESS;
 }

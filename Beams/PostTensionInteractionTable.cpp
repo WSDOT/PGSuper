@@ -65,7 +65,7 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
    // gather some data
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
    double Eci = (tempStrandUsage == pgsTypes::ttsPTBeforeShipping ? pMaterial->GetEcGdr(span,gdr) : pMaterial->GetEciGdr(span,gdr));
-   double Ep  = pMaterial->GetStrand(span,gdr)->GetE();
+   double Ep  = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    double nEffectiveStrands;
@@ -107,12 +107,12 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
    (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,2) << COLHDR("x",rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,3) << COLHDR(Sub2("f","pt max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR(RPT_STRESS("pt max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,4) << COLHDR(Sub2("P","pt"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
    (*table)(0,5) << COLHDR(Sub2("A","g"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,6) << COLHDR(Sub2("I","g"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
-   (*table)(0,7) << COLHDR(Sub2("f","cgpt"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,8) << COLHDR(symbol(DELTA) << Sub2("f","pt"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,7) << COLHDR(RPT_STRESS("cgpt"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS("pt"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }
