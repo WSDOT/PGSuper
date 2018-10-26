@@ -1,8 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include "..\PGSuperCommandIDs.h"
-#include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -13,9 +11,7 @@
 #include <PGSuperVersion.h>
 #endif
 #include "afxres.h"
-#if !defined NOGRID
-#include "grid\gxresrc.h"
-#endif
+#include <EAF\EAFResources.h>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -48,6 +44,7 @@ BEGIN
     "#include <PGSuperVersion.h>\r\n"
     "#endif\r\n"
     "#include ""afxres.h""\r\n"
+    "#include <EAF\\EAFResources.h>\0"
     "#if !defined NOGRID\r\n"
     "#include ""grid\\gxresrc.h""\r\n"
     "#endif\0"
@@ -844,33 +841,21 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMEN
 CAPTION "Copy Girder Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    COMBOBOX        IDC_FROM_SPAN,16,41,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_FROM_GIRDER,82,41,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FROM_SPAN,16,24,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FROM_GIRDER,82,24,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Single Girder, Span, Girderline, or All",IDC_RADIO1,
-                    "Button",BS_AUTORADIOBUTTON,189,27,129,10
-    COMBOBOX        IDC_TO_SPAN,205,41,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_TO_GIRDER,270,41,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Multiple Girders",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,189,61,64,10
-    PUSHBUTTON      "Select Girders\n(0 Selected)",IDC_SELECT_GIRDERS,221,75,78,23,BS_MULTILINE
-    CONTROL         "Copy Girder Type",IDC_COPY_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,131,71,10
-    CONTROL         "Copy Concrete Material Properties",IDC_COPY_MATERIAL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,142,135,10
-    CONTROL         "Copy Prestressing",IDC_COPY_PRESTRESSING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,154,71,10
-    CONTROL         "Copy Longitudinal Reinforcement",IDC_LONGITUDINAL_REBAR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,166,120,10
-    CONTROL         "Copy Transverse Reinforcement",IDC_COPY_TRANSVERSE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,178,113,10
-    CONTROL         "Copy Handling Locations",IDC_COPY_HANDLING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,190,91,10
-    CONTROL         "Copy Slab Offset (""A"" Dimension)",IDC_COPY_SLABOFFSET,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,203,121,10
-    DEFPUSHBUTTON   "Copy Now",IDOK,118,232,48,15
-    DEFPUSHBUTTON   "Close",IDCANCEL,181,232,48,15
-    PUSHBUTTON      "Help",ID_HELP,290,233,50,14
-    GROUPBOX        "Source Girder",IDC_STATIC,7,7,139,101
-    LTEXT           "Copy Properties From:",IDC_STATIC,17,19,76,8
-    LTEXT           "To:",IDC_STATIC,165,19,11,8
-    GROUPBOX        "Select Properties to be Copied:",IDC_STATIC,7,117,333,105
-    GROUPBOX        "Target Girder(s)",IDC_STATIC,160,7,180,101
+                    "Button",BS_AUTORADIOBUTTON,169,21,129,10
+    COMBOBOX        IDC_TO_SPAN,185,35,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TO_GIRDER,250,35,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Multiple Girders",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,169,55,64,10
+    PUSHBUTTON      "Select Girders\n(0 Selected)",IDC_SELECT_GIRDERS,201,69,78,23,BS_MULTILINE
+    DEFPUSHBUTTON   "Copy Now",IDOK,184,232,48,15
+    PUSHBUTTON      "Close",IDCANCEL,238,232,48,15
+    PUSHBUTTON      "Help",ID_HELP,290,232,50,15
+    GROUPBOX        "Copy Properties From",IDC_STATIC,7,7,139,89
+    GROUPBOX        "Select Properties to be Copied:",IDC_STATIC,7,103,333,119
+    GROUPBOX        "Copy Properties To",IDC_STATIC,160,7,180,89
+    LISTBOX         IDC_LIST,17,119,314,92,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SECTION_CUT_DIALOG DIALOG  0, 0, 226, 62
@@ -2237,8 +2222,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,0,1
- PRODUCTVERSION 2,9,0,1
+ FILEVERSION 2,9,0,2
+ PRODUCTVERSION 2,9,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2255,12 +2240,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.9.0.1"
+            VALUE "FileVersion", "2.9.0.2"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.0.1"
+            VALUE "ProductVersion", "2.9.0.2"
         END
     END
     BLOCK "VarFileInfo"

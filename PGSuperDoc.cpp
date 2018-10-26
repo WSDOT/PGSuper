@@ -154,7 +154,6 @@
 #include "DesignGirder.h"
 #include "InsertDeleteSpan.h"
 #include "EditLLDF.h"
-#include "CopyGirder.h"
 #include "EditEnvironment.h"
 #include "EditProjectCriteria.h"
 #include "EditRatingCriteria.h"
@@ -319,7 +318,7 @@ m_bAutoCalcEnabled(true)
 
    m_PluginMgr.LoadPlugins(); // these are the data importers and exporters
 
-   m_ViewCallbackID = 0;
+   m_CallbackID = 0;
 
    // Reserve a range of command IDs for extension agent commands (which are current supported)
    // and EAFDocumentPlugin objects (which are not currently supported in PGSuper)
@@ -1024,7 +1023,7 @@ BOOL CPGSuperDoc::UpdateTemplates()
 
 IDType CPGSuperDoc::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_BridgePlanViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -1040,14 +1039,14 @@ bool CPGSuperDoc::UnregisterBridgePlanViewCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IBridgePlanViewEventCallback*> CPGSuperDoc::GetBridgePlanViewCallbacks()
+const std::map<IDType,IBridgePlanViewEventCallback*>& CPGSuperDoc::GetBridgePlanViewCallbacks()
 {
    return m_BridgePlanViewCallbacks;
 }
 
 IDType CPGSuperDoc::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_BridgeSectionViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -1063,14 +1062,14 @@ bool CPGSuperDoc::UnregisterBridgeSectionViewCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IBridgeSectionViewEventCallback*> CPGSuperDoc::GetBridgeSectionViewCallbacks()
+const std::map<IDType,IBridgeSectionViewEventCallback*>& CPGSuperDoc::GetBridgeSectionViewCallbacks()
 {
    return m_BridgeSectionViewCallbacks;
 }
 
 IDType CPGSuperDoc::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_GirderElevationViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -1086,14 +1085,14 @@ bool CPGSuperDoc::UnregisterGirderElevationViewCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IGirderElevationViewEventCallback*> CPGSuperDoc::GetGirderElevationViewCallbacks()
+const std::map<IDType,IGirderElevationViewEventCallback*>& CPGSuperDoc::GetGirderElevationViewCallbacks()
 {
    return m_GirderElevationViewCallbacks;
 }
 
 IDType CPGSuperDoc::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_GirderSectionViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -1109,14 +1108,14 @@ bool CPGSuperDoc::UnregisterGirderSectionViewCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IGirderSectionViewEventCallback*> CPGSuperDoc::GetGirderSectionViewCallbacks()
+const std::map<IDType,IGirderSectionViewEventCallback*>& CPGSuperDoc::GetGirderSectionViewCallbacks()
 {
    return m_GirderSectionViewCallbacks;
 }
 
 IDType CPGSuperDoc::RegisterEditPierCallback(IEditPierCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_EditPierCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -1132,14 +1131,14 @@ bool CPGSuperDoc::UnregisterEditPierCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IEditPierCallback*> CPGSuperDoc::GetEditPierCallbacks()
+const std::map<IDType,IEditPierCallback*>& CPGSuperDoc::GetEditPierCallbacks()
 {
    return m_EditPierCallbacks;
 }
 
 IDType CPGSuperDoc::RegisterEditSpanCallback(IEditSpanCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_EditSpanCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -1155,37 +1154,54 @@ bool CPGSuperDoc::UnregisterEditSpanCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IEditSpanCallback*> CPGSuperDoc::GetEditSpanCallbacks()
+const std::map<IDType,IEditSpanCallback*>& CPGSuperDoc::GetEditSpanCallbacks()
 {
    return m_EditSpanCallbacks;
 }
 
-IDType CPGSuperDoc::RegisterEditGirderCallback(IEditGirderCallback* pCallback)
+IDType CPGSuperDoc::RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback * pCopyCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_EditGirderCallbacks.insert(std::make_pair(key,pCallback));
+
+   if ( pCopyCallback )
+   {
+      m_CopyGirderPropertiesCallbacks.insert(std::make_pair(key,pCopyCallback));
+   }
+
    return key;
 }
 
 bool CPGSuperDoc::UnregisterEditGirderCallback(IDType ID)
 {
-   std::map<IDType,IEditGirderCallback*>::iterator found = m_EditGirderCallbacks.find(ID);
-   if ( found == m_EditGirderCallbacks.end() )
+   std::map<IDType,IEditGirderCallback*>::iterator foundCallback = m_EditGirderCallbacks.find(ID);
+   if ( foundCallback == m_EditGirderCallbacks.end() )
       return false;
 
-   m_EditGirderCallbacks.erase(found);
+   m_EditGirderCallbacks.erase(foundCallback);
+
+   std::map<IDType,ICopyGirderPropertiesCallback*>::iterator foundCopyCallback = m_CopyGirderPropertiesCallbacks.find(ID);
+   if ( foundCopyCallback != m_CopyGirderPropertiesCallbacks.end() )
+   {
+      m_CopyGirderPropertiesCallbacks.erase(foundCopyCallback);
+   }
 
    return true;
 }
 
-std::map<IDType,IEditGirderCallback*> CPGSuperDoc::GetEditGirderCallbacks()
+const std::map<IDType,IEditGirderCallback*>& CPGSuperDoc::GetEditGirderCallbacks()
 {
    return m_EditGirderCallbacks;
 }
 
+const std::map<IDType,ICopyGirderPropertiesCallback*>& CPGSuperDoc::GetCopyGirderPropertiesCallbacks()
+{
+   return m_CopyGirderPropertiesCallbacks;
+}
+
 IDType CPGSuperDoc::RegisterEditBridgeCallback(IEditBridgeCallback* pCallback)
 {
-   IDType key = m_ViewCallbackID++;
+   IDType key = m_CallbackID++;
    m_EditBridgeCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
@@ -1201,7 +1217,7 @@ bool CPGSuperDoc::UnregisterEditBridgeCallback(IDType ID)
    return true;
 }
 
-std::map<IDType,IEditBridgeCallback*> CPGSuperDoc::GetEditBridgeCallbacks()
+const std::map<IDType,IEditBridgeCallback*>& CPGSuperDoc::GetEditBridgeCallbacks()
 {
    return m_EditBridgeCallbacks;
 }
@@ -1598,6 +1614,15 @@ BOOL CPGSuperDoc::Init()
 
    CEAFCustomReports customs = pPGSuper->GetCustomReports();
    SetCustomReports(customs);
+
+   // register the standard copy girder callback objects
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderType));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderSlabOffset));
 
    return TRUE;
 }
@@ -2561,26 +2586,32 @@ void CPGSuperDoc::OnCopyGirderProps()
    CCopyGirderDlg dlg(m_pBroker,this);
    if ( dlg.DoModal() == IDOK )
    {
-      OnApplyCopyGirder(dlg.m_FromSpanGirderHashValue,
-                        dlg.m_ToSpanGirderHashValues,
-                        dlg.m_bCopyGirder,
-                        dlg.m_bCopyTransverse,
-                        dlg.m_bCopyLongitudinalRebar,
-                        dlg.m_bCopyPrestressing,
-                        dlg.m_bCopyHandling,
-                        dlg.m_bCopyMaterial,
-                        dlg.m_bCopySlabOffset);
+      pgsMacroTxn* pMacro = new pgsMacroTxn;
+      pMacro->Name(_T("Copy Girder Properties"));
+
+      std::vector<IDType> callbackIDs = dlg.GetCallbackIDs();
+      std::vector<IDType>::iterator iter(callbackIDs.begin());
+      std::vector<IDType>::iterator end(callbackIDs.end());
+      for ( ; iter != end; iter++ )
+      {
+         IDType callbackID = *iter;
+         std::map<IDType,ICopyGirderPropertiesCallback*>::iterator found(m_CopyGirderPropertiesCallbacks.find(callbackID));
+         ATLASSERT(found != m_CopyGirderPropertiesCallbacks.end());
+         ICopyGirderPropertiesCallback* pCallback = found->second;
+
+         txnTransaction* pTxn = pCallback->CreateCopyTransaction(dlg.m_FromSpanGirderHashValue,dlg.m_ToSpanGirderHashValues);
+         if ( pTxn )
+         {
+            pMacro->AddTransaction(pTxn);
+         }
+      }
+
+      if ( 0 < pMacro->GetTxnCount() )
+      {
+         GET_IFACE(IEAFTransactions,pTransactions);
+         pTransactions->Execute(pMacro);
+      }
    }
-}
-
-void CPGSuperDoc::OnApplyCopyGirder(SpanGirderHashType fromHash,std::vector<SpanGirderHashType> toHash,BOOL bGirder,BOOL bTransverse,BOOL bLongitudinalRebar,BOOL bPrestress,BOOL bHandling, BOOL bMaterial, BOOL bSlabOffset)
-{
-   if (!(bGirder || bTransverse || bPrestress || bLongitudinalRebar || bHandling || bMaterial || bSlabOffset))
-      return; //nothing to do
-
-   txnCopyGirder* pTxn = new txnCopyGirder(fromHash,toHash,bGirder,bTransverse,bLongitudinalRebar,bPrestress,bHandling,bMaterial,bSlabOffset);
-   GET_IFACE(IEAFTransactions,pTransactions);
-   pTransactions->Execute(pTxn);
 }
 
 void CPGSuperDoc::OnImportProjectLibrary() 
@@ -3734,14 +3765,14 @@ void CPGSuperDoc::OnCustomReportError(custReportErrorType error, const std::_tst
    switch(error)
    {
       case creParentMissingAtLoad:
-         os << _T("For custom report ")<<reportName<<_T(": the parent report ")<<otherName<<_T(" could not be found at program load time. The custom report was deleted.");
+         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found at program load time. The custom report was deleted.");
          break;
       case creParentMissingAtImport:
-         os << _T("For custom report ")<<reportName<<_T(": the parent report ")<<otherName<<_T(" could not be found. The report may have depended on one of PGSuper's plug-ins. The custom report was deleted.");
+         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found. The report may have depended on one of PGSuper's plug-ins. The custom report was deleted.");
          break;
       case creChapterMissingAtLoad:
       case creChapterMissingAtImport:
-         os << _T("For custom report ")<<reportName<<_T(": the following chapter ")<<otherName<<_T(" does not exist in the pareent report. The chapter was removed. Perhaps the chapter name changed? You may want to edit the report.");
+         os << _T("For custom report \"")<<reportName<<_T("\": the following chapter ")<<otherName<<_T(" does not exist in the pareent report. The chapter was removed. Perhaps the chapter name changed? You may want to edit the report.");
          break;
       default:
          ATLASSERT(0);

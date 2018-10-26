@@ -56,18 +56,17 @@ CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, CPGSuperDoc* pDoc, CWnd* pParen
 	//}}AFX_DATA_INIT
 }
 
+std::vector<IDType> CCopyGirderDlg::GetCallbackIDs()
+{
+   return m_CallbackIDs;
+}
+
 
 void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CCopyGirderDlg)
-	DDX_Control(pDX, IDC_COPY_GIRDER, m_DoCopyGirder);
-	DDX_Control(pDX, IDC_COPY_MATERIAL, m_DoCopyMaterial);
-	DDX_Control(pDX, IDC_COPY_TRANSVERSE, m_DoCopyTransverse);
-	DDX_Control(pDX, IDC_COPY_PRESTRESSING, m_DoCopyPrestressing);
-	DDX_Control(pDX, IDC_COPY_HANDLING, m_DoCopyHandling);
-	DDX_Control(pDX, IDC_COPY_SLABOFFSET, m_DoCopySlabOffset);
-   DDX_Control(pDX, IDC_LONGITUDINAL_REBAR, m_DoCopyLongitudinalRebar);
+   DDX_Control(pDX, IDC_LIST, m_PropertiesList);
 
    DDX_Control(pDX, IDC_FROM_SPAN,   m_FromSpan);
    DDX_Control(pDX, IDC_FROM_GIRDER, m_FromGirder);
@@ -75,18 +74,21 @@ void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_TO_GIRDER,   m_ToGirder);
 	//}}AFX_DATA_MAP
 
-   DDX_Check(pDX, IDC_COPY_GIRDER,       m_bCopyGirder);
-   DDX_Check(pDX, IDC_COPY_TRANSVERSE,   m_bCopyTransverse);
-   DDX_Check(pDX, IDC_COPY_PRESTRESSING, m_bCopyPrestressing);
-   DDX_Check(pDX, IDC_COPY_HANDLING,     m_bCopyHandling);
-   DDX_Check(pDX, IDC_COPY_MATERIAL,     m_bCopyMaterial);
-   DDX_Check(pDX, IDC_LONGITUDINAL_REBAR, m_bCopyLongitudinalRebar);
-   DDX_Check(pDX, IDC_COPY_SLABOFFSET,   m_bCopySlabOffset);
-
    if ( pDX->m_bSaveAndValidate )
    {
       m_FromSpanGirderHashValue = GetFromSpanGirder();
       m_ToSpanGirderHashValues  = GetToSpanGirders();
+
+      m_CallbackIDs.clear();
+      int nItems = m_PropertiesList.GetCount();
+      for ( int idx = 0; idx < nItems; idx++ )
+      {
+         if ( m_PropertiesList.GetCheck(idx) == BST_CHECKED )
+         {
+            IDType callbackID = (IDType)m_PropertiesList.GetItemData(idx);
+            m_CallbackIDs.push_back(callbackID);
+         }
+      }
    }
    else
    {
@@ -102,14 +104,7 @@ BEGIN_MESSAGE_MAP(CCopyGirderDlg, CDialog)
    ON_CBN_SELCHANGE(IDC_FROM_SPAN,OnFromSpanChanged)
    ON_CBN_SELCHANGE(IDC_TO_SPAN,OnToSpanChanged)
    ON_CBN_SELCHANGE(IDC_TO_GIRDER,OnToGirderChanged)
-	ON_BN_CLICKED(IDC_COPY_PRESTRESSING, OnCopyPrestressing)
-	ON_BN_CLICKED(IDC_COPY_HANDLING, OnCopyHandling)
-	ON_BN_CLICKED(IDC_COPY_SLABOFFSET, OnCopySlabOffset)
-	ON_BN_CLICKED(IDC_COPY_TRANSVERSE, OnCopyTransverse)
-   ON_BN_CLICKED(IDC_LONGITUDINAL_REBAR, OnCopyLongitudinalRebar)
 	ON_BN_CLICKED(ID_HELP, OnHelp)
-	ON_BN_CLICKED(IDC_COPY_MATERIAL, OnCopyMaterial)
-	ON_BN_CLICKED(IDC_COPY_GIRDER, OnCopyGirder)
    ON_BN_CLICKED(IDC_RADIO1, &CCopyGirderDlg::OnBnClickedRadio)
    ON_BN_CLICKED(IDC_RADIO2, &CCopyGirderDlg::OnBnClickedRadio)
 	//}}AFX_MSG_MAP
@@ -121,43 +116,11 @@ END_MESSAGE_MAP()
 
 BOOL CCopyGirderDlg::OnInitDialog() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
+   SetIcon(hIcon,FALSE);
+
 	CDialog::OnInitDialog();
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   // prestressing and longitudinal rebar can only be copied if
-   // the source and destination girders are the same time
-   UINT chkMainReinforcement = 1;
-
-   if ( pBridgeDesc->UseSameGirderForEntireBridge() )
-   {
-      m_DoCopyGirder.SetCheck(0);
-      m_DoCopyGirder.EnableWindow(FALSE);
-
-      chkMainReinforcement = 1;
-   }
-   else
-   {
-      m_DoCopyGirder.SetCheck(1);
-      chkMainReinforcement = 0;
-   }
-
-   m_DoCopyPrestressing.SetCheck(chkMainReinforcement);
-   m_DoCopyLongitudinalRebar.SetCheck(chkMainReinforcement);
-   m_DoCopyTransverse.SetCheck(1);
-   m_DoCopyHandling.SetCheck(1);
-   m_DoCopyMaterial.SetCheck(1);
-
-   if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
-   {
-      m_DoCopySlabOffset.SetCheck(0);
-      m_DoCopySlabOffset.EnableWindow(FALSE);
-   }
-   else
-   {
-      m_DoCopySlabOffset.SetCheck(1);
-   }
 
    FillComboBoxes(m_FromSpan,m_FromGirder,false);
    FillComboBoxes(m_ToSpan,  m_ToGirder,  true );
@@ -174,13 +137,9 @@ BOOL CCopyGirderDlg::OnInitDialog()
       m_ToSpan.SetCurSel((int)currSpan+1);
       OnToSpanChanged();
    }
-	
-   UpdateApply();
 
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
-   SetIcon(hIcon,FALSE);
+   CopyToSelectionChanged();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -279,67 +238,41 @@ void CCopyGirderDlg::OnToGirderChanged()
 
 void CCopyGirderDlg::CopyToSelectionChanged() 
 {
-   // if the source and any of the destination girders are not the same type
-   // the prestressing and longitudinal reinforcement data must be copied
    SpanGirderHashType copyFrom = GetFromSpanGirder();
    std::vector<SpanGirderHashType> copyTo = GetToSpanGirders();
 
-   SpanIndexType fromSpan;
-   GirderIndexType fromGirder;
-   UnhashSpanGirder(copyFrom,&fromSpan,&fromGirder);
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   std::_tstring strFromGirder = pBridgeDesc->GetSpan(fromSpan)->GetGirderTypes()->GetGirderName(fromGirder);
-
-   BOOL bCanCopy = TRUE;
-
-   std::vector<SpanGirderHashType>::iterator iter;
-   for ( iter = copyTo.begin(); iter != copyTo.end(); iter++ )
+   std::map<IDType,int> buttonStates;
+   int nItems = m_PropertiesList.GetCount();
+   for ( int idx = 0; idx < nItems; idx++ )
    {
-      SpanGirderHashType dwTo = *iter;
-      SpanIndexType toSpan;
-      GirderIndexType toGirder;
-      UnhashSpanGirder(dwTo,&toSpan,&toGirder);
-      std::_tstring strToGirder = pBridgeDesc->GetSpan(toSpan)->GetGirderTypes()->GetGirderName(toGirder);
+      IDType callbackID = (IDType)m_PropertiesList.GetItemData(idx);
+      buttonStates.insert(std::make_pair(callbackID,m_PropertiesList.GetCheck(idx)));
+   }
 
-      if ( strFromGirder != strToGirder )
+   m_PropertiesList.ResetContent();
+
+   const std::map<IDType,ICopyGirderPropertiesCallback*>& callbacks = m_pDoc->GetCopyGirderPropertiesCallbacks();
+   std::map<IDType,ICopyGirderPropertiesCallback*>::const_iterator iter(callbacks.begin());
+   std::map<IDType,ICopyGirderPropertiesCallback*>::const_iterator end(callbacks.end());
+   for ( ; iter != end; iter++ )
+   {
+      IDType callbackID = iter->first;
+      ICopyGirderPropertiesCallback* pCallback = iter->second;
+      if ( pCallback->CanCopy(copyFrom,copyTo) )
       {
-         bCanCopy = FALSE;
-         break;
+         LPCTSTR strName = pCallback->GetName();
+         int idx = m_PropertiesList.AddString(strName);
+         m_PropertiesList.SetItemData(idx,(DWORD_PTR)callbackID);
+
+         int checked = BST_CHECKED;
+         std::map<IDType,int>::iterator found = buttonStates.find(callbackID);
+         if ( found != buttonStates.end() )
+         {
+            checked = found->second;
+         }
+         m_PropertiesList.SetCheck(idx,checked);
       }
    }
-   m_DoCopyPrestressing.SetCheck(bCanCopy ? 1 : 0);
-   m_DoCopyPrestressing.EnableWindow(bCanCopy);
-   m_DoCopyLongitudinalRebar.SetCheck(bCanCopy ? 1 : 0);
-   m_DoCopyLongitudinalRebar.EnableWindow(bCanCopy);
-
-   UpdateApply();
-}
-
-void CCopyGirderDlg::UpdateApply()
-{
-   BOOL enable = TRUE;
-   if (m_DoCopyTransverse.GetCheck()==1   ||
-       m_DoCopyGirder.GetCheck()==1 ||
-       m_DoCopyPrestressing.GetCheck()==1 ||
-       m_DoCopyHandling.GetCheck()==1     ||
-       m_DoCopyMaterial.GetCheck()==1     ||
-       m_DoCopySlabOffset.GetCheck()==1     ||
-       m_DoCopyLongitudinalRebar.GetCheck() == 1)
-   {
-      enable = TRUE;
-   }
-   else
-   {
-      enable = FALSE;
-   }
-   CWnd* butok = GetDlgItem(IDOK);
-   ASSERT(butok!=0);
-   butok->EnableWindow(enable);
 }
 
 SpanGirderHashType CCopyGirderDlg::GetFromSpanGirder()
@@ -419,44 +352,9 @@ std::vector<SpanGirderHashType> CCopyGirderDlg::GetToSpanGirders()
    return vec;
 }
 
-void CCopyGirderDlg::OnCopyPrestressing() 
-{
-   UpdateApply();
-}
-
-void CCopyGirderDlg::OnCopyHandling() 
-{
-   UpdateApply();
-}
-
-void CCopyGirderDlg::OnCopySlabOffset() 
-{
-   UpdateApply();
-}
-
-void CCopyGirderDlg::OnCopyTransverse()  
-{
-   UpdateApply();
-}
-
-void CCopyGirderDlg::OnCopyLongitudinalRebar()
-{
-   UpdateApply();
-}
-
 void CCopyGirderDlg::OnHelp()
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_COPYGDRPROPERTIES );
-}
-
-void CCopyGirderDlg::OnCopyMaterial() 
-{
-   UpdateApply();
-}
-
-void CCopyGirderDlg::OnCopyGirder() 
-{
-   UpdateApply();	
 }
 
 void CCopyGirderDlg::OnBnClickedRadio()

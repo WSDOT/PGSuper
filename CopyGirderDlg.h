@@ -46,20 +46,14 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CCopyGirderDlg)
 	enum { IDD = IDD_COPY_GIRDER_PROPERTIES };
-	CButton	m_DoCopyGirder;
-	CButton	m_DoCopyMaterial;
-	CButton	m_DoCopyTransverse;
-	CButton	m_DoCopyLongitudinalRebar;
-	CButton	m_DoCopyPrestressing;
-	CButton	m_DoCopyHandling;
-	CButton	m_DoCopySlabOffset;
-	//CListBox	m_ToList;
-	//CListBox	m_FromList;
    
    CComboBox m_FromSpan;
    CComboBox m_FromGirder;
    CComboBox m_ToSpan;
    CComboBox m_ToGirder;
+
+   CCheckListBox m_PropertiesList;
+   std::vector<IDType> GetCallbackIDs();
 
 	//}}AFX_DATA
 
@@ -79,16 +73,9 @@ public:
    SpanGirderHashType m_FromSpanGirderHashValue;
    std::vector<SpanGirderHashType> m_ToSpanGirderHashValues;
 
-   BOOL m_bCopyGirder;
-   BOOL m_bCopyTransverse;
-   BOOL m_bCopyPrestressing;
-   BOOL m_bCopyHandling;
-   BOOL m_bCopyMaterial;
-   BOOL m_bCopyLongitudinalRebar;
-   BOOL m_bCopySlabOffset;
-
 // Implementation
 protected:
+   std::vector<IDType> m_CallbackIDs;
 
 	// Generated message map functions
 	//{{AFX_MSG(CCopyGirderDlg)
@@ -96,25 +83,13 @@ protected:
    afx_msg void OnFromSpanChanged();
    afx_msg void OnToSpanChanged();
    afx_msg void OnToGirderChanged();
-	//afx_msg void OnSelchangeFromList();
-	//afx_msg void OnSelchangeToList();
-	afx_msg void OnCopyPrestressing();
-	afx_msg void OnCopyHandling();
-	afx_msg void OnCopySlabOffset();
-	afx_msg void OnCopyTransverse();
-   afx_msg void OnCopyLongitudinalRebar();
    afx_msg void OnHelp();
-	afx_msg void OnCopyMaterial();
-	afx_msg void OnCopyGirder();
    afx_msg void OnBnClickedRadio();
    afx_msg void OnBnClickedSelectGirders();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-//   void FillListBox(CListBox& rbox, std::map<int,SpanGirderHashType>& indicies,SpanGirderHashType skip);
-
    void CopyToSelectionChanged();
-   void UpdateApply();
    CPGSuperDoc* m_pDoc;
    IBroker* m_pBroker;
 

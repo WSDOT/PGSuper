@@ -449,12 +449,13 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   std::map<IDType,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
-   std::map<IDType,IBridgeSectionViewEventCallback*>::iterator iter;
-   for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+   const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pDoc->GetBridgeSectionViewCallbacks();
+   std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
-      IBridgeSectionViewEventCallback* callback = iter->second;
-      callback->OnBackgroundContextMenu(pMenu);
+      IBridgeSectionViewEventCallback* pCallback = callbackIter->second;
+      pCallback->OnBackgroundContextMenu(pMenu);
    }
 
 

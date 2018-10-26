@@ -185,12 +185,13 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnContextMe
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_SPAN_CONTEXT,NULL);
 
-      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IBridgePlanViewEventCallback* callback = iter->second;
-         callback->OnSpanContextMenu(pThis->m_SpanIdx,pMenu);
+         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnSpanContextMenu(pThis->m_SpanIdx,pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);

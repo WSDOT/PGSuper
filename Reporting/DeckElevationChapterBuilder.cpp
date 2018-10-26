@@ -71,6 +71,21 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+
+   SpanIndexType InSpan;
+   GirderIndexType InGdr;
+   if ( pSGRptSpec )
+   {
+      InSpan = pSGRptSpec->GetSpan();
+      InGdr = pSGRptSpec->GetGirder();
+   }
+   else
+   {
+      InSpan = ALL_SPANS;
+      InGdr  = ALL_GIRDERS;
+   }
+
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pPara << _T("Deck Elevations over Girder Webs") << rptNewLine;
    (*pChapter) << pPara;
@@ -95,8 +110,20 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    GET_IFACE2(pBroker, IGirder, pGirder );
 
    RowIndexType row_step = 4; // number of rows reported for each web
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   for ( SpanIndexType span = 0; span < nSpans; span++ )
+
+   SpanIndexType startSpan, endSpan;
+   if(InSpan == ALL_SPANS)
+   {
+      startSpan = 0;
+      endSpan   = pBridge->GetSpanCount()-1;
+   }
+   else
+   {
+      startSpan = InSpan;
+      endSpan   = InSpan;
+   }
+
+   for ( SpanIndexType span = startSpan; span <= endSpan; span++ )
    {
       std::_tostringstream os;
       os << _T("Span ") << LABEL_SPAN(span) << std::endl;
@@ -132,8 +159,19 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
       RowIndexType row = pTable->GetNumberOfHeaderRows();
       col = 0;
 
-      GirderIndexType nGdrs = pBridge->GetGirderCount(span);
-      for ( GirderIndexType gdr = 0; gdr < nGdrs; gdr++ )
+      GirderIndexType startGdr, endGdr;
+      if(InGdr == ALL_GIRDERS)
+      {
+         startGdr = 0;
+         endGdr   = pBridge->GetGirderCount(span)-1;
+      }
+      else
+      {
+         startGdr = InGdr;
+         endGdr   = InGdr;
+      }
+
+      for ( GirderIndexType gdr = startGdr; gdr <= endGdr; gdr++ )
       {
          Float64 length = pBridge->GetSpanLength(span,gdr);
 

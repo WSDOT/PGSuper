@@ -51,6 +51,10 @@ COPYRIGHT
 class CShearData;
 class CLongitudinalRebarData;
 class CGirderData;
+class CHandlingData;
+class CPrestressData;
+class CHandlingData;
+
 class CPointLoadData;
 class CDistributedLoadData;
 class CMomentLoadData;
@@ -391,6 +395,10 @@ interface IGirderData : IUnknown
    virtual void SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,const matPsStrand* pmat)=0;
    virtual const CGirderData* GetGirderData(SpanIndexType span,GirderIndexType gdr) const = 0;
    virtual bool SetGirderData(const CGirderData& data,SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual const CPrestressData* GetPrestressData(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual void SetPrestressData(const CPrestressData& data,SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual const CHandlingData* GetHandlingData(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual void SetHandlingData(const CHandlingData& data,SpanIndexType span,GirderIndexType gdr) = 0;
    virtual const CGirderMaterial* GetGirderMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
    virtual void SetGirderMaterial(SpanIndexType span,GirderIndexType gdr,const CGirderMaterial& material) = 0;
 };

@@ -31,13 +31,15 @@ class REPORTINGCLASS CPGSuperTitlePageBuilder :
 {
 public:
    CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion=true);
+   CPGSuperTitlePageBuilder(const CPGSuperTitlePageBuilder& other);
    ~CPGSuperTitlePageBuilder(void);
 
    virtual rptChapter* Build(boost::shared_ptr<CReportSpecification>& pRptSpec);
    virtual bool NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec);
 
+   virtual CTitlePageBuilder* Clone() const;
+
 protected:
    CComPtr<IBroker> m_pBroker;
-   std::_tstring m_Title;
    bool m_bFullVersion;
 };

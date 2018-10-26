@@ -153,22 +153,24 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
 
    if ( pThis->m_bGirderElevation )
    {
-      std::map<IDType,IGirderElevationViewEventCallback*> callbacks = pDoc->GetGirderElevationViewCallbacks();
-      std::map<IDType,IGirderElevationViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      const std::map<IDType,IGirderElevationViewEventCallback*>& callbacks = pDoc->GetGirderElevationViewCallbacks();
+      std::map<IDType,IGirderElevationViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IGirderElevationViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IGirderElevationViewEventCallback* callback = iter->second;
-         callback->OnBackgroundContextMenu(pMenu);
+         IGirderElevationViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnBackgroundContextMenu(pMenu);
       }
    }
    else
    {
-      std::map<IDType,IGirderSectionViewEventCallback*> callbacks = pDoc->GetGirderSectionViewCallbacks();
-      std::map<IDType,IGirderSectionViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      const std::map<IDType,IGirderSectionViewEventCallback*>& callbacks = pDoc->GetGirderSectionViewCallbacks();
+      std::map<IDType,IGirderSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IGirderSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IGirderSectionViewEventCallback* callback = iter->second;
-         callback->OnBackgroundContextMenu(pMenu);
+         IGirderSectionViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnBackgroundContextMenu(pMenu);
       }
    }
 

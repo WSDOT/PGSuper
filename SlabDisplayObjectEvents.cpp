@@ -176,12 +176,13 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnContextMe
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
 
-      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IBridgePlanViewEventCallback* callback = iter->second;
-         callback->OnDeckContextMenu(pMenu);
+         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnDeckContextMenu(pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
@@ -388,12 +389,13 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnContex
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
 
-      std::map<IDType,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
-      std::map<IDType,IBridgeSectionViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pDoc->GetBridgeSectionViewCallbacks();
+      std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IBridgeSectionViewEventCallback* callback = iter->second;
-         callback->OnDeckContextMenu(pMenu);
+         IBridgeSectionViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnDeckContextMenu(pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);

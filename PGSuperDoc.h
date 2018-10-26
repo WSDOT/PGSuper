@@ -46,6 +46,8 @@
 #include "PGSuperCommandLineInfo.h"
 #include "PGSuperPluginMgr.h"
 
+#include "CopyGirderPropertiesCallbacks.h"
+
 #define EPD_GENERAL        0
 #define EPD_CONNECTION     1
 #define EPD_SPACING        2
@@ -196,40 +198,41 @@ public:
 
    IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
    bool UnregisterBridgePlanViewCallback(IDType ID);
-   std::map<IDType,IBridgePlanViewEventCallback*> GetBridgePlanViewCallbacks();
+   const std::map<IDType,IBridgePlanViewEventCallback*>& GetBridgePlanViewCallbacks();
 
    IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
    bool UnregisterBridgeSectionViewCallback(IDType ID);
-   std::map<IDType,IBridgeSectionViewEventCallback*> GetBridgeSectionViewCallbacks();
+   const std::map<IDType,IBridgeSectionViewEventCallback*>& GetBridgeSectionViewCallbacks();
 
    IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
    bool UnregisterGirderElevationViewCallback(IDType ID);
-   std::map<IDType,IGirderElevationViewEventCallback*> GetGirderElevationViewCallbacks();
+   const std::map<IDType,IGirderElevationViewEventCallback*>& GetGirderElevationViewCallbacks();
 
    IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
    bool UnregisterGirderSectionViewCallback(IDType ID);
-   std::map<IDType,IGirderSectionViewEventCallback*> GetGirderSectionViewCallbacks();
+   const std::map<IDType,IGirderSectionViewEventCallback*>& GetGirderSectionViewCallbacks();
 
    IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
    bool UnregisterEditPierCallback(IDType ID);
-   std::map<IDType,IEditPierCallback*> GetEditPierCallbacks();
+   const std::map<IDType,IEditPierCallback*>& GetEditPierCallbacks();
 
    IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
    bool UnregisterEditSpanCallback(IDType ID);
-   std::map<IDType,IEditSpanCallback*> GetEditSpanCallbacks();
+   const std::map<IDType,IEditSpanCallback*>& GetEditSpanCallbacks();
 
-   IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback);
+   IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback * pCopyCallback);
    bool UnregisterEditGirderCallback(IDType ID);
-   std::map<IDType,IEditGirderCallback*> GetEditGirderCallbacks();
+   const std::map<IDType,IEditGirderCallback*>& GetEditGirderCallbacks();
+   const std::map<IDType,ICopyGirderPropertiesCallback*>& GetCopyGirderPropertiesCallbacks();
 
    IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
    bool UnregisterEditBridgeCallback(IDType ID);
-   std::map<IDType,IEditBridgeCallback*> GetEditBridgeCallbacks();
+   const std::map<IDType,IEditBridgeCallback*>& GetEditBridgeCallbacks();
 
 protected:
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 
-   IDType m_ViewCallbackID;
+   IDType m_CallbackID;
    std::map<IDType,IBridgePlanViewEventCallback*> m_BridgePlanViewCallbacks;
    std::map<IDType,IBridgeSectionViewEventCallback*> m_BridgeSectionViewCallbacks;
    std::map<IDType,IGirderElevationViewEventCallback*> m_GirderElevationViewCallbacks;
@@ -238,7 +241,18 @@ protected:
    std::map<IDType,IEditPierCallback*> m_EditPierCallbacks;
    std::map<IDType,IEditSpanCallback*> m_EditSpanCallbacks;
    std::map<IDType,IEditGirderCallback*> m_EditGirderCallbacks;
+   std::map<IDType,ICopyGirderPropertiesCallback*> m_CopyGirderPropertiesCallbacks;
    std::map<IDType,IEditBridgeCallback*> m_EditBridgeCallbacks;
+
+   // these are the standard copy girder callbacks
+   CCopyGirderType m_CopyGirderType;
+   CCopyGirderStirrups m_CopyGirderStirrups;
+   CCopyGirderPrestressing m_CopyGirderPrestressing;
+   CCopyGirderHandling m_CopyGirderHandling;
+   CCopyGirderMaterial m_CopyGirderMaterials;
+   CCopyGirderRebar m_CopyGirderRebar;
+   CCopyGirderSlabOffset m_CopyGirderSlabOffset;
+
 
    psgLibraryManager m_LibMgr;
 
@@ -262,9 +276,6 @@ protected:
    // callback IDs for any status callbacks we register
    StatusCallbackIDType m_scidInformationalError;
    StatusGroupIDType m_StatusGroupID;
-
-   friend CCopyGirderDlg;
-   void OnApplyCopyGirder(SpanGirderHashType fromHash,std::vector<SpanGirderHashType> toHash,BOOL bGirder,BOOL bTransverse,BOOL bLongitudinalRebar,BOOL bPrestress,BOOL bHandling, BOOL bMaterial, BOOL bSlabOffset);
 
    virtual void OnCreateInitialize();
    virtual void OnCreateFinalize();

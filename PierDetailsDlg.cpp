@@ -161,9 +161,9 @@ void CPierDetailsDlg::CreateExtensionPages()
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
 
-   std::map<IDType,IEditPierCallback*> callbacks = pDoc->GetEditPierCallbacks();
-   std::map<IDType,IEditPierCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditPierCallback*>::iterator callbackIterEnd(callbacks.end());
+   const std::map<IDType,IEditPierCallback*>& callbacks = pDoc->GetEditPierCallbacks();
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIterEnd(callbacks.end());
    for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
       IEditPierCallback* pEditPierCallback = callbackIter->second;
@@ -184,9 +184,9 @@ void CPierDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& 
    m_BridgeExtensionPages = editBridgeExtensions;
 
 
-   std::map<IDType,IEditPierCallback*> callbacks = pDoc->GetEditPierCallbacks();
-   std::map<IDType,IEditPierCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditPierCallback*>::iterator callbackIterEnd(callbacks.end());
+   const std::map<IDType,IEditPierCallback*>& callbacks = pDoc->GetEditPierCallbacks();
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIterEnd(callbacks.end());
    for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
       IEditPierCallback* pEditPierCallback = callbackIter->second;
@@ -261,9 +261,9 @@ void CPierDetailsDlg::NotifyBridgeExtensionPages()
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
 
-   std::map<IDType,IEditPierCallback*> callbacks = pDoc->GetEditPierCallbacks();
-   std::map<IDType,IEditPierCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditPierCallback*>::iterator callbackIterEnd(callbacks.end());
+   const std::map<IDType,IEditPierCallback*>& callbacks = pDoc->GetEditPierCallbacks();
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditPierCallback*>::const_iterator callbackIterEnd(callbacks.end());
    std::vector<std::pair<IEditPierCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
    for ( ; callbackIter != callbackIterEnd; callbackIter++, pageIter++ )
    {

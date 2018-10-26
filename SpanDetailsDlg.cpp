@@ -209,9 +209,9 @@ void CSpanDetailsDlg::CreateExtensionPages()
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
 
-   std::map<IDType,IEditSpanCallback*> callbacks = pDoc->GetEditSpanCallbacks();
-   std::map<IDType,IEditSpanCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditSpanCallback*>::iterator callbackIterEnd(callbacks.end());
+   const std::map<IDType,IEditSpanCallback*>& callbacks = pDoc->GetEditSpanCallbacks();
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIterEnd(callbacks.end());
    for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
       IEditSpanCallback* pCallback = callbackIter->second;
@@ -231,9 +231,9 @@ void CSpanDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& 
 
    m_BridgeExtensionPages = editBridgeExtensions;
 
-   std::map<IDType,IEditSpanCallback*> callbacks = pDoc->GetEditSpanCallbacks();
-   std::map<IDType,IEditSpanCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditSpanCallback*>::iterator callbackIterEnd(callbacks.end());
+   const std::map<IDType,IEditSpanCallback*>& callbacks = pDoc->GetEditSpanCallbacks();
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIterEnd(callbacks.end());
    for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
       IEditSpanCallback* pEditSpanCallback = callbackIter->second;
@@ -308,9 +308,9 @@ void CSpanDetailsDlg::NotifyBridgeExtensionPages()
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
 
-   std::map<IDType,IEditSpanCallback*> callbacks = pDoc->GetEditSpanCallbacks();
-   std::map<IDType,IEditSpanCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditSpanCallback*>::iterator callbackIterEnd(callbacks.end());
+   const std::map<IDType,IEditSpanCallback*>& callbacks = pDoc->GetEditSpanCallbacks();
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditSpanCallback*>::const_iterator callbackIterEnd(callbacks.end());
    std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
    for ( ; callbackIter != callbackIterEnd; callbackIter++, pageIter++ )
    {

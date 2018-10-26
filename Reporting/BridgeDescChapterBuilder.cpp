@@ -112,9 +112,9 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   write_alignment_data( pBroker, pDisplayUnits, pChapter, level);
-   write_profile_data( pBroker, pDisplayUnits, pChapter, level);
-   write_crown_data( pBroker, pDisplayUnits, pChapter, level);
+//   write_alignment_data( pBroker, pDisplayUnits, pChapter, level);
+//   write_profile_data( pBroker, pDisplayUnits, pChapter, level);
+//   write_crown_data( pBroker, pDisplayUnits, pChapter, level);
    write_bridge_data( pBroker, pDisplayUnits, pChapter, level, span, gdr);
    write_concrete_details(pBroker,pDisplayUnits,pChapter, span, gdr,level);
    write_pier_data( pBroker, pDisplayUnits, pChapter, level);

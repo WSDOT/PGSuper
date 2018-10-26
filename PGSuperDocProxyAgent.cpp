@@ -1221,9 +1221,9 @@ IDType CPGSuperDocProxyAgent::RegisterEditSpanCallback(IEditSpanCallback* pCallb
    return m_pPGSuperDoc->RegisterEditSpanCallback(pCallback);
 }
 
-IDType CPGSuperDocProxyAgent::RegisterEditGirderCallback(IEditGirderCallback* pCallback)
+IDType CPGSuperDocProxyAgent::RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback)
 {
-   return m_pPGSuperDoc->RegisterEditGirderCallback(pCallback);
+   return m_pPGSuperDoc->RegisterEditGirderCallback(pCallback,pCopyCallback);
 }
 
 IDType CPGSuperDocProxyAgent::RegisterEditBridgeCallback(IEditBridgeCallback* pCallback)

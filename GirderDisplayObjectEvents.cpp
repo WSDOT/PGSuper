@@ -229,12 +229,13 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
       pPGSuperDoc->BuildReportMenu(pMenu,true);
 
-      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
-      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IBridgePlanViewEventCallback* callback = iter->second;
-         callback->OnGirderContextMenu(pThis->m_SpanIdx,pThis->m_GirderIdx,pMenu);
+         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnGirderContextMenu(pThis->m_SpanIdx,pThis->m_GirderIdx,pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
@@ -451,12 +452,13 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
       pPGSuperDoc->BuildReportMenu(pMenu,true);
 
-      std::map<IDType,IBridgeSectionViewEventCallback*> callbacks = pPGSuperDoc->GetBridgeSectionViewCallbacks();
-      std::map<IDType,IBridgeSectionViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pPGSuperDoc->GetBridgeSectionViewCallbacks();
+      std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+      std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
-         IBridgeSectionViewEventCallback* callback = iter->second;
-         callback->OnGirderContextMenu(pThis->m_SpanIdx,pThis->m_GirderIdx,pMenu);
+         IBridgeSectionViewEventCallback* pCallback = callbackIter->second;
+         pCallback->OnGirderContextMenu(pThis->m_SpanIdx,pThis->m_GirderIdx,pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);

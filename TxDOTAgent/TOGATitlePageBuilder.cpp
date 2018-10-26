@@ -42,15 +42,28 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CTOGATitlePageBuilder::CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
+CTitlePageBuilder(strTitle),
 m_pBroker(pBroker),
-m_Title(strTitle),
 m_bFullVersion(bFullVersion)
+{
+}
+
+CTOGATitlePageBuilder::CTOGATitlePageBuilder(const CTOGATitlePageBuilder& other) :
+CTitlePageBuilder(other),
+m_pBroker(other.m_pBroker),
+m_bFullVersion(other.m_bFullVersion)
 {
 }
 
 CTOGATitlePageBuilder::~CTOGATitlePageBuilder(void)
 {
 }
+
+CTitlePageBuilder* CTOGATitlePageBuilder::Clone() const
+{
+   return new CTOGATitlePageBuilder(*this);
+}
+
 
 bool CTOGATitlePageBuilder::NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec)
 {

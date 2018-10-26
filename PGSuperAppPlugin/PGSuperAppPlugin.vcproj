@@ -794,6 +794,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CopyGirderPropertiesCallbacks.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\CrownSlopeGrid.cpp"
 				>
 			</File>
@@ -1560,6 +1564,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CopyGirderPropertiesCallbacks.h"
+				>
+			</File>
+			<File
 				RelativePath="..\CPPGSuperDocProxyAgent.h"
 				>
 			</File>
@@ -1964,11 +1972,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\resource.h"
+				RelativePath=".\Resource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Resource.h"
+				RelativePath="..\resource.h"
 				>
 			</File>
 			<File
@@ -2218,11 +2226,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -2286,11 +2294,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\PGSuper.ico"
+				RelativePath="..\res\PGSuper.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\PGSuper.ico"
+				RelativePath=".\res\PGSuper.ico"
 				>
 			</File>
 			<File
@@ -2460,10 +2468,6 @@
 				Name="Header Files"
 				>
 				<File
-					RelativePath="..\CopyGirder.h"
-					>
-				</File>
-				<File
 					RelativePath="..\DesignGirder.h"
 					>
 				</File>
@@ -2543,10 +2547,6 @@
 			<Filter
 				Name="Source Files"
 				>
-				<File
-					RelativePath="..\CopyGirder.cpp"
-					>
-				</File>
 				<File
 					RelativePath="..\DesignGirder.cpp"
 					>

@@ -219,7 +219,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    PierIndexType startPier = (span == ALL_SPANS ? 0 : span); // Make ALL_SPAN not crash. Assert above should stop this
-   PierIndexType endPier   = startPier+2;
+   PierIndexType endPier   = startPier+1;
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);

@@ -127,6 +127,28 @@ interface IEditBridgeCallback
    virtual void EditSpan_OnOK(CPropertyPage* pBridgePropertyPage,CPropertyPage* pSpanPropertyPage) = 0;
 };
 
+// Callback interface for copying girder properties. If you are extending the girder dialog with
+// additional girder-based data you may want to also have that data copied with the Copy Girder Properties
+// command is executed. Implement this interface, and register it with the IExtendUI interface to
+// have your girder properties listed in the Copy Girder Properties dialog and for your code
+// to be notified when it is time to copy the data
+interface ICopyGirderPropertiesCallback
+{
+   // Text string to be displayed in the Copy Girder Properties dialog
+   virtual LPCTSTR GetName() = 0;
+
+   // Return TRUE if your girder properties check box should be included in the copy properties list.
+   // Example: The Slab Offset parameter should not be copied if it is defined as a single value
+   // for the entire bridge. 
+   // This method is called whenever the selection of the source or target girders changes.
+   virtual BOOL CanCopy(SpanGirderHashType fromSpanGirderHashValue,const std::vector<SpanGirderHashType>& toSpanGirderHashValues) = 0;
+
+   // called by the framework when you need to create a transaction object that
+   // will cause your girder data to be copied. Allocate the transaction object
+   // on the heap. The framework will delete it when it is no longer needed.
+   virtual txnTransaction* CreateCopyTransaction(SpanGirderHashType fromSpanGirderHashValue,const std::vector<SpanGirderHashType>& toSpanGirderHashValues) = 0;
+};
+
 
 /////////////////////////////////////////////////////////
 // IExtendUI
@@ -140,7 +162,7 @@ interface IExtendUI : IUnknown
 {
    virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback) = 0;
    virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback) = 0;
-   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback) = 0;
+   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback = NULL) = 0;
    virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback) = 0;
 
    virtual bool UnregisterEditPierCallback(IDType ID) = 0;

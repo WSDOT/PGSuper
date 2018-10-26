@@ -284,7 +284,7 @@ public:
 public:
    virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
    virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
-   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback);
+   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
    virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
    virtual bool UnregisterEditPierCallback(IDType ID);
    virtual bool UnregisterEditSpanCallback(IDType ID);

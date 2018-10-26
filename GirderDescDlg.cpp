@@ -107,9 +107,9 @@ void CGirderDescDlg::CreateExtensionPages()
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
 
-   std::map<IDType,IEditGirderCallback*> callbacks = pDoc->GetEditGirderCallbacks();
-   std::map<IDType,IEditGirderCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditGirderCallback*>::iterator callbackIterEnd(callbacks.end());
+   const std::map<IDType,IEditGirderCallback*>& callbacks = pDoc->GetEditGirderCallbacks();
+   std::map<IDType,IEditGirderCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditGirderCallback*>::const_iterator callbackIterEnd(callbacks.end());
    for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
       IEditGirderCallback* pCallback = callbackIter->second;

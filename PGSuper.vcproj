@@ -1231,15 +1231,15 @@
 				>
 			</File>
 			<File
+				RelativePath="LibraryEditor\res\ico00001.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\ico00001.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00001.ico"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\res\ico00001.ico"
 				>
 			</File>
 			<File
@@ -1263,15 +1263,15 @@
 				>
 			</File>
 			<File
+				RelativePath="LibraryEditor\res\ico00004.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\ico00004.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00004.ico"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\res\ico00004.ico"
 				>
 			</File>
 			<File
@@ -1287,7 +1287,7 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
+				RelativePath="LibraryEditor\res\ico00006.ico"
 				>
 			</File>
 			<File
@@ -1295,7 +1295,7 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00006.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
 				>
 			</File>
 			<File
@@ -1351,15 +1351,15 @@
 				>
 			</File>
 			<File
+				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\icon1.ico"
-				>
-			</File>
-			<File
-				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1628,14 +1628,6 @@
 			</File>
 			<File
 				RelativePath="hlp\Scmin.bmp"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="My Amplifier Results"
-			>
-			<File
-				RelativePath=".\My Amplifier Results\r028hs\r028hs.ampl"
 				>
 			</File>
 		</Filter>

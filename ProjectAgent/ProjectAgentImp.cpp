@@ -4987,6 +4987,34 @@ void CProjectAgentImp::SetGirderMaterial(SpanIndexType span,GirderIndexType gdr,
    pSpan->SetGirderTypes(girderTypes);
 }
 
+const CPrestressData* CProjectAgentImp::GetPrestressData(SpanIndexType span,GirderIndexType gdr)
+{
+   return &m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).PrestressData;
+}
+
+void CProjectAgentImp::SetPrestressData(const CPrestressData& data,SpanIndexType span,GirderIndexType gdr)
+{
+   if ( data != m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).PrestressData )
+   {
+      m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).PrestressData = data;
+      Fire_GirderChanged(span,gdr,GCH_PRESTRESSING_CONFIGURATION);
+   }
+}
+
+const CHandlingData* CProjectAgentImp::GetHandlingData(SpanIndexType span,GirderIndexType gdr)
+{
+   return &m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).HandlingData;
+}
+
+void CProjectAgentImp::SetHandlingData(const CHandlingData& data,SpanIndexType span,GirderIndexType gdr)
+{
+   if ( data != m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).HandlingData )
+   {
+      m_BridgeDescription.GetSpan(span)->GetGirderTypes()->GetGirderData(gdr).HandlingData = data;
+      Fire_GirderChanged(span,gdr,0);
+   }
+}
+
 bool CProjectAgentImp::SetGirderData(const CGirderData& data,SpanIndexType span,GirderIndexType gdr)
 {
    int change_type = DoSetGirderData(data,span, gdr);

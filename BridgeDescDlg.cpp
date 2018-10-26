@@ -102,9 +102,9 @@ void CBridgeDescDlg::CreateExtensionPages()
    CEAFDocument* pEAFDoc = EAFGetDocument();
    CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
 
-   std::map<IDType,IEditBridgeCallback*> callbacks = pDoc->GetEditBridgeCallbacks();
-   std::map<IDType,IEditBridgeCallback*>::iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditBridgeCallback*>::iterator callbackIterEnd(callbacks.end());
+   const std::map<IDType,IEditBridgeCallback*>& callbacks = pDoc->GetEditBridgeCallbacks();
+   std::map<IDType,IEditBridgeCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditBridgeCallback*>::const_iterator callbackIterEnd(callbacks.end());
    for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
       IEditBridgeCallback* pCallback = callbackIter->second;

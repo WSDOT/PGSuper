@@ -246,6 +246,10 @@ public:
    virtual void SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,const matPsStrand* pmat);
    virtual const CGirderData* GetGirderData(SpanIndexType span,GirderIndexType gdr) const;
    virtual bool SetGirderData(const CGirderData& data,SpanIndexType span,GirderIndexType gdr);
+   virtual const CPrestressData* GetPrestressData(SpanIndexType span,GirderIndexType gdr);
+   virtual void SetPrestressData(const CPrestressData& data,SpanIndexType span,GirderIndexType gdr);
+   virtual const CHandlingData* GetHandlingData(SpanIndexType span,GirderIndexType gdr);
+   virtual void SetHandlingData(const CHandlingData& data,SpanIndexType span,GirderIndexType gdr);
    virtual const CGirderMaterial* GetGirderMaterial(SpanIndexType span,GirderIndexType gdr) const;
    virtual void SetGirderMaterial(SpanIndexType span,GirderIndexType gdr,const CGirderMaterial& material);
 private:

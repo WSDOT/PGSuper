@@ -776,12 +776,13 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-   std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
-   for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+   const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
+   std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+   std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
    {
-      IBridgePlanViewEventCallback* callback = iter->second;
-      callback->OnBackgroundContextMenu(pMenu);
+      IBridgePlanViewEventCallback* pCallback = callbackIter->second;
+      pCallback->OnBackgroundContextMenu(pMenu);
    }
 
 
