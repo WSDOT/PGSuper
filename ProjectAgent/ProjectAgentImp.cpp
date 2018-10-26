@@ -2736,8 +2736,8 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
       const CTimelineEvent* pGirderPlacementEvent;
       EventIndexType cyEventIdx;
       EventIndexType gpEventIdx;
-      VERIFY(pTimelineMgr->FindEvent(_T("Casting Yard"),&cyEventIdx,&pCastingYardEvent));
-      VERIFY(pTimelineMgr->FindEvent(_T("Girder Placement"),&gpEventIdx,&pGirderPlacementEvent));
+      VERIFY(pTimelineMgr->FindEvent(_T("Construct Girders, Erect Piers"),&cyEventIdx,&pCastingYardEvent));
+      VERIFY(pTimelineMgr->FindEvent(_T("Erect Girders"),&gpEventIdx,&pGirderPlacementEvent));
 
       std::map<SpanGirderHashType,CGirderData>::iterator iter;
       for ( iter = girderDataMap.begin(); iter != girderDataMap.end(); iter++ )

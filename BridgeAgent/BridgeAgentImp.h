@@ -1156,6 +1156,12 @@ private:
    pgsTypes::SectionPropertyType m_LOTFSectionPropertiesType;
    SectProp m_LOTFSectionProperties;
 
+   // Cache to hold the girder section objects.
+   typedef std::map<pgsPointOfInterest,CComPtr<IGirderSection>> GirderSectionCache;
+   std::auto_ptr<GirderSectionCache> m_pGirderSectionCache[2]; // array index is pgsTypes::SectionCoordinateType
+   void InvalidateGirderSections(pgsTypes::SectionCoordinateType scType);
+   static UINT DeleteGirderSectionCache(LPVOID pParam);
+
    void InvalidateSectionProperties(pgsTypes::SectionPropertyType sectPropType);
    static UINT DeleteSectionProperties(LPVOID pParam);
    pgsTypes::SectionPropertyType GetSectionPropertiesType(); // returns the section properties types for the current section properties mode

@@ -2526,8 +2526,11 @@ void CBridgeDescription2::SetGirderName(LPCTSTR strName)
                CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
                pSegment->Strands.ResetPrestressData();
 
-               pSegment->ShearData = m_pGirderLibraryEntry->GetShearData();
-               pSegment->LongitudinalRebarData.CopyGirderEntryData(*m_pGirderLibraryEntry);
+               if ( m_pGirderLibraryEntry )
+               {
+                  pSegment->ShearData = m_pGirderLibraryEntry->GetShearData();
+                  pSegment->LongitudinalRebarData.CopyGirderEntryData(*m_pGirderLibraryEntry);
+               }
             }
          }
       }

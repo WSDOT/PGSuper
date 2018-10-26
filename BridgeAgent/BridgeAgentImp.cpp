@@ -632,6 +632,27 @@ void CBridgeAgentImp::InvalidateSectionProperties(pgsTypes::SectionPropertyType 
    m_Shapes.clear();
 }
 
+void CBridgeAgentImp::InvalidateGirderSections(pgsTypes::SectionCoordinateType scType)
+{
+   GirderSectionCache* pOldCache = m_pGirderSectionCache[scType].release();
+   m_pGirderSectionCache[scType] = std::auto_ptr<GirderSectionCache>(new GirderSectionCache);
+#if defined _USE_MULTITHREADING
+   m_ThreadManager.CreateThread(CBridgeAgentImp::DeleteGirderSectionCache,(LPVOID)(pOldCache));
+#else
+   CBridgeAgentImp::DeleteGirderSectionCache((LPVOID)(pOldCache));
+#endif
+}
+
+UINT CBridgeAgentImp::DeleteGirderSectionCache(LPVOID pParam)
+{
+   WATCH(_T("Begin: DeleteGirderSectionCache"));
+   GirderSectionCache* pCache = (GirderSectionCache*)(pParam);
+   pCache->clear();
+   delete pCache;
+   WATCH(_T("End: DeleteGirderSectionCache"));
+   return 0;
+}
+
 UINT CBridgeAgentImp::DeleteSectionProperties(LPVOID pParam)
 {
    WATCH(_T("Begin: DeleteSectionProperties"));
@@ -701,6 +722,9 @@ HRESULT CBridgeAgentImp::FinalConstruct()
       m_pSectProps[spType] = std::auto_ptr<SectPropContainer>(new SectPropContainer);
    }
 
+   m_pGirderSectionCache[pgsTypes::scBridge] = std::auto_ptr<GirderSectionCache>(new GirderSectionCache);
+   m_pGirderSectionCache[pgsTypes::scGirder] = std::auto_ptr<GirderSectionCache>(new GirderSectionCache);
+
    return S_OK;
 }
 
@@ -753,6 +777,9 @@ void CBridgeAgentImp::Invalidate( Uint16 level )
       InvalidateUserLoads();
 
       InvalidateDeckParameters();
+
+      InvalidateGirderSections(pgsTypes::scBridge);
+      InvalidateGirderSections(pgsTypes::scGirder);
 
       // clear the cached shapes
       m_DeckShapes.clear();
@@ -24777,8 +24804,16 @@ HRESULT CBridgeAgentImp::GetSlabOverhangs(Float64 Xb,Float64* pLeft,Float64* pRi
    return S_OK;
 }
 
-HRESULT CBridgeAgentImp::GetGirderSection(const pgsPointOfInterest& poi,pgsTypes::SectionCoordinateType csType,IGirderSection** gdrSection)
+HRESULT CBridgeAgentImp::GetGirderSection(const pgsPointOfInterest& poi,pgsTypes::SectionCoordinateType scType,IGirderSection** gdrSection)
 {
+   // First check the cache... if we have the requested section just return it
+   std::map<pgsPointOfInterest,CComPtr<IGirderSection>>::iterator found(m_pGirderSectionCache[scType]->find(poi));
+   if ( found != m_pGirderSectionCache[scType]->end() )
+   {
+      return found->second.CopyTo(gdrSection);
+   }
+
+   // Get the girder section from the generic bridge model
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    CComPtr<ISuperstructureMemberSegment> segment;
@@ -24788,29 +24823,56 @@ HRESULT CBridgeAgentImp::GetGirderSection(const pgsPointOfInterest& poi,pgsTypes
    Float64 Xs = poi.GetDistFromStart();
    Float64 Ls = GetSegmentLength(segmentKey);
    Xs = ::ForceIntoRange(0.0,Xs,Ls);
-   segment->get_PrimaryShape(Xs,&girder_shape);
+   segment->get_PrimaryShape(Xs,&girder_shape); // always returns primary shape in bridge section coordinates
 
-   if ( csType == pgsTypes::scGirder )
+   CComQIPtr<IGirderSection> global_girder_section(girder_shape); // this is the shape in bridge section coordinates
+   ATLASSERT(global_girder_section != NULL);
+
+   // Get the shape in girder section coordinates
+   // Only need to do this if it is specifically asked for, or if the poi has a valid ID because we are doing bridge and girder section coordinates at the same time
+   CComPtr<IGirderSection> local_girder_section;
+   if ( scType == pgsTypes::scGirder || poi.GetID() != INVALID_ID )
    {
-      // Convert to girder section coordinates....
-      // the bottom center point is located at (0,0)
-      CComQIPtr<IXYPosition> position(girder_shape);
-
-      CComPtr<IPoint2d> point;
-      position->get_LocatorPoint(lpBottomCenter,&point);
-
-      point->Move(0,0);
-
-      position->put_LocatorPoint(lpBottomCenter,point);
+      CComPtr<IShape> local_girder_shape;
+      girder_shape->Clone(&local_girder_shape);
+      CComQIPtr<IXYPosition> position(local_girder_shape);
+      CComPtr<IPoint2d> pntBC;
+      position->get_LocatorPoint(lpBottomCenter,&pntBC);
+      pntBC->Move(0,0);
+      position->put_LocatorPoint(lpBottomCenter,pntBC);
+      local_girder_shape.QueryInterface(&local_girder_section);
+      ATLASSERT(local_girder_section != NULL);
    }
 
+   if ( poi.GetID() != INVALID_ID )
+   {
+      // don't cache for a POI with an invalid ID.
+      std::pair<std::map<pgsPointOfInterest,CComPtr<IGirderSection>>::iterator,bool> bridgeResult = m_pGirderSectionCache[pgsTypes::scBridge]->insert(std::make_pair(poi,global_girder_section));
+      ATLASSERT(bridgeResult.second);
 
-   CComQIPtr<IGirderSection> girder_section(girder_shape);
+      std::pair<std::map<pgsPointOfInterest,CComPtr<IGirderSection>>::iterator,bool> girderResult = m_pGirderSectionCache[pgsTypes::scGirder]->insert(std::make_pair(poi,local_girder_section));
+      ATLASSERT(girderResult.second);
 
-   ASSERT(girder_section != NULL);
-
-   (*gdrSection) = girder_section;
-   (*gdrSection)->AddRef();
+      if ( scType == pgsTypes::scBridge )
+      {
+         bridgeResult.first->second.CopyTo(gdrSection);
+      }
+      else
+      {
+         girderResult.first->second.CopyTo(gdrSection);
+      }
+   }
+   else
+   {
+      if ( scType == pgsTypes::scBridge )
+      {
+         global_girder_section.CopyTo(gdrSection);
+      }
+      else
+      {
+         local_girder_section.CopyTo(gdrSection);
+      }
+   }
 
    return S_OK;
 }
