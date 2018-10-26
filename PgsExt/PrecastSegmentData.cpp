@@ -24,7 +24,7 @@
 #include <PgsExt\PrecastSegmentData.h>
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\StructuredSave.h>
@@ -66,6 +66,10 @@ CPrecastSegmentData::CPrecastSegmentData(const CPrecastSegmentData& rOther)
    MakeCopy(rOther,true /* only copy data, not ID or Index*/);
 }
 
+CPrecastSegmentData::~CPrecastSegmentData()
+{
+}
+
 void CPrecastSegmentData::Init()
 {
    m_SegmentIndex = INVALID_INDEX;
@@ -101,10 +105,6 @@ void CPrecastSegmentData::Init()
 
    m_pLeftClosure = NULL;
    m_pRightClosure = NULL;
-}
-
-CPrecastSegmentData::~CPrecastSegmentData()
-{
 }
 
 void CPrecastSegmentData::SetGirder(CSplicedGirderData* pGirder)
@@ -151,32 +151,32 @@ SpanIndexType CPrecastSegmentData::GetSpanIndex(pgsTypes::MemberEndType endType)
    return (m_pSpanData[endType] != NULL ? m_pSpanData[endType]->GetIndex() : m_SpanIdx[endType]);
 }
 
-void CPrecastSegmentData::SetLeftClosure(CClosurePourData* pClosure)
+void CPrecastSegmentData::SetLeftClosure(CClosureJointData* pClosure)
 {
    m_pLeftClosure = pClosure;
 }
 
-const CClosurePourData* CPrecastSegmentData::GetLeftClosure() const
+const CClosureJointData* CPrecastSegmentData::GetLeftClosure() const
 {
    return m_pLeftClosure;
 }
 
-CClosurePourData* CPrecastSegmentData::GetLeftClosure()
+CClosureJointData* CPrecastSegmentData::GetLeftClosure()
 {
    return m_pLeftClosure;
 }
 
-void CPrecastSegmentData::SetRightClosure(CClosurePourData* pClosure)
+void CPrecastSegmentData::SetRightClosure(CClosureJointData* pClosure)
 {
    m_pRightClosure = pClosure;
 }
 
-const CClosurePourData* CPrecastSegmentData::GetRightClosure() const
+const CClosureJointData* CPrecastSegmentData::GetRightClosure() const
 {
    return m_pRightClosure;
 }
 
-CClosurePourData* CPrecastSegmentData::GetRightClosure()
+CClosureJointData* CPrecastSegmentData::GetRightClosure()
 {
    return m_pRightClosure;
 }
@@ -272,7 +272,7 @@ void CPrecastSegmentData::GetSpacing(const CGirderSpacing2** ppStartSpacing,cons
 
 void CPrecastSegmentData::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset)
 {
-   CClosurePourData* pClosure = (end == pgsTypes::metStart ? m_pLeftClosure : m_pRightClosure);
+   CClosureJointData* pClosure = (end == pgsTypes::metStart ? m_pLeftClosure : m_pRightClosure);
    if ( pClosure )
    {
       pClosure->SetSlabOffset(offset);
@@ -286,7 +286,7 @@ void CPrecastSegmentData::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offs
 
 Float64 CPrecastSegmentData::GetSlabOffset(pgsTypes::MemberEndType end) const
 {
-   CClosurePourData* pClosure = (end == pgsTypes::metStart ? m_pLeftClosure : m_pRightClosure);
+   CClosureJointData* pClosure = (end == pgsTypes::metStart ? m_pLeftClosure : m_pRightClosure);
    if ( pClosure )
    {
       return pClosure->GetSlabOffset();

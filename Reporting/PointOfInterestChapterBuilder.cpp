@@ -108,7 +108,7 @@ rptChapter* CPointOfInterestChapterBuilder::Build(CReportSpecification* pRptSpec
    //      (*pTable)(row,3) << loc.SetValue(segPoi.GetDistFromStart());
    //   }
 
-   //   pgsPointOfInterest cpPoi( pClosurePourPOI->GetClosurePourPointOfInterest(poi.GetID()) );
+   //   pgsPointOfInterest cpPoi( pClosureJointPOI->GetClosureJointPointOfInterest(poi.GetID()) );
    //   if ( cpPoi.GetID() != INVALID_ID )
    //   {
    //      GirderIndexType gdrIdx;

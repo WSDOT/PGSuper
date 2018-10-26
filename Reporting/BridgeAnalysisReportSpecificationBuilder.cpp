@@ -49,11 +49,12 @@ boost::shared_ptr<CReportSpecification> CBridgeAnalysisReportSpecificationBuilde
 
    // Prompt for girder and chapter list
    GET_IFACE(ISelection,pSelection);
-   GirderIndexType gdrIdx = pSelection->GetGirderIndex();
-   gdrIdx = (gdrIdx == INVALID_INDEX ? 0 : gdrIdx );
+   CGirderKey girderKey = pSelection->GetSelectedGirder();
+   girderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
+   girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
    CBridgeAnalysisReportDlg dlg(m_pBroker,rptDesc,pRptSpec); // span only mode
-   dlg.m_Girder = gdrIdx;
+   dlg.m_Girder = girderKey.girderIndex;
 
    if ( dlg.DoModal() == IDOK )
    {

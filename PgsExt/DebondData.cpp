@@ -23,6 +23,12 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\DebondData.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 HRESULT CDebondData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    pStrLoad->BeginUnit(_T("DebondInfo"));

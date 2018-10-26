@@ -158,3 +158,11 @@ const ANCHORSETDETAILS* CPsBeamLossEngineer::GetAnchorSetDetails(const CGirderKe
    ATLASSERT(false); // why did this method get called? it shouldn't happen
    return NULL;
 }
+
+Float64 CPsBeamLossEngineer::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
+{
+   // This returns basically a dummy object... non-spliced girders don't have PT so
+   // there is no anchor set... this implementation keeps the compiler happy
+   ATLASSERT(false); // why did this method get called? it shouldn't happen
+   return 0;
+}

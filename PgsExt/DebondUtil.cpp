@@ -24,6 +24,12 @@
 #include <PgsExt\DebondUtil.h>
 #include <IFace\Bridge.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 TxDOTDebondTool::TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry) :
 m_SegmentKey(segmentKey), 
 m_pStrandGeometry(pStrandGeometry ), 

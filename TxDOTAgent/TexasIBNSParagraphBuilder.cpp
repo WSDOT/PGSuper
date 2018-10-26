@@ -701,7 +701,8 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetID() );
-      pArtifact->GetExternalEffects( &fcTop, &fcBot );
+      fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
+      fcBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
       if (bFirst)
          (*p_table)(row,0) << _T("Design Load Compressive Stress (Top CL)");
@@ -709,7 +710,8 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       (*p_table)(row++,col) << stress.SetValue(-fcTop);
 
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid[0].GetID() );
-      pArtifact->GetExternalEffects( &ftTop, &ftBot );
+      ftTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
+      ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
       if (bFirst)
          (*p_table)(row,0) << _T("Design Load Tensile Stress (Bottom CL)");
@@ -723,7 +725,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       if (bFirst)
          (*p_table)(row,0) << _T("Required minimum ultimate moment capacity ");
 
-      (*p_table)(row++,col) << moment.SetValue( _cpp_max(mmcd.Mu,mmcd.MrMin) );
+      (*p_table)(row++,col) << moment.SetValue( Max(mmcd.Mu,mmcd.MrMin) );
 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {

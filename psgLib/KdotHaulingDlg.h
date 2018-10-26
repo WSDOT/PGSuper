@@ -16,21 +16,11 @@ public:
 	enum { IDD = IDD_KDOT_HAULINGD };
 
 protected:
+   virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 
-   static BOOL CALLBACK EnableWindows(HWND hwnd,LPARAM lParam);
-
 public:
-   void HideControls(bool hide);
-	void DoCheckMax();
-	void DoCheckMinLocation();
-
-   bool m_IsHaulingEnabled;
    afx_msg void OnBnClickedCheckHaulingTensMax();
-   afx_msg void OnBnClickedIsSupportLessThan();
-protected:
-   virtual void OnOK();
-   virtual void OnCancel();
 };

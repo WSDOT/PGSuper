@@ -222,8 +222,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       GirderIndexType nGirders = pGroup->GetGirderCount();
       GirderIndexType firstGirderIdx, lastGirderIdx;
-      firstGirderIdx = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      lastGirderIdx  = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
+      firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
+      lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
       
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {

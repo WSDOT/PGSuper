@@ -37,19 +37,19 @@ public:
    bool BuildBridgeGeometryModel(const CBridgeDescription2* pBridgeDesc,ICogoModel* pCogoModel,IAlignment* pAlignment,IBridgeGeometry* pBridgeGeometry);
 
 protected:
-   bool LayoutPiers(const CBridgeDescription2* pBridgeDesc);
-   bool LayoutTemporarySupports(const CBridgeDescription2* pBridgeDesc);
-   bool LayoutGirderLines(const CBridgeDescription2* pBridgeDesc);
-   bool LayoutUniformGirderLines(const CBridgeDescription2* pBridgeDesc);
-   bool LayoutGeneralGirderLines(const CBridgeDescription2* pBridgeDesc);
-   bool LayoutDiaphragmLines(const CBridgeDescription2* pBridgeDesc);
+   bool LayoutPiers(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
+   bool LayoutTemporarySupports(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
+   bool LayoutGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
+   bool LayoutUniformGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
+   bool LayoutGeneralGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
+   bool LayoutDiaphragmLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
 
-   void ResolveGirderSpacingAtPier(IAlignment* pAlignment,Float64 alignmentOffset,const CPierData2* pPier,pgsTypes::PierFaceType pierFace,IPoint2dCollection** ppPoints);
-   void ResolveGirderSpacingAtTempSupport(IAlignment* pAlignment,Float64 alignmentOffset,const CTemporarySupportData* pTS,IPoint2dCollection** ppPoints);
+   void ResolveGirderSpacingAtPier(IAlignment* pAlignment,Float64 alignmentOffset,const CPierData2* pPier,pgsTypes::PierFaceType pierFace,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry);
+   void ResolveGirderSpacingAtTempSupport(IAlignment* pAlignment,Float64 alignmentOffset,const CTemporarySupportData* pTS,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry);
 
    // Resolves girder spacing from however it is input into an array of distances measured from the
    // alignment to the girder line, measured along the support direction.
-   void ResolveGirderSpacing(IAlignment* pAlignment,Float64 alignmentOffset,Float64 supportStation,IDirection* pSupportDirection,const CGirderSpacing2* pSpacing,IPoint2dCollection** ppPoints);
+   void ResolveGirderSpacing(IAlignment* pAlignment,Float64 alignmentOffset,Float64 supportStation,IDirection* pSupportDirection,const CGirderSpacing2* pSpacing,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry);
 
    void GetPierID(const CPrecastSegmentData* pSegment,PierIDType* pStartID,PierIDType* pEndID);
    void GetPierSkewAngle(IAlignment* pAlignment,const CPierData2* pPier,IAngle** ppSkew);
@@ -58,5 +58,4 @@ protected:
    Float64 GetGirderWidth(const CSplicedGirderData* pGirder);
 
    CogoObjectID m_AlignmentID;
-   CComPtr<IBridgeGeometry> m_BridgeGeometry;
 };

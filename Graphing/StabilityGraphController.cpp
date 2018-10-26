@@ -74,7 +74,7 @@ BOOL CStabilityGraphController::OnInitDialog()
    FillGroupCtrl();
 
    // Set initial value based on the current selection
-   GET_IFACE(ISelectionEx,pSelection);
+   GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);

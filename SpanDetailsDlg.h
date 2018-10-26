@@ -38,65 +38,21 @@
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg
 
-class CSpanDetailsDlg : public CPropertySheet, public IPierConnectionsParent
+class CSpanDetailsDlg : public CPropertySheet
 {
 	DECLARE_DYNAMIC(CSpanDetailsDlg)
 
 // Construction
 public:
-	CSpanDetailsDlg(const CSpanData2* pSpanData = NULL,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-   void SetSpanData(const CSpanData2* pSpan);
-
-   //interface IPierConnectionsParent
-   virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx);
-   virtual void SetPierConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type);
-   virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx);
-   virtual void SetSegmentConnectionType(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType type);
-   virtual const CSpanData2* GetPrevSpan(PierIndexType pierIdx);
-   virtual const CSpanData2* GetNextSpan(PierIndexType pierIdx);
-   virtual const CBridgeDescription2* GetBridgeDescription();
+	CSpanDetailsDlg(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	virtual ~CSpanDetailsDlg();
 
 // Attributes
 public:
+   const CBridgeDescription2* GetBridgeDescription();
 
 // Operations
 public:
-   txnEditSpanData GetEditSpanData();
-
-   // General Layout
-   Float64 GetSpanLength();
-
-   // Connections
-   pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
-   Float64 GetDiaphragmHeight(pgsTypes::MemberEndType end);
-   Float64 GetDiaphragmWidth(pgsTypes::MemberEndType end);
-   ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::MemberEndType end);
-   Float64 GetDiaphragmLoadLocation(pgsTypes::MemberEndType end);
-   ConnectionLibraryEntry::EndDistanceMeasurementType GetEndDistanceMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
-   Float64 GetEndDistance(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
-   ConnectionLibraryEntry::BearingOffsetMeasurementType GetBearingOffsetMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
-   Float64 GetBearingOffset(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
-   Float64 GetSupportWidth(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
-
-
-   pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
-   bool UseSameGirderType();
-   bool UseSameNumGirders();
-   CGirderSpacing2 GetGirderSpacing(pgsTypes::MemberEndType end);
-   const CGirderGroupData& GetGirderGroup() const;
-   GirderIndexType GetGirderCount() const;
-   pgsTypes::MeasurementLocation GetMeasurementLocation(pgsTypes::MemberEndType end);
-   pgsTypes::MeasurementType GetMeasurementType(pgsTypes::MemberEndType end);
-
-   GirderIndexType GetRefGirder(pgsTypes::MemberEndType end);
-   Float64 GetRefGirderOffset(pgsTypes::MemberEndType end);
-   pgsTypes::OffsetMeasurementType GetRefGirderOffsetType(pgsTypes::MemberEndType end);
-
-   pgsTypes::MeasurementLocation GetMeasurementLocation(); // for the entire bridge
-
-   pgsTypes::SlabOffsetType GetSlabOffsetType();
-   Float64 GetSlabOffset(pgsTypes::MemberEndType end);
-
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSpanDetailsDlg)
@@ -104,7 +60,6 @@ public:
 
 // Implementation
 public:
-	virtual ~CSpanDetailsDlg();
 
 
    // Generated message map functions
@@ -114,14 +69,14 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   void Init();
-   bool AllowConnectionChange(pgsTypes::MemberEndType end, const CString& conectionName);
+   void InitPages();
+   void Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx);
 
-   const CBridgeDescription2* m_pBridgeDesc;
-   const CPierData2* m_pPrevPier;
-   const CSpanData2* m_pSpanData;
-   const CPierData2* m_pNextPier;
-   const CGirderGroupData* m_pGirderGroup;
+   CBridgeDescription2 m_BridgeDesc; // this is the bridge we are operating on
+   CPierData2* m_pPrevPier; // points to elements inside our private bridge model to make life easier
+   CSpanData2* m_pSpanData;
+   CPierData2* m_pNextPier;
+   CGirderGroupData* m_pGirderGroup;
 
    pgsTypes::PierConnectionType m_PierConnectionType[2];
    pgsTypes::PierSegmentConnectionType m_SegmentConnectionType[2];

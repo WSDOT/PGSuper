@@ -56,7 +56,7 @@ private:
    txnEditLiveLoadData m_Design[2];
    txnEditLiveLoadData m_Fatigue[2];
    txnEditLiveLoadData m_Permit[2];
-   EventIndexType m_EventIdx[2];
+   EventIndexType m_EventIndex[2];
 
    void DoExecute(int i);
 };

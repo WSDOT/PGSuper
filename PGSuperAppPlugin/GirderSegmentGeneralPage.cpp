@@ -1142,6 +1142,7 @@ void CGirderSegmentGeneralPage::FillEventList()
    pcbConstruct->ResetContent();
    pcbErect->ResetContent();
 
+#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -1178,6 +1179,7 @@ void CGirderSegmentGeneralPage::OnConstructionEventChanging()
 
 void CGirderSegmentGeneralPage::OnConstructionEventChanged()
 {
+#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CONSTRUCTION_EVENT);
    int curSel = pCB->GetCurSel();
    EventIndexType idx = (IndexType)pCB->GetItemData(curSel);
@@ -1220,6 +1222,7 @@ void CGirderSegmentGeneralPage::OnErectionEventChanging()
 
 void CGirderSegmentGeneralPage::OnErectionEventChanged()
 {
+#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
    int curSel = pCB->GetCurSel();
    EventIndexType idx = (IndexType)pCB->GetItemData(curSel);

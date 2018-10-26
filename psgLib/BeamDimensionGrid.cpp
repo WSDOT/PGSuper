@@ -80,7 +80,7 @@ void CBeamDimensionGrid::Insertrow()
 	else
 		nRow = GetRowCount()+1;
 
-	nRow = max(1, nRow);
+	nRow = Max((ROWCOL)1, nRow);
 
 	InsertRows(nRow, 1);
    SetRowStyle(nRow);

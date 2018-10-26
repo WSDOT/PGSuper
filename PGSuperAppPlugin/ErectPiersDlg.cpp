@@ -13,13 +13,14 @@
 // Pier and Temporary Support indicies are stored in the ItemData member of the
 // list box controls. To differentiate between a Pier index and a Temporary Support index
 // the Temporary Support indices are encoded/decoded with the following methods
-#include <PGSuperAppPlugin\CastClosurePourDlg.h> // use Encode/Decode methods from CastClosurePourDlg
+#include <PGSuperAppPlugin\CastClosureJointDlg.h> // use Encode/Decode methods from CastClosureJointDlg
 
 IMPLEMENT_DYNAMIC(CErectPiersDlg, CDialog)
 
-CErectPiersDlg::CErectPiersDlg(const CTimelineManager* pTimelineMgr,CWnd* pParent /*=NULL*/)
+CErectPiersDlg::CErectPiersDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
 	: CDialog(CErectPiersDlg::IDD, pParent),
-   m_pTimelineMgr(pTimelineMgr)
+   m_pTimelineMgr(pTimelineMgr),
+   m_EventIndex(eventIdx)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -56,7 +57,9 @@ void CErectPiersDlg::DoDataExchange(CDataExchange* pDX)
          }
          else
          {
-            m_ErectPiers.AddPier(key);
+            PierIndexType pierIdx = (PierIndexType)key;
+            const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
+            m_ErectPiers.AddPier(pPier->GetID());
          }
       }
    }
@@ -110,8 +113,8 @@ void CErectPiersDlg::OnMoveRight()
       }
       else
       {
-         const CPierData2* pPier = m_pBridgeDesc->FindPier(key);
-         PierIndexType pierIdx = pPier->GetIndex();
+         const CPierData2* pPier = m_pBridgeDesc->GetPier(key);
+         ATLASSERT(pPier->GetIndex() == key);
 
          CString label(GetLabel(pPier,m_pDisplayUnits));
          pTargetList->SetItemData(pTargetList->AddString(label),key);
@@ -150,8 +153,8 @@ void CErectPiersDlg::OnMoveLeft()
       }
       else
       {
-         const CPierData2* pPier = m_pBridgeDesc->FindPier(key);
-         PierIndexType pierIdx = pPier->GetIndex();
+         const CPierData2* pPier = m_pBridgeDesc->GetPier(key);
+         ATLASSERT(pPier->GetIndex() == key);
 
          CString label(GetLabel(pPier,m_pDisplayUnits));
          pSourceList->SetItemData(pSourceList->AddString(label),key);
@@ -173,7 +176,14 @@ void CErectPiersDlg::FillSourceList()
    {
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
       PierIDType pierID = pPier->GetID();
-      if ( !m_pTimelineMgr->IsPierErected(pierID) )
+      bool bIsPierErected = m_pTimelineMgr->IsPierErected(pierID);
+      EventIndexType erectionEventIdx = m_pTimelineMgr->GetPierErectionEventIndex(pierID);
+      if ( bIsPierErected && erectionEventIdx == m_EventIndex )
+      {
+         if ( !m_ErectPiers.HasPier(pierID) )
+            bIsPierErected = false;
+      }
+      if ( !bIsPierErected )
       {
          CString label(GetLabel(pPier,m_pDisplayUnits));
          pSourceList->SetItemData(pSourceList->AddString(label),pierIdx);
@@ -185,7 +195,15 @@ void CErectPiersDlg::FillSourceList()
    {
       const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
       SupportIDType tsID = pTS->GetID();
-      if ( !m_pTimelineMgr->IsTemporarySupportErected(tsID) )
+      bool bIsTemporarySupportErected = m_pTimelineMgr->IsTemporarySupportErected(tsID);
+      EventIndexType erectEventIdx, removeEventIdx;
+      m_pTimelineMgr->GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
+      if ( bIsTemporarySupportErected && erectEventIdx == m_EventIndex )
+      {
+         if ( !m_ErectPiers.HasTempSupport(tsID) )
+            bIsTemporarySupportErected = false;
+      }
+      if ( !bIsTemporarySupportErected )
       {
          CString label(GetLabel(pTS,m_pDisplayUnits));
 

@@ -55,7 +55,7 @@ public:
    void RemovePier(PierIDType pierID);
    IndexType GetPierCount() const;
 
-   void AddTempSupport(SupportIDType tsIdx);
+   void AddTempSupport(SupportIDType tsID);
    void AddTempSupports(const std::vector<SupportIDType>& tempSupports);
    const std::set<SupportIDType>& GetTempSupports() const;
    bool HasTempSupport(SupportIDType tsID) const;
@@ -86,15 +86,15 @@ protected:
    LPCTSTR GetUnitName() { return _T("ErectPiers"); }
 };
 
-class PGSEXTCLASS CCastClosurePourActivity : public CSupportActivityBase
+class PGSEXTCLASS CCastClosureJointActivity : public CSupportActivityBase
 {
 public:
-   CCastClosurePourActivity();
-   CCastClosurePourActivity(const CCastClosurePourActivity& rOther);
+   CCastClosureJointActivity();
+   CCastClosureJointActivity(const CCastClosureJointActivity& rOther);
 
-   CCastClosurePourActivity& operator= (const CCastClosurePourActivity& rOther);
-   bool operator==(const CCastClosurePourActivity& rOther) const;
-   bool operator!=(const CCastClosurePourActivity& rOther) const;
+   CCastClosureJointActivity& operator= (const CCastClosureJointActivity& rOther);
+   bool operator==(const CCastClosureJointActivity& rOther) const;
+   bool operator!=(const CCastClosureJointActivity& rOther) const;
 
    Float64 GetConcreteAgeAtContinuity() const;
    void SetConcreteAgeAtContinuity(Float64 age);
@@ -102,8 +102,8 @@ public:
 protected:
    LPCTSTR GetUnitName() { return _T("CastClosurePours"); }
 
-   void MakeCopy(const CCastClosurePourActivity& rOther);
-   virtual void MakeAssignment(const CCastClosurePourActivity& rOther);
+   void MakeCopy(const CCastClosureJointActivity& rOther);
+   virtual void MakeAssignment(const CCastClosureJointActivity& rOther);
 
    virtual HRESULT LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress);
    virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress);

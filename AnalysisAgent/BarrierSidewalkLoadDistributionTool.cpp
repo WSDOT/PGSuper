@@ -358,7 +358,7 @@ void pgsBarrierSidewalkLoadDistributionTool::DistributeBSWLoadToNNearest(pgsType
    // Finally, add number of participating GMSW's N nearest
    ATLASSERT(m_nMaxDistributed < distances.size()); // logic break: if this happens, load should have been distributed evenly to all gmsw's
 
-   IndexType nidxs = min(distances.size(), m_nMaxDistributed);
+   IndexType nidxs = Min(distances.size(), m_nMaxDistributed);
    for (IndexType idx=0; idx<nidxs; idx++)
    {
       GirderIndexType igdr = distances[idx].m_Gdr;

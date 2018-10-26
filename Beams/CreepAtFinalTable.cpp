@@ -169,11 +169,19 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,3) << COLHDR(RPT_FC,rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*pParamTable)(0,4) << Sub2(_T("k"),_T("f"));
 
-   (*pParamTable)(1,0) << table->mod_e.SetValue( pDetails->RefinedLosses2005.GetEp() );
-   (*pParamTable)(1,1) << table->mod_e.SetValue( pDetails->RefinedLosses2005.GetEc() );
-   (*pParamTable)(1,2) << table->mod_e.SetValue( pDetails->RefinedLosses2005.GetEci() );
-   (*pParamTable)(1,3) << table->stress.SetValue(pDetails->RefinedLosses2005.GetFc());
-   (*pParamTable)(1,4) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepDeckToFinal().GetKf());
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return table;
+   }
+
+   (*pParamTable)(1,0) << table->mod_e.SetValue( ptl->GetEp() );
+   (*pParamTable)(1,1) << table->mod_e.SetValue( ptl->GetEc() );
+   (*pParamTable)(1,2) << table->mod_e.SetValue( ptl->GetEci() );
+   (*pParamTable)(1,3) << table->stress.SetValue(ptl->GetFc());
+   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKf());
 
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -182,15 +190,15 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,2) << COLHDR(Sub2(_T("t"),_T("f")), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
 
    table->time.ShowUnitTag(true);
-   (*pParamTable)(0,3) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(pDetails->RefinedLosses2005.GetAdjustedInitialAge());
-   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetMaturity());
+   (*pParamTable)(0,3) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetAdjustedInitialAge());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
    table->time.ShowUnitTag(false);
 
-   (*pParamTable)(1,0) << table->time.SetValue( pDetails->RefinedLosses2005.GetAdjustedInitialAge() );
-   (*pParamTable)(1,1) << table->time.SetValue( pDetails->RefinedLosses2005.GetAgeAtDeckPlacement() );
-   (*pParamTable)(1,2) << table->time.SetValue( pDetails->RefinedLosses2005.GetFinalAge() );
-   (*pParamTable)(1,3) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetKtd());
-   (*pParamTable)(1,4) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepDeckToFinal().GetKtd());
+   (*pParamTable)(1,0) << table->time.SetValue( ptl->GetAdjustedInitialAge() );
+   (*pParamTable)(1,1) << table->time.SetValue( ptl->GetAgeAtDeckPlacement() );
+   (*pParamTable)(1,2) << table->time.SetValue( ptl->GetFinalAge() );
+   (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
+   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKtd());
 
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -198,9 +206,9 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,1) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("d")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
    (*pParamTable)(0,2) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
 
-   (*pParamTable)(1,0) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetCreepCoefficient());
-   (*pParamTable)(1,1) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToDeck().GetCreepCoefficient());
-   (*pParamTable)(1,2) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepDeckToFinal().GetCreepCoefficient());
+   (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(1,1) << table->scalar.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient());
+   (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());
 
 
    
@@ -230,16 +238,24 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
 void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
    ColumnIndexType col = 1;
-   (*this)(row,col++) << scalar.SetValue(pDetails->RefinedLosses2005.GetKdf());
+   (*this)(row,col++) << scalar.SetValue(ptl->GetKdf());
    (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
 
    if ( 0 < m_NtMax && m_pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
-      (*this)(row,col++) << stress.SetValue( pDetails->RefinedLosses2005.GetDeltaFpp() );
+      (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFpp() );
 
    if ( 0 < m_NtMax )
-      (*this)(row,col++) << stress.SetValue( pDetails->RefinedLosses2005.GetDeltaFptr() );
+      (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFptr() );
 
-   (*this)(row,col++) << stress.SetValue( pDetails->RefinedLosses2005.GetDeltaFcd() );
-   (*this)(row,col++) << stress.SetValue( pDetails->RefinedLosses2005.CreepLossAfterDeckPlacement() );
+   (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFcd() );
+   (*this)(row,col++) << stress.SetValue( ptl->CreepLossAfterDeckPlacement() );
 }

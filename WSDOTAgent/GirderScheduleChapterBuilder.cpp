@@ -639,7 +639,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       p = new rptParagraph;
       *pChapter << p;
 
-      *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is less than the camber at time of deck casting, D. The girder will end up with a sag.")) << color(Black) << rptNewLine;
+      *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
    }
    else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
    {

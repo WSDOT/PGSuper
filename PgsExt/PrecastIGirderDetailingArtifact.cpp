@@ -126,13 +126,13 @@ void pgsPrecastIGirderDetailingArtifact::SetProvidedBottomFlangeThickness(Float6
 
 bool pgsPrecastIGirderDetailingArtifact::Passed() const
 {
-   if (m_MinTopFlangeThickness>m_ProvidedTopFlangeThickness && !IsZero(m_ProvidedTopFlangeThickness) )
+   if (m_ProvidedTopFlangeThickness < m_MinTopFlangeThickness && !IsZero(m_ProvidedTopFlangeThickness) )
       return false;
 
-   if (m_MinWebThickness>m_ProvidedWebThickness && !IsZero(m_ProvidedWebThickness) )
+   if (m_ProvidedWebThickness < m_MinWebThickness && !IsZero(m_ProvidedWebThickness) )
       return false;
 
-   if (m_MinBottomFlangeThickness>m_ProvidedBottomFlangeThickness && !IsZero(m_ProvidedBottomFlangeThickness))
+   if (m_ProvidedBottomFlangeThickness < m_MinBottomFlangeThickness && !IsZero(m_ProvidedBottomFlangeThickness))
       return false;
 
    return true;

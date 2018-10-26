@@ -80,16 +80,18 @@ STDMETHODIMP_(void) CDisplayObjectFactory::XFactory::Create(CLIPFORMAT cfFormat,
       doSectionCut->SetSelectionType(stAll);
 
       CSectionCutDisplayImpl* pDisplayImpl = new CSectionCutDisplayImpl();
-      IUnknown* unk = pDisplayImpl->GetInterface(&IID_iDrawPointStrategy);
-      doSectionCut->SetDrawingStrategy((iDrawPointStrategy*)unk);
+      CComPtr<iDrawPointStrategy> strategy;
+      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      doSectionCut->SetDrawingStrategy(strategy);
 
-      unk = pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents);
-      doSectionCut->RegisterEventSink((iDisplayObjectEvents*)unk);
-
-      unk = pDisplayImpl->GetInterface(&IID_IUnknown);
-      CComQIPtr<iDragData,&IID_iDragData> dd(unk);
+      CComPtr<iDisplayObjectEvents> events;
+      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
+      doSectionCut->RegisterEventSink(events.Detach());
+      
+      CComPtr<iDragData> dragData;
+      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
       CComQIPtr<iDraggable,&IID_iDraggable> draggable(doSectionCut);
-      draggable->SetDragData(dd);
+      draggable->SetDragData(dragData.Detach());
 
       if ( pDataObject )
       {
@@ -110,18 +112,19 @@ STDMETHODIMP_(void) CDisplayObjectFactory::XFactory::Create(CLIPFORMAT cfFormat,
       CComPtr<iPointDisplayObject> doSectionCut;
       ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doSectionCut);
 
-      CBridgeSectionCutDisplayImpl* pDisplayImpl = new CBridgeSectionCutDisplayImpl(); // ref count = 1
-      IUnknown* unk = pDisplayImpl->GetInterface(&IID_iDrawPointStrategy);
-      doSectionCut->SetDrawingStrategy((iDrawPointStrategy*)unk);
-      unk->Release(); // balances the AddRef for new above
+      CBridgeSectionCutDisplayImpl* pDisplayImpl = new CBridgeSectionCutDisplayImpl();
+      CComPtr<iDrawPointStrategy> strategy;
+      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      doSectionCut->SetDrawingStrategy(strategy);
 
-      unk = pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents);
-      doSectionCut->RegisterEventSink((iDisplayObjectEvents*)unk);
+      CComPtr<iDisplayObjectEvents> events;
+      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
+      doSectionCut->RegisterEventSink(events.Detach());
 
-      unk = pDisplayImpl->GetInterface(&IID_IUnknown);
-      CComQIPtr<iDragData,&IID_iDragData> dd(unk);
+      CComPtr<iDragData> dragData;
+      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
       CComQIPtr<iDraggable,&IID_iDraggable> draggable(doSectionCut);
-      draggable->SetDragData(dd);
+      draggable->SetDragData(dragData.Detach());
 
       if ( pDataObject )
       {
@@ -145,16 +148,18 @@ STDMETHODIMP_(void) CDisplayObjectFactory::XFactory::Create(CLIPFORMAT cfFormat,
       LoadRep->SetSelectionType(stAll);
 
       CPointLoadDrawStrategyImpl* pDisplayImpl = new CPointLoadDrawStrategyImpl();
-      IUnknown*  unk = pDisplayImpl->GetInterface(&IID_iDrawPointStrategy);
-      LoadRep->SetDrawingStrategy((iDrawPointStrategy*)unk);
+      CComPtr<iDrawPointStrategy> strategy;
+      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      LoadRep->SetDrawingStrategy(strategy);
 
-      unk = pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents);
-      LoadRep->RegisterEventSink((iDisplayObjectEvents*)unk);
+      CComPtr<iDisplayObjectEvents> events;
+      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
+      LoadRep->RegisterEventSink(events.Detach());
       
-      unk = pDisplayImpl->GetInterface(&IID_IUnknown);
-      CComQIPtr<iDragData,&IID_iDragData> dd(unk);
+      CComPtr<iDragData> dragData;
+      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
       CComQIPtr<iDraggable,&IID_iDraggable> draggable(LoadRep);
-      draggable->SetDragData(dd);
+      draggable->SetDragData(dragData.Detach());
 
       if ( pDataObject )
       {
@@ -178,19 +183,22 @@ STDMETHODIMP_(void) CDisplayObjectFactory::XFactory::Create(CLIPFORMAT cfFormat,
       LoadRep->SetSelectionType(stAll);
 
       CDistributedLoadDrawStrategyImpl* pDisplayImpl = new CDistributedLoadDrawStrategyImpl();
-      IUnknown*  unk = pDisplayImpl->GetInterface(&IID_iDrawPointStrategy);
-      LoadRep->SetDrawingStrategy((iDrawPointStrategy*)unk);
+      CComPtr<iDrawPointStrategy> strategy;
+      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      LoadRep->SetDrawingStrategy(strategy);
 
-      unk = pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents);
-      LoadRep->RegisterEventSink((iDisplayObjectEvents*)unk);
+      CComPtr<iDisplayObjectEvents> events;
+      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
+      LoadRep->RegisterEventSink(events.Detach());
 
-      unk = pDisplayImpl->GetInterface(&IID_iGravityWellStrategy);
-      LoadRep->SetGravityWellStrategy((iGravityWellStrategy*)unk);
+      CComPtr<iGravityWellStrategy> gravityWell;
+      gravityWell.Attach((iGravityWellStrategy*)pDisplayImpl->GetInterface(&IID_iGravityWellStrategy));
+      LoadRep->SetGravityWellStrategy(gravityWell.Detach());
 
-      unk = pDisplayImpl->GetInterface(&IID_IUnknown);
-      CComQIPtr<iDragData,&IID_iDragData> dd(unk);
+      CComPtr<iDragData> dragData;
+      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
       CComQIPtr<iDraggable,&IID_iDraggable> draggable(LoadRep);
-      draggable->SetDragData(dd);
+      draggable->SetDragData(dragData.Detach());
 
       if ( pDataObject )
       {
@@ -214,16 +222,18 @@ STDMETHODIMP_(void) CDisplayObjectFactory::XFactory::Create(CLIPFORMAT cfFormat,
       LoadRep->SetSelectionType(stAll);
 
       CMomentLoadDrawStrategyImpl* pDisplayImpl = new CMomentLoadDrawStrategyImpl();
-      IUnknown*  unk = pDisplayImpl->GetInterface(&IID_iDrawPointStrategy);
-      LoadRep->SetDrawingStrategy((iDrawPointStrategy*)unk);
+      CComPtr<iDrawPointStrategy> strategy;
+      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      LoadRep->SetDrawingStrategy(strategy);
 
-      unk = pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents);
-      LoadRep->RegisterEventSink((iDisplayObjectEvents*)unk);
+      CComPtr<iDisplayObjectEvents> events;
+      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
+      LoadRep->RegisterEventSink(events.Detach());
       
-      unk = pDisplayImpl->GetInterface(&IID_IUnknown);
-      CComQIPtr<iDragData,&IID_iDragData> dd(unk);
+      CComPtr<iDragData> dragData;
+      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
       CComQIPtr<iDraggable,&IID_iDraggable> draggable(LoadRep);
-      draggable->SetDragData(dd);
+      draggable->SetDragData(dragData.Detach());
 
       if ( pDataObject )
       {
@@ -243,5 +253,4 @@ STDMETHODIMP_(void) CDisplayObjectFactory::XFactory::Create(CLIPFORMAT cfFormat,
    {
       pThis->m_Factory->Create(cfFormat,pDataObject,dispObj);
    }
-
 }

@@ -125,7 +125,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
          m_Intervals.push_back(i);
       }
 
-      if ( pTimelineEvent->GetCastClosurePourActivity().IsEnabled() && pTimelineEvent->GetCastDeckActivity().IsEnabled() )
+      if ( pTimelineEvent->GetCastClosureJointActivity().IsEnabled() && pTimelineEvent->GetCastDeckActivity().IsEnabled() )
       {
          CInterval i;
 
@@ -136,7 +136,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
          i.End           = i.Start;
          i.Middle        = i.Start;
          i.Duration      = 0;
-         i.Description   = _T("Cast closure pours and deck");
+         i.Description   = _T("Cast closure joints and deck");
          m_Intervals.push_back(i);
          m_CastDeckInterval = m_Intervals.size()-1;
 
@@ -148,7 +148,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             m_CompositeDeckInterval = m_Intervals.size()+1;
 
             i.Start = i.End;
-            i.Duration = max(pTimelineEvent->GetCastClosurePourActivity().GetConcreteAgeAtContinuity(),pTimelineEvent->GetCastDeckActivity().GetConcreteAgeAtContinuity());
+            i.Duration = Max(pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity(),pTimelineEvent->GetCastDeckActivity().GetConcreteAgeAtContinuity());
             i.End = i.Start + i.Duration;
             i.Middle = 0.5*(i.Start + i.End);
             i.Description = _T("Time Step - Deck Curing");
@@ -166,7 +166,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
       }
       else
       {
-         if ( pTimelineEvent->GetCastClosurePourActivity().IsEnabled() )
+         if ( pTimelineEvent->GetCastClosureJointActivity().IsEnabled() )
          {
             CInterval i;
 
@@ -177,14 +177,14 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             i.End           = i.Start;
             i.Middle        = i.Start;
             i.Duration      = 0;
-            i.Description   = _T("Cast closure pour");
+            i.Description   = _T("Cast closure joint");
             m_Intervals.push_back(i);
 
             // time step to time when concrete reaches continuity age
             if ( bTimeStepMethod )
             {
                i.Start = i.End;
-               i.Duration = pTimelineEvent->GetCastClosurePourActivity().GetConcreteAgeAtContinuity();
+               i.Duration = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
                i.End = i.Start + i.Duration;
                i.Middle = 0.5*(i.Start + i.End);
                i.Description = _T("Time Step");

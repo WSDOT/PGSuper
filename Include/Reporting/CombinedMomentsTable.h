@@ -288,7 +288,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          }
       }
 
-      if ( bRating )
+      if ( bRating && 0 < nRatingCols)
       {
          pTable->SetColumnSpan(ll_title_row,ll_title_col,nRatingCols);
          (*pTable)(ll_title_row,ll_title_col++) << _T("Rating");
@@ -1079,7 +1079,7 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
       std::vector<Float64>::const_iterator minPedIt = minPed.begin();
       while(minIt != minEnd)
       {
-         *minIt = min(*minIt, *minPedIt);
+         *minIt = Min(*minIt, *minPedIt);
          minIt++;
          minPedIt++;
       }
@@ -1089,7 +1089,7 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
       std::vector<Float64>::const_iterator maxPedIt = maxPed.begin();
       while(maxIt != maxEnd)
       {
-         *maxIt = max(*maxIt, *maxPedIt);
+         *maxIt = Max(*maxIt, *maxPedIt);
          maxIt++;
          maxPedIt++;
       }
@@ -1137,8 +1137,8 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
       std::vector<sysSectionValue>::const_iterator minPedIt = minPed.begin();
       while(minIt != minEnd)
       {
-         minIt->Left()  = min(minIt->Left(), minPedIt->Left());
-         minIt->Right() = min(minIt->Right(), minPedIt->Right());
+         minIt->Left()  = Min(minIt->Left(), minPedIt->Left());
+         minIt->Right() = Min(minIt->Right(), minPedIt->Right());
          minIt++;
          minPedIt++;
       }
@@ -1148,8 +1148,8 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
       std::vector<sysSectionValue>::const_iterator maxPedIt = maxPed.begin();
       while(maxIt != maxEnd)
       {
-         maxIt->Left()  = max(maxIt->Left(), maxPedIt->Left());
-         maxIt->Right() = max(maxIt->Right(), maxPedIt->Right());
+         maxIt->Left()  = Max(maxIt->Left(), maxPedIt->Left());
+         maxIt->Right() = Max(maxIt->Right(), maxPedIt->Right());
          maxIt++;
          maxPedIt++;
       }

@@ -35,8 +35,6 @@ public:
    pgsPointOfInterest GetLocation();
    int GetXAxisType();
 
-   void SetIntervalText(const CString& strText);
-
 protected:
    virtual BOOL OnInitDialog();
 

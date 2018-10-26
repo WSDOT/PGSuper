@@ -32,6 +32,7 @@ CLASS
 #include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderArtifactTool.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -158,6 +159,8 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
+   CGirderKey girderKey(pGirderArtifact->GetGirderKey());
+
    if( pGirderArtifact->Passed() )
    {
       *pPara << color(Green)<< _T("The Specification Check was Successful") << color(Black) << rptNewLine;
@@ -209,20 +212,84 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
       }
    }
 
-   // Negative camber is not technically a spec check, but a warning
-#pragma Reminder("UPDATE") // get this working... need to check camber at mid-span of the final girder configuration
-   //GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   //std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_MIDSPAN,POIFIND_AND) );
-   //CHECK(vPoi.size()==1);
-   //pgsPointOfInterest poi( *vPoi.begin() );
+   // Stirrup lengths is not technically a spec check, but a warning
+   bool bCheckStirrups = false;
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsConstructabilityArtifact* pConstrArtifact = pSegmentArtifact->GetConstructabilityArtifact();
+      if ( pConstrArtifact->CheckStirrupLength() )
+      {
+         bCheckStirrups = true;
+      }
+   }
+   if ( bCheckStirrups )
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << color(Red) << Bold(_T("WARNING: The length of stirrups that engage the bridge deck may need special attention. Refer to the Specification Check Details for more information.")) << color(Black) << rptNewLine;
+   }
+
+   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
+   if ( !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << color(Red) << Bold(_T("WARNING: Stirrup zone lengths are not compatible with stirrup spacings. Refer to the Stirrup Layout Geometry Check for more information.")) << color(Black) << rptNewLine;
+   }
+
+#pragma Reminder("UPDATE: this needs to be completed")
+
+   //// Negative camber is not technically a spec check, but a warning
+   //GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   //std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, gdr ,pgsTypes::BridgeSite1, POI_MIDSPAN);
+   //ATLASSERT(pmid.size()==1);
+   //pgsPointOfInterest poiMidSpan(pmid.front());
+
 
    //GET_IFACE2(pBroker,ICamber,pCamber);
-   //Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
-   //if ( excess_camber < 0 )
+   //GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   //const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   //Float64 C = 0;
+   //if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   //{
+   //   C = pCamber->GetScreedCamber( poiMidSpan ) ;
+   //}
+
+   //Float64 D = 999;
+   //if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+   //{
+   //   D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
+   //}
+   //else
+   //{
+   //   D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
+   //}
+
+   //if ( D < C )
+   //{
+   //   pPara = new rptParagraph;
+   //   *pChapter << pPara;
+
+   //   *pPara << color(Red) << Bold(_T("WARNING: Screed Camber is greater than the camber at time of deck casting. The girder may end up with a sag.")) << color(Black) << rptNewLine;
+   //}
+   //else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+   //{
+   //   pPara = new rptParagraph;
+   //   *pChapter << pPara;
+
+   //   *pPara << color(Red) << Bold(_T("WARNING: Screed Camber is nearly equal to the camber at time of deck casting. The girder may end up with a sag.")) << color(Black) << rptNewLine;
+   //}
+
+   //Float64 excess_camber = pCamber->GetExcessCamber(poiMidSpan,CREEP_MAXTIME);
+   //if ( excess_camber < 0.0 )
    //{
    //   rptParagraph* pPara = new rptParagraph;
    //   *pChapter << pPara;
-   //   *pPara << _T("Warning:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.") << rptNewLine;
+   //   *pPara << color(Red) << Bold(_T("WARNING:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.")) << color(Black) << rptNewLine;
    //}
 }
 

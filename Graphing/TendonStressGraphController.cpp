@@ -27,7 +27,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\DocumentType.h>
-#include <IFace\Project.h>
+#include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Selection.h>
 
@@ -111,15 +111,11 @@ void CTendonStressGraphController::FillDuctCtrl()
 
    CComboBox* pcbDuct = (CComboBox*)GetDlgItem(IDC_DUCT);
    int curSel = pcbDuct->GetCurSel();
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-   const CPTData* pPTData = pGirder->GetPostTensioning();
-   
    pcbDuct->ResetContent();
-   DuctIndexType nDucts = pPTData->GetDuctCount();
+
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(CGirderKey(grpIdx,gdrIdx));
+   
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       CString strDuct;

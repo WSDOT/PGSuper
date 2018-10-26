@@ -30,8 +30,8 @@
 #include <PgsExt\GirderData.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-class  CTOGAGirderSelectStrandsDlg;
-struct UserData;
+class CTOGAGirderSelectStrandsDlg;
+class CUserData;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTOGAStrandFillGrid window
@@ -92,8 +92,8 @@ private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
 
-   void RemoveStrandFill(UserData* pUserData);
-   void AddStrandFill(UserData* pUserData);
+   void RemoveStrandFill(const CUserData* pUserData);
+   void AddStrandFill(const CUserData* pUserData);
 
    void UpdateParent();
 

@@ -58,6 +58,9 @@ CPierLayoutPage::CPierLayoutPage() : CPropertyPage(CPierLayoutPage::IDD)
 	//}}AFX_DATA_INIT
    m_MovePierOption = pgsTypes::MoveBridge;
    m_ErectionEventIndex = 0;
+
+   HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
+   ASSERT(SUCCEEDED(hr));
 }
 
 CPierLayoutPage::~CPierLayoutPage()
@@ -99,6 +102,12 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
          AfxMessageBox(_T("Pier skew must be less than 88°\r\nPier skew is measured from the alignment normal"));
          pDX->Fail();
       }
+
+      // Copy the temporary data from this dialog in to actual bridge model
+      CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+      pParent->m_BridgeDesc.MovePier(pParent->m_pPierData->GetIndex(),m_Station,m_MovePierOption);
+      pParent->m_pPierData->SetOrientation(m_strOrientation.c_str());
+      pParent->m_BridgeDesc.GetTimelineManager()->SetPierErectionEventByIndex(pParent->m_pPierData->GetID(),m_ErectionEventIndex);
    }
 }
 
@@ -111,6 +120,7 @@ BEGIN_MESSAGE_MAP(CPierLayoutPage, CPropertyPage)
 	ON_COMMAND(ID_HELP, OnHelp)
    ON_CBN_SELCHANGE(IDC_ERECTION_EVENT, OnErectionStageChanged)
    ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, OnErectionStageChanging)
+   ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -129,7 +139,7 @@ BOOL CPierLayoutPage::OnInitDialog()
    
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   CString strPierType(pParent->m_pPrevSpan == NULL || pParent->m_pNextSpan == NULL ? _T("Abutment") : _T("Pier"));
+   CString strPierType(pParent->m_pPierData->IsAbutment() ? _T("Abutment") : _T("Pier"));
 
    CString strGroupLabel;
    strGroupLabel.Format(_T("%s Line"),strPierType);
@@ -188,23 +198,44 @@ void CPierLayoutPage::OnChangeStation()
    UpdateMoveOptionList();
 }
 
-void CPierLayoutPage::UpdateMoveOptionList()
+BOOL CPierLayoutPage::IsValidStation(Float64* pStation)
 {
-
-   // Get the current value for station
-   CDataExchange dx(this,TRUE);
-
+   BOOL bResult = TRUE;
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   // read the current value of the station edit
-   Float64 toStation;
-   try
+   UnitModeType unitMode = pDisplayUnits->GetStationFormat().GetUnitOfMeasure() == unitStationFormat::Feet ? umUS : umSI;
+   const unitLength& displayUnit = (unitMode == umUS ? unitMeasure::Feet : unitMeasure::Meter);
+
+   CWnd* pWnd = GetDlgItem(IDC_STATION);
+   
+   int cLength = pWnd->GetWindowTextLength() + 1;
+   cLength = (cLength == 1 ? 32 : cLength );
+   LPTSTR lpszBuffer = new TCHAR[cLength];
+
+   pWnd->GetWindowText(lpszBuffer,cLength);
+   HRESULT hr = m_objStation->FromString(CComBSTR(lpszBuffer),unitMode);
+   if ( SUCCEEDED(hr) )
    {
-      DDX_Station(&dx,IDC_STATION,toStation,pDisplayUnits->GetStationFormat());
+      m_objStation->get_Value(pStation);
+      *pStation = ::ConvertToSysUnits( *pStation, displayUnit );
+      bResult = TRUE;
    }
-   catch(...)
+   else
+   {
+      bResult = FALSE;
+   }
+
+   delete[] lpszBuffer;
+   return bResult;
+}
+
+void CPierLayoutPage::UpdateMoveOptionList()
+{
+   Float64 toStation;
+   BOOL bIsValid = IsValidStation(&toStation);
+   if ( bIsValid == FALSE )
    {
       CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
       pOptions->EnableWindow(FALSE);
@@ -214,15 +245,24 @@ void CPierLayoutPage::UpdateMoveOptionList()
       return;
    }
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
    // get the current selection
    CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
-   int curSel = _cpp_max(pOptions->GetCurSel(),0);
+   int curSel = Max(pOptions->GetCurSel(),0);
 
    pOptions->ResetContent();
 
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+   CString strName = (pParent->m_pPierData->IsAbutment() ? _T("Abutment") : _T("Pier"));
+
+
    CWnd* pMove = GetDlgItem(IDC_MOVE_LABEL);
    CString strMove;
-   strMove.Format(_T("Move Pier %d from %s to %s"),
+   strMove.Format(_T("Move %s %d from %s to %s"),
+                  strName,
                   LABEL_PIER(m_PierIdx),
                   FormatStation(pDisplayUnits->GetStationFormat(),m_FromStation),
                   FormatStation(pDisplayUnits->GetStationFormat(),toStation)
@@ -251,8 +291,8 @@ void CPierLayoutPage::UpdateMoveOptionList()
       options[nOptions] = pgsTypes::AdjustNextSpan;
       if ( m_nSpans == 1 )
       {
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving Pier %d"),
-                                       LABEL_SPAN(m_PierIdx),LABEL_PIER(m_PierIdx));
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving %s %d"),
+                                       LABEL_SPAN(m_PierIdx),strName,LABEL_SPAN(m_PierIdx));
       }
       else
       {
@@ -266,8 +306,8 @@ void CPierLayoutPage::UpdateMoveOptionList()
       options[nOptions] = pgsTypes::AdjustPrevSpan;
       if ( m_nSpans == 1 )
       {
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving Pier %d"),
-                                       LABEL_SPAN(m_PierIdx-1),LABEL_PIER(m_PierIdx));
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving %s %d"),
+                                       LABEL_SPAN(m_PierIdx-1),strName,LABEL_SPAN(m_PierIdx));
       }
       else
       {
@@ -299,7 +339,9 @@ void CPierLayoutPage::UpdateMoveOptionList()
       int idx = pOptions->AddString(strOptions[i]); 
       pOptions->SetItemData(idx,(DWORD)options[i]);
    }
-   pOptions->SetCurSel(curSel);
+   int result = pOptions->SetCurSel(curSel);
+   if ( result == CB_ERR )
+      pOptions->SetCurSel(0);
 
    int nShow = IsEqual(m_FromStation,toStation) ? SW_HIDE : SW_SHOW;
    GetDlgItem(IDC_MOVE_PIER)->EnableWindow(TRUE);
@@ -322,6 +364,25 @@ void CPierLayoutPage::OnHelp()
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PIERDETAILS_GENERAL );
 }
 
+HBRUSH CPierLayoutPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
+{
+   HBRUSH hbr = CPropertyPage::OnCtlColor(pDC,pWnd,nCtlColor);
+   if ( pWnd->GetDlgCtrlID() == IDC_STATION )
+   {
+      Float64 toStation;
+      if ( IsValidStation(&toStation) )
+      {
+         pDC->SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+      }
+      else
+      {
+         pDC->SetTextColor(RED);
+      }
+   }
+
+   return hbr;
+}
+
 void CPierLayoutPage::FillEventList()
 {
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
@@ -340,7 +401,7 @@ void CPierLayoutPage::FillEventList()
 
    pcbErect->ResetContent();
 
-   const CTimelineManager* pTimelineMgr = pParent->m_pBridge->GetTimelineManager();
+   const CTimelineManager* pTimelineMgr = pParent->GetBridgeDescription()->GetTimelineManager();
 
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
    for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
@@ -377,11 +438,7 @@ void CPierLayoutPage::OnErectionStageChanged()
       if (eventIdx != INVALID_INDEX)
       {
          CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-         pIBridgeDesc->SetPierErectionEventByIndex(pParent->m_pPierData->GetIndex(),eventIdx);
+         pParent->m_BridgeDesc.GetTimelineManager()->SetPierErectionEventByIndex(pParent->m_pPierData->GetIndex(),eventIdx);
 
          FillEventList();
 
@@ -397,15 +454,15 @@ void CPierLayoutPage::OnErectionStageChanged()
 
 EventIndexType CPierLayoutPage::CreateEvent()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+   CTimelineManager* pTimelineMgr = pParent->GetBridgeDescription()->GetTimelineManager();
 
    CTimelineEventDlg dlg(pTimelineMgr,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+      EventIndexType idx;
+      pTimelineMgr->AddTimelineEvent(dlg.m_TimelineEvent,true,&idx);
+      return idx;
   }
 
    return INVALID_INDEX;

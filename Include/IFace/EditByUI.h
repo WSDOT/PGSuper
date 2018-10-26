@@ -79,6 +79,7 @@ interface IEditByUI : IUnknown
    virtual void EditBridgeDescription(int nPage) = 0;
    virtual void EditAlignmentDescription(int nPage) = 0;
    virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) = 0;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage) = 0;
    virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) = 0;
    virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage) = 0;
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) = 0;

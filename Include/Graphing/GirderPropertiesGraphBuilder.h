@@ -45,6 +45,7 @@ public:
       TendonEccentricity,
       TendonProfile,
       EffectiveFlangeWidth,
+      Fc,
       PropertyTypeCount // this must always be last
    };
 

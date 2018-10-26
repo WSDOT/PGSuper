@@ -150,16 +150,17 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
 
    Float64 Eps = pStrand->GetE();
-   Float64 fpe = 0.0; // effective prestress after all losses
-   Float64 e_initial_strand = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
+   Float64 fpe_ps = 0.0; // effective prestress after all losses
+   Float64 eps_initial = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
    if ( bPositiveMoment )
    {
       // only for positive moment... strands are ignored for negative moment analysis
-      fpe = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::Middle);
-      e_initial_strand = fpe/Eps;
+      fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+      eps_initial = fpe_ps/Eps;
    }
 
-   std::vector<Float64> e_initial_tendons;
+   std::vector<Float64> fpe_pt;
+   std::vector<Float64> ept_initial;
    const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
    Float64 Ept = pTendon->GetE();
    GET_IFACE(IPosttensionForce,pPTForce);
@@ -169,12 +170,13 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    {
       Float64 fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
       Float64 e = fpe/Ept;
-      e_initial_tendons.push_back(e);
+      fpe_pt.push_back(fpe);
+      ept_initial.push_back(e);
    }
 
    pgsBondTool bondTool(m_pBroker,poi);
 
-   ComputeMomentCapacity(intervalIdx,poi,NULL,fpe,e_initial_strand,e_initial_tendons,bondTool,bPositiveMoment,pmcd);
+   ComputeMomentCapacity(intervalIdx,poi,NULL,fpe_ps,eps_initial,fpe_pt,ept_initial,bondTool,bPositiveMoment,pmcd);
 }
 
 void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
@@ -186,20 +188,21 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
 
    Float64 Eps = pStrand->GetE();
-   Float64 fpe = 0.0; // effective prestress after all losses
-   Float64 e_initial_strand = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
+   Float64 fpe_ps = 0.0; // effective prestress after all losses
+   Float64 eps_initial = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
    if ( bPositiveMoment )
    {
       // only for positive moment... strands are ignored for negative moment analysis
       if ( pConfig )
-         fpe = pPrestressForce->GetEffectivePrestress(poi,*pConfig,pgsTypes::Permanent,intervalIdx,pgsTypes::Middle);
+         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,*pConfig,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
       else
-         fpe = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::Middle);
+         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
 
-      e_initial_strand = fpe/Eps;
+      eps_initial = fpe_ps/Eps;
    }
 
-   std::vector<Float64> e_initial_tendons;
+   std::vector<Float64> fpe_pt;
+   std::vector<Float64> ept_initial;
    const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
    Float64 Ept = pTendon->GetE();
    GET_IFACE(IPosttensionForce,pPTForce);
@@ -209,50 +212,67 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    {
       Float64 fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
       Float64 e = fpe/Ept;
-      e_initial_tendons.push_back(e);
+      fpe_pt.push_back(fpe);
+      ept_initial.push_back(e);
    }
 
    if ( pConfig )
    {
       pgsBondTool bondTool(m_pBroker,poi,*pConfig);
-      ComputeMomentCapacity(intervalIdx,poi,pConfig,fpe,e_initial_strand,e_initial_tendons,bondTool,bPositiveMoment,pmcd);
+      ComputeMomentCapacity(intervalIdx,poi,pConfig,fpe_ps,eps_initial,fpe_pt,ept_initial,bondTool,bPositiveMoment,pmcd);
    }
    else
    {
       pgsBondTool bondTool(m_pBroker,poi);
-      ComputeMomentCapacity(intervalIdx,poi,NULL,fpe,e_initial_strand,e_initial_tendons,bondTool,bPositiveMoment,pmcd);
+      ComputeMomentCapacity(intervalIdx,poi,NULL,fpe_ps,eps_initial,fpe_pt,ept_initial,bondTool,bPositiveMoment,pmcd);
    }
 }
 
-void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe,Float64 e_initial,const std::vector<Float64>& e_initial_tendons,pgsBondTool& bondTool,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
+void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial,const std::vector<Float64>& fpe_pt,const std::vector<Float64>& ept_initial,pgsBondTool& bondTool,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
 {
    GET_IFACE(IBridge, pBridge);
    GET_IFACE(IPretensionForce, pPrestressForce);
    GET_IFACE(ILongRebarGeometry, pLongRebarGeom);
    GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE(ITendonGeometry,pTendonGeom);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   StrandIndexType Ns, Nh;
-   if ( pConfig )
+   StrandIndexType Ns = 0;
+   StrandIndexType Nh = 0;
+   if ( bPositiveMoment )
    {
-      Ns = pConfig->PrestressConfig.GetNStrands(pgsTypes::Straight);
-      Nh = pConfig->PrestressConfig.GetNStrands(pgsTypes::Harped);
+      // Strands only modeled for positive moment calculations
+      if ( pConfig )
+      {
+         Ns = pConfig->PrestressConfig.GetNStrands(pgsTypes::Straight);
+         Nh = pConfig->PrestressConfig.GetNStrands(pgsTypes::Harped);
+      }
+      else
+      {
+         Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
+         Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
+      }
    }
-   else
+
+   DuctIndexType Npt = 0;
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
-      Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
+      Npt += pTendonGeom->GetTendonStrandCount(segmentKey,ductIdx);
    }
+
+   bool bIsSplicedGirder = (0 < nDucts ? true : false);
 
    // create a problem to solve
    CComPtr<IGeneralSection> section;
-   CComPtr<IPoint2d> pntCompression; // needed to figure out the result geometry
+   CComPtr<IPoint2d> pntCompression; // location of the extreme compression faoce
    CComPtr<ISize2d> szOffset; // distance to offset coordinates from bridge model to capacity model
    std::map<StrandIndexType,Float64> bond_factors[2];
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
-   Float64 H;
-   BuildCapacityProblem(intervalIdx,poi,pConfig,e_initial,e_initial_tendons,bondTool,bPositiveMoment,&section,&pntCompression,&szOffset,&dt,&H,bond_factors);
+   Float64 H; // overall height of section
+   Float64 Haunch; // haunch build up that is modeled
+   BuildCapacityProblem(intervalIdx,poi,pConfig,eps_initial,ept_initial,bondTool,bPositiveMoment,&section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
 
 #if defined _DEBUG_SECTION_DUMP
    DumpSection(poi,section,bond_factors[0],bond_factors[1],bPositiveMoment);
@@ -398,11 +418,14 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    else
    {
       // PPR was removed from LRFD in 6th Edition, 2012. Use 1.0 for positive moments so
-      // Phi = PhiRC + (PhiPS-PhiRC)*PPR = PhiRc + PhiPS - PhiRc = PhiPS and use 0.0 for negative moment so
+      // Phi = PhiRC + (PhiPS-PhiRC)*PPR = PhiRC + PhiPS - PhiRC = PhiPS and use 0.0 for negative moment so
       // Phi = PhiRC + (PhiPS-PhiRC)*0.0 = PhiRC
       //
       // See computation of Phi about 5 lines down
-      pmcd->PPR = (bPositiveMoment ? 1.0 : 0.0); // PPR was removed from LRFD in 6th Edition, 2012.. Use 0.0
+      if ( bIsSplicedGirder )
+         pmcd->PPR = 1.0;
+      else
+         pmcd->PPR = (bPositiveMoment ? 1.0 : 0.0);
    }
 
    GET_IFACE(IMaterials,pMaterial);
@@ -412,11 +435,18 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    pMaterial->GetDeckRebarMaterial(rebarType,deckRebarGrade);
 
    GET_IFACE(IResistanceFactors,pResistanceFactors);
-   Float64 PhiRC,PhiPS,PhiC;
-   pResistanceFactors->GetFlexureResistanceFactors(concType,&PhiPS,&PhiRC,&PhiC);
-   pmcd->Phi = PhiRC + (PhiPS-PhiRC)*pmcd->PPR; // generalized form of 5.5.4.2.1-3
-                                                // Removed in AASHTO LRFD 6th Edition 2012, however
-                                                // PPR has been computed above to take this into account
+   Float64 PhiRC,PhiPS,PhiSP,PhiC;
+   pResistanceFactors->GetFlexureResistanceFactors(concType,&PhiPS,&PhiRC,&PhiSP,&PhiC);
+   if ( bIsSplicedGirder )
+   {
+      pmcd->Phi = PhiSP;
+   }
+   else
+   {
+      pmcd->Phi = PhiRC + (PhiPS-PhiRC)*pmcd->PPR; // generalized form of 5.5.4.2.1-3
+                                                   // Removed in AASHTO LRFD 6th Edition 2012, however
+                                                   // PPR has been computed above to take this into account
+   }
 
    Float64 C,T;
    solution->get_CompressionResultant(&C);
@@ -433,10 +463,24 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    Float64 fps_avg = 0;
 
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
 
-   if ( !IsZero(Mn) )
+   if ( IsZero(Mn) )
+   {
+      // dimensions have no meaning if no moment capacity
+      pmcd->c          = 0.0;
+      pmcd->dc         = 0.0;
+      pmcd->MomentArm  = 0.0;
+      pmcd->de         = 0.0;
+      pmcd->de_shear   = 0.0;
+      
+      fps_avg          = 0.0;
+   }
+   else
    {
       pmcd->MomentArm = fabs(Mn/T);
+
+      Float64 tSlab = pBridge->GetStructuralSlabDepth(poi);
 
       Float64 x1,y1, x2,y2;
       pntCompression->get_X(&x1);
@@ -461,93 +505,146 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       szOffset->get_Dx(&dx);
       szOffset->get_Dy(&dy);
 
-      Float64 aps = pStrand->GetNominalArea();
+      // calculate average resultant stress in strands/tendonds at ultimate
 
-      // determine average stress in strands and location of de
-      // de: see PCI BDM 8.4.1.2.
-      Float64 t = 0; // summ of the tension forces in the strands
-      Float64 tde = 0; // summ of location of strand time tension force in strand
-      // de = tde/t
-      if ( bPositiveMoment && 0 <  Ns + Nh )
+      if ( 0 < Ns+Nh+Npt )
       {
+         Float64 aps = pStrand->GetNominalArea();
+
+         Float64 Aps[2] = {0,0}; // total area of straight/harped
+         Float64 Apt = 0; // total area of tendon
+
          CComPtr<IStressStrain> ssStrand;
-         ssStrand.CoCreateInstance(CLSID_PSPowerFormula);
-         for ( int i = 0; i < 2; i++ ) // straight and harped strands
+         CreateStrandMaterial(segmentKey,&ssStrand);
+
+         CComPtr<IStressStrain> ssTendon;
+         CreateTendonMaterial(segmentKey,&ssTendon);
+
+         if ( bPositiveMoment )
          {
-            pgsTypes::StrandType strandType = (i == 0 ? pgsTypes::Straight : pgsTypes::Harped);
-            CComPtr<IPoint2dCollection> points;
-            if ( pConfig )
-               pStrandGeom->GetStrandPositionsEx(poi, pConfig->PrestressConfig, strandType, &points);
-            else
-               pStrandGeom->GetStrandPositions(poi, strandType, &points);
-
-            long strandPos = 0;
-            CComPtr<IEnumPoint2d> enum_points;
-            points->get__Enum(&enum_points);
-            CComPtr<IPoint2d> point;
-            while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+            for ( int i = 0; i < 2; i++ ) // straight and harped strands
             {
-               Float64 bond_factor = bond_factors[i][strandPos++];
-
-               point->get_X(&x);
-               point->get_Y(&y);
-
-               strainPlane->GetZ(x-dx,y-dy,&z);
-               Float64 stress;
-               ssStrand->ComputeStress(z+e_initial,&stress);
-
-               stress *= bond_factor;
-
-               // this is for de shear... tension side means strands below h/2
-               // if there is tensile stress in the strand,
-               // sum the force in the strand and the force in the strand times it y location
-               if ( y < H/2 )
+               pgsTypes::StrandType strandType = (i == 0 ? pgsTypes::Straight : pgsTypes::Harped);
+               CComPtr<IPoint2dCollection> points;
+               if ( pConfig )
                {
-                  ATLASSERT( 0 <= stress );
-                  Float64 _t = aps*stress;
-                  t += _t;
-                  tde += (_t)*(y);
+                  pStrandGeom->GetStrandPositionsEx(poi, pConfig->PrestressConfig, strandType, &points);
+               }
+               else
+               {
+                  pStrandGeom->GetStrandPositions(poi, strandType, &points);
                }
 
-               fps_avg += stress;
+               long strandPos = 0;
+               CComPtr<IEnumPoint2d> enum_points;
+               points->get__Enum(&enum_points);
+               CComPtr<IPoint2d> point;
+               while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+               {
+                  Float64 bond_factor = bond_factors[i][strandPos++];
 
-               point.Release();
+                  point->get_X(&x);
+                  point->get_Y(&y);
+
+                  strainPlane->GetZ(x-dx,y-dy,&z);
+                  Float64 stress;
+                  ssStrand->ComputeStress(z+eps_initial,&stress);
+
+                  stress *= bond_factor;
+
+                  Aps[i] += aps;
+                  fps_avg += aps*stress;
+
+                  point.Release();
+               }
             }
          }
 
-         fps_avg /= (Ns+Nh);
+         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         {
+            CComPtr<IPoint2d> point;
+            pTendonGeom->GetDuctPoint(poi,ductIdx,&point);
 
-         pmcd->de_shear = IsZero(t) ? 0 : H - tde/t;
-      } // if ( Ns+Nh
-      else
-      {
-         if ( bPositiveMoment )
-         {
-            // this happens when Ns+Nh is zero
-            pmcd->de_shear = 0; 
+            Float64 apt = pTendonGeom->GetTendonArea(segmentKey,intervalIdx,ductIdx);
+            Apt += apt;
+
+            point->get_X(&x);
+            point->get_Y(&y);
+
+            strainPlane->GetZ(x-dx,y-dy,&z);
+            Float64 stress;
+            ssTendon->ComputeStress(z+ept_initial[ductIdx],&stress);
+
+            //stress *= bond_factor;
+
+            fps_avg += apt*stress;
+
+            point.Release();
          }
-         else
+
+         fps_avg /= (Aps[pgsTypes::Straight]+Aps[pgsTypes::Harped]+Apt);
+      }
+
+      // determine de (see PCI BDM 8.4.1.2).
+      // de = resultant of tension force due to reinforcement on the tension half of the beam
+      Float64 t = 0; // summ of the tension forces 
+      Float64 tde = 0; // summ of the product of the location of tension force and the tension force
+      // de = tde/t
+      CComPtr<IGeneralSectionSolution> general_solution;
+      solution->get_GeneralSectionSolution(&general_solution);
+      CollectionIndexType nSlices;
+      general_solution->get_SliceCount(&nSlices);
+
+      for ( CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
+      {
+         CComPtr<IGeneralSectionSlice> slice;
+         general_solution->get_Slice(sliceIdx,&slice);
+      
+         Float64 slice_area;
+         slice->get_Area(&slice_area);
+
+         CComPtr<IPoint2d> pntCG;
+         slice->get_CG(&pntCG);
+
+         Float64 cgY;
+         pntCG->get_Y(&cgY);
+
+         Float64 fgStress,bgStress,netStress;
+         slice->get_ForegroundStress(&fgStress);
+         slice->get_BackgroundStress(&bgStress);
+
+         netStress = fgStress - bgStress;
+
+         Float64 F = slice_area * netStress;
+         Float64 d = cgY + dy - (Haunch+tSlab); // adding dy moves cgY to the Girder Section Coordinate (0,0 at top of bare girder)
+                                                // subtracting (Haunch+tSlab) makes d measured from the top of composite girder section
+         if ( 0 < F &&  // tension
+             ( 
+               ( bPositiveMoment && d < -H/2) || // on bottom half
+               (!bPositiveMoment && -H/2 < d)    // on top half
+              )
+            ) 
          {
-            pmcd->de_shear = pmcd->de;
+            t += F;
+            tde += F*d;
          }
       }
+
+      pmcd->de_shear = (IsZero(t) ? 0 : -tde/t);
+
+      if ( !bPositiveMoment )
+      {
+         // de_shear is measured from the top of the girder
+         // for negative moment, we want it to be measured from the bottom
+         pmcd->de_shear = H - pmcd->de_shear;
+      }
    }
-   else
-   {
-      // dimensions have no meaning if no moment capacity
-      pmcd->c          = 0.0;
-      pmcd->dc         = 0.0;
-      pmcd->MomentArm  = 0.0;
-      pmcd->de         = 0.0;
-      pmcd->de_shear   = 0.0;
-      
-      fps_avg          = 0.0;
-   }
+
 
    WATCHX(MomCap,0, _T("X = ") << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft") << _T("   Mn = ") << ::ConvertFromSysUnits(Mn,unitMeasure::KipFeet) << _T(" kip-ft") << _T(" My/Mx = ") << My/Mn << _T(" fps_avg = ") << ::ConvertFromSysUnits(fps_avg,unitMeasure::KSI) << _T(" KSI"));
 
    pmcd->fps = fps_avg;
-   pmcd->dt = dt;
+   pmcd->dt  = dt;
    pmcd->bOverReinforced = false;
 
    GET_IFACE(ISpecification, pSpec);
@@ -575,7 +672,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             GET_IFACE(ISectionProperties,pProps);
 
             GET_IFACE(IGirder, pGdr);
-            bw = pGdr->GetShearWidth(poi);
+            bw = pGdr->GetWebWidth(poi);
 
             if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
             {
@@ -597,7 +694,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             GET_IFACE(IGirder, pGdr);
             hf = pGdr->GetMinBottomFlangeThickness(poi);
             b  = pGdr->GetBottomWidth(poi);
-            bw = pGdr->GetShearWidth(poi);
+            bw = pGdr->GetWebWidth(poi);
             fc = pMaterial->GetSegmentFc(segmentKey,intervalIdx);
             Beta1 = lrfdConcreteUtil::Beta1(fc);
          }
@@ -639,36 +736,70 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       // prestressing strand and grade 60 rebar. PGSuper can model grade 40-80 rebar. Use the strain based method
       // for computing Phi. This method is in WSDOT BDM 2012 and will be in LRFD 2013
       Float64 ecl, etl;
-      if ( bPositiveMoment )
+      if ( bIsSplicedGirder )
       {
-         pResistanceFactors->GetFlexuralStrainLimits(pStrand->GetGrade(),pStrand->GetType(),&ecl,&etl);
+         pResistanceFactors->GetFlexuralStrainLimits(pTendon->GetGrade(),pTendon->GetType(),&ecl,&etl);
       }
       else
       {
-         pResistanceFactors->GetFlexuralStrainLimits(deckRebarGrade,&ecl,&etl);
+         if ( bPositiveMoment )
+         {
+            pResistanceFactors->GetFlexuralStrainLimits(pStrand->GetGrade(),pStrand->GetType(),&ecl,&etl);
+         }
+         else
+         {
+            pResistanceFactors->GetFlexuralStrainLimits(deckRebarGrade,&ecl,&etl);
+         }
       }
       pmcd->ecl = ecl;
       pmcd->etl = etl;
 
       if ( IsZero(pmcd->c) ) 
       {
-         pmcd->Phi = (bPositiveMoment ? PhiPS : PhiRC); // there is no moment capacity, use PhiRC for phi instead of dividing by zero
+         if ( bIsSplicedGirder )
+         {
+            pmcd->Phi = PhiSP;
+         }
+         else
+         {
+            pmcd->Phi = (bPositiveMoment ? PhiPS : PhiRC); // there is no moment capacity, use PhiRC for phi instead of dividing by zero
+         }
       }
       else
       {
-
          pmcd->et = (pmcd->dt - pmcd->c)*0.003/(pmcd->c);
-         if ( bPositiveMoment )
-            pmcd->Phi = PhiC + 0.25*(pmcd->et - ecl)/(etl-ecl);
+         if ( bIsSplicedGirder )
+         {
+            pmcd->Phi = PhiC + 0.20*(pmcd->et - ecl)/(etl-ecl);
+         }
          else
-            pmcd->Phi = PhiC + 0.15*(pmcd->et - ecl)/(etl-ecl);
+         {
+            if ( bPositiveMoment )
+            {
+               pmcd->Phi = PhiC + 0.25*(pmcd->et - ecl)/(etl-ecl);
+            }
+            else
+            {
+               pmcd->Phi = PhiC + 0.15*(pmcd->et - ecl)/(etl-ecl);
+            }
+         }
       }
 
-      pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiRC + (PhiPS-PhiRC)*pmcd->PPR);
+      if ( bIsSplicedGirder )
+      {
+         pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiSP);
+      }
+      else
+      {
+         pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiRC + (PhiPS-PhiRC)*pmcd->PPR);
+      }
    }
 
-   pmcd->fpe = fpe;
-   pmcd->e_initial = e_initial;
+   pmcd->fpe_ps      = fpe_ps;
+   pmcd->eps_initial = eps_initial;
+
+   pmcd->fpe_pt      = fpe_pt;
+   pmcd->ept_initial = ept_initial;
 
 #if defined _DEBUG
    m_Log << _T("Dist from end ") << poi.GetDistFromStart() << endl;
@@ -706,7 +837,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
 void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const CRACKINGMOMENTDETAILS& cmd,MINMOMENTCAPDETAILS* pmmcd)
 {
    Float64 Mr;     // Nominal resistance (phi*Mn)
-   Float64 MrMin;  // Minimum nominal resistance - min(MrMin1,MrMin2)
+   Float64 MrMin;  // Minimum nominal resistance - Min(MrMin1,MrMin2)
    Float64 MrMin1; // 1.2Mcr
    Float64 MrMin2; // 1.33Mu
    Float64 Mu_StrengthI;
@@ -729,7 +860,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    Mr = mcd.Phi * mcd.Mn;
 
    if ( bAfter2002 && bBefore2012 )
-      Mcr = (bPositiveMoment ? max(cmd.Mcr,cmd.McrLimit) : min(cmd.Mcr,cmd.McrLimit));
+      Mcr = (bPositiveMoment ? Max(cmd.Mcr,cmd.McrLimit) : Min(cmd.Mcr,cmd.McrLimit));
    else
       Mcr = cmd.Mcr;
 
@@ -790,7 +921,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
 
 
    MrMin2 = 1.33*Mu;
-   MrMin =  (bPositiveMoment ? min(MrMin1,MrMin2) : max(MrMin1,MrMin2));
+   MrMin =  (bPositiveMoment ? Min(MrMin1,MrMin2) : Max(MrMin1,MrMin2));
 
    if (ls==pgsTypes::StrengthI)
    {
@@ -815,27 +946,43 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    GET_IFACE(IPretensionForce,pPrestressForce);
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IPretensionStresses,pPrestress);
-   Float64 fcpe; // Stress at bottom of non-composite girder due to prestress
 
-   if ( bPositiveMoment )
+   GET_IFACE(IPosttensionStresses,pPosttension);
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   Float64 fcpe = 0; // compressive stress in concrete due to effective prestress forces only
+                     // (after allowance for all prestress losses) at extreme fiber of 
+                     // section where tensile stress is caused by externally applied loads
+
+   pgsTypes::StressLocation stressLocation = (bPositiveMoment ? pgsTypes::BottomGirder : pgsTypes::TopDeck);
+
+   // Compute stress due to prestressing
+   Float64 Pps = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+   Float64 ns_eff;
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   Float64 eps = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, false, &ns_eff ); // eccentricity of non-composite section
+
+   Float64 dfcpe = pPrestress->GetStress(poi,stressLocation,Pps,eps);
+   if ( dfcpe < 0 )
    {
-      // Get stress at bottom of girder due to prestressing
-      // Using negative because we want the amount tensile stress required to overcome the
-      // precompression
-      Float64 P = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::Middle);
-      Float64 ns_eff;
-
-      GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-      Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, false, &ns_eff ); // eccentricity of non-composite section
-
-      fcpe = -pPrestress->GetStress(poi,pgsTypes::BottomGirder,P,e);
+      fcpe += dfcpe; // only want compression stress
    }
-   else
+
+   // Compute stress due to tendons
+   dfcpe = pPosttension->GetStress(intervalIdx,poi,stressLocation,ALL_DUCTS);
+   if ( dfcpe < 0 )
    {
-      // no precompression in the slab
-      fcpe = 0;
+      fcpe += dfcpe;
    }
+
+   // We have computed a compression stress so its sign is < 0. However, in the context of computing
+   // the cracking moment, we want the equal and opposite tension stress that must overcome this compression
+   // to induce cracking. Change sign of stress for use in LRFD Eq. 5.7.3.3.2-1
+   ATLASSERT(fcpe <= 0);
+   fcpe *= -1;
 
    ComputeCrackingMoment(intervalIdx,poi,fcpe,bPositiveMoment,pcmd);
 }
@@ -846,6 +993,12 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IPretensionStresses,pPrestress);
    Float64 fcpe; // Stress at bottom of non-composite girder due to prestress
+
+#if defined _DEBUG
+   // version of this method with GDRCONFIG does not apply to spliced girder bridges
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   ATLASSERT(pTendonGeom->GetDuctCount(poi.GetSegmentKey()) == 0);
+#endif
 
    if ( bPositiveMoment )
    {
@@ -1142,7 +1295,8 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    CComPtr<ISize2d> szOffset; // distance to offset coordinates from bridge model to capacity model
    std::map<StrandIndexType,Float64> bond_factors[2];
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
-   Float64 H;
+   Float64 H; // overall height of section
+   Float64 Haunch; // haunch build up that is modeled
 
    Float64 e_initial_strands = 0;
    std::vector<Float64> e_initial_tendons;
@@ -1152,7 +1306,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   BuildCapacityProblem(liveLoadIntervalIdx,poi,NULL,e_initial_strands,e_initial_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,&H,bond_factors);
+   BuildCapacityProblem(liveLoadIntervalIdx,poi,NULL,e_initial_strands,e_initial_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
 
    // determine neutral axis angle
    // compression is on the left side of the neutral axis
@@ -1293,7 +1447,7 @@ void pgsMomentCapacityEngineer::CreateTendonMaterial(const CGirderKey& girderKey
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 e_initial,const std::vector<Float64>& e_initial_tendons,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,std::map<StrandIndexType,Float64>* pBondFactors)
+void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 eps_initial,const std::vector<Float64>& ept_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,Float64* pHaunch,std::map<StrandIndexType,Float64>* pBondFactors)
 {
    GET_IFACE(IPretensionForce,pPrestressForce);
 
@@ -1306,21 +1460,20 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    GET_IFACE(ICamber,pCamber);
    GET_IFACE(IGirder,pGirder);
 
+   CComPtr<IPoint2d> pntTension; // location of the extreme tension face
+
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IIntervals,pIntervals);
    ATLASSERT( pIntervals->GetLiveLoadInterval() <= intervalIdx );
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
-   Float64 dist_from_start = poi.GetDistFromStart();
-
-   Float64 gdr_length = pBridge->GetSegmentLength(segmentKey);
+   Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
    Float64 dt = 0; // depth from compression face to extreme layer of tensile reinforcement
 
    StrandIndexType Ns(0), Nh(0);
-   if ( poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_PIER) )
+   if ( poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_BOUNDARY_PIER) )
    {
       Ns = 0;
       Nh = 0;
@@ -1361,7 +1514,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    else
    {
       if ( poi.HasAttribute(POI_CLOSURE) )
-         matGirder->put_fc( pMaterial->GetClosurePourFc(segmentKey,intervalIdx) );
+         matGirder->put_fc( pMaterial->GetClosureJointFc(segmentKey,intervalIdx) );
       else
          matGirder->put_fc( pMaterial->GetSegmentFc(segmentKey,intervalIdx) );
    }
@@ -1379,7 +1532,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    Float64 E, Fy, Fu;
    if ( poi.HasAttribute(POI_CLOSURE) )
    {
-      pMaterial->GetClosurePourLongitudinalRebarProperties(segmentKey,&E,&Fy,&Fu);
+      pMaterial->GetClosureJointLongitudinalRebarProperties(segmentKey,&E,&Fy,&Fu);
    }
    else
    {
@@ -1404,25 +1557,23 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    
    // beam shape
    CComPtr<IShape> shapeBeam;
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
-   {
-      // if there is no deck, get the shape in this interval because the section
-      // may have been altered because of wearing surface
-      pShapes->GetSegmentShape(intervalIdx,poi,false,pgsTypes::scGirder,&shapeBeam);
-   }
-   else
-   {
-      // want just the plain girder shape so get it at release (though any interval
-      // before the deck is composite would do)
-      pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shapeBeam);
-   }
-
+   pShapes->GetSegmentShape(intervalIdx,poi,false,pgsTypes::scGirder,&shapeBeam);
    CComQIPtr<ICompositeShape> compBeam(shapeBeam);
-   CComQIPtr<IXYPosition> posBeam(shapeBeam);
 
+   if ( compBeam && // beam is a composite (made of many shapes) 
+        pBridge->GetDeckType() != pgsTypes::sdtNone && // bridge has a deck
+        compositeDeckIntervalIdx <= intervalIdx // deck is become composite with the girder
+      )
+   {
+      // The last item is the bridge deck and we don't want it...
+      // We will be adding the deck below
+      IndexType nShapes;
+      compBeam->get_Count(&nShapes);
+      compBeam->Remove(nShapes-1);
+   }
 
    // offset each shape so that the origin of the composite (if it is composite)
-   // is located at the origin (this keeps the moment capacity solver happy)
+   // is located at the centroid of the bare girder (this keeps the moment capacity solver happy)
    // Use the same offset to position the rebar
    CComPtr<IShapeProperties> props;
    shapeBeam->get_ShapeProperties(&props);
@@ -1432,6 +1583,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    cgBeam->get_X(&dx);
    cgBeam->get_Y(&dy);
 
+   // need to return the offset for use later
    CComPtr<ISize2d> size;
    size.CoCreateInstance(CLSID_Size2d);
    size->put_Dx(dx);
@@ -1439,10 +1591,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    *szOffset = size;
    (*szOffset)->AddRef();
 
+   // start building up the capacity model
+   CComQIPtr<IXYPosition> posBeam(shapeBeam);
    if ( compBeam )
    {
-      // beam shape is composite
-
       CollectionIndexType shapeCount;
       compBeam->get_Count(&shapeCount);
 
@@ -1469,7 +1621,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             // void shape... use only a background material (backgrounds are subtracted)
             AddShape2Section(section,shape,NULL,ssGirder,0.00);
          }
-      }
+      } // next shape
    }
    else
    {
@@ -1478,13 +1630,20 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       AddShape2Section(section,shapeBeam,ssGirder,NULL,0.00);
    }
 
-   // so far there is no deck in the model.... if this is positive moment the compression point is top center, otherwise bottom center
+   // so far there is no deck in the model.... 
+   // if this is for positive moment the compression point is top center, otherwise bottom center
    if ( bPositiveMoment )
+   {
       posBeam->get_LocatorPoint(lpTopCenter,pntCompression);
+      posBeam->get_LocatorPoint(lpBottomCenter,&pntTension);
+   }
    else
+   {
       posBeam->get_LocatorPoint(lpBottomCenter,pntCompression);
+      posBeam->get_LocatorPoint(lpTopCenter,&pntTension);
+   }
 
-   Float64 Yc;
+   Float64 Yc; // elevation of the extreme compression fiber
    (*pntCompression)->get_Y(&Yc);
 
    /////// -- NOTE -- //////
@@ -1500,9 +1659,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    //
    Float64 fra = 0.25; // 25% either side of centerline
    bool bNearMidSpan = false;
-   if ( InRange(fra*gdr_length,dist_from_start,(1-fra)*gdr_length))
+   if ( InRange(fra*segment_length,poi.GetDistFromStart(),(1-fra)*segment_length))
+   {
       bNearMidSpan = true;
-
+   }
 
    if ( bPositiveMoment ) // only model strands for positive moment
    {
@@ -1514,7 +1674,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       {
          StrandIndexType nStrands = (i == 0 ? Ns : Nh);
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
-         CComPtr<IPoint2dCollection> points;
+         CComPtr<IPoint2dCollection> points; // strand points are in Girder Section Coordinates
          if ( pConfig )
          {
             pStrandGeom->GetStrandPositionsEx(poi, pConfig->PrestressConfig, strandType, &points);
@@ -1527,7 +1687,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          /////////////////////////////////////////////
          // We know that we have symmetric section and that strands are generally in rows.
          // Create a single "lump of strand" for each row instead of modeling each strand 
-         // individually. This will spead up the solver by quite a bit
+         // individually. This will speed up the solver by quite a bit
 
          RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(segmentKey,nStrands,strandType);
          for ( RowIndexType rowIdx = 0; rowIdx < nStrandRows; rowIdx++ )
@@ -1541,8 +1701,9 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 #endif
 
             ATLASSERT( 0 < strandIdxs.size() );
-            std::vector<StrandIndexType>::iterator iter;
-            for ( iter = strandIdxs.begin(); iter != strandIdxs.end(); iter++ )
+            std::vector<StrandIndexType>::iterator iter(strandIdxs.begin());
+            std::vector<StrandIndexType>::iterator end(strandIdxs.end());
+            for ( ; iter != end; iter++ )
             {
                StrandIndexType strandIdx = *iter;
                ATLASSERT( strandIdx < nStrands );
@@ -1556,10 +1717,6 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    
                // get the bond factor (this will reduce the effective area of the strand if it isn't fully developed)
                Float64 bond_factor = bondTool.GetBondFactor(strandIdx,strandType);
-
-               // for negative moment, assume fully bonded
-               if ( !bPositiveMoment )
-                  bond_factor = 1.0;
 
                pBondFactors[i].insert( std::make_pair(strandIdx,bond_factor) );
 
@@ -1592,10 +1749,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             // determine depth to lowest layer of strand
             Float64 cy;
             hp->get_Y(&cy);
-            dt = _cpp_max(dt,fabs(Yc-cy));
+            dt = Max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shape(bar_shape);
-            AddShape2Section(section,shape,ssStrand,ssGirder,e_initial);
+            AddShape2Section(section,shape,ssStrand,ssGirder,eps_initial);
 
 #if defined _DEBUG
             CComPtr<IShapeProperties> props;
@@ -1619,7 +1776,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
       Float64 area = pTendonGeom->GetTendonArea(segmentKey,intervalIdx,ductIdx);
 
-      Float64 s = sqrt(area);
+      Float64 s = sqrt(area); // side of equivalent square (area = s*s)
 
       CComPtr<IRectangle> tendon_shape;
       tendon_shape.CoCreateInstance(CLSID_Rect);
@@ -1632,10 +1789,15 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       hp->MoveEx(point);
       hp->Offset(-dx,-dy);
 
-      Float64 e_initial_tendon = e_initial_tendons[ductIdx];
+      // determine depth to lowest layer of strand
+      Float64 cy;
+      hp->get_Y(&cy);
+      dt = Max(dt,fabs(Yc-cy));
+
+      Float64 epti = ept_initial[ductIdx];
 
       CComQIPtr<IShape> shape(tendon_shape);
-      AddShape2Section(section,shape,ssTendon,ssGirder,e_initial_tendon);
+      AddShape2Section(section,shape,ssTendon,ssGirder,epti);
    }
 
    // girder rebar
@@ -1683,7 +1845,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
          Float64 cy;
          hp->get_Y(&cy);
-         dt = _cpp_max(dt,fabs(Yc-cy));
+         dt = Max(dt,fabs(Yc-cy));
 
          CComQIPtr<IShape> shape(square);
          AddShape2Section(section,shape,ssGirderRebar,ssGirder,0);
@@ -1703,7 +1865,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
       // so far, dt is measured from top of girder (if positive moment)
       // since we have a deck, add Dslab so that dt is measured from top of slab
-      if ( bPositiveMoment )
+      // If dt is zero, there wasn't any reinforcement so don't add Dslab
+      if ( bPositiveMoment && !IsZero(dt) )
          dt += Dslab;
 
       CComPtr<IRectangle> rect;
@@ -1719,6 +1882,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          CComPtr<IPoint2d> pntCommon;
          posBeam->get_LocatorPoint(lpTopCenter,&pntCommon);
          posDeck->put_LocatorPoint(lpBottomCenter,pntCommon);
+
+         *pHaunch = 0; // not modeling haunch buildup for positive moment
       }
       else
       {
@@ -1726,52 +1891,68 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
         Float64 top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi); // does not account for camber
         Float64 excess_camber;
         if ( pConfig )
+        {
            excess_camber = pCamber->GetExcessCamber(poi,*pConfig,CREEP_MAXTIME);
+        }
         else
+        {
            excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
+        }
 
         Float64 top_girder_to_bottom_slab = top_girder_to_top_slab - Dslab - excess_camber;
         if ( top_girder_to_bottom_slab < 0 )
+        {
            top_girder_to_bottom_slab = 0;
+        }
 
         ATLASSERT(0 <= top_girder_to_bottom_slab);
 
-         CComPtr<IPoint2d> pntCommon;
-         posBeam->get_LocatorPoint(lpTopCenter,&pntCommon);
-         pntCommon->Offset(0,top_girder_to_bottom_slab);
+        CComPtr<IPoint2d> pntCommon;
+        posBeam->get_LocatorPoint(lpTopCenter,&pntCommon);
+        pntCommon->Offset(0,top_girder_to_bottom_slab);
 
-         posDeck->put_LocatorPoint(lpBottomCenter,pntCommon);
+        posDeck->put_LocatorPoint(lpBottomCenter,pntCommon);
 
-         if ( !IsZero(top_girder_to_bottom_slab) )
-         {
-            Float64 x_centerline;
-            pntCommon->get_X(&x_centerline);
-            FlangeIndexType nTopFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
-            for ( FlangeIndexType flangeIdx = 0; flangeIdx < nTopFlanges; flangeIdx++ )
-            {
-               Float64 offset = pGirder->GetTopFlangeLocation(poi,flangeIdx);
-               Float64 top_flange_width = pGirder->GetTopFlangeWidth(poi,flangeIdx);
+        *pHaunch = top_girder_to_bottom_slab;
 
-               CComPtr<IRectangle> haunch;
-               haunch.CoCreateInstance(CLSID_Rect);
-               haunch->put_Height(top_girder_to_bottom_slab);
-               haunch->put_Width(top_flange_width);
+        if ( !IsZero(top_girder_to_bottom_slab) )
+        {
+           Float64 x_centerline;
+           pntCommon->get_X(&x_centerline);
+           FlangeIndexType nTopFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
+           for ( FlangeIndexType flangeIdx = 0; flangeIdx < nTopFlanges; flangeIdx++ )
+           {
+              Float64 offset = pGirder->GetTopFlangeLocation(poi,flangeIdx);
+              Float64 top_flange_width = pGirder->GetTopFlangeWidth(poi,flangeIdx);
 
-               Float64 x = x_centerline + offset;
-               pntCommon->put_X(x);
-               CComQIPtr<IXYPosition> posHaunch(haunch);
-               posHaunch->put_LocatorPoint(lpTopCenter,pntCommon);
+              CComPtr<IRectangle> haunch;
+              haunch.CoCreateInstance(CLSID_Rect);
+              haunch->put_Height(top_girder_to_bottom_slab);
+              haunch->put_Width(top_flange_width);
 
-               CComQIPtr<IShape> shapeHaunch(haunch);
-               AddShape2Section(section,shapeHaunch,ssSlab,NULL,0.00);
-            }
+              Float64 x = x_centerline + offset;
+              pntCommon->put_X(x);
+              CComQIPtr<IXYPosition> posHaunch(haunch);
+              posHaunch->put_LocatorPoint(lpTopCenter,pntCommon);
+
+              CComQIPtr<IShape> shapeHaunch(haunch);
+              AddShape2Section(section,shapeHaunch,ssSlab,NULL,0.00);
+           }
          }
       }
 
 
       // if this is positive moment and we have a deck, the extreme compression point is top center
       if (bPositiveMoment)
+      {
+         (*pntCompression)->Release();
          posDeck->get_LocatorPoint(lpTopCenter,pntCompression);
+      }
+      else
+      {
+         pntTension.Release();
+         posDeck->get_LocatorPoint(lpTopCenter,&pntTension);
+      }
 
       CComQIPtr<IShape> shapeDeck(posDeck);
 
@@ -1822,7 +2003,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
             Float64 cy;
             pntDeck->get_Y(&cy);
-            dt = _cpp_max(dt,fabs(Yc-cy));
+            dt = Max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shapeTop(posTop);
             AddShape2Section(section,shapeTop,ssSlabRebar,ssSlab,0.00);
@@ -1856,7 +2037,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
             Float64 cy;
             pntDeck->get_Y(&cy);
-            dt = _cpp_max(dt,fabs(Yc-cy));
+            dt = Max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shapeBottom(posBottom);
             AddShape2Section(section,shapeBottom,ssSlabRebar,ssSlab,0.00);
@@ -1866,9 +2047,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
 
    // measure from bottom of beam to top of deck to get height
-   CComPtr<IPoint2d> pntBottom;
-   posBeam->get_LocatorPoint(lpBottomCenter,&pntBottom);
-   pntBottom->DistanceEx(*pntCompression,pH);
+   pntTension->DistanceEx(*pntCompression,pH);
 
    *pdt = dt;
 

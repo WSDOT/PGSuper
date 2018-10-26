@@ -174,7 +174,7 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
    GirderIndexType max_gdrs = 0;
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
-      max_gdrs = max( max_gdrs, (GirderIndexType)groupGirderCollection[grpIdx].size());
+      max_gdrs = Max( max_gdrs, (GirderIndexType)groupGirderCollection[grpIdx].size());
    }
 
    const ROWCOL num_rows = (ROWCOL)max_gdrs;

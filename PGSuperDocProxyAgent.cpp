@@ -430,7 +430,6 @@ STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
    pBrokerInit->RegInterface( IID_IDesign,             this );
    pBrokerInit->RegInterface( IID_IViews,              this );
    pBrokerInit->RegInterface( IID_ISelection,          this );
-   pBrokerInit->RegInterface( IID_ISelectionEx,        this );
    pBrokerInit->RegInterface( IID_IUIEvents,           this );
    pBrokerInit->RegInterface( IID_IUpdateTemplates,    this );
    pBrokerInit->RegInterface( IID_IVersionInfo,        this );
@@ -714,27 +713,72 @@ HRESULT CPGSuperDocProxyAgent::OnLibraryConflictResolved()
    return S_OK;
 }
 
-////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 // ISelection
-PierIndexType CPGSuperDocProxyAgent::GetPierIndex()
+CSelection CPGSuperDocProxyAgent::GetSelection()
+{
+   return m_pMyDocument->GetSelection();
+}
+
+void CPGSuperDocProxyAgent::ClearSelection()
+{
+   m_pMyDocument->ClearSelection();
+}
+
+PierIndexType CPGSuperDocProxyAgent::GetSelectedPier()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    CSelection selection = m_pMyDocument->GetSelection();
    return selection.PierIdx;
 }
 
-SpanIndexType CPGSuperDocProxyAgent::GetSpanIndex()
+SpanIndexType CPGSuperDocProxyAgent::GetSelectedSpan()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    CSelection selection = m_pMyDocument->GetSelection();
    return selection.SpanIdx;
 }
 
-GirderIndexType CPGSuperDocProxyAgent::GetGirderIndex()
+CGirderKey CPGSuperDocProxyAgent::GetSelectedGirder()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    CSelection selection = m_pMyDocument->GetSelection();
-   return selection.GirderIdx;
+   return CGirderKey(selection.GroupIdx,selection.GirderIdx);
+}
+
+CSegmentKey CPGSuperDocProxyAgent::GetSelectedSegment()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   CSelection selection = m_pMyDocument->GetSelection();
+   return CSegmentKey(selection.GroupIdx,selection.GirderIdx,selection.SegmentIdx);
+}
+
+CClosureKey CPGSuperDocProxyAgent::GetSelectedClosureJoint()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   CSelection selection = m_pMyDocument->GetSelection();
+   return CClosureKey(selection.GroupIdx,selection.GirderIdx,selection.SegmentIdx);
+}
+
+SupportIDType CPGSuperDocProxyAgent::GetSelectedTemporarySupport()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   CSelection selection = m_pMyDocument->GetSelection();
+   return selection.tsID;
+}
+
+bool CPGSuperDocProxyAgent::IsDeckSelected()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   CSelection selection = m_pMyDocument->GetSelection();
+   return selection.Type == CSelection::Deck;
+}
+
+bool CPGSuperDocProxyAgent::IsAlignmentSelected()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   CSelection selection = m_pMyDocument->GetSelection();
+   return selection.Type == CSelection::Alignment;
 }
 
 void CPGSuperDocProxyAgent::SelectPier(PierIndexType pierIdx)
@@ -753,6 +797,34 @@ void CPGSuperDocProxyAgent::SelectGirder(const CGirderKey& girderKey)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SelectGirder(girderKey);
+}
+
+void CPGSuperDocProxyAgent::SelectSegment(const CSegmentKey& segmentKey)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   m_pMyDocument->SelectSegment(segmentKey);
+}
+
+void CPGSuperDocProxyAgent::SelectClosureJoint(const CClosureKey& closureKey)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   m_pMyDocument->SelectClosureJoint(closureKey);
+}
+
+void CPGSuperDocProxyAgent::SelectTemporarySupport(SupportIDType tsID)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   m_pMyDocument->SelectTemporarySupport(tsID);
+}
+
+void CPGSuperDocProxyAgent::SelectDeck()
+{
+   m_pMyDocument->SelectDeck();
+}
+
+void CPGSuperDocProxyAgent::SelectAlignment()
+{
+   m_pMyDocument->SelectAlignment();
 }
 
 Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
@@ -778,32 +850,6 @@ Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
    return -999999;
 }
 
-/////////////////////////////////////////////////////////////////////////
-// ISelectionEx
-CSelection CPGSuperDocProxyAgent::GetSelection()
-{
-   return m_pMyDocument->GetSelection();
-}
-
-void CPGSuperDocProxyAgent::SelectDeck()
-{
-   m_pMyDocument->SelectDeck();
-}
-
-void CPGSuperDocProxyAgent::SelectAlignment()
-{
-   m_pMyDocument->SelectAlignment();
-}
-
-void CPGSuperDocProxyAgent::ClearSelection()
-{
-   m_pMyDocument->ClearSelection();
-}
-
-void CPGSuperDocProxyAgent::SelectSegment(const CSegmentKey& segmentKey)
-{
-   m_pMyDocument->SelectSegment(segmentKey);
-}
 
 /////////////////////////////////////////////////////////////////////////
 // IUpdateTemplates
@@ -900,6 +946,11 @@ void CPGSuperDocProxyAgent::EditAlignmentDescription(int nPage)
 bool CPGSuperDocProxyAgent::EditSegmentDescription(const CSegmentKey& segmentKey, int nPage)
 {
    return m_pMyDocument->EditGirderSegmentDescription(segmentKey,nPage);
+}
+
+bool CPGSuperDocProxyAgent::EditClosureJointDescription(const CClosureKey& closureKey, int nPage)
+{
+   return m_pMyDocument->EditClosureJointDescription(closureKey,nPage);
 }
 
 bool CPGSuperDocProxyAgent::EditGirderDescription(const CGirderKey& girderKey, int nPage)

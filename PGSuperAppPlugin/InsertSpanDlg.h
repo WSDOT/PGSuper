@@ -46,7 +46,7 @@ public:
    PierIndexType m_RefPierIdx; // pier where the new span is located
    pgsTypes::PierFaceType m_PierFace; // face of pier where new span is inserted
    bool m_bCreateNewGroup; // if true, a new girder group is created
-   EventIndexType m_EventIdx; // event when the pier is constructed
+   EventIndexType m_EventIndex; // event when the pier is constructed
 
 // Overrides
 	// ClassWizard generated virtual function overrides

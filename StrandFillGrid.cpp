@@ -52,17 +52,25 @@ static char THIS_FILE[] = __FILE__;
 
 
 // local struct to store data in a grid cell
-struct UserData
+
+class CUserData : public CGXAbstractUserAttribute
 {
+public:
    pgsTypes::StrandType strandType;
    StrandIndexType      strandTypeGridIdx; // index in library collection for the strnad type defined by strandType (harped, straight, or temporary library grid index)
    bool                 isDebondable;
    StrandIndexType      oneOrTwo; // strands available for filling
 
-   UserData(pgsTypes::StrandType type, StrandIndexType index, bool debondable, StrandIndexType oneTwo):
+   CUserData(pgsTypes::StrandType type, StrandIndexType index, bool debondable, StrandIndexType oneTwo):
       strandType(type), strandTypeGridIdx(index), isDebondable(debondable), oneOrTwo(oneTwo)
    {;}
+
+   virtual CGXAbstractUserAttribute* Clone() const
+   {
+      return new CUserData(strandType,strandTypeGridIdx,isDebondable,oneOrTwo);
+   }
 };
+
 
 /////////////////
 
@@ -378,16 +386,16 @@ void CStrandFillGrid::FillGrid()
       bool isFilled = IsPermStrandFilled(strandType, localIdx);
 
       // store strand type and index for later use
-      UserData* pUserData = new UserData(strandType==GirderLibraryEntry::stStraight ? pgsTypes::Straight : pgsTypes::Harped, 
+      CUserData userData(strandType==GirderLibraryEntry::stStraight ? pgsTypes::Straight : pgsTypes::Harped, 
          localIdx, canDebond, oneOrTwo); // the grid will delete this
 
       SetStyleRange(CGXRange(row,SELECT_CHECK_COL), CGXStyle()
          .SetValue(isFilled ? _T("1") : _T("0"))
-         .SetItemDataPtr((void*)pUserData)
+         .SetUserAttribute(0,userData)
          );
 
-      bool bIsExtendedLeft  = IsStrandExtended(pUserData->strandTypeGridIdx,pgsTypes::metStart);
-      bool bIsExtendedRight = IsStrandExtended(pUserData->strandTypeGridIdx,pgsTypes::metEnd);
+      bool bIsExtendedLeft  = IsStrandExtended(userData.strandTypeGridIdx,pgsTypes::metStart);
+      bool bIsExtendedRight = IsStrandExtended(userData.strandTypeGridIdx,pgsTypes::metEnd);
 
       if ( !isFilled )
       {
@@ -592,11 +600,11 @@ void CStrandFillGrid::FillGrid()
       bool isFilled = IsTempStrandFilled(gridIdx);
 
       // store strand type and index for later use
-      UserData* pUserData = new UserData(pgsTypes::Temporary, gridIdx, false, oneOrTwo); // the grid will delete this
+      CUserData userData(pgsTypes::Temporary, gridIdx, false, oneOrTwo); // the grid will delete this
 
       SetStyleRange(CGXRange(row,SELECT_CHECK_COL), CGXStyle()
          .SetValue(isFilled ? _T("1") : _T("0"))
-         .SetItemDataPtr((void*)pUserData)
+         .SetUserAttribute(0,userData)
          );
 
 
@@ -668,8 +676,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
       if ( style.GetValue() == _T("0") )
          continue; // strand are not selected... continue to the next row
 
-      UserData* pUserData = (UserData*)style.GetItemDataPtr(); // user data we set at fill time
-
+      const CUserData& userData = dynamic_cast<const CUserData&>(style.GetUserAttribute(0));
 
       GetStyleRowCol(nRow, DEBOND_CHECK_COL, style);
       if ( style.GetValue() == _T("1") )
@@ -730,10 +737,10 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
          }
 
 
-         if (pUserData->strandTypeGridIdx != INVALID_INDEX)
+         if (userData.strandTypeGridIdx != INVALID_INDEX)
          {
             CDebondData dbinfo;
-            dbinfo.strandTypeGridIdx = pUserData->strandTypeGridIdx;
+            dbinfo.strandTypeGridIdx = userData.strandTypeGridIdx;
             dbinfo.Length1 = leftDebond;
             dbinfo.Length2 = rightDebond;
 
@@ -747,18 +754,18 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
          CString strCheck = extendStyle.GetValue();
          if ( strCheck == _T("1") ) 
          {
-            ATLASSERT(pUserData->strandTypeGridIdx != INVALID_INDEX);
-            ATLASSERT(pUserData->strandType == pgsTypes::Straight);
-            m_pParent->m_ExtendedStrands[pgsTypes::metStart].push_back(pUserData->strandTypeGridIdx);
+            ATLASSERT(userData.strandTypeGridIdx != INVALID_INDEX);
+            ATLASSERT(userData.strandType == pgsTypes::Straight);
+            m_pParent->m_ExtendedStrands[pgsTypes::metStart].push_back(userData.strandTypeGridIdx);
          }
 
          GetStyleRowCol(nRow, LAST_EXTEND_COL, extendStyle);
          strCheck = extendStyle.GetValue();
          if ( strCheck == _T("1") )
          {
-            ATLASSERT(pUserData->strandTypeGridIdx != INVALID_INDEX);
-            ATLASSERT(pUserData->strandType == pgsTypes::Straight);
-            m_pParent->m_ExtendedStrands[pgsTypes::metEnd].push_back(pUserData->strandTypeGridIdx);
+            ATLASSERT(userData.strandTypeGridIdx != INVALID_INDEX);
+            ATLASSERT(userData.strandType == pgsTypes::Straight);
+            m_pParent->m_ExtendedStrands[pgsTypes::metEnd].push_back(userData.strandTypeGridIdx);
          }
       }
    }
@@ -777,7 +784,7 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
 
       CGXStyle style;
       GetStyleRowCol(nRow, nCol, style);
-      UserData* pUserData = (UserData*)style.GetItemDataPtr(); // user data we set at fill time
+      const CUserData& userData = dynamic_cast<const CUserData&>(style.GetUserAttribute(0));
 
       CString strval = style.GetValue();
       bool bIsChecked = (strval == _T("1") ? true : false);
@@ -786,10 +793,10 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
       if(bIsChecked)
       {
          // just selected the strand
-         AddStrandFill(pUserData);
+         AddStrandFill(&userData);
 
          // If the strand is debondable, enable the debond check box
-         if ( pUserData->isDebondable )
+         if ( userData.isDebondable )
          {
             SetStyleRange(CGXRange(nRow,DEBOND_CHECK_COL),CGXStyle()
                .SetValue(_T("0")) 
@@ -801,7 +808,7 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
          }
 
          // If strands are extendable, enable the check boxes
-         if ( pUserData->strandType==pgsTypes::Straight && m_pParent->m_bCanExtendStrands )
+         if ( userData.strandType==pgsTypes::Straight && m_pParent->m_bCanExtendStrands )
          {
             SetStyleRange(CGXRange(nRow,FIRST_EXTEND_COL,nRow,LAST_EXTEND_COL),CGXStyle()
                .SetValue(_T("0")) 
@@ -815,7 +822,7 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
       else
       {
          // just unchecked the box
-         RemoveStrandFill(pUserData);
+         RemoveStrandFill(&userData);
 
 
          // Clear and disable the rest of the row
@@ -902,9 +909,9 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
       GetStyleRowCol(nRow, SELECT_CHECK_COL, style);
       ATLASSERT( style.GetValue() != _T("0") );
 
-      UserData* pUserData = (UserData*)style.GetItemDataPtr(); // user data we set at fill time
+      const CUserData& userData = dynamic_cast<const CUserData&>(style.GetUserAttribute(0));
 
-      if ( pUserData->isDebondable ) // uncheck debond if debondable 
+      if ( userData.isDebondable ) // uncheck debond if debondable 
       {
          SetStyleRange(CGXRange(nRow,DEBOND_CHECK_COL), CGXStyle()
                .SetControl(GX_IDS_CTRL_CHECKBOX3D)  //
@@ -981,7 +988,7 @@ bool CStrandFillGrid::IsTempStrandFilled(StrandIndexType idxStrandGrid)
    return m_pParent->m_DirectFilledTemporaryStrands.IsStrandFilled(idxStrandGrid);
 }
 
-void CStrandFillGrid::RemoveStrandFill(UserData* pUserData)
+void CStrandFillGrid::RemoveStrandFill(const CUserData* pUserData)
 {
    if (pUserData->strandType == pgsTypes::Straight)
    {
@@ -999,7 +1006,7 @@ void CStrandFillGrid::RemoveStrandFill(UserData* pUserData)
       ATLASSERT(0);
 }
 
-void CStrandFillGrid::AddStrandFill(UserData* pUserData)
+void CStrandFillGrid::AddStrandFill(const CUserData* pUserData)
 {
    CDirectStrandFillInfo fillinf(pUserData->strandTypeGridIdx, pUserData->oneOrTwo);
 

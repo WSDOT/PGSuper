@@ -36,7 +36,7 @@
 
 #include <boost\shared_ptr.hpp>
 
-class CClosurePourData;
+class CClosureJointData;
 class CSplicedGirderData;
 class CGirderSpacing2;
 
@@ -100,13 +100,13 @@ public:
    CSplicedGirderData* GetGirder();
    const CSplicedGirderData* GetGirder() const;
 
-   void SetLeftClosure(CClosurePourData* pClosure);
-   const CClosurePourData* GetLeftClosure() const;
-   CClosurePourData* GetLeftClosure();
+   void SetLeftClosure(CClosureJointData* pClosure);
+   const CClosureJointData* GetLeftClosure() const;
+   CClosureJointData* GetLeftClosure();
 
-   void SetRightClosure(CClosurePourData* pClosure);
-   const CClosurePourData* GetRightClosure() const;
-   CClosurePourData* GetRightClosure();
+   void SetRightClosure(CClosureJointData* pClosure);
+   const CClosureJointData* GetRightClosure() const;
+   CClosureJointData* GetRightClosure();
 
    const CPrecastSegmentData* GetPrevSegment() const;
    const CPrecastSegmentData* GetNextSegment() const;
@@ -158,11 +158,11 @@ protected:
    void ResolveReferences();
 
    // A segment can start/end of a temporary support or a pier (hinge/roller connections only)
-   // Temporary supports are acceesed through the closure pour object
+   // Temporary supports are acceesed through the closure joint object
 
-   // pointers to the closure pour data objects that are on the left and right of this segment.
-   CClosurePourData* m_pLeftClosure;  // weak reference, owned by CSplicedGirderData
-   CClosurePourData* m_pRightClosure; // weak reference, owned by CSplicedGirderData
+   // pointers to the closure joint data objects that are on the left and right of this segment.
+   CClosureJointData* m_pLeftClosure;  // weak reference, owned by CSplicedGirderData
+   CClosureJointData* m_pRightClosure; // weak reference, owned by CSplicedGirderData
 
    pgsTypes::SegmentVariationType m_VariationType;
    Float64 m_VariationLength[4]; // index is the SegmentZoneType enum

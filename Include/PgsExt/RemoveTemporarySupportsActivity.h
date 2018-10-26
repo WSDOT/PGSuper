@@ -47,11 +47,11 @@ public:
 
    void Clear();
 
-   void AddTempSupport(SupportIDType tsIdx);
+   void AddTempSupport(SupportIDType tsID);
    void AddTempSupports(const std::vector<SupportIDType>& tempSupports);
    const std::vector<SupportIDType>& GetTempSupports() const;
-   bool HasTempSupport(SupportIDType tsIdx) const;
-   void RemoveTempSupport(SupportIDType tsIdx);
+   bool HasTempSupport(SupportIDType tsID) const;
+   void RemoveTempSupport(SupportIDType tsID);
    IndexType GetTempSupportCount() const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);

@@ -50,16 +50,5 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
-	void DoCheckMax();
    void EnableLumpSumMethod(BOOL bEnable);
-
-   static BOOL CALLBACK EnableWindows(HWND hwnd,LPARAM lParam);
-
-public:
-   void HideControls(bool hide);
-
-   bool m_IsHaulingEnabled;
-protected:
-   virtual void OnCancel();
-   virtual void OnOK();
 };

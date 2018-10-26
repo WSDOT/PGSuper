@@ -190,7 +190,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         (*pPara) << _T("Closure Pour at TS ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         (*pPara) << _T("Closure Joint at TS ") << LABEL_SEGMENT(segIdx) << rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -214,14 +214,14 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          {
             col = 0;
             (*pTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-            (*pTable)(row,col++) << pMaterials->GetClosurePourConcreteAge(closureKey,intervalIdx);
-            (*pTable)(row,col++) << stress.SetValue(pMaterials->GetClosurePourFc(closureKey,intervalIdx));
-            (*pTable)(row,col++) << modE.SetValue(pMaterials->GetClosurePourEc(closureKey,intervalIdx));
-            (*pTable)(row,col++) << pMaterials->GetClosurePourCreepCoefficient(closureKey,intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-            (*pTable)(row,col++) << pMaterials->GetClosurePourAgingCoefficient(closureKey,intervalIdx);
-            (*pTable)(row,col++) << modE.SetValue(pMaterials->GetClosurePourAgeAdjustedEc(closureKey,intervalIdx));
-            (*pTable)(row,col++) << 1E6*pMaterials->GetClosurePourFreeShrinkageStrain(closureKey,intervalIdx);
-            (*pTable)(row,col++) << 1E6*pMaterials->GetClosurePourFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End);
+            (*pTable)(row,col++) << pMaterials->GetClosureJointConcreteAge(closureKey,intervalIdx);
+            (*pTable)(row,col++) << stress.SetValue(pMaterials->GetClosureJointFc(closureKey,intervalIdx));
+            (*pTable)(row,col++) << modE.SetValue(pMaterials->GetClosureJointEc(closureKey,intervalIdx));
+            (*pTable)(row,col++) << pMaterials->GetClosureJointCreepCoefficient(closureKey,intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+            (*pTable)(row,col++) << pMaterials->GetClosureJointAgingCoefficient(closureKey,intervalIdx);
+            (*pTable)(row,col++) << modE.SetValue(pMaterials->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx));
+            (*pTable)(row,col++) << 1E6*pMaterials->GetClosureJointFreeShrinkageStrain(closureKey,intervalIdx);
+            (*pTable)(row,col++) << 1E6*pMaterials->GetClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End);
          }
 
 
@@ -251,8 +251,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             (*pCreepTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
             for ( IntervalIndexType loadIntIdx = 0; loadIntIdx < intervalIdx && loadIntIdx < nIntervals-1; loadIntIdx++ )
             {
-               (*pCreepTable)(row,col++) << pMaterials->GetClosurePourCreepCoefficient(closureKey,loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-               (*pCreepTable)(row,col++) << pMaterials->GetClosurePourCreepCoefficient(closureKey,loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
+               (*pCreepTable)(row,col++) << pMaterials->GetClosureJointCreepCoefficient(closureKey,loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+               (*pCreepTable)(row,col++) << pMaterials->GetClosureJointCreepCoefficient(closureKey,loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
             }
             for ( IntervalIndexType i = intervalIdx; i < nIntervals-1; i++ )
             {

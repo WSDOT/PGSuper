@@ -61,31 +61,13 @@ void CSpecLiftingPage::DoDataExchange(CDataExchange* pDX)
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
    // dad is a friend of the entry. use him to transfer data.
    pDad->ExchangeLiftingData(pDX);
-
-   if (!pDX->m_bSaveAndValidate)
-   {
-      CEdit* pnote = (CEdit*)GetDlgItem(IDC_LIFTING_NOTE);
-      if (!m_IsLiftingEnabled)
-      {
-         HideLiftingControls(true);
-         pnote->SetWindowText(_T("Lifting Check is Disabled on Design Tab"));
-      }
-      else
-      {
-         HideLiftingControls(false);
-         pnote->SetWindowText(_T("Lifting Check is Enabled on Design Tab"));
-
-	      DoCheckMax();
-      }
-   }
 }
 
 
 BEGIN_MESSAGE_MAP(CSpecLiftingPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecLiftingPage)
-	ON_BN_CLICKED(IDC_CHECK_LIFTING_NORMAL_MAX_MAX, OnCheckLiftingNormalMaxMax)
+	ON_BN_CLICKED(IDC_CHECK_LIFTING_TENSION_MAX, OnCheckLiftingNormalMaxMax)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
-	ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -99,14 +81,14 @@ void CSpecLiftingPage::OnCheckLiftingNormalMaxMax()
 
 void CSpecLiftingPage::DoCheckMax()
 {
-   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_LIFTING_NORMAL_MAX_MAX);
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_LIFTING_TENSION_MAX);
    ASSERT(pchk);
    BOOL ischk = pchk->GetCheck();
 
-   CWnd* pwnd = GetDlgItem(IDC_LIFTING_NORMAL_MAX_MAX);
+   CWnd* pwnd = GetDlgItem(IDC_LIFTING_TENSION_MAX);
    ASSERT(pchk);
    pwnd->EnableWindow(ischk);
-   pwnd = GetDlgItem(IDC_LIFTING_NORMAL_MAX_MAX_UNITS);
+   pwnd = GetDlgItem(IDC_LIFTING_TENSION_MAX_UNIT);
    ASSERT(pchk);
    pwnd->EnableWindow(ischk);
 }
@@ -115,7 +97,8 @@ BOOL CSpecLiftingPage::OnInitDialog()
 {
 	CPropertyPage::OnInitDialog();
 	
-	
+	DoCheckMax();
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -124,33 +107,4 @@ LRESULT CSpecLiftingPage::OnCommandHelp(WPARAM, LPARAM lParam)
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SPEC_LIFTING );
    return TRUE;
-}
-
-
-BOOL CSpecLiftingPage::EnableWindows(HWND hwnd,LPARAM lParam)
-{
-   ::EnableWindow(hwnd,(BOOL)lParam);
-   return TRUE;
-}
-
-void CSpecLiftingPage::HideLiftingControls(bool hide)
-{
-   bool enable = !hide;
-
-   // disable all of the windows
-   EnumChildWindows(GetSafeHwnd(),CSpecLiftingPage::EnableWindows,(LPARAM)enable);
-   GetDlgItem(IDC_LIFTING_NOTE)->EnableWindow(TRUE); // always enable the note at the top of the page
-}
-
-
-HBRUSH CSpecLiftingPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
-{
-	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
-	
-   if (pWnd->GetDlgCtrlID() == IDC_LIFTING_NOTE)
-   {
-      pDC->SetTextColor(RGB(255, 0, 0));
-   }	
-
-	return hbr;
 }

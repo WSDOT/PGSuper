@@ -178,7 +178,7 @@ BOOL CCopyGirderDlg::OnInitDialog()
       m_ToGroup.EnableWindow(FALSE);
    }
 
-   GET_IFACE(ISelectionEx,pSelection);
+   GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    if ( selection.Type == CSelection::Girder || selection.TemporarySupport == CSelection::Segment )
    {

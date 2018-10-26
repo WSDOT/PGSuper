@@ -38,9 +38,13 @@ struct txnEditLossParametersData
    Float64 AfterSIDLLosses;
    Float64 FinalLosses;
 
-   Float64 Dset;
-   Float64 WobbleFriction;
-   Float64 FrictionCoefficient;
+   Float64 Dset_PT;
+   Float64 WobbleFriction_PT;
+   Float64 FrictionCoefficient_PT;
+
+   Float64 Dset_TTS;
+   Float64 WobbleFriction_TTS;
+   Float64 FrictionCoefficient_TTS;
 };
 
 class txnEditLossParameters : public txnTransaction

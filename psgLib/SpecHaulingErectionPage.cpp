@@ -94,27 +94,11 @@ void CSpecHaulingErectionPage::DoDataExchange(CDataExchange* pDX)
          pDad->ExchangeKdotHaulingData(&DxDlg);
       }
    }
-
-   if (!pDX->m_bSaveAndValidate)
-   {
-      CEdit* pnote = (CEdit*)GetDlgItem(IDC_ENABLE_NOTE);
-      if (!pDad->IsHaulingEnabled())
-      {
-         HideControls(true);
-         pnote->SetWindowText(_T("Hauling Check is Disabled on Design Tab"));
-      }
-      else
-      {
-         HideControls(false);
-         pnote->SetWindowText(_T("Hauling Check is Enabled on Design Tab"));
-      }
-   }
 }
 
 
 BEGIN_MESSAGE_MAP(CSpecHaulingErectionPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecHaulingErectionPage)
-	ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
    ON_CBN_SELCHANGE(IDC_HAULING_METHOD, &CSpecHaulingErectionPage::OnCbnSelchangeHaulingMethod)
@@ -154,8 +138,6 @@ BOOL CSpecHaulingErectionPage::OnInitDialog()
 
    m_BeforeInit = false;
 
-   HideControls( !pDad->IsHaulingEnabled() );
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -172,51 +154,6 @@ void CSpecHaulingErectionPage::SwapDialogs()
       m_WsdotHaulingDlg.ShowWindow(SW_HIDE);
       m_KdotHaulingDlg.ShowWindow(SW_SHOW);
    }
-}
-
-BOOL CSpecHaulingErectionPage::EnableWindows(HWND hwnd,LPARAM lParam)
-{
-   ::EnableWindow(hwnd,(BOOL)lParam);
-   return TRUE;
-}
-
-void CSpecHaulingErectionPage::HideControls(bool hide)
-{
-   CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_HAULING_METHOD);
-   pBox->EnableWindow(hide?FALSE:TRUE);
-
-   m_WsdotHaulingDlg.HideControls(hide);
-   m_KdotHaulingDlg.HideControls(hide);
-}
-
-HBRUSH CSpecHaulingErectionPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
-{
-	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
-	
-   if (pWnd->GetDlgCtrlID() == IDC_ENABLE_NOTE)
-   {
-      pDC->SetTextColor(RGB(255, 0, 0));
-   }	
-
-	return hbr;
-}
-
-BOOL CSpecHaulingErectionPage::OnSetActive()
-{
-   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-
-   bool is_enabled = pDad->IsHaulingEnabled();
-   m_WsdotHaulingDlg.m_IsHaulingEnabled = is_enabled;
-   m_KdotHaulingDlg.m_IsHaulingEnabled = is_enabled;
-
-   return CPropertyPage::OnSetActive();
-}
-
-BOOL CSpecHaulingErectionPage::OnKillActive()
-{
-   // TODO: Add your specialized code here and/or call the base class
-
-   return CPropertyPage::OnKillActive();
 }
 
 void CSpecHaulingErectionPage::OnCbnSelchangeHaulingMethod()

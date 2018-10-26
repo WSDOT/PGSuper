@@ -221,7 +221,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
       maxDistanceBetweenSupports = Lg - min_overhang_start - min_overhang_end;
    }
 
-   Float64 min_location      = max(min_overhang_start,min_overhang_end);
+   Float64 min_location      = Max(min_overhang_start,min_overhang_end);
    Float64 location_accuracy = pCriteria->GetHaulingSupportLocationAccuracy();
 
    Float64 minOverhang = (Lg - maxDistanceBetweenSupports)/2.;
@@ -493,7 +493,7 @@ void pgsWsdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegment
 
    pArtifact->SetConcreteStrength(Fc);
    pArtifact->SetModRupture( pGirderHaulingSpecCriteria->GetHaulingModulusOfRupture(Fc,concType) );
-   pArtifact->SetModRuptureCoefficient( pGirderHaulingSpecCriteria->GetHaulingModulusOfRuptureCoefficient(concType) );
+   pArtifact->SetModRuptureCoefficient( pGirderHaulingSpecCriteria->GetHaulingModulusOfRuptureFactor(concType) );
 
    pArtifact->SetElasticModulusOfGirderConcrete(Ec);
 
@@ -567,9 +567,9 @@ void pgsWsdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& seg
    pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStressParameters(&rcsT,&rcsBfmax,&rcsFmax);
    Float64 rcsTalt = pGirderHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStressFactor();
 
-   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
+   bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
    // Use calculator object to deal with casting yard higher allowable stress
-   pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials, bUnitsSI);
+   pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials, true/*limit bar stress*/, bSISpec);
 
    IndexType psiz = rpoiVec.size();
    IndexType msiz = momVec.size();
@@ -718,7 +718,7 @@ void pgsWsdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& seg
       // Compression: Lump in inclined stress.
       Float64 min_stress = haul_artifact.GetMaximumConcreteCompressiveStress();
       Float64 min_stress_inc = haul_artifact.GetMaximumInclinedConcreteCompressiveStress();
-      min_stress = min(min_stress, min_stress_inc);
+      min_stress = Min(min_stress, min_stress_inc);
 
       Float64 fc_compression = 0.0;
       if ( min_stress < 0 )
@@ -749,12 +749,12 @@ void pgsWsdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& seg
       // Now, get max required strength
       if (fc_tens_norebar > 0.0)
       {
-         fc_tens_norebar = max(fc_tens_norebar, fc_tension_inclined);
+         fc_tens_norebar = Max(fc_tens_norebar, fc_tension_inclined);
       }
 
       if (fc_tens_withrebar > 0.0)
       {
-         fc_tens_withrebar = max(fc_tens_withrebar, fc_tension_inclined);
+         fc_tens_withrebar = Max(fc_tens_withrebar, fc_tension_inclined);
       }
 
       haul_artifact.SetRequiredConcreteStrength(fc_compression,fc_tens_norebar,fc_tens_withrebar);

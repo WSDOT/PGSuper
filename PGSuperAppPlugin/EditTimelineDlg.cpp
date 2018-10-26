@@ -109,7 +109,7 @@ void CEditTimelineDlg::OnAddEvent()
 
             CString strMsg;
             strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
-            if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
+            if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
             {
                bAdjustTimeline = true;
             }

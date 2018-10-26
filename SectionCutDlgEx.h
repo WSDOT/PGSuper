@@ -40,7 +40,7 @@ class CSectionCutDlgEx : public CDialog
 public:
    CSectionCutDlgEx(CWnd* pParent=NULL);   // standard constructor
 
-	CSectionCutDlgEx(long nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
+	CSectionCutDlgEx(IndexType nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
 		CGirderModelChildFrame::CutLocation, CWnd* pParent = NULL);
 
    void SetValue(Float64 value);
@@ -81,7 +81,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   long m_nHarpPoints;
+   IndexType m_nHarpPoints;
    Float64	 m_Value;
    Float64   m_LowerBound;
    Float64   m_UpperBound;

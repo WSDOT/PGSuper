@@ -28,7 +28,7 @@
 #include "ErectPiersDlg.h"
 #include "ErectSegmentsDlg.h"
 #include "RemoveTempSupportsDlg.h"
-#include "CastClosurePourDlg.h"
+#include "CastClosureJointDlg.h"
 #include "ApplyLoadsDlg.h"
 #include "ConstructSegmentsDlg.h"
 #include "StressTendonDlg.h"
@@ -83,13 +83,13 @@ void CTimelineEventDlg::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
 
-#pragma Reminder("UPDATE: event duration validation")
+#pragma Reminder("UPDATE: event elapsed time validation")
       // if this is a new event, then pTimelineEvent is null. we need a way to validate the duration of this event
       //if ( pTimelineEvent )
       //{
       //   EventIndexType eventIdx = m_pTimelineMgr->GetEventIndex(pTimelineEvent->GetID());
       //   Float64 duration = m_pTimelineMgr->GetDuration(eventIdx);
-      //   if ( duration < m_TimelineEvent.GetMinimumDuration() )
+      //   if ( duration < m_TimelineEvent.GetMinElapsedTime() )
       //   {
       //      pDX->PrepareEditCtrl(IDC_DAY);
       //      CString strMsg;
@@ -112,19 +112,16 @@ void CTimelineEventDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CTimelineEventDlg, CDialog)
    ON_BN_CLICKED(IDC_REMOVE, &CTimelineEventDlg::OnRemoveActivities)
-   ON_COMMAND(ID_ACTIVITIES_CONSTRUCTSEGMENT,OnConstructSegments)
-   ON_COMMAND(ID_ACTIVITIES_ERECT_PIERS,OnErectPiers)
-   ON_COMMAND(ID_ACTIVITIES_ERECT_SEGMENTS,OnErectSegments)
-   ON_COMMAND(ID_ACTIVITIES_REMOVE_TS,OnRemoveTempSupports)
-   ON_COMMAND(ID_ACTIVITIES_CASTCLOSUREPOURS,OnCastClosurePours)
-   ON_COMMAND(ID_ACTIVITIES_CASTDECK,OnCastDeck)
-   ON_COMMAND(ID_ACTIVITIES_APPLYLOADS,OnApplyLoads)
-   ON_COMMAND(ID_ACTIVITIES_STRESSTENDON,OnStressTendons)
+   ON_COMMAND(ID_ACTIVITIES_CONSTRUCTSEGMENT,&CTimelineEventDlg::OnConstructSegments)
+   ON_COMMAND(ID_ACTIVITIES_ERECT_PIERS,&CTimelineEventDlg::OnErectPiers)
+   ON_COMMAND(ID_ACTIVITIES_ERECT_SEGMENTS,&CTimelineEventDlg::OnErectSegments)
+   ON_COMMAND(ID_ACTIVITIES_REMOVE_TS,&CTimelineEventDlg::OnRemoveTempSupports)
+   ON_COMMAND(ID_ACTIVITIES_CASTCLOSUREJOINTS,&CTimelineEventDlg::OnCastClosureJoints)
+   ON_COMMAND(ID_ACTIVITIES_CASTDECK,&CTimelineEventDlg::OnCastDeck)
+   ON_COMMAND(ID_ACTIVITIES_APPLYLOADS,&CTimelineEventDlg::OnApplyLoads)
+   ON_COMMAND(ID_ACTIVITIES_STRESSTENDON,&CTimelineEventDlg::OnStressTendons)
    ON_BN_CLICKED(ID_HELP, &CTimelineEventDlg::OnHelp)
 END_MESSAGE_MAP()
-
-
-// CTimelineEventDlg message handlers
 
 BOOL CTimelineEventDlg::OnInitDialog()
 {
@@ -197,34 +194,33 @@ void CTimelineEventDlg::UpdateAddButton()
    m_btnAdd.Clear();
 
    // Keep the activities in a somewhat logical sequence
-   if ( !m_TimelineEvent.GetConstructSegmentsActivity().IsEnabled() )
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_CONSTRUCTSEGMENT,_T("Construct Segments"),MF_STRING);
 
-   if ( !m_TimelineEvent.GetErectPiersActivity().IsEnabled() )
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_PIERS,_T("Erect Piers/Temporary Supports"),MF_STRING);
 
-   if ( !m_TimelineEvent.GetErectSegmentsActivity().IsEnabled() )
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_SEGMENTS,_T("Erect Segments"),MF_STRING);
+   UINT flags = 0;
 
-   if ( !m_TimelineEvent.GetCastClosurePourActivity().IsEnabled() )
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTCLOSUREPOURS,_T("Cast Closure Pours"),MF_STRING);
+   flags = (m_TimelineEvent.GetConstructSegmentsActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CONSTRUCTSEGMENT,_T("Construct Segments"),flags);
 
-   if ( !m_TimelineEvent.GetStressTendonActivity().IsEnabled() )
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_STRESSTENDON,_T("Stress Tendons"),MF_STRING);
+   flags = (m_TimelineEvent.GetErectPiersActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_PIERS,_T("Erect Piers/Temporary Supports"),flags);
 
-   if ( !m_TimelineEvent.GetRemoveTempSupportsActivity().IsEnabled() )
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"),MF_STRING);
+   flags = (m_TimelineEvent.GetErectSegmentsActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_SEGMENTS,_T("Erect Segments"),flags);
 
-   if ( !m_TimelineEvent.GetCastDeckActivity().IsEnabled() )
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTDECK,_T("Cast Deck"),MF_STRING);
+   flags = (m_TimelineEvent.GetCastClosureJointActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTCLOSUREJOINTS,_T("Cast Closure Joints"),flags);
 
-   if ( !m_TimelineEvent.GetApplyLoadActivity().IsEnabled() )
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_APPLYLOADS,_T("Apply Loads"),MF_STRING);
+   flags = (m_TimelineEvent.GetStressTendonActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_STRESSTENDON,_T("Stress Tendons"),flags);
 
-   if ( m_btnAdd.GetMenuItemCount() == 0 )
-      m_btnAdd.EnableWindow(FALSE);
-   else
-      m_btnAdd.EnableWindow(TRUE);
+   flags = (m_TimelineEvent.GetRemoveTempSupportsActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"),flags);
+
+   flags = (m_TimelineEvent.GetCastDeckActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTDECK,_T("Cast Deck"),flags);
+
+   flags = (m_TimelineEvent.GetApplyLoadActivity().IsEnabled() ? MF_DISABLED : MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_APPLYLOADS,_T("Apply Loads"),flags);
 }
 
 void CTimelineEventDlg::OnRemoveActivities()
@@ -246,7 +242,7 @@ void CTimelineEventDlg::OnConstructSegments()
 
 void CTimelineEventDlg::OnErectPiers()
 {
-   CErectPiersDlg dlg(m_pTimelineMgr);
+   CErectPiersDlg dlg(m_pTimelineMgr,m_EventIndex);
    if ( dlg.DoModal() == IDOK )
    {
       m_TimelineEvent.SetErectPiersActivity(dlg.m_ErectPiers);
@@ -257,7 +253,7 @@ void CTimelineEventDlg::OnErectPiers()
 
 void CTimelineEventDlg::OnErectSegments()
 {
-   CErectSegmentsDlg dlg(m_pTimelineMgr);
+   CErectSegmentsDlg dlg(m_pTimelineMgr,m_EventIndex);
    if ( dlg.DoModal() == IDOK )
    {
       m_TimelineEvent.SetErectSegmentsActivity(dlg.m_ErectSegments);
@@ -268,7 +264,7 @@ void CTimelineEventDlg::OnErectSegments()
 
 void CTimelineEventDlg::OnRemoveTempSupports()
 {
-   CRemoveTempSupportsDlg dlg(m_pTimelineMgr);
+   CRemoveTempSupportsDlg dlg(m_pTimelineMgr,m_EventIndex);
    if ( dlg.DoModal() == IDOK )
    {
       m_TimelineEvent.SetRemoveTempSupportsActivity(dlg.m_RemoveTempSupports);
@@ -277,12 +273,12 @@ void CTimelineEventDlg::OnRemoveTempSupports()
    }
 }
 
-void CTimelineEventDlg::OnCastClosurePours()
+void CTimelineEventDlg::OnCastClosureJoints()
 {
-   CCastClosurePourDlg dlg(m_pTimelineMgr);
+   CCastClosureJointDlg dlg(m_pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      m_TimelineEvent.SetCastClosurePourActivity(dlg.m_CastClosurePours);
+      m_TimelineEvent.SetCastClosureJointActivity(dlg.m_CastClosureJoints);
       m_Grid.Refresh();
       UpdateAddButton();
    }
@@ -308,10 +304,10 @@ void CTimelineEventDlg::OnApplyLoads()
 
 void CTimelineEventDlg::OnStressTendons()
 {
-   CStressTendonDlg dlg;
+   CStressTendonDlg dlg(m_pTimelineMgr,m_EventIndex);
    if ( dlg.DoModal() == IDOK )
    {
-      m_TimelineEvent.SetStressTendonActivity(dlg.m_StressTendons);
+      m_TimelineEvent.SetStressTendonActivity(dlg.m_StressTendonActivity);
       m_Grid.Refresh();
       UpdateAddButton();
    }

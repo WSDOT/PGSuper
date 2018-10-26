@@ -58,100 +58,6 @@ LPCTSTR CCastingYardRebarRequirementChapterBuilder::GetName() const
 {
    return TEXT("Casting Yard Tensile Reinforcement Requirements");
 }
-/*
-rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
-{
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
-
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
-   
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
-
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,        pDisplayUnits->GetAreaUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
-
-
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-   *pChapter << pTitle;
-   *pTitle << _T("Details for Tensile Reinforcement Requirement for Allowable Tension Stress in Casting Yard [5.9.4][C5.9.4.1.2]")<<rptNewLine;
-
-   rptParagraph* p = new rptParagraph;
-   *pChapter << p;
-
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   {
-      *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-
-      CSegmentKey segmentKey(girderKey,segIdx);
-
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-      const pgsSegmentArtifact* segmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
-
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2]"));
-      *p << pTable << rptNewLine;
-
-      if ( segmentKey.groupIndex == ALL_GROUPS )
-      {
-         pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-      }
-
-      (*pTable)(0,0) << COLHDR(RPT_GDR_END_LOCATION,  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTable)(0,1) << COLHDR(Sub2(_T("Y"),_T("na")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0,2) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*pTable)(0,3) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-      (*pTable)(0,4) << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-
-      RowIndexType row = pTable->GetNumberOfHeaderRows();
-      CollectionIndexType nArtifacts = segmentArtifact->GetFlexuralStressArtifactCount(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension);
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
-      {
-         const pgsFlexuralStressArtifact* pArtifact = segmentArtifact->GetFlexuralStressArtifact( releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,idx );
-         const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
-
-         ATLASSERT(pArtifact->IsAlternativeTensileStressApplicable());
-    
-         Float64 Yna,At,T,As;
-         pArtifact->GetAlternativeTensileStressParameters(&Yna,&At,&T,&As);
-
-         (*pTable)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
-
-         if (Yna < 0 )
-             (*pTable)(row,1) << _T("-");
-         else
-            (*pTable)(row,1) << dim.SetValue(Yna);
-
-         (*pTable)(row,2) << area.SetValue(At);
-         (*pTable)(row,3) << force.SetValue(T);
-         (*pTable)(row,4) << area.SetValue(As);
-
-         row++;
-      }
-   }
-
-   return pChapter;
-}
-*/
-
 
 rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
@@ -180,7 +86,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Details for Tensile Reinforcement Requirement for Allowable Tension Stress in Casting Yard [5.9.4][C5.9.4.1.2]")<<rptNewLine;
+   *pTitle << _T("Details for Tensile Reinforcement Requirement for Allowable Tension Stress in At Release [5.9.4][C5.9.4.1.2]")<<rptNewLine;
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -199,7 +105,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
       const pgsSegmentArtifact* segmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(12,_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2]"));
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(12,_T("Reinforcement requirements for Tensile Stress Limit [C5.9.4.1.2]"));
       *p << pTable << rptNewLine;
 
       pTable->SetNumberOfHeaderRows(2);
@@ -258,7 +164,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
          (*pTable)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
 
          Float64 Yna,At,T,AsProvided,AsRequired;
-         pArtifact->GetAlternativeTensileStressParameters(&Yna,&At,&T,&AsProvided,&AsRequired);
+         pArtifact->GetAlternativeTensileStressParameters(pgsTypes::GirderBottom,&Yna,&At,&T,&AsProvided,&AsRequired);
 
          if (Yna < 0 )
          {
@@ -273,8 +179,8 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
             (*pTable)(row,1) << dim.SetValue(Yna);
 
             // We have a neutral axis. See which side is in tension
-            Float64 fTop, fBot;
-            pArtifact->GetDemand(&fTop, &fBot);
+            Float64 fTop = pArtifact->GetDemand(pgsTypes::TopGirder);
+            Float64 fBot = pArtifact->GetDemand(pgsTypes::BottomGirder);
 
             // Half of the table is always n/a. Determine which half to fill
             ColumnIndexType dataStart, dataEnd;
@@ -316,7 +222,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
          row++;
       } // next artifact
 
-      *p << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.");
+      *p << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
    } // next segment
 
    return pChapter;

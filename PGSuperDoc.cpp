@@ -225,6 +225,11 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
    }
 }
 
+bool CPGSuperDoc::EditClosureJointDescription(const CClosureKey& closureKey,int nPage)
+{
+   // there aren't any closure joints in a PGSuper model... do nothing
+   return true;
+}
 
 void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,GroupIndexType grpIdx,GirderIndexType gdrIdx)
 {

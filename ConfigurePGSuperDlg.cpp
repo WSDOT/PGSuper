@@ -53,6 +53,9 @@ CConfigurePGSuperDlg::CConfigurePGSuperDlg(LPCTSTR lpszAppName,LPCTSTR lpszTempl
    m_bNetworkError = false;
 }
 
+CConfigurePGSuperDlg::~CConfigurePGSuperDlg()
+{
+}
 
 void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
 {

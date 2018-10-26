@@ -54,21 +54,8 @@ public:
    CSameGirderSpacingHyperLink   m_GirderSpacingHyperLink;
    CComboBox                     m_cbGirderSpacingMeasurement;
 
-   Uint32 m_GirderSpacingMeasure; // this is a hash of measurement location and measurement type
-
-
-   CSegmentSpacingGrid m_SpacingGrid;
-
-   GirderIndexType m_RefGirderIdx;
-   Float64 m_RefGirderOffset;
-   pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
-   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
-   pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
-
-   void Init(const CPierData2* pPierData);
-   void Init(const CTemporarySupportData& tsData);
-
-   bool AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName);
+   void Init(CPierData2* pPierData);
+   void Init(CTemporarySupportData* pTS);
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -81,7 +68,7 @@ public:
 
 // Implementation
 protected:
-   void CommonInit(const CGirderSpacing2* pSpacing,const CBridgeDescription2* pBridge);
+   void CommonInit(CGirderSpacing2* pSpacing,CBridgeDescription2* pBridge);
 
 	// Generated message map functions
 	//{{AFX_MSG(CGirderSegmentSpacingPage)
@@ -93,12 +80,24 @@ protected:
    afx_msg LRESULT OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
-   void ToggleGirderSpacingType();
-
    bool m_bIsPier;
    CString m_strSupportLabel;
 
-   CGirderSpacingData2 m_SpacingCache;
+
+   Uint32 m_GirderSpacingMeasure; // this is a hash of measurement location and measurement type
+
+
+   CSegmentSpacingGrid m_SpacingGrid;
+
+   GirderIndexType m_RefGirderIdx;
+   Float64 m_RefGirderOffset;
+   pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
+
+   GirderIndexType m_RefGirderIdxCache;
+   Float64 m_RefGirderOffsetCache;
+   pgsTypes::OffsetMeasurementType m_RefGirderOffsetTypeCache;
+
+   CGirderSpacing2 m_SpacingCache;
    long m_GirderSpacingMeasureCache;
 
    void OnPierSpacingDatumChanged(UINT nIDC,pgsTypes::PierFaceType pierFace);
@@ -115,10 +114,12 @@ protected:
    void UpdateChildWindowState();
    void UpdateGirderSpacingState();
 
-public:
-   const CBridgeDescription2* GetBridgeDescription();
-   bool IsContinuousSegment();
+   CBridgeDescription2* GetBridgeDescription();
+   CGirderSpacing2* GetSpacing();
+   void SetSpacing(CGirderSpacing2* pSpacing);
+   Float64 GetSkewAngle();
    Float64 GetStation();
    LPCTSTR GetOrientation();
+   bool IsContinuousSegment();
    void SetGroupTitle();
 };

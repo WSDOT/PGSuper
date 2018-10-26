@@ -31,7 +31,7 @@
 
 #include <Lrfd\ConcreteUtil.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 #include <PgsExt\GirderLabel.h>
 
 #ifdef _DEBUG
@@ -84,6 +84,8 @@ void CConcreteManager::ValidateConcrete()
    GET_IFACE(ISectionProperties,pSectProp);
    pgsPointOfInterest poi(CSegmentKey(0,0,0),0.0); // dummy POI
 
+   const CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
+
    //////////////////////////////////////////////////////////////////////////////
    //
    // Create Deck concrete
@@ -118,9 +120,9 @@ void CConcreteManager::ValidateConcrete()
       m_DeckShrinkageK2 = pDeck->Concrete.ShrinkageK2;
 
       // Time dependent model
-      EventIndexType castDeckEventIdx  = m_pBridgeDesc->GetTimelineManager()->GetCastDeckEventIndex();
-      Float64   time_at_casting        = m_pBridgeDesc->GetTimelineManager()->GetStart(castDeckEventIdx);
-      Float64   age_at_initial_loading = m_pBridgeDesc->GetTimelineManager()->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
+      EventIndexType castDeckEventIdx  = pTimelineMgr->GetCastDeckEventIndex();
+      Float64   time_at_casting        = pTimelineMgr->GetStart(castDeckEventIdx);
+      Float64   age_at_initial_loading = pTimelineMgr->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
       Float64   cure_time              = age_at_initial_loading;
 #pragma Reminder("REVIEW: is this the correct V/S ratio for the deck?")
       // can't get deck properties until the model is build... and that is what we are doing here so there is recursion
@@ -187,12 +189,12 @@ void CConcreteManager::ValidateConcrete()
    
    //////////////////////////////////////////////////////////////////////////////
    //
-   // Precast Segment and Closure Pour Concrete
+   // Precast Segment and Closure Joint Concrete
    //
    //////////////////////////////////////////////////////////////////////////////
-   EventIndexType segConstructEventIdx = m_pBridgeDesc->GetTimelineManager()->GetSegmentConstructionEventIndex();
-   Float64 segment_casting_time        = m_pBridgeDesc->GetTimelineManager()->GetStart(segConstructEventIdx);
-   Float64 segment_age_at_release      = m_pBridgeDesc->GetTimelineManager()->GetEventByIndex(segConstructEventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
+   EventIndexType segConstructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex();
+   Float64 segment_casting_time        = pTimelineMgr->GetStart(segConstructEventIdx);
+   Float64 segment_age_at_release      = pTimelineMgr->GetEventByIndex(segConstructEventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
    Float64 segment_cure_time = segment_age_at_release;
 
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
@@ -228,13 +230,13 @@ void CConcreteManager::ValidateConcrete()
 
             if ( segIdx < nSegments-1 )
             {
-               const CClosurePourData* pClosure   = pGirder->GetClosurePour(segIdx);
-               EventIndexType castClosureEventIdx      = m_pBridgeDesc->GetTimelineManager()->GetCastClosurePourEventIndex(pSegment->GetID());
-               Float64 closure_casting_time       = m_pBridgeDesc->GetTimelineManager()->GetStart(castClosureEventIdx);
-               Float64 closure_age_at_continuity  = m_pBridgeDesc->GetTimelineManager()->GetEventByIndex(castClosureEventIdx)->GetCastClosurePourActivity().GetConcreteAgeAtContinuity();
+               const CClosureJointData* pClosure  = pGirder->GetClosureJoint(segIdx);
+               EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure->GetID());
+               Float64 closure_casting_time       = pTimelineMgr->GetStart(castClosureEventIdx);
+               Float64 closure_age_at_continuity  = pTimelineMgr->GetEventByIndex(castClosureEventIdx)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
                Float64 closure_cure_time          = closure_age_at_continuity;
 
-               // this isn't really needed because closure pours are for spliced girders only and
+               // this isn't really needed because closure joints are for spliced girders only and
                // spliced girders only use a time-dependent material model... but since we need 
                // to provide this parameters, we will provide it so that it is logical.
                //
@@ -409,14 +411,13 @@ void CConcreteManager::ValidateConcrete()
 
             std::_tostringstream osLabel;
             osLabel << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx);
-            //ValidateConcrete(m_pSegmentConcreteRelease[segmentKey],m_pSegmentConcreteFinal[segmentKey],pgsConcreteStrengthStatusItem::GirderSegment,osLabel.str().c_str(),segmentKey);
             ValidateConcrete(m_pSegmentConcrete[segmentKey],pgsConcreteStrengthStatusItem::GirderSegment,osLabel.str().c_str(),segmentKey);
 
             if ( segIdx < nSegments-1 )
             {
                std::_tostringstream osLabel2;
                osLabel2 << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Closure ") << LABEL_SEGMENT(segIdx);
-               ValidateConcrete(m_pClosureConcrete[segmentKey],pgsConcreteStrengthStatusItem::ClosurePour,osLabel2.str().c_str(),segmentKey);
+               ValidateConcrete(m_pClosureConcrete[segmentKey],pgsConcreteStrengthStatusItem::ClosureJoint,osLabel2.str().c_str(),segmentKey);
             }
          }
       }
@@ -427,6 +428,7 @@ void CConcreteManager::ValidateConcrete()
 
 void CConcreteManager::ValidateConcrete(boost::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey)
 {
+   ATLASSERT(elementType == pgsConcreteStrengthStatusItem::GirderSegment || elementType == pgsConcreteStrengthStatusItem::ClosureJoint);
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(ILimits,pLimits);
@@ -436,14 +438,25 @@ void CConcreteManager::ValidateConcrete(boost::shared_ptr<matConcreteBase> pConc
    // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
    bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
    Float64 fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
+   // the LRFD doesn't say that this specifically applies to closure joints,
+   // but we are going to assume that it does.
 
    Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(concreteType);
    Float64 MaxWc  = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
 
-   Float64 max_girder_fci = pLimits->GetMaxSegmentFci(concreteType);
-   Float64 fciGirderMax   = ::ConvertFromSysUnits(max_girder_fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
-   Float64 max_girder_fc  = pLimits->GetMaxSegmentFc(concreteType);
-   Float64 fcGirderMax    = ::ConvertFromSysUnits(max_girder_fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+   Float64 max_fci, max_fc;
+   if ( elementType == pgsConcreteStrengthStatusItem::GirderSegment )
+   {
+      max_fci = pLimits->GetMaxSegmentFci(concreteType);
+      max_fc  = pLimits->GetMaxSegmentFc(concreteType);
+   }
+   else
+   {
+      max_fci = pLimits->GetMaxClosureFci(concreteType);
+      max_fc  = pLimits->GetMaxClosureFc(concreteType);
+   }
+   Float64 fciMax = ::ConvertFromSysUnits(max_fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+   Float64 fcMax  = ::ConvertFromSysUnits(max_fc, pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
    Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(concreteType);
    Float64 MaxAggSize   = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -462,10 +475,10 @@ void CConcreteManager::ValidateConcrete(boost::shared_ptr<matConcreteBase> pConc
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_girder_fci < fci )
+   if (  max_fci < fci )
    {
       std::_tostringstream os;
-      os << strLabel << _T(": Initial concrete strength exceeds the normal value of ") << fciGirderMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
+      os << strLabel << _T(": Initial concrete strength exceeds the normal value of ") << fciMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
 
       strMsg = os.str();
 
@@ -473,10 +486,10 @@ void CConcreteManager::ValidateConcrete(boost::shared_ptr<matConcreteBase> pConc
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_girder_fc < fc28 )
+   if (  max_fc < fc28 )
    {
       std::_tostringstream os;
-      os << strLabel << _T(": Concrete strength exceeds the normal value of ") << fcGirderMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
+      os << strLabel << _T(": Concrete strength exceeds the normal value of ") << fcMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
 
       strMsg = os.str();
 
@@ -797,108 +810,108 @@ Float64 CConcreteManager::GetSegmentShrinkageK2(const CSegmentKey& segmentKey)
    return K2;
 }
 
-pgsTypes::ConcreteType CConcreteManager::GetClosurePourConcreteType(const CSegmentKey& closureKey)
+pgsTypes::ConcreteType CConcreteManager::GetClosureJointConcreteType(const CSegmentKey& closureKey)
 {
    ValidateConcrete();
    return (pgsTypes::ConcreteType)m_pClosureConcrete[closureKey]->GetType();
 }
 
-bool CConcreteManager::DoesClosurePourConcreteHaveAggSplittingStrength(const CSegmentKey& closureKey)
+bool CConcreteManager::DoesClosureJointConcreteHaveAggSplittingStrength(const CSegmentKey& closureKey)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->HasAggSplittingStrength();
 }
 
-Float64 CConcreteManager::GetClosurePourConcreteAggSplittingStrength(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointConcreteAggSplittingStrength(const CSegmentKey& closureKey)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetAggSplittingStrength();
 }
 
-Float64 CConcreteManager::GetClosurePourMaxAggrSize(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointMaxAggrSize(const CSegmentKey& closureKey)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetMaxAggregateSize();
 }
 
-Float64 CConcreteManager::GetClosurePourStrengthDensity(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointStrengthDensity(const CSegmentKey& closureKey)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetStrengthDensity();
 }
 
-Float64 CConcreteManager::GetClosurePourWeightDensity(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointWeightDensity(const CSegmentKey& closureKey)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetWeightDensity();
 }
 
-Float64 CConcreteManager::GetClosurePourEccK1(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointEccK1(const CSegmentKey& closureKey)
 {
    Float64 K1 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    {
-      const CClosurePourData* pClosure = m_pBridgeDesc->GetClosurePour(closureKey);
+      const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K1 = pClosure->GetConcrete().EcK1;
    }
 
    return K1;
 }
 
-Float64 CConcreteManager::GetClosurePourEccK2(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointEccK2(const CSegmentKey& closureKey)
 {
    Float64 K2 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    {
-      const CClosurePourData* pClosure = m_pBridgeDesc->GetClosurePour(closureKey);
+      const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K2 = pClosure->GetConcrete().EcK2;
    }
 
    return K2;
 }
 
-Float64 CConcreteManager::GetClosurePourCreepK1(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointCreepK1(const CSegmentKey& closureKey)
 {
    Float64 K1 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    {
-      const CClosurePourData* pClosure = m_pBridgeDesc->GetClosurePour(closureKey);
+      const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K1 = pClosure->GetConcrete().CreepK1;
    }
 
    return K1;
 }
 
-Float64 CConcreteManager::GetClosurePourCreepK2(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointCreepK2(const CSegmentKey& closureKey)
 {
    Float64 K2 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    {
-      const CClosurePourData* pClosure = m_pBridgeDesc->GetClosurePour(closureKey);
+      const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K2 = pClosure->GetConcrete().CreepK2;
    }
 
    return K2;
 }
 
-Float64 CConcreteManager::GetClosurePourShrinkageK1(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointShrinkageK1(const CSegmentKey& closureKey)
 {
    Float64 K1 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    {
-      const CClosurePourData* pClosure = m_pBridgeDesc->GetClosurePour(closureKey);
+      const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K1 = pClosure->GetConcrete().ShrinkageK1;
    }
 
    return K1;
 }
 
-Float64 CConcreteManager::GetClosurePourShrinkageK2(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointShrinkageK2(const CSegmentKey& closureKey)
 {
    Float64 K2 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    {
-      const CClosurePourData* pClosure = m_pBridgeDesc->GetClosurePour(closureKey);
+      const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K2 = pClosure->GetConcrete().ShrinkageK2;
    }
 
@@ -1233,43 +1246,43 @@ Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentK
    return m_pSegmentConcrete[segmentKey]->GetCreepCoefficient(t,tla);
 }
 
-Float64 CConcreteManager::GetClosurePourCastingTime(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointCastingTime(const CSegmentKey& closureKey)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetTimeAtCasting();
 }
 
-Float64 CConcreteManager::GetClosurePourFc(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointFc(const CSegmentKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetFc(t);
 }
 
-Float64 CConcreteManager::GetClosurePourFlexureFr(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointFlexureFr(const CSegmentKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetFlexureFr(t);
 }
 
-Float64 CConcreteManager::GetClosurePourShearFr(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointShearFr(const CSegmentKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetShearFr(t);
 }
 
-Float64 CConcreteManager::GetClosurePourEc(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointEc(const CSegmentKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetEc(t);
 }
 
-Float64 CConcreteManager::GetClosurePourFreeShrinkageStrain(const CSegmentKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,Float64 t)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetFreeShrinkageStrain(t);
 }
 
-Float64 CConcreteManager::GetClosurePourCreepCoefficient(const CSegmentKey& closureKey,Float64 t,Float64 tla)
+Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CSegmentKey& closureKey,Float64 t,Float64 tla)
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetCreepCoefficient(t,tla);

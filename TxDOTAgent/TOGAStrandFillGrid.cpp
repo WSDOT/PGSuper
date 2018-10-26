@@ -48,16 +48,23 @@ static char THIS_FILE[] = __FILE__;
 
 
 // local struct to store data in a grid cell
-struct UserData
+
+class CUserData : public CGXAbstractUserAttribute
 {
+public:
    pgsTypes::StrandType strandType;
    StrandIndexType      strandTypeGridIdx; // index in library collection for the strnad type defined by strandType (harped, straight, or temporary library grid index)
    bool                 isDebondable;
    StrandIndexType      oneOrTwo; // strands available for filling
 
-   UserData(pgsTypes::StrandType type, StrandIndexType index, bool debondable, StrandIndexType oneTwo):
+   CUserData(pgsTypes::StrandType type, StrandIndexType index, bool debondable, StrandIndexType oneTwo):
       strandType(type), strandTypeGridIdx(index), isDebondable(debondable), oneOrTwo(oneTwo)
    {;}
+
+   virtual CGXAbstractUserAttribute* Clone() const
+   {
+      return new CUserData(strandType,strandTypeGridIdx,isDebondable,oneOrTwo);
+   }
 };
 
 /////////////////
@@ -336,12 +343,12 @@ void CTOGAStrandFillGrid::FillGrid()
       bool isFilled = IsPermStrandFilled(strandType, localIdx);
 
       // store strand type and index for later use
-      UserData* pUserData = new UserData(strandType==GirderLibraryEntry::stStraight ? pgsTypes::Straight : pgsTypes::Harped, 
+      CUserData userData(strandType==GirderLibraryEntry::stStraight ? pgsTypes::Straight : pgsTypes::Harped, 
          localIdx, canDebond, oneOrTwo); // the grid will delete this
 
       SetStyleRange(CGXRange(row,SELECT_CHECK_COL), CGXStyle()
          .SetValue(isFilled ? _T("1") : _T("0"))
-         .SetItemDataPtr((void*)pUserData)
+         .SetUserAttribute(0,userData)
          );
 
       if ( !isFilled )
@@ -447,11 +454,11 @@ void CTOGAStrandFillGrid::FillGrid()
       bool isFilled = false; // = IsTempStrandFilled(gridIdx);
 
       // store strand type and index for later use
-      UserData* pUserData = new UserData(pgsTypes::Temporary, gridIdx, false, oneOrTwo); // the grid will delete this
+      CUserData userData(pgsTypes::Temporary, gridIdx, false, oneOrTwo); // the grid will delete this
 
       SetStyleRange(CGXRange(row,SELECT_CHECK_COL), CGXStyle()
          .SetValue(isFilled ? _T("1") : _T("0"))
-         .SetItemDataPtr((void*)pUserData)
+         .SetUserAttribute(0,userData)
          );
 
 
@@ -500,8 +507,7 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
       if ( style.GetValue() == _T("0") )
          continue; // strand are not selected... continue to the next row
 
-      UserData* pUserData = (UserData*)style.GetItemDataPtr(); // user data we set at fill time
-
+      const CUserData& userData = dynamic_cast<const CUserData&>(style.GetUserAttribute(0));
 
       GetStyleRowCol(nRow, DEBOND_CHECK_COL, style);
       if ( style.GetValue() == _T("1") )
@@ -542,10 +548,10 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
          }
 
 
-         if (pUserData->strandTypeGridIdx != INVALID_INDEX)
+         if (userData.strandTypeGridIdx != INVALID_INDEX)
          {
             CDebondData dbinfo;
-            dbinfo.strandTypeGridIdx = pUserData->strandTypeGridIdx;
+            dbinfo.strandTypeGridIdx = userData.strandTypeGridIdx;
             dbinfo.Length1 = leftDebond;
             dbinfo.Length2 = rightDebond;
 
@@ -568,7 +574,7 @@ void CTOGAStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
 
       CGXStyle style;
       GetStyleRowCol(nRow, nCol, style);
-      UserData* pUserData = (UserData*)style.GetItemDataPtr(); // user data we set at fill time
+      const CUserData& userData = dynamic_cast<const CUserData&>(style.GetUserAttribute(0));
 
       CString strval = style.GetValue();
       bool bIsChecked = (strval == _T("1") ? true : false);
@@ -577,10 +583,10 @@ void CTOGAStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
       if(bIsChecked)
       {
          // just selected the strand
-         AddStrandFill(pUserData);
+         AddStrandFill(&userData);
 
          // If the strand is debondable, enable the debond check box
-         if ( pUserData->isDebondable )
+         if ( userData.isDebondable )
          {
             SetStyleRange(CGXRange(nRow,DEBOND_CHECK_COL),CGXStyle()
                .SetValue(_T("0")) 
@@ -594,7 +600,7 @@ void CTOGAStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
       else
       {
          // just unchecked the box
-         RemoveStrandFill(pUserData);
+         RemoveStrandFill(&userData);
 
          // Clear and disable the rest of the row
          SetStyleRange(CGXRange(nRow,DEBOND_CHECK_COL,nRow,DEBOND_VAL_COL), CGXStyle()
@@ -670,7 +676,7 @@ bool CTOGAStrandFillGrid::IsPermStrandFilled(GirderLibraryEntry::psStrandType st
    }
 }
 
-void CTOGAStrandFillGrid::RemoveStrandFill(UserData* pUserData)
+void CTOGAStrandFillGrid::RemoveStrandFill(const CUserData* pUserData)
 {
    if (pUserData->strandType == pgsTypes::Straight)
    {
@@ -680,7 +686,7 @@ void CTOGAStrandFillGrid::RemoveStrandFill(UserData* pUserData)
       ATLASSERT(0);
 }
 
-void CTOGAStrandFillGrid::AddStrandFill(UserData* pUserData)
+void CTOGAStrandFillGrid::AddStrandFill(const CUserData* pUserData)
 {
    CDirectStrandFillInfo fillinf(pUserData->strandTypeGridIdx, pUserData->oneOrTwo);
 

@@ -73,10 +73,7 @@ class ATL_NO_VTABLE CBridgeAgentImp :
    public IStrandGeometry,
    public ILongRebarGeometry,
    public IStirrupGeometry,
-   //public IGirderPointOfInterest,
    public IPointOfInterest,
-   //public IClosurePourPointOfInterest,
-   //public ISplicedGirderPointOfInterest,
    public ISectionProperties,
    public IShapes,
    public IBarriers,
@@ -87,7 +84,6 @@ class ATL_NO_VTABLE CBridgeAgentImp :
    public IUserDefinedLoads,
    public ITempSupport,
    public IGirder,
-   public IClosurePour,
    public ITendonGeometry,
    public IIntervals
 {
@@ -116,10 +112,7 @@ BEGIN_COM_MAP(CBridgeAgentImp)
    COM_INTERFACE_ENTRY(IStrandGeometry)
    COM_INTERFACE_ENTRY(ILongRebarGeometry)
    COM_INTERFACE_ENTRY(IStirrupGeometry)
-   //COM_INTERFACE_ENTRY(IGirderPointOfInterest)
    COM_INTERFACE_ENTRY(IPointOfInterest)
-   //COM_INTERFACE_ENTRY(IClosurePourPointOfInterest)
-   //COM_INTERFACE_ENTRY(ISplicedGirderPointOfInterest)
    COM_INTERFACE_ENTRY(ISectionProperties)
    COM_INTERFACE_ENTRY(IShapes)
    COM_INTERFACE_ENTRY(IBarriers)
@@ -130,7 +123,6 @@ BEGIN_COM_MAP(CBridgeAgentImp)
    COM_INTERFACE_ENTRY(IUserDefinedLoads)
    COM_INTERFACE_ENTRY(ITempSupport)
    COM_INTERFACE_ENTRY(IGirder)
-   COM_INTERFACE_ENTRY(IClosurePour)
    COM_INTERFACE_ENTRY(ITendonGeometry)
    COM_INTERFACE_ENTRY(IIntervals)
    COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
@@ -201,6 +193,7 @@ public:
    virtual SpanIndexType GetGirderGroupEndSpan(GroupIndexType grpIdx);
    virtual void GetGirderGroupSpans(GroupIndexType grpIdx,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
    virtual GroupIndexType GetGirderGroupIndex(SpanIndexType spanIdx);
+   virtual void GetGirderGirderIndex(PierIndexType pierIdx,GroupIndexType* pBackGroupIdx,GroupIndexType* pAheadGroupIdx);
    virtual void GetDistanceBetweenGirders(const pgsPointOfInterest& poi,Float64 *pLeft,Float64* pRight);
    virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType);
    virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(SpanIndexType spanIdx,Float64 distFromStartOfSpan);
@@ -213,7 +206,7 @@ public:
    virtual Float64 GetSegmentPlanLength(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentSlope(const CSegmentKey& segmentKey);
    virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   virtual Float64 GetLoadingSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetFullSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSegmentStartEndDistance(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentEndEndDistance(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentStartBearingOffset(const CSegmentKey& segmentKey);
@@ -241,6 +234,9 @@ public:
    virtual bool IsLeftExteriorGirder(const CGirderKey& girderKey);
    virtual bool IsRightExteriorGirder(const CGirderKey& girderKey);
    virtual bool AreGirderTopFlangesRoughened(const CSegmentKey& segmentKey);
+   virtual void GetClosureJointProfile(const CClosureKey& closureKey,IShape** ppShape);
+   virtual Float64 GetClosureJointLength(const CClosureKey& closureKey);
+   virtual void GetClosureJointSize(const CClosureKey& closureKey,Float64* pLeft,Float64* pRight);
    virtual void GetBackSideEndDiaphragmSize(PierIndexType pier,Float64* pW,Float64* pH);
    virtual void GetAheadSideEndDiaphragmSize(PierIndexType pier,Float64* pW,Float64* pH);
    virtual bool DoesLeftSideEndDiaphragmLoadGirder(PierIndexType pier);
@@ -325,66 +321,66 @@ public:
 // IMaterials
 public:
    virtual Float64 GetSegmentFc28(const CSegmentKey& segmentKey);
-   virtual Float64 GetClosurePourFc28(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointFc28(const CSegmentKey& closureKey);
    virtual Float64 GetDeckFc28();
    virtual Float64 GetRailingSystemFc28(pgsTypes::TrafficBarrierOrientation orientation);
 
    virtual Float64 GetSegmentEc28(const CSegmentKey& segmentKey);
-   virtual Float64 GetClosurePourEc28(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointEc28(const CSegmentKey& closureKey);
    virtual Float64 GetDeckEc28();
    virtual Float64 GetRailingSystemEc28(pgsTypes::TrafficBarrierOrientation orientation);
 
    virtual Float64 GetSegmentWeightDensity(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosurePourWeightDensity(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointWeightDensity(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetDeckWeightDensity(IntervalIndexType intervalIdx);
    virtual Float64 GetRailingSystemWeightDensity(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentConcreteAge(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosurePourConcreteAge(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointConcreteAge(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetDeckConcreteAge(IntervalIndexType intervalIdx);
    virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosurePourFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetDeckFc(IntervalIndexType intervalIdx);
    virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged);
-   virtual Float64 GetClosurePourEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosurePourEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged);
+   virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged);
    virtual Float64 GetDeckEc(IntervalIndexType intervalIdx);
    virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosurePourFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosurePourShearFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetDeckFlexureFr(IntervalIndexType intervalIdx);
    virtual Float64 GetDeckShearFr(IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosurePourAgingCoefficient(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointAgingCoefficient(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetDeckAgingCoefficient(IntervalIndexType intervalIdx);
    virtual Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentAgeAdjustedEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosurePourAgeAdjustedEc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointAgeAdjustedEc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetDeckAgeAdjustedEc(IntervalIndexType intervalIdx);
    virtual Float64 GetRailingSystemAgeAdjustedEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time);
-   virtual Float64 GetClosurePourFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time);
+   virtual Float64 GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time);
    virtual Float64 GetDeckFreeShrinkageStrain(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time);
    virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
 
    virtual Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosurePourFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetDeckFreeShrinkageStrain(IntervalIndexType intervalIdx);
    virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
-   virtual Float64 GetClosurePourCreepCoefficient(const CSegmentKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
+   virtual Float64 GetClosureJointCreepCoefficient(const CSegmentKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
    virtual Float64 GetDeckCreepCoefficient(IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
    virtual Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType);
 
@@ -399,17 +395,17 @@ public:
    virtual Float64 GetSegmentCreepK2(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey);
-   virtual pgsTypes::ConcreteType GetClosurePourConcreteType(const CSegmentKey& closureKey);
-   virtual bool DoesClosurePourConcreteHaveAggSplittingStrength(const CSegmentKey& closureKey);
-   virtual Float64 GetClosurePourConcreteAggSplittingStrength(const CSegmentKey& closureKey);
-   virtual Float64 GetClosurePourStrengthDensity(const CSegmentKey& closureKey);
-   virtual Float64 GetClosurePourMaxAggrSize(const CSegmentKey& closureKey);
-   virtual Float64 GetClosurePourEccK1(const CSegmentKey& closureKey);
-   virtual Float64 GetClosurePourEccK2(const CSegmentKey& closureKey);
-   virtual Float64 GetClosurePourCreepK1(const CSegmentKey& closureKey);
-   virtual Float64 GetClosurePourCreepK2(const CSegmentKey& closureKey);
-   virtual Float64 GetClosurePourShrinkageK1(const CSegmentKey& closureKey);
-   virtual Float64 GetClosurePourShrinkageK2(const CSegmentKey& closureKey);
+   virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CSegmentKey& closureKey);
+   virtual bool DoesClosureJointConcreteHaveAggSplittingStrength(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointConcreteAggSplittingStrength(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointStrengthDensity(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointMaxAggrSize(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointEccK1(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointEccK2(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointCreepK1(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointCreepK2(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointShrinkageK1(const CSegmentKey& closureKey);
+   virtual Float64 GetClosureJointShrinkageK2(const CSegmentKey& closureKey);
    virtual pgsTypes::ConcreteType GetDeckConcreteType();
    virtual bool DoesDeckConcreteHaveAggSplittingStrength();
    virtual Float64 GetDeckConcreteAggSplittingStrength();
@@ -427,15 +423,15 @@ public:
    virtual void GetSegmentLongitudinalRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetSegmentLongitudinalRebarName(const CSegmentKey& segmentKey);
    virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade);
-   virtual void GetClosurePourLongitudinalRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu);
-   virtual std::_tstring GetClosurePourLongitudinalRebarName(const CClosureKey& closureKey);
-   virtual void GetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
+   virtual void GetClosureJointLongitudinalRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu);
+   virtual std::_tstring GetClosureJointLongitudinalRebarName(const CClosureKey& closureKey);
+   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
    virtual void GetSegmentTransverseRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu);
    virtual void GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade);
    virtual std::_tstring GetSegmentTransverseRebarName(const CSegmentKey& segmentKey);
-   virtual void GetClosurePourTransverseRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu);
-   virtual void GetClosurePourTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
-   virtual std::_tstring GetClosurePourTransverseRebarName(const CClosureKey& closureKey);
+   virtual void GetClosureJointTransverseRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu);
+   virtual void GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
+   virtual std::_tstring GetClosureJointTransverseRebarName(const CClosureKey& closureKey);
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetDeckRebarName();
    virtual void GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade);
@@ -504,6 +500,8 @@ public:
    virtual void GetStartConfinementBarInfo(const CSegmentKey& segmentKey, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing);
    virtual void GetEndConfinementBarInfo(  const CSegmentKey& segmentKey, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing);
 
+   virtual bool AreStirrupZoneLengthsCombatible(const CGirderKey& girderKey);
+
 private:
    ZoneIndexType GetPrimaryShearZoneIndexAtPoi(const pgsPointOfInterest& poi, const CShearData2* pShearData);
    const CShearZoneData2* GetPrimaryShearZoneDataAtPoi(const pgsPointOfInterest& poi, const CShearData2* pShearData);
@@ -566,7 +564,7 @@ public:
    virtual void GetStrandPosition(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, IPoint2d** ppPoint);
    virtual void GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints);
    virtual void GetStrandPositionsEx(const pgsPointOfInterest& poi,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType type, IPoint2dCollection** ppPoints);
-   virtual void GetStrandPositionsEx(LPCTSTR strGirderName, const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType type,pgsTypes::MemberEndType endType, IPoint2dCollection** ppPoints);
+   virtual void GetStrandPositionsEx(LPCTSTR strGirderName, Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType type,pgsTypes::MemberEndType endType, IPoint2dCollection** ppPoints);
 
    // Harped strands can be forced to be straight along their length
    virtual bool GetAreHarpedStrandsForcedStraight(const CSegmentKey& segmentKey);
@@ -579,10 +577,10 @@ public:
 
    virtual void GetHarpedEndOffsetBounds(const CSegmentKey& segmentKey,Float64* DownwardOffset, Float64* UpwardOffset);
    virtual void GetHarpedEndOffsetBoundsEx(const CSegmentKey& segmentKey,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset);
-   virtual void GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName, const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset);
+   virtual void GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName, Float64 HgStart, Float64 HgHp1, Float64 HgHp2, Float64 HgEnd, const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset);
    virtual void GetHarpedHpOffsetBounds(const CSegmentKey& segmentKey,Float64* DownwardOffset, Float64* UpwardOffset);
    virtual void GetHarpedHpOffsetBoundsEx(const CSegmentKey& segmentKey,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset);
-   virtual void GetHarpedHpOffsetBoundsEx(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset);
+   virtual void GetHarpedHpOffsetBoundsEx(LPCTSTR strGirderName, Float64 HgStart, Float64 HgHp1, Float64 HgHp2, Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset);
 
    virtual Float64 GetHarpedEndOffsetIncrement(const CSegmentKey& segmentKey);
    virtual Float64 GetHarpedHpOffsetIncrement(const CSegmentKey& segmentKey);
@@ -652,31 +650,21 @@ public:
    virtual Float64 GetDefaultDebondLength(const CSegmentKey& segmentKey);
 
    virtual Float64 ComputeAbsoluteHarpedOffsetEnd(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset);
-   virtual Float64 ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset);
+   virtual Float64 ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset);
    virtual Float64 ComputeHarpedOffsetFromAbsoluteEnd(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset);
-   virtual Float64 ComputeHarpedOffsetFromAbsoluteEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset);
+   virtual Float64 ComputeHarpedOffsetFromAbsoluteEnd(LPCTSTR strGirderName,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset);
    virtual Float64 ComputeAbsoluteHarpedOffsetHp(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset);
-   virtual Float64 ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset);
+   virtual Float64 ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset);
    virtual Float64 ComputeHarpedOffsetFromAbsoluteHp(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset);
-   virtual Float64 ComputeHarpedOffsetFromAbsoluteHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset);
+   virtual Float64 ComputeHarpedOffsetFromAbsoluteHp(LPCTSTR strGirderName,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset);
    virtual void ComputeValidHarpedOffsetForMeasurementTypeEnd(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange);
-   virtual void ComputeValidHarpedOffsetForMeasurementTypeEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange);
+   virtual void ComputeValidHarpedOffsetForMeasurementTypeEnd(LPCTSTR strGirderName,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange);
    virtual void ComputeValidHarpedOffsetForMeasurementTypeHp(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange);
-   virtual void ComputeValidHarpedOffsetForMeasurementTypeHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange);
+   virtual void ComputeValidHarpedOffsetForMeasurementTypeHp(LPCTSTR strGirderName,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange);
    virtual Float64 ConvertHarpedOffsetEnd(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType);
-   virtual Float64 ConvertHarpedOffsetEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType);
+   virtual Float64 ConvertHarpedOffsetEnd(LPCTSTR strGirderName,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType);
    virtual Float64 ConvertHarpedOffsetHp(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType);
-   virtual Float64 ConvertHarpedOffsetHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType);
-
-
-//// IGirderPointOfInterest
-//public:
-//   virtual std::vector<pgsPointOfInterest> GetGirderPointsOfInterest(SpanIndexType span,GirderIndexType gdr);
-//   virtual std::vector<pgsPointOfInterest> GetGirderPointsOfInterest(SpanIndexType span,GirderIndexType gdr,const std::vector<EventIndexType>& events,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
-//   virtual std::vector<pgsPointOfInterest> GetGirderPointsOfInterest(SpanIndexType span,GirderIndexType gdr,EventIndexType event,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
-//   virtual std::vector<pgsPointOfInterest> GetGirderTenthPointPOIs(EventIndexType event,SpanIndexType span,GirderIndexType gdr);
-//   virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState limitState,GirderIDType gdrID);
-//   virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState limitState,GirderIDType gdrID,const GDRCONFIG& config);
+   virtual Float64 ConvertHarpedOffsetHp(LPCTSTR strGirderName,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType);
 
 // IPointOfInterest
 public:
@@ -696,6 +684,7 @@ public:
    virtual Float64 ConvertPoiToSegmentCoordinate(const pgsPointOfInterest& poi);
    virtual pgsPointOfInterest ConvertSegmentCoordinateToPoi(const CSegmentKey& segmentKey,Float64 Xs);
    virtual Float64 ConvertSegmentCoordinateToPoiCoordinate(const CSegmentKey& segmentKey,Float64 Xs);
+   virtual Float64 ConvertSegmentCoordinateToGirderCoordinate(const CSegmentKey& segmentKey,Float64 Xs);
    virtual Float64 ConvertPoiCoordinateToSegmentCoordinate(const CSegmentKey& segmentKey,Float64 Xpoi);
    virtual Float64 ConvertPoiToGirderCoordinate(const pgsPointOfInterest& poi);
    virtual pgsPointOfInterest ConvertGirderCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg);
@@ -703,6 +692,7 @@ public:
    virtual pgsPointOfInterest ConvertGirderPathCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg);
    virtual Float64 ConvertGirderCoordinateToGirderPathCoordinate(const CGirderKey& girderKey,Float64 distFromStartOfGirder);
    virtual Float64 ConvertGirderPathCoordinateToGirderCoordinate(const CGirderKey& girderKey,Float64 Xg);
+   virtual Float64 ConvertPoiToGirderlineCoordinate(const pgsPointOfInterest& poi);
    virtual void RemovePointsOfInterest(std::vector<pgsPointOfInterest>& vPoi,PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute);
 
 // ISectionProperties
@@ -881,6 +871,7 @@ public:
 	virtual Float64 GetWebSpacing(const pgsPointOfInterest& poi,WebIndexType spaceIdx);
    virtual Float64 GetWebThickness(const pgsPointOfInterest& poi,WebIndexType webIdx);
    virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi);
+   virtual Float64 GetWebWidth(const pgsPointOfInterest& poi);
    virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2);
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey);
    virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi);
@@ -902,12 +893,6 @@ public:
    virtual void GetSegmentBearingOffset(const CSegmentKey& segmentKey,Float64* pStartBearingOffset,Float64* pEndBearingOffset);
    virtual void GetSegmentStorageSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd);
 
-// IClosurePour
-public:
-   virtual void GetClosurePourProfile(const CClosureKey& closureKey,IShape** ppShape);
-   virtual Float64 GetClosurePourLength(const CClosureKey& closureKey);
-   virtual void GetClosurePourSize(const CClosureKey& closureKey,Float64* pLeft,Float64* pRight);
-
 // ITendonGeometry
 public:
    DuctIndexType GetDuctCount(const CGirderKey& girderKey);
@@ -915,8 +900,11 @@ public:
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,const CSplicedGirderData* pGirder,IPoint2dCollection** ppPoints);
    virtual void GetDuctPoint(const pgsPointOfInterest& poit,DuctIndexType ductIdx,IPoint2d** ppPoint);
    virtual void GetDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint);
-   virtual StrandIndexType GetStrandCount(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual Float64 GetDuctDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual StrandIndexType GetTendonStrandCount(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetTendonArea(const CGirderKey& girderKey,IntervalIndexType intervalIdx,DuctIndexType ductIdx);
+   virtual void GetTendonSlope(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IVector3d** ppSlope);
+   virtual void GetTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope);
    virtual Float64 GetPjack(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetFpj(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetDuctOffset(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx);
@@ -924,6 +912,8 @@ public:
    virtual Float64 GetAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
    virtual Float64 GetAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx);
    virtual pgsTypes::JackingEndType GetJackingEnd(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual Float64 GetAptTopHalf(const pgsPointOfInterest& poi);
+   virtual Float64 GetAptBottomHalf(const pgsPointOfInterest& poi);
 
 // IIntervals
 public:
@@ -945,13 +935,16 @@ public:
    virtual IntervalIndexType GetErectSegmentInterval(const CSegmentKey& segmentKey);
    virtual IntervalIndexType GetTemporaryStrandInstallationInterval(const CSegmentKey& segmentKey);
    virtual IntervalIndexType GetTemporaryStrandRemovalInterval(const CSegmentKey& segmentKey);
-   virtual IntervalIndexType GetCastClosurePourInterval(const CClosureKey& closureKey);
-   virtual IntervalIndexType GetCompositeClosurePourInterval(const CClosureKey& closureKey);
+   virtual IntervalIndexType GetCastClosureJointInterval(const CClosureKey& closureKey);
+   virtual IntervalIndexType GetCompositeClosureJointInterval(const CClosureKey& closureKey);
+   virtual void GetContinuityInterval(PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead);
    virtual IntervalIndexType GetCastDeckInterval();
    virtual IntervalIndexType GetCompositeDeckInterval();
    virtual IntervalIndexType GetLiveLoadInterval();
    virtual IntervalIndexType GetOverlayInterval();
    virtual IntervalIndexType GetInstallRailingSystemInterval();
+   virtual IntervalIndexType GetStressFirstTendonInterval(const CGirderKey& girderKey);
+   virtual IntervalIndexType GetStressLastTendonInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual IntervalIndexType GetTemporarySupportRemovalInterval(SupportIDType tsID);
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey);
@@ -1017,14 +1010,6 @@ private:
    pgsPoiMgr m_LiftingPoiMgr;
    pgsPoiMgr m_HaulingPoiMgr;
 
-   //// Points of interest for full superstructure members (only used for spliced girders)
-   //pgsPoiMgr m_GirderPoiMgr;
-   //std::set<GirderIDType> m_GirderPoiValidated; // If the gdrID is in the set, then the POI's have been validated
-
-   //// Other spliced girder POIs
-   //pgsPoiMgr m_ClosurePourPoiMgr;
-   //std::set<GirderIDType> m_SplicedGirderPoiValidated;
-
    // keeps track of which girders have had critical sections locations determined
    std::set<CGirderKey> m_CriticalSectionState[2]; // index 0 = Strength I, index 1 = Strength II
 
@@ -1070,7 +1055,7 @@ private:
    void CreateBarrierObject(IBarrier** pBarrier, const TrafficBarrierEntry*  pBarrierEntry, pgsTypes::TrafficBarrierOrientation orientation);
    void LayoutDeckRebar(const CDeckDescription2* pDeck,IBridgeDeck* deck);
    void LayoutSegmentRebar(const CSegmentKey& segmentKey);
-   void LayoutClosurePourRebar(const CClosureKey& closureKey);
+   void LayoutClosureJointRebar(const CClosureKey& closureKey);
    void UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType girderIdx,SegmentIndexType segmentIdx);
 
    // functions for building the new CBridgeGeometry model
@@ -1095,10 +1080,6 @@ private:
    void LayoutPoiForSectionChanges(const CSegmentKey& segmentKey);
    void LayoutPoiForTemporarySupports(const CSegmentKey& segmentKey);
    void LayoutPoiForPiers(const CSegmentKey& segmentKey);
-
-   //void ValidateSplicedGirderPointsOfInterest(GirderIDType gdrID);
-   //void LayoutSplicedGirderPointsOfInterest(GirderIDType gdrID);
-   //void LayoutSplicedGirderRegularPoi(GirderIDType gdrID,Uint16 nPointsPerSegment,Uint16 nPointsPerClosure);
 
    void ValidateSegmentOrientation(const CSegmentKey& segmentKey);
 
@@ -1168,6 +1149,8 @@ private:
    Float64 GetApsTensionSide(const pgsPointOfInterest& poi, const GDRCONFIG& config,DevelopmentAdjustmentType devAdjust,bool bTensionTop);
    Float64 GetApsTensionSide(const pgsPointOfInterest& poi, bool bUseConfig,const GDRCONFIG& config,DevelopmentAdjustmentType devAdjust,bool bTensionTop);
 
+   Float64 GetAptTensionSide(const pgsPointOfInterest& poi,bool bTensionTop);
+
    Float64 GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt,bool bTopMat,bool bBottomMat);
    Float64 GetLocationDeckMats(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt,bool bTopMat,bool bBottomMat);
    void GetDeckMatData(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt,bool bTopMat,bool bBottomMat,Float64* pAs,Float64* pYb);
@@ -1183,10 +1166,6 @@ private:
    void CreateCompositeOverlayEdgePaths(const CBridgeDescription2* pBridgeDesc,IPath** ppLeftPath,IPath** ppRightPath);
 
    REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
-
-
-   //// top left is at (0,0)
-   //void GetSegmentProfile(const CPrecastSegmentData& segmentData,Float64 length,IShape** ppShape);
 
    boost::shared_ptr<mathFunction2d> CreateGirderProfile(const CSplicedGirderData* pGirder);
    boost::shared_ptr<mathFunction2d> CreateGirderBottomFlangeProfile(const CSplicedGirderData* pGirder);

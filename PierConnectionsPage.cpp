@@ -58,8 +58,10 @@ CPierConnectionsPage::~CPierConnectionsPage()
 {
 }
 
-void CPierConnectionsPage::Init(const CPierData2* pPier)
+void CPierConnectionsPage::Init(CPierData2* pPier)
 {
+   m_pPier = pPier;
+
    m_PierIdx = pPier->GetIndex();
 
    m_PierConnectionType = pPier->GetPierConnectionType();
@@ -79,10 +81,6 @@ void CPierConnectionsPage::Init(const CPierData2* pPier)
 
 void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
 {
-   IPierConnectionsParent* pParent = dynamic_cast<IPierConnectionsParent*>(GetParent());
-   const CSpanData2* pPrevSpan = pParent->GetPrevSpan(m_PierIdx);
-   const CSpanData2* pNextSpan = pParent->GetNextSpan(m_PierIdx);
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -117,14 +115,14 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX,IDC_BOUNDARY_CONDITIONS,m_PierConnectionType);
 
    // Connection Dimensions
-   if ( pPrevSpan )
+   if ( m_pPier->GetPrevSpan() )
    {
       DDX_UnitValueAndTag(pDX,IDC_LEFT_BEARING_OFFSET, IDC_LEFT_BEARING_OFFSET_T,  m_BearingOffset[pgsTypes::Back],  pDisplayUnits->GetComponentDimUnit());
       DDX_UnitValueAndTag(pDX,IDC_LEFT_END_DISTANCE,   IDC_LEFT_END_DISTANCE_T,    m_EndDistance[pgsTypes::Back],    pDisplayUnits->GetComponentDimUnit());
       DDX_UnitValueAndTag(pDX,IDC_LEFT_SUPPORT_WIDTH,  IDC_LEFT_SUPPORT_WIDTH_T,   m_SupportWidth[pgsTypes::Back],   pDisplayUnits->GetComponentDimUnit());
    }
 
-   if ( pNextSpan )
+   if ( m_pPier->GetNextSpan() )
    {
       DDX_UnitValueAndTag(pDX,IDC_RIGHT_BEARING_OFFSET,IDC_RIGHT_BEARING_OFFSET_T, m_BearingOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
       DDX_UnitValueAndTag(pDX,IDC_RIGHT_END_DISTANCE,  IDC_RIGHT_END_DISTANCE_T,   m_EndDistance[pgsTypes::Ahead],   pDisplayUnits->GetComponentDimUnit());
@@ -137,9 +135,8 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    // Validate connection dimensions
    if ( pDX->m_bSaveAndValidate )
    {
-      if ( pPrevSpan )
+      if ( m_pPier->GetPrevSpan() )
       {
-         DDV_UnitValueZeroOrMore(pDX, IDC_LEFT_BEARING_OFFSET, m_BearingOffset[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit() );
          DDV_UnitValueZeroOrMore(pDX, IDC_LEFT_END_DISTANCE,   m_EndDistance[pgsTypes::Back],   pDisplayUnits->GetComponentDimUnit() );
 
          // if end distance is measured from the datum line end distance cannot be greater than
@@ -154,15 +151,11 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
             AfxMessageBox(_T("End Distance must be less than or equal to the Bearing Offset"),MB_OK | MB_ICONINFORMATION);
             pDX->Fail();
          }
-
-#pragma Reminder("KDOT: validate support width") // must be <= 1/2 end distance, measured from CL Bearing
       }
 
-      if ( pNextSpan )
+      if ( m_pPier->GetNextSpan() )
       {
-         DDV_UnitValueZeroOrMore(pDX, IDC_RIGHT_BEARING_OFFSET, m_BearingOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
          DDV_UnitValueZeroOrMore(pDX, IDC_RIGHT_END_DISTANCE,   m_EndDistance[pgsTypes::Ahead],   pDisplayUnits->GetComponentDimUnit() );
-
 
          // if end distance is measured from the datum line end distance cannot be greater than
          // the bearing offset
@@ -176,10 +169,9 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
             AfxMessageBox(_T("End Distance must be less than or equal to the Bearing Offset"),MB_OK | MB_ICONINFORMATION);
             pDX->Fail();
          }
-#pragma Reminder("KDOT: validate support width") // must be <= 1/2 end distance, measured from CL Bearing
       }
 
-      if ( pPrevSpan && pNextSpan )
+      if ( m_pPier->GetPrevSpan() && m_pPier->GetNextSpan() )
       {
          // this is an intermediate pier
          if ( m_BearingOffset[pgsTypes::Back]+m_BearingOffset[pgsTypes::Ahead] < m_EndDistance[pgsTypes::Back]+m_EndDistance[pgsTypes::Ahead] )
@@ -192,7 +184,7 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    }
 
    // Diaphragms
-   if ( pPrevSpan )
+   if ( m_pPier->GetPrevSpan() )
    {
       DDX_UnitValueAndTag(pDX,IDC_BACK_DIAPHRAGM_HEIGHT,IDC_BACK_DIAPHRAGM_HEIGHT_T,m_DiaphragmHeight[pgsTypes::Back],pDisplayUnits->GetComponentDimUnit());
       DDX_UnitValueAndTag(pDX,IDC_BACK_DIAPHRAGM_WIDTH, IDC_BACK_DIAPHRAGM_WIDTH_T, m_DiaphragmWidth[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
@@ -205,7 +197,7 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-   if ( pNextSpan )
+   if ( m_pPier->GetNextSpan() )
    {
       DDX_UnitValueAndTag(pDX,IDC_AHEAD_DIAPHRAGM_HEIGHT,IDC_AHEAD_DIAPHRAGM_HEIGHT_T,m_DiaphragmHeight[pgsTypes::Ahead],pDisplayUnits->GetComponentDimUnit());
       DDX_UnitValueAndTag(pDX,IDC_AHEAD_DIAPHRAGM_WIDTH, IDC_AHEAD_DIAPHRAGM_WIDTH_T, m_DiaphragmWidth[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
@@ -215,6 +207,25 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
       {
          DDX_UnitValue( pDX, IDC_AHEAD_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
          DDV_UnitValueZeroOrMore(pDX, IDC_AHEAD_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
+      }
+   }
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      // all of the data has been extracted from the dialog controls and it has been validated
+      // set the values on the actual pier object
+      m_pPier->SetPierConnectionType(m_PierConnectionType);
+
+      for ( int i = 0; i < 2; i++ )
+      {
+         m_pPier->SetBearingOffset(pgsTypes::PierFaceType(i),m_BearingOffset[i],m_BearingOffsetMeasurementType);
+         m_pPier->SetGirderEndDistance(pgsTypes::PierFaceType(i),m_EndDistance[i],m_EndDistanceMeasurementType);
+         m_pPier->SetSupportWidth(pgsTypes::PierFaceType(i),m_SupportWidth[i]);
+
+         m_pPier->SetDiaphragmHeight(pgsTypes::PierFaceType(i),m_DiaphragmHeight[i]);
+         m_pPier->SetDiaphragmWidth(pgsTypes::PierFaceType(i),m_DiaphragmWidth[i]);
+         m_pPier->SetDiaphragmLoadType(pgsTypes::PierFaceType(i),m_DiaphragmLoadType[i]);
+         m_pPier->SetDiaphragmLoadLocation(pgsTypes::PierFaceType(i),m_DiaphragmLoadLocation[i]);
       }
    }
 }
@@ -266,17 +277,14 @@ void CPierConnectionsPage::FillBoundaryConditionComboBox()
 {
    CBoundaryConditionComboBox* pcbBoundaryConditions = (CBoundaryConditionComboBox*)GetDlgItem(IDC_BOUNDARY_CONDITIONS);
 
-   IPierConnectionsParent* pParent = dynamic_cast<IPierConnectionsParent*>(GetParent());
-   const CBridgeDescription2* pBridgeDesc = pParent->GetBridgeDescription();
-
-   std::vector<pgsTypes::PierConnectionType> connections( pBridgeDesc->GetPierConnectionTypes(m_PierIdx) );
+   std::vector<pgsTypes::PierConnectionType> connections( m_pPier->GetBridgeDescription()->GetPierConnectionTypes(m_PierIdx) );
 
    pcbBoundaryConditions->Initialize(connections);
 }
 
 void CPierConnectionsPage::FillDiaphragmLoadComboBox()
 {
-#pragma Reminder("UPDATE: option 2 is not available for Continuou Segment boundary conditions")
+#pragma Reminder("UPDATE: option 2 is not available for Continuous Segment boundary conditions")
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_BACK_DIAPHRAGM_LOAD);
    pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm over CL Bearing")), DWORD_PTR(ConnectionLibraryEntry::ApplyAtBearingCenterline));
    pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm to girder")), DWORD_PTR(ConnectionLibraryEntry::ApplyAtSpecifiedLocation));
@@ -309,14 +317,10 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
    int curSel = pcbConnectionType->GetCurSel();
    pgsTypes::PierConnectionType connectionType = (pgsTypes::PierConnectionType)pcbConnectionType->GetItemData(curSel);
 
-   IPierConnectionsParent* pParent = dynamic_cast<IPierConnectionsParent*>(GetParent());
-   const CSpanData2* pPrevSpan = pParent->GetPrevSpan(m_PierIdx);
-   const CSpanData2* pNextSpan = pParent->GetNextSpan(m_PierIdx);
-
 #pragma Reminder("UPDATE: clean up this code...")
    //BOOL bEnable = (connectionType == pgsTypes::ContinuousSegment ? FALSE : TRUE);
    BOOL bEnable = TRUE;
-   if ( pPrevSpan )
+   if ( m_pPier->GetPrevSpan() )
    {
       GetDlgItem(IDC_LEFT_LABEL)->EnableWindow(bEnable);
       m_BearingOffsetEdit[pgsTypes::Back].EnableWindow(bEnable);
@@ -327,12 +331,11 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
       GetDlgItem(IDC_LEFT_SUPPORT_WIDTH_T)->EnableWindow(bEnable);
 
       GetDlgItem(IDC_BACK_DIAPHRAGM_LOAD)->EnableWindow(bEnable);
-      GetDlgItem(IDC_BACK_DIAPHRAGM_OFFSET_LABEL)->EnableWindow(bEnable);
-      GetDlgItem(IDC_BACK_DIAPHRAGM_OFFSET)->EnableWindow(bEnable);
-      GetDlgItem(IDC_BACK_DIAPHRAGM_OFFSET)->EnableWindow(bEnable);
+
+      OnBackDiaphragmLoadTypeChanged();
    }
 
-   if ( pNextSpan )
+   if ( m_pPier->GetNextSpan() )
    {
       GetDlgItem(IDC_RIGHT_LABEL)->EnableWindow(bEnable);
       m_BearingOffsetEdit[pgsTypes::Ahead].EnableWindow(bEnable);
@@ -343,9 +346,8 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
       GetDlgItem(IDC_RIGHT_SUPPORT_WIDTH_T)->EnableWindow(bEnable);
 
       GetDlgItem(IDC_AHEAD_DIAPHRAGM_LOAD)->EnableWindow(bEnable);
-      GetDlgItem(IDC_AHEAD_DIAPHRAGM_OFFSET_LABEL)->EnableWindow(bEnable);
-      GetDlgItem(IDC_AHEAD_DIAPHRAGM_OFFSET)->EnableWindow(bEnable);
-      GetDlgItem(IDC_AHEAD_DIAPHRAGM_OFFSET)->EnableWindow(bEnable);
+
+      OnAheadDiaphragmLoadTypeChanged();
    }
 
    GetDlgItem(IDC_COPY)->EnableWindow(bEnable);
@@ -362,7 +364,7 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
    //}
    //else
    {
-      if ( pPrevSpan )
+      if ( m_pPier->GetPrevSpan() )
       {
          m_DiaphragmHeightEdit[pgsTypes::Back].EnableWindow(TRUE);
          GetDlgItem(IDC_BACK_DIAPHRAGM_HEIGHT_T)->EnableWindow(TRUE);
@@ -370,7 +372,7 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
          GetDlgItem(IDC_BACK_DIAPHRAGM_WIDTH_T)->EnableWindow(TRUE);
       }
 
-      if ( pNextSpan )
+      if ( m_pPier->GetNextSpan() )
       {
          m_DiaphragmHeightEdit[pgsTypes::Ahead].EnableWindow(TRUE);
          GetDlgItem(IDC_AHEAD_DIAPHRAGM_HEIGHT_T)->EnableWindow(TRUE);
@@ -457,9 +459,8 @@ HBRUSH CPierConnectionsPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
 
 CString CPierConnectionsPage::GetImageName(pgsTypes::PierConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
 {
-   IPierConnectionsParent* pParent = dynamic_cast<IPierConnectionsParent*>(GetParent());
-   const CSpanData2* pPrevSpan = pParent->GetPrevSpan(m_PierIdx);
-   const CSpanData2* pNextSpan = pParent->GetNextSpan(m_PierIdx);
+   CSpanData2* pPrevSpan = m_pPier->GetPrevSpan();
+   CSpanData2* pNextSpan = m_pPier->GetNextSpan();
    const int StartPier = PIERTYPE_START;
    const int IntPier   = PIERTYPE_INTERMEDIATE;
    const int EndPier   = PIERTYPE_END;
@@ -554,10 +555,7 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::PierConnectionType connecti
 
 bool CPierConnectionsPage::IsAbutment()
 {
-   IPierConnectionsParent* pParent = dynamic_cast<IPierConnectionsParent*>(GetParent());
-   const CSpanData2* pPrevSpan = pParent->GetPrevSpan(m_PierIdx);
-   const CSpanData2* pNextSpan = pParent->GetNextSpan(m_PierIdx);
-   return ( pPrevSpan == NULL || pNextSpan == NULL ) ? true : false;
+   return m_pPier->IsAbutment();
 }
 
 void CPierConnectionsPage::OnBackDiaphragmLoadTypeChanged()
@@ -640,6 +638,10 @@ void CPierConnectionsPage::OnCopyFromLibrary()
 	
 	      dx.m_bSaveAndValidate = FALSE;
 	      DoDataExchange(&dx);
+
+         OnBoundaryConditionChanged();
+         OnBackDiaphragmLoadTypeChanged();
+         OnAheadDiaphragmLoadTypeChanged();
 	   }
    }
 }
@@ -648,11 +650,7 @@ BOOL CPierConnectionsPage::OnSetActive()
 {
    BOOL bResult = CPropertyPage::OnSetActive();
 
-   IPierConnectionsParent* pParent = dynamic_cast<IPierConnectionsParent*>(GetParent());
-   const CSpanData2* pPrevSpan = pParent->GetPrevSpan(m_PierIdx);
-   const CSpanData2* pNextSpan = pParent->GetNextSpan(m_PierIdx);
-
-   if ( pPrevSpan == NULL )
+   if ( m_pPier->GetPrevSpan() == NULL )
    {
       // if there isn't a previous span, then only have input for the ahead side
       GetDlgItem(IDC_LEFT_LABEL)->EnableWindow(FALSE);
@@ -675,7 +673,7 @@ BOOL CPierConnectionsPage::OnSetActive()
       m_cbBoundaryCondition.SetPierType(PIERTYPE_START);
    }
 
-   if ( pNextSpan == NULL )
+   if ( m_pPier->GetNextSpan() == NULL )
    {
       GetDlgItem(IDC_RIGHT_LABEL)->EnableWindow(FALSE);
       m_BearingOffsetEdit[pgsTypes::Ahead].EnableWindow(FALSE);

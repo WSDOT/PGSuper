@@ -99,6 +99,9 @@ interface IPointOfInterest : public IUnknown
    // Converts a segment coordinate to a POI coordinate
    virtual Float64 ConvertSegmentCoordinateToPoiCoordinate(const CSegmentKey& segmentKey,Float64 Xs) = 0;
 
+   // Converts a segment coordinate to a girder coordinate
+   virtual Float64 ConvertSegmentCoordinateToGirderCoordinate(const CSegmentKey& segmentKey,Float64 Xs) = 0;
+
    // Converts a POI coordinate to a segment coordinate
    virtual Float64 ConvertPoiCoordinateToSegmentCoordinate(const CSegmentKey& segmentKey,Float64 Xpoi) = 0;
 
@@ -119,6 +122,9 @@ interface IPointOfInterest : public IUnknown
 
    // Converts a girder path coordinate to a girder coordinate
    virtual Float64 ConvertGirderPathCoordinateToGirderCoordinate(const CGirderKey& girderKey,Float64 Xg) = 0;
+
+   // Converts a POI to a location in the girder line coordinate system
+   virtual Float64 ConvertPoiToGirderlineCoordinate(const pgsPointOfInterest& poi) = 0;
 
    // Removes all poi from the vector that have the specified attribute unless the poi also has the
    // exception attribute, in which case it is retained

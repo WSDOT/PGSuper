@@ -166,7 +166,7 @@ private:
    void CreateStrandMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS);
    void CreateTendonMaterial(const CGirderKey& girderKey,IStressStrain** ppSS);
 
-   void ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe,Float64 e_initial_strand,const std::vector<Float64>& e_initial_tendons,pgsBondTool& bondTool,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd);
+   void ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial_strand,const std::vector<Float64>& fpe_pt,const std::vector<Float64>& ept_initial,pgsBondTool& bondTool,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd);
    void ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const CRACKINGMOMENTDETAILS& cmd,MINMOMENTCAPDETAILS* pmmcd);
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd);
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd);
@@ -182,7 +182,7 @@ private:
 
 
 
-   void BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 e_initial,const std::vector<Float64>& e_initial_tendons,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,std::map<StrandIndexType,Float64>* pBondFactors);
+   void BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 eps_initial,const std::vector<Float64>& ept_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,Float64* pHaunch,std::map<StrandIndexType,Float64>* pBondFactors);
    // GROUP: INQUIRY
 
 public:

@@ -37,6 +37,25 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+class CNameGroupData : public CGXAbstractUserAttribute
+{
+public:
+   CNameGroupData(GirderIndexType firstGdrIdx,GirderIndexType lastGdrIdx)
+   {
+      m_FirstGirderIdx = firstGdrIdx;
+      m_LastGirderIdx  = lastGdrIdx;
+   }
+
+   virtual CGXAbstractUserAttribute* Clone() const
+   {
+      return new CNameGroupData(m_FirstGirderIdx,m_LastGirderIdx);
+   }
+
+   GirderIndexType m_FirstGirderIdx;
+   GirderIndexType m_LastGirderIdx;
+};
+
 GRID_IMPLEMENT_REGISTER(CGirderNameGrid, CS_DBLCLKS, 0, 0, 0);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -64,7 +83,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CGirderNameGrid message handlers
 
-void CGirderNameGrid::CustomInit(const CGirderGroupData* pGirderGroup)
+void CGirderNameGrid::CustomInit(CGirderGroupData* pGirderGroup)
 {
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -83,12 +102,9 @@ void CGirderNameGrid::CustomInit(const CGirderGroupData* pGirderGroup)
 	GetParam()->EnableMoveRows(FALSE);
    GetParam()->EnableMoveCols(FALSE);
 
-   m_bSameGirderName = pBridgeDesc->UseSameGirderForEntireBridge();
-   m_bSameNumGirders = pBridgeDesc->UseSameNumberOfGirdersInAllGroups();
-   m_GirderGroup     = *pGirderGroup;
-   m_GirderGroup.SetBridgeDescription(NULL);
+   m_pGirderGroup = pGirderGroup;
 
-   FillGrid();
+   UpdateGrid();
 
    // don't allow users to resize grids
    GetParam( )->EnableTrackColWidth(0); 
@@ -110,7 +126,7 @@ void CGirderNameGrid::CustomInit(const CGirderGroupData* pGirderGroup)
 }
 
 
-void CGirderNameGrid::FillGrid()
+void CGirderNameGrid::UpdateGrid()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -119,8 +135,8 @@ void CGirderNameGrid::FillGrid()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   GroupIndexType nGirderTypeGroups = m_GirderGroup.GetGirderTypeGroupCount();
-   GirderIndexType nGirders         = m_GirderGroup.GetGirderCount();
+   GroupIndexType nGirderTypeGroups = m_pGirderGroup->GetGirderTypeGroupCount();
+   GirderIndexType nGirders         = m_pGirderGroup->GetGirderCount();
 
    const ROWCOL num_rows = 1;
    const ROWCOL num_cols = (ROWCOL)nGirderTypeGroups;
@@ -135,16 +151,19 @@ void CGirderNameGrid::FillGrid()
 		);
 
 
+   bool bSameNumGirders = m_pGirderGroup->GetBridgeDescription()->UseSameNumberOfGirdersInAllGroups();
+   bool bSameGirderName = m_pGirderGroup->GetBridgeDescription()->UseSameGirderForEntireBridge();
+
    for ( GroupIndexType grpTypeGroupIdx = 0; grpTypeGroupIdx < nGirderTypeGroups; grpTypeGroupIdx++ )
    {
       std::_tstring strName;
       GirderIndexType firstGdrIdx, lastGdrIdx;
 
-      m_GirderGroup.GetGirderTypeGroup(grpTypeGroupIdx,&firstGdrIdx,&lastGdrIdx,&strName);
+      m_pGirderGroup->GetGirderTypeGroup(grpTypeGroupIdx,&firstGdrIdx,&lastGdrIdx,&strName);
 
       // if this is the last group and the girder names are shared but the girder count is not shared
       // then the last girder index needs to be forced to nGirders-1
-      if ( grpTypeGroupIdx == nGirderTypeGroups-1 && m_bSameGirderName && !m_bSameNumGirders )
+      if ( grpTypeGroupIdx == nGirderTypeGroups-1 && bSameGirderName && !bSameNumGirders )
          lastGdrIdx = nGirders-1;
 
       CString strHeading;
@@ -157,13 +176,13 @@ void CGirderNameGrid::FillGrid()
          strHeading.Format(_T("%s-%s"),LABEL_GIRDER(firstGdrIdx),LABEL_GIRDER(lastGdrIdx));
       }
 
-      UserData* pUserData = new UserData(firstGdrIdx,lastGdrIdx); // the grid will delete this
+      CNameGroupData nameGroupData(firstGdrIdx,lastGdrIdx); // the grid will delete this
 
       SetStyleRange(CGXRange(0,ROWCOL(grpTypeGroupIdx+1)), CGXStyle()
          .SetHorizontalAlignment(DT_CENTER)
          .SetEnabled(FALSE)
          .SetValue(strHeading)
-         .SetItemDataPtr((void*)pUserData)
+         .SetUserAttribute(0,nameGroupData)
          );
 
       SetStyleRange(CGXRange(1,ROWCOL(grpTypeGroupIdx+1)), CGXStyle()
@@ -217,18 +236,6 @@ void CGirderNameGrid::FillGrid()
 	GetParam()->EnableUndo(TRUE);
 }
 
-void CGirderNameGrid::AddGirders(GirderIndexType nGirders)
-{
-   m_GirderGroup.AddGirders(nGirders);
-   FillGrid();
-}
-
-void CGirderNameGrid::RemoveGirders(GirderIndexType nGirders)
-{
-   m_GirderGroup.RemoveGirders(nGirders);
-   FillGrid();
-}
-
 BOOL CGirderNameGrid::OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT nFlags,WORD nHitState)
 {
    if ( nHitState & GX_HITSTART )
@@ -272,19 +279,6 @@ void CGirderNameGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    CGXGridWnd::OnModifyCell(nRow,nCol);
 }
 
-void CGirderNameGrid::UseSameGirderName(bool bSame)
-{
-   m_bSameGirderName = bSame;
-   m_GirderGroup.SetBridgeDescription(NULL);
-   FillGrid();
-}
-
-void CGirderNameGrid::UseSameNumGirders(bool bSame)
-{
-   m_bSameNumGirders = bSame;
-   FillGrid();
-}
-
 void CGirderNameGrid::OnExpand()
 {
    CRowColArray selCols;
@@ -295,7 +289,7 @@ void CGirderNameGrid::OnExpand()
 
    if ( nSelCols == GetColCount() )
    {
-      m_GirderGroup.ExpandAll();
+      m_pGirderGroup->ExpandAll();
    }
    else
    {
@@ -304,11 +298,11 @@ void CGirderNameGrid::OnExpand()
          ROWCOL col = selCols[i];
          GroupIndexType grpIdx = GroupIndexType(col-1);
 
-         m_GirderGroup.Expand(grpIdx);
+         m_pGirderGroup->Expand(grpIdx);
       }
    }
 
-   FillGrid();
+   UpdateGrid();
 }
 
 void CGirderNameGrid::OnJoin()
@@ -328,16 +322,16 @@ void CGirderNameGrid::OnJoin()
       GetStyleRowCol(0,firstCol,firstColStyle);
       GetStyleRowCol(0,lastCol, lastColStyle);
 
-      UserData* pFirstColUserData = (UserData*)firstColStyle.GetItemDataPtr();
-      UserData* pLastColUserData =  (UserData*)lastColStyle.GetItemDataPtr();
+      const CNameGroupData& firstColUserData = dynamic_cast<const CNameGroupData&>(firstColStyle.GetUserAttribute(0));
+      const CNameGroupData& lastColUserData  = dynamic_cast<const CNameGroupData&>(lastColStyle.GetUserAttribute(0));
 
-      GirderIndexType firstGdrIdx = pFirstColUserData->first;
-      GirderIndexType lastGdrIdx  = pLastColUserData->second;
+      GirderIndexType firstGdrIdx = firstColUserData.m_FirstGirderIdx;
+      GirderIndexType lastGdrIdx  = lastColUserData.m_LastGirderIdx;
 
-      m_GirderGroup.Join(firstGdrIdx,lastGdrIdx,firstGdrIdx);
+      m_pGirderGroup->Join(firstGdrIdx,lastGdrIdx,firstGdrIdx);
   }
 
-   FillGrid();
+   UpdateGrid();
 }
 
 BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
@@ -350,22 +344,22 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    CString strNewName;
    GetCurrentCellControl()->GetCurrentText(strNewName);
 
-   ASSERT( !m_bSameGirderName );
+//   ASSERT( !m_bSameGirderName );
 
    GirderIndexType firstGdrIdx,lastGdrIdx;
    std::_tstring strName;
-   m_GirderGroup.GetGirderTypeGroup(gdrTypeGroupIdx,&firstGdrIdx,&lastGdrIdx,&strName);
+   m_pGirderGroup->GetGirderTypeGroup(gdrTypeGroupIdx,&firstGdrIdx,&lastGdrIdx,&strName);
 
    if ( strNewName != CString(strName.c_str()) )
    {
-      m_GirderGroup.SetGirderName(gdrTypeGroupIdx,strNewName);
+      m_pGirderGroup->SetGirderName(gdrTypeGroupIdx,strNewName);
 
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,ILibrary,pLib);
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry( strNewName );
       
-      m_GirderGroup.SetGirderLibraryEntry(gdrTypeGroupIdx,pGdrEntry);
+      m_pGirderGroup->SetGirderLibraryEntry(gdrTypeGroupIdx,pGdrEntry);
    }
 
    return CGXGridWnd::OnEndEditing(nRow,nCol);
@@ -397,7 +391,7 @@ void CGirderNameGrid::UpdateGirderFamilyList(LPCTSTR strGirderFamily)
 void CGirderNameGrid::OnGirderFamilyChanged(LPCTSTR strGirderFamily)
 {
    UpdateGirderFamilyList(strGirderFamily);
-   FillGrid();
+   UpdateGrid();
 
    // force the data structure to be updated with the new girder type
    // based on the new girder family
@@ -436,7 +430,7 @@ void CGirderNameGrid::Enable(BOOL bEnable)
       range = CGXRange(0,0,0,GetColCount());
       SetStyleRange(range,style);
 
-      range = CGXRange(0,0,_cpp_min(GetRowCount(),(ROWCOL)1),0);
+      range = CGXRange(0,0,Min(GetRowCount(),(ROWCOL)1),0);
       SetStyleRange(range,style);
    }
    else

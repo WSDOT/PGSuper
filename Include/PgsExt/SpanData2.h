@@ -92,14 +92,17 @@ public:
    // returns the piers at the start/end of this span
    CPierData2* GetPrevPier();
    CPierData2* GetNextPier();
+   CPierData2* GetPier(pgsTypes::MemberEndType end);
    const CPierData2* GetPrevPier() const;
    const CPierData2* GetNextPier() const;
+   const CPierData2* GetPier(pgsTypes::MemberEndType end) const;
 
    // Returns the length of this span measured between the stations of the prev/next piers
    Float64 GetSpanLength() const;
 
    // Returns all of the temporary supports defined in this span
    std::vector<const CTemporarySupportData*> GetTemporarySupports() const;
+   std::vector<CTemporarySupportData*> GetTemporarySupports();
 
    // =================================================================================
    // Live Load Distribution Factors (for Directly Input)

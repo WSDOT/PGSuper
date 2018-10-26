@@ -28,7 +28,7 @@
 #include <IFace\Bridge.h>
 
 #include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -643,10 +643,10 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -734,7 +734,7 @@ void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
    Float64 gwt = 2*(W1+W2) + W3;
    Float64 gwb = 2*(W4+W2) + W3;
 
-   Float64 gw = max(gwt,gwb);
+   Float64 gw = Max(gwt,gwb);
 
    if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
    {
@@ -843,20 +843,20 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
       Float64 h;
       if (Hreg > 0.0)
       {
-         h = min(Hreg, H4);
+         h = Min(Hreg, H4);
          A1 = (W4-W1) * h;
 
          Hreg -= H4;
          if (Hreg > 0.0)
          {
-            h = min(Hreg, H5);
+            h = Min(Hreg, H5);
             A2 = (W4-W1) * h;
             A3 = W1*h / 2.0;
 
             Hreg -= H5;
             if (Hreg > 0.0)
             {
-               h = min(Hreg, HW);
+               h = Min(Hreg, HW);
                A4 = W4 * h;
 
                Hreg -= HW;
@@ -882,26 +882,26 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
       Float64 h;
       if (Hreg > 0.0)
       {
-         h = min(Hreg, H5);
+         h = Min(Hreg, H5);
          A1 = W1 * h / 2.0;
 
          Hreg -= H5;
          if (Hreg > 0.0)
          {
-            h = min(Hreg, HW);
+            h = Min(Hreg, HW);
             A2 = W1 * h;
 
             Hreg -= HW;
             if (Hreg > 0.0)
             {
-               h = min(Hreg, H6);
+               h = Min(Hreg, H6);
                A3 = (W1-W4) * h;
                A4 = AreaChoppedTriangle(W4, H6, h);
 
                Hreg -= H6;
                if (Hreg > 0.0)
                {
-                  h = min(Hreg, H7);
+                  h = Min(Hreg, H7);
                   A5 = (W1-W4)*h;
                }
             }
@@ -919,13 +919,13 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
       Float64 h;
       if (Hreg > 0.0)
       {
-         h = min(Hreg, H5);
+         h = Min(Hreg, H5);
          A1 = W1 * h / 2.0;
 
          Hreg -= H5;
          if (Hreg > 0.0)
          {
-            h = min(Hreg, HW);
+            h = Min(Hreg, HW);
             A2 = W1 * h;
 
             Hreg -= HW;
@@ -964,5 +964,5 @@ Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions
 
    Float64 bot = 2*(W4+W2) + W3;
 
-   return max(top,bot);
+   return Max(top,bot);
 }

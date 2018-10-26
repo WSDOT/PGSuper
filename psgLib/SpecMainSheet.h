@@ -30,20 +30,18 @@
 //
 #include "psgLib\SpecLibraryEntry.h"
 #include "SpecDescrPage.h"
-#include "SpecCastingYardPage.h"
 #include "SpecLiftingPage.h"
-#include "SpecBridgeSite1Page.h"
-#include "SpecBridgeSite2Page.h"
-#include "SpecBridgeSitePage.h"
 #include "SpecHaulingErectionPage.h"
 #include "SpecCreepPage.h"
 #include "SpecLossPage.h"
 #include "SpecPSLimitPage.h"
 #include "SpecLimitsPage.h"
 #include "SpecDesignPage.h"
-#include "SpecDeflectionsPage.h"
 #include "SpecShearPage.h"
 #include "SpecMomentPage.h"
+#include "SpecLoadsPage.h"
+#include "SpecGirderStressPage.h"
+#include "SpecClosurePage.h"
 
 class SpecLibraryEntry;
 
@@ -66,20 +64,20 @@ public:
 // Attributes
 public:
    CSpecDescrPage           m_SpecDescrPage;
-   CSpecCastingYardPage     m_SpecCastingYardPage;
    CSpecHaulingErectionPage m_SpecHaulingErectionPage;
-   CSpecBridgeSite1Page      m_SpecBridgeSite1Page;
-   CSpecBridgeSite2Page      m_SpecBridgeSite2Page;
-   CSpecBridgeSite3Page      m_SpecBridgeSite3Page;
    CSpecCreepPage           m_SpecCreepPage;
    CSpecLiftingPage         m_SpecLiftingPage;
    CSpecLossPage            m_SpecLossPage;
-   CSpecPSLimitPage         m_SpecPSLimitPage;
-   CSpecLimitsPage         m_SpecLimitsPage;
-   CSpecDesignPage         m_SpecDesignPage;
-   CSpecDeflectionsPage    m_SpecDeflectionsPage;
-   CSpecShearPage          m_SpecShearPage;
-   CSpecMomentPage         m_SpecMomentPage;
+   CSpecStrandPage          m_SpecStrandStressPage;
+   CSpecLimitsPage          m_SpecLimitsPage;
+   CSpecDesignPage          m_SpecDesignPage;
+   CSpecShearPage           m_SpecShearPage;
+   CSpecMomentPage          m_SpecMomentPage;
+
+   CSpecClosurePage         m_SpecClosurePage;
+
+   CSpecLoadsPage          m_SpecLoadsPage;
+   CSpecGirderStressPage m_SpecGirderStressPage;
 
    bool                m_AllowEditing;
 
@@ -111,24 +109,23 @@ protected:
 public:
 // implementation stuff
 
-   void ExchangeDescrData(CDataExchange* pDX);
-   void ExchangeCyData(CDataExchange* pDX);
+   void ExchangeDescriptionData(CDataExchange* pDX);
+   void ExchangeLoadsData(CDataExchange* pDX);
+   void ExchangeGirderData(CDataExchange* pDX);
    void ExchangeLiftingData(CDataExchange* pDX);
    bool IsHaulingEnabled() const;
    void ExchangeWsdotHaulingData(CDataExchange* pDX);
    void ExchangeKdotHaulingData(CDataExchange* pDX);
-   void ExchangeBs1Data(CDataExchange* pDX);
-   void ExchangeBs2Data(CDataExchange* pDX);
-   void ExchangeBsData(CDataExchange* pDX);
    void ExchangeShearCapacityData(CDataExchange* pDX);
    void ExchangeMomentCapacityData(CDataExchange* pDX);
-   void ExchangeDeflectionsData(CDataExchange* pDX);
    void ExchangeCreepData(CDataExchange* pDX);
    void ExchangeLossData(CDataExchange* pDX);
-   void ExchangePSLimitData(CDataExchange* pDX);
+   void ExchangeStrandData(CDataExchange* pDX);
    void ExchangeLimitsData(CDataExchange* pDX);
-   void UploadDesignData(CDataExchange* pDX);
-   void DownloadDesignData(CDataExchange* pDX);
+   void ExchangeClosureData(CDataExchange* pDX);
+
+   void ExchangeDesignData(CDataExchange* pDX);
+
 
 private:
    void Init();

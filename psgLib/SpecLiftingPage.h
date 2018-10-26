@@ -58,23 +58,17 @@ public:
 
 // Implementation
 public:
-   void HideLiftingControls(bool hide);
-
-   bool m_IsLiftingEnabled;
 
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSpecLiftingPage)
 	afx_msg void OnCheckLiftingNormalMaxMax();
 	virtual BOOL OnInitDialog();
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
 	void DoCheckMax();
-
-   static BOOL CALLBACK EnableWindows(HWND hwnd,LPARAM lParam);
 };
 
 //{{AFX_INSERT_LOCATION}}

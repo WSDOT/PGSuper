@@ -145,8 +145,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
       {
          EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
          pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-         continuityEventIndex = _cpp_min(continuityEventIndex,leftContinuityEventIdx);
-         continuityEventIndex = _cpp_min(continuityEventIndex,rightContinuityEventIdx);
+         continuityEventIndex = Min(continuityEventIndex,leftContinuityEventIdx);
+         continuityEventIndex = Min(continuityEventIndex,rightContinuityEventIdx);
       }
    }
    IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);

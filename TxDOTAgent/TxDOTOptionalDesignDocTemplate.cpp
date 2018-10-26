@@ -30,6 +30,35 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// utility data structures for managing TOGA template file
+struct TemplateFile
+{
+   std::_tstring FileTitle;
+   std::_tstring FilePath;
+};
+
+struct TemplateFolder
+{
+   std::_tstring Title; // name of folder and icon file associated with it
+   std::vector<TemplateFile> Files;
+
+   bool operator==(const TemplateFolder& rOther) const
+   { 
+      return Title == rOther.Title;
+   }
+
+   bool operator<(const TemplateFolder& other) const
+   {
+      return Title < other.Title;
+   }
+};
+
+// Use set to have sorted collection of unique folders
+typedef std::set<TemplateFolder> TemplateFolderCollection;
+typedef TemplateFolderCollection::iterator TemplateFolderIterator;
+typedef TemplateFolderCollection::const_iterator TemplateFolderConstIterator;
+
+
 IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignDocTemplate,CEAFDocTemplate)
 
 CTxDOTOptionalDesignDocTemplate::CTxDOTOptionalDesignDocTemplate(UINT nIDResource,
@@ -106,12 +135,16 @@ void CTxDOTOptionalDesignDocTemplate::FindInFolder(LPCTSTR strPath,CEAFTemplateG
    FindTemplateFiles(strPath,pGroup,folderIcon); // find template files in this folder
 }
 
-void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon)
+void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON origIcon)
 {
    CString strTemplateSuffix;
    VERIFY(strTemplateSuffix.LoadString(IDS_TEMPLATE_SUFFIX));
    ASSERT(!strTemplateSuffix.IsEmpty());
 
+   // load template files information into a data structure of folders. then we can create folder structure
+   TemplateFolderCollection Folders;
+   
+   // Create our folder list by parsing template files
    CFileFind finder;
    CString strTemplateFileSpec = strPath + CString(_T("\\*.")) + strTemplateSuffix;
    BOOL bHasTemplateFiles = finder.FindFile(strTemplateFileSpec);
@@ -119,15 +152,59 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
    {
       bHasTemplateFiles = finder.FindNextFile();
 
-      HICON fileIcon = folderIcon;
+      CString templateFile = finder.GetFilePath();
 
-      CString strIconFile = finder.GetFilePath();
-      strIconFile.Replace(strTemplateSuffix,_T("ico"));
+      CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName;
+      if(::DoParseTemplateFile(templateFile, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName))
+      {
+         // Attempt to insert folder. Doesn't matter if insterted or not, all we want is an iterator
+         TemplateFolder tfolder;
+         tfolder.Title = folderName;
+         std::pair<TemplateFolderIterator, bool> itfolder = Folders.insert(tfolder);
+
+         TemplateFile file;
+         file.FilePath = templateFile;
+         file.FileTitle = finder.GetFileTitle();
+
+         itfolder.first->Files.push_back(file);
+      }
+      else
+      {
+         ATLASSERT(0); // problem parsing a template file. Probably need a better way to handle this error
+      }
+   }
+
+   // We have our templates arranged in folders. Now create our objects and icons
+   TemplateFolderIterator itfolder = Folders.begin();
+   while(itfolder != Folders.end())
+   {
+      const TemplateFolder& rfolder = *itfolder;
+
+      HICON fileIcon = origIcon;
+
+      CString strIconFile = CString(strPath) + _T("\\") + rfolder.Title.c_str() + _T(".ico");
       HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
       if ( hIcon )
          fileIcon = hIcon;
+      else
+         ATLASSERT(0);
 
-      CEAFTemplateItem* pItem = new CEAFTemplateItem(this,finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
-      pGroup->AddItem(pItem);
+      CEAFTemplateGroup* pNewGroup = new CEAFTemplateGroup();
+      pNewGroup->SetGroupName(rfolder.Title.c_str());
+      pNewGroup->SetIcon(fileIcon);
+      pGroup->AddGroup(pNewGroup);
+
+      std::vector<TemplateFile>::const_iterator itfiles = rfolder.Files.begin();
+      while(itfiles != rfolder.Files.end())
+      {
+         const TemplateFile rfile = *itfiles;
+
+         CEAFTemplateItem* pItem = new CEAFTemplateItem(this,rfile.FileTitle.c_str(),rfile.FilePath.c_str(),fileIcon);
+         pNewGroup->AddItem(pItem);
+
+         itfiles++;
+      }
+
+      itfolder++;
    }
 }

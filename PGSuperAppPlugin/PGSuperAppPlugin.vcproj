@@ -35,7 +35,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
 				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
@@ -135,7 +135,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
 				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
@@ -235,7 +235,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
 				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
@@ -340,7 +340,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
 				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
@@ -444,7 +444,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
 				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
@@ -548,7 +548,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
 				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
 				Outputs="\ARP\BridgeLink\PGSuper.tip"
 			/>
@@ -768,7 +768,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\CastClosurePourDlg.cpp"
+				RelativePath=".\CastClosureJointDlg.cpp"
 				>
 			</File>
 			<File
@@ -784,27 +784,27 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourDisplayObjectEvents.cpp"
+				RelativePath=".\ClosureJointDisplayObjectEvents.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourDlg.cpp"
+				RelativePath=".\ClosureJointDlg.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourGeneralPage.cpp"
+				RelativePath=".\ClosureJointGeneralPage.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourGeometryPage.cpp"
+				RelativePath=".\ClosureJointGeometryPage.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourLongitudinalReinforcementPage.cpp"
+				RelativePath=".\ClosureJointLongitudinalReinforcementPage.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourStirrupsPage.cpp"
+				RelativePath=".\ClosureJointStirrupsPage.cpp"
 				>
 			</File>
 			<File
@@ -1504,7 +1504,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SelectClosurePourDlg.cpp"
+				RelativePath=".\SelectClosureJointDlg.cpp"
 				>
 			</File>
 			<File
@@ -1663,6 +1663,10 @@
 				RelativePath="..\UIHintsDlg.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\Utilities.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1794,7 +1798,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\CastClosurePourDlg.h"
+				RelativePath=".\CastClosureJointDlg.h"
 				>
 			</File>
 			<File
@@ -1810,27 +1814,27 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourDisplayObjectEvents.h"
+				RelativePath=".\ClosureJointDisplayObjectEvents.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourDlg.h"
+				RelativePath=".\ClosureJointDlg.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourGeneralPage.h"
+				RelativePath=".\ClosureJointGeneralPage.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourGeometryPage.h"
+				RelativePath=".\ClosureJointGeometryPage.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourLongitudinalReinforcementPage.h"
+				RelativePath=".\ClosureJointLongitudinalReinforcementPage.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourStirrupsPage.h"
+				RelativePath=".\ClosureJointStirrupsPage.h"
 				>
 			</File>
 			<File
@@ -2266,11 +2270,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PGSuperComponentInfo.h"
+				RelativePath=".\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.h"
+				RelativePath="..\Include\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
@@ -2450,7 +2454,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SelectClosurePourDlg.h"
+				RelativePath=".\SelectClosureJointDlg.h"
 				>
 			</File>
 			<File
@@ -2567,6 +2571,10 @@
 			</File>
 			<File
 				RelativePath="..\UIHintsDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Utilities.h"
 				>
 			</File>
 		</Filter>
@@ -3082,7 +3090,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\EditClosurePour.h"
+					RelativePath=".\EditBridge.h"
+					>
+				</File>
+				<File
+					RelativePath=".\EditClosureJoint.h"
 					>
 				</File>
 				<File
@@ -3198,7 +3210,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\EditClosurePour.cpp"
+					RelativePath=".\EditBridge.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\EditClosureJoint.cpp"
 					>
 				</File>
 				<File
@@ -3511,6 +3527,10 @@
 				</File>
 			</Filter>
 		</Filter>
+		<File
+			RelativePath="..\PGSplice.tip"
+			>
+		</File>
 		<File
 			RelativePath="..\PGSuper.tip"
 			>

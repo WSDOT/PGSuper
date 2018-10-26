@@ -84,8 +84,8 @@ protected:
    std::map<CSegmentKey,IDType> m_SegmentIDs;
    IDType m_NextSegmentID;
 
-   std::map<CSegmentKey,IDType> m_ClosurePourIDs;
-   IDType m_NextClosurePourID;
+   std::map<CSegmentKey,IDType> m_ClosureJointIDs;
+   IDType m_NextClosureJointID;
 
 // Attributes
 public:
@@ -102,8 +102,8 @@ public:
    void SelectGirder(const CGirderKey& girderKey,bool bSelect);
    bool GetSelectedSegment(CSegmentKey* pSegmentKey);
    void SelectSegment(const CSegmentKey& segmentKey,bool bSelect);
-   bool GetSelectedClosurePour(CSegmentKey* pClosureKey);
-   void SelectClosurePour(const CSegmentKey& closureKey,bool bSelect);
+   bool GetSelectedClosureJoint(CSegmentKey* pClosureKey);
+   void SelectClosureJoint(const CSegmentKey& closureKey,bool bSelect);
    void SelectDeck(bool bSelect);
    void SelectAlignment(bool bSelect);
    void SelectTemporarySupport(SupportIDType tsID,bool bSelect);
@@ -164,7 +164,7 @@ protected:
    void BuildAlignmentDisplayObjects();
    void BuildPierDisplayObjects();
    void BuildTemporarySupportDisplayObjects();
-   void BuildClosurePourDisplayObjects();
+   void BuildClosureJointDisplayObjects();
    void BuildGirderSegmentDisplayObjects();
    void BuildGirderDisplayObjects();
    void BuildSpanDisplayObjects();
@@ -178,7 +178,7 @@ protected:
    void UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw);
 
    void UpdateSegmentTooltips();
-   void UpdateClosurePourTooltips();
+   void UpdateClosureJointTooltips();
 
    void DrawFocusRect();
 

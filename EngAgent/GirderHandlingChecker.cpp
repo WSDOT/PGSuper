@@ -202,8 +202,8 @@ CLASS
 
 pgsAlternativeTensileStressCalculator::pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,IGirder* pGirder,
                                          IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
-                                         IMaterials* pMaterials,
-                                         bool bSIUnits) :
+                                         IMaterials* pMaterials,bool bLimitBarStress,
+                                         bool bSISpec) :
 m_pGirder(pGirder),
 m_pShapes(pShapes),
 m_pSectProps(pSectProps),
@@ -211,24 +211,24 @@ m_pRebarGeom(pRebarGeom),
 m_pMaterials(pMaterials)
 {
    m_IntervalIdx = intervalIdx;
+   m_bLimitBarStress = bLimitBarStress;
+   m_bSISpec = bSISpec;
+}
 
-   // Precompute some values
-   Float64 Es, fy, fu;
-   pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+void pgsAlternativeTensileStressCalculator::LimitBarStress(bool bLimit)
+{
+   m_bLimitBarStress = bLimit;
+}
 
-   // Max bar stress for computing higher allowable temporary tensile (5.9.4.1.2)
-   Float64 fs = 0.5*fy;
-   Float64 fsMax = (bSIUnits ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
-   if ( fsMax < fs )
-       fs = fsMax;
-
-   m_AllowableFs = fs; 
+bool pgsAlternativeTensileStressCalculator::LimitBarStress() const
+{
+   return m_bLimitBarStress;
 }
 
 Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequirements(
                                         const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
                                         Float64 fTop, Float64 fBot, 
-                                        Float64 lowAllowTens, Float64 highAllowTens,
+                                        Float64 fAllowableWithoutRebar, Float64 fAllowableWithRebar,
                                         Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
                                         Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar)
 {
@@ -240,12 +240,29 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
+   // Determine bar stress
+   Float64 Es, fy, fu;
+   if ( poi.HasAttribute(POI_CLOSURE) )
+   {
+      m_pMaterials->GetClosureJointLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+   }
+   else
+   {
+      m_pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+   }
+
+   // Max bar stress for computing higher allowable temporary tensile (5.9.4.1.2)
+   Float64 allowable_bar_stress = 0.5*fy;
+   Float64 fsMax = (m_bSISpec ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
+   if ( m_bLimitBarStress && fsMax < allowable_bar_stress )
+       allowable_bar_stress = fsMax;
+
    if ( fTop <= TOLERANCE && fBot <= TOLERANCE )
    {
       // compression over entire cross section
       stressLoc = slAllComp;
    }
-   else if ( 0 <= fTop && 0 <= fBot )
+   else if ( 0.0 <= fTop && 0.0 <= fBot )
    {
        // tension over entire cross section
       stressLoc = slAllTens;
@@ -254,7 +271,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    {
       ATLASSERT( BinarySign(fBot) != BinarySign(fTop) );
 
-      stressLoc = fBot>0.0 ? slBotTens : slTopTens;
+      stressLoc = 0.0 <= fBot ? slBotTens : slTopTens;
 
       // Location of neutral axis from Bottom of Girder
       Yna = (IsZero(fBot) ? 0 : H - (fTop*H/(fTop-fBot)) );
@@ -341,7 +358,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    }
 
    // Area of steel required to meet higher tensile stress requirement
-   Float64 AsReqd = T/m_AllowableFs;
+   Float64 AsReqd = T/allowable_bar_stress;
    ATLASSERT( 0 <= AsReqd );
 
 // This will need to be revisited if we start designing longitudinal rebar
@@ -366,10 +383,20 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
       }
       else
       {
-         fci       = m_pMaterials->GetSegmentFc(segmentKey,m_IntervalIdx);
-         conc_type = m_pMaterials->GetSegmentConcreteType(segmentKey);
-         isfct     = m_pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
-         fct       = isfct ? m_pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
+         if ( poi.HasAttribute(POI_CLOSURE) )
+         {
+            fci       = m_pMaterials->GetClosureJointFc(segmentKey,m_IntervalIdx);
+            conc_type = m_pMaterials->GetClosureJointConcreteType(segmentKey);
+            isfct     = m_pMaterials->DoesClosureJointConcreteHaveAggSplittingStrength(segmentKey);
+            fct       = isfct ? m_pMaterials->GetClosureJointConcreteAggSplittingStrength(segmentKey) : 0.0;
+         }
+         else
+         {
+            fci       = m_pMaterials->GetSegmentFc(segmentKey,m_IntervalIdx);
+            conc_type = m_pMaterials->GetSegmentConcreteType(segmentKey);
+            isfct     = m_pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
+            fct       = isfct ? m_pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
+         }
       }
 
       CComPtr<IEnumRebarSectionItem> enumItems;
@@ -385,11 +412,10 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 
          Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(item, conc_type, fci, isfct, fct);
 
-         if (dev_length_factor >= 1.0) // Bars must be fully developed before higher 
-                                       // allowable stress can be used
+         if ( IsGE(1.0,dev_length_factor) ) // Bars must be fully developed before higher 
+                                            // allowable stress can be used.
+                                            // Apply a small tolerance.
          {
-            ATLASSERT(dev_length_factor==1.0);
-
             if (stressLoc == slAllTens)
             {
                // all bars in tension - just add
@@ -404,7 +430,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
                location->get_X(&x);
                location->get_Y(&y);
                // Add bar if it's on right side of NA
-               if ( stressLoc == slTopTens && y > Yna)
+               if ( stressLoc == slTopTens && Yna < y)
                {
                   AsProvd += as;
                }
@@ -421,24 +447,53 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 
    // Now we can determine which allowable we can use
    Float64 fAllowable;
-   if (AsProvd > AsReqd)
+   if (AsReqd < AsProvd)
    {
-      fAllowable = highAllowTens;
+      fAllowable = fAllowableWithRebar;
       *pIsAdequateRebar = true;
    }
    else
    {
-      fAllowable = lowAllowTens;
+      fAllowable = fAllowableWithoutRebar;
       *pIsAdequateRebar = false;
    }
 
-   *pYna = Yna;
+   *pYna      = Yna;
    *pAreaTens = AreaTens;
-   *pT = T;
-   *pAsProvd = AsProvd;
-   *pAsReqd = AsReqd;
+   *pT        = T;
+   *pAsProvd  = AsProvd;
+   *pAsReqd   = AsReqd;
 
    return fAllowable;
+}
+
+void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(Float64 ft, // stress demand
+                       Float64 rcsT, bool rcsBfmax, Float64 rcsFmax, Float64 rcsTalt, // allowable stress coeff's
+                       Float64* pFcNo,Float64* pFcWithRebar)
+{
+   if ( 0 < ft )
+   {
+      // Without rebar
+      if ( rcsBfmax && (rcsFmax < ft) )
+      {
+         // allowable stress is limited and we hit the limit
+         *pFcNo = -1;
+      }
+      else
+      {
+         *pFcNo = pow(ft/rcsT,2);
+      }
+
+      // With rebar
+      *pFcWithRebar = pow(ft/rcsTalt,2);
+
+   }
+   else
+   {
+      // Compression
+      *pFcNo = 0.0;
+      *pFcWithRebar = 0.0;
+   }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

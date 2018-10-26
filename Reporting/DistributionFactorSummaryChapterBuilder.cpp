@@ -58,7 +58,7 @@ inline GirderIndexType GetPierGirderCount(PierIndexType pierIdx, IBridge* pBridg
       SpanIndexType nextSpanIdx = prevSpanIdx+1;
       GirderIndexType prvNgdrs = pBridge->GetGirderCountBySpan(prevSpanIdx);
       GirderIndexType nxtNgdrs = pBridge->GetGirderCountBySpan(nextSpanIdx);
-      return max(prvNgdrs, nxtNgdrs);
+      return Max(prvNgdrs, nxtNgdrs);
    }
 }
 

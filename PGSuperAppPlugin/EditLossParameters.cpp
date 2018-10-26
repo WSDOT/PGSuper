@@ -77,9 +77,13 @@ void txnEditLossParameters::DoExecute(int i)
 
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
 
-   pLossParameters->SetPostTensionParameters(m_LossParameters[i].Dset,
-                                             m_LossParameters[i].WobbleFriction,
-                                             m_LossParameters[i].FrictionCoefficient);
+   pLossParameters->SetTendonPostTensionParameters(m_LossParameters[i].Dset_PT,
+                                                   m_LossParameters[i].WobbleFriction_PT,
+                                                   m_LossParameters[i].FrictionCoefficient_PT);
+
+   pLossParameters->SetTemporaryStrandPostTensionParameters(m_LossParameters[i].Dset_TTS,
+                                                            m_LossParameters[i].WobbleFriction_TTS,
+                                                            m_LossParameters[i].FrictionCoefficient_TTS);
 
    pLossParameters->UseGeneralLumpSumLosses(          m_LossParameters[i].bUseLumpSumLosses );
    pLossParameters->SetBeforeXferLosses(              m_LossParameters[i].BeforeXferLosses );

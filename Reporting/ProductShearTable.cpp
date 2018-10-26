@@ -123,7 +123,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
    for ( GroupIndexType grpIdx = startGroup; grpIdx < nGroups; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = min(girderKey.girderIndex,nGirders-1);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
       CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );

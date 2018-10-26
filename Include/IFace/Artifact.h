@@ -46,7 +46,6 @@ COPYRIGHT
 //
 class pgsGirderArtifact;
 class pgsSegmentArtifact;
-class pgsClosurePourArtifact;
 class pgsDesignArtifact;
 class pgsLiftingAnalysisArtifact;
 class pgsHaulingAnalysisArtifact;
@@ -81,9 +80,6 @@ interface IArtifact : IUnknown
 
    // Returns a HaulingAnalysisArtifact which captures the specification checks related to hauling for an individual segment.
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) = 0;
-
-   // Returns a ClosurePourArtifact which captures the full specification check for an individual closure pour.
-   virtual const pgsClosurePourArtifact* GetClosurePourArtifact(const CSegmentKey& segmentKey) = 0;
 
    // Creates a DesignArtifact for the specified girder
    virtual const pgsDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,arDesignOptions options) = 0;

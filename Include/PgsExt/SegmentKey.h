@@ -104,7 +104,7 @@ public:
    }
 };
 
-// Key to identify a precast segment or a closure pour segment
+// Key to identify a precast segment or a closure joint segment
 class PGSEXTCLASS CSegmentKey : public CGirderKey
 {
 public:

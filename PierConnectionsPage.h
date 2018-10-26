@@ -35,17 +35,6 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierConnectionsPage dialog
-interface IPierConnectionsParent
-{
-   virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx) = 0;
-   virtual void SetPierConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type) = 0;
-   virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx) = 0;
-   virtual void SetSegmentConnectionType(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType type) = 0;
-   virtual const CSpanData2* GetPrevSpan(PierIndexType pierIdx) = 0;
-   virtual const CSpanData2* GetNextSpan(PierIndexType pierIdx) = 0;
-   virtual const CBridgeDescription2* GetBridgeDescription() = 0;
-};
-
 class CPierConnectionsPage : public CPropertyPage
 {
 	DECLARE_DYNCREATE(CPierConnectionsPage)
@@ -62,7 +51,7 @@ public:
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
-   void Init(const CPierData2* pPier);
+   void Init(CPierData2* pPier);
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPierConnectionsPage)
@@ -95,6 +84,8 @@ protected:
    CString GetImageName(pgsTypes::PierConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
 
    bool IsAbutment();
+
+   CPierData2* m_pPier;
 
    PierIndexType m_PierIdx;
 

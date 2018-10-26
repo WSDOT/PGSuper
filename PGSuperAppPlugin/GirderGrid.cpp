@@ -31,10 +31,10 @@
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #include "GirderSegmentDlg.h"
-#include "ClosurePourDlg.h"
+#include "ClosureJointDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -150,8 +150,8 @@ void CGirderGrid::CustomInit()
 
       if ( segIdx < nSegments-1 )
       {
-         //CClosurePourData* pClosure = pParent->m_Girder.GetClosurePour(segIdx);
-         AddRow(_T("Closure Pour"),CRowType(CRowType::Closure,segIdx));
+         //CClosureJointData* pClosure = pParent->m_Girder.GetClosureJoint(segIdx);
+         AddRow(_T("Closure Joint"),CRowType(CRowType::Closure,segIdx));
       }
    }
 
@@ -266,24 +266,24 @@ void CGirderGrid::EditClosure(CollectionIndexType idx)
    CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
 
    CSegmentKey segmentKey(pParent->m_GirderKey,idx);
-   CClosurePourDlg dlg(_T("Closure Pour / Splice"),segmentKey,pParent->m_Girder.GetClosurePour(idx),pParent->m_CastClosureEvent[idx],true,this);
+   CClosureJointDlg dlg(_T("Closure Joint"),segmentKey,pParent->m_Girder.GetClosureJoint(idx),pParent->m_CastClosureEvent[idx],true,this);
 
    if ( dlg.DoModal() == IDOK )
    {
-      if ( dlg.m_bCopyToAllClosurePours )
+      if ( dlg.m_bCopyToAllClosureJoints )
       {
-         // copy to all closure pours in this girder
-         IndexType nCP = pParent->m_Girder.GetClosurePourCount();
+         // copy to all closure joints in this girder
+         IndexType nCP = pParent->m_Girder.GetClosureJointCount();
          for ( IndexType i = 0; i < nCP; i++ )
          {
-            pParent->m_Girder.GetClosurePour(i)->CopyClosurePourData(&dlg.m_ClosurePour);
-            pParent->m_CastClosureEvent[i] = dlg.m_EventIdx;
+            pParent->m_Girder.GetClosureJoint(i)->CopyClosureJointData(&dlg.m_ClosureJoint);
+            pParent->m_CastClosureEvent[i] = dlg.m_EventIndex;
          }
       }
       else
       {
-         pParent->m_Girder.GetClosurePour(idx)->CopyClosurePourData(&dlg.m_ClosurePour);
-         pParent->m_CastClosureEvent[idx] = dlg.m_EventIdx;
+         pParent->m_Girder.GetClosureJoint(idx)->CopyClosureJointData(&dlg.m_ClosureJoint);
+         pParent->m_CastClosureEvent[idx] = dlg.m_EventIndex;
       }
       pParent->Invalidate();
       pParent->UpdateWindow();

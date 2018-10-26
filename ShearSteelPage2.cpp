@@ -68,7 +68,7 @@ void CShearSteelPage2::DoRestoreDefaults()
    m_ShearData.CopyGirderEntryData(*pGird);
 }
 
-void CShearSteelPage2::EnableClosurePourMode()
+void CShearSteelPage2::EnableClosureJointMode()
 {
    int nID[] = 
    {
@@ -109,7 +109,7 @@ void CShearSteelPage2::EnableClosurePourMode()
 #pragma Reminder("UPDATE: this code isn't working")
    // This code isn't working???
    // The "Confinement Bar Size" column needs to be hidded because
-   // it doesn't apply to closure pours
+   // it doesn't apply to closure joints
 	m_pGrid->GetParam()->EnableUndo(FALSE);
    m_pGrid->GetParam()->SetLockReadOnly(FALSE);
    m_pGrid->SetColWidth(6,6,0);

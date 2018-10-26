@@ -171,7 +171,7 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,const CSegmentKey& seg
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
-   pIPoi->RemovePointsOfInterest(vPoi,POI_PIER);
+   pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
    GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
 

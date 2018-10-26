@@ -24,7 +24,7 @@
 #include <PgsExt\GirderGroupData.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PierData2.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -210,7 +210,26 @@ void CGirderGroupData::SetPier(pgsTypes::MemberEndType end,CPierData2* pPier)
    m_PierIndex[end] = INVALID_INDEX;
 
    if ( pOldSpacing )
+   {
       m_pPier[end]->SetGirderSpacing(pierFace,*pOldSpacing);
+   }
+
+   // Update where the first/last segment starts/ends
+   std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
+   std::vector<CSplicedGirderData*>::iterator iterEnd(m_Girders.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      CSplicedGirderData* pGirder = *iter;
+      if ( end == pgsTypes::metStart )
+      {
+         pGirder->GetSegment(0)->SetSpan(end,pPier->GetNextSpan());
+      }
+      else
+      {
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         pGirder->GetSegment(nSegments-1)->SetSpan(end,pPier->GetPrevSpan());
+      }
+   }
 
 #if defined _DEBUG
    if ( m_pBridge != NULL )
@@ -333,48 +352,36 @@ void CGirderGroupData::SetGirderCount(GirderIndexType nGirders)
    ASSERT_VALID;
 }
 
-void CGirderGroupData::RemoveGirders(GirderIndexType nGirders)
+void CGirderGroupData::RemoveGirders(GirderIndexType nGirdersToRemove)
 {
-   ATLASSERT( nGirders < (GirderIndexType)m_Girders.size() ); // removing more than the container holds
+   ATLASSERT( nGirdersToRemove < (GirderIndexType)m_Girders.size() ); // removing more than the container holds
 
-   CTimelineManager* pTimelineMgr = m_pBridge->GetTimelineManager();
-
-   std::vector<CSplicedGirderData*>::iterator iter( m_Girders.end() - nGirders );
+   std::vector<CSplicedGirderData*>::iterator iter( m_Girders.end() - nGirdersToRemove );
    std::vector<CSplicedGirderData*>::iterator end(  m_Girders.end() );
    for ( ; iter != end; iter++ )
    {
       CSplicedGirderData* pSplicedGirder = *iter;
-
-      // remove references to this girder from the timeline manager
-      CGirderKey girderKey(pSplicedGirder->GetGirderKey());
-      DuctIndexType nDucts = pSplicedGirder->GetPostTensioning()->GetDuctCount();
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-      {
-#pragma Reminder("REVIEW: seems like we need to remove the duct rather than set the index to invalid")
-         pTimelineMgr->SetStressTendonEventByIndex(girderKey, ductIdx, INVALID_INDEX);
-      }
-
-      SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-      {
-         CPrecastSegmentData* pSegment = pSplicedGirder->GetSegment(segIdx);
-         SegmentIDType segID = pSegment->GetID();
-         ATLASSERT(segID != INVALID_ID);
-
-#pragma Reminder("REVIEW: seems like we need to remove the segment rather than set the index to invalid")
-         pTimelineMgr->SetSegmentErectionEventByIndex(segID,INVALID_INDEX);
-      }
       delete pSplicedGirder;
+      pSplicedGirder = NULL;
 
       m_GirderTypeGroups.back().second--;
       if ( m_GirderTypeGroups.back().second < m_GirderTypeGroups.back().first )
+      {
          m_GirderTypeGroups.pop_back();
+      }
    }
 
-   GirderIndexType ng = m_Girders.size();
-   m_SlabOffset[pgsTypes::metStart].resize(ng-nGirders);
-   m_SlabOffset[pgsTypes::metEnd].resize(ng-nGirders);
-   m_Girders.resize(ng-nGirders);
+   GirderIndexType nGirders = m_Girders.size();
+   m_SlabOffset[pgsTypes::metStart].resize(nGirders-nGirdersToRemove);
+   m_SlabOffset[pgsTypes::metEnd].resize(nGirders-nGirdersToRemove);
+   m_Girders.resize(nGirders-nGirdersToRemove);
+
+
+   // Update the girder spacing (number of girders and number of spaces are related)
+   m_pPier[pgsTypes::metStart]->GetGirderSpacing(pgsTypes::Ahead)->RemoveGirders(nGirdersToRemove);
+   m_pPier[pgsTypes::metEnd  ]->GetGirderSpacing(pgsTypes::Back )->RemoveGirders(nGirdersToRemove);
+
+   ASSERT_VALID;
 }
 
 void CGirderGroupData::Initialize(GirderIndexType nGirders)
@@ -406,12 +413,13 @@ void CGirderGroupData::Initialize(GirderIndexType nGirders)
    m_GirderTypeGroups.push_back( GirderTypeGroup(0,m_Girders.size()-1) );
 }
 
-void CGirderGroupData::AddGirders(GirderIndexType nGirders)
+void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
 {
    ATLASSERT(m_Girders.size() != 0);
 
    // Collect the construction and erection event information for each
-   // segment for the reference girder
+   // segment from the reference girder. We'll use the same events for
+   // the new girder and its segments.
    const CSplicedGirderData* pRefGirder = m_Girders.back();
    GirderIDType refGdrID = pRefGirder->GetID();
 
@@ -433,7 +441,7 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirders)
       segmentEvents[segIdx] = erectionEventIdx;
    }
 
-   // Collect the post-tensioning event information for the reference girder
+   // Collect the post-tensioning event information for the reference girder.
    DuctIndexType nDucts = pRefGirder->GetPostTensioning()->GetDuctCount();
    std::vector<EventIndexType> ptEvents(nDucts);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -442,15 +450,15 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirders)
    }
 
    // create the new girders
-   for ( GirderIndexType i = 0; i < nGirders; i++ )
+   for ( GirderIndexType i = 0; i < nGirdersToAdd; i++ )
    {
-      gdrIdx++;
       CSplicedGirderData* pNewGirder = new CSplicedGirderData(*pRefGirder);
       pNewGirder->SetGirderGroup(this);
       pNewGirder->SetIndex(m_Girders.size());
       m_Girders.push_back(pNewGirder);
 
       pNewGirder->SetID( m_pBridge->GetNextGirderID() );
+
       CGirderKey newGirderKey(pNewGirder->GetGirderKey());
 
       m_SlabOffset[pgsTypes::metStart].push_back(m_SlabOffset[pgsTypes::metStart].back());
@@ -480,6 +488,32 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirders)
 
    // Update the girder type group
    m_GirderTypeGroups.back().second = m_Girders.size()-1;
+
+   // Update the girder spacing (number of girders and number of spaces are related)
+   CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
+   CPierData2* pEndPier   = m_pPier[pgsTypes::metEnd];
+   CPierData2* pPier = pStartPier;
+   bool bDone = false;
+   while ( !bDone )
+   {
+      if ( pPier == pStartPier )
+      {
+         pPier->GetGirderSpacing(pgsTypes::Ahead)->AddGirders(nGirdersToAdd);
+      }
+      else if ( pPier == pEndPier )
+      {
+         pPier->GetGirderSpacing(pgsTypes::Back)->AddGirders(nGirdersToAdd);
+      }
+      else
+      {
+         pPier->GetGirderSpacing(pgsTypes::Ahead)->AddGirders(nGirdersToAdd);
+         pPier->GetGirderSpacing(pgsTypes::Back)->AddGirders(nGirdersToAdd);
+      }
+
+      pPier = pPier->GetNextSpan()->GetNextPier();
+      if ( pPier == pEndPier )
+         bDone = true;
+   }
 }
 
 GirderIndexType CGirderGroupData::GetGirderCount() const
@@ -500,21 +534,22 @@ void CGirderGroupData::SetGirder(GirderIndexType gdrIdx,CSplicedGirderData* pGir
 
 CSplicedGirderData* CGirderGroupData::GetGirder(GirderIndexType gdrIdx)
 {
+   if ( gdrIdx < 0 || m_Girders.size() <= gdrIdx )
+      return NULL;
+
    return m_Girders[gdrIdx];
 }
 
 const CSplicedGirderData* CGirderGroupData::GetGirder(GirderIndexType gdrIdx) const
 {
+   if ( gdrIdx < 0 || m_Girders.size() <= gdrIdx )
+      return NULL;
+
    return m_Girders[gdrIdx];
 }
 
 void CGirderGroupData::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset)
 {
-//#if defined _DEBUG
-//   pgsTypes::SlabOffsetType slabOffsetType = m_pBridge->GetSlabOffsetType();
-//   ATLASSERT(slabOffsetType == pgsTypes::sotGroup);
-//#endif
-//
    std::vector<Float64>::iterator iter(m_SlabOffset[end].begin());
    std::vector<Float64>::iterator iterEnd(m_SlabOffset[end].end());
    for ( ; iter != iterEnd; iter++ )
@@ -525,11 +560,6 @@ void CGirderGroupData::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset)
 
 void CGirderGroupData::SetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end,Float64 offset)
 {
-//#if defined _DEBUG
-//   pgsTypes::SlabOffsetType slabOffsetType = m_pBridge->GetSlabOffsetType();
-//   ATLASSERT(slabOffsetType == pgsTypes::sotSegment);
-//#endif
-//
    m_SlabOffset[end][gdrIdx] = offset;
 }
 
@@ -663,7 +693,7 @@ GroupIndexType CGirderGroupData::CreateGirderTypeGroup(GirderIndexType firstGdrI
 
    m_GirderTypeGroups = gdrGroups;
 
-   IS_VALID;
+   ASSERT_VALID;
 
    return newGroupIdx;
 }
@@ -676,7 +706,7 @@ void CGirderGroupData::ExpandAll()
    {
       m_GirderTypeGroups.push_back(std::make_pair(gdrIdx,gdrIdx));
    }
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 void CGirderGroupData::Expand(GroupIndexType girderTypeGroupIdx)
@@ -698,7 +728,7 @@ void CGirderGroupData::Expand(GroupIndexType girderTypeGroupIdx)
       GirderTypeGroup group(gdrIdx,gdrIdx);
       pos = m_GirderTypeGroups.insert(pos,group);
    }
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 
@@ -729,7 +759,7 @@ void CGirderGroupData::JoinAll(GirderIndexType gdrIdx)
       pGirder->SetGirderName(strName.c_str());
       pGirder->SetGirderLibraryEntry(pGdrEntry);
    }
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 void CGirderGroupData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrIdx,GirderIndexType gdrIdx)
@@ -795,7 +825,7 @@ void CGirderGroupData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrI
 
    // finally replace the data member with the local girder groups
    m_GirderTypeGroups = gdrGroups;
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 GroupIndexType CGirderGroupData::GetGirderTypeGroupCount() const
@@ -1026,6 +1056,78 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->EndUnit(); // GirderTypeGroups
 
       hr = pStrLoad->EndUnit(); // GirderTypeGroup
+
+      if ( ::IsBridgeSpacing(m_pBridge->GetGirderSpacingType()) )
+      {
+         // If the girder spacing type is a bridge spacing then individual girder spaces aren't loaded by
+         // the CPierData2 objects. The girder spacing objects need to have spacing that is consistent
+         // with the number of girders. Set those values here.
+         Float64 bridgeSpacing = m_pBridge->GetGirderSpacing();
+         CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
+         CPierData2* pEndPier   = m_pPier[pgsTypes::metEnd];
+         CPierData2* pPier = pStartPier;
+         bool bDone = false;
+         while ( !bDone )
+         {
+            if ( pPier == pStartPier )
+            {
+               pPier->GetGirderSpacing(pgsTypes::Ahead)->InitGirderCount(nGirders);
+               pPier->GetGirderSpacing(pgsTypes::Ahead)->SetGirderSpacing(0,bridgeSpacing);
+            }
+            else if ( pPier == pEndPier )
+            {
+               pPier->GetGirderSpacing(pgsTypes::Back)->InitGirderCount(nGirders);
+               pPier->GetGirderSpacing(pgsTypes::Back)->SetGirderSpacing(0,bridgeSpacing);
+            }
+            else
+            {
+               pPier->GetGirderSpacing(pgsTypes::Ahead)->InitGirderCount(nGirders);
+               pPier->GetGirderSpacing(pgsTypes::Ahead)->SetGirderSpacing(0,bridgeSpacing);
+               pPier->GetGirderSpacing(pgsTypes::Back )->InitGirderCount(nGirders);
+               pPier->GetGirderSpacing(pgsTypes::Back )->SetGirderSpacing(0,bridgeSpacing);
+            }
+
+            pPier = pPier->GetNextSpan()->GetNextPier();
+            if ( pPier == pEndPier )
+               bDone = true;
+         }
+      }
+#if defined _DEBUG
+      else
+      {
+         // Girder spacing was loaded by CPierData2 objects. Make sure the number of girder spaces is consistent
+         // with the number of girders
+         ATLASSERT(m_pPier[pgsTypes::metStart]->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1 == m_Girders.size());
+         ATLASSERT(m_pPier[pgsTypes::metEnd  ]->GetGirderSpacing(pgsTypes::Back )->GetSpacingCount()+1 == m_Girders.size());
+
+
+         CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
+         CPierData2* pEndPier   = m_pPier[pgsTypes::metEnd];
+         CPierData2* pPier = pStartPier;
+         bool bDone = false;
+         while ( !bDone )
+         {
+            if ( pPier == pStartPier )
+            {
+               ATLASSERT(pPier->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1 == m_Girders.size());
+            }
+            else if ( pPier == pEndPier )
+            {
+               ATLASSERT(pPier->GetGirderSpacing(pgsTypes::Back)->GetSpacingCount()+1 == m_Girders.size());
+            }
+            else
+            {
+               ATLASSERT(pPier->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1 == m_Girders.size());
+               ATLASSERT(pPier->GetGirderSpacing(pgsTypes::Back)->GetSpacingCount()+1 == m_Girders.size());
+            }
+
+            pPier = pPier->GetNextSpan()->GetNextPier();
+            if ( pPier == pEndPier )
+               bDone = true;
+         }
+      }
+#endif
+
    }
    catch(...)
    {
@@ -1234,5 +1336,8 @@ void CGirderGroupData::AssertValid()
       ATLASSERT( m_pBridge == m_pPier[pgsTypes::metEnd]->GetBridgeDescription() );
       ATLASSERT( m_pPier[pgsTypes::metEnd]->IsBoundaryPier() );
    }
+
+   ATLASSERT(m_pPier[pgsTypes::metStart]->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1 == m_Girders.size());
+   ATLASSERT(m_pPier[pgsTypes::metEnd  ]->GetGirderSpacing(pgsTypes::Back)->GetSpacingCount()+1 == m_Girders.size());
 }
 #endif // _DEBUG

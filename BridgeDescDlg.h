@@ -53,7 +53,7 @@ public:
    const CBridgeDescription2& GetBridgeDescription();
 
    CBridgeDescGeneralPage           m_GeneralPage;
-   CBridgeDescFramingPage          m_FramingPage;
+   CBridgeDescFramingPage           m_FramingPage;
    CBridgeDescRailingSystemPage     m_RailingSystemPage;
    CBridgeDescDeckDetailsPage       m_DeckDetailsPage;
    CBridgeDescDeckReinforcementPage m_DeckRebarPage;
@@ -76,7 +76,7 @@ public:
 	// Generated message map functions
 protected:
    void Init();
-   CBridgeDescription2 m_BridgeDesc;
+   CBridgeDescription2 m_BridgeDesc; // this is the bridge we are operating on
 
    friend CBridgeDescGeneralPage;
    friend CBridgeDescFramingPage;

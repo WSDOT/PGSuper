@@ -66,6 +66,7 @@ public:
    virtual std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType);
    virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType);
    virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType);
+   virtual GirderIndexType GetMinimumBeamCount();
 
 protected:
    std::vector<std::_tstring> m_DimNames;

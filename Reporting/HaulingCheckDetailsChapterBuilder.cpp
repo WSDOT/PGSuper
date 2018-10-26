@@ -87,18 +87,8 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       GET_IFACE2(pBroker,IArtifact,pArtifacts);
    
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   
-   
-   
-   
-   
-   
-   
       {
          CSegmentKey segmentKey(girderKey,segIdx);
-   
-   
-   
    
          // Artifact does heavy lifting
          const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);

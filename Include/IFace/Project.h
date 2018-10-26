@@ -48,7 +48,7 @@ class CGirderMaterial;
 class CTemporarySupportData;
 class CSplicedGirderData;
 class CPrecastSegmentData;
-class CClosurePourData;
+class CClosureJointData;
 class CGirderGroupData;
 class CPTData;
 class CTimelineManager;
@@ -411,11 +411,11 @@ interface IShear : IUnknown
    virtual const CShearData2* GetSegmentShearData(const CSegmentKey& segmentKey) const = 0;
    virtual void SetSegmentShearData(const CSegmentKey& segmentKey,const CShearData2& data) = 0;
 
-   virtual std::_tstring GetClosurePourStirrupMaterial(const CClosureKey& closureKey) const = 0;
-   virtual void GetClosurePourStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) = 0;
-   virtual void SetClosurePourStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade) = 0;
-   virtual const CShearData2* GetClosurePourShearData(const CClosureKey& closureKey) const = 0;
-   virtual void SetClosurePourShearData(const CClosureKey& closureKey,const CShearData2& data) = 0;
+   virtual std::_tstring GetClosureJointStirrupMaterial(const CClosureKey& closureKey) const = 0;
+   virtual void GetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) = 0;
+   virtual void SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade) = 0;
+   virtual const CShearData2* GetClosureJointShearData(const CClosureKey& closureKey) const = 0;
+   virtual void SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& data) = 0;
 };
 
 /*****************************************************************************
@@ -438,11 +438,11 @@ interface ILongitudinalRebar : IUnknown
    virtual const CLongitudinalRebarData* GetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey) const = 0;
    virtual void SetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey,const CLongitudinalRebarData& data) = 0;
 
-   virtual std::_tstring GetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey) const = 0;
-   virtual void GetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) = 0;
-   virtual void SetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade) = 0;
-   virtual const CLongitudinalRebarData* GetClosurePourLongitudinalRebarData(const CClosureKey& closureKey) const = 0;
-   virtual void SetClosurePourLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data) = 0;
+   virtual std::_tstring GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey) const = 0;
+   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) = 0;
+   virtual void SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade) = 0;
+   virtual const CLongitudinalRebarData* GetClosureJointLongitudinalRebarData(const CClosureKey& closureKey) const = 0;
+   virtual void SetClosureJointLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data) = 0;
 };
 
 
@@ -787,6 +787,8 @@ interface ILimits : IUnknown
    virtual Float64 GetMaxSlabFc(pgsTypes::ConcreteType concType) = 0;
    virtual Float64 GetMaxSegmentFci(pgsTypes::ConcreteType concType) = 0;
    virtual Float64 GetMaxSegmentFc(pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetMaxClosureFci(pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetMaxClosureFc(pgsTypes::ConcreteType concType) = 0;
    virtual Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType) = 0;
    virtual Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType concType) = 0;
 };
@@ -879,8 +881,8 @@ interface IBridgeDescription : IUnknown
    virtual const CPrecastSegmentData* GetPrecastSegmentData(const CSegmentKey& segmentKey) = 0;
    virtual void SetPrecastSegmentData(const CSegmentKey& segmentKey,const CPrecastSegmentData& segment) = 0;
 
-   virtual const CClosurePourData* GetClosurePourData(const CClosureKey& closureKey) = 0;
-   virtual void SetClosurePourData(const CClosureKey& closureKey,const CClosurePourData& closure) = 0;
+   virtual const CClosureJointData* GetClosureJointData(const CClosureKey& closureKey) = 0;
+   virtual void SetClosureJointData(const CClosureKey& closureKey,const CClosureJointData& closure) = 0;
 
    virtual void SetSpanLength(SpanIndexType spanIdx,Float64 newLength) = 0;
    virtual void MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption) = 0;
@@ -895,12 +897,12 @@ interface IBridgeDescription : IUnknown
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders) = 0;
    virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup) = 0;
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType) = 0;
-   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType) = 0;
+   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType,EventIndexType castClosureEventIdx) = 0;
 
    virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan) = 0;
    virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx) = 0;
 
-   virtual void InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx) = 0;
+   virtual void InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType castClosureJointEventIdx) = 0;
    virtual void DeleteTemporarySupportByIndex(SupportIndexType tsIdx) = 0;
    virtual void DeleteTemporarySupportByID(SupportIDType tsID) = 0;
 
@@ -963,10 +965,10 @@ interface IBridgeDescription : IUnknown
    virtual EventIndexType GetSegmentErectionEventIndex(const CSegmentKey& segmentKey) = 0;
    virtual EventIDType GetSegmentErectionEventID(const CSegmentKey& segmentKey) = 0;
 
-   virtual EventIndexType GetCastClosurePourEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx) = 0;
-   virtual EventIDType GetCastClosurePourEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx) = 0;
-   virtual void SetCastClosurePourEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx) = 0;
-   virtual void SetCastClosurePourEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIDType eventID) = 0;
+   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx) = 0;
+   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx) = 0;
+   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx) = 0;
+   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIDType eventID) = 0;
 
    virtual EventIndexType GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
    virtual EventIDType GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
@@ -1053,9 +1055,13 @@ interface ILossParameters : IUnknown
    // Returns the method for computing prestress losses
    virtual pgsTypes::LossMethod GetLossMethod() = 0;
 
-   // Set/Get the parameters for computing initial losses in post-tension strands and tendons
-   virtual void SetPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction) = 0;
-   virtual void GetPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction) = 0;
+   // Set/Get the parameters for computing initial losses in post-tension tendons
+   virtual void SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction) = 0;
+   virtual void GetTendonPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction) = 0;
+
+   // Set/Get the parameters for computing initial losses in post-tension temporary strands
+   virtual void SetTemporaryStrandPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction) = 0;
+   virtual void GetTemporaryStrandPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction) = 0;
 
    // Indicates if the method of computing prestress losses is ignored
    // and general lump sum losses are used. If general lump sum losses

@@ -143,8 +143,8 @@ void CTemporarySupportDrawStrategyImpl::GetLSymbolSize(iCoordinateMap* pMap, lon
    Float64 w = m_LeftBrgOffset + m_RightBrgOffset;
    pMap->WPtoLP(w,2*w,&x2,&y2);
 
-   *psx = max(minX,abs(x2-xo));
-   *psy = max(minY,abs(y2-yo));
+   *psx = Max(minX,abs(x2-xo));
+   *psy = Max(minY,abs(y2-yo));
 }
 
 

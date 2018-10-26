@@ -31,12 +31,14 @@
 #include <IFace\Intervals.h>
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
+#include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <PGSuperUnits.h>
 
@@ -81,12 +83,6 @@ CGirderKey CStressHistoryGraphController::GetGirderKey()
 pgsPointOfInterest CStressHistoryGraphController::GetLocation()
 {
    return m_Poi;
-}
-
-void CStressHistoryGraphController::SetIntervalText(const CString& strText)
-{
-   CWnd* pWnd = GetDlgItem(IDC_INTERVAL_LIST);
-   pWnd->SetWindowText(strText);
 }
 
 void CStressHistoryGraphController::OnGroupChanged()
@@ -211,9 +207,28 @@ void CStressHistoryGraphController::FillLocationCtrl()
    for ( ; iter != end; iter++ )
    {
       pgsPointOfInterest& poi(*iter);
+      
       Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
+
       CString strItem;
-      strItem.Format(_T("%s"),FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit()));
+      std::_tstring strAttributes = poi.GetAttributes(POI_ERECTED_SEGMENT,false);
+      if ( strAttributes.size() == 0 )
+      {
+         strItem.Format(_T("Segment %d, %s (X=%s)"),
+            LABEL_SEGMENT(poi.GetSegmentKey().segmentIndex),
+            FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()),
+            FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit())
+            );
+      }
+      else
+      {
+         strItem.Format(_T("Segment %d, %s (%s) (X=%s)"),
+            LABEL_SEGMENT(poi.GetSegmentKey().segmentIndex),
+            FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()),
+            poi.GetAttributes(POI_ERECTED_SEGMENT,false).c_str(),
+            FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit())
+            );
+      }
 
       int idx = pcbLocation->AddString(strItem);
       pcbLocation->SetItemData(idx,poi.GetID());

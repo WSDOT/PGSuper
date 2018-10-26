@@ -58,7 +58,7 @@ void CSpecDescrPage::DoDataExchange(CDataExchange* pDX)
 
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
    // dad is a friend of the entry. use him to transfer data.
-   pDad->ExchangeDescrData(pDX);
+   pDad->ExchangeDescriptionData(pDX);
 
 }
 
@@ -87,6 +87,17 @@ BOOL CSpecDescrPage::OnInitDialog()
    {
       idx = pSpec->AddString(lrfdVersionMgr::GetVersionString((lrfdVersionMgr::Version)(i)).c_str());
       pSpec->SetItemData(idx,(DWORD)(i));
+   }
+
+   CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
+   lrfdVersionMgr::Version version = pParent->GetSpecVersion();
+
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EFF_FLANGE_WIDTH);
+   pCB->AddString(_T("in accordance with LRFD 4.6.2.6"));
+
+   if ( version < lrfdVersionMgr::FourthEditionWith2008Interims )
+   {
+      pCB->AddString(_T("using the tributary width"));
    }
 
 

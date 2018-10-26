@@ -495,7 +495,7 @@ private:
                      Float64 test_strength = strength + factor * ::ConvertToSysUnits(0.1,unitMeasure::KSI);
 
                      // this ISA decrease, so don't allow an increase
-                     test_strength = min(test_strength, m_CurrentState.m_Strength);
+                     test_strength = Min(test_strength, m_CurrentState.m_Strength);
 
                      // allow 3 decreases only for each design state
                      if (incr < 4 && test_strength < m_CurrentState.m_Strength)

@@ -50,10 +50,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma Reminder("UPDATE: complete the features of this graph")
-// User should be able to select the product load type (girder, slab, barrier, prestress, post tensioning, etc)
-// User should be able to select the limit state (Service I, Service IA, Fatigue I , Service III)
-
 // create a dummy unit conversion tool to pacify the graph constructor
 static unitmgtLengthData DUMMY(unitMeasure::Meter);
 static LengthTool    DUMMY_TOOL(DUMMY);
@@ -81,7 +77,7 @@ m_XAxisType(X_AXIS_TIME_LOG)
 
    SetName(_T("Stress History"));
 
-   m_Scalar.Width = 5;
+   m_Scalar.Width = 7;
    m_Scalar.Precision = 0;
    m_Scalar.Format = sysNumericFormatTool::Fixed;
 }
@@ -99,7 +95,7 @@ m_XAxisType(X_AXIS_TIME_LOG)
 {
    m_pGraphController = new CStressHistoryGraphController;
 
-   m_Scalar.Width = 5;
+   m_Scalar.Width = 7;
    m_Scalar.Precision = 0;
    m_Scalar.Format = sysNumericFormatTool::Fixed;
 }
@@ -171,15 +167,14 @@ int CStressHistoryGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
    m_pGraphController->CheckDlgButton(IDC_TIME_LOG,BST_CHECKED);
 
    // x axis
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtScalar timeUnit = pDisplayUnits->GetScalarFormat();
-   m_pTimeFormat = new ScalarTool(timeUnit);
+   m_pTimeFormat = new ScalarTool(m_Scalar);
    m_pIntervalFormat = new ScalarTool(m_Scalar);
    m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
    m_XAxisType = X_AXIS_TIME_LOG;
 
    // y axis
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
@@ -192,8 +187,6 @@ int CStressHistoryGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
    m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
    m_Graph.SetDoDrawGrid(); // show grid by default
    m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
-
-   SetIntervalText();
 
    return 0;
 }
@@ -217,29 +210,6 @@ void CStressHistoryGraphBuilder::OnBottomGirder()
    m_bBottomGirder = !m_bBottomGirder;
    Update();
    GetView()->Invalidate();
-}
-
-void CStressHistoryGraphBuilder::SetIntervalText()
-{
-   CString strText(_T(""));
-   if ( m_XAxisType == X_AXIS_INTEGER )
-   {
-      GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-      for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
-      {
-         CString strInterval;
-         strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-         strText += strInterval;
-
-         if ( intervalIdx < nIntervals-1 )
-         {
-            strText += _T("\r\n");
-         }
-      }
-   }
-
-   m_pGraphController->SetIntervalText(strText);
 }
 
 void CStressHistoryGraphBuilder::OnShowGrid()
@@ -273,6 +243,35 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
    CString strGraphTitle;
    strGraphTitle.Format(_T("Stress History"));
    m_Graph.SetTitle(std::_tstring(strGraphTitle));
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IPointOfInterest,pPoi);
+   Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
+   CString strSubtitle;
+   std::_tstring strAttributes = poi.GetAttributes(POI_ERECTED_SEGMENT,false);
+   if ( strAttributes.size() == 0 )
+   {
+      strSubtitle.Format(_T("Group %d Girder %s Segment %d, %s (X=%s)"),
+         LABEL_GROUP(segmentKey.groupIndex),
+         LABEL_GIRDER(segmentKey.girderIndex),
+         LABEL_SEGMENT(segmentKey.segmentIndex),
+         FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()),
+         FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit()));
+   }
+   else
+   {
+      strSubtitle.Format(_T("Group %d Girder %s Segment %d, %s (%s) (X=%s)"),
+         LABEL_GROUP(segmentKey.groupIndex),
+         LABEL_GIRDER(segmentKey.girderIndex),
+         LABEL_SEGMENT(segmentKey.segmentIndex),
+         FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()),
+         strAttributes.c_str(),
+         FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit()));
+   }
+
+   m_Graph.SetSubtitle(std::_tstring(strSubtitle));
 }
 
 void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
@@ -280,30 +279,20 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
    // clear graph
    m_Graph.ClearData();
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE(IPointOfInterest,pPoi);
-   Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
-   CString strSubtitle;
-   strSubtitle.Format(_T("Location: %s"),FormatDimension(Xg,pDisplayUnits->GetSpanLengthUnit()));
-
-   m_Graph.SetSubtitle(std::_tstring(strSubtitle));
-
-   IndexType topSlabDataSeriesMin   = m_Graph.CreateDataSeries(_T("Top of Slab"),     PS_SOLID,1,ORANGE);
-   IndexType topSlabDataSeriesMax   = m_Graph.CreateDataSeries(_T("Top of Slab"),     PS_SOLID,1,ORANGE);
-   IndexType topGirderDataSeriesMin = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID,1,GREEN);
-   IndexType topGirderDataSeriesMax = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID,1,GREEN);
-   IndexType botGirderDataSeriesMin = m_Graph.CreateDataSeries(_T("Bottom of Girder"),PS_SOLID,1,BLUE);
-   IndexType botGirderDataSeriesMax = m_Graph.CreateDataSeries(_T("Bottom of Girder"),PS_SOLID,1,BLUE);
+   IndexType topSlabMinDataSeries   = m_Graph.CreateDataSeries(_T("Top of Slab"),     PS_SOLID,1,ORANGE);
+   IndexType topSlabMaxDataSeries   = m_Graph.CreateDataSeries(_T(""),                PS_SOLID,1,ORANGE);
+   IndexType topGirderMinDataSeries = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID,1,GREEN);
+   IndexType topGirderMaxDataSeries = m_Graph.CreateDataSeries(_T(""),                PS_SOLID,1,GREEN);
+   IndexType botGirderMinDataSeries = m_Graph.CreateDataSeries(_T("Bottom of Girder"),PS_SOLID,1,BLUE);
+   IndexType botGirderMaxDataSeries = m_Graph.CreateDataSeries(_T(""),                PS_SOLID,1,BLUE);
 
    GET_IFACE(ILimitStateForces,pForces);
    GET_IFACE(IIntervals,pIntervals);
+
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
-#pragma Reminder("UPDATE: limit state")
-      // Select the limit state based on interval and location...
-      // Service I for everything except stress in bottom of girder with live load, then Service III?
       Float64 xStart, xEnd;
       if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
       {
@@ -316,34 +305,42 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
          xStart = xEnd - 1;
       }
 
+      bool bIncludePrestress = true;
+
       if ( m_bTopDeck )
       {
          Float64 fMin, fMax;
-         pForces->GetStress(pgsTypes::ServiceI,intervalIdx-1,poi,pgsTypes::TopDeck,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
-         AddGraphPoint(topSlabDataSeriesMax,xStart,fMax);
+         pForces->GetStress(pgsTypes::ServiceI,intervalIdx-1,poi,pgsTypes::TopDeck,bIncludePrestress,pgsTypes::ContinuousSpan,&fMin,&fMax);
+         AddGraphPoint(topSlabMinDataSeries,xStart,fMin);
+         AddGraphPoint(topSlabMaxDataSeries,xStart,fMax);
 
-         pForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::TopDeck,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
-         AddGraphPoint(topSlabDataSeriesMax,xEnd,fMax);
+         pForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::TopDeck,bIncludePrestress,pgsTypes::ContinuousSpan,&fMin,&fMax);
+         AddGraphPoint(topSlabMinDataSeries,xEnd,fMin);
+         AddGraphPoint(topSlabMaxDataSeries,xEnd,fMax);
       }
 
       if ( m_bTopGirder )
       {
          Float64 fMin, fMax;
-         pForces->GetStress(pgsTypes::ServiceI,intervalIdx-1,poi,pgsTypes::TopGirder,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
-         AddGraphPoint(topGirderDataSeriesMax,xStart,fMax);
+         pForces->GetStress(pgsTypes::ServiceI,intervalIdx-1,poi,pgsTypes::TopGirder,bIncludePrestress,pgsTypes::ContinuousSpan,&fMin,&fMax);
+         AddGraphPoint(topGirderMinDataSeries,xStart,fMin);
+         AddGraphPoint(topGirderMaxDataSeries,xStart,fMax);
 
-         pForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::TopGirder,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
-         AddGraphPoint(topGirderDataSeriesMax,xEnd,fMax);
+         pForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::TopGirder,bIncludePrestress,pgsTypes::ContinuousSpan,&fMin,&fMax);
+         AddGraphPoint(topGirderMinDataSeries,xEnd,fMin);
+         AddGraphPoint(topGirderMaxDataSeries,xEnd,fMax);
       }
 
       if ( m_bBottomGirder )
       {
          Float64 fMin, fMax;
-         pForces->GetStress(pgsTypes::ServiceI,intervalIdx-1,poi,pgsTypes::BottomGirder,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
-         AddGraphPoint(botGirderDataSeriesMax,xStart,fMax);
+         pForces->GetStress(pgsTypes::ServiceI,intervalIdx-1,poi,pgsTypes::BottomGirder,bIncludePrestress,pgsTypes::ContinuousSpan,&fMin,&fMax);
+         AddGraphPoint(botGirderMinDataSeries,xStart,fMin);
+         AddGraphPoint(botGirderMaxDataSeries,xStart,fMax);
 
-         pForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::BottomGirder,true,pgsTypes::ContinuousSpan,&fMin,&fMax);
-         AddGraphPoint(botGirderDataSeriesMax,xEnd,fMax);
+         pForces->GetStress(pgsTypes::ServiceI,intervalIdx,poi,pgsTypes::BottomGirder,bIncludePrestress,pgsTypes::ContinuousSpan,&fMin,&fMax);
+         AddGraphPoint(botGirderMinDataSeries,xEnd,fMin);
+         AddGraphPoint(botGirderMaxDataSeries,xEnd,fMax);
       }
    }
 }

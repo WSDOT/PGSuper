@@ -296,6 +296,16 @@ PoiAttributeType pgsPointOfInterest::GetReference(PoiAttributeType attrib)
    return poiRef;
 }
 
+bool pgsPointOfInterest::IsReferenceAttribute(PoiAttributeType attrib)
+{
+   return ( attrib == POI_RELEASED_SEGMENT ||
+            attrib == POI_LIFT_SEGMENT     ||
+            attrib == POI_STORAGE_SEGMENT  ||
+            attrib == POI_HAUL_SEGMENT     ||
+            attrib == POI_ERECTED_SEGMENT  ||
+            attrib == POI_GIRDER ) ? true : false;
+}
+
 void pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
 {
    m_Attributes |= rOther.GetAttributes();
@@ -471,6 +481,231 @@ bool pgsPointOfInterest::IsValidReference(PoiAttributeType reference) const
    return false;
 }
 
+std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool bIncludeMarkup) const
+{
+   std::_tstring strAttrib;
+   PoiAttributeType attributes = GetAttributes();
+   if ( attributes == 0 )
+      return strAttrib;
+
+   int nAttributes = 0;
+
+   if ( IsHarpingPoint() )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("HP");
+      nAttributes++;
+   }
+
+   if ( IsAtH(reference) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("H");
+      nAttributes++;
+   }
+
+   if ( IsAt15H(reference) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("1.5H");
+      nAttributes++;
+   }
+   
+   if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
+   {
+      if ( HasAttribute(POI_CRITSECTSHEAR1) || HasAttribute(POI_CRITSECTSHEAR2) )
+      {
+         if ( 0 < nAttributes )
+            strAttrib += _T(", ");
+
+         strAttrib += _T("CS");
+         nAttributes++;
+      }
+   }
+   else
+   {
+      if ( HasAttribute(POI_CRITSECTSHEAR1) )
+      {
+         if ( 0 < nAttributes )
+            strAttrib += _T(", ");
+
+         strAttrib += _T("DCS");
+         nAttributes++;
+      }
+      
+      if ( HasAttribute(POI_CRITSECTSHEAR2) )
+      {
+         if ( 0 < nAttributes )
+            strAttrib += _T(", ");
+
+         strAttrib += _T("PCS");
+         nAttributes++;
+      }
+   }
+
+   if ( HasAttribute(POI_PSXFER) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("PSXFR");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_PSDEV) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("Ld");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_DEBOND) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("Debond");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_DECKBARCUTOFF) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("Bar Cutoff");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_BARCUTOFF) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("Bar Cutoff");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_BARDEVELOP) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("Bar Develop.");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_PICKPOINT) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("Pick Point");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_BUNKPOINT) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("Bunk Point");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_FACEOFSUPPORT) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("FoS");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_CLOSURE) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("CP");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_SECTCHANGE_TRANSITION) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("ST");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_INTERMEDIATE_PIER) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("IP");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_STIRRUP_ZONE) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("SZB");
+      nAttributes++;
+   }
+
+   if ( HasAttribute(POI_TEMPSUPPORT) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("ITS");
+      nAttributes++;
+   }
+
+   Uint16 tenpt = IsTenthPoint(reference);
+   if (0 < tenpt)
+   {
+      ATLASSERT(tenpt<12);
+      // for the sake of efficiency, dont use a stringstream
+      LPCTSTR release_label_markup[]={_T("err"),_T("0.0L<sub>s</sub>"),_T("0.1L<sub>s</sub>"),_T("0.2L<sub>s</sub>"),_T("0.3L<sub>s</sub>"),_T("0.4L<sub>s</sub>"),
+         _T("0.5L<sub>s</sub>"),_T("0.6L<sub>s</sub>"),_T("0.7L<sub>s</sub>"),_T("0.8L<sub>s</sub>"),_T("0.9L<sub>s</sub>"),_T("1.0L<sub>s</sub>")};
+
+      LPCTSTR release_label[]={_T("err"),_T("0.0Ls"),_T("0.1Ls"),_T("0.2Ls"),_T("0.3Ls"),_T("0.4Ls"),
+         _T("0.5Ls"),_T("0.6Ls"),_T("0.7Ls"),_T("0.8Ls"),_T("0.9Ls"),_T("1.0Ls")};
+
+      LPCTSTR girder_label_markup[]={_T("err"),_T("0.0L<sub>g</sub>"),_T("0.1L<sub>g</sub>"),_T("0.2L<sub>g</sub>"),_T("0.3L<sub>g</sub>"),_T("0.4L<sub>g</sub>"),
+         _T("0.5L<sub>g</sub>"),_T("0.6L<sub>g</sub>"),_T("0.7L<sub>g</sub>"),_T("0.8L<sub>g</sub>"),_T("0.9L<sub>g</sub>"),_T("1.0L<sub>g</sub>")};
+
+      LPCTSTR girder_label[]={_T("err"),_T("0.0Lg"),_T("0.1Lg"),_T("0.2Lg"),_T("0.3Lg"),_T("0.4Lg"),
+         _T("0.5Lg"),_T("0.6Lg"),_T("0.7Lg"),_T("0.8Lg"),_T("0.9Lg"),_T("1.0Lg")};
+
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      if ( sysFlags<PoiAttributeType>::IsSet(reference,POI_ERECTED_SEGMENT) )
+         strAttrib += std::_tstring((bIncludeMarkup ? girder_label_markup[tenpt] : girder_label[tenpt]));
+      else
+         strAttrib += std::_tstring((bIncludeMarkup ? release_label_markup[tenpt] : release_label[tenpt]));
+
+      nAttributes++;
+   }
+
+   return strAttrib;
+}
+
 #if defined _DEBUG
 bool pgsPointOfInterest::AssertValid() const
 {
@@ -632,8 +867,11 @@ void pgsPointOfInterest::UpdateAttributeString()
    if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_INTERMEDIATE_PIER) )
       os << _T("POI_INTERMEDIATE_PIER | ");
 
-   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_PIER) )
-      os << _T("POI_PIER | ");
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_BOUNDARY_PIER) )
+      os << _T("POI_BOUNDARY_PIER | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_ABUTMENT) )
+      os << _T("POI_ABUTMENT | ");
 
    if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_STIRRUP_ZONE) )
       os << _T("POI_STIRRUP_ZONE | ");

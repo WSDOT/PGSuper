@@ -42,6 +42,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\Intervals.h>
 
 #include <PsgLib\GirderLibraryEntry.h>
 
@@ -255,11 +256,13 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
+                                                                                   m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                    harpFill,
                                                                                    pParent->m_Segment.Strands.HsoEndMeasurement, 
                                                                                    pParent->m_Segment.Strands.HpOffsetAtEnd);
 
             Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(pParent->m_strGirderName.c_str(), 
+                                                                                       m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                        harpFill,
                                                                                        hsoCGFROMTOP, 
                                                                                        absol_offset);
@@ -294,11 +297,13 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(),
+                                                                                  m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                   harpFill,
                                                                                   pParent->m_Segment.Strands.HsoHpMeasurement, 
                                                                                   pParent->m_Segment.Strands.HpOffsetAtHp);
 
             Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(pParent->m_strGirderName.c_str(), 
+                                                                                      m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                       harpFill, 
                                                                                       hsoCGFROMBOTTOM, absol_offset);
 
@@ -345,12 +350,14 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
+                                                                                   m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                    harpFill,
                                                                                    pParent->m_Segment.Strands.HsoEndMeasurement, 
                                                                                    pParent->m_Segment.Strands.HpOffsetAtEnd);
 
             Float64 max_end_offset, min_end_offset;
             pStrandGeometry->GetHarpedEndOffsetBoundsEx(pParent->m_strGirderName.c_str(), 
+                                                        m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                         harpFill, &min_end_offset, &max_end_offset);
 
             if( absol_offset > max_end_offset+TOLERANCE )
@@ -374,12 +381,14 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(), 
+                                                                          m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                           harpFill,
                                                                           pParent->m_Segment.Strands.HsoHpMeasurement, 
                                                                           pParent->m_Segment.Strands.HpOffsetAtHp);
 
             Float64 max_hp_offset, min_hp_offset;
             pStrandGeometry->GetHarpedHpOffsetBoundsEx(pParent->m_strGirderName.c_str(), 
+                                                       m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                        harpFill,
                                                        &min_hp_offset, &max_hp_offset);
 
@@ -463,6 +472,41 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+
+   // Get key segment dimensions
+   IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
+
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_RELEASED_SEGMENT | POI_0L);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiStart(vPoi.front());
+
+   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_RELEASED_SEGMENT | POI_10L);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiEnd(vPoi.front());
+
+   m_HgStart = pSectProp->GetHg(intervalIdx,poiStart);
+   m_HgEnd   = pSectProp->GetHg(intervalIdx,poiEnd);
+
+   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_HARPINGPOINT);
+   if ( 0 < vPoi.size() )
+   {
+      ATLASSERT(vPoi.size() == 1 || vPoi.size() == 2);
+      pgsPointOfInterest poiHp1(vPoi.front());
+      pgsPointOfInterest poiHp2(vPoi.back());
+
+      m_HgHp1 = pSectProp->GetHg(intervalIdx,poiHp1);
+      m_HgHp2 = pSectProp->GetHg(intervalIdx,poiHp2);
+   }
+   else
+   {
+      m_HgHp1 = m_HgStart;
+      m_HgHp2 = m_HgEnd;
+   }
+
 
    // This value is used throughout
    m_bAreHarpedStrandsForcedStraight = pStrandGeom->GetAreHarpedStrandsForcedStraightEx(pParent->m_strGirderName.c_str());
@@ -1373,13 +1417,15 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
                                         pStrandGeom->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Harped, Nh);
 
       Float64 lowRange, highRange;
-      pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeEnd(pParent->m_strGirderName.c_str(), harpFill, measureType, &lowRange, &highRange);
+      pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeEnd(pParent->m_strGirderName.c_str(),
+                                                                 m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                 harpFill, measureType, &lowRange, &highRange);
 
       lowRange  = ::ConvertFromSysUnits(lowRange, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       highRange = ::ConvertFromSysUnits(highRange,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
-      Float64 low  = min(lowRange, highRange);
-      Float64 high = max(lowRange, highRange);
+      Float64 low  = Min(lowRange, highRange);
+      Float64 high = Max(lowRange, highRange);
 
       if ( IS_SI_UNITS(pDisplayUnits) )
          str.Format(_T("(Valid Range %.1f to %.1f)"), low, high);
@@ -1409,14 +1455,14 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
                                         pStrandGeom->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Harped, Nh);
 
       Float64 lowRange, highRange;
-      pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeHp(pParent->m_strGirderName.c_str(), harpFill, measureType, &lowRange, &highRange);
+      pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeHp(pParent->m_strGirderName.c_str(), m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, harpFill, measureType, &lowRange, &highRange);
 
 
       lowRange = ::ConvertFromSysUnits(lowRange,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       highRange = ::ConvertFromSysUnits(highRange,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
-      Float64 low  = min(lowRange, highRange);
-      Float64 high = max(lowRange, highRange);
+      Float64 low  = Min(lowRange, highRange);
+      Float64 high = Max(lowRange, highRange);
 
       if ( IS_SI_UNITS(pDisplayUnits) )
          str.Format(_T("(Valid Range %.1f to %.1f)"), low, high);
@@ -1470,8 +1516,9 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
 
       ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
-      offset = pStrandGeom->ConvertHarpedOffsetHp(pParent->m_strGirderName.c_str(), harpFill, 
-                                                  m_OldHpMeasureType, offset, measureType);
+      offset = pStrandGeom->ConvertHarpedOffsetHp(pParent->m_strGirderName.c_str(), 
+                                                  m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                  harpFill,  m_OldHpMeasureType, offset, measureType);
       
       strOffset = ::FormatDimension(offset,pDisplayUnits->GetComponentDimUnit(),false);
       pWnd->SetWindowText(strOffset);
@@ -1506,8 +1553,9 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
 
       ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
-      offset = pStrandGeom->ConvertHarpedOffsetEnd(pParent->m_strGirderName.c_str(), harpFill,
-                                                   m_OldEndMeasureType, offset, measureType);
+      offset = pStrandGeom->ConvertHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
+                                                   m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                   harpFill,  m_OldEndMeasureType, offset, measureType);
       
       strOffset = FormatDimension(offset,pDisplayUnits->GetComponentDimUnit(),false);
       pWnd->SetWindowText(strOffset);

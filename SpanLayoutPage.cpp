@@ -61,11 +61,18 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CSpanLayoutPage)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
+   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      pParent->m_BridgeDesc.SetSpanLength(pParent->m_pSpanData->GetIndex(),m_SpanLength);
+   }
 }
 
 
@@ -77,9 +84,9 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanLayoutPage message handlers
-void CSpanLayoutPage::Init(const CSpanData2* pSpan)
+void CSpanLayoutPage::Init(CSpanDetailsDlg* pParent)
 {
-   m_SpanLength = pSpan->GetSpanLength();
+   m_SpanLength = pParent->m_pSpanData->GetSpanLength();
 }
 
 BOOL CSpanLayoutPage::OnInitDialog() 
@@ -94,8 +101,8 @@ BOOL CSpanLayoutPage::OnInitDialog()
    const CSpanData2* pPrevSpan = pParent->m_pSpanData->GetPrevPier()->GetPrevSpan();
    const CSpanData2* pNextSpan = pParent->m_pSpanData->GetNextPier()->GetNextSpan();
 
-   CString strPrevPierType(pPrevSpan ? _T("Pier") : _T("Abutment"));
-   CString strNextPierType(pNextSpan ? _T("Pier") : _T("Abutment"));
+   CString strPrevPierType(pParent->m_pSpanData->GetPrevPier()->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   CString strNextPierType(pParent->m_pSpanData->GetNextPier()->IsAbutment() ? _T("Abutment") : _T("Pier"));
 
    CString strSpanLabel;
    strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(spanIdx));
@@ -111,11 +118,6 @@ BOOL CSpanLayoutPage::OnInitDialog()
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-Float64 CSpanLayoutPage::GetSpanLength()
-{
-   return m_SpanLength;
 }
 
 void CSpanLayoutPage::OnHelp() 

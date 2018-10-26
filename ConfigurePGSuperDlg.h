@@ -40,6 +40,7 @@ class CConfigurePGSuperDlg : public CDialog
 // Construction
 public:
 	CConfigurePGSuperDlg(LPCTSTR lpszAppName,LPCTSTR lpszTemplateExt,BOOL bFirstRun,CWnd* pParent = NULL);   // standard constructor
+   virtual ~CConfigurePGSuperDlg();
 
 // Dialog Data
 	//{{AFX_DATA(CConfigurePGSuperDlg)

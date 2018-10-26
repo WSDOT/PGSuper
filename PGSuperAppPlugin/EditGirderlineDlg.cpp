@@ -9,7 +9,7 @@
 
 
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 #include <IFace\Project.h>
 
 // CEditGirderlineDlg dialog
@@ -49,6 +49,18 @@ void DDX_PTData(CDataExchange* pDX,INT nIDC,CPTData* ptData)
    if ( pDX->m_bSaveAndValidate )
    {
       *ptData = pGrid->GetPTData();
+
+      // If Pjack is defined with a user-input force, the value of Pj
+      // becomes the last Pj input by the user. Update the data structure here.
+      DuctIndexType nDucts = ptData->GetDuctCount();
+      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      {
+         CDuctData* pDuct = ptData->GetDuct(ductIdx);
+         if ( !pDuct->bPjCalc )
+         {
+            pDuct->LastUserPj = pDuct->Pj;
+         }
+      }
    }
    else
    {
@@ -80,12 +92,12 @@ CEditGirderlineDlg::CEditGirderlineDlg(const CGirderKey& girderKey,CWnd* pParent
       m_TendonStressingEvent.push_back(eventIdx);
    }
 
-   IndexType nClosurePours = m_Girder.GetClosurePourCount();
-   for ( IndexType idx = 0; idx < nClosurePours; idx++ )
+   IndexType nClosureJoints = m_Girder.GetClosureJointCount();
+   for ( IndexType idx = 0; idx < nClosureJoints; idx++ )
    {
       const CPrecastSegmentData* pSegment = m_Girder.GetSegment(idx);
       SegmentIDType segID = pSegment->GetID();
-      EventIndexType eventIdx = pTimelineMgr->GetCastClosurePourEventIndex(segID);
+      EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(segID);
       m_CastClosureEvent.push_back(eventIdx);
    }
 }
@@ -123,12 +135,12 @@ void CEditGirderlineDlg::DoDataExchange(CDataExchange* pDX)
          pTimelineMgr->SetStressTendonEventByIndex(m_GirderKey,ductIdx,m_TendonStressingEvent[ductIdx]);
       }
 
-      SegmentIndexType nCP = m_Girder.GetClosurePourCount();
+      SegmentIndexType nCP = m_Girder.GetClosureJointCount();
       for ( SegmentIndexType cpIdx = 0; cpIdx < nCP; cpIdx++ )
       {
-         const CClosurePourData* pCP = m_Girder.GetClosurePour(cpIdx);
+         const CClosureJointData* pCP = m_Girder.GetClosureJoint(cpIdx);
          IDType cpID = pCP->GetID();
-         pTimelineMgr->SetCastClosurePourEventByIndex(cpID,m_CastClosureEvent[cpIdx]);
+         pTimelineMgr->SetCastClosureJointEventByIndex(cpID,m_CastClosureEvent[cpIdx]);
       }
 
       int result = pTimelineMgr->Validate();

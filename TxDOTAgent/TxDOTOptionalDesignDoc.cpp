@@ -496,8 +496,8 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(bool isNewFileFromTemplate)
 BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName, bool isNewFileFromTemplate)
 {
    // Read girder type, connection types, and pgsuper template file name
-   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry;
-   if(!::ParseTemplateFile(lpszPathName, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry))
+   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName;
+   if(!::DoParseTemplateFile(lpszPathName, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName))
    {
       ASSERT(0);
       return FALSE;
@@ -1054,59 +1054,83 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    Float64 spacing = m_ProjectData.GetBeamSpacing();
    pgsTypes::SupportedBeamSpacings sbs = factory->GetSupportedBeamSpacings();
 
-   // Use uniform spread spacing if it is available
-   if (std::find(sbs.begin(), sbs.end(), pgsTypes::sbsUniform) != sbs.end())
-   {
-      // spread uniform
-      Float64 gdr_width = pGdrEntry->GetBeamWidth(pgsTypes::metStart);
-      if (spacing < gdr_width)
+   // Determine which type of beam spacing to use
+   bool is_spread = std::find(sbs.begin(), sbs.end(), pgsTypes::sbsUniform) != sbs.end();
+   bool is_adjacent = std::find(sbs.begin(), sbs.end(), pgsTypes::sbsUniformAdjacent) != sbs.end();
+
+   if (!is_spread && !is_adjacent)
       {
-         gdr_width = ::ConvertFromSysUnits(gdr_width, unitMeasure::Feet);
          TxDOTBrokerRetrieverException exc;
-         exc.Message.Format(_T("The girder spacing must be greater than the girder width of %f feet"),gdr_width);
+      exc.Message = _T("Fatal Error - Selected girder type must support uniform spread or adjacent spacing.");
          throw exc;
       }
 
-      Float64 sd = m_ProjectData.GetSlabThickness();
-      sd = ::ConvertFromSysUnits(sd, unitMeasure::Inch);
-      if (sd < 4.0)
+   // Spacing cannot be less than girder width for any case
+   const Float64 Tol=0.001; // millimeter
+   Float64 gdr_width = pGdrEntry->GetBeamWidth(pgsTypes::metStart);
+   if (spacing < gdr_width+Tol)
       {
+      gdr_width = ::ConvertFromSysUnits(gdr_width, unitMeasure::Feet);
          TxDOTBrokerRetrieverException exc;
-         exc.Message = _T("Slab thickness for spread beams must be 4 inches or greater.");
+      exc.Message.Format(_T("The girder spacing must be greater than or equal to the girder width of %f feet"),gdr_width);
          throw exc;
       }
 
-      bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniform);
-      bridgeDesc.SetGirderSpacing(spacing);
-      pDeck->DeckType = pgsTypes::sdtCompositeCIP;
-   }
-   else if (std::find(sbs.begin(), sbs.end(), pgsTypes::sbsUniformAdjacent) != sbs.end())
+   if (is_adjacent)
    {
-      // Otherwise, adjacent uniform. Get joint width limit
+      // see if we can space girder adjacently uniform within allowable joint width
       Float64 sd = m_ProjectData.GetSlabThickness();
       pgsTypes::SupportedDeckType sdt = sd > 0 ? pgsTypes::sdtCompositeOverlay : pgsTypes::sdtNone;
       Float64 minSpc, maxSpc;
       factory->GetAllowableSpacingRange(pGdrEntry->GetDimensions(), sdt, pgsTypes::sbsUniformAdjacent, &minSpc, &maxSpc);
  
-      const Float64 Tol=0.01; // centimeter
-      if (spacing < minSpc-Tol || spacing > maxSpc+Tol)
+      if (spacing > maxSpc+Tol)
+      {
+         if(is_spread)
+         {
+            // spacing to big to be adjacent. continue to spread
+            ;
+         }
+         else
+         {
+            maxSpc = ::ConvertFromSysUnits(maxSpc, unitMeasure::Feet);
+            TxDOTBrokerRetrieverException exc;
+            exc.Message.Format(_T("For an adjacent-only beam, allowable Beam Spacing may not be greater than %f feet"),maxSpc);
+            throw exc;
+         }
+      }
+      else if (spacing < minSpc-Tol)
       {
          minSpc = ::ConvertFromSysUnits(minSpc, unitMeasure::Feet);
-         maxSpc = ::ConvertFromSysUnits(maxSpc, unitMeasure::Feet);
          TxDOTBrokerRetrieverException exc;
-         exc.Message.Format(_T("Allowable Beam Spacing is bounded by the beam width plus allowed joint spacing. Value must be between a minimum of %f feet and a maximum of %f feet"),minSpc, maxSpc);
+         exc.Message.Format(_T("Beam Spacing may not be less than %f feet"),minSpc);
          throw exc;
       }
-
+      else
+      {
+         is_spread = false;
       bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniformAdjacent);
       bridgeDesc.SetGirderSpacing(spacing-minSpc); // input value is joint width
       pDeck->DeckType = sdt;
    }
-   else
+   }
+
+   // Use uniform spread spacing if it is available
+   if (is_spread)
+   {
+      // spread uniform
+      Float64 sd = m_ProjectData.GetSlabThickness();
+      sd = ::ConvertFromSysUnits(sd, unitMeasure::Inch);
+      if (sd < 4.0)
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message = _T("Fatal Error - Selected girder type must support uniform spread or adjacent spacing.");
+         exc.Message = _T("Slab thickness for spread beams must be 4 inches or greater.");
       throw exc;
+   }
+
+      bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniform);
+      bridgeDesc.SetGirderSpacing(spacing);
+      pDeck->DeckType = pgsTypes::sdtCompositeCIP;
    }
 
    // connections
@@ -1240,7 +1264,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wncdc.m_Description = _T("w non-comp, dc");
    wncdc.m_Type = UserLoads::Uniform;
    wncdc.m_WStart = w;
-   wncdc.m_EventIdx = pBridgeDesc->GetCastDeckEventIndex();/* pgsTypes::BridgeSite1;*/
+   wncdc.m_EventIndex = pBridgeDesc->GetCastDeckEventIndex();/* pgsTypes::BridgeSite1;*/
    wncdc.m_LoadCase = UserLoads::DC;
    wncdc.m_Fractional = true;
    wncdc.m_StartLocation = 0.0;
@@ -1259,7 +1283,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wcdc.m_Description = _T("w comp, dc");
    wcdc.m_Type = UserLoads::Uniform;
    wcdc.m_WStart = w;
-   wcdc.m_EventIdx = pBridgeDesc->GetRailingSystemLoadEventIndex();/* pgsTypes::BridgeSite2;*/
+   wcdc.m_EventIndex = pBridgeDesc->GetRailingSystemLoadEventIndex();/* pgsTypes::BridgeSite2;*/
    wcdc.m_LoadCase = UserLoads::DC;
    wcdc.m_Fractional = true;
    wcdc.m_StartLocation = 0.0;

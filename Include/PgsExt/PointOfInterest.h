@@ -68,7 +68,7 @@ typedef Uint64 PoiAttributeType;
 #define POI_PICKPOINT              0x0000100000000000 // POI at lifting pick point
 #define POI_BUNKPOINT              0x0000080000000000 // POI at hauling bunk point
 #define POI_FACEOFSUPPORT          0x0000040000000000 // POI at face of support
-#define POI_CLOSURE                0x0000020000000000 // POI at center of closure pour
+#define POI_CLOSURE                0x0000020000000000 // POI at center of closure joint
 // Section Changes
 #define POI_SECTCHANGE_TRANSITION  0x0000010000000000
 #define POI_SECTCHANGE_RIGHTFACE   0x0000008000000000
@@ -77,15 +77,15 @@ typedef Uint64 PoiAttributeType;
 // intermediate pier and temporary supports
 #define POI_TEMPSUPPORT            0x0000002000000000
 #define POI_INTERMEDIATE_PIER      0x0000001000000000 // POI at a pier that occurs between the ends of a segment
-#define POI_PIER                   0x0000000800000000 // POI at a pier that occurs between groups
-#define POI_STIRRUP_ZONE           0x0000000400000000 // Stirrup Zone Boundary
+#define POI_BOUNDARY_PIER          0x0000000800000000 // POI at a pier that occurs between groups
+#define POI_ABUTMENT               0x0000000400000000 // POI at CL Bearing at start/end abutment
+#define POI_STIRRUP_ZONE           0x0000000200000000 // Stirrup Zone Boundary
 
 // The following POI attributes are undefined/unused.
 // If a new attribute is needed, take it from this list
 // starting with the highest value.
 // **** NOTE ****
 // If a new POI is defined, don't forget to update pgsPoiMgr::AndFind and pgsPoiMgr::OrFind
-//#define POI_UNDEFINED23            0x0000000200000000
 //#define POI_UNDEFINED22            0x0000000100000000
 //#define POI_UNDEFINED21            0x0000000080000000
 //#define POI_UNDEFINED20            0x0000000040000000
@@ -124,7 +124,7 @@ typedef Uint64 PoiAttributeType;
 
 #define POI_ALLSPECIAL        POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD | \
                               POI_MIDSPAN | POI_H | POI_15H | POI_PSXFER | POI_PSDEV | POI_DEBOND |  \
-                              POI_BARCUTOFF | POI_FACEOFSUPPORT | POI_SECTCHANGE | POI_INTERMEDIATE_PIER | POI_PIER | POI_TEMPSUPPORT
+                              POI_BARCUTOFF | POI_FACEOFSUPPORT | POI_SECTCHANGE | POI_INTERMEDIATE_PIER | POI_BOUNDARY_PIER | POI_TEMPSUPPORT
                              // note PICKPOINT and BUNKPOINT skipped on purpose
 
 
@@ -276,8 +276,14 @@ public:
    // Removes attributes from this POI.
    void RemoveAttributes(PoiAttributeType attrib);
 
+   // returns the reference attribute of this POI
    PoiAttributeType GetReference() const;
+
+   // returns all of the reference attributes encoded in attrib
    static PoiAttributeType GetReference(PoiAttributeType attrib);
+
+   // returns true if attrib is one of the reference attribute types
+   static bool IsReferenceAttribute(PoiAttributeType attrib);
 
    // prevents POI merging
    bool CanMerge() const
@@ -330,6 +336,10 @@ public:
    bool HasAttribute(PoiAttributeType attribute) const;
 
    bool AtSamePlace(const pgsPointOfInterest& other) const;
+
+   // Returns a string of attribute codes.
+   std::_tstring GetAttributes(PoiAttributeType reference,bool bIncludeMarkup) const;
+
 
 protected:
    //------------------------------------------------------------------------

@@ -191,6 +191,7 @@ BEGIN_MESSAGE_MAP(CBridgeDescRailingSystemPage, CPropertyPage)
 	ON_COMMAND(ID_HELP, OnHelp)
    ON_WM_CTLCOLOR()
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
+   ON_CBN_DROPDOWN(IDC_EVENT, OnEventChanging)
    ON_CBN_SELCHANGE(IDC_EVENT, OnEventChanged)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -964,47 +965,78 @@ void CBridgeDescRailingSystemPage::FillEventList()
       pcbEvent->SetCurSel(eventIdx);
 }
 
+void CBridgeDescRailingSystemPage::OnEventChanging()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DECK_EVENT);
+   m_PrevEventIdx = pCB->GetCurSel();
+}
 
 void CBridgeDescRailingSystemPage::OnEventChanged()
 {
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DECK_EVENT);
    int curSel = pCB->GetCurSel();
-   EventIndexType idx = (EventIndexType)pCB->GetItemData(curSel);
-   if ( idx == CREATE_TIMELINE_EVENT )
+   EventIndexType eventIdx = (EventIndexType)pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
    {
-      EventIndexType eventIdx = CreateEvent();
-      if (eventIdx != INVALID_INDEX)
+      eventIdx = CreateEvent();
+   }
+
+   if (eventIdx != INVALID_INDEX)
+   {
+      CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+      bool bDone = false;
+      bool bAdjustTimeline = false;
+      while ( !bDone )
       {
-         CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+         int result = pParent->m_BridgeDesc.GetTimelineManager()->SetCastDeckEventByIndex(eventIdx,bAdjustTimeline);
+         if ( result == TLM_SUCCESS )
+         {
+            bDone = true;
+         }
+         else
+         {
+            CString strProblem;
+            if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
+               strProblem = _T("This event begins before the activities in the previous event have completed.");
+            else
+               strProblem = _T("The activities in this event end after the next event begins.");
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-         pIBridgeDesc->SetRailingSystemLoadEventByIndex(eventIdx);
+            CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
-         FillEventList();
+            CString strMsg;
+            strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
+            if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
+            {
+               bAdjustTimeline = true;
+            }
+            else
+            {
+               return;
+            }
 
-         pCB->SetCurSel((int)idx);
-         m_EventIndex = eventIdx;
+         }
       }
-      else
-      {
-         pCB->SetCurSel((int)m_EventIndex);
-      }
+
+      FillEventList();
+
+      pCB->SetCurSel((int)eventIdx);
+   }
+   else
+   {
+      pCB->SetCurSel((int)m_PrevEventIdx);
    }
 }
 
 EventIndexType CBridgeDescRailingSystemPage::CreateEvent()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   CTimelineEventDlg dlg(pParent->m_BridgeDesc.GetTimelineManager(),FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+      EventIndexType eventIdx;
+      int result = pParent->m_BridgeDesc.GetTimelineManager()->AddTimelineEvent(dlg.m_TimelineEvent,true,&eventIdx);
+      return eventIdx;
   }
 
    return INVALID_INDEX;

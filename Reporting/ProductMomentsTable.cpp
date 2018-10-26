@@ -219,8 +219,8 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
       {
          EventIndexType left_event_index, right_event_index;
          pBridge->GetContinuityEventIndex(pierIdx,&left_event_index,&right_event_index);
-         continuityEventIdx = _cpp_min(continuityEventIdx,left_event_index);
-         continuityEventIdx = _cpp_min(continuityEventIdx,right_event_index);
+         continuityEventIdx = Min(continuityEventIdx,left_event_index);
+         continuityEventIdx = Min(continuityEventIdx,right_event_index);
       }
    }
    *pContinuityInterval = pIntervals->GetInterval(continuityEventIdx);
@@ -391,7 +391,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
    for ( GroupIndexType grpIdx = startGroup; grpIdx < nGroups; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = min(girderKey.girderIndex,nGirders-1);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
       CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );

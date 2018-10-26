@@ -96,11 +96,14 @@ interface IIntervals : IUnknown
    // returns the index of the interval when temporary strands are removed from a specific segment
    virtual IntervalIndexType GetTemporaryStrandRemovalInterval(const CSegmentKey& segmentKey) = 0;
 
-   // returns the index of the interval when a closure pour is cast
-   virtual IntervalIndexType GetCastClosurePourInterval(const CClosureKey& closureKey) = 0;
+   // returns the index of the interval when a closure joint is cast
+   virtual IntervalIndexType GetCastClosureJointInterval(const CClosureKey& closureKey) = 0;
 
-   // retuns the interval when a closure pour becomes composite with the girder
-   virtual IntervalIndexType GetCompositeClosurePourInterval(const CClosureKey& closureKey) = 0;
+   // retuns the interval when a closure joint becomes composite with the girder
+   virtual IntervalIndexType GetCompositeClosureJointInterval(const CClosureKey& closureKey) = 0;
+
+   // returns the interval when continuity occurs at a pier
+   virtual void GetContinuityInterval(PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead) = 0;
 
    // returns the index of the interval when the deck and diaphragms are cast
    // this is the replacement for pgsTypes::BridgeSite1
@@ -126,6 +129,14 @@ interface IIntervals : IUnknown
    // returns the index of the interval when the railing system is constructed
    // this is the same as pgsTypes::BridgeSite2 for pre version 3.0 PGSuper projects
    virtual IntervalIndexType GetInstallRailingSystemInterval() = 0;
+
+   // returns the index of the interval when the first tendon is stressed
+   // note that this tendon in all girders in the group are assumed to be stressed at the same time
+   virtual IntervalIndexType GetStressFirstTendonInterval(const CGirderKey& girderKey) = 0;
+
+   // returns the index of the interval when the last tendon is stressed
+   // note that this tendon in all girders in the group are assumed to be stressed at the same time
+   virtual IntervalIndexType GetStressLastTendonInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when the specified tendon is stressed
    // note that this tendon in all girders in the group are assumed to be stressed at the same time

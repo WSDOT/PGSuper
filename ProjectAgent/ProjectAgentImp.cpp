@@ -373,9 +373,13 @@ CProjectAgentImp::CProjectAgentImp()
    m_AfterSIDLLosses               = m_ShippingLosses;
    m_FinalLosses                   = m_ShippingLosses;
 
-   m_Dset                = ::ConvertToSysUnits(0.375,unitMeasure::Inch);
-   m_WobbleFriction      = ::ConvertToSysUnits(0.0002,unitMeasure::PerFeet);
-   m_FrictionCoefficient = 0.25;
+   m_Dset_PT                = ::ConvertToSysUnits(0.375,unitMeasure::Inch);
+   m_WobbleFriction_PT      = ::ConvertToSysUnits(0.0002,unitMeasure::PerFeet);
+   m_FrictionCoefficient_PT = 0.25;
+
+   m_Dset_TTS                = ::ConvertToSysUnits(0.375,unitMeasure::Inch);
+   m_WobbleFriction_TTS      = ::ConvertToSysUnits(0.0002,unitMeasure::PerFeet);
+   m_FrictionCoefficient_TTS = 0.25;
 }
 
 CProjectAgentImp::~CProjectAgentImp()
@@ -2583,10 +2587,16 @@ HRESULT CProjectAgentImp::LossesProc(IStructuredSave* pSave,IStructuredLoad* pLo
       }
 
       pSave->BeginUnit(_T("PostTensioning"),1.0);
-      pSave->put_Property(_T("AnchorSet"),          CComVariant(pObj->m_Dset));
-      pSave->put_Property(_T("WobbleFriction"),     CComVariant(pObj->m_WobbleFriction));
-      pSave->put_Property(_T("FrictionCoefficient"),CComVariant(pObj->m_FrictionCoefficient));
+      pSave->put_Property(_T("AnchorSet"),          CComVariant(pObj->m_Dset_PT));
+      pSave->put_Property(_T("WobbleFriction"),     CComVariant(pObj->m_WobbleFriction_PT));
+      pSave->put_Property(_T("FrictionCoefficient"),CComVariant(pObj->m_FrictionCoefficient_PT));
       pSave->EndUnit(); // PostTensioning
+
+      pSave->BeginUnit(_T("TemporaryStrandPT"),1.0);
+      pSave->put_Property(_T("AnchorSet"),          CComVariant(pObj->m_Dset_TTS));
+      pSave->put_Property(_T("WobbleFriction"),     CComVariant(pObj->m_WobbleFriction_TTS));
+      pSave->put_Property(_T("FrictionCoefficient"),CComVariant(pObj->m_FrictionCoefficient_TTS));
+      pSave->EndUnit(); // TemporaryStrandPT
    }
    else
    {
@@ -2639,15 +2649,39 @@ HRESULT CProjectAgentImp::LossesProc(IStructuredSave* pSave,IStructuredLoad* pLo
          
          var.vt = VT_R8;
          pLoad->get_Property(_T("AnchorSet"),&var);
-         pObj->m_Dset = var.dblVal;
+         pObj->m_Dset_PT = var.dblVal;
 
          pLoad->get_Property(_T("WobbleFriction"),&var);
-         pObj->m_WobbleFriction = var.dblVal;
+         pObj->m_WobbleFriction_PT = var.dblVal;
 
          pLoad->get_Property(_T("FrictionCoefficient"),&var);
-         pObj->m_FrictionCoefficient = var.dblVal;
+         pObj->m_FrictionCoefficient_PT = var.dblVal;
 
          pLoad->EndUnit(); // PostTensioning
+
+         // added in version 6
+         if ( 5 < version )
+         {
+            pLoad->BeginUnit(_T("TemporaryStrandPT"));
+            
+            var.vt = VT_R8;
+            pLoad->get_Property(_T("AnchorSet"),&var);
+            pObj->m_Dset_TTS = var.dblVal;
+
+            pLoad->get_Property(_T("WobbleFriction"),&var);
+            pObj->m_WobbleFriction_TTS = var.dblVal;
+
+            pLoad->get_Property(_T("FrictionCoefficient"),&var);
+            pObj->m_FrictionCoefficient_TTS = var.dblVal;
+
+            pLoad->EndUnit(); // TemporaryStrandPT
+         }
+         else
+         {
+            pObj->m_Dset_TTS                = pObj->m_Dset_PT;
+            pObj->m_WobbleFriction_TTS      = pObj->m_WobbleFriction_PT;
+            pObj->m_FrictionCoefficient_TTS = pObj->m_FrictionCoefficient_PT;
+         }
       }
    }
 
@@ -3447,7 +3481,7 @@ bool CProjectAgentImp::AssertValid() const
 }
 #endif // _DEBUG
 
-BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),5.0)
+BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),6.0)
    BEGIN_UNIT(_T("ProjectProperties"),_T("Project Properties"),1.0)
       PROPERTY(_T("BridgeName"),SDT_STDSTRING, m_BridgeName )
       PROPERTY(_T("BridgeId"),  SDT_STDSTRING, m_BridgeId )
@@ -3773,7 +3807,7 @@ void CProjectAgentImp::ReleaseGirderLibraryEntries()
    if ( m_pLibMgr )
    {
       // girder entry
-      const GirderLibrary&  girderLibrary = m_pLibMgr->GetGirderLibrary();
+      const GirderLibrary& girderLibrary = m_pLibMgr->GetGirderLibrary();
       if (m_BridgeDescription.GetGirderLibraryEntry() != 0)
       {
          release_library_entry( &m_LibObserver,
@@ -3848,13 +3882,13 @@ void CProjectAgentImp::VerifyRebarGrade()
                pSegment->ShearData.ShearBarGrade = matRebar::Grade60;
             }
 
-            CClosurePourData* pClosure = pSegment->GetRightClosure();
+            CClosureJointData* pClosure = pSegment->GetRightClosure();
             if ( pClosure )
             {
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == matRebar::Grade100 )
                {
                   CString strMsg;
-                  strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Pour %d has been changed to %s"),
+                  strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
                                  lrfdVersionMgr::GetCodeString().c_str(),
                                  lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
@@ -3869,7 +3903,7 @@ void CProjectAgentImp::VerifyRebarGrade()
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == matRebar::Grade100 )
                {
                   CString strMsg;
-                  strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Pour %d has been changed to %s"),
+                  strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
                                  lrfdVersionMgr::GetCodeString().c_str(),
                                  lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
@@ -3945,9 +3979,13 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       m_AfterSIDLLosses               = temp_manager.m_AfterSIDLLosses;
       m_FinalLosses                   = temp_manager.m_FinalLosses;
 
-      m_Dset                = temp_manager.m_DSet;
-      m_WobbleFriction      = temp_manager.m_WobbleFriction;
-      m_FrictionCoefficient = temp_manager.m_FrictionCoefficient;
+      m_Dset_PT                = temp_manager.m_DSet;
+      m_WobbleFriction_PT      = temp_manager.m_WobbleFriction;
+      m_FrictionCoefficient_PT = temp_manager.m_FrictionCoefficient;
+
+      m_Dset_TTS                = temp_manager.m_DSet;
+      m_WobbleFriction_TTS      = temp_manager.m_WobbleFriction;
+      m_FrictionCoefficient_TTS = temp_manager.m_FrictionCoefficient;
    }
    catch( sysXStructuredLoad& e )
    {
@@ -4061,7 +4099,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          Float64 topWidth, botWidth;
          gdrSection->get_TopWidth(&topWidth);
          gdrSection->get_BottomWidth(&botWidth);
-         Float64 width = _cpp_max(topWidth,botWidth);
+         Float64 width = Max(topWidth,botWidth);
          Float64 jointWidth = m_BridgeDescription.GetGirderSpacing() - width;
          jointWidth = IsZero(jointWidth) ? 0 : jointWidth;
 
@@ -4882,7 +4920,7 @@ void CProjectAgentImp::SetPrecastSegmentData(const CSegmentKey& segmentKey,const
    }
 }
 
-const CClosurePourData* CProjectAgentImp::GetClosurePourData(const CSegmentKey& closureKey)
+const CClosureJointData* CProjectAgentImp::GetClosureJointData(const CSegmentKey& closureKey)
 {
    const CGirderGroupData*   pGroup    = m_BridgeDescription.GetGirderGroup(closureKey.groupIndex);
    const CSplicedGirderData* pGirder   = pGroup->GetGirder(closureKey.girderIndex);
@@ -4890,21 +4928,21 @@ const CClosurePourData* CProjectAgentImp::GetClosurePourData(const CSegmentKey& 
    return pSegment->GetRightClosure();
 }
 
-void CProjectAgentImp::SetClosurePourData(const CSegmentKey& closureKey,const CClosurePourData& closure)
+void CProjectAgentImp::SetClosureJointData(const CSegmentKey& closureKey,const CClosureJointData& closure)
 {
    CGirderGroupData*    pGroup   = m_BridgeDescription.GetGirderGroup(closureKey.groupIndex);
    CSplicedGirderData*  pGirder  = pGroup->GetGirder(closureKey.girderIndex);
    CPrecastSegmentData* pSegment = pGirder->GetSegment(closureKey.segmentIndex);
-   CClosurePourData*    pClosure = pSegment->GetRightClosure();
+   CClosureJointData*    pClosure = pSegment->GetRightClosure();
 
-   // this method sets the right closure pour data... there is not a closure
+   // this method sets the right closure joint data... there is not a closure
    // at the right end of the last segment
    ATLASSERT(pGirder->GetSegmentCount()-1 != closureKey.segmentIndex);
 
    if ( *pClosure != closure )
    {
       // copy only data. don't alter ID or Index
-      pClosure->CopyClosurePourData(&closure);
+      pClosure->CopyClosureJointData(&closure);
       Fire_BridgeChanged();
    }
 }
@@ -5202,46 +5240,46 @@ EventIDType CProjectAgentImp::GetSegmentErectionEventID(const CSegmentKey& segme
    return m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventID(segID);
 }
 
-EventIndexType CProjectAgentImp::GetCastClosurePourEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx)
+EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx)
 {
-#pragma Reminder("BUG: Closure Pour referencing scheme doesn't fit")
+#pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
    SegmentIDType segID = pSegment->GetID();
 
-   return m_BridgeDescription.GetTimelineManager()->GetCastClosurePourEventIndex(segID);
+   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(segID);
 }
 
-EventIDType CProjectAgentImp::GetCastClosurePourEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx)
+EventIDType CProjectAgentImp::GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx)
 {
-#pragma Reminder("BUG: Closure Pour referencing scheme doesn't fit")
+#pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
    SegmentIDType segID = pSegment->GetID();
 
-   return m_BridgeDescription.GetTimelineManager()->GetCastClosurePourEventID(segID);
+   return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(segID);
 }
 
-void CProjectAgentImp::SetCastClosurePourEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx)
+void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx)
 {
-#pragma Reminder("BUG: Closure Pour referencing scheme doesn't fit")
+#pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
    SegmentIDType segID = pSegment->GetID();
 
-   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetCastClosurePourEventIndex(segID) )
+   if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(segID) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetCastClosurePourEventByIndex(segID,eventIdx);
+      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByIndex(segID,eventIdx);
       Fire_BridgeChanged();
    }
 }
 
-void CProjectAgentImp::SetCastClosurePourEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,IDType eventID)
+void CProjectAgentImp::SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,IDType eventID)
 {
-#pragma Reminder("BUG: Closure Pour referencing scheme doesn't fit")
+#pragma Reminder("BUG: Closure Joint referencing scheme doesn't fit")
    const CPrecastSegmentData* pSegment = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetSegment(closureIdx);
    SegmentIDType segID = pSegment->GetID();
 
-   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetCastClosurePourEventID(segID) )
+   if ( eventID != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(segID) )
    {
-      m_BridgeDescription.GetTimelineManager()->SetCastClosurePourEventByID(segID,eventID);
+      m_BridgeDescription.GetTimelineManager()->SetCastClosureJointEventByID(segID,eventID);
       Fire_BridgeChanged();
    }
 }
@@ -5510,13 +5548,13 @@ void CProjectAgentImp::SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::Pier
    }
 }
 
-void CProjectAgentImp::SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType)
+void CProjectAgentImp::SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType,EventIndexType castClosureEventIdx)
 {
    CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
-   ATLASSERT(pPier->IsInteriorPier());// this should be a boundary pier
+   ATLASSERT(pPier->IsInteriorPier());// this should not be a boundary pier
    if ( pPier->GetSegmentConnectionType() != connectionType )
    {
-      pPier->SetSegmentConnectionType(connectionType);
+      pPier->SetSegmentConnectionType(connectionType,castClosureEventIdx);
       Fire_BridgeChanged();
    }
 }
@@ -5569,9 +5607,9 @@ void CProjectAgentImp::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceTyp
    Fire_BridgeChanged(pHint);
 }
 
-void CProjectAgentImp::InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx)
+void CProjectAgentImp::InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType castClosureJointEventIdx)
 {
-   m_BridgeDescription.AddTemporarySupport(pTSData,erectionEventIdx,removalEventIdx);
+   m_BridgeDescription.AddTemporarySupport(pTSData,erectionEventIdx,removalEventIdx,castClosureJointEventIdx);
    Fire_BridgeChanged();
 }
 
@@ -5605,7 +5643,12 @@ void CProjectAgentImp::UseSameNumberOfGirdersInAllGroups(bool bUseSame)
 {
    if ( m_BridgeDescription.UseSameNumberOfGirdersInAllGroups() != bUseSame )
    {
+      ReleaseBridgeLibraryEntries();
+
       m_BridgeDescription.UseSameNumberOfGirdersInAllGroups(bUseSame);
+
+      UseBridgeLibraryEntries();
+
       Fire_BridgeChanged();
    }
 }
@@ -5621,7 +5664,9 @@ void CProjectAgentImp::SetGirderCount(GirderIndexType nGirders)
    {
       m_BridgeDescription.SetGirderCount(nGirders);
       if ( m_BridgeDescription.UseSameNumberOfGirdersInAllGroups() )
+      {
          Fire_BridgeChanged();
+      }
    }
 }
 
@@ -5655,7 +5700,9 @@ void CProjectAgentImp::SetGirderName(LPCTSTR strGirderName)
       UseBridgeLibraryEntries();
 
       if ( m_BridgeDescription.UseSameGirderForEntireBridge() )
+      {
          Fire_BridgeChanged();
+      }
    }
 }
 
@@ -5679,7 +5726,9 @@ void CProjectAgentImp::SetGirderSpacing(Float64 spacing)
    {
       m_BridgeDescription.SetGirderSpacing(spacing);
       if ( IsBridgeSpacing(m_BridgeDescription.GetGirderSpacingType()) )
+      {
          Fire_BridgeChanged();
+      }
    }
 }
 
@@ -5689,7 +5738,9 @@ void CProjectAgentImp::SetMeasurementType(pgsTypes::MeasurementType mt)
    {
       m_BridgeDescription.SetMeasurementType(mt);
       if ( IsBridgeSpacing(m_BridgeDescription.GetGirderSpacingType()) )
+      {
          Fire_BridgeChanged();
+      }
    }
 }
 
@@ -5705,7 +5756,9 @@ void CProjectAgentImp::SetMeasurementLocation(pgsTypes::MeasurementLocation ml)
    {
       m_BridgeDescription.SetMeasurementLocation(ml);
       if ( IsBridgeSpacing(m_BridgeDescription.GetGirderSpacingType()) )
+      {
          Fire_BridgeChanged();
+      }
    }
 }
 
@@ -6172,48 +6225,48 @@ void CProjectAgentImp::SetSegmentShearData(const CSegmentKey& segmentKey,const C
    }
 }
 
-std::_tstring CProjectAgentImp::GetClosurePourStirrupMaterial(const CClosureKey& closureKey) const
+std::_tstring CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closureKey) const
 {
-   const CShearData2* pShearData = GetClosurePourShearData(closureKey);
+   const CShearData2* pShearData = GetClosureJointShearData(closureKey);
    return lrfdRebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
 }
 
-void CProjectAgentImp::GetClosurePourStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade)
+void CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade)
 {
-   const CShearData2* pShearData = GetClosurePourShearData(closureKey);
+   const CShearData2* pShearData = GetClosureJointShearData(closureKey);
    type = pShearData->ShearBarType;
    grade = pShearData->ShearBarGrade;
 }
 
-void CProjectAgentImp::SetClosurePourStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosurePourData* pClosurePour = pSegment->GetRightClosure();
-   if ( pClosurePour->GetStirrups().ShearBarType != type || pClosurePour->GetStirrups().ShearBarGrade != grade)
+   CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   if ( pClosureJoint->GetStirrups().ShearBarType != type || pClosureJoint->GetStirrups().ShearBarGrade != grade)
    {
-      pClosurePour->GetStirrups().ShearBarType = type;
-      pClosurePour->GetStirrups().ShearBarGrade = grade;
+      pClosureJoint->GetStirrups().ShearBarType = type;
+      pClosureJoint->GetStirrups().ShearBarGrade = grade;
       Fire_GirderChanged(closureKey,GCH_STIRRUPS);
    }
 }
 
-const CShearData2* CProjectAgentImp::GetClosurePourShearData(const CClosureKey& closureKey) const
+const CShearData2* CProjectAgentImp::GetClosureJointShearData(const CClosureKey& closureKey) const
 {
    const CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   const CClosurePourData* pClosurePour = pSegment->GetRightClosure();
-   if ( pClosurePour == NULL )
+   const CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   if ( pClosureJoint == NULL )
       return NULL;
 
-   return &pClosurePour->GetStirrups();
+   return &pClosureJoint->GetStirrups();
 }
 
-void CProjectAgentImp::SetClosurePourShearData(const CClosureKey& closureKey,const CShearData2& shearData)
+void CProjectAgentImp::SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& shearData)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosurePourData* pClosurePour = pSegment->GetRightClosure();
-   if ( pClosurePour && pClosurePour->GetStirrups() != shearData )
+   CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   if ( pClosureJoint && pClosureJoint->GetStirrups() != shearData )
    {
-      pClosurePour->SetStirrups(shearData);
+      pClosureJoint->SetStirrups(shearData);
       Fire_GirderChanged(closureKey,GCH_STIRRUPS);
    }
 }
@@ -6260,45 +6313,45 @@ void CProjectAgentImp::SetSegmentLongitudinalRebarData(const CSegmentKey& segmen
    }
 }
 
-std::_tstring CProjectAgentImp::GetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey) const
+std::_tstring CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey) const
 {
-   const CLongitudinalRebarData* pLRD = GetClosurePourLongitudinalRebarData(closureKey);
+   const CLongitudinalRebarData* pLRD = GetClosureJointLongitudinalRebarData(closureKey);
    return lrfdRebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
 }
 
-void CProjectAgentImp::GetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade)
+void CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade)
 {
-   const CLongitudinalRebarData* pLRD = GetClosurePourLongitudinalRebarData(closureKey);
+   const CLongitudinalRebarData* pLRD = GetClosureJointLongitudinalRebarData(closureKey);
    grade = pLRD->BarGrade;
    type = pLRD->BarType;
 }
 
-void CProjectAgentImp::SetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosurePourData* pClosurePour = pSegment->GetRightClosure();
-   if ( pClosurePour->GetRebar().BarGrade != grade || pClosurePour->GetRebar().BarType != type )
+   CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   if ( pClosureJoint->GetRebar().BarGrade != grade || pClosureJoint->GetRebar().BarType != type )
    {
-      pClosurePour->GetRebar().BarGrade = grade;
-      pClosurePour->GetRebar().BarType = type;
+      pClosureJoint->GetRebar().BarGrade = grade;
+      pClosureJoint->GetRebar().BarType = type;
       Fire_GirderChanged(closureKey,GCH_LONGITUDINAL_REBAR);
    }
 }
 
-const CLongitudinalRebarData* CProjectAgentImp::GetClosurePourLongitudinalRebarData(const CClosureKey& closureKey) const
+const CLongitudinalRebarData* CProjectAgentImp::GetClosureJointLongitudinalRebarData(const CClosureKey& closureKey) const
 {
    const CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   const CClosurePourData* pClosurePour = pSegment->GetRightClosure();
-   return &pClosurePour->GetRebar();
+   const CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   return &pClosureJoint->GetRebar();
 }
 
-void CProjectAgentImp::SetClosurePourLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data)
+void CProjectAgentImp::SetClosureJointLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosurePourData* pClosurePour = pSegment->GetRightClosure();
-   if ( pClosurePour->GetRebar() != data )
+   CClosureJointData* pClosureJoint = pSegment->GetRightClosure();
+   if ( pClosureJoint->GetRebar() != data )
    {
-      pClosurePour->GetRebar() = data;
+      pClosureJoint->GetRebar() = data;
       Fire_GirderChanged(closureKey,GCH_LONGITUDINAL_REBAR);
    }
 }
@@ -6778,7 +6831,7 @@ pgsTypes::OverlayLoadDistributionType CProjectAgentImp::GetOverlayLoadDistributi
 
 Uint16 CProjectAgentImp::GetMomentCapacityMethod()
 {
-   return m_pSpecEntry->GetBs3LRFDOverreinforcedMomentCapacity() == true ? LRFD_METHOD : WSDOT_METHOD;
+   return m_pSpecEntry->GetLRFDOverreinforcedMomentCapacity() == true ? LRFD_METHOD : WSDOT_METHOD;
 }
 
 void CProjectAgentImp::SetAnalysisType(pgsTypes::AnalysisType analysisType)
@@ -7338,7 +7391,7 @@ CollectionIndexType CProjectAgentImp::AddPointLoad(const CPointLoadData& pld)
    m_PointLoads.back().m_ID = UserLoads::ms_NextPointLoadID++;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIdx);
+   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
    pEvent->GetApplyLoadActivity().AddUserLoad(m_PointLoads.back().m_ID);
 
    FireContinuityRelatedSpanChange(pld.m_SpanGirderKey,GCH_LOADING_ADDED);
@@ -7383,12 +7436,12 @@ void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, const CPointLoad
       }
 
       CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-      CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_PointLoads[idx].m_EventIdx);
+      CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_PointLoads[idx].m_EventIndex);
       pEvent->GetApplyLoadActivity().RemoveUserLoad(m_PointLoads[idx].m_ID);
 
       m_PointLoads[idx] = pld;
 
-      pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIdx);
+      pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
       pEvent->GetApplyLoadActivity().AddUserLoad(m_PointLoads[idx].m_ID);
 
       FireContinuityRelatedSpanChange(pld.m_SpanGirderKey,GCH_LOADING_CHANGED);
@@ -7403,7 +7456,7 @@ void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
    it += idx;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_PointLoads[idx].m_EventIdx);
+   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_PointLoads[idx].m_EventIndex);
    pEvent->GetApplyLoadActivity().RemoveUserLoad(m_PointLoads[idx].m_ID);
 
    CSpanGirderKey& key( it->m_SpanGirderKey );
@@ -7425,7 +7478,7 @@ CollectionIndexType CProjectAgentImp::AddDistributedLoad(const CDistributedLoadD
    m_DistributedLoads.back().m_ID = UserLoads::ms_NextDistributedLoadID++;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIdx);
+   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
    pEvent->GetApplyLoadActivity().AddUserLoad(m_DistributedLoads.back().m_ID);
 
    FireContinuityRelatedSpanChange(pld.m_SpanGirderKey,GCH_LOADING_ADDED);
@@ -7470,12 +7523,12 @@ void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, const CDis
       }
 
       CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-      CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_DistributedLoads[idx].m_EventIdx);
+      CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_DistributedLoads[idx].m_EventIndex);
       pEvent->GetApplyLoadActivity().RemoveUserLoad(m_DistributedLoads[idx].m_ID);
 
       m_DistributedLoads[idx] = pld;
 
-      pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIdx);
+      pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
       pEvent->GetApplyLoadActivity().AddUserLoad(m_DistributedLoads[idx].m_ID);
 
       FireContinuityRelatedSpanChange(pld.m_SpanGirderKey,GCH_LOADING_CHANGED);
@@ -7487,7 +7540,7 @@ void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
    ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_DistributedLoads[idx].m_EventIdx);
+   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_DistributedLoads[idx].m_EventIndex);
    pEvent->GetApplyLoadActivity().RemoveUserLoad(m_DistributedLoads[idx].m_ID);
 
    CSpanGirderKey& key( m_DistributedLoads[idx].m_SpanGirderKey );
@@ -7510,7 +7563,7 @@ CollectionIndexType CProjectAgentImp::AddMomentLoad(const CMomentLoadData& pld)
    m_MomentLoads.back().m_ID = UserLoads::ms_NextMomentLoadID++;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIdx);
+   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
    pEvent->GetApplyLoadActivity().AddUserLoad(m_MomentLoads.back().m_ID);
    
    FireContinuityRelatedSpanChange(pld.m_SpanGirderKey,GCH_LOADING_ADDED);
@@ -7555,7 +7608,7 @@ void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, const CMomentLo
       }
 
       CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-      CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_MomentLoads[idx].m_EventIdx);
+      CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_MomentLoads[idx].m_EventIndex);
       pEvent->GetApplyLoadActivity().RemoveUserLoad(m_MomentLoads[idx].m_ID);
 
       m_MomentLoads[idx] = pld;
@@ -7572,7 +7625,7 @@ void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
    it += idx;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_MomentLoads[idx].m_EventIdx);
+   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_MomentLoads[idx].m_EventIndex);
    pEvent->GetApplyLoadActivity().RemoveUserLoad(m_MomentLoads[idx].m_ID);
 
    CSpanGirderKey& key( it->m_SpanGirderKey );
@@ -7867,6 +7920,16 @@ Float64 CProjectAgentImp::GetMaxSegmentFci(pgsTypes::ConcreteType concType)
 Float64 CProjectAgentImp::GetMaxSegmentFc(pgsTypes::ConcreteType concType)
 {
    return m_pSpecEntry->GetMaxSegmentFc(concType);
+}
+
+Float64 CProjectAgentImp::GetMaxClosureFci(pgsTypes::ConcreteType concType)
+{
+   return m_pSpecEntry->GetMaxClosureFci(concType);
+}
+
+Float64 CProjectAgentImp::GetMaxClosureFc(pgsTypes::ConcreteType concType)
+{
+   return m_pSpecEntry->GetMaxClosureFc(concType);
 }
 
 Float64 CProjectAgentImp::GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType)
@@ -8254,22 +8317,40 @@ pgsTypes::LossMethod CProjectAgentImp::GetLossMethod()
    return loss_method;
 }
 
-void CProjectAgentImp::SetPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction)
+void CProjectAgentImp::SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction)
 {
-   if ( !IsEqual(m_Dset,Dset) || !IsEqual(m_WobbleFriction,wobble) || !IsEqual(m_FrictionCoefficient,friction) )
+   if ( !IsEqual(m_Dset_PT,Dset) || !IsEqual(m_WobbleFriction_PT,wobble) || !IsEqual(m_FrictionCoefficient_PT,friction) )
    {
-      m_Dset                = Dset;
-      m_WobbleFriction      = wobble;
-      m_FrictionCoefficient = friction;
+      m_Dset_PT                = Dset;
+      m_WobbleFriction_PT      = wobble;
+      m_FrictionCoefficient_PT = friction;
       Fire_BridgeChanged();
    }
 }
 
-void CProjectAgentImp::GetPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction)
+void CProjectAgentImp::GetTendonPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction)
 {
-   *Dset     = m_Dset;
-   *wobble   = m_WobbleFriction;
-   *friction = m_FrictionCoefficient;
+   *Dset     = m_Dset_PT;
+   *wobble   = m_WobbleFriction_PT;
+   *friction = m_FrictionCoefficient_PT;
+}
+
+void CProjectAgentImp::SetTemporaryStrandPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction)
+{
+   if ( !IsEqual(m_Dset_TTS,Dset) || !IsEqual(m_WobbleFriction_TTS,wobble) || !IsEqual(m_FrictionCoefficient_TTS,friction) )
+   {
+      m_Dset_TTS                = Dset;
+      m_WobbleFriction_TTS      = wobble;
+      m_FrictionCoefficient_TTS = friction;
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::GetTemporaryStrandPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction)
+{
+   *Dset     = m_Dset_TTS;
+   *wobble   = m_WobbleFriction_TTS;
+   *friction = m_FrictionCoefficient_TTS;
 }
 
 void CProjectAgentImp::UseGeneralLumpSumLosses(bool bLumpSum)

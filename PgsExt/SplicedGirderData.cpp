@@ -24,7 +24,7 @@
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\SpanData2.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 #include <PgsExt\GirderGroupData.h>
 #include <PgsExt\BridgeDescription2.h>
 
@@ -104,34 +104,32 @@ CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup)
 
 CSplicedGirderData::~CSplicedGirderData()
 {
-   ClearSegments();
-   ClearClosures();
+   RemoveSegmentsFromTimelineManager();
+   RemoveClosureJointsFromTimelineManager();
+   DeleteSegments();
+   DeleteClosures();
 }
 
-void CSplicedGirderData::ClearSegments()
+void CSplicedGirderData::DeleteSegments()
 {
    std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
    std::vector<CPrecastSegmentData*>::iterator segIterEnd(m_Segments.end());
    for ( ; segIter != segIterEnd; segIter++ )
    {
       CPrecastSegmentData* pSegment = *segIter;
-#pragma Reminder("REVIEW: is this necessary")
-      //RemoveSegmentFromTimelineManager(pSegment);
       delete pSegment;
    }
 
    m_Segments.clear();
 }
 
-void CSplicedGirderData::ClearClosures()
+void CSplicedGirderData::DeleteClosures()
 {
-   std::vector<CClosurePourData*>::iterator closureIter(m_Closures.begin());
-   std::vector<CClosurePourData*>::iterator closureIterEnd(m_Closures.end());
+   std::vector<CClosureJointData*>::iterator closureIter(m_Closures.begin());
+   std::vector<CClosureJointData*>::iterator closureIterEnd(m_Closures.end());
    for ( ; closureIter != closureIterEnd; closureIter++ )
    {
-      CClosurePourData* pClosure = *closureIter;
-#pragma Reminder("REVIEW: is this necessary")
-      //RemoveClosurePourFromTimelineManager(pClosure);
+      CClosureJointData* pClosure = *closureIter;
       delete pClosure;
    }
 
@@ -153,7 +151,7 @@ void CSplicedGirderData::Resize(SegmentIndexType nSegments)
 
          if ( i != 0 )
          {
-            CClosurePourData* pClosure = m_Closures.back();
+            CClosureJointData* pClosure = m_Closures.back();
             delete pClosure;
             m_Closures.pop_back();
          }
@@ -168,7 +166,7 @@ void CSplicedGirderData::Resize(SegmentIndexType nSegments)
          if ( m_Segments.size() != 0 )
          {
             // don't add the first closure if there aren't any segments
-            CClosurePourData* pNewClosure = new CClosurePourData;
+            CClosureJointData* pNewClosure = new CClosureJointData;
             pNewClosure->SetGirder(this);
             m_Closures.push_back(pNewClosure);
          }
@@ -244,7 +242,7 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
 {
    Resize(rOther.GetSegmentCount());
 
-   // must have the same number of segments and closure pours
+   // must have the same number of segments and closure joints
    ATLASSERT(rOther.m_Segments.size() == m_Segments.size());
    ATLASSERT(rOther.m_Closures.size() == m_Closures.size());
 
@@ -260,8 +258,8 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
 
    m_PTData = rOther.m_PTData;
 
-   m_GirderType          = rOther.GetGirderName();
-   m_pGirderLibraryEntry = rOther.GetGirderLibraryEntry();
+   m_GirderType          = rOther.m_GirderType;
+   m_pGirderLibraryEntry = rOther.m_pGirderLibraryEntry;
 
    // create new segments
    SegmentIndexType nSegments = rOther.m_Segments.size();
@@ -279,11 +277,11 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
 
       if ( segIdx < nSegments-1 )
       {
-         const CClosurePourData* pOtherClosure = rOther.m_Closures[segIdx];
+         const CClosureJointData* pOtherClosure = rOther.m_Closures[segIdx];
 
          if ( bCopyDataOnly )
          {
-            m_Closures[segIdx]->CopyClosurePourData(pOtherClosure);
+            m_Closures[segIdx]->CopyClosureJointData(pOtherClosure);
          }
          else
          {
@@ -341,8 +339,8 @@ HRESULT CSplicedGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    USES_CONVERSION;
 
-   ClearSegments();
-   ClearClosures();
+   DeleteSegments();
+   DeleteClosures();
 
    pStrLoad->BeginUnit(_T("Girder"));
 
@@ -385,7 +383,7 @@ HRESULT CSplicedGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       m_Segments.push_back(pSegment);
       if ( segIdx < nSegments-1 )
       {
-         CClosurePourData* pClosure = new CClosurePourData;
+         CClosureJointData* pClosure = new CClosureJointData;
          pClosure->SetGirder(this);
          pClosure->SetIndex(segIdx);
 
@@ -557,8 +555,8 @@ void CSplicedGirderData::UpdateSegments()
       CPrecastSegmentData* pSegment = m_Segments[segIdx];
       pSegment->SetIndex(segIdx);
 
-      CClosurePourData* pLeftClosure  = pSegment->GetLeftClosure();
-      CClosurePourData* pRightClosure = pSegment->GetRightClosure();
+      CClosureJointData* pLeftClosure  = pSegment->GetLeftClosure();
+      CClosureJointData* pRightClosure = pSegment->GetRightClosure();
 
       pSegment->ResolveReferences();
       if ( pLeftClosure )
@@ -597,7 +595,7 @@ void CSplicedGirderData::UpdateSegments()
    ASSERT_VALID;
 }
 
-void CSplicedGirderData::SetClosurePour(CollectionIndexType idx,const CClosurePourData& closure)
+void CSplicedGirderData::SetClosureJoint(CollectionIndexType idx,const CClosureJointData& closure)
 {
    *m_Closures[idx] = closure;
 }
@@ -639,12 +637,12 @@ std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegm
    return variations;
 }
 
-CollectionIndexType CSplicedGirderData::GetClosurePourCount() const
+CollectionIndexType CSplicedGirderData::GetClosureJointCount() const
 {
    return m_Closures.size();
 }
 
-CClosurePourData* CSplicedGirderData::GetClosurePour(CollectionIndexType idx)
+CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx)
 {
    if ( m_Closures.size() <= idx )
       return NULL;
@@ -652,7 +650,7 @@ CClosurePourData* CSplicedGirderData::GetClosurePour(CollectionIndexType idx)
    return m_Closures[idx];
 }
 
-const CClosurePourData* CSplicedGirderData::GetClosurePour(CollectionIndexType idx) const
+const CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx) const
 {
    if ( m_Closures.size() <= idx )
       return NULL;
@@ -777,8 +775,8 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
          // Segment starts and ends in the span that is being removed
          // Remove the segment and closures
          SegmentIndexType segIdx = pSegment->GetIndex();
-         CClosurePourData* pLeftClosure = pSegment->GetLeftClosure();
-         CClosurePourData* pRightClosure = pSegment->GetRightClosure();
+         CClosureJointData* pLeftClosure = pSegment->GetLeftClosure();
+         CClosureJointData* pRightClosure = pSegment->GetRightClosure();
 
          RemoveSegmentFromTimelineManager(pSegment);
 
@@ -790,7 +788,7 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
          {
             pLeftClosure->GetLeftSegment()->SetRightClosure(NULL);
             m_Closures[pLeftClosure->GetIndex()] = NULL;
-            RemoveClosurePourFromTimelineManager(pLeftClosure);
+            RemoveClosureJointFromTimelineManager(pLeftClosure);
             delete pLeftClosure;
          }
 
@@ -798,7 +796,7 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
          {
             pRightClosure->GetRightSegment()->SetLeftClosure(NULL);
             m_Closures[pRightClosure->GetIndex()] = NULL;
-            RemoveClosurePourFromTimelineManager(pRightClosure);
+            RemoveClosureJointFromTimelineManager(pRightClosure);
             delete pRightClosure;
          }
       }
@@ -824,7 +822,7 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
    std::vector<CPrecastSegmentData*>::iterator new_segment_end = std::remove(m_Segments.begin(),m_Segments.end(),(CPrecastSegmentData*)NULL);
    m_Segments.erase(new_segment_end,m_Segments.end());
 
-   std::vector<CClosurePourData*>::iterator new_closure_end = std::remove(m_Closures.begin(),m_Closures.end(),(CClosurePourData*)NULL);
+   std::vector<CClosureJointData*>::iterator new_closure_end = std::remove(m_Closures.begin(),m_Closures.end(),(CClosureJointData*)NULL);
    m_Closures.erase(new_closure_end,m_Closures.end());
 
    PierIndexType pierIdx = (rmPierType == pgsTypes::PrevPier ? spanIdx : spanIdx+1);
@@ -847,20 +845,20 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
    //                     Segment                              Segment
 
    std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
-   std::vector<CClosurePourData*>::iterator closureIter(m_Closures.begin());
-   std::vector<CClosurePourData*>::iterator closureIterEnd(m_Closures.end());
+   std::vector<CClosureJointData*>::iterator closureIter(m_Closures.begin());
+   std::vector<CClosureJointData*>::iterator closureIterEnd(m_Closures.end());
    for ( ; closureIter != closureIterEnd; segIter++, closureIter++ )
    {
-      CClosurePourData* pClosure = *closureIter;
+      CClosureJointData* pClosure = *closureIter;
       const CTemporarySupportData* pTS = pClosure->GetTemporarySupport();
       if ( pTS && pTS->GetIndex() == tsIdx )
       {
          // we found the closure that is going away
          // take the right hand segment with it
-         ATLASSERT(pTS->GetConnectionType() == pgsTypes::sctClosurePour); // should be closure pour.. it is changing to sctContinuous
+         ATLASSERT(pTS->GetConnectionType() == pgsTypes::sctClosureJoint); // should be closure joint.. it is changing to sctContinuous
 
 
-         RemoveClosurePourFromTimelineManager(pClosure);
+         RemoveClosureJointFromTimelineManager(pClosure);
 
 
          CPrecastSegmentData* pLeftSegment  = pClosure->GetLeftSegment();
@@ -912,12 +910,12 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 
    std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
    std::vector<CPrecastSegmentData*>::iterator segIterEnd(m_Segments.end());
-   std::vector<CClosurePourData*>::iterator closureIter(m_Closures.begin());
+   std::vector<CClosureJointData*>::iterator closureIter(m_Closures.begin());
    for ( ; segIter != segIterEnd; segIter++, closureIter++ )
    {
       CPrecastSegmentData* pSegment = *segIter;
-      CClosurePourData* pLeftClosure = pSegment->GetLeftClosure();
-      CClosurePourData* pRightClosure = pSegment->GetRightClosure();
+      CClosureJointData* pLeftClosure = pSegment->GetLeftClosure();
+      CClosureJointData* pRightClosure = pSegment->GetRightClosure();
 
       Float64 startStation, endStation;
       pSegment->GetStations(&startStation,&endStation);
@@ -927,7 +925,7 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          // we found the segment that needs to be split
          // create a new closure and a new segment for the right hand side of the closure
 
-         CClosurePourData* pNewClosure = new CClosurePourData(this,pTS);
+         CClosureJointData* pNewClosure = new CClosureJointData(this,pTS);
          CPrecastSegmentData* pNewSegment = new CPrecastSegmentData(this);
 
          pNewSegment->SetID( m_pGirderGroup->GetBridgeDescription()->GetNextSegmentID() );
@@ -956,20 +954,21 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 
          UpdateLinks();
 
-         CTimelineManager* pTimelineMgr = this->m_pGirderGroup->GetBridgeDescription()->GetTimelineManager();
+         CTimelineManager* pTimelineMgr = GetTimelineManager();
+         ATLASSERT(pTimelineMgr);
          EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
          pTimelineMgr->SetSegmentErectionEventByIndex(pNewSegment->GetID(),erectionEventIdx);
 
-         // Find the timeline event where the closure pour activity includes the temporary support where the segments are split
+         // Find the timeline event where the closure joint activity includes the temporary support where the segments are split
          EventIndexType nEvents = pTimelineMgr->GetEventCount();
          EventIndexType eventIdx;
          for ( eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-            if ( pTimelineEvent->GetCastClosurePourActivity().IsEnabled() || pTimelineEvent->GetCastClosurePourActivity().HasTempSupport(pTS->GetID()) )
+            if ( pTimelineEvent->GetCastClosureJointActivity().IsEnabled() || pTimelineEvent->GetCastClosureJointActivity().HasTempSupport(pTS->GetID()) )
             {
-               // set the closure pour casting event for the new closure pour
-               pTimelineMgr->SetCastClosurePourEventByIndex(pNewClosure->GetID(),eventIdx);
+               // set the closure joint casting event for the new closure joint
+               pTimelineMgr->SetCastClosureJointEventByIndex(pNewClosure->GetID(),eventIdx);
                break;
             }
          }
@@ -977,7 +976,7 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          if ( nEvents <= eventIdx )
          {
             // event wasn't found so just use the segment erection event
-            pTimelineMgr->SetCastClosurePourEventByIndex(pNewSegment->GetID(),erectionEventIdx);
+            pTimelineMgr->SetCastClosureJointEventByIndex(pNewSegment->GetID(),erectionEventIdx);
          }
 
          break;
@@ -1000,28 +999,28 @@ void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
    // ================================================||==================
    //                     Segment                              Segment
 
-   // Search for the closure pour that is being removed from the model.
+   // Search for the closure joint that is being removed from the model.
    // The segments on each side of this closure need to be joined.
    std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
-   std::vector<CClosurePourData*>::iterator closureIter(m_Closures.begin());
-   std::vector<CClosurePourData*>::iterator closureIterEnd(m_Closures.end());
+   std::vector<CClosureJointData*>::iterator closureIter(m_Closures.begin());
+   std::vector<CClosureJointData*>::iterator closureIterEnd(m_Closures.end());
    for ( ; closureIter != closureIterEnd; segIter++, closureIter++ )
    {
-      CClosurePourData* pClosure = *closureIter;
+      CClosureJointData* pClosure = *closureIter;
       const CPierData2* pPier = pClosure->GetPier();
       if ( pPier && pPier->GetIndex() == pierIdx )
       {
          // we found the closure that is going away
          // take the right hand segment with it (remove the right hand segment from the model)
 
-         // this should be an interior pier and its connection should be one of the continuous segment types
+         // this should be an interior pier and its connection should be one of the closure joint types (because it is changing from a closure joint type to a continuous type)
          ATLASSERT(pPier->IsInteriorPier());
-         ATLASSERT(pPier->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment || pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment);
+         ATLASSERT(pPier->GetSegmentConnectionType() == pgsTypes::psctContinousClosureJoint || pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralClosureJoint);
 
          CPrecastSegmentData* pLeftSegment  = pClosure->GetLeftSegment();
          CPrecastSegmentData* pRightSegment = pClosure->GetRightSegment();
 
-         RemoveClosurePourFromTimelineManager(pClosure);
+         RemoveClosureJointFromTimelineManager(pClosure);
 
          // the right hand segment is going away, so merge its geometry
          // with the segment to its left
@@ -1072,12 +1071,12 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
    // Search for segment that needs to be split
    std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
    std::vector<CPrecastSegmentData*>::iterator segIterEnd(m_Segments.end());
-   std::vector<CClosurePourData*>::iterator closureIter(m_Closures.begin());
+   std::vector<CClosureJointData*>::iterator closureIter(m_Closures.begin());
    for ( ; segIter != segIterEnd; segIter++, closureIter++ )
    {
       CPrecastSegmentData* pSegment = *segIter;
-      CClosurePourData* pLeftClosure = pSegment->GetLeftClosure();
-      CClosurePourData* pRightClosure = pSegment->GetRightClosure();
+      CClosureJointData* pLeftClosure = pSegment->GetLeftClosure();
+      CClosureJointData* pRightClosure = pSegment->GetRightClosure();
 
       Float64 startStation, endStation;
       pSegment->GetStations(&startStation,&endStation);
@@ -1087,7 +1086,7 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
          // we found the segment that needs to be split
          // create a new closure and a new segment for the right hand side of the closure
 
-         CClosurePourData* pNewClosure = new CClosurePourData(this,pPier);
+         CClosureJointData* pNewClosure = new CClosureJointData(this,pPier);
          CPrecastSegmentData* pNewSegment = new CPrecastSegmentData(this);
          pNewSegment->SetID( m_pGirderGroup->GetBridgeDescription()->GetNextSegmentID() );
          pNewSegment->SetSpan(pgsTypes::metStart,pPier->GetNextSpan());
@@ -1115,20 +1114,21 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
          m_Closures.insert(closureIter,pNewClosure);
 
 
-         CTimelineManager* pTimelineMgr = this->m_pGirderGroup->GetBridgeDescription()->GetTimelineManager();
+         CTimelineManager* pTimelineMgr = GetTimelineManager();
+         ATLASSERT(pTimelineMgr);
          EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
          pTimelineMgr->SetSegmentErectionEventByIndex(pNewSegment->GetID(),erectionEventIdx);
 
-         // Find the evnet where the closure pour activity includes the temporary support where the segments are split
+         // Find the evnet where the closure joint activity includes the temporary support where the segments are split
          EventIndexType nEvents = pTimelineMgr->GetEventCount();
          EventIndexType eventIdx;
          for ( eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-            if ( pTimelineEvent->GetCastClosurePourActivity().IsEnabled() || pTimelineEvent->GetCastClosurePourActivity().HasPier(pPier->GetID()) )
+            if ( pTimelineEvent->GetCastClosureJointActivity().IsEnabled() || pTimelineEvent->GetCastClosureJointActivity().HasPier(pPier->GetID()) )
             {
-               // set the closure pour casting event for the new closure pour
-               pTimelineMgr->SetCastClosurePourEventByIndex(pNewClosure->GetID(),eventIdx);
+               // set the closure joint casting event for the new closure joint
+               pTimelineMgr->SetCastClosureJointEventByIndex(pNewClosure->GetID(),eventIdx);
                break;
             }
          }
@@ -1136,7 +1136,7 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
          if ( nEvents <= eventIdx )
          {
             // event wasn't found so just use the segment erection event
-            pTimelineMgr->SetCastClosurePourEventByIndex(pNewSegment->GetID(),erectionEventIdx);
+            pTimelineMgr->SetCastClosureJointEventByIndex(pNewSegment->GetID(),erectionEventIdx);
          }
 
          break;
@@ -1494,60 +1494,101 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
 
 void CSplicedGirderData::AddSegmentToTimelineManager(const CPrecastSegmentData* pSegment,const CPrecastSegmentData* pNewSegment)
 {
-   CTimelineManager* pTimelineMgr = this->m_pGirderGroup->GetBridgeDescription()->GetTimelineManager();
+   CTimelineManager* pTimelineMgr = GetTimelineManager();
+   ATLASSERT(pTimelineMgr);
+
    EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
    pTimelineMgr->SetSegmentErectionEventByIndex(pNewSegment->GetID(),erectionEventIdx);
 }
 
 void CSplicedGirderData::RemoveSegmentFromTimelineManager(const CPrecastSegmentData* pSegment)
 {
-   CTimelineManager* pTimelineMgr = m_pGirderGroup->GetBridgeDescription()->GetTimelineManager();
-   
-   SegmentIDType segID = pSegment->GetID();
-   
-   EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex( segID );
-
-   if ( erectionEventIdx != INVALID_INDEX )
+   CTimelineManager* pTimelineMgr = GetTimelineManager();
+   if ( pTimelineMgr )
    {
-      CTimelineEvent* pErectionEvent = pTimelineMgr->GetEventByIndex(erectionEventIdx);
-      pErectionEvent->GetErectSegmentsActivity().RemoveSegment( segID );
+      SegmentIDType segID = pSegment->GetID();
+      
+      EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex( segID );
+
+      if ( erectionEventIdx != INVALID_INDEX )
+      {
+         CTimelineEvent* pErectionEvent = pTimelineMgr->GetEventByIndex(erectionEventIdx);
+         pErectionEvent->GetErectSegmentsActivity().RemoveSegment( segID );
+      }
    }
 }
 
-void CSplicedGirderData::RemoveClosurePourFromTimelineManager(const CClosurePourData* pClosure)
+void CSplicedGirderData::RemoveSegmentsFromTimelineManager()
 {
-   CTimelineManager* pTimelineMgr = m_pGirderGroup->GetBridgeDescription()->GetTimelineManager();
-
-   // closures are stored by the ID of the segment on the left side of the closure
-   SegmentIDType segID = pClosure->GetLeftSegment()->GetID();
-
-   EventIndexType eventIdx = pTimelineMgr->GetCastClosurePourEventIndex(segID);
-   if ( eventIdx != INVALID_INDEX )
+   std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
+   std::vector<CPrecastSegmentData*>::iterator segIterEnd(m_Segments.end());
+   for ( ; segIter != segIterEnd; segIter++ )
    {
-      CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-
-      if ( pClosure->GetPier() )
-         pTimelineEvent->GetCastClosurePourActivity().RemovePier(pClosure->GetPier()->GetID());
-
-      if ( pClosure->GetTemporarySupport() )
-         pTimelineEvent->GetCastClosurePourActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
+      CPrecastSegmentData* pSegment = *segIter;
+      RemoveSegmentFromTimelineManager(pSegment);
    }
 }
 
-void CSplicedGirderData::AddClosureToTimelineManager(const CClosurePourData* pClosure,EventIndexType castClosureEventIdx)
+void CSplicedGirderData::RemoveClosureJointFromTimelineManager(const CClosureJointData* pClosure)
 {
-   CTimelineManager* pTimelineMgr = m_pGirderGroup->GetBridgeDescription()->GetTimelineManager();
+   if ( m_pGirderGroup )
+   {
+      if ( 1 < m_pGirderGroup->GetGirderCount() )
+      {
+         // The cast closure joint activity for this closure applies to all girders in the group.
+         // That is, the first closure in the group for all girders are cast together, the second
+         // closure in the group for all girders are cast together, and so on.
+         // Remove this closure from the timeline if it is for the last girder in the group, otherwise
+         // simply return and do noting
+         return;
+      }
 
-   // closures are stored by the ID of the segment on the left side of the closure
-   SegmentIDType segID = pClosure->GetLeftSegment()->GetID();
+      CTimelineManager* pTimelineMgr = GetTimelineManager();
+      if ( pTimelineMgr )
+      {
+         // closures are stored by the ID of the segment on the left side of the closure
+         SegmentIDType segID = pClosure->GetLeftSegment()->GetID();
 
-   pTimelineMgr->SetCastClosurePourEventByIndex(segID,castClosureEventIdx);
+         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(segID);
+         if ( eventIdx != INVALID_INDEX )
+         {
+            CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+
+            if ( pClosure->GetPier() )
+               pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
+
+            if ( pClosure->GetTemporarySupport() )
+               pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
+         }
+      }
+   }
+}
+
+void CSplicedGirderData::RemoveClosureJointsFromTimelineManager()
+{
+   std::vector<CClosureJointData*>::iterator closureIter(m_Closures.begin());
+   std::vector<CClosureJointData*>::iterator closureIterEnd(m_Closures.end());
+   for ( ; closureIter != closureIterEnd; closureIter++ )
+   {
+      CClosureJointData* pClosure = *closureIter;
+      RemoveClosureJointFromTimelineManager(pClosure);
+   }
+}
+
+void CSplicedGirderData::AddClosureToTimelineManager(const CClosureJointData* pClosure,EventIndexType castClosureEventIdx)
+{
+   CTimelineManager* pTimelineMgr = GetTimelineManager();
+   ATLASSERT(pTimelineMgr);
+
+   IDType closureID = pClosure->GetID();
+
+   pTimelineMgr->SetCastClosureJointEventByIndex(closureID,castClosureEventIdx);
 }
 
 void CSplicedGirderData::Initialize()
 {
-   ClearClosures();
-   ClearSegments();
+   DeleteClosures();
+   DeleteSegments();
 
    // this should be a new girder with no segments (a default girder, not one created with the copy constructor)
    ATLASSERT(m_Segments.size() == 0);
@@ -1560,6 +1601,20 @@ void CSplicedGirderData::Initialize()
    pSegment->SetID(m_pGirderGroup->GetBridgeDescription()->GetNextSegmentID());
 
    m_Segments.push_back(pSegment);
+}
+
+CTimelineManager* CSplicedGirderData::GetTimelineManager()
+{
+   if ( m_pGirderGroup )
+   {
+      CBridgeDescription2* pBridgeDesc = m_pGirderGroup->GetBridgeDescription();
+      if ( pBridgeDesc )
+      {
+         return pBridgeDesc->GetTimelineManager();
+      }
+   }
+
+   return NULL;
 }
 
 #if defined _DEBUG
@@ -1603,8 +1658,8 @@ void CSplicedGirderData::AssertValid()
          }
       }
 
-      CClosurePourData* pLeftClosure  = pSegment->GetLeftClosure();
-      CClosurePourData* pRightClosure = pSegment->GetRightClosure();
+      CClosureJointData* pLeftClosure  = pSegment->GetLeftClosure();
+      CClosureJointData* pRightClosure = pSegment->GetRightClosure();
 
       if ( pLeftClosure )
       {
@@ -1621,11 +1676,11 @@ void CSplicedGirderData::AssertValid()
       }
    }
 
-   std::vector<CClosurePourData*>::iterator closureIter(m_Closures.begin());
-   std::vector<CClosurePourData*>::iterator closureIterEnd(m_Closures.end());
+   std::vector<CClosureJointData*>::iterator closureIter(m_Closures.begin());
+   std::vector<CClosureJointData*>::iterator closureIterEnd(m_Closures.end());
    for ( ; closureIter != closureIterEnd; closureIter++ )
    {
-       CClosurePourData* pClosure = *closureIter;
+       CClosureJointData* pClosure = *closureIter;
       _ASSERT(pClosure->GetGirder() == this);
 
       _ASSERT(pClosure->GetID() != INVALID_ID);

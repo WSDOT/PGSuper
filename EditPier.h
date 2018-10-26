@@ -20,73 +20,19 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_EDITPIER_H_
-#define INCLUDED_EDITPIER_H_
+#pragma once
+#include <PGSuperAppPlugin\EditBridge.h>
 
-#include <System\Transaction.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\GirderSpacing2.h>
-#include <IFace\Project.h>
-
-struct txnEditPierData
-{
-   txnEditPierData();
-   txnEditPierData(const CPierData2* pPier);
-
-   Float64 Station;
-   std::_tstring Orientation;
-   EventIndexType ErectionEventIndex;
-
-   pgsTypes::PierConnectionType PierConnectionType;
-   pgsTypes::PierSegmentConnectionType SegmentConnectionType;
-   Float64 BearingOffset[2];
-   Float64 EndDistance[2];
-   Float64 SupportWidth[2];
-   ConnectionLibraryEntry::EndDistanceMeasurementType EndDistanceMeasurementType[2];
-   ConnectionLibraryEntry::BearingOffsetMeasurementType BearingOffsetMeasurementType[2];
-
-   GirderIndexType nGirders[2];
-   CGirderSpacing2 GirderSpacing[2];
-   pgsTypes::SlabOffsetType SlabOffsetType;
-   Float64 SlabOffset[2];
-
-   Float64 DiaphragmHeight[2];
-   Float64 DiaphragmWidth[2];
-   ConnectionLibraryEntry::DiaphragmLoadType DiaphragmLoadType[2];
-   Float64 DiaphragmLoadLocation[2];
-
-   // data for the entire bridge
-   pgsTypes::SupportedBeamSpacing GirderSpacingType;
-   pgsTypes::MeasurementLocation GirderMeasurementLocation;
-   bool UseSameNumberOfGirdersInAllGroups;
-};
-
-class txnEditPier : public txnTransaction
+class txnEditPier : public txnEditBridgeDescription
 {
 public:
-   txnEditPier(PierIndexType pierIdx,
-               const txnEditPierData& oldPierData,
-               const txnEditPierData& newPierData,
-               pgsTypes::MovePierOption moveOption);
+   txnEditPier(PierIndexType pierIdx,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
 
-   ~txnEditPier();
+   virtual ~txnEditPier();
 
-   virtual bool Execute();
-   virtual void Undo();
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
 
 private:
-   void DoExecute(int i);
-
    PierIndexType m_PierIdx;
-   txnEditPierData m_PierData[2];
-   pgsTypes::MovePierOption m_MoveOption;
-
-   std::_tstring m_strPierType; // abutment or pier
 };
-
-#endif // INCLUDED_EDITPIER_H_

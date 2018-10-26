@@ -34,7 +34,7 @@ public:
    CDrawBeamTool();
    virtual ~CDrawBeamTool();
 
-   void DrawBeam(IBroker* pBroker,CDC* pDC,Float64 graphStartOffset,grlibPointMapper mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType intervalIdx,const CGirderKey& girderKey);
+   void DrawBeam(IBroker* pBroker,CDC* pDC,Float64 beamShift,grlibPointMapper mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType intervalIdx,const CGirderKey& girderKey);
 
 protected:
    IBroker* m_pBroker;
@@ -43,12 +43,9 @@ protected:
 
    CSize m_SupportSize;
 
-   Float64 m_GraphStartOffset; // distance from (0,0) on the graph to the start of the origin of the girder coordinate system
-                               // for the first segment in the girder being drawn
-
-   void DrawSegmentEndSupport(Float64 segToGraphCoordinateAdjustment,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC);
-   void DrawIntermediatePier(Float64 gdrPathToGraphCoordinateAdjustment,const CPrecastSegmentData* pSegment,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC);
-   void DrawIntermediateTemporarySupport(Float64 gdrPathToGraphCoordinateAdjustment,const CPrecastSegmentData* pSegment,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC);
+   void DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC);
+   void DrawIntermediatePier(Float64 beamShift,const CPrecastSegmentData* pSegment,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC);
+   void DrawIntermediateTemporarySupport(Float64 beamShift,const CPrecastSegmentData* pSegment,IntervalIndexType intervalIdx,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC);
    void DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPier,const CTimelineManager* pTimelineMgr,const CPoint& p,CDC* pDC);
    void DrawTemporarySupport(IntervalIndexType intervalIdx,const CTemporarySupportData* pTS,const CTimelineManager* pTimelineMgr,const CPoint& p,const grlibPointMapper& mapper,CDC* pDC);
    void DrawStrongBack(const CTemporarySupportData* pTS,const CPoint& p,const grlibPointMapper& mapper,CDC* pDC);
@@ -58,4 +55,5 @@ protected:
    void DrawIntegral(CPoint p,CDC* pDC);
    void DrawIntegralHingeBack(CPoint p,CDC* pDC);
    void DrawIntegralHingeAhead(CPoint p,CDC* pDC);
+   void DrawTendons(Float64 beamShift,const CGirderKey& girderKey,IntervalIndexType intervalIndexType,const CTimelineManager* pTimelineMgr,const grlibPointMapper& mapper,CDC* pDC);
 };

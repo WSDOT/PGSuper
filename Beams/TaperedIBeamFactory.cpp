@@ -344,7 +344,7 @@ void CTaperedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    Float64 t1,t2;
    GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7s,d7e,w1,w2,w3,w4,t1,t2,c1);
 
-   Float64 width = min(t1,t2);
+   Float64 width = Min(t1,t2);
    Float64 depth = d1 + d2 + d3 + d4 + d5 + d6 + d7s;
 #pragma Reminder("*** Review strand mover for beam with variable depth")
 
@@ -365,10 +365,10 @@ void CTaperedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -946,7 +946,7 @@ void CTaperedIBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensio
    Float64 top_w = T1 + 2.0*(W1+W2);
    Float64 bot_w = T2 + 2.0*(W3+W4);
 
-   Float64 gw = max(top_w, bot_w);
+   Float64 gw = Max(top_w, bot_w);
 
 
    if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
@@ -998,7 +998,7 @@ Float64 CTaperedIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimen
    Float64 top = 2*(W1+W2) + T1;
    Float64 bot = 2*(W3+W4) + T2;
 
-   return max(top,bot);
+   return Max(top,bot);
 }
 
 bool CTaperedIBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
@@ -1010,4 +1010,9 @@ void CTaperedIBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dime
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
+}
+
+GirderIndexType CTaperedIBeamFactory::GetMinimumBeamCount()
+{
+   return 2;
 }

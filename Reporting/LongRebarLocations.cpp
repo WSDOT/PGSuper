@@ -110,7 +110,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSeg
 
    (*p_table)(0,0) << _T("Row");
    (*p_table)(0,1) << COLHDR(_T("Bar Start"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,2) << COLHDR(_T("Bar End"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,2) << COLHDR(_T("Bar End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*p_table)(0,3) << _T("Girder") << rptNewLine << _T("Face");
    (*p_table)(0,4) << COLHDR(_T("Cover"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*p_table)(0,5) << _T("Bar") << rptNewLine << _T("Size");

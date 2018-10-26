@@ -35,6 +35,12 @@
 #include <EAF\EAFDisplayUnits.h>
 
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 
 /****************************************************************************
 CLASS
@@ -188,12 +194,12 @@ void pgsKdotHaulingStressAnalysisArtifact::SetBottomFiberStress(Float64 Ps,Float
 
 Float64 pgsKdotHaulingStressAnalysisArtifact::GetMaximumConcreteCompressiveStress() const
 {
-   return min(m_TopFiberStress, m_BottomFiberStress);
+   return Min(m_TopFiberStress, m_BottomFiberStress);
 }
 
 Float64 pgsKdotHaulingStressAnalysisArtifact::GetMaximumConcreteTensileStress() const
 {
-   return max(m_TopFiberStress, m_BottomFiberStress);
+   return Max(m_TopFiberStress, m_BottomFiberStress);
 }
 
 void pgsKdotHaulingStressAnalysisArtifact::GetConcreteTensileStress(Float64* fTop, Float64* fBottom, Float64* Capacity) const
@@ -480,7 +486,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 
    Float64 loh = this->GetLeadingOverhang();
    Float64 toh = this->GetTrailingOverhang();
-   Float64 min_oh = min(loh, toh);
+   Float64 min_oh = Min(loh, toh);
 
    *p <<_T("The current hauling bunk point location is ")<<slen_u.SetValue(min_oh)<<_T(" - ");
    if(this->Passed())
@@ -536,11 +542,11 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    Float64 t_max; // maximum allowable tension
    bool b_t_max; // true if max allowable tension is applicable
 
-   c = pSpecEntry->GetHaulingCompStress();
-   t = pSpecEntry->GetMaxConcreteTensHauling();
-   pSpecEntry->GetAbsMaxConcreteTensHauling(&b_t_max,&t_max);
+   c = pSpecEntry->GetHaulingCompressionStressFactor();
+   t = pSpecEntry->GetHaulingTensionStressFactor();
+   pSpecEntry->GetHaulingMaximumTensionStress(&b_t_max,&t_max);
 
-   Float64 t2 = pSpecEntry->GetMaxConcreteTensWithRebarHauling();
+   Float64 t2 = pSpecEntry->GetHaulingTensionStressFactorWithRebar();
 
    Float64 capCompression = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
 
@@ -672,7 +678,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
       else
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(tensCapacity,fTens,false)<<_T(")");
 
-      Float64 fComp = min(fTop, fBot);
+      Float64 fComp = Min(fTop, fBot);
       
       if ( stressArtifact->CompressionPassed() )
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");

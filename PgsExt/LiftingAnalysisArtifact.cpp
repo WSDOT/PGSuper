@@ -137,11 +137,11 @@ void pgsLiftingStressAnalysisArtifact::GetMaxCompressiveStress(Float64* fTop, Fl
    Float64 fps, fNone;
    Float64 fTopUp, fTopDown;
    this->GetTopFiberStress(&fps, &fTopUp, &fNone, &fTopDown);
-   *fTop    = max(fTopUp, fTopDown);
+   *fTop    = Max(fTopUp, fTopDown);
 
    Float64 fBotUp, fBotDown;
    this->GetBottomFiberStress(&fps, &fBotUp, &fNone, &fBotDown);
-   *fBottom = max(fBotUp, fBotDown);
+   *fBottom = Max(fBotUp, fBotDown);
    *Capacity = m_AllowableCompression;
 }
 
@@ -238,12 +238,12 @@ void pgsLiftingStressAnalysisArtifact::SetBottomFiberStress(Float64 PS, Float64 
 
 Float64 pgsLiftingStressAnalysisArtifact::GetMaximumConcreteCompressiveStress() const
 {
-   return Min4(m_TopFiberStressUpward,m_TopFiberStressDownward,m_BottomFiberStressUpward,m_BottomFiberStressDownward);
+   return Min(m_TopFiberStressUpward,m_TopFiberStressDownward,m_BottomFiberStressUpward,m_BottomFiberStressDownward);
 }
 
 Float64 pgsLiftingStressAnalysisArtifact::GetMaximumConcreteTensileStress() const
 {
-   return Max4(m_TopFiberStressUpward,m_TopFiberStressDownward,m_BottomFiberStressUpward,m_BottomFiberStressDownward);
+   return Max(m_TopFiberStressUpward,m_TopFiberStressDownward,m_BottomFiberStressUpward,m_BottomFiberStressDownward);
 }
 
 void pgsLiftingStressAnalysisArtifact::SetAlternativeTensileStressParameters(ImpactDir impact, Float64 Yna,   Float64 At,   Float64 T,
@@ -958,7 +958,7 @@ Float64 pgsLiftingAnalysisArtifact::GetMinFsForCracking() const
         i!=m_LiftingCrackingAnalysisArtifacts.end(); i++)
    {
       Float64 fs = i->second.GetFsCracking();
-      min_fs = min(min_fs,fs);
+      min_fs = Min(min_fs,fs);
    }
    return min_fs;
 }
@@ -1102,14 +1102,14 @@ void pgsLiftingAnalysisArtifact::GetGirderStress(
             Float64 fTopPS,fTopImpactUp,fTopNoImpact,fTopImpactDown;
             liftStressArtifact.GetTopFiberStress(&fTopPS,&fTopImpactUp,&fTopNoImpact,&fTopImpactDown);
 
-            Float64 ft = ( bMin ? Min3(fTopImpactUp,fTopNoImpact,fTopImpactDown) : Max3(fTopImpactUp,fTopNoImpact,fTopImpactDown) );
+            Float64 ft = ( bMin ? Min(fTopImpactUp,fTopNoImpact,fTopImpactDown) : Max(fTopImpactUp,fTopNoImpact,fTopImpactDown) );
             if ( !bIncludePrestress )
                ft -= fTopPS;
 
             Float64 fBottomPS,fBottomImpactUp,fBottomNoImpact,fBottomImpactDown;
             liftStressArtifact.GetBottomFiberStress(&fBottomPS,&fBottomImpactUp,&fBottomNoImpact,&fBottomImpactDown);
 
-            Float64 fb = ( bMin ? Min3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) : Max3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) );
+            Float64 fb = ( bMin ? Min(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) : Max(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) );
             if ( !bIncludePrestress )
                fb -= fBottomPS;
 
@@ -1167,7 +1167,7 @@ void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress,
          Float64 up, no, dn;
          rart.GetTopFiberStress(&stps,&up, &no, &dn);
 
-         Float64 optim = Max3(up,no,dn);
+         Float64 optim = Max(up,no,dn);
 
          optim -= stps;
 
@@ -1182,7 +1182,7 @@ void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress,
          Float64 sbps;
          rart.GetBottomFiberStress(&sbps, &up, &no, &dn);
 
-         optim = Min3(up,no,dn);
+         optim = Min(up,no,dn);
 
          optim -= sbps;
 
@@ -1230,7 +1230,7 @@ void pgsLiftingAnalysisArtifact::GetMidZoneMinMaxRawStresses(Float64 leftHp, Flo
          Float64 up, no, dn;
          rart.GetTopFiberStress(&stps, &up, &no, &dn);
 
-         Float64 optim = Max3(up, no, dn);
+         Float64 optim = Max(up, no, dn);
 
          optim -= stps;
 
@@ -1245,7 +1245,7 @@ void pgsLiftingAnalysisArtifact::GetMidZoneMinMaxRawStresses(Float64 leftHp, Flo
          Float64 sbps;
          rart.GetBottomFiberStress(&sbps, &up, &no, &dn);
 
-         optim = Min3(up, no, dn);
+         optim = Min(up, no, dn);
 
          optim -= sbps;
 
@@ -1288,13 +1288,13 @@ void pgsLiftingAnalysisArtifact::GetMinMaxLiftingStresses(MaxLiftingStressCollec
       // upward impact will always cause max top tension
       rart.GetTopFiberStress(&stps, &up, &no, &dn);
 
-      Float64 top_stress = Max3(up,no,dn);
+      Float64 top_stress = Max(up,no,dn);
 
       // bottom fiber
       Float64 sbps;
       rart.GetBottomFiberStress(&sbps, &up, &no, &dn);
 
-      Float64 bot_stress = Min3(up,no,dn);
+      Float64 bot_stress = Min(up,no,dn);
 
       // prestress force
       Float64 psf = rart.GetEffectiveHorizPsForce();

@@ -8,13 +8,13 @@
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
 
-#include "CastClosurePourDlg.h"// for label methods
+#include "CastClosureJointDlg.h"// for label methods
 
 // CRemoveTempSupportsDlg dialog
 
 IMPLEMENT_DYNAMIC(CRemoveTempSupportsDlg, CDialog)
 
-CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager* pTimelineMgr,CWnd* pParent /*=NULL*/)
+CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
 	: CDialog(CRemoveTempSupportsDlg::IDD, pParent),
    m_pTimelineMgr(pTimelineMgr)
 {
@@ -22,6 +22,8 @@ CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager* pTimeline
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pDisplayUnits = pDisplayUnits;
+
+   m_EventIndex = eventIdx;
 
    m_pBridgeDesc = m_pTimelineMgr->GetBridgeDescription();
 }
@@ -131,7 +133,15 @@ void CRemoveTempSupportsDlg::FillSourceList()
    {
       const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
       SupportIDType tsID = pTS->GetID();
-      if ( !m_pTimelineMgr->IsTemporarySupportRemoved(tsID) )
+      bool bIsTemporarySupportRemoved = m_pTimelineMgr->IsTemporarySupportRemoved(tsID);
+      EventIndexType erectEventIdx, removeEventIdx;
+      m_pTimelineMgr->GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
+      if ( bIsTemporarySupportRemoved && removeEventIdx == m_EventIndex )
+      {
+         if ( !m_RemoveTempSupports.HasTempSupport(tsID) )
+            bIsTemporarySupportRemoved = false;
+      }
+      if ( !bIsTemporarySupportRemoved )
       {
          CString label( GetLabel(pTS,m_pDisplayUnits) );
          pSourceList->SetItemData(pSourceList->AddString(label),tsID);

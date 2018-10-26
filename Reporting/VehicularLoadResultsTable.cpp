@@ -164,7 +164,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = min(girderKey.girderIndex,nGirders-1);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
@@ -226,10 +226,8 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
 
          if ( bReportTruckConfig )
          {
-            if ( poi.HasGirderCoordinate() )
-               (*p_table)(row,col++) << span_location.SetValue(poi.GetGirderCoordinate());
-            else
-               (*p_table)(row,col++) << span_location.SetValue(cumm_span_length + poi.GetDistFromStart() - end_size);
+            Float64 Xg = pIPoi->ConvertPoiToGirderCoordinate(poi);
+            (*p_table)(row,col++) << span_location.SetValue(cumm_span_length + Xg);
          }
 
          (*p_table)(row,col++) << moment.SetValue( Mmax[index] );

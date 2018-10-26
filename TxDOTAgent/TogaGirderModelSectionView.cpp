@@ -306,7 +306,7 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    pntBC.Release();
    box->get_TopCenter(&pntTC);
    box->get_BottomCenter(&pntBC);
-   Float64 dx = -_cpp_max(top_width,bottom_width)/2.0;
+   Float64 dx = -Max(top_width,bottom_width)/2.0;
    pntTC->Offset(dx,0);
    pntBC->Offset(dx,0);
    connectable->AddSocket(SOCKET_HT,pntTC,&socketHT);
@@ -676,7 +676,7 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
       long tx0,ty0;
       long tx1,ty1;
       m_pCoordinateMap->WPtoTP(0,0,&tx0,&ty0);
-      m_pCoordinateMap->WPtoTP(_cpp_max(top_width,bottom_width)/2,0,&tx1,&ty1);
+      m_pCoordinateMap->WPtoTP(Max(top_width,bottom_width)/2,0,&tx1,&ty1);
       doDimLineCGPS->SetWitnessLength(tx1-tx0);
       doDimLineHeight->SetWitnessLength(tx1-tx0+50);
    }
@@ -778,8 +778,8 @@ void CTogaGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
    rect.DeflateRect(5,5,5,5);
 
    CSize size = rect.Size();
-   size.cx = max(0,size.cx);
-   size.cy = max(0,size.cy);
+   size.cx = Max(0L,size.cx);
+   size.cy = Max(0L,size.cy);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);

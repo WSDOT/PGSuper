@@ -34,10 +34,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description=""
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
+				Description="Copying Toga Templates to BridgeLink folder"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates"
+				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
+				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -135,10 +135,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description=""
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
+				Description="Copying Toga Templates to BridgeLink folder"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates"
+				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
+				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -236,10 +236,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description=""
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
+				Description="Copying Toga Templates to BridgeLink folder"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates"
+				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
+				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -343,10 +343,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description=""
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
+				Description="Copying Toga Templates to BridgeLink folder"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates"
+				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
+				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -449,10 +449,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description=""
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
+				Description="Copying Toga Templates to BridgeLink folder"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates"
+				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
+				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -556,10 +556,10 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description=""
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
+				Description="Copying Toga Templates to BridgeLink folder"
+				CommandLine="xcopy /y/d .\TogaTemplates\*.togt \ARP\BridgeLink\TogaTemplates"
+				AdditionalDependencies="\ARP\BridgeLink\TogaTemplates\*.togt"
+				Outputs="\ARP\BridgeLink\TogaTemplates\*.togt"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"

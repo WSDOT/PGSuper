@@ -51,7 +51,7 @@ CGirderSpacingData2::CGirderSpacingData2()
 
    m_DefaultSpacing = ::ConvertToSysUnits(5.0,unitMeasure::Feet);
 
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 CGirderSpacingData2::CGirderSpacingData2(const CGirderSpacingData2& rOther)
@@ -197,14 +197,14 @@ HRESULT CGirderSpacingData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       ATLASSERT(0);
    }
 
-   IS_VALID;
+   ASSERT_VALID;
 
    return hr;
 }
 
 HRESULT CGirderSpacingData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   IS_VALID;
+   ASSERT_VALID;
 
    HRESULT hr = S_OK;
    pStrSave->BeginUnit(_T("GirderSpacing"),1.0);
@@ -252,21 +252,13 @@ void CGirderSpacingData2::MakeCopy(const CGirderSpacingData2& rOther)
 
    m_DefaultSpacing = rOther.m_DefaultSpacing;
 
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 void CGirderSpacingData2::MakeAssignment(const CGirderSpacingData2& rOther)
 {
    MakeCopy( rOther );
 }
-
-#if defined _DEBUG
-void CGirderSpacingData2::AssertValid() const
-{
-   _ASSERT( m_MeasurementType     == pgsTypes::AlongItem        || m_MeasurementType     == pgsTypes::NormalToItem );
-   _ASSERT( m_MeasurementLocation == pgsTypes::AtPierLine || m_MeasurementLocation == pgsTypes::AtCenterlineBearing );
-}
-#endif
 
 void CGirderSpacingData2::SetGirderSpacing(GroupIndexType grpIdx,Float64 s)
 {
@@ -277,20 +269,26 @@ void CGirderSpacingData2::SetGirderSpacing(GroupIndexType grpIdx,Float64 s)
    SpacingIndexType firstSpaceIdx = firstGdrIdx;
    SpacingIndexType lastSpaceIdx  = lastGdrIdx-1;
 
+   if ( m_GirderSpacing.size() <= lastSpaceIdx )
+   {
+      // the vector is too small... resize it so that everything fits
+      m_GirderSpacing.resize(lastSpaceIdx+1);
+   }
+
    _ASSERT( 0 <= firstSpaceIdx && firstSpaceIdx < (SpacingIndexType)m_GirderSpacing.size() );
    _ASSERT( 0 <= lastSpaceIdx  && lastSpaceIdx  < (SpacingIndexType)m_GirderSpacing.size() );
    for ( SpacingIndexType i = firstSpaceIdx; i <= lastSpaceIdx; i++ )
    {
       m_GirderSpacing[i] = s;
    }
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 void CGirderSpacingData2::SetMeasurementType(pgsTypes::MeasurementType mt)
 {
    _ASSERT( mt == pgsTypes::AlongItem || mt == pgsTypes::NormalToItem );
    m_MeasurementType = mt;
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 pgsTypes::MeasurementType CGirderSpacingData2::GetMeasurementType() const
@@ -302,7 +300,7 @@ void CGirderSpacingData2::SetMeasurementLocation(pgsTypes::MeasurementLocation m
 {
    _ASSERT( ml == pgsTypes::AtPierLine || ml == pgsTypes::AtCenterlineBearing );
    m_MeasurementLocation = ml;
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 pgsTypes::MeasurementLocation CGirderSpacingData2::GetMeasurementLocation() const
@@ -498,26 +496,31 @@ Float64 CGirderSpacingData2::GetGirderSpacing(SpacingIndexType spacingIdx) const
    return m_GirderSpacing[spacingIdx];
 }
 
+void CGirderSpacingData2::InitGirderCount(GirderIndexType nGirders)
+{
+   m_SpacingGroups.clear();
+   m_GirderSpacing.clear();
+
+   SpacingGroup group;
+   group.first = 0;
+   group.second = nGirders-1;
+
+   m_SpacingGroups.push_back(group);
+
+   m_GirderSpacing.insert(m_GirderSpacing.end(),nGirders-1,m_DefaultSpacing);
+}
+
 void CGirderSpacingData2::AddGirders(GirderIndexType nGirders)
 {
    if ( m_GirderSpacing.size() == 0 )
    {
       SpacingGroup group;
       group.first = 0;
-      group.second = nGirders-1;
-
-      // this takes care of the case when we have 1 girder and are adding 1 girder
-      if( group.first == group.second && group.first == 0 )
-      {
-         group.second++;
-      }
+      group.second = nGirders;
 
       m_SpacingGroups.push_back(group);
 
-      for ( SpacingIndexType i = group.first; i < group.second; i++ )
-      {
-         m_GirderSpacing.push_back(m_DefaultSpacing);
-      }
+      m_GirderSpacing.insert(m_GirderSpacing.end(),nGirders,m_DefaultSpacing);
    }
    else
    {
@@ -533,6 +536,8 @@ void CGirderSpacingData2::RemoveGirders(GirderIndexType nGirdersToRemove)
 {
    _ASSERT( nGirdersToRemove <= (GirderIndexType)(m_GirderSpacing.size()+1) ); // trying to remove too many girders
 
+   Float64 default_spacing = m_GirderSpacing.front(); // hang onto this spacing before we change the size of the vector
+
    SpacingIndexType nSpacesToRemove = nGirdersToRemove;
    for ( SpacingIndexType i = 0; i < nSpacesToRemove; i++ )
       m_GirderSpacing.pop_back();
@@ -543,15 +548,16 @@ void CGirderSpacingData2::RemoveGirders(GirderIndexType nGirdersToRemove)
    if ( nGirders == 1 )
    {
       // if there is only one girder left, then there is no spacing
-      //m_DefaultSpacing = m_GirderSpacing.front();
+      m_DefaultSpacing = default_spacing; // the default spacing, if girders are added back, is the last spacing used before nGirders when to 1
       m_GirderSpacing.clear();
       m_SpacingGroups.clear();
    }
    else
    {
-      std::vector<SpacingGroup>::iterator iter;
+      std::vector<SpacingGroup>::iterator iter(m_SpacingGroups.begin());
+      std::vector<SpacingGroup>::iterator end(m_SpacingGroups.end());
       GirderIndexType gdrCount = 0;
-      for ( iter = m_SpacingGroups.begin(); iter != m_SpacingGroups.end(); iter++ )
+      for ( ; iter != end; iter++ )
       {
          SpacingGroup& group = *iter;
 
@@ -615,6 +621,14 @@ void CGirderSpacingData2::SetGirderCount(GirderIndexType nGirders)
          AddGirders(nGirders - (m_GirderSpacing.size()+1));
    }
 }
+
+#if defined _DEBUG
+void CGirderSpacingData2::AssertValid() const
+{
+   ATLASSERT( m_MeasurementType     == pgsTypes::AlongItem  || m_MeasurementType     == pgsTypes::NormalToItem );
+   ATLASSERT( m_MeasurementLocation == pgsTypes::AtPierLine || m_MeasurementLocation == pgsTypes::AtCenterlineBearing );
+}
+#endif
 
 
 /****************************************************************************
@@ -756,7 +770,10 @@ GroupIndexType CGirderSpacing2::GetSpacingGroupCount() const
    const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
    if ( pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
    {
-      return 1;
+      if ( pBridgeDesc->UseSameNumberOfGirdersInAllGroups() )
+         return 1;
+      else
+         return CGirderSpacingData2::GetSpacingGroupCount();
    }
    else
    {
@@ -769,14 +786,29 @@ void CGirderSpacing2::GetSpacingGroup(GroupIndexType spacingGroupIdx,GirderIndex
    const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
    if ( pBridgeDesc && IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
    {
+      // this spacing object is attached to a bridge model
+      // the spacing is defined at the bridge model level (one spacing used everywhere)
       *pSpacing = pBridgeDesc->GetGirderSpacing();
       *pFirstGdrIdx = 0;
-      *pLastGdrIdx = pBridgeDesc->GetGirderCount()-1;
+
+      if ( pBridgeDesc->UseSameNumberOfGirdersInAllGroups() )
+      {
+         // the same number of girders is used in all groups so the last girder
+         // in this spacing group is the nGirders-1 from the bridge level
+         *pLastGdrIdx = pBridgeDesc->GetGirderCount()-1;
+      }
+      else
+      {
+         // a different number of girders is used in each group.
+         // the last girder in this group comes from the spacing group
+         const SpacingGroup& group = m_SpacingGroups[spacingGroupIdx];
+         *pLastGdrIdx  = group.second;
+      }
    }
    else
    {
       _ASSERT( spacingGroupIdx < (SpacingIndexType)m_SpacingGroups.size() );
-      SpacingGroup group = m_SpacingGroups[spacingGroupIdx];
+      const SpacingGroup& group = m_SpacingGroups[spacingGroupIdx];
 
       *pSpacing = m_GirderSpacing[group.first];
       *pFirstGdrIdx = group.first;
@@ -819,13 +851,13 @@ SpacingIndexType CGirderSpacing2::GetSpacingCount() const
          {
             // this spacing is for the back side of this pier
             // get the girder group for the span on the back side of this pier
-            pGroup = pBridgeDesc->GetGirderGroup((SpanIndexType)(m_pPier->GetIndex()-1));
+            pGroup = pBridgeDesc->GetGirderGroup(m_pPier->GetSpan(pgsTypes::Back));
          }
          else
          {
             // this spacing is for the ahead side of this pier
             // get the girder group for the span on the ahead side of this pier
-            pGroup = pBridgeDesc->GetGirderGroup((SpanIndexType)m_pPier->GetIndex());
+            pGroup = pBridgeDesc->GetGirderGroup(m_pPier->GetSpan(pgsTypes::Ahead));
          }
 
          // get the number of girders in the group and compute the number of spaces
@@ -836,6 +868,12 @@ SpacingIndexType CGirderSpacing2::GetSpacingCount() const
    }
    else
    {
+      if ( pBridgeDesc && pBridgeDesc->UseSameNumberOfGirdersInAllGroups() )
+      {
+         // using the same number of girders in all spans
+         return pBridgeDesc->GetGirderCount()-1;
+      }
+
       return CGirderSpacingData2::GetSpacingCount();
    }
 }
@@ -950,9 +988,14 @@ const CGirderGroupData* CGirderSpacing2::GetGirderGroup() const
          pSpan = m_pPier->GetNextSpan();
       }
    }
-   else
+   else if ( m_pTempSupport )
    {
       pSpan = m_pTempSupport->GetSpan();
+   }
+   else
+   {
+      // spacing data is not hooked up to a bridge model
+      return NULL;
    }
 
    const CGirderGroupData* pGroup = GetBridgeDescription()->GetGirderGroup(pSpan);
@@ -964,3 +1007,16 @@ Float64 CGirderSpacing2::GetGirderWidth(const CSplicedGirderData* pGirder) const
    const GirderLibraryEntry* pLibEntry = pGirder->GetGirderLibraryEntry();
    return pLibEntry->GetBeamWidth(pgsTypes::metStart);
 }
+
+#if defined _DEBUG
+void CGirderSpacing2::AssertValid() const
+{
+   CGirderSpacingData2::AssertValid();
+
+   const CGirderGroupData* pGroup = GetGirderGroup();
+   if ( pGroup )
+   {
+      ATLASSERT(pGroup->m_Girders.size() == m_GirderSpacing.size()+1);
+   }
+}
+#endif

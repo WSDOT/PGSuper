@@ -123,7 +123,7 @@ public:
    // Use when slab offset type is pgsTypes::sotGroup
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
 
-   // Set/Get the slab offset at the ends of the segmens in a girder
+   // Set/Get the slab offset at the ends of the segments in a girder
    // Use when slab offset type is pgsTypes::sotSegment
    void SetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end,Float64 offset);
    Float64 GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const;
@@ -201,4 +201,9 @@ private:
    void RemoveGirder(GirderIndexType gdrIdx);
 
    void UpdatePiers();
+
+#if defined _DEBUG
+   // Giving other classes access to our internal data members for debugging purposes only
+   friend CGirderSpacing2;
+#endif
 };

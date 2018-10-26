@@ -99,7 +99,7 @@ int CDuctGrid::GetColWidth(ROWCOL nCol)
    return rect.Width()/9;
 }
 
-void CDuctGrid::CustomInit(const CSplicedGirderData* pGirder)
+void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
 {
    m_PTData.SetGirder(pGirder);
 
@@ -771,6 +771,23 @@ BOOL CDuctGrid::CanActivateGrid(BOOL bActivate)
          EventIndexType eventIdx;
          DuctIndexType ductIdx = (DuctIndexType)row;
          GetDuctData(row+1,*pDuctData,eventIdx);
+
+         if ( pDuctData->nStrands == 0 )
+         {
+            CString strMsg;
+            strMsg.Format(_T("Duct %d does not have any strands"),LABEL_DUCT(ductIdx));
+            AfxMessageBox(strMsg);
+            return FALSE;
+         }
+
+         if ( pDuctData->Pj < 0 )
+         {
+            CString strMsg;
+            strMsg.Format(_T("The jacking force in Duct %d must be a positive value"),LABEL_DUCT(ductIdx));
+            AfxMessageBox(strMsg);
+            return FALSE;
+         }
+
          if ( eventIdx == INVALID_INDEX )
          {
             AfxMessageBox(_T("Tendon stressing events must be defined"));

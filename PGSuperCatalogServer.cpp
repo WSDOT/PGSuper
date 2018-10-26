@@ -493,9 +493,9 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
          {
             // download the catalog file
             CInternetSession inetSession;
-            CFtpConnection* pFTP = inetSession.GetFtpConnection(strServer);
+            std::auto_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer) );
 
-            CFtpFileFind ftpFind(pFTP);
+            CFtpFileFind ftpFind(pFTP.get());
             if ( !ftpFind.FindFile(strObject) || !pFTP->GetFile(strObject,m_strLocalCatalog,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
             {
                // could not find or get the file (it may not be on the server)
@@ -1104,9 +1104,9 @@ bool CFtpPGSuperCatalogServer::TestServer(CString& errorMessage) const
 
    // See if we find the catalog file
    CInternetSession inetSession;
-   CFtpConnection* pFTP = inetSession.GetFtpConnection(strServer);
+   std::auto_ptr<CFtpConnection> pFTP( inetSession.GetFtpConnection(strServer) );
 
-   CFtpFileFind ftpFind(pFTP);
+   CFtpFileFind ftpFind(pFTP.get());
    if ( !ftpFind.FindFile(strObject))
    {
       errorMessage.Format(_T("Error - Unable to find catalog file: %s on the server."),strObject);

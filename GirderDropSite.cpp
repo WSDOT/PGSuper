@@ -61,6 +61,12 @@ CGirderDropSite::~CGirderDropSite()
 
 }
 
+void CGirderDropSite::OnFinalRelease()
+{
+   m_DispObj.Detach();
+   CCmdTarget::OnFinalRelease();
+}
+
 BEGIN_INTERFACE_MAP(CGirderDropSite,CCmdTarget)
    INTERFACE_PART(CGirderDropSite,IID_iDropSite,DropSite)
 END_INTERFACE_MAP()
@@ -128,7 +134,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
 
-         data.m_EventIdx = pThis->m_pFrame->GetEvent();
+         data.m_EventIndex = pThis->m_pFrame->GetEvent();
          if (pThis->m_pFrame->GetEvent() == liveLoadEventIdx )
             data.m_LoadCase = UserLoads::LL_IM;
 
@@ -185,7 +191,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
 
-         data.m_EventIdx = pThis->m_pFrame->GetEvent();
+         data.m_EventIndex = pThis->m_pFrame->GetEvent();
          if (pThis->m_pFrame->GetEvent() == liveLoadEventIdx )
             data.m_LoadCase = UserLoads::LL_IM;
 
@@ -235,7 +241,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
 
-         data.m_EventIdx = pThis->m_pFrame->GetEvent();
+         data.m_EventIndex = pThis->m_pFrame->GetEvent();
          if (pThis->m_pFrame->GetEvent() == liveLoadEventIdx )
             data.m_LoadCase = UserLoads::LL_IM;
 
@@ -275,7 +281,8 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
 STDMETHODIMP_(void) CGirderDropSite::XDropSite::SetDisplayObject(iDisplayObject* pDO)
 {
    METHOD_PROLOGUE(CGirderDropSite,DropSite);
-   pThis->m_DispObj = pDO;
+   pThis->m_DispObj.Detach();
+   pThis->m_DispObj.Attach(pDO);
 }
 
 STDMETHODIMP_(void) CGirderDropSite::XDropSite::GetDisplayObject(iDisplayObject** dispObj)

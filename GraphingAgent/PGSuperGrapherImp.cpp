@@ -35,6 +35,7 @@
 // Graph Builders
 #include <Graphing\AnalysisResultsGraphBuilder.h>
 #include <Graphing\StabilityGraphBuilder.h>
+#include <Graphing\InfluenceLineGraphBuilder.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,6 +60,7 @@ HRESULT CPGSuperGrapherImp::InitGraphBuilders()
 
    pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
+   //pGraphMgr->AddGraphBuilder(new CInfluenceLineGraphBuilder);
 
    return S_OK;
 }

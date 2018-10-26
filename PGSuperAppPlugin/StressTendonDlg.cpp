@@ -12,8 +12,10 @@
 
 IMPLEMENT_DYNAMIC(CStressTendonDlg, CDialog)
 
-CStressTendonDlg::CStressTendonDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CStressTendonDlg::IDD, pParent)
+CStressTendonDlg::CStressTendonDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
+	: CDialog(CStressTendonDlg::IDD, pParent),
+   m_pTimelineMgr(pTimelineMgr),
+   m_EventIndex(eventIdx)
 {
 }
 
@@ -38,9 +40,9 @@ void CStressTendonDlg::DoDataExchange(CDataExchange* pDX)
          tendons.push_back( std::make_pair(girderKey,ductIdx) );
       }
 
-      m_StressTendons.Clear();
-      m_StressTendons.Enable(true);
-      m_StressTendons.AddTendons(tendons);
+      m_StressTendonActivity.Clear();
+      m_StressTendonActivity.Enable(true);
+      m_StressTendonActivity.AddTendons(tendons);
    }
 }
 
@@ -75,10 +77,7 @@ void CStressTendonDlg::OnMoveRight()
    arrSelected.SetSize(nCount);
    pSourceList->GetSelItems(nCount,arrSelected.GetData());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = m_pTimelineMgr->GetBridgeDescription();
 
    CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
    for ( int i = 0; i < nCount; i++ )
@@ -114,10 +113,7 @@ void CStressTendonDlg::OnMoveLeft()
    arrSelected.SetSize(nCount);
    pTargetList->GetSelItems(nCount,arrSelected.GetData());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = m_pTimelineMgr->GetBridgeDescription();
 
    CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
    for ( int i = 0; i < nCount; i++ )
@@ -148,12 +144,7 @@ void CStressTendonDlg::FillSourceList()
    CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
    m_SourceTendons.clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   const CBridgeDescription2* pBridgeDesc = m_pTimelineMgr->GetBridgeDescription();
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -170,7 +161,16 @@ void CStressTendonDlg::FillSourceList()
          DuctIndexType nDucts = pPTData->GetDuctCount();
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
-            if ( !pTimelineMgr->IsTendonStressed( girderKey, ductIdx) )
+            bool bIsTendonStressed = m_pTimelineMgr->IsTendonStressed(girderKey,ductIdx);
+            if ( bIsTendonStressed && m_pTimelineMgr->GetStressTendonEventIndex(girderKey,ductIdx) == m_EventIndex )
+            {
+               // if the tendon is marked as stress and if it is stressed during this event, make sure it is
+               // marked as stressed in the activity. If it is not stressed in this activity
+               // the it is not stressed (the global timeline manager hasn't been updated yet)
+               if ( !m_StressTendonActivity.IsTendonStressed(girderKey,ductIdx) )
+                  bIsTendonStressed = false;
+            }
+            if ( !bIsTendonStressed )
             {
                CString label;
                label.Format(_T("Group %d, Girder %s, Duct %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_DUCT(ductIdx));
@@ -194,7 +194,7 @@ void CStressTendonDlg::FillTargetList()
    CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
    m_TargetTendons.clear();
 
-   std::vector<std::pair<CGirderKey,DuctIndexType>> tendons = m_StressTendons.GetTendons();
+   std::vector<std::pair<CGirderKey,DuctIndexType>> tendons = m_StressTendonActivity.GetTendons();
    std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator iter(tendons.begin());
    std::vector<std::pair<CGirderKey,DuctIndexType>>::iterator iterEnd(tendons.end());
 

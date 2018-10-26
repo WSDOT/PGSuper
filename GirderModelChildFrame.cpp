@@ -68,7 +68,7 @@ IMPLEMENT_DYNCREATE(CGirderModelChildFrame, CSplitChildFrame)
 CGirderModelChildFrame::CGirderModelChildFrame():
 m_CurrentCutLocation(0),
 m_CutLocation(Center),
-m_EventIdx(0),
+m_EventIndex(0),
 m_GirderKey(ALL_GROUPS,0),
 m_bIsAfterFirstUpdate(false)
 {
@@ -377,7 +377,7 @@ void CGirderModelChildFrame::UpdateBar()
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      nGirders = max(nGirders,pGroup->GetGirderCount());
+      nGirders = Max(nGirders,pGroup->GetGirderCount());
    }
 
    pcbGirder->ResetContent();
@@ -524,7 +524,7 @@ void CGirderModelChildFrame::OnGroupChanged()
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       GirderIndexType nGirders = pGroup->GetGirderCount();
-      m_GirderKey.girderIndex = min(m_GirderKey.girderIndex,nGirders-1);
+      m_GirderKey.girderIndex = Min(m_GirderKey.girderIndex,nGirders-1);
    }
 
    UpdateBar();
@@ -540,7 +540,7 @@ void CGirderModelChildFrame::OnGroupChanged()
 void CGirderModelChildFrame::OnSelectEvent() 
 {
    CComboBox* pcbEvents = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SELEVENT);
-   m_EventIdx = (EventIndexType)pcbEvents->GetCurSel();
+   m_EventIndex = (EventIndexType)pcbEvents->GetCurSel();
 
    UpdateBar();
    UpdateViews();
@@ -733,8 +733,8 @@ void CGirderModelChildFrame::OnAddPointload()
    data.m_SpanGirderKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   if ( m_EventIdx != liveLoadEventIdx)
-      data.m_EventIdx = m_EventIdx;
+   if ( m_EventIndex != liveLoadEventIdx)
+      data.m_EventIndex = m_EventIndex;
    else
       data.m_LoadCase = UserLoads::LL_IM;
 
@@ -763,8 +763,8 @@ void CGirderModelChildFrame::OnAddDistributedLoad()
    data.m_SpanGirderKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   if ( m_EventIdx != liveLoadEventIdx)
-      data.m_EventIdx = m_EventIdx;
+   if ( m_EventIndex != liveLoadEventIdx)
+      data.m_EventIndex = m_EventIndex;
    else
       data.m_LoadCase = UserLoads::LL_IM;
 
@@ -791,8 +791,8 @@ void CGirderModelChildFrame::OnAddMoment()
    data.m_SpanGirderKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   if ( m_EventIdx != liveLoadEventIdx)
-      data.m_EventIdx = m_EventIdx;
+   if ( m_EventIndex != liveLoadEventIdx)
+      data.m_EventIndex = m_EventIndex;
    else
       data.m_LoadCase = UserLoads::LL_IM;
 
@@ -861,5 +861,5 @@ void CGirderModelChildFrame::FillEventComboBox()
       pcbEvents->AddString(strLabel);
    }
    pcbEvents->SetCurSel( sel == CB_ERR ? 0 : sel );
-   m_EventIdx = (EventIndexType)pcbEvents->GetCurSel();
+   m_EventIndex = (EventIndexType)pcbEvents->GetCurSel();
 }

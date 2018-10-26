@@ -32,7 +32,7 @@
 class CSpanData2;
 class CBridgeDescription2;
 class CPierData;
-class CClosurePourData;
+class CClosureJointData;
 
 /*****************************************************************************
 CLASS 
@@ -151,9 +151,14 @@ public:
    pgsTypes::PierConnectionType GetPierConnectionType() const;
    void SetPierConnectionType(pgsTypes::PierConnectionType type);
 
-   // Set/Get the segment connection type (not used if pier is located between girder groups)
+   // Set/Get the segment connection type (not used if pier is a BoundaryPier)
+   // When setting the connection type to pgsTypes::psctContinuousSegment or pgsTypes::psctIntegralSegment 
+   // the casting event for the closures that are created at this pier are set to castClosureJointEvent
+   // otherwise this parameter is not used.
+   // When setting the connection type to pgsTypes::psctContinousClosureJoint or pgsTypes::psctIntegralClosureJoint
+   // the casting event for the closure joints that are removed are automatically removed from the timeline manager
+   void SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType type,EventIndexType castClosureJointEvent);
    pgsTypes::PierSegmentConnectionType GetSegmentConnectionType() const;
-   void SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType type);
 
    // Set/Get the distance from the CL bearing to the end of the girders at this pier
    // These parameters are meaningless if the connection type is pgsTypes::ContinuousSegment
@@ -169,13 +174,15 @@ public:
    void SetSupportWidth(pgsTypes::PierFaceType face,Float64 w);
    Float64 GetSupportWidth(pgsTypes::PierFaceType face) const;
 
-   // Set/Get the girder spacing at this pier
+   // Set/Get the girder spacing at this pier.
+   // If there is a closure pour associated with this pier then only the pgsTypes::Back spacing is valid
    void SetGirderSpacing(pgsTypes::PierFaceType pierFace,const CGirderSpacing2& spacing);
    CGirderSpacing2* GetGirderSpacing(pgsTypes::PierFaceType pierFace);
    const CGirderSpacing2* GetGirderSpacing(pgsTypes::PierFaceType pierFace) const;
 
-   // Get a closure pour associated with this pier. Returns NULL if there isn't a closure pour.
-   const CClosurePourData* GetClosurePour(GirderIndexType gdrIdx) const;
+   // Get a closure joint associated with this pier. Returns NULL if there isn't a closure joint.
+   CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx);
+   const CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx) const;
 
    // =================================================================================
    // Diaphragm
@@ -266,6 +273,8 @@ private:
    mutable std::vector<LLDF> m_LLDFs; // this is mutable because we may have to change the container size on Get functions
 
    mutable bool m_bDistributionFactorsFromOlderVersion; // If this is true, we need to do some processing into the new format
+
+   void RemoveFromTimeline();
 
    // safe internal function for getting lldfs in lieue of girder count changes
    LLDF& GetLLDF(GirderIndexType gdrIdx) const;

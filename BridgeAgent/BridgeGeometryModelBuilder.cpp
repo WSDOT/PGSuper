@@ -24,7 +24,7 @@
 #include "BridgeGeometryModelBuilder.h"
 #include "BridgeHelpers.h"
 
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
 #ifdef _DEBUG
@@ -40,40 +40,36 @@ CBridgeGeometryModelBuilder::CBridgeGeometryModelBuilder()
 
 bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescription2* pBridgeDesc,ICogoModel* pCogoModel,IAlignment* pAlignment,IBridgeGeometry* pBridgeGeometry)
 {
-   m_BridgeGeometry = pBridgeGeometry;
-
    //
    // Associate COGO model with bridge
    //
-   m_BridgeGeometry->putref_CogoModel(pCogoModel);
+   pBridgeGeometry->putref_CogoModel(pCogoModel);
 
    // Associate an alignment with the bridge model (bridges can be associated with many alignments)
-   m_BridgeGeometry->putref_Alignment(m_AlignmentID,pAlignment);
+   pBridgeGeometry->putref_Alignment(m_AlignmentID,pAlignment);
 
    // Set the alignment offset
-   m_BridgeGeometry->put_AlignmentOffset(-pBridgeDesc->GetAlignmentOffset());
+   pBridgeGeometry->put_AlignmentOffset(-pBridgeDesc->GetAlignmentOffset());
 
    // Set the ID of the main bridge alignment (all other alignments are secondary)
-   m_BridgeGeometry->put_BridgeAlignmentID(m_AlignmentID);
+   pBridgeGeometry->put_BridgeAlignmentID(m_AlignmentID);
 
-   if ( !LayoutPiers(pBridgeDesc) )
+   if ( !LayoutPiers(pBridgeDesc,pBridgeGeometry) )
       return false;
 
-   if ( !LayoutTemporarySupports(pBridgeDesc) )
+   if ( !LayoutTemporarySupports(pBridgeDesc,pBridgeGeometry) )
       return false;
 
-   if ( !LayoutGirderLines(pBridgeDesc) )
+   if ( !LayoutGirderLines(pBridgeDesc,pBridgeGeometry) )
       return false;
 
-   if ( !LayoutDiaphragmLines(pBridgeDesc) )
+   if ( !LayoutDiaphragmLines(pBridgeDesc,pBridgeGeometry) )
       return false;
-
-   m_BridgeGeometry.Release();
 
    return true;
 }
 
-bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridgeDesc)
+bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
    // use pier index as the pier ID
    const CPierData2* pPier = pBridgeDesc->GetPier(0);
@@ -86,7 +82,7 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       std::_tstring strOrientation = pPier->GetOrientation();
 
       CComPtr<IAlignment> alignment;
-      m_BridgeGeometry->get_BridgeAlignment(&alignment);
+      pBridgeGeometry->get_BridgeAlignment(&alignment);
 
       CComPtr<IAngle> skew;
       GetPierSkewAngle(alignment,pPier,&skew);
@@ -111,7 +107,7 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       if ( pPrevSpan )
       {
          const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);
-         back_width = max(back_width,pSpacing->GetSpacingWidth());
+         back_width = Max(back_width,pSpacing->GetSpacingWidth());
    
          GirderIndexType refGirderIdx = pSpacing->GetRefGirder();
          Float64 refGirderOffset = pSpacing->GetRefGirderOffset();
@@ -155,7 +151,7 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       if ( pNextSpan )
       {
          const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Ahead);
-         ahead_width = max(ahead_width,pSpacing->GetSpacingWidth());
+         ahead_width = Max(ahead_width,pSpacing->GetSpacingWidth());
    
          GirderIndexType refGirderIdx = pSpacing->GetRefGirder();
          Float64 refGirderOffset = pSpacing->GetRefGirderOffset();
@@ -209,7 +205,7 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       }
 
       CComPtr<IPierLine> pierline;
-      m_BridgeGeometry->CreatePierLine(pierID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),width,offset,&pierline);
+      pBridgeGeometry->CreatePierLine(pierID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),width,offset,&pierline);
 
       // Layout connection geometry on back side of pier
       if ( pPier->GetPrevSpan() )
@@ -298,7 +294,7 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
    return true;
 }
 
-bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescription2* pBridgeDesc)
+bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
    SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
@@ -319,7 +315,7 @@ bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescripti
       Float64 offset = 0;
 
       CComPtr<IPierLine> tsLine;
-      m_BridgeGeometry->CreatePierLine(tsID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),width,offset,&tsLine);
+      pBridgeGeometry->CreatePierLine(tsID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),width,offset,&tsLine);
 
       Float64 brgOffset;
       ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
@@ -368,7 +364,7 @@ bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescripti
    return true;
 }
 
-bool CBridgeGeometryModelBuilder::LayoutGirderLines(const CBridgeDescription2* pBridgeDesc)
+bool CBridgeGeometryModelBuilder::LayoutGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
    // girder layout lines are geometric construction lines that are used
    // to create the actual girder line geometry
@@ -379,12 +375,12 @@ bool CBridgeGeometryModelBuilder::LayoutGirderLines(const CBridgeDescription2* p
    case pgsTypes::sbsUniform:
    case pgsTypes::sbsUniformAdjacent:
    case pgsTypes::sbsConstantAdjacent:
-      bRetVal = LayoutUniformGirderLines(pBridgeDesc);
+      bRetVal = LayoutUniformGirderLines(pBridgeDesc,pBridgeGeometry);
       break;
 
    case pgsTypes::sbsGeneral:
    case pgsTypes::sbsGeneralAdjacent:
-      bRetVal = LayoutGeneralGirderLines(pBridgeDesc);
+      bRetVal = LayoutGeneralGirderLines(pBridgeDesc,pBridgeGeometry);
       break;
 
    default:
@@ -394,7 +390,7 @@ bool CBridgeGeometryModelBuilder::LayoutGirderLines(const CBridgeDescription2* p
    return bRetVal;
 }
 
-bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescription2* pBridgeDesc)
+bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
    pgsTypes::MeasurementLocation measureLocation = pBridgeDesc->GetMeasurementLocation();
    pgsTypes::MeasurementType measureType = pBridgeDesc->GetMeasurementType();
@@ -415,7 +411,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
       
       // the girder spacing is measured along the CL pier or CL bearing. if the piers are skewed or
       // if the alignment is curved, the girder spacing along the alignment normal will not be uniform
-      return LayoutGeneralGirderLines(pBridgeDesc);
+      return LayoutGeneralGirderLines(pBridgeDesc,pBridgeGeometry);
    }
 
 #pragma Reminder("UPDATE: adjust ref girder offset for spacing measurement type")
@@ -433,7 +429,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
       const GirderLibraryEntry* pGdrLibEntry = pGirder->GetGirderLibraryEntry();
       Float64 w1 = pGdrLibEntry->GetBeamWidth(pgsTypes::metStart);
       Float64 w2 = pGdrLibEntry->GetBeamWidth(pgsTypes::metEnd);
-      Float64 w = max(w1,w2);
+      Float64 w  = Max(w1,w2);
 
       spacing += w;
    }
@@ -486,7 +482,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
    factory->put_Offset(-refGirderOffset);  // refGirderOffset < 0 = left of alignment; WBFL Bridge Geometry: positive value is to the left of the alignment; Change sign
    factory->put_OffsetIncrement(-spacing); // positive value places lines to the left of the previous line (want to place the lines to the right)
    factory->put_AlignmentID(m_AlignmentID);
-   m_BridgeGeometry->CreateLayoutLines(factory);
+   pBridgeGeometry->CreateLayoutLines(factory);
 
    //
    // Build Girder Lines
@@ -523,7 +519,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
             glFactory->put_StartPierID(startID);
             glFactory->put_EndPierID(endID);
 
-            m_BridgeGeometry->CreateGirderLines(glFactory);
+            pBridgeGeometry->CreateGirderLines(glFactory);
          } // segment loop
       } // girder loop
    } // group loop
@@ -531,7 +527,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
    return true;
 }
 
-bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescription2* pBridgeDesc)
+bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
    //
    // Do some preliminary setup for the function
@@ -540,7 +536,7 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
    factory.CoCreateInstance(CLSID_SimpleLayoutLineFactory);
 
    CComPtr<IAlignment> alignment;
-   m_BridgeGeometry->get_Alignment(m_AlignmentID,&alignment);
+   pBridgeGeometry->get_Alignment(m_AlignmentID,&alignment);
 
    Float64 alignmentOffset = pBridgeDesc->GetAlignmentOffset();
 
@@ -563,25 +559,25 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
       // Resolve girder spacing at segments ends
       //
 
-      ResolveGirderSpacingAtPier(alignment,alignmentOffset,pStartPier,pgsTypes::Ahead,&girderPoints[0]);
+      ResolveGirderSpacingAtPier(alignment,alignmentOffset,pStartPier,pgsTypes::Ahead,&girderPoints[0],pBridgeGeometry);
 
       for ( SegmentIndexType segIdx = 1; segIdx < nSegments; segIdx++ )
       {
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-         const CClosurePourData* pClosure = pSegment->GetLeftClosure();
+         const CClosureJointData* pClosure = pSegment->GetLeftClosure();
          const CPierData2* pPier           = pClosure->GetPier();
          const CTemporarySupportData* pTS = pClosure->GetTemporarySupport();
          if ( pPier )
          {
-            ResolveGirderSpacingAtPier(alignment,alignmentOffset,pPier,pgsTypes::Back,&girderPoints[segIdx]);
+            ResolveGirderSpacingAtPier(alignment,alignmentOffset,pPier,pgsTypes::Back,&girderPoints[segIdx],pBridgeGeometry);
          }
          else
          {
-            ResolveGirderSpacingAtTempSupport(alignment,alignmentOffset,pTS,&girderPoints[segIdx]);
+            ResolveGirderSpacingAtTempSupport(alignment,alignmentOffset,pTS,&girderPoints[segIdx],pBridgeGeometry);
          }
       }
 
-      ResolveGirderSpacingAtPier(alignment,alignmentOffset,pEndPier,pgsTypes::Back,&girderPoints[nSegments]);
+      ResolveGirderSpacingAtPier(alignment,alignmentOffset,pEndPier,pgsTypes::Back,&girderPoints[nSegments],pBridgeGeometry);
 
    #if defined _DEBUG
       // verify all girder offset arrays are the same length
@@ -626,7 +622,7 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
 
       // create the layout lines
       // there is a layout line for each segment. The layout line ID is derived from grpIdx/gdrIdx/segIdx
-      m_BridgeGeometry->CreateLayoutLines(factory);
+      pBridgeGeometry->CreateLayoutLines(factory);
       factory->Reset();
 
       //
@@ -657,7 +653,7 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
             glFactory->put_StartMeasurementLocation( pStartSpacing->GetMeasurementLocation() == pgsTypes::AtPierLine ? mlPierLine : mlCenterlineBearing );
             glFactory->put_EndMeasurementType( pEndSpacing->GetMeasurementType() == pgsTypes::AlongItem ? mtAlongItem : mtNormal );
             glFactory->put_EndMeasurementLocation( pEndSpacing->GetMeasurementLocation() == pgsTypes::AtPierLine ? mlPierLine : mlCenterlineBearing );
-            m_BridgeGeometry->CreateGirderLines(glFactory);
+            pBridgeGeometry->CreateGirderLines(glFactory);
             glFactory->Reset();
          }
       }
@@ -669,8 +665,8 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
 
 void CBridgeGeometryModelBuilder::GetPierID(const CPrecastSegmentData* pSegment,PierIDType* pStartID,PierIDType* pEndID)
 {
-   const CClosurePourData* pLeftClosure  = pSegment->GetLeftClosure();
-   const CClosurePourData* pRightClosure = pSegment->GetRightClosure();
+   const CClosureJointData* pLeftClosure  = pSegment->GetLeftClosure();
+   const CClosureJointData* pRightClosure = pSegment->GetRightClosure();
 
    if ( pLeftClosure == NULL )
    {
@@ -723,7 +719,7 @@ void CBridgeGeometryModelBuilder::GetPierSkewAngle(IAlignment* pAlignment,const 
    direction->AngleBetween(normal,ppSkew);
 }
 
-bool CBridgeGeometryModelBuilder::LayoutDiaphragmLines(const CBridgeDescription2* pBridgeDesc)
+bool CBridgeGeometryModelBuilder::LayoutDiaphragmLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
 #pragma Reminder("TODO: Implement")
    // need to add diaphragms to the bridge geometry model
@@ -735,7 +731,7 @@ bool CBridgeGeometryModelBuilder::LayoutDiaphragmLines(const CBridgeDescription2
    return true;
 }
 
-void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtPier(IAlignment* pAlignment,Float64 alignmentOffset,const CPierData2* pPier,pgsTypes::PierFaceType pierFace,IPoint2dCollection** ppPoints)
+void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtPier(IAlignment* pAlignment,Float64 alignmentOffset,const CPierData2* pPier,pgsTypes::PierFaceType pierFace,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry)
 {
    const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pierFace);
    Float64 measureStation;
@@ -782,10 +778,10 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtPier(IAlignment* pAlignm
       pAlignment->GetDirection(CComVariant(pierStation),CComBSTR(pPier->GetOrientation()),&measureDirection);
    }
 
-   ResolveGirderSpacing(pAlignment,alignmentOffset,measureStation,measureDirection,pSpacing,ppPoints);
+   ResolveGirderSpacing(pAlignment,alignmentOffset,measureStation,measureDirection,pSpacing,ppPoints,pBridgeGeometry);
 }
 
-void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtTempSupport(IAlignment* pAlignment,Float64 alignmentOffset,const CTemporarySupportData* pTS,IPoint2dCollection** ppPoints)
+void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtTempSupport(IAlignment* pAlignment,Float64 alignmentOffset,const CTemporarySupportData* pTS,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry)
 {
    const CGirderSpacing2* pSpacing = pTS->GetSegmentSpacing();
 
@@ -805,10 +801,10 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacingAtTempSupport(IAlignment* 
       pAlignment->GetDirection(CComVariant(measureStation),CComBSTR(pTS->GetOrientation()),&measureDirection);
    }
 
-   ResolveGirderSpacing(pAlignment,alignmentOffset,measureStation,measureDirection,pSpacing,ppPoints);
+   ResolveGirderSpacing(pAlignment,alignmentOffset,measureStation,measureDirection,pSpacing,ppPoints,pBridgeGeometry);
 }
 
-void CBridgeGeometryModelBuilder::ResolveGirderSpacing(IAlignment* pAlignment,Float64 alignmentOffset,Float64 measureStation,IDirection* pMeasureDirection,const CGirderSpacing2* pSpacing,IPoint2dCollection** ppPoints)
+void CBridgeGeometryModelBuilder::ResolveGirderSpacing(IAlignment* pAlignment,Float64 alignmentOffset,Float64 measureStation,IDirection* pMeasureDirection,const CGirderSpacing2* pSpacing,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry)
 {
    // NOTE: supportStation is the station where the girder spacing is measured. It could be at the
    // center of the support or at the centerline of bearing. You must check the girder spacing object
@@ -886,7 +882,7 @@ void CBridgeGeometryModelBuilder::ResolveGirderSpacing(IAlignment* pAlignment,Fl
    //
 
    CComPtr<ICogoModel> cogoModel;
-   m_BridgeGeometry->get_CogoModel(&cogoModel);
+   pBridgeGeometry->get_CogoModel(&cogoModel);
 
    CComPtr<ICogoEngine> cogoEngine;
    cogoModel->get_Engine(&cogoEngine);

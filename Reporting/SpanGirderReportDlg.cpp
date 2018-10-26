@@ -130,7 +130,7 @@ void CSpanGirderReportDlg::UpdateGirderComboBox(GroupIndexType grpIdx)
       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
       for ( GroupIndexType i = 0; i < nGroups; i++ )
       {
-         cGirders = max(cGirders,pBridge->GetGirderCount(i));
+         cGirders = Max(cGirders,pBridge->GetGirderCount(i));
       }
    }
    else

@@ -48,7 +48,7 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CSelectPOIDlg dlg(pBroker);
 
-   GET_IFACE2(pBroker,ISelectionEx,pSelection);
+   GET_IFACE2(pBroker,ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    if (selection.Type == CSelection::Girder )
    {
@@ -109,7 +109,7 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
       GET_IFACE2(pBroker,IMaterials,pMaterials);
       Float64 EcGdr;
       if ( dlg.GetPOI().HasAttribute(POI_CLOSURE) )
-         EcGdr = pMaterials->GetClosurePourEc(dlg.GetPOI().GetSegmentKey(),intervalIdx);
+         EcGdr = pMaterials->GetClosureJointEc(dlg.GetPOI().GetSegmentKey(),intervalIdx);
       else
          EcGdr = pMaterials->GetSegmentEc(dlg.GetPOI().GetSegmentKey(),intervalIdx);
 

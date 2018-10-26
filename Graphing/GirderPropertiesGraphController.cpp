@@ -136,7 +136,8 @@ void CGirderPropertiesGraphController::UpdateSectionPropertyTypeControls()
    BOOL bEnable = TRUE;
    if ( m_PropertyType == CGirderPropertiesGraphBuilder::Height ||
         m_PropertyType == CGirderPropertiesGraphBuilder::TendonEccentricity ||
-        m_PropertyType == CGirderPropertiesGraphBuilder::EffectiveFlangeWidth
+        m_PropertyType == CGirderPropertiesGraphBuilder::EffectiveFlangeWidth ||
+        m_PropertyType == CGirderPropertiesGraphBuilder::Fc
       )
    {
       bEnable = FALSE;

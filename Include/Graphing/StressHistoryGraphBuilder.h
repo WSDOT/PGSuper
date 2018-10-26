@@ -73,8 +73,6 @@ protected:
 
    int m_XAxisType;
 
-   void SetIntervalText();
-
    virtual bool UpdateNow();
 
    void UpdateXAxis();

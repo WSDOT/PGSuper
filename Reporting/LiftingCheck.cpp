@@ -119,11 +119,11 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    Float64 t_max; // maximum allowable tension
    bool b_t_max; // true if max allowable tension is applicable
 
-   c = pSpecEntry->GetCyCompStressLifting();
-   t = pSpecEntry->GetCyMaxConcreteTensLifting();
-   pSpecEntry->GetCyAbsMaxConcreteTensLifting(&b_t_max,&t_max);
+   c = pSpecEntry->GetLiftingCompressionStressFactor();
+   t = pSpecEntry->GetLiftingTensionStressFactor();
+   pSpecEntry->GetLiftingMaximumTensionStress(&b_t_max,&t_max);
 
-   Float64 t2 = pSpecEntry->GetMaxConcreteTensWithRebarLifting();
+   Float64 t2 = pSpecEntry->GetLiftingTensionStressFactorWithRebar();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -265,8 +265,8 @@ void CLiftingCheck::Build(rptChapter* pChapter,
          Float64 fBotUpward, fBotNoImpact, fBotDownward;
          stressArtifact->GetBottomFiberStress(&fPs, &fBotUpward, &fBotNoImpact, &fBotDownward);
 
-         Float64 fTopMin = Min3(fTopUpward, fTopNoImpact, fTopDownward);
-         Float64 fBotMin = Min3(fBotUpward, fBotNoImpact, fBotDownward);
+         Float64 fTopMin = Min(fTopUpward, fTopNoImpact, fTopDownward);
+         Float64 fBotMin = Min(fBotUpward, fBotNoImpact, fBotDownward);
 
          ColumnIndexType col = 1;
          (*p_table)(row,col++) << stress.SetValue(fTensTop);
@@ -310,7 +310,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
          else
              (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,false)<<_T(")");
 
-         Float64 fComp = min(fTopMin, fBotMin);
+         Float64 fComp = Min(fTopMin, fBotMin);
          
          if ( stressArtifact->CompressionPassed() )
              (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");

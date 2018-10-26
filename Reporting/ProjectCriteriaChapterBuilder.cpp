@@ -373,9 +373,9 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fccy = pAllowableConcreteStress->GetAllowableStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
-   Float64 ftcy = pAllowableConcreteStress->GetAllowableStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
-   Float64 ft   = pAllowableConcreteStress->GetAllowableStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, true /*with bonded rebar*/); 
+   Float64 fccy = pAllowableConcreteStress->GetAllowableStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression,false,false);
+   Float64 ftcy = pAllowableConcreteStress->GetAllowableStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension,false,false);
+   Float64 ft   = pAllowableConcreteStress->GetAllowableStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, true /*with bonded rebar*/,false); 
    *pPara << _T("Allowable Concrete Stresses - Service I (5.8.4.1.1)") << rptNewLine;
    *pPara << _T("- Compressive Stress = ") << stress.SetValue(fccy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
@@ -421,16 +421,16 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), true );
 
    *pPara<<_T("Factors of Safety")<<rptNewLine;
-   *pPara<<_T("- Cracking F.S. = ")<< pSpecEntry->GetCyLiftingCrackFs()<<rptNewLine;
-   *pPara<<_T("- Failure F.S. = ")<< pSpecEntry->GetCyLiftingFailFs()<<rptNewLine;
+   *pPara<<_T("- Cracking F.S. = ")<< pSpecEntry->GetCrackingFOSLifting()<<rptNewLine;
+   *pPara<<_T("- Failure F.S. = ")<< pSpecEntry->GetLiftingFailureFOS()<<rptNewLine;
 
    *pPara<<_T("Impact Factors")<<rptNewLine;
-   *pPara<<_T("- Upward   = ")<< pSpecEntry->GetCyLiftingUpwardImpact()<<rptNewLine;
-   *pPara<<_T("- Downward = ")<< pSpecEntry->GetCyLiftingDownwardImpact()<<rptNewLine;
+   *pPara<<_T("- Upward   = ")<< pSpecEntry->GetLiftingUpwardImpactFactor()<<rptNewLine;
+   *pPara<<_T("- Downward = ")<< pSpecEntry->GetLiftingDownwardImpactFactor()<<rptNewLine;
 
    *pPara<<_T("Height of pick point above top of girder = ")<<dim.SetValue(pSpecEntry->GetPickPointHeight())<<rptNewLine;
    *pPara<<_T("Lifting loop placement tolerance = ")<<dim.SetValue(pSpecEntry->GetLiftingLoopTolerance())<<rptNewLine;
-   *pPara<<_T("Max. girder sweep tolerance = ")<<pSpecEntry->GetMaxGirderSweepLifting()<<rptNewLine;
+   *pPara<<_T("Max. girder sweep tolerance = ")<<pSpecEntry->GetLiftingMaximumGirderSweepTolerance()<<rptNewLine;
    *pPara<<_T("Min. angle of inclination of lifting cables = ")<<angle.SetValue(pSpecEntry->GetMinCableInclination())<<rptNewLine;
 
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
@@ -464,12 +464,12 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
    INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(),true );
 
    *pPara<<_T("Factors of Safety")<<rptNewLine;
-   *pPara<<_T("- Cracking F.S. = ")<< pSpecEntry->GetHaulingCrackFs()<<rptNewLine;
-   *pPara<<_T("- Roll Over F.S. = ")<< pSpecEntry->GetHaulingFailFs()<<rptNewLine;
+   *pPara<<_T("- Cracking F.S. = ")<< pSpecEntry->GetHaulingCrackingFOS()<<rptNewLine;
+   *pPara<<_T("- Roll Over F.S. = ")<< pSpecEntry->GetHaulingFailureFOS()<<rptNewLine;
 
    *pPara<<_T("Impact Factors")<<rptNewLine;
-   *pPara<<_T("- Upward   = ")<< pSpecEntry->GetHaulingUpwardImpact()<<rptNewLine;
-   *pPara<<_T("- Downward = ")<< pSpecEntry->GetHaulingDownwardImpact()<<rptNewLine;
+   *pPara<<_T("- Upward   = ")<< pSpecEntry->GetHaulingUpwardImpactFactor()<<rptNewLine;
+   *pPara<<_T("- Downward = ")<< pSpecEntry->GetHaulingDownwardImpactFactor()<<rptNewLine;
 
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pHauling);
 
@@ -533,8 +533,8 @@ void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-2,(segmentKey.girderIndex == ALL_GIRDERS ? 0 : segmentKey.girderIndex));
-      GirderIndexType lastGirderIdx  = min(nGirders-1,(segmentKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx + 1));
+      GirderIndexType firstGirderIdx = Min(nGirders-2,(segmentKey.girderIndex == ALL_GIRDERS ? 0 : segmentKey.girderIndex));
+      GirderIndexType lastGirderIdx  = Min(nGirders-1,(segmentKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx + 1));
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
          CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segmentKey.segmentIndex);
@@ -585,11 +585,11 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
     IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
       
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression);
+   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression,false,false);
    *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
-   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, pgsTypes::Tension);
+   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, pgsTypes::Tension,false,false);
    *pPara<<_T("Allowable Tensile Concrete Stresses (5.9.4.2.2)")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
 }
@@ -611,11 +611,11 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, castDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
+   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, castDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression,false,false);
    *pPara << _T("Allowable Compressive Concrete Stresses (5.9.4.2.1)") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fcsp) << rptNewLine;
 
-   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, castDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
+   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, castDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension,false,false);
    *pPara << _T("Allowable Tensile Concrete Stresses (5.9.4.2.2)") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fts) << rptNewLine;
 }
@@ -655,7 +655,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, compositeDeckIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression);
+   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, compositeDeckIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression,false,false);
    *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
@@ -700,23 +700,23 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    pgsPointOfInterest poi(segmentKey,0.0);
 
-   Float64 fcsl = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression);
+   Float64 fcsl = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression,false,false);
    *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
    *pPara<<_T("- Service I (permanent + live load) = ")<<stress.SetValue(fcsl)<<rptNewLine;
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
-      Float64 fcsa = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIA, pgsTypes::Compression);
+      Float64 fcsa = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIA, pgsTypes::Compression,false,false);
       *pPara<<_T("- Service IA (one-half of permanent + live load) = ")<<stress.SetValue(fcsa)<<rptNewLine;
    }
 
-   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIII, pgsTypes::Tension);
+   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIII, pgsTypes::Tension,false,false);
    *pPara<<_T("Allowable Tensile Concrete Stresses (5.9.4.2.2)")<<rptNewLine;
    *pPara<<_T("- Service III = ")<<stress.SetValue(fts)<<rptNewLine;
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      Float64 ftf = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::FatigueI, pgsTypes::Compression);
+      Float64 ftf = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::FatigueI, pgsTypes::Compression,false,false);
       *pPara<<_T("Allowable Compressive Concrete Stresses (5.5.3.1)")<<rptNewLine;
       *pPara<<_T("- Fatigue I = ")<<stress.SetValue(ftf)<<rptNewLine;
    }
@@ -753,7 +753,7 @@ void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUni
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
-      if (pSpecEntry->GetBs3LRFDOverreinforcedMomentCapacity())
+      if (pSpecEntry->GetLRFDOverreinforcedMomentCapacity())
       {
          *pPara << _T("Capacity of over reinforced sections computed in accordance with LRFD C5.7.3.3.1") << rptNewLine;
       }
@@ -918,6 +918,9 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
       case pgsTypes::TXDOT_REFINED_2004:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4 and TxDOT Bridge Design")<<rptNewLine;
          break;
+      case pgsTypes::TXDOT_REFINED_2013:
+         *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013")<<rptNewLine;
+         break;
       case pgsTypes::AASHTO_LUMPSUM:
          bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
       case pgsTypes::AASHTO_LUMPSUM_2005:
@@ -936,7 +939,7 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          CHECK(false); // Should never get here
       }
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if ( loss_method != pgsTypes::TXDOT_REFINED_2013 && lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
          *pPara << _T("Assumed time at shipping = ") << time.SetValue(pSpecEntry->GetShippingTime()) << rptNewLine;
       }
@@ -979,36 +982,36 @@ void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   if ( pSpecEntry->CheckStrandStress(AT_JACKING) )
+   if ( pSpecEntry->CheckStrandStress(CSS_AT_JACKING) )
    {
       *pPara << rptNewLine;
       *pPara << _T("Stress Limit at Jacking") << rptNewLine;
-      *pPara << _T("- Stress Relieved Strand = ") << pSpecEntry->GetStrandStressCoefficient(AT_JACKING,STRESS_REL) << RPT_STRESS(_T("pu")) << rptNewLine;
-      *pPara << _T("- Low Relaxation Strand = ") << pSpecEntry->GetStrandStressCoefficient(AT_JACKING,LOW_RELAX) << RPT_STRESS(_T("pu")) << rptNewLine;
+      *pPara << _T("- Stress Relieved Strand = ") << pSpecEntry->GetStrandStressCoefficient(CSS_AT_JACKING,STRESS_REL) << RPT_STRESS(_T("pu")) << rptNewLine;
+      *pPara << _T("- Low Relaxation Strand = ") << pSpecEntry->GetStrandStressCoefficient(CSS_AT_JACKING,LOW_RELAX) << RPT_STRESS(_T("pu")) << rptNewLine;
    }
 
-   if ( pSpecEntry->CheckStrandStress(BEFORE_TRANSFER) )
+   if ( pSpecEntry->CheckStrandStress(CSS_BEFORE_TRANSFER) )
    {
       *pPara << rptNewLine;
       *pPara << _T("Stress Limit Immediately Prior to Transfer") << rptNewLine;
-      *pPara << _T("- Stress Relieved Strand = ") << pSpecEntry->GetStrandStressCoefficient(BEFORE_TRANSFER,STRESS_REL) << RPT_STRESS(_T("pu")) << rptNewLine;
-      *pPara << _T("- Low Relaxation Strand = ") << pSpecEntry->GetStrandStressCoefficient(BEFORE_TRANSFER,LOW_RELAX) << RPT_STRESS(_T("pu")) << rptNewLine;
+      *pPara << _T("- Stress Relieved Strand = ") << pSpecEntry->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,STRESS_REL) << RPT_STRESS(_T("pu")) << rptNewLine;
+      *pPara << _T("- Low Relaxation Strand = ") << pSpecEntry->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,LOW_RELAX) << RPT_STRESS(_T("pu")) << rptNewLine;
    }
 
-   if ( pSpecEntry->CheckStrandStress(AFTER_TRANSFER) )
+   if ( pSpecEntry->CheckStrandStress(CSS_AFTER_TRANSFER) )
    {
       *pPara << rptNewLine;
       *pPara << _T("Stress Limit Immediately After Transfer") << rptNewLine;
-      *pPara << _T("- Stress Relieved Strand = ") << pSpecEntry->GetStrandStressCoefficient(AFTER_TRANSFER,STRESS_REL) << RPT_STRESS(_T("pu")) << rptNewLine;
-      *pPara << _T("- Low Relaxation Strand = ") << pSpecEntry->GetStrandStressCoefficient(AFTER_TRANSFER,LOW_RELAX) << RPT_STRESS(_T("pu")) << rptNewLine;
+      *pPara << _T("- Stress Relieved Strand = ") << pSpecEntry->GetStrandStressCoefficient(CSS_AFTER_TRANSFER,STRESS_REL) << RPT_STRESS(_T("pu")) << rptNewLine;
+      *pPara << _T("- Low Relaxation Strand = ") << pSpecEntry->GetStrandStressCoefficient(CSS_AFTER_TRANSFER,LOW_RELAX) << RPT_STRESS(_T("pu")) << rptNewLine;
    }
 
-   if ( pSpecEntry->CheckStrandStress(AFTER_ALL_LOSSES) )
+   if ( pSpecEntry->CheckStrandStress(CSS_AFTER_ALL_LOSSES) )
    {
       *pPara << rptNewLine;
       *pPara << _T("Stress Limit at service limit state after all losses") << rptNewLine;
-      *pPara << _T("- Stress Relieved Strand = ") << pSpecEntry->GetStrandStressCoefficient(AFTER_ALL_LOSSES,STRESS_REL) << RPT_STRESS(_T("py")) << rptNewLine;
-      *pPara << _T("- Low Relaxation Strand = ") << pSpecEntry->GetStrandStressCoefficient(AFTER_ALL_LOSSES,LOW_RELAX) << RPT_STRESS(_T("py")) << rptNewLine;
+      *pPara << _T("- Stress Relieved Strand = ") << pSpecEntry->GetStrandStressCoefficient(CSS_AFTER_ALL_LOSSES,STRESS_REL) << RPT_STRESS(_T("py")) << rptNewLine;
+      *pPara << _T("- Low Relaxation Strand = ") << pSpecEntry->GetStrandStressCoefficient(CSS_AFTER_ALL_LOSSES,LOW_RELAX) << RPT_STRESS(_T("py")) << rptNewLine;
    }
 }
 

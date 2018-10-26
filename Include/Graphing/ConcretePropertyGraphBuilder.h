@@ -35,7 +35,7 @@
 
 // Graph Elements
 #define GRAPH_ELEMENT_SEGMENT 0 // plot properties for a segment
-#define GRAPH_ELEMENT_CLOSURE 1 // plot properties for a clousre pour
+#define GRAPH_ELEMENT_CLOSURE 1 // plot properties for a clousre joint
 #define GRAPH_ELEMENT_DECK    2 // plot properties for the bridge deck
 
 // X-Axis Display Type

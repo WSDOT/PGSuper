@@ -195,7 +195,7 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
    // Range of lifting loop locations and step increment
    //
    GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   Float64 min_location = max(pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metStart),pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metEnd));
+   Float64 min_location = Max(pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metStart),pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metEnd));
    Float64 location_accuracy = pGirderLiftingSpecCriteria->GetLiftingPointLocationAccuracy();
 
    Float64 bigInc = 8*location_accuracy;
@@ -216,7 +216,7 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
       GET_IFACE(IStrandGeometry,pStrandGeom);
       pStrandGeom->GetHarpingPointLocations(segmentKey,&lhp,&rhp);
 
-      maxLoc = min(lhp, maxLoc);
+      maxLoc = Min(lhp, maxLoc);
    }
 
 
@@ -417,7 +417,7 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(const CSegmentKey& 
 
    pArtifact->SetConcreteStrength(Fci);
    pArtifact->SetModRupture( pGirderLiftingSpecCriteria->GetLiftingModulusOfRupture(Fci,concType) );
-   pArtifact->SetModRuptureCoefficient( pGirderLiftingSpecCriteria->GetLiftingModulusOfRuptureCoefficient(concType) );
+   pArtifact->SetModRuptureCoefficient( pGirderLiftingSpecCriteria->GetLiftingModulusOfRuptureFactor(concType) );
 
    pArtifact->SetElasticModulusOfGirderConcrete(Eci);
 
@@ -529,10 +529,10 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
    pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressParameters(&rcsT,&rcsBfmax,&rcsFmax);
    Float64 rcsTalt = pGirderLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStressFactor();
 
-   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
+   bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
 
    // Use calculator object to deal with casting yard higher allowable stress
-   pgsAlternativeTensileStressCalculator altCalc(segmentKey, liftSegmentIntervalIdx, pGirder, pShapes,pSectProps, pRebarGeom, pMaterials, bUnitsSI);
+   pgsAlternativeTensileStressCalculator altCalc(segmentKey, liftSegmentIntervalIdx, pGirder, pShapes,pSectProps, pRebarGeom, pMaterials, true/*limit bar stress*/, bSISpec);
 
    Float64 AsMax = 0;
    Float64 As = 0;

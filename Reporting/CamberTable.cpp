@@ -456,7 +456,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       const pgsPointOfInterest& poi = *i;
 
       // the camber models don't support these locations
-      if ( poi.HasAttribute(POI_CRITSECTSHEAR1) || poi.HasAttribute(POI_CRITSECTSHEAR2) || poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_PIER) )
+      if ( poi.HasAttribute(POI_CRITSECTSHEAR1) || poi.HasAttribute(POI_CRITSECTSHEAR2) || poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_BOUNDARY_PIER) )
          continue;
 
       Float64 Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Ddeck, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;

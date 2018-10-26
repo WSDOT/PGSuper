@@ -186,48 +186,26 @@ public:
    // Constructor
    pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,IGirder* pGirder,
                                          IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
-                                         IMaterials* pMaterials,
-                                         bool bSIUnits);
+                                         IMaterials* pMaterials,bool bLimitBarStress,
+                                         bool bSISpec);
 
    //------------------------------------------------------------------------
    // Destructor
    virtual ~pgsAlternativeTensileStressCalculator()
    {;}
 
+   void LimitBarStress(bool bLimit);
+   bool LimitBarStress() const;
+
    Float64 ComputeAlternativeStressRequirements(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
                                                 Float64 fTop, Float64 fBot, 
-                                                Float64 lowAllowTens, Float64 highAllowTens,
+                                                Float64 fAllowableWithoutRebar, Float64 fAllowableWithRebar,
                                                 Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
                                                 Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar);
 
    static void ComputeReqdFcTens(Float64 ft, // stress demand
                           Float64 rcsT, bool rcsBfmax, Float64 rcsFmax, Float64 rcsTalt, // allowable stress coeff's
-                          Float64* pFcNo,Float64* pFcWithRebar)
-   {
-      if ( 0 < ft )
-      {
-         // Without rebar
-         if ( rcsBfmax &&  ft>rcsFmax)
-         {
-            // allowable stress is limited and we hit the limit
-            *pFcNo = -1;
-         }
-         else
-         {
-            *pFcNo = pow(ft/rcsT,2);
-         }
-
-         // With rebar
-         *pFcWithRebar = pow(ft/rcsTalt,2);
-
-      }
-      else
-      {
-         // Compression
-         *pFcNo = 0.0;
-         *pFcWithRebar = 0.0;
-      }
-   }
+                          Float64* pFcNo,Float64* pFcWithRebar);
 
 private:
    pgsAlternativeTensileStressCalculator(); // no default constructor
@@ -240,7 +218,8 @@ private:
    ISectionProperties* m_pSectProps;
    ILongRebarGeometry* m_pRebarGeom;
    IMaterials* m_pMaterials;
-   Float64 m_AllowableFs;
+   bool m_bLimitBarStress;
+   bool m_bSISpec;
    IntervalIndexType m_IntervalIdx;
 };
 

@@ -1364,7 +1364,7 @@ GirderIndexType CPierData::GetLldfGirderCount() const
    }
    else
    {
-      return max(ahead, back);
+      return Max(ahead, back);
    }
 }
 

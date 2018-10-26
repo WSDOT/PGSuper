@@ -64,5 +64,10 @@ interface IPsLossEngineer : IUnknown
    //---------------------------------------------------------------------
    // Returns the anchor set details for a particular tendon (this is basically the seating wedge parameters)
    virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
+
+   //---------------------------------------------------------------------
+   // Returns the tendon elongation duration jacking at the specified end of the
+   // girder.
+   virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) = 0;
 };
 

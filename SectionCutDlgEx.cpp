@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSectionCutDlgEx dialog
 
-CSectionCutDlgEx::CSectionCutDlgEx(long nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
+CSectionCutDlgEx::CSectionCutDlgEx(IndexType nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
                      CGirderModelChildFrame::CutLocation location, CWnd* pParent):
 CDialog(CSectionCutDlgEx::IDD, pParent),
 m_Value(value),

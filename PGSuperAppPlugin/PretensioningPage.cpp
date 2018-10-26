@@ -100,6 +100,9 @@ BOOL CPretensioningPage::OnInitDialog()
    case LOSSES_TXDOT_REFINED_2004:
       strMethod = _T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4 and TxDOT Bridge Design");
       break;
+   case LOSSES_TXDOT_REFINED_2013:
+      strMethod = _T("Losses calculated per Refined Estimate Method in accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013");
+      break;
    case LOSSES_AASHTO_LUMPSUM:
    case LOSSES_AASHTO_LUMPSUM_2005:
       strMethod = _T("Losses calculated per Approximate Lump Sum Method in accordnace with AASHTO LRFD 5.9.5.3");

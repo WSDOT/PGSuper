@@ -25,6 +25,8 @@
 #include "IFace\PsLossEngineer.h"
 #include <PgsExt\PoiKey.h>
 
+#include <PgsExt\PTData.h>
+
 // {26275720-66E8-40f6-A4C3-79404FB64968}
 DEFINE_GUID(CLSID_TimeStepLossEngineer, 
 0x26275720, 0x66e8, 0x40f6, 0xa4, 0xc3, 0x79, 0x40, 0x4f, 0xb6, 0x49, 0x68);
@@ -55,6 +57,7 @@ public:
    virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
 
 private:
    IBroker* m_pBroker;
@@ -76,4 +79,8 @@ private:
    void InitializeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
    void AnalyzeInitialStrains(IntervalIndexType intervalIdx,const CGirderKey& girderKey,LOSSES* pLosses);
    void FinalizeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
+
+   void ComputeAnchorSetLosses(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 Lg,std::map<pgsPointOfInterest,LOSSDETAILS>::iterator& frMinIter,Float64* pdfpA,Float64* pdfpS,Float64* pXSet);
+   void BoundAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,Float64 Dset,LOSSES* pLosses,Float64 fpj,Float64 Lg,std::map<pgsPointOfInterest,LOSSDETAILS>::iterator& frMinIter,Float64* pXsetMin,Float64* pDsetMin,Float64* pdfpATMin,Float64* pdfpSMin,Float64* pXsetMax,Float64* pDsetMax,Float64* pdfpATMax,Float64* pdfpSMax);
+   Float64 EvaluateAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 fpj,Float64 Lg,std::map<pgsPointOfInterest,LOSSDETAILS>::iterator& frMinIter,Float64 Xset,Float64* pdfpAT,Float64* pdfpS);
 };

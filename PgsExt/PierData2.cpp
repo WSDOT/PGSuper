@@ -25,7 +25,7 @@
 #include <PgsExt\SpanData2.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderSpacing2.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #include <PierData.h>
 
@@ -109,6 +109,21 @@ CPierData2::CPierData2(const CPierData2& rOther)
 
 CPierData2::~CPierData2()
 {
+   RemoveFromTimeline();
+}
+
+void CPierData2::RemoveFromTimeline()
+{
+   if ( m_pBridgeDesc )
+   {
+      CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
+      EventIndexType erectPierEventIdx = pTimelineMgr->GetPierErectionEventIndex(m_PierID);
+      if ( erectPierEventIdx != INVALID_INDEX )
+      {
+         CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(erectPierEventIdx);
+         pTimelineEvent->GetErectPiersActivity().RemovePier(m_PierID);
+      }
+   }
 }
 
 CPierData2& CPierData2::operator= (const CPierData2& rOther)
@@ -188,6 +203,30 @@ bool CPierData2::operator==(const CPierData2& rOther) const
          return false;
    }
 
+   if ( !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   {
+      if ( IsBoundaryPier() )
+      {
+         if ( m_pPrevSpan )
+         {
+            if ( m_GirderSpacing[pgsTypes::Back] != rOther.m_GirderSpacing[pgsTypes::Back] )
+               return false;
+         }
+
+         if ( m_pNextSpan )
+         {
+            if ( m_GirderSpacing[pgsTypes::Ahead] != rOther.m_GirderSpacing[pgsTypes::Ahead] )
+               return false;
+         }
+      }
+      else if (m_SegmentConnectionType == pgsTypes::psctContinousClosureJoint || m_SegmentConnectionType == pgsTypes::psctIntegralClosureJoint)
+      {
+         if ( m_GirderSpacing[pgsTypes::Back] != rOther.m_GirderSpacing[pgsTypes::Back] )
+            return false;
+      }
+   }
+
+
    return true;
 }
 
@@ -242,11 +281,11 @@ LPCTSTR CPierData2::AsString(pgsTypes::PierSegmentConnectionType type)
 {
    switch(type)
    { 
-   case pgsTypes::psctContinousClosurePour:
-      return _T("Continuous Segments w/ Closure Pour");
+   case pgsTypes::psctContinousClosureJoint:
+      return _T("Continuous Segments w/ Closure Joint");
 
-   case pgsTypes::psctIntegralClosurePour:
-      return _T("Integral Segment w/ Closure Pour");
+   case pgsTypes::psctIntegralClosureJoint:
+      return _T("Integral Segment w/ Closure Joint");
 
    case pgsTypes::psctContinuousSegment:
       return _T("Continuous Segment");
@@ -304,15 +343,44 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("Orientation"), &var );
       m_strOrientation = OLE2T(var.bstrVal);
 
-      var.vt = VT_I4;
-      hr = pStrLoad->get_Property(_T("PierConnectionType"),&var);
-      m_PierConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+      VARIANT_BOOL vbIsBoundaryPier = VARIANT_TRUE;
+      if ( 10 < version )
+      {
+         var.vt = VT_BOOL;
+         hr = pStrLoad->get_Property(_T("IsBoundaryPier"),&var);
+         vbIsBoundaryPier = var.boolVal;
+      }
 
-      var.vt = VT_I4;
-      hr = pStrLoad->get_Property(_T("SegmentConnectionType"),&var);
-      m_SegmentConnectionType = (pgsTypes::PierSegmentConnectionType)var.lVal;
+      if ( 10 < version )
+      {
+         if ( vbIsBoundaryPier == VARIANT_TRUE )
+         {
+            var.vt = VT_I4;
+            hr = pStrLoad->get_Property(_T("PierConnectionType"),&var);
+            m_PierConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+         }
+         else
+         {
+            var.vt = VT_I4;
+            hr = pStrLoad->get_Property(_T("SegmentConnectionType"),&var);
+            m_SegmentConnectionType = (pgsTypes::PierSegmentConnectionType)var.lVal;
+         }
+      }
+      else
+      {
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("PierConnectionType"),&var);
+         m_PierConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("SegmentConnectionType"),&var);
+         m_SegmentConnectionType = (pgsTypes::PierSegmentConnectionType)var.lVal;
+      }
       
       hr = pStrLoad->BeginUnit(_T("Back"));
+
+      Float64 back_version;
+      pStrLoad->get_Version(&back_version);
 
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("GirderEndDistance"),&var);
@@ -334,9 +402,19 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("SupportWidth"),&var);
       m_SupportWidth[pgsTypes::Back] = var.dblVal;
 
-      if ( !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+      if ( back_version < 2 )
       {
-         hr = m_GirderSpacing[pgsTypes::Back].Load(pStrLoad,pProgress);
+         if ( !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+         {
+            hr = m_GirderSpacing[pgsTypes::Back].Load(pStrLoad,pProgress);
+         }
+      }
+      else
+      {
+         if ( vbIsBoundaryPier == VARIANT_TRUE && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+         {
+            hr = m_GirderSpacing[pgsTypes::Back].Load(pStrLoad,pProgress);
+         }
       }
 
       {
@@ -380,6 +458,9 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->BeginUnit(_T("Ahead"));
 
+      Float64 ahead_version;
+      pStrLoad->get_Version(&ahead_version);
+
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("GirderEndDistance"),&var);
       m_GirderEndDistance[pgsTypes::Ahead] = var.dblVal;
@@ -400,9 +481,19 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("SupportWidth"),&var);
       m_SupportWidth[pgsTypes::Ahead] = var.dblVal;
 
-      if ( !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+      if ( ahead_version < 2 )
       {
-         hr = m_GirderSpacing[pgsTypes::Ahead].Load(pStrLoad,pProgress);
+         if ( !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+         {
+            hr = m_GirderSpacing[pgsTypes::Ahead].Load(pStrLoad,pProgress);
+         }
+      }
+      else
+      {
+         if ( vbIsBoundaryPier == VARIANT_TRUE && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+         {
+            hr = m_GirderSpacing[pgsTypes::Ahead].Load(pStrLoad,pProgress);
+         }
       }
 
 
@@ -609,22 +700,33 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierDataDetails"),10.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),11.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
    pStrSave->put_Property(_T("Station"),         CComVariant(m_Station) );
    pStrSave->put_Property(_T("Orientation"),     CComVariant( CComBSTR(m_strOrientation.c_str()) ) );
-   pStrSave->put_Property(_T("PierConnectionType"),  CComVariant( m_PierConnectionType ) ); // changed from left and right to a single value in version 7
-   pStrSave->put_Property(_T("SegmentConnectionType"),  CComVariant( m_SegmentConnectionType ) );
+   pStrSave->put_Property(_T("IsBoundaryPier"),  CComVariant( IsBoundaryPier() ? VARIANT_TRUE : VARIANT_FALSE) ); // added in version 11
 
-   pStrSave->BeginUnit(_T("Back"),1.0);
+   // prior to version 11 both of these values were stored
+   if ( IsBoundaryPier() )
+   {
+      pStrSave->put_Property(_T("PierConnectionType"),  CComVariant( m_PierConnectionType ) ); // changed from left and right to a single value in version 7
+   }
+   else
+   {
+      pStrSave->put_Property(_T("SegmentConnectionType"),  CComVariant( m_SegmentConnectionType ) );
+   }
+
+   pStrSave->BeginUnit(_T("Back"),2.0);
    pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Back] ) );
    pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Back]).c_str()) );
    pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Back]));
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Back]).c_str()) );
    pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Back]));
-   if ( !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+
+   // added IsBoundaryPier() requirement in version 2
+   if ( IsBoundaryPier() && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
    {
       m_GirderSpacing[pgsTypes::Back].Save(pStrSave,pProgress);
    }
@@ -655,13 +757,15 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    }
    pStrSave->EndUnit(); // Back
 
-   pStrSave->BeginUnit(_T("Ahead"),1.0);
+   pStrSave->BeginUnit(_T("Ahead"),2.0);
    pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Ahead] ) );
    pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Ahead]).c_str()) );
    pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Ahead]));
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Ahead]).c_str()) );
    pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Ahead]));
-   if ( !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   
+   // added IsBoundaryPier() requirement in version 2
+   if ( IsBoundaryPier() && !::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
    {
       m_GirderSpacing[pgsTypes::Ahead].Save(pStrSave,pProgress);
    }
@@ -757,9 +861,15 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
       // If this pier is part of a bridge, use the SetXXXConnectionType method so
       // girder segments are split/joined as necessary for the new connection types
       if ( IsBoundaryPier() )
+      {
          SetPierConnectionType(rOther.m_PierConnectionType);
+      }
       else
-         SetSegmentConnectionType(rOther.m_SegmentConnectionType);
+      {
+         const CClosureJointData* pClosure = rOther.GetClosureJoint(0);
+         EventIndexType eventIdx = rOther.GetBridgeDescription()->GetTimelineManager()->GetCastClosureJointEventIndex(pClosure->GetID());
+         SetSegmentConnectionType(rOther.m_SegmentConnectionType,eventIdx);
+      }
    }
    else
    {
@@ -912,10 +1022,9 @@ pgsTypes::PierSegmentConnectionType CPierData2::GetSegmentConnectionType() const
    return m_SegmentConnectionType;
 }
 
-void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType newType)
+void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType newType,EventIndexType castClosureJointEvent)
 {
    pgsTypes::PierSegmentConnectionType oldType = m_SegmentConnectionType;
-   m_SegmentConnectionType = newType;
 
    if ( oldType == newType )
       return; // nothing is changing
@@ -926,9 +1035,20 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
    if ( newType == pgsTypes::psctContinuousSegment || newType == pgsTypes::psctIntegralSegment )
    {
       // connection has changed to continuous segments... join segments at this pier
-      CGirderGroupData* pGroup = this->GetGirderGroup(pgsTypes::Ahead);
+      CGirderGroupData* pGroup = GetGirderGroup(pgsTypes::Ahead);
       ATLASSERT(pGroup == GetGirderGroup(pgsTypes::Back)); // this pier must be in the middle of a group
                                                              // to make the segments continuous
+
+      // remove the closure joints at this pier from the timeline manager
+      CClosureJointData* pClosure = GetClosureJoint(0);
+      if ( pClosure )
+      {
+         IDType closureID = pClosure->GetID();
+         CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
+         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(closureID);
+         pTimelineMgr->GetEventByIndex(eventIdx)->GetCastClosureJointActivity().RemovePier(GetID());
+      }
+
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
@@ -940,16 +1060,28 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
    {
       // connection has changed from continuous segments... split segments at this pier
 
-      CGirderGroupData* pGroup = this->GetGirderGroup(pgsTypes::Ahead);
+      CGirderGroupData* pGroup = GetGirderGroup(pgsTypes::Ahead);
       ATLASSERT(pGroup == GetGirderGroup(pgsTypes::Back)); // this pier must be in the middle of a group
-                                                             // to make the segments continuous
+                                                            // to make the segments continuous
+
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
          pGirder->SplitSegmentsAtPier(m_PierIdx);
       }
+
+      // add the closure joint casting events to the timeline manager.
+      CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
+      CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(castClosureJointEvent);
+      ATLASSERT(pTimelineEvent != NULL);
+      pTimelineEvent->GetCastClosureJointActivity().AddPier(GetID());
+
+      m_GirderSpacing[pgsTypes::Back].SetGirderCount(nGirders);
+      m_GirderSpacing[pgsTypes::Ahead].SetGirderCount(nGirders);
    }
+
+   m_SegmentConnectionType = newType;
 }
 
 void CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)
@@ -1001,11 +1133,46 @@ const CGirderSpacing2* CPierData2::GetGirderSpacing(pgsTypes::PierFaceType pierF
    return &m_GirderSpacing[pierFace];
 }
 
-const CClosurePourData* CPierData2::GetClosurePour(GirderIndexType gdrIdx) const
+CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx)
 {
    if ( IsBoundaryPier() )
    {
-      ATLASSERT(false); // why are you asking for a closure pour at a boundary pier? it doesn't have one
+      ATLASSERT(false); // why are you asking for a closure joint at a boundary pier? it doesn't have one
+      return NULL;
+   }
+
+   if ( m_SegmentConnectionType == pgsTypes::psctContinuousSegment || m_SegmentConnectionType == pgsTypes::psctIntegralSegment )
+      return NULL;
+
+   // If there is a closure at this pier, then this pier is in the middle of a group
+   // so the group on the ahead and back side of this pier are the same. There can't
+   // be a closure here if this is an end pier
+   CGirderGroupData* pGroup = GetGirderGroup(pgsTypes::Ahead); // get on ahead side... could be back side
+   if ( pGroup == NULL )
+      return NULL;
+
+   CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+   SegmentIndexType nSegments = pGirder->GetSegmentCount();
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
+   {
+      // NOTE: nSegments-1 because there is one less closure than segments
+      // no need to check the right end of the last segment as there isn't a closure there)
+      CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+      CClosureJointData* pClosure = pSegment->GetRightClosure();
+      if ( pClosure->GetPier() == this )
+      {
+         return pClosure;
+      }
+   }
+
+   return NULL;
+}
+
+const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) const
+{
+   if ( IsBoundaryPier() )
+   {
+      ATLASSERT(false); // why are you asking for a closure joint at a boundary pier? it doesn't have one
       return NULL;
    }
 
@@ -1026,7 +1193,7 @@ const CClosurePourData* CPierData2::GetClosurePour(GirderIndexType gdrIdx) const
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      const CClosurePourData* pClosure = pSegment->GetRightClosure();
+      const CClosureJointData* pClosure = pSegment->GetRightClosure();
       if ( pClosure->GetPier() == this )
       {
          return pClosure;
@@ -1166,7 +1333,7 @@ bool CPierData2::IsContinuous() const
 {
    if ( IsInteriorPier() )
    {
-      return (m_SegmentConnectionType == pgsTypes::psctContinousClosurePour || m_SegmentConnectionType == pgsTypes::psctContinuousSegment);
+      return (m_SegmentConnectionType == pgsTypes::psctContinousClosureJoint || m_SegmentConnectionType == pgsTypes::psctContinuousSegment);
    }
    else
    {
@@ -1178,7 +1345,7 @@ void CPierData2::IsIntegral(bool* pbLeft,bool* pbRight) const
 {
    if ( IsInteriorPier() )
    {
-      if (m_SegmentConnectionType == pgsTypes::psctIntegralClosurePour || m_SegmentConnectionType == pgsTypes::psctIntegralSegment)
+      if (m_SegmentConnectionType == pgsTypes::psctIntegralClosureJoint || m_SegmentConnectionType == pgsTypes::psctIntegralSegment)
       {
          *pbLeft  = true;
          *pbRight = true;
@@ -1343,7 +1510,7 @@ GirderIndexType CPierData2::GetLldfGirderCount() const
    }
    else
    {
-      return max(nGirdersAhead, nGirdersBack);
+      return Max(nGirdersAhead, nGirdersBack);
    }
 }
 

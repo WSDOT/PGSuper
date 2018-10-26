@@ -25,35 +25,17 @@
 #include <System\Transaction.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\TemporarySupportData.h>
+#include "EditBridge.h"
 #include <IFace\Project.h>
 
-struct txnEditTemporarySupportData
-{
-   CTemporarySupportData m_TS;
-   EventIndexType m_ErectionEvent;
-   EventIndexType m_RemovalEvent;
-   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
-   pgsTypes::MeasurementLocation m_GirderMeasurementLocation;
-   EventIndexType m_ClosureEvent;
-};
-
-class txnEditTemporarySupport : public txnTransaction
+class txnEditTemporarySupport : public txnEditBridgeDescription
 {
 public:
-   txnEditTemporarySupport(SupportIDType tsID,const txnEditTemporarySupportData& oldData,const txnEditTemporarySupportData& newData);
-
-   ~txnEditTemporarySupport();
-
-   virtual bool Execute();
-   virtual void Undo();
+   txnEditTemporarySupport(SupportIndexType tsIndex,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
+   virtual ~txnEditTemporarySupport();
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
 
 private:
-   void DoExecute(int i);
-
-   SupportIDType m_tsID;
-   txnEditTemporarySupportData m_TSData[2];
+   SupportIndexType m_tsIndex;
 };

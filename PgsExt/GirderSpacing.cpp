@@ -51,7 +51,7 @@ CGirderSpacingData::CGirderSpacingData()
 
    m_DefaultSpacing = ::ConvertToSysUnits(5.0,unitMeasure::Feet);
 
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 CGirderSpacingData::CGirderSpacingData(const CGirderSpacingData& rOther)
@@ -201,14 +201,14 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       ATLASSERT(0);
    }
 
-   IS_VALID;
+   ASSERT_VALID;
 
    return hr;
 }
 
 HRESULT CGirderSpacingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   IS_VALID;
+   ASSERT_VALID;
 
    HRESULT hr = S_OK;
    pStrSave->BeginUnit(_T("GirderSpacing"),2.0);
@@ -256,7 +256,7 @@ void CGirderSpacingData::MakeCopy(const CGirderSpacingData& rOther)
 
    m_DefaultSpacing = rOther.m_DefaultSpacing;
 
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 void CGirderSpacingData::MakeAssignment(const CGirderSpacingData& rOther)
@@ -287,14 +287,14 @@ void CGirderSpacingData::SetGirderSpacing(GroupIndexType grpIdx,Float64 s)
    {
       m_GirderSpacing[i] = s;
    }
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 void CGirderSpacingData::SetMeasurementType(pgsTypes::MeasurementType mt)
 {
    _ASSERT( mt == pgsTypes::AlongItem || mt == pgsTypes::NormalToItem );
    m_MeasurementType = mt;
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 pgsTypes::MeasurementType CGirderSpacingData::GetMeasurementType() const
@@ -306,7 +306,7 @@ void CGirderSpacingData::SetMeasurementLocation(pgsTypes::MeasurementLocation ml
 {
    _ASSERT( ml == pgsTypes::AtPierLine || ml == pgsTypes::AtCenterlineBearing );
    m_MeasurementLocation = ml;
-   IS_VALID;
+   ASSERT_VALID;
 }
 
 pgsTypes::MeasurementLocation CGirderSpacingData::GetMeasurementLocation() const

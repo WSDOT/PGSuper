@@ -618,6 +618,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InfluenceLineGraphBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InfluenceLineGraphController.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\StabilityGraphBuilder.cpp"
 				>
 			</File>
@@ -749,6 +757,14 @@
 			</File>
 			<File
 				RelativePath="..\Include\Graphing\GraphingExp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Graphing\InfluenceLineGraphBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InfluenceLineGraphController.h"
 				>
 			</File>
 			<File

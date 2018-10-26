@@ -69,28 +69,19 @@ protected:
 
 public:
    // custom stuff for grid
-   void CustomInit(const CGirderGroupData* pGirderGroup);
-   void FillGrid();
+   void CustomInit(CGirderGroupData* pGirderGroup);
+   void UpdateGrid();
    void OnGirderFamilyChanged(LPCTSTR strGirderFamily);
-
-   void AddGirders(GirderIndexType nGirders);
-   void RemoveGirders(GirderIndexType nGirders);
 
    void Enable(BOOL bEnable);
 
-   void UseSameGirderName(bool bSame);
-   void UseSameNumGirders(bool bSame);
-
-   CGirderGroupData m_GirderGroup;
-
 private:
    BOOL m_bEnabled;
-   bool m_bSameGirderName;
-   bool m_bSameNumGirders;
+
+   CGirderGroupData* m_pGirderGroup;
 
    CString m_GirderList;
    CString m_strGirderFamilyName;
-   typedef std::pair<GirderIndexType,GirderIndexType> UserData;
 
    virtual BOOL OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT nFlags,WORD nHitState);
 

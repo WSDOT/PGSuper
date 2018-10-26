@@ -467,8 +467,8 @@ void CTogaGirderModelElevationView::OnSize(UINT nType, int cx, int cy)
       rect.DeflateRect(5,5,5,5);
 
       CSize size = rect.Size();
-      size.cx = max(0,size.cx);
-      size.cy = max(0,size.cy);
+      size.cx = Max(0L,size.cx);
+      size.cy = Max(0L,size.cy);
 
       CComPtr<iDisplayMgr> dispMgr;
       GetDisplayMgr(&dispMgr);
@@ -1108,9 +1108,9 @@ void CTogaGirderModelElevationView::BuildDimensionDisplayObjects(CTxDOTOptionalD
 */
    // support distances (along bottom)
    from_point->put_X(start_lgth);
-   from_point->put_Y(-max(Hg_start,Hg_end));
+   from_point->put_Y(-Max(Hg_start,Hg_end));
    to_point->put_X(gdr_length-end_lgth);
-   to_point->put_Y(-max(Hg_start,Hg_end));
+   to_point->put_Y(-Max(Hg_start,Hg_end));
    dimLine = BuildDimensionLine(pDL, from_point, to_point, span_length);
    dimLine->SetWitnessLength(-twip_offset);
 

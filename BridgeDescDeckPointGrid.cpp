@@ -137,7 +137,7 @@ ROWCOL CBridgeDescDeckPointGrid::AddRow()
 {
 	ROWCOL nRow = 0;
    nRow = GetRowCount()+1;
-	nRow = max(1, nRow);
+	nRow = Max((ROWCOL)1, nRow);
 
 	InsertRows(nRow, 1);
    return nRow;
@@ -514,7 +514,7 @@ void CBridgeDescDeckPointGrid::Enable(BOOL bEnable)
       range = CGXRange(0,0,0,GetColCount());
       SetStyleRange(range,style);
 
-      range = CGXRange(0,0,_cpp_min(GetRowCount(),(ROWCOL)1),0);
+      range = CGXRange(0,0,Min(GetRowCount(),(ROWCOL)1),0);
       SetStyleRange(range,style);
    }
    else

@@ -114,16 +114,16 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
 
    CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,releaseIntervalIdx,      pgsTypes::ServiceI);
    CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,castDeckIntervalIdx,     pgsTypes::ServiceI);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,     pgsTypes::ServiceI,pgsTypes::Compression);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,compositeDeckIntervalIdx,pgsTypes::ServiceI);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,     pgsTypes::ServiceI);
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIA);
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIII);
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::FatigueI);
 
 
     return pChapter;

@@ -445,7 +445,7 @@ void CBridgeModelViewChildFrame::SelectSegment(const CSegmentKey& segmentKey)
    m_bSelecting = false;
 }
 
-void CBridgeModelViewChildFrame::SelectClosurePour(const CSegmentKey& closureKey)
+void CBridgeModelViewChildFrame::SelectClosureJoint(const CSegmentKey& closureKey)
 {
    if ( m_bSelecting )
       return;
@@ -454,7 +454,7 @@ void CBridgeModelViewChildFrame::SelectClosurePour(const CSegmentKey& closureKey
 
    m_bSelecting = true;
    CPGSuperDocBase* pDoc = (CPGSuperDocBase*)(GetBridgePlanView()->GetDocument());
-   pDoc->SelectClosurePour(closureKey);
+   pDoc->SelectClosureJoint(closureKey);
    m_bSelecting = false;
 }
 
@@ -591,7 +591,7 @@ void CBridgeModelViewChildFrame::OnInsertSpan()
          PierIndexType refPierIdx = dlg.m_RefPierIdx;
          pgsTypes::PierFaceType face = dlg.m_PierFace;
          bool bCreateNewGroup = dlg.m_bCreateNewGroup;
-         EventIndexType eventIdx = dlg.m_EventIdx;
+         EventIndexType eventIdx = dlg.m_EventIndex;
 
          CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
          pDoc->InsertSpan(refPierIdx,face,span_length,bCreateNewGroup,eventIdx);
@@ -621,7 +621,7 @@ void CBridgeModelViewChildFrame::OnInsertPier()
          PierIndexType refPierIdx = dlg.m_RefPierIdx;
          pgsTypes::PierFaceType pierFace = dlg.m_PierFace;
          bool bCreateNewGroup = dlg.m_bCreateNewGroup;
-         EventIndexType eventIdx = dlg.m_EventIdx;
+         EventIndexType eventIdx = dlg.m_EventIndex;
 
          CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
          pDoc->InsertSpan(refPierIdx,pierFace,span_length,bCreateNewGroup,eventIdx);
@@ -661,8 +661,8 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
          case IDM_INTEGRAL_BEFOREDECK_HINGEBACK:  newPierConnectionType = pgsTypes::IntegralBeforeDeckHingeBack;  break;
          case IDM_INTEGRAL_AFTERDECK_HINGEAHEAD:  newPierConnectionType = pgsTypes::IntegralAfterDeckHingeAhead;  break;
          case IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD: newPierConnectionType = pgsTypes::IntegralBeforeDeckHingeAhead; break;
-         case IDM_CONTINUOUS_CLOSURE:             newSegmentConnectionType = pgsTypes::psctContinousClosurePour;  break;
-         case IDM_INTEGRAL_CLOSURE:               newSegmentConnectionType = pgsTypes::psctIntegralClosurePour;   break;
+         case IDM_CONTINUOUS_CLOSURE:             newSegmentConnectionType = pgsTypes::psctContinousClosureJoint;  break;
+         case IDM_INTEGRAL_CLOSURE:               newSegmentConnectionType = pgsTypes::psctIntegralClosureJoint;   break;
          case IDM_CONTINUOUS_SEGMENT_AT_PIER:     newSegmentConnectionType = pgsTypes::psctContinuousSegment;     break;
          case IDM_INTEGRAL_SEGMENT_AT_PIER:       newSegmentConnectionType = pgsTypes::psctIntegralSegment;       break;
 
@@ -683,8 +683,10 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       }
       else
       {
+#pragma Reminder("UPDATE: BUG: INVALID_INDEX is a dummy value. Need to figure out actual events")
+         ATLASSERT(false); // this is to just get my attention when this method gets called
          pgsTypes::PierSegmentConnectionType oldConnectionType = pPier->GetSegmentConnectionType();
-         pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,newSegmentConnectionType);
+         pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,INVALID_INDEX,newSegmentConnectionType,INVALID_INDEX);
       }
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
@@ -715,8 +717,8 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
          case IDM_INTEGRAL_BEFOREDECK_HINGEBACK:  pCmdUI->SetCheck(pierConnectionType == pgsTypes::IntegralBeforeDeckHingeBack);  break;
          case IDM_INTEGRAL_AFTERDECK_HINGEAHEAD:  pCmdUI->SetCheck(pierConnectionType == pgsTypes::IntegralAfterDeckHingeAhead);  break;
          case IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD: pCmdUI->SetCheck(pierConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead); break;
-         case IDM_CONTINUOUS_CLOSURE:             pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctContinousClosurePour);  break;
-         case IDM_INTEGRAL_CLOSURE:               pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctIntegralClosurePour);   break;
+         case IDM_CONTINUOUS_CLOSURE:             pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctContinousClosureJoint);  break;
+         case IDM_INTEGRAL_CLOSURE:               pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctIntegralClosureJoint);   break;
          case IDM_CONTINUOUS_SEGMENT_AT_PIER:     pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctContinuousSegment);     break;
          case IDM_INTEGRAL_SEGMENT_AT_PIER:       pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctIntegralSegment);       break;
          default: ATLASSERT(0); // is there a new connection type?

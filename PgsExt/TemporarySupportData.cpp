@@ -25,7 +25,7 @@
 #include <PgsExt\SpanData2.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,7 +48,7 @@ CTemporarySupportData::CTemporarySupportData()
    m_pSpan = NULL;
 
    m_SupportType    = pgsTypes::ErectionTower;
-   m_ConnectionType = pgsTypes::sctClosurePour;
+   m_ConnectionType = pgsTypes::sctClosureJoint;
 
    m_Station = 0;
    m_strOrientation = _T("Normal");
@@ -77,6 +77,28 @@ CTemporarySupportData::CTemporarySupportData(const CTemporarySupportData& rOther
 
 CTemporarySupportData::~CTemporarySupportData()
 {
+   RemoveFromTimeline();
+}
+
+void CTemporarySupportData::RemoveFromTimeline()
+{
+   if ( m_pSpan )
+   {
+      CTimelineManager* pTimelineMgr = m_pSpan->GetBridgeDescription()->GetTimelineManager();
+
+      EventIndexType erectionEventIdx, removalEventIdx;
+      pTimelineMgr->GetTempSupportEvents(m_ID,&erectionEventIdx,&removalEventIdx);
+
+      if ( erectionEventIdx != INVALID_INDEX )
+      {
+         pTimelineMgr->GetEventByIndex(erectionEventIdx)->GetErectPiersActivity().RemoveTempSupport(m_ID);
+      }
+
+      if ( removalEventIdx != INVALID_INDEX )
+      {
+         pTimelineMgr->GetEventByIndex(removalEventIdx)->GetRemoveTempSupportsActivity().RemoveTempSupport(m_ID);
+      }
+   }
 }
 
 CTemporarySupportData& CTemporarySupportData::operator= (const CTemporarySupportData& rOther)
@@ -142,13 +164,16 @@ bool CTemporarySupportData::operator<(const CTemporarySupportData& rOther) const
    return m_Station < rOther.m_Station;
 }
 
-HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
+HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,CBridgeDescription2* pBridgeDesc)
 {
    USES_CONVERSION;
    HRESULT hr = S_OK;
 
    CComVariant var;
    pStrLoad->BeginUnit(_T("TemporarySupportData"));
+
+   Float64 version;
+   pStrLoad->get_Version(&version);
 
    var.vt = VT_ID;
    pStrLoad->get_Property(_T("ID"),&var);
@@ -167,7 +192,7 @@ HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
    pStrLoad->get_Property(_T("ConnectionType"),&var);
    CString strConnectionType = OLE2T(var.bstrVal);
    if ( strConnectionType == CString(_T("ClosurePour")) )
-      m_ConnectionType = pgsTypes::sctClosurePour;
+      m_ConnectionType = pgsTypes::sctClosureJoint;
    else if ( strConnectionType == CString(_T("ContinuousSegment")) )
       m_ConnectionType = pgsTypes::sctContinuousSegment;
    else
@@ -209,9 +234,19 @@ HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
    pStrLoad->get_Property(_T("SupportWidth"),&var);
    m_SupportWidth = var.dblVal;
 
-   if ( m_ConnectionType != pgsTypes::sctContinuousSegment )
+   if ( version < 2 )
    {
-      m_Spacing.Load(pStrLoad,pProgress);
+      if ( m_ConnectionType != pgsTypes::sctContinuousSegment )
+      {
+         m_Spacing.Load(pStrLoad,pProgress);
+      }
+   }
+   else
+   {
+      if ( m_ConnectionType != pgsTypes::sctContinuousSegment && !::IsBridgeSpacing(pBridgeDesc->GetGirderSpacingType()) )
+      {
+         m_Spacing.Load(pStrLoad,pProgress);
+      }
    }
 
    pStrLoad->EndUnit();
@@ -223,7 +258,7 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("TemporarySupportData"),1.0);
+   pStrSave->BeginUnit(_T("TemporarySupportData"),2.0);
    pStrSave->put_Property(_T("ID"),CComVariant(m_ID));
 
    switch( m_SupportType )
@@ -242,7 +277,7 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
 
    switch( m_ConnectionType )
    {
-   case pgsTypes::sctClosurePour:
+   case pgsTypes::sctClosureJoint:
       pStrSave->put_Property(_T("ConnectionType"),CComVariant(_T("ClosurePour")));
       break;
 
@@ -262,7 +297,8 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType).c_str()) );
    pStrSave->put_Property(_T("SupportWidth"),                CComVariant(m_SupportWidth));
 
-   if ( m_ConnectionType != pgsTypes::sctContinuousSegment )
+   // add check for IsBridgeSpacing in version 2
+   if ( m_ConnectionType != pgsTypes::sctContinuousSegment && !::IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()))
    {
       m_Spacing.Save(pStrSave,pProgress);
    }
@@ -313,9 +349,56 @@ pgsTypes::TemporarySupportType CTemporarySupportData::GetSupportType() const
    return m_SupportType;
 }
 
-void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType type)
+void CTemporarySupportData::SetConnectionType(pgsTypes::SegmentConnectionType newType,EventIndexType castClosureJointEvent)
 {
-   m_ConnectionType = type;
+   pgsTypes::SegmentConnectionType oldType = m_ConnectionType;
+   if ( oldType == newType )
+      return; // nothing changed;
+
+   CBridgeDescription2* pBridgeDesc = m_pSpan->GetBridgeDescription();
+   if ( newType == pgsTypes::sctContinuousSegment )
+   {
+      // before the closure joints go away, remove their casting event from the timeline
+      // manager
+      CClosureJointData* pClosure = GetClosureJoint(0);
+      if ( pClosure )
+      {
+         IDType closureID = pClosure->GetID();
+         CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(closureID);
+         pTimelineMgr->GetEventByIndex(eventIdx)->GetCastClosureJointActivity().RemoveTempSupport(GetID());
+      }
+
+      // connection has changed to continuous segments... join segments
+      CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_pSpan);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         pGirder->JoinSegmentsAtTemporarySupport(m_Index);
+      }
+   }
+   else if ( oldType == pgsTypes::sctContinuousSegment )
+   {
+      // connection has changed from continuous... split at this temporary support
+      CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_pSpan);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         pGirder->SplitSegmentsAtTemporarySupport(m_Index);
+      }
+
+      // add the closure joint casting events to the timeline manager.
+      CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+      CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(castClosureJointEvent);
+      ATLASSERT(pTimelineEvent != NULL);
+      pTimelineEvent->GetCastClosureJointActivity().AddTempSupport(GetID());
+
+      m_Spacing.SetGirderCount(nGirders);
+   }
+
+   m_ConnectionType = newType;
 }
 
 pgsTypes::SegmentConnectionType CTemporarySupportData::GetConnectionType() const
@@ -379,7 +462,30 @@ const CSpanData2* CTemporarySupportData::GetSpan() const
    return m_pSpan;
 }
 
-const CClosurePourData* CTemporarySupportData::GetClosurePour(GirderIndexType gdrIdx) const
+CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType gdrIdx)
+{
+   if ( m_ConnectionType == pgsTypes::sctContinuousSegment )
+      return NULL;
+
+   CGirderGroupData* pGroup = m_pSpan->GetBridgeDescription()->GetGirderGroup(m_pSpan);
+   CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+   SegmentIndexType nSegments = pGirder->GetSegmentCount();
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
+   {
+      // NOTE: nSegments-1 because there is one less closure than segments
+      // no need to check the right end of the last segment as there isn't a closure there)
+      CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+      CClosureJointData* pClosure = pSegment->GetRightClosure();
+      if ( pClosure->GetTemporarySupport() == this )
+      {
+         return pClosure;
+      }
+   }
+
+   return NULL;
+}
+
+const CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType gdrIdx) const
 {
    if ( m_ConnectionType == pgsTypes::sctContinuousSegment )
       return NULL;
@@ -392,7 +498,7 @@ const CClosurePourData* CTemporarySupportData::GetClosurePour(GirderIndexType gd
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      const CClosurePourData* pClosure = pSegment->GetRightClosure();
+      const CClosureJointData* pClosure = pSegment->GetRightClosure();
       if ( pClosure->GetTemporarySupport() == this )
       {
          return pClosure;
@@ -465,8 +571,8 @@ LPCTSTR CTemporarySupportData::AsString(pgsTypes::TemporarySupportType type)
 
 LPCTSTR CTemporarySupportData::AsString(pgsTypes::SegmentConnectionType type)
 {
-   if ( type == pgsTypes::sctClosurePour )
-      return _T("Closure Pour");
+   if ( type == pgsTypes::sctClosureJoint )
+      return _T("Closure Joint");
    else
       return _T("Continous Segment");
 }
@@ -476,7 +582,7 @@ void CTemporarySupportData::AssertValid()
 {
    if ( m_pSpan )
    {
-      ATLASSERT(m_pSpan->GetPrevPier()->GetStation() < m_Station && m_Station < m_pSpan->GetNextPier()->GetStation());
+      ATLASSERT(m_pSpan->GetPrevPier()->GetStation() <= m_Station && m_Station <= m_pSpan->GetNextPier()->GetStation());
       const CBridgeDescription2* pBridge = m_pSpan->GetBridgeDescription();
       ATLASSERT(pBridge->IsOnBridge(m_Station));
    }

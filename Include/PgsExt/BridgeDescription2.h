@@ -43,7 +43,7 @@ CLASS
 DESCRIPTION
    Utility class for managing the bridge description data.
 
-   Piers, Temporary Supports, Spliced Girders, Precast Segments, and Closures Pours
+   Piers, Temporary Supports, Spliced Girders, Precast Segments, and Closures Joints
    can be identified by Index or by ID. The Index of an object changes as their parent
    collections change in size, however, their IDs remain constant. This objects are
    always identified in the Timeline Manager by ID.
@@ -133,13 +133,13 @@ public:
    // =================================================================================
 
    // Use this method to create the first span in the bridge, also creates the first girder group.
-   void CreateFirstSpan(const CPierData2* pFirstPier,const CSpanData2* pFirstSpan,const CPierData2* pNextPier,EventIndexType eventIdx);
+   void CreateFirstSpan(const CPierData2* pFirstPier,const CSpanData2* pFirstSpan,const CPierData2* pNextPier,EventIndexType pierErectionEventIdx);
 
    // Appends a span to the end of the bridge.
-   void AppendSpan(const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx);
+   void AppendSpan(const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType pierErectionEventIdx);
 
    // Inserts a new span at the location defined by refPierIdx and pierFace (e.g. Pier 2, Back Face)
-   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx);
+   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType pierErectionEventIdx);
 
    // Removes a span and pier from the bridge.
    void RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType);
@@ -196,7 +196,7 @@ public:
    // =================================================================================
 
    // adds a temporary support to the bridge model. returns the temporary support index based on location along the bridge
-   SupportIndexType AddTemporarySupport(CTemporarySupportData* pTempSupport,EventIndexType erectionEventIdx,EventIndexType removalEventIdx);
+   SupportIndexType AddTemporarySupport(CTemporarySupportData* pTempSupport,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType castClosureEventIdx);
 
    // returns the number of temporary supports
    SupportIndexType GetTemporarySupportCount() const;
@@ -331,6 +331,9 @@ public:
    CPrecastSegmentData* FindSegment(SegmentIDType segID);
    const CPrecastSegmentData* FindSegment(SegmentIDType segID) const;
 
+   CClosureJointData* FindClosureJoint(ClosureIDType closureID);
+   const CClosureJointData* FindClosureJoint(ClosureIDType closureID) const;
+
    void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset); 
                     // takes all the data defined at the bridge level and copies
                     // it down to the spans and girders (only for this parameters set to true)
@@ -344,13 +347,13 @@ public:
    std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx) const;
    std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx) const;
 
-   // Returns the number of closure pours on a girder line. The number of closures
+   // Returns the number of closure joints on a girder line. The number of closures
    // in each girder within a group are equal. 
-   IndexType GetClosurePourCount() const;
+   IndexType GetClosureJointCount() const;
 
-   // Returns the closure pour data
-   CClosurePourData* GetClosurePour(const CSegmentKey& closureKey);
-   const CClosurePourData* GetClosurePour(const CSegmentKey& closureKey) const;
+   // Returns the closure joint data
+   CClosureJointData* GetClosureJoint(const CSegmentKey& closureKey);
+   const CClosureJointData* GetClosureJoint(const CSegmentKey& closureKey) const;
 
 protected:
    void MakeCopy(const CBridgeDescription2& rOther);
@@ -427,9 +430,6 @@ private:
    void AddSplicedGirders(GirderIndexType nGirders);
 
    void ClearGirderGroups();
-
-   void RemovePierFromTimelineManager(const CPierData2* pPier);
-   void RemoveTemporarySupportFromTimelineManager(const CTemporarySupportData* pTS);
 
    HRESULT LoadOldBridgeDescription(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress);
 

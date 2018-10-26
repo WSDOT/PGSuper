@@ -92,9 +92,17 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
 
 void CTimeDependentLossFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,1) << stress.SetValue(pDetails->RefinedLosses2005.ShrinkageLossAfterDeckPlacement());
-   (*this)(row,2) << stress.SetValue(pDetails->RefinedLosses2005.CreepLossAfterDeckPlacement());
-   (*this)(row,3) << stress.SetValue(pDetails->RefinedLosses2005.RelaxationLossAfterDeckPlacement());
-   (*this)(row,4) << stress.SetValue(pDetails->RefinedLosses2005.ElasticGainDueToDeckShrinkage());
-   (*this)(row,5) << stress.SetValue(pDetails->RefinedLosses2005.TimeDependentLossesAfterDeck());
+   // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
+   (*this)(row,1) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
+   (*this)(row,2) << stress.SetValue(ptl->CreepLossAfterDeckPlacement());
+   (*this)(row,3) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
+   (*this)(row,4) << stress.SetValue(ptl->ElasticGainDueToDeckShrinkage());
+   (*this)(row,5) << stress.SetValue(ptl->TimeDependentLossesAfterDeck());
 }

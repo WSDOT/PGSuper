@@ -131,6 +131,7 @@ bool CGirderPropertiesGraphBuilder::UpdateNow()
 void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
 {
    delete m_pYFormat;
+   m_pYFormat = NULL;
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
@@ -230,6 +231,16 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       break;
       }
 
+   case Fc:
+      {
+      const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
+      m_pYFormat = new StressTool(stressUnit);
+      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      std::_tstring strYAxisTitle = _T("f'c (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
+      m_Graph.SetYAxisTitle(strYAxisTitle);
+      break;
+      }
+
    default:
       ASSERT(false); 
    }
@@ -276,6 +287,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
    GET_IFACE(ISectionProperties,pSectProps);
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IMaterials,pMaterials);
    GET_IFACE(IIntervals,pIntervals);
 
    Float64 nEffectiveStrands;
@@ -339,6 +351,12 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
          else
             value = pSectProps->GetEffectiveFlangeWidth(poi);
          break;
+
+      case Fc:
+         if ( poi.HasAttribute(POI_CLOSURE) )
+            value = pMaterials->GetClosureJointFc(poi.GetSegmentKey(),intervalIdx);
+         else
+            value = pMaterials->GetSegmentFc(poi.GetSegmentKey(),intervalIdx);
 
       default:
          ATLASSERT(false);
@@ -456,6 +474,10 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
 
    case EffectiveFlangeWidth:
       return _T("Effective Flange Width");
+      break;
+
+   case Fc:
+      return _T("f'c");
       break;
 
    default:

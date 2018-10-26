@@ -919,7 +919,7 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    Float64 top_width = pGirder->GetTopWidth(poi);
    Float64 bot_width = pGirder->GetBottomWidth(poi);
 
-   Float64 width = _cpp_max(top_width,bot_width);
+   Float64 width = Max(top_width,bot_width);
 
    Float64 height = pGirder->GetHeight(poi);
 

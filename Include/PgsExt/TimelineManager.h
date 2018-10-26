@@ -41,14 +41,14 @@
 #define TLM_ERECT_PIERS_ACTIVITY_REQUIRED                0x00000200
 #define TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED             0x00000400
 #define TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED  0x00000800
-#define TLM_CAST_CLOSURE_POUR_ACTIVITY_REQUIRED          0x00001000
+#define TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED         0x00001000
 #define TLM_STRESS_TENDONS_ACTIVITY_REQUIRED             0x00002000
 
 #define TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR              0x00004000 // temporary support was removed before it was erected or before the segments were lifted off by PT
 #define TLM_SEGMENT_ERECTION_ERROR                       0x00008000 // segment erected before its supports are erected
-#define TLM_CLOSURE_POUR_ERROR                           0x00010000 // closure pour is cast before the segment is erected or PT is applied before it is cased and cured
+#define TLM_CLOSURE_JOINT_ERROR                          0x00010000 // closure joint is cast before the segment is erected or PT is applied before it is cased and cured
 #define TLM_RAILING_SYSTEM_ERROR                         0x00020000 // railing system is installed before deck is cast
-#define TLM_STRESS_TENDON_ERROR                          0x00040000 // tendon stressed before closure pours are cast or segments are erected
+#define TLM_STRESS_TENDON_ERROR                          0x00040000 // tendon stressed before closure joints are cast or segments are erected
 
 #define TLM_SUCCESS                                      0xffffffff // event was successfully added
 
@@ -101,6 +101,10 @@ public:
    int AdjustDayByIndex(EventIndexType eventIdx,Float64 day,bool bAdjustTimeline);
    int AdjustDayByID(EventIDType id,Float64 day,bool bAdjustTimeline);
 
+   // Sets the elapsed time from the specified event to the next event.
+   // The day of the specified event does not changed.
+   void SetElapsedTime(EventIndexType eventIdx,Float64 elapsedTime);
+
    int RemoveEventByIndex(EventIndexType eventIdx);
    int RemoveEventByID(EventIDType id);
 
@@ -119,10 +123,18 @@ public:
    Float64 GetEnd(EventIndexType eventIdx) const;
    Float64 GetDuration(EventIndexType eventIdx) const;
 
+   bool AreAllPiersErected() const;
+   bool AreAllTemporarySupportsErected() const;
+   bool AreAllTemporarySupportsRemoved() const;
+   bool AreAllSegmentsErected() const;
+   bool AreAllSegmentsErected(const CGirderKey& girderKey,EventIndexType eventIdx) const;
+   bool AreAllClosureJointsCast() const;
+   bool AreAllTendonsStressed() const;
+
    bool IsDeckCast() const;
    bool IsRailingSystemInstalled() const;
    bool IsSegmentConstructed(SegmentIDType segmentID) const;
-   bool IsClosurePourCast(SegmentIDType segmentID) const;
+   bool IsClosureJointCast(ClosureIDType closureID) const;
    bool IsPierErected(PierIDType pierID) const;
    bool IsTemporarySupportErected(SupportIDType tsID) const;
    bool IsTemporarySupportRemoved(SupportIDType tsID) const;
@@ -135,15 +147,14 @@ public:
    // returns true if the segment is erected in or has been erected prior to the specified event
    bool IsSegmentErected(SegmentIDType segmentID,EventIndexType eventIdx) const;
 
-   // returns true if there is a closure pour at this pier
-   bool IsClosurePourAtPier(PierIDType pierID) const;
+   // returns true if there is a closure joint at this pier
+   bool IsClosureJointAtPier(PierIDType pierID) const;
 
-   // returns true if there is a closure pour at this temporary support
-   bool IsClosurePourAtTempSupport(SupportIDType tsID) const;
+   // returns true if there is a closure joint at this temporary support
+   bool IsClosureJointAtTempSupport(SupportIDType tsID) const;
 
-   // returns true if the specified closure pour is cast
-   // closure pours are identified as begin at the right end of the segment defined by SegmentID
-   bool IsClosurePourCast(EventIndexType eventIdx,SegmentIDType segID) const;
+   // returns true if the specified closure joint is cast
+   bool IsClosureJointCast(EventIndexType eventIdx,ClosureIDType closureID) const;
 
    bool IsTendonStressed(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
 
@@ -168,12 +179,10 @@ public:
    EventIndexType GetFirstSegmentErectionEventIndex() const;
    EventIDType GetFirstSegmentErectionEventID() const;
 
-   // Closure Pours are identified by the segment that is on the left hand side of the closure
-   // ... closure pour is on the right hand side of the segment identified by segID
-   EventIndexType GetCastClosurePourEventIndex(SegmentIDType segID) const;
-   EventIDType GetCastClosurePourEventID(SegmentIDType segID) const;
-   void SetCastClosurePourEventByIndex(SegmentIDType segID,EventIndexType eventIdx);
-   void SetCastClosurePourEventByID(SegmentIDType segID,EventIDType ID);
+   EventIndexType GetCastClosureJointEventIndex(ClosureIDType closureID) const;
+   EventIDType GetCastClosureJointEventID(ClosureIDType closureID) const;
+   void SetCastClosureJointEventByIndex(ClosureIDType closureID,EventIndexType eventIdx);
+   void SetCastClosureJointEventByID(ClosureIDType closureID,EventIDType ID);
 
    // Events when tendons are stressed.
    EventIndexType GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx) const;

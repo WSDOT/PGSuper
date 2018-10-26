@@ -37,6 +37,6 @@ public:
 	void DoRestoreDefaults();
 
 protected:
-   // Hides UI elements that don't make any sense when this page is used for closure pours
-   void EnableClosurePourMode();
+   // Hides UI elements that don't make any sense when this page is used for closure joints
+   void EnableClosureJointMode();
 };

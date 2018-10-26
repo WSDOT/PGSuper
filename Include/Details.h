@@ -92,8 +92,11 @@ struct MOMENTCAPACITYDETAILS
    Float64 bw;
    Float64 MnMin;           // Minimum nominal capacity of a over reinforced section (Eqn C5.7.3.3.1-1 or 2)
 
-   Float64 fpe; // Effective prestress
-   Float64 e_initial; // Initial strain in strands
+   Float64 fpe_ps; // Effective prestress
+   Float64 eps_initial; // Initial strain in strands
+
+   std::vector<Float64> fpe_pt; // Effective prestress
+   std::vector<Float64> ept_initial; // Initial strain in strands
 
    // solution object provides the full equilibrium state of the moment
    // capacity solution
@@ -117,7 +120,7 @@ struct MINMOMENTCAPDETAILS
 {
    std::_tstring LimitState; // Limit State for the minimum magnitude of Mu
    Float64 Mr;     // Nominal resistance (phi*Mn)
-   Float64 MrMin;  // Minimum nominal resistance max(MrMin1,MrMin2)
+   Float64 MrMin;  // Minimum nominal resistance Max(MrMin1,MrMin2)
    Float64 MrMin1; // 1.2Mcr
    Float64 MrMin2; // 1.33Mu
    Float64 Mcr;
@@ -135,22 +138,27 @@ struct SHEARCAPACITYDETAILS
    ShearCapacityMethod Method; // General or Simplfied per LRFD 5.8.3.4.3 (Vci/Vcw - added to LRFD in 2007)
    Float64 Nu;
    Float64 Mu;
-   Float64 RealMu; // Actual Mu computed from structural analysis. Same as Mu is MuLimitUsed is false
+   Float64 RealMu; // Actual Mu computed from structural analysis. Same as Mu if MuLimitUsed is false
    Float64 PhiMu; // capacity reduction factor for moment
    bool    MuLimitUsed; // true if Mu set equal to Vu*dv per 2000 version of LRFD
    Float64 Vi; // Vu that goes with Mu
    Float64 Vu; // Maximum Vu at section
    Float64 Vd; // Vdc + Vdw
-   Float64 Vp;
+   Float64 Vp;  // vertical component of prestress Vps + Vpt
+   Float64 Vps; // vertical component of prestress due to strands
+   Float64 Vpt; // vertical component of prestress due to tendons
    Float64 Phi;
    Float64 dv;
    Float64 bv;
-   Float64 fpe;
+   Float64 fpeps;
+   Float64 fpept;
    Float64 fpc;
    Float64 Es;
    Float64 As;
-   Float64 Ep;
+   Float64 Eps;
    Float64 Aps;
+   Float64 Ept;
+   Float64 Apt;
    Float64 Ec;
    Float64 Ac;
    Float64 fc;
@@ -167,7 +175,8 @@ struct SHEARCAPACITYDETAILS
    bool    bTensionBottom; // true if the flexural tension side is on the bottom of the girder
 
    // [OUT]
-   Float64 fpo;
+   Float64 fpops; // fpo for strand
+   Float64 fpopt; // fpo for tendon
    bool ShearInRange; // If this is true, the applied shear was in range so
                       // shear capacity could be calculated. Otherwise all
                       // values below to Vn1 are not defined.
@@ -208,8 +217,10 @@ struct SHEARCAPACITYDETAILS
 // fpc - strand stress for shear capacity calculation
 struct FPCDETAILS
 {
-   Float64 e;   // Eccentricity of prestress strand
-   Float64 P;   // Prestress force
+   Float64 eps; // Eccentricity of prestress strand
+   Float64 Pps; // Prestress force
+   Float64 ept; // Eccentricity of post-tension strand
+   Float64 Ppt; // Post-tension force
    Float64 Ag;  // Area of non-composite girder
    Float64 Ig;  // Moment of inertia of non-composite girder
    Float64 Ybg; // Ybottom of girder
@@ -321,7 +332,7 @@ struct CREEPCOEFFICIENTDETAILS
 
 // This struct holds the computation details for a cross section of a concrete part
 // for a specific interval for a time step loss analysis
-// The concrete part could be a girder segment, closure pour, or deck
+// The concrete part could be a girder segment, closure joint, or deck
 struct TIME_STEP_CONCRETE
 {
    //
@@ -658,7 +669,7 @@ struct ANCHORSETDETAILS
       {
          Lset[i]  = 0;
          dfpAT[i] = 0;
-         p[i]     = 0;
+         dfpS[i]  = 0;
       }
    }
 
@@ -669,8 +680,9 @@ struct ANCHORSETDETAILS
    // Value
    // Array index is pgsTypes::MemberEndType
    Float64 Lset[2]; // Anchor set zone length
-   Float64 dfpAT[2]; // Loss of effect stress at anchorage due to seating
-   Float64 p[2]; // Friction loss per unit length
+   Float64 dfpAT[2]; // Loss of effective stress at anchorage due to seating
+   Float64 dfpS[2];  // Loss of effective stress at end of anchor set zone length due to seating
+                     // This is typically zero except when the anchor set zone is longer than the tendon
 
    bool operator<(const ANCHORSETDETAILS& other) const
    {
@@ -698,31 +710,18 @@ struct FRICTIONLOSSDETAILS
 // at a POI
 struct LOSSDETAILS
 {
-   LOSSDETAILS() { pLosses = 0; }
+   LOSSDETAILS() {;}
+
    LOSSDETAILS(const LOSSDETAILS& other)
    { MakeCopy(other); }
+
    LOSSDETAILS& operator=(const LOSSDETAILS& other)
    { return MakeCopy(other); }
+
    LOSSDETAILS& MakeCopy(const LOSSDETAILS& other)
    {
       LossMethod = other.LossMethod;
-
-      RefinedLosses                     = other.RefinedLosses;
-      RefinedLosses2005                 = other.RefinedLosses2005;
-      ApproxLosses                      = other.ApproxLosses;
-      ApproxLosses2005                  = other.ApproxLosses2005;
-      LumpSum                           = other.LumpSum;
-
-      if ( other.pLosses == &other.RefinedLosses2005 )
-         pLosses = &RefinedLosses2005;
-      else if ( other.pLosses == &other.RefinedLosses )
-         pLosses = &RefinedLosses;
-      else if ( other.pLosses == &other.ApproxLosses )
-         pLosses = &ApproxLosses;
-      else if ( other.pLosses == &other.ApproxLosses2005 )
-         pLosses = &ApproxLosses2005;
-      else if ( other.pLosses == &other.LumpSum )
-         pLosses = &LumpSum;
+      pLosses = other.pLosses;
 
       FrictionLossDetails = other.FrictionLossDetails;
 
@@ -741,13 +740,9 @@ struct LOSSDETAILS
 
    // THESE LOSS OBJECTS NOT VALID WITH TIME_STEP METHOD
 
-   // LRFD Method Losses (details can be extracted from these objects)
-   const lrfdLosses* pLosses;                  // pointer to one of the loss objects below
-   lrfdLumpSumLosses LumpSum;                  // general lump sum losses
-   lrfdRefinedLosses RefinedLosses;            // refined before LRFD 2005
-   lrfdApproximateLosses ApproxLosses;         // approximate before LRFD 2005
-   lrfdRefinedLosses2005 RefinedLosses2005;    // refined LRFD 2005 and later
-   lrfdApproximateLosses2005 ApproxLosses2005; // approximate LRFD 2005 and later
+   // LRFD Method Losses
+   // Base class can be casted to derived class to get details. You know who you are!
+   boost::shared_ptr<const lrfdLosses> pLosses;
 
 
    ///////////////////////////////////////////////////////////////////////////////

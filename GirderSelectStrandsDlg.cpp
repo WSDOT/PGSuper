@@ -372,10 +372,10 @@ void CGirderSelectStrandsDlg::OnPaint()
                                                         m_pGdrEntry->GetName().c_str(), m_DirectFilledHarpedStrands);
 
 
-   Float64 absol_end_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(m_pGdrEntry->GetName().c_str(), 
+   Float64 absol_end_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(m_SegmentKey/*m_pGdrEntry->GetName().c_str()*/, 
                                                         harped_fillvec, m_HsoEndMeasurement, m_HpOffsetAtEnd);
 
-   Float64 absol_hp_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(m_pGdrEntry->GetName().c_str(), 
+   Float64 absol_hp_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(m_SegmentKey/*m_pGdrEntry->GetName().c_str()*/, 
                                                         harped_fillvec, m_HsoHpMeasurement, m_HpOffsetAtHp);
 
    // We need a strand mover to adjust harped strands
@@ -391,7 +391,7 @@ void CGirderSelectStrandsDlg::OnPaint()
    gpRect2d strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);
 
    gpSize2d world_size;
-   world_size.Dx() = max(bottom_width,strand_bounds.Width());
+   world_size.Dx() = Max(bottom_width,strand_bounds.Width());
 
    world_size.Dy() = strand_bounds.Height();
    if ( IsZero(world_size.Dy()) )
@@ -719,8 +719,8 @@ gpRect2d CGirderSelectStrandsDlg::ComputeStrandBounds(IStrandMover* strand_mover
       bool candb;
       m_pGdrEntry->GetStraightStrandCoordinates(igrid, &xs, &ys, &xe, &ye, &candb);
 
-      xmax = max(xmax, xs);
-      ymax = max(ymax, ys);
+      xmax = Max(xmax, xs);
+      ymax = Max(ymax, ys);
    }
 
    // Harped strands
@@ -747,8 +747,8 @@ gpRect2d CGirderSelectStrandsDlg::ComputeStrandBounds(IStrandMover* strand_mover
       Float64 xnew, ynew;
       strand_mover->TranslateStrand(x, y, offset, &xnew, &ynew);
 
-      xmax = max(xmax, xnew);
-      ymax = max(ymax, ynew);
+      xmax = Max(xmax, xnew);
+      ymax = Max(ymax, ynew);
    }
 
    // Temporary strands
@@ -758,8 +758,8 @@ gpRect2d CGirderSelectStrandsDlg::ComputeStrandBounds(IStrandMover* strand_mover
       Float64 xs, ys, xe, ye;
       m_pGdrEntry->GetTemporaryStrandCoordinates(igrid, &xs, &ys, &xe, &ye);
 
-      xmax = max(xmax, xs);
-      ymax = max(ymax, ys);
+      xmax = Max(xmax, xs);
+      ymax = Max(ymax, ys);
    }
 
    return gpRect2d(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
@@ -965,10 +965,10 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
 
 
             Float64 lowRange, highRange;
-            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeEnd(m_pGdrEntry->GetName().c_str(), harped_fillvec, m_HsoEndMeasurement, &lowRange, &highRange);
+            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeEnd(m_SegmentKey/*m_pGdrEntry->GetName().c_str()*/, harped_fillvec, m_HsoEndMeasurement, &lowRange, &highRange);
 
-            Float64 low  = min(lowRange, highRange);
-            Float64 high = max(lowRange, highRange);
+            Float64 low  = Min(lowRange, highRange);
+            Float64 high = Max(lowRange, highRange);
 
             // Force current offset into allowable range - we could warn user?
             if(m_HpOffsetAtEnd<low)
@@ -1007,10 +1007,10 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
                                                                  m_pGdrEntry->GetName().c_str(), m_DirectFilledHarpedStrands);
 
             Float64 lowRange, highRange;
-            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeHp(m_pGdrEntry->GetName().c_str(), harped_fillvec, m_HsoHpMeasurement, &lowRange, &highRange);
+            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeHp(m_SegmentKey/*m_pGdrEntry->GetName().c_str()*/, harped_fillvec, m_HsoHpMeasurement, &lowRange, &highRange);
 
-            Float64 low  = min(lowRange, highRange);
-            Float64 high = max(lowRange, highRange);
+            Float64 low  = Min(lowRange, highRange);
+            Float64 high = Max(lowRange, highRange);
 
             if(m_HpOffsetAtHp<low)
                m_HpOffsetAtHp = low;

@@ -84,6 +84,7 @@ protected:
    afx_msg void OnRightUserEc();
    afx_msg void OnChangeRightFc();
    afx_msg void OnChangeRightDensity();
+   afx_msg void OnEventChanging();
    afx_msg void OnEventChanged();
 
    afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
@@ -121,6 +122,7 @@ protected:
 
    bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
 
+   int m_PrevEventIdx;
    void FillEventList();
    EventIndexType CreateEvent();
 

@@ -146,7 +146,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
 
    // Set concrete strength 
    Float64 ifc = GetMinimumConcreteStrength();
-   ifc = max(slab_fc, ifc);
+   ifc = Max(slab_fc, ifc);
 
 #pragma Reminder("UPDATE: using fake modulus of rupture")
    matConcreteEx conc(_T("Design Concrete"), ifc, pGirderMaterial->Concrete.StrengthDensity, 
@@ -620,13 +620,13 @@ StrandIndexType pgsStrandDesignTool::ComputeNextNumProportionalStrands(StrandInd
       {
          if (m_HarpedRatio==0.0)
          {
-            ns = min(prevNum, ns_max-1);
+            ns = Min(prevNum, ns_max-1);
          }
          else
          {
             Float64 fra = 1.0 - m_HarpedRatio;
             StrandIndexType s = (StrandIndexType)ceil(fra*prevNum);
-            ns = min( max(s, 1), ns_max-1);
+            ns = Min( Max(s, (StrandIndexType)1), ns_max-1);
          }
 
          ns = pStrandGeom->GetNextNumStrands(m_SegmentKey,pgsTypes::Straight, ns-1 );
@@ -799,7 +799,7 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
    ATLASSERT(IsEqual(m_Aps[pgsTypes::Straight],m_Aps[pgsTypes::Harped])); // must be the same for this algorithm to work
    Float64 fN = Aps/m_Aps[pgsTypes::Straight];
    StrandIndexType N = (StrandIndexType)ceil(fN);
-   N = max(N,1); // Must be zero or more strands
+   N = Max(N,(StrandIndexType)1); // Must be zero or more strands
 
    LOG(_T("Required number of permanent strands (float) = ") << fN);
    LOG(_T("Required number of permanent strands = ") << N);
@@ -1117,6 +1117,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 slope = pStrandGeom->GetAvgStrandSlope( poi, nh, end_offset, hp_offset);
+   slope = fabs(slope); // slope could be + or -
    LOG(_T("Average Strand Slope = 1 : ") << slope);
 
    GET_IFACE(IPretensionForce,pPrestressForce);
@@ -1601,7 +1602,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
          Float64 t, fmax;
          bool bfMax;
 
-         pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,intervalIdx,ls,false/*without rebar*/,&t,&bfMax,&fmax);
+         pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,intervalIdx,ls,false/*without rebar*/,false,&t,&bfMax,&fmax);
          if (0 < t)
          {
             LOG(_T("f allow coeff = ") << ::ConvertFromSysUnits(t,unitMeasure::SqrtKSI) << _T("_/f'c = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI));
@@ -1616,7 +1617,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
                   bool bCheckMaxAlt;
                   Float64 fMaxAlt;
                   Float64 talt;
-                  pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,intervalIdx,pgsTypes::ServiceI,true/*with rebar*/,&talt,&bCheckMaxAlt,&fMaxAlt);
+                  pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,intervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
                   fc_reqd = pow(fControl/talt,2);
                   result = ConcSuccessWithRebar;
                   LOG(_T("Min rebar is required to acheive required strength"));
@@ -2047,24 +2048,11 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    Float64 fstrand = fpj - loss;
    LOG(_T("Average strand stress at lifting = ") << ::ConvertFromSysUnits(fstrand,unitMeasure::KSI) << _T(" KSI"));
 
-   // reduction due to strand slope
-   Float64 hp_offset  = GetHarpStrandOffsetHp();
-   Float64 end_offset = GetHarpStrandOffsetEnd();
+   Float64 force = fstrand * xFerFactor * (m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh + m_Aps[pgsTypes::Temporary]*nt);
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   Float64 ss = pStrandGeom->GetAvgStrandSlope(pgsPointOfInterest(m_SegmentKey,distFromStart), nh,
-                                               end_offset, hp_offset );
-
-   LOG(_T("Adjust for a strand slope of: ") << ss);
-
-   Float64 hz = 1.0;
-//   if (ss < Float64_Max)
-//      hz = ss/sqrt(1*1 + ss*ss);
-
-   Float64 force = fstrand * xFerFactor * (m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh*hz + m_Aps[pgsTypes::Temporary]*nt);
    LOG(_T("Total force at lifting = (") << ::ConvertFromSysUnits(fstrand,unitMeasure::KSI) << _T(" ksi)(") << xFerFactor << _T(")")
       << _T("[") << ::ConvertFromSysUnits(m_Aps[pgsTypes::Straight],unitMeasure::Inch2) << _T(" in^2)(") << ns << _T(") + (") 
-      << ::ConvertFromSysUnits(m_Aps[pgsTypes::Harped],unitMeasure::Inch2) << _T(" in^2)(") << hz << _T(")(") << nh << _T(") + ") 
+      << ::ConvertFromSysUnits(m_Aps[pgsTypes::Harped],unitMeasure::Inch2) << _T(" in^2)(") << nh << _T(") + ") 
       << ::ConvertFromSysUnits(m_Aps[pgsTypes::Temporary],unitMeasure::Inch2) << _T("in^2)(") << nt << _T(")] = ") << ::ConvertFromSysUnits(force,unitMeasure::Kip) << _T(" kip"));
 
    return force;
@@ -2760,7 +2748,7 @@ pgsPointOfInterest pgsStrandDesignTool::GetDebondSamplingPOI(IntervalIndexType i
 
    // grab first poi past transfer length
    Float64 xferLength = GetTransferLength(pgsTypes::Permanent);
-   Float64 bound = max( xferLength, ::ConvertToSysUnits(2.0,unitMeasure::Inch)); // value is fairly arbitrary, we just don't want end poi
+   Float64 bound = Max( xferLength, ::ConvertToSysUnits(2.0,unitMeasure::Inch)); // value is fairly arbitrary, we just don't want end poi
 
    std::vector<pgsPointOfInterest>::iterator it(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
@@ -3076,7 +3064,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       Float64 xfer_length = pPrestress->GetXferLength(m_SegmentKey,pgsTypes::Permanent);
 
       Float64 start_conn = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
-      if (xfer_length < start_conn )
+      if (xfer_length < start_conn)
       {
          pgsPointOfInterest pxfer(m_SegmentKey,start_conn,attrib_xfer);
          m_PoiMgr.AddPointOfInterest(pxfer);
@@ -3084,7 +3072,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
 
       Float64 end_conn = pBridge->GetSegmentEndEndDistance(m_SegmentKey);
 
-      if (end_conn > xfer_length)
+      if (xfer_length < end_conn)
       {
          pgsPointOfInterest pxfer(m_SegmentKey,m_SegmentLength-end_conn,attrib_xfer);
          m_PoiMgr.AddPointOfInterest(pxfer);
@@ -3272,16 +3260,16 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
          Float64 sflen = m_SegmentLength * spanFraction;
          LOG(_T("User-input min MZ fractional length = ")<< ::ConvertFromSysUnits(sflen,unitMeasure::Inch)<<_T(" in"));
 
-         mz_end_len = min(mz_end_len, sflen);
+         mz_end_len = Min(mz_end_len, sflen);
       }
 
       if (buseHard)
       {
-         mz_end_len = min(mz_end_len, hardDistance);
+         mz_end_len = Min(mz_end_len, hardDistance);
          LOG(_T("User-input min MZ hard length = ")<< ::ConvertFromSysUnits(hardDistance,unitMeasure::Inch)<<_T(" in"));
       }
 
-      mz_end_len = max(mz_end_len, 0.0); // can't be less than zero
+      mz_end_len = Max(mz_end_len, 0.0); // can't be less than zero
       LOG(_T("Raw MZ end length = ")<< ::ConvertFromSysUnits(mz_end_len,unitMeasure::Inch)<<_T(" in"));
       LOG(_T("Girder length = ")<< ::ConvertFromSysUnits(m_SegmentLength,unitMeasure::Inch)<<_T(" in"));
  
@@ -3933,7 +3921,7 @@ DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrand
          {
             // Have enough strands to work at this level, see if we have room section-wise
             StrandIndexType num_debonded = rlevel.StrandsDebonded.size();
-            StrandIndexType max_debonds_at_section = max(m_MaxDebondSection, StrandIndexType(num_debonded*m_MaxPercentDebondSection) );
+            StrandIndexType max_debonds_at_section = Max(m_MaxDebondSection, StrandIndexType(num_debonded*m_MaxPercentDebondSection) );
 
             // allow int to floor
             SectionIndexType leading_sections_required = (num_debonded == 0 ? 0 : SectionIndexType((num_debonded-1)/max_debonds_at_section));
@@ -4024,7 +4012,7 @@ bool pgsStrandDesignTool::SmoothDebondLevelsAtSections(std::vector<DebondLevelTy
    DebondLevelType debond_level_at_girder_end = rDebondLevelsAtSections[0];
    StrandIndexType num_debonded = m_DebondLevels[debond_level_at_girder_end].StrandsDebonded.size();
 
-   StrandIndexType max_db_term_at_section = max(m_MaxDebondSection, StrandIndexType(floor(num_debonded*m_MaxPercentDebondSection)));
+   StrandIndexType max_db_term_at_section = Max(m_MaxDebondSection, StrandIndexType(floor(num_debonded*m_MaxPercentDebondSection)));
    LOG(_T("Max allowable debond terminations at a section = ")<<max_db_term_at_section);
 
    // iterate from mid-girder toward end
@@ -4452,8 +4440,8 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
                in_top_db_level *= -1;
             }
 
-            out_db_level = max(out_db_level, out_top_db_level);
-            in_db_level  = max(in_db_level,  in_top_db_level);
+            out_db_level = Max(out_db_level, out_top_db_level);
+            in_db_level  = Max(in_db_level,  in_top_db_level);
          }
 
          if (demand.m_BottomStress < allowComp)
@@ -4481,8 +4469,8 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
                in_bot_db_level *= -1;
             }
 
-            out_db_level = max(out_db_level, out_bot_db_level);
-            in_db_level  = max(in_db_level,  in_bot_db_level);
+            out_db_level = Max(out_db_level, out_bot_db_level);
+            in_db_level  = Max(in_db_level,  in_bot_db_level);
 
          }
 

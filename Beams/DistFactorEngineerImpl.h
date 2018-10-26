@@ -313,7 +313,7 @@ void CDistFactorEngineerImpl<T>::GetPierReactionDF(PierIndexType pierIdx,GirderI
       // controlling
       if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
       {
-         plldf->gR  = max(plldf->gR1.mg,plldf->gR2.mg);
+         plldf->gR  = Max(plldf->gR1.mg,plldf->gR2.mg);
       }
       else
       {
@@ -421,7 +421,7 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
       // controlling
       if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
       {
-         plldf->gM  = max(plldf->gM1.mg,plldf->gM2.mg);
+         plldf->gM  = Max(plldf->gM1.mg,plldf->gM2.mg);
       }
       else
       {
@@ -572,8 +572,8 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(SpanIndexType spanIdx,GirderIndexType
       // controlling
       if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
       {
-         plldf->gM  = max(plldf->gM1.mg,plldf->gM2.mg);
-         plldf->gV  = max(plldf->gV1.mg,plldf->gV2.mg);
+         plldf->gM  = Max(plldf->gM1.mg,plldf->gM2.mg);
+         plldf->gV  = Max(plldf->gV1.mg,plldf->gV2.mg);
       }
       else
       {
@@ -709,9 +709,9 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType spanI
 
    Float64 ctrl_loc_from_gdr;
    if ( dist_to_section_along_cl_span <= pBridge->GetSpanLength(spanIdx)/2 )
-      ctrl_loc_from_gdr = min(loc1,loc2);
+      ctrl_loc_from_gdr = Min(loc1,loc2);
    else
-      ctrl_loc_from_gdr = max(loc1,loc2);
+      ctrl_loc_from_gdr = Max(loc1,loc2);
 
    CSegmentKey segmentKey;
    Float64 distFromStartOfSegment;

@@ -30,7 +30,7 @@
 //
 #include "PGSuperAppPlugin\resource.h"
 
-class CSpanData;
+class CSpanDetailsDlg;
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanLayoutPage dialog
@@ -51,9 +51,7 @@ public:
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
-   Float64 GetSpanLength();
-
-   void Init(const CSpanData2* pSpan);
+   void Init(CSpanDetailsDlg* pParent);
 
 // Overrides
 	// ClassWizard generate virtual function overrides

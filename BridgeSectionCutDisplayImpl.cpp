@@ -209,10 +209,10 @@ void CBridgeSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Floa
    pMap->LPtoWP(left_arrow[1].x, left_arrow[1].y,  &lx,&ly);
    pMap->LPtoWP(right_arrow[1].x,right_arrow[1].y, &rx,&ry);
 
-   *top    = _cpp_max( _cpp_max(y1,y2), _cpp_max(ly,ry) );
-   *bottom = _cpp_min( _cpp_min(y1,y2), _cpp_min(ly,ry) );
-   *left   = _cpp_min( _cpp_min(x1,x2), _cpp_min(lx,rx) );
-   *right  = _cpp_max( _cpp_max(x1,x2), _cpp_max(lx,rx) );
+   *top    = Max( Max(y1,y2), Max(ly,ry) );
+   *bottom = Min( Min(y1,y2), Min(ly,ry) );
+   *left   = Min( Min(x1,x2), Min(lx,rx) );
+   *right  = Max( Max(x1,x2), Max(lx,rx) );
 }
 
 void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(iPointDisplayObject* pDO,IPoint2d* userLoc,IPoint2d** p1,IPoint2d** p2)

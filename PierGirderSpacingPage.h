@@ -39,6 +39,7 @@
 #include <PgsExt\SpanData2.h>
 #include <PgsExt\GirderGroupData.h>
 
+class CPierDetailsDlg;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierGirderSpacingPage dialog
@@ -51,6 +52,7 @@ class CPierGirderSpacingPage : public CPropertyPage
 public:
 	CPierGirderSpacingPage();
 	~CPierGirderSpacingPage();
+   void Init(CPierDetailsDlg* pParent);
 
 // Dialog Data
 	//{{AFX_DATA(CPierGirderSpacingPage)
@@ -69,9 +71,6 @@ public:
    CComboBox                     m_cbGirderSpacingMeasurement[2];
 
    GirderIndexType m_nGirders[2];
-   
-   // global bridge girder spacing and number of girder settings
-   bool m_bUseSameNumGirders;
 
    CGirderSpacingGrid m_GirderSpacingGrid[2];
    DWORD m_GirderSpacingMeasure[2];
@@ -85,12 +84,7 @@ public:
    Float64 m_SlabOffset[2];
    CString m_strSlabOffsetCache[2];
 
-   pgsTypes::SupportedBeamSpacing m_SpacingType;
    pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
-
-
-   void Init(const CPierData2* pPier);
-   bool AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName);
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -120,23 +114,15 @@ protected:
    afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
-   const CPierData2* m_pPier;
-   const CSpanData2* m_pPrevSpan;
-   const CSpanData2* m_pNextSpan;
-   const CGirderGroupData* m_pPrevGroup;
-   const CGirderGroupData* m_pNextGroup;
-
    CStatic m_NoSpacingNote;
-
-   void ToggleGirderSpacingType();
 
    GirderIndexType m_MinGirderCount[2];
 
    GirderIndexType m_nGirdersCache[2];
-   CGirderSpacingGridData m_GirderSpacingCache[2];
-   long m_GirderSpacingMeasureCache[2];
+   CGirderSpacing2 m_GirderSpacingCache[2];
+   DWORD m_GirderSpacingMeasureCache[2];
 
-   int GetMinGirderCount(const CSpanData2* pSpan);
+   GirderIndexType GetMinGirderCount(pgsTypes::PierFaceType pierFace);
 
    void OnPierSpacingDatumChanged(UINT nIDC,pgsTypes::PierFaceType pierFace);
 
@@ -144,7 +130,6 @@ protected:
    void OnNumGirdersChanged(NMHDR* pNMHDR,LRESULT* pResult,pgsTypes::PierFaceType pierFace);
    void AddGirders(GirderIndexType nGirders,pgsTypes::PierFaceType pierFace);
    void RemoveGirders(GirderIndexType nGirders,pgsTypes::PierFaceType pierFace);
-   void SetGirderCount(GirderIndexType nGirders,pgsTypes::PierFaceType pierFace);
 
    void FillRefGirderOffsetTypeComboBox(pgsTypes::PierFaceType pierFace);
    void FillRefGirderComboBox(pgsTypes::PierFaceType pierFace);
@@ -164,8 +149,8 @@ protected:
    void HideGroup(UINT* nIDs,UINT nControls,bool bHide=true);
    void MoveAheadGroup();
 
-   void InitSpacingBack(bool bUse);
-   void InitSpacingAhead(bool bUse);
+   void InitSpacingBack(CPierDetailsDlg* pParent,bool bUse);
+   void InitSpacingAhead(CPierDetailsDlg* pParent,bool bUse);
 
    bool IsAbutment();
    bool IsContinuousSegment();

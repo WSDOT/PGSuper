@@ -32,6 +32,8 @@
 #include <grid\gxall.h>
 #endif // NOGRID
 
+#include <WBFLAtlExt.h>
+
 #include <HtmlHelp.h>
 #include <WBFLCore.h>
 #include <WBFLTools.h>

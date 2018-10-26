@@ -31,12 +31,13 @@ class CPGSuperBaseAppPlugin
 {
 public:
    CPGSuperBaseAppPlugin();
+   virtual ~CPGSuperBaseAppPlugin();
 
    virtual CString GetAppName() const = 0;
    virtual CString GetTemplateFileExtension() = 0;
 
-   HRESULT OnFinalConstruct();
-   void OnFinalRelease();
+   virtual HRESULT OnFinalConstruct();
+   virtual void OnFinalRelease();
 
    // call these from Init and Terminate
    virtual void DefaultInit();

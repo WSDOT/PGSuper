@@ -69,6 +69,7 @@ class ATL_NO_VTABLE CAnalysisAgentImp :
    public IContraflexurePoints,
    public IContinuity,
    public IBearingDesign,
+   public IPrecompressedTensileZone,
    public IInfluenceResults,
    public IBridgeDescriptionEventSink,
    public ISpecificationEventSink,
@@ -105,6 +106,7 @@ BEGIN_COM_MAP(CAnalysisAgentImp)
    COM_INTERFACE_ENTRY(IContraflexurePoints)
    COM_INTERFACE_ENTRY(IContinuity)
    COM_INTERFACE_ENTRY(IBearingDesign)
+   COM_INTERFACE_ENTRY(IPrecompressedTensileZone)
    COM_INTERFACE_ENTRY(IInfluenceResults)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
@@ -167,6 +169,7 @@ public:
    virtual void GetEquivPTLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<EquivPTPointLoad>& ptLoads,std::vector<EquivPTDistributedLoad>& distLoads,std::vector<EquivPTMomentLoad>& momentLoads);
 
 private:
+   void GetSlabLoad(const CSegmentKey& segmentKey, std::vector<LinearLoad>& vSlabLoads, std::vector<LinearLoad>& vHaunchLoads, std::vector<LinearLoad>& vPanelLoads);
    void GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::vector<SlabLoad>* pSlabLoads);
    void GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, std::vector<OverlayLoad>* pOverlayLoads);
    void GetMainSpanShearKeyLoad(const CSegmentKey& segmentKey,std::vector<ShearKeyLoad>* pLoads);
@@ -402,6 +405,11 @@ public:
    virtual bool IsContinuityFullyEffective(const CGirderKey& girderKey);
    virtual Float64 GetContinuityStressLevel(PierIndexType pierIdx,const CGirderKey& girderKey);
 
+// IPrecompressedTensileZone
+public:
+   virtual bool IsInPrecompressedTensileZone(IntervalIndexType stressingIntervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat);
+   virtual bool IsInPrecompressedTensileZone(IntervalIndexType stressingIntervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat, const GDRCONFIG* pConfig);
+
 // IInfluenceResults
 public:
    virtual std::vector<Float64> GetUnitLoadMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitLoadPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx);
@@ -616,6 +624,9 @@ private:
 
    void CheckGirderEndGeometry(IBridge* pBridge,const CGirderKey& girderKey);
    void BuildBridgeSiteModel(GirderIndexType gdrIdx,bool bContinuous,IContraflexureResponse* pContraflexureResponse,IContraflexureResponse* pDeflContraflexureResponse,ILBAMModel* pModel);
+   void CreateLBAMStages(ILBAMModel* pModel);
+   void CreateLBAMSpans(GirderIndexType gdr,bool bContinuousModel,lrfdLoadModifier& loadModifier,ILBAMModel* pModel);
+   void CreateLBAMSuperstructureMembers(GirderIndexType gdr,bool bContinuousModel,lrfdLoadModifier& loadModifier,ILBAMModel* pModel);
    void ApplySelfWeightLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrIdx);
    void ApplyDiaphragmLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrIdx);
    void ApplySlabLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrIdx);
@@ -848,7 +859,10 @@ private:
    // Returns the number of superstructure members used to model the segment
    IndexType GetSuperstructureMemberCount(const CSegmentKey& segmentKey);
 
-   void ConfigureLBAMPoisForReactions(PierIndexType pierIdx,IntervalIndexType intervalIdx,pgsTypes::BridgeAnalysisType bat);
+   void ConfigureLBAMPoisForReactions(PierIndexType pierIdx,IntervalIndexType intervalIdx,pgsTypes::BridgeAnalysisType bat,bool bLiveLoadReaction);
+
+   bool IsDeckInPrecompressedTensileZone(IntervalIndexType stressingIntervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat);
+   bool IsGirderInPrecompressedTensileZone(IntervalIndexType stressingIntervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat, const GDRCONFIG* pConfig);
 };
 
 #endif //__ANALYSISAGENT_H_

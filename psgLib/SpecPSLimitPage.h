@@ -20,36 +20,36 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_SPECPSLIMITPAGE_H__FE3DB4E5_D66A_11D2_88FA_006097C68A9C__INCLUDED_)
-#define AFX_SPECPSLIMITPAGE_H__FE3DB4E5_D66A_11D2_88FA_006097C68A9C__INCLUDED_
+#if !defined(AFX_SpecStrandPage_H__FE3DB4E5_D66A_11D2_88FA_006097C68A9C__INCLUDED_)
+#define AFX_SpecStrandPage_H__FE3DB4E5_D66A_11D2_88FA_006097C68A9C__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-// SpecPSLimitPage.h : header file
+// SpecStrandPage.h : header file
 //
 
 /////////////////////////////////////////////////////////////////////////////
-// CSpecPSLimitPage dialog
+// CSpecStrandPage dialog
 
-class CSpecPSLimitPage : public CPropertyPage
+class CSpecStrandPage : public CPropertyPage
 {
-	DECLARE_DYNCREATE(CSpecPSLimitPage)
+	DECLARE_DYNCREATE(CSpecStrandPage)
 
 // Construction
 public:
-	CSpecPSLimitPage();
-	~CSpecPSLimitPage();
+	CSpecStrandPage();
+	~CSpecStrandPage();
 
 // Dialog Data
-	//{{AFX_DATA(CSpecPSLimitPage)
+	//{{AFX_DATA(CSpecStrandPage)
 	enum { IDD = IDD_SPEC_STRANDS };
 	//}}AFX_DATA
 
 
 // Overrides
 	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CSpecPSLimitPage)
+	//{{AFX_VIRTUAL(CSpecStrandPage)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -57,7 +57,7 @@ public:
 // Implementation
 protected:
 	// Generated message map functions
-	//{{AFX_MSG(CSpecPSLimitPage)
+	//{{AFX_MSG(CSpecStrandPage)
 	virtual BOOL OnInitDialog();
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	afx_msg void OnPsChecked();
@@ -72,4 +72,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_SPECPSLIMITPAGE_H__FE3DB4E5_D66A_11D2_88FA_006097C68A9C__INCLUDED_)
+#endif // !defined(AFX_SpecStrandPage_H__FE3DB4E5_D66A_11D2_88FA_006097C68A9C__INCLUDED_)

@@ -117,7 +117,7 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
-   pIPoi->RemovePointsOfInterest(vPoi,POI_PIER);
+   pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
    GET_IFACE2(pBroker,IProductForces,pForces);
    pgsTypes::BridgeAnalysisType bat = pForces->GetBridgeAnalysisType(pgsTypes::Maximize);

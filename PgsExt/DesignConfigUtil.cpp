@@ -439,7 +439,7 @@ void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
 
             *pStartRBsiz = zd.ConfinementBarSize;
 
-            *pStartS = max(*pStartS, zd.BarSpacing); // use max spacing of any zone
+            *pStartS = Max(*pStartS, zd.BarSpacing); // use max spacing of any zone
 
             endloc += zd.ZoneLength;
          }
@@ -474,7 +474,7 @@ void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
 
                *pEndRBsiz = zd.ConfinementBarSize;
 
-               *pEndS = max(*pEndS, zd.BarSpacing); 
+               *pEndS = Max(*pEndS, zd.BarSpacing); 
 
                endloc += zd.ZoneLength;
             }
@@ -618,11 +618,11 @@ void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matRebar::Type
       Float64 Avs = Abar * config.nSplittingBars / config.SplittingBarSpacing;
 
       // start end
-      Float64 zl = min(reqdStartZl, config.SplittingZoneLength);
+      Float64 zl = Min(reqdStartZl, config.SplittingZoneLength);
       *pStartAv = Avs * zl;
 
       // end end
-      zl = min(reqdEndZl, config.SplittingZoneLength);
+      zl = Min(reqdEndZl, config.SplittingZoneLength);
       *pEndAv = Avs * zl;
    }
 

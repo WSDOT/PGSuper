@@ -32,7 +32,7 @@
 #include "PierLayoutPage.h"
 #include "PierConnectionsPage.h"
 #include "PierGirderSpacingPage.h"
-#include "PGSuperAppPlugin\ClosurePourGeometryPage.h"
+#include "PGSuperAppPlugin\ClosureJointGeometryPage.h"
 #include "PGSuperAppPlugin\GirderSegmentSpacingPage.h"
 #include <PgsExt\BridgeDescription2.h>
 #include "EditPier.h"
@@ -40,62 +40,16 @@
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg
 
-class CPierDetailsDlg : public CPropertySheet, public IPierConnectionsParent
+class CPierDetailsDlg : public CPropertySheet
 {
 	DECLARE_DYNAMIC(CPierDetailsDlg)
 
 // Construction
 public:
-	CPierDetailsDlg(const CPierData2* pPierData = NULL,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-
-   void SetPierData(const CPierData2* pPier);
-   txnEditPierData GetEditPierData();
-
-//interface IPierConnectionsParent
-   virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx);
-   virtual void SetPierConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type);
-   virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx);
-   virtual void SetSegmentConnectionType(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType type);
-   virtual const CSpanData2* GetPrevSpan(PierIndexType pierIdx);
-   virtual const CSpanData2* GetNextSpan(PierIndexType pierIdx);
-   virtual const CBridgeDescription2* GetBridgeDescription();
-
-   pgsTypes::MovePierOption GetMovePierOption();
-   Float64 GetStation();
-   LPCTSTR GetOrientation();
-   EventIndexType GetErectionEventIndex();
-
-   bool IsInteriorPier();
-   bool IsBoundaryPier();
-   bool HasSpacing();
-
-   pgsTypes::PierConnectionType GetPierConnectionType();
-   pgsTypes::PierSegmentConnectionType GetSegmentConnectionType();
-   Float64 GetBearingOffset(pgsTypes::PierFaceType face);
-   ConnectionLibraryEntry::BearingOffsetMeasurementType GetBearingOffsetMeasurementType(pgsTypes::PierFaceType face);
-   Float64 GetEndDistance(pgsTypes::PierFaceType face);
-   ConnectionLibraryEntry::EndDistanceMeasurementType GetEndDistanceMeasurementType(pgsTypes::PierFaceType face);
-   Float64 GetSupportWidth(pgsTypes::PierFaceType face);
-
-   GirderIndexType GetGirderCount(pgsTypes::PierFaceType pierFace);
-   CGirderSpacing2 GetSpacing(pgsTypes::PierFaceType pierFace);
-   pgsTypes::SupportedBeamSpacing GetSpacingType();
-   bool UseSameNumberOfGirdersInAllGroups();
-   pgsTypes::MeasurementLocation GetMeasurementLocation(pgsTypes::PierFaceType pierFace);
-   pgsTypes::MeasurementType GetMeasurementType(pgsTypes::PierFaceType pierFace);
+	CPierDetailsDlg(const CBridgeDescription2* pBridgeDesc,PierIndexType pierIdx,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	virtual ~CPierDetailsDlg();
    
-   pgsTypes::MeasurementLocation GetMeasurementLocation(); // for the entire bridge
-
-   pgsTypes::SlabOffsetType GetSlabOffsetType();
-   Float64 GetSlabOffset(pgsTypes::PierFaceType pierFace);
-
-   Float64 GetDiaphragmHeight(pgsTypes::PierFaceType pierFace);
-   Float64 GetDiaphragmWidth(pgsTypes::PierFaceType pierFace);
-   ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::PierFaceType pierFace);
-   Float64 GetDiaphragmLoadLocation(pgsTypes::PierFaceType pierFace);
-
-
-   bool AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName);
+   CBridgeDescription2* GetBridgeDescription();
 
 // Attributes
 public:
@@ -110,7 +64,6 @@ public:
 
 // Implementation
 public:
-	virtual ~CPierDetailsDlg();
 
 	// Generated message map functions
 protected:
@@ -119,16 +72,19 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   void Init();
+   void InitPages();
+   void Init(const CBridgeDescription2* pBridge,PierIndexType pierIdx);
 
-   const CBridgeDescription2* m_pBridge;
-   const CSpanData2* m_pPrevSpan;
-   const CPierData2* m_pPierData;
-   const CSpanData2* m_pNextSpan;
+   CBridgeDescription2 m_BridgeDesc; // this is the bridge we are operating on
+   CSpanData2* m_pPrevSpan; // pointers to objects within our private bridge model just to make life easier
+   CPierData2* m_pPierData;
+   CSpanData2* m_pNextSpan;
 
 private:
    friend CPierLayoutPage;
    friend CPierGirderSpacingPage;
+   friend CGirderSegmentSpacingPage;
+   friend CClosureJointGeometryPage;
 
    // General layout page
    CPierLayoutPage            m_PierLayoutPage;
@@ -138,7 +94,7 @@ private:
    CPierGirderSpacingPage     m_PierGirderSpacingPage;
 
    // These two pages are used when the pier is interior to a girder group
-   CClosurePourGeometryPage   m_ClosurePourGeometryPage;
+   CClosureJointGeometryPage  m_ClosureJointGeometryPage;
    CGirderSegmentSpacingPage  m_GirderSegmentSpacingPage;
 };
 

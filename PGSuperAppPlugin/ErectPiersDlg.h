@@ -16,7 +16,7 @@ class CErectPiersDlg : public CDialog
 	DECLARE_DYNAMIC(CErectPiersDlg)
 
 public:
-	CErectPiersDlg(const CTimelineManager* pTimelineMgr,CWnd* pParent = NULL);   // standard constructor
+	CErectPiersDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CErectPiersDlg();
 
 // Dialog Data
@@ -34,6 +34,7 @@ protected:
 
    CComPtr<IEAFDisplayUnits> m_pDisplayUnits;
    const CBridgeDescription2* m_pBridgeDesc;
+   EventIndexType m_EventIndex;
 
 public:
    virtual BOOL OnInitDialog();

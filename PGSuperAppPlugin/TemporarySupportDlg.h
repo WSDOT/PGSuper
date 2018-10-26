@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PGSuperAppPlugin\TemporarySupportLayoutPage.h"
-#include "PGSuperAppPlugin\ClosurePourGeometryPage.h"
+#include "PGSuperAppPlugin\ClosureJointGeometryPage.h"
 #include "PGSuperAppPlugin\GirderSegmentSpacingPage.h"
 
 #include <PgsExt\TemporarySupportData.h>
@@ -18,47 +18,25 @@ public:
 
    virtual BOOL OnInitDialog();
 
-   const CBridgeDescription2* GetBridgeDescription();
-
-   void SetEvents(EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType closureEventIdx);
-
-   SupportIndexType GetTemporarySupportIndex();
-
-   const CTemporarySupportData& GetTemporarySupport();
-
-   // Data from General Page
-   Float64 GetStation();
-   LPCTSTR GetOrientation();
-   pgsTypes::TemporarySupportType GetTemporarySupportType();
-   EventIndexType GetErectionEventIndex();
-   EventIndexType GetRemovalEventIndex();
-
-   // Data from Geometry Page
-   pgsTypes::SegmentConnectionType GetConnectionType();
-   void SetConnectionType(pgsTypes::SegmentConnectionType type);
-   EventIndexType GetClosurePourEventIndex();
-   Float64 GetBearingOffset();
-   ConnectionLibraryEntry::BearingOffsetMeasurementType GetBearingOffsetMeasurementType();
-   Float64 GetEndDistance();
-   ConnectionLibraryEntry::EndDistanceMeasurementType GetEndDistanceMeasurementType();
-   Float64 GetSupportWidth();
-
-   // Data from Spacing Page
-   pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
-   pgsTypes::MeasurementLocation GetSpacingMeasurementLocation();
+   CBridgeDescription2* GetBridgeDescription();
+   SupportIndexType GetTempSupportIndex();
 
 protected:
 	DECLARE_MESSAGE_MAP()
 
+   void InitPages();
    void Init(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx);
 
-   const CBridgeDescription2* m_pBridgeDesc;
-
-   CTemporarySupportData m_TemporarySupport;
+   CBridgeDescription2 m_BridgeDesc;
+   CTemporarySupportData* m_pTS;
 
    CTemporarySupportLayoutPage   m_General;
-   CClosurePourGeometryPage      m_Geometry;
+   CClosureJointGeometryPage     m_Geometry;
    CGirderSegmentSpacingPage     m_Spacing;
+
+   friend CTemporarySupportLayoutPage;
+   friend CClosureJointGeometryPage;
+   friend CGirderSegmentSpacingPage;
 };
 
 

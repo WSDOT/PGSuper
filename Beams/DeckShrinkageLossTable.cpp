@@ -155,19 +155,27 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*pParamTable)(0,7) << Sub2(_T("K"),_T("2"));
    (*pParamTable)(0,8) << Sub2(symbol(epsilon),_T("ddf")) << _T("x 1000");
 
-   if ( IsZero(pDetails->RefinedLosses2005.GetVolumeSlab()) || IsZero(pDetails->RefinedLosses2005.GetSurfaceAreaSlab()) )
+   // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return table;
+   }
+
+   if ( IsZero(ptl->GetVolumeSlab()) || IsZero(ptl->GetSurfaceAreaSlab()) )
       (*pParamTable)(1,0) << table->ecc.SetValue(0.0);
    else
-      (*pParamTable)(1,0) << table->ecc.SetValue(pDetails->RefinedLosses2005.GetVolumeSlab()/pDetails->RefinedLosses2005.GetSurfaceAreaSlab());
+      (*pParamTable)(1,0) << table->ecc.SetValue(ptl->GetVolumeSlab()/ptl->GetSurfaceAreaSlab());
 
-   (*pParamTable)(1,1) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepDeck().GetKvs());
-   (*pParamTable)(1,2) << table->scalar.SetValue(pDetails->RefinedLosses2005.Getkhs());
-   (*pParamTable)(1,3) << table->stress.SetValue(pDetails->RefinedLosses2005.GetFcSlab() );
-   (*pParamTable)(1,4) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepDeck().GetKf());
-   (*pParamTable)(1,5) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepDeck().GetKtd());
-   (*pParamTable)(1,6) << pDetails->RefinedLosses2005.GetDeckK1Shrinkage();
-   (*pParamTable)(1,7) << pDetails->RefinedLosses2005.GetDeckK2Shrinkage();
-   (*pParamTable)(1,8) << table->strain.SetValue(pDetails->RefinedLosses2005.Get_eddf() * 1000);
+   (*pParamTable)(1,1) << table->scalar.SetValue(ptl->GetCreepDeck().GetKvs());
+   (*pParamTable)(1,2) << table->scalar.SetValue(ptl->Getkhs());
+   (*pParamTable)(1,3) << table->stress.SetValue(ptl->GetFcSlab() );
+   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepDeck().GetKf());
+   (*pParamTable)(1,5) << table->scalar.SetValue(ptl->GetCreepDeck().GetKtd());
+   (*pParamTable)(1,6) << ptl->GetDeckK1Shrinkage();
+   (*pParamTable)(1,7) << ptl->GetDeckK2Shrinkage();
+   (*pParamTable)(1,8) << table->strain.SetValue(ptl->Get_eddf() * 1000);
 
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -180,14 +188,14 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*pParamTable)(0,6) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
    (*pParamTable)(0,7) << Sub2(symbol(psi),_T("bd")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
 
-   (*pParamTable)(1,0) << table->mod_e.SetValue( pDetails->RefinedLosses2005.GetEp() );
-   (*pParamTable)(1,1) << table->mod_e.SetValue( pDetails->RefinedLosses2005.GetEc() );
-   (*pParamTable)(1,2) << table->mod_e.SetValue( pDetails->RefinedLosses2005.GetEcd() );
+   (*pParamTable)(1,0) << table->mod_e.SetValue( ptl->GetEp() );
+   (*pParamTable)(1,1) << table->mod_e.SetValue( ptl->GetEc() );
+   (*pParamTable)(1,2) << table->mod_e.SetValue( ptl->GetEcd() );
    (*pParamTable)(1,3) << pSpecEntry->GetDeckShrinkageElasticGain();
-   (*pParamTable)(1,4) << pDetails->RefinedLosses2005.GetDeckK1Creep();
-   (*pParamTable)(1,5) << pDetails->RefinedLosses2005.GetDeckK2Creep();
-   (*pParamTable)(1,6) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepDeckToFinal().GetCreepCoefficient());
-   (*pParamTable)(1,7) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepDeck().GetCreepCoefficient());
+   (*pParamTable)(1,4) << ptl->GetDeckK1Creep();
+   (*pParamTable)(1,5) << ptl->GetDeckK2Creep();
+   (*pParamTable)(1,6) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());
+   (*pParamTable)(1,7) << table->scalar.SetValue(ptl->GetCreepDeck().GetCreepCoefficient());
 
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
@@ -219,17 +227,25 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
 
 void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    Float64 fTop,fBot;
    pProductForces->GetDeckShrinkageStresses(poi,&fTop,&fBot);
 
-   (*this)(row,1) << area.SetValue( pDetails->RefinedLosses2005.GetAd() );
-   (*this)(row,2) << ecc.SetValue( pDetails->RefinedLosses2005.GetEccpc() );
-   (*this)(row,3) << ecc.SetValue( m_Sign*pDetails->RefinedLosses2005.GetDeckEccentricity() );
+   (*this)(row,1) << area.SetValue( ptl->GetAd() );
+   (*this)(row,2) << ecc.SetValue( ptl->GetEccpc() );
+   (*this)(row,3) << ecc.SetValue( m_Sign*ptl->GetDeckEccentricity() );
    (*this)(row,4) << area.SetValue( pDetails->pLosses->GetAc() );
    (*this)(row,5) << mom_inertia.SetValue( pDetails->pLosses->GetIc() );
-   (*this)(row,6) << stress.SetValue( pDetails->RefinedLosses2005.GetDeltaFcdf() );
-   (*this)(row,7) << stress.SetValue( pDetails->RefinedLosses2005.ElasticGainDueToDeckShrinkage() );
+   (*this)(row,6) << stress.SetValue( ptl->GetDeltaFcdf() );
+   (*this)(row,7) << stress.SetValue( ptl->ElasticGainDueToDeckShrinkage() );
    (*this)(row,8) << stress.SetValue( fTop );
    (*this)(row,9) << stress.SetValue( fBot );
 }

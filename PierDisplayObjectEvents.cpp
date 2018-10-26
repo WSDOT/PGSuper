@@ -261,8 +261,8 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
 
          // Mapping between connection type and menu id
          std::map<pgsTypes::PierSegmentConnectionType,UINT> menuIDs;
-         menuIDs.insert(std::make_pair(pgsTypes::psctContinousClosurePour,IDM_CONTINUOUS_CLOSURE));
-         menuIDs.insert(std::make_pair(pgsTypes::psctIntegralClosurePour,IDM_INTEGRAL_CLOSURE));
+         menuIDs.insert(std::make_pair(pgsTypes::psctContinousClosureJoint,IDM_CONTINUOUS_CLOSURE));
+         menuIDs.insert(std::make_pair(pgsTypes::psctIntegralClosureJoint,IDM_INTEGRAL_CLOSURE));
          menuIDs.insert(std::make_pair(pgsTypes::psctContinuousSegment,IDM_CONTINUOUS_SEGMENT_AT_PIER));
          menuIDs.insert(std::make_pair(pgsTypes::psctIntegralSegment,IDM_INTEGRAL_SEGMENT_AT_PIER));
 

@@ -114,6 +114,22 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    else
       *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
 
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return table;
+   }
+
+   if ( ptl->AdjustShrinkageStrain() )
+   {
+      // LRFD 5.4.2.3.3
+      // If the concrete is exposed to drying before 5 days of curing have elapsed,
+      // the shrinkage as determined in Eq 5.4.2.3.3-1 should be increased by 20%
+      *pParagraph << _T("Girder is exposed to drying before 5 days of curing have elapsed, the shrinkage strain has been increased by 20% (LRFD 5.4.2.3.3)") << rptNewLine;
+   }
+
    // parameters for calculations (two tables to keep the width printable)
    rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -124,12 +140,12 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(0,4) << COLHDR(Sub2(_T("t"),_T("d")),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
    (*pParamTable)(0,5) << COLHDR(Sub2(_T("t"),_T("f")),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
 
-   (*pParamTable)(1,0) << pDetails->RefinedLosses2005.GetRelHumidity();
-   (*pParamTable)(1,1) << table->ecc.SetValue(pDetails->RefinedLosses2005.GetVolume()/pDetails->RefinedLosses2005.GetSurfaceArea());
-   (*pParamTable)(1,2) << table->stress.SetValue(pDetails->RefinedLosses2005.GetFci());
-   (*pParamTable)(1,3) << table->time.SetValue(pDetails->RefinedLosses2005.GetAdjustedInitialAge());
-   (*pParamTable)(1,4) << table->time.SetValue(pDetails->RefinedLosses2005.GetAgeAtDeckPlacement());
-   (*pParamTable)(1,5) << table->time.SetValue(pDetails->RefinedLosses2005.GetFinalAge());
+   (*pParamTable)(1,0) << ptl->GetRelHumidity();
+   (*pParamTable)(1,1) << table->ecc.SetValue(ptl->GetVolume()/ptl->GetSurfaceArea());
+   (*pParamTable)(1,2) << table->stress.SetValue(ptl->GetFci());
+   (*pParamTable)(1,3) << table->time.SetValue(ptl->GetAdjustedInitialAge());
+   (*pParamTable)(1,4) << table->time.SetValue(ptl->GetAgeAtDeckPlacement());
+   (*pParamTable)(1,5) << table->time.SetValue(ptl->GetFinalAge());
 
    // intermediate results
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
@@ -145,16 +161,16 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(0,3) << Sub2(_T("k"),_T("f"));
 
    table->time.ShowUnitTag(true);
-   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToDeck().GetMaturity());
-   (*pParamTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetMaturity());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToDeck().GetMaturity());
+   (*pParamTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
    table->time.ShowUnitTag(false);
 
-   (*pParamTable)(1,0) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetKvs());
-   (*pParamTable)(1,1) << table->scalar.SetValue(pDetails->RefinedLosses2005.Getkhs());
-   (*pParamTable)(1,2) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetKhc());
-   (*pParamTable)(1,3) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetKf());
-   (*pParamTable)(1,4) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToDeck().GetKtd());
-   (*pParamTable)(1,5) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetKtd());
+   (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKvs());
+   (*pParamTable)(1,1) << table->scalar.SetValue(ptl->Getkhs());
+   (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKhc());
+   (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKf());
+   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepInitialToDeck().GetKtd());
+   (*pParamTable)(1,5) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
 
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -180,14 +196,14 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(1,6) << Sub2(_T("K"),_T("2"));
    (*pParamTable)(1,7) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
 
-   (*pParamTable)(2,0) << table->mod_e.SetValue(pDetails->RefinedLosses2005.GetEp());
-   (*pParamTable)(2,1) << table->mod_e.SetValue(pDetails->RefinedLosses2005.GetEci());
-   (*pParamTable)(2,2) << pDetails->RefinedLosses2005.GetGdrK1Shrinkage();
-   (*pParamTable)(2,3) << pDetails->RefinedLosses2005.GetGdrK2Shrinkage();
-   (*pParamTable)(2,4) << table->strain.SetValue(pDetails->RefinedLosses2005.Get_ebid() * 1000);
-   (*pParamTable)(2,5) << pDetails->RefinedLosses2005.GetGdrK1Creep();
-   (*pParamTable)(2,6) << pDetails->RefinedLosses2005.GetGdrK2Creep();
-   (*pParamTable)(2,7) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(2,0) << table->mod_e.SetValue(ptl->GetEp());
+   (*pParamTable)(2,1) << table->mod_e.SetValue(ptl->GetEci());
+   (*pParamTable)(2,2) << ptl->GetGdrK1Shrinkage();
+   (*pParamTable)(2,3) << ptl->GetGdrK2Shrinkage();
+   (*pParamTable)(2,4) << table->strain.SetValue(ptl->Get_ebid() * 1000);
+   (*pParamTable)(2,5) << ptl->GetGdrK1Creep();
+   (*pParamTable)(2,6) << ptl->GetGdrK2Creep();
+   (*pParamTable)(2,7) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
 
    // shrinkage loss   
    *pParagraph << table << rptNewLine;
@@ -215,6 +231,14 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
 
 void CShrinkageAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
+   // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
    Float64 Aps = pDetails->pLosses->GetApsPermanent();
    if ( pDetails->pLosses->GetTempStrandUsage() == lrfdLosses::tsPretensioned ||
         pDetails->pLosses->GetTempStrandUsage() == lrfdLosses::tsPTBeforeLifting )
@@ -234,6 +258,6 @@ void CShrinkageAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroke
    (*this)(row,3) << mom_inertia.SetValue(pDetails->pLosses->GetIn());
    (*this)(row,4) << ecc.SetValue(eps);
    (*this)(row,5) << ecc.SetValue(e);
-   (*this)(row,6) << scalar.SetValue(pDetails->RefinedLosses2005.GetKid());
-   (*this)(row,7) << stress.SetValue( pDetails->RefinedLosses2005.ShrinkageLossBeforeDeckPlacement() );
+   (*this)(row,6) << scalar.SetValue(ptl->GetKid());
+   (*this)(row,7) << stress.SetValue( ptl->ShrinkageLossBeforeDeckPlacement() );
 }

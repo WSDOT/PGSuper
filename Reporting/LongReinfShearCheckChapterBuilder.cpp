@@ -407,6 +407,11 @@ rptParagraph* create_table1_design(IBroker* pBroker,
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
+   if ( 1 < nSegments )
+   {
+      location.IncludeSpanAndGirder(true);
+   }
+
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
@@ -496,6 +501,11 @@ rptParagraph* create_table2_design(IBroker* pBroker,
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
+   if ( 1 < nSegments )
+   {
+      location.IncludeSpanAndGirder(true);
+   }
+
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
@@ -578,6 +588,11 @@ rptParagraph* create_table3_design(IBroker* pBroker,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   if ( 1 < nSegments )
+   {
+      location.IncludeSpanAndGirder(true);
+   }
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {

@@ -229,11 +229,11 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
             //    ||              ||  |
             //    ||              ||  |
             //  ======================|
-            width = topWidth/2 + _cpp_max(topWidth,botWidth)/2;
+            width = topWidth/2 + Max(topWidth,botWidth)/2;
          }
          else
          {
-            width = _cpp_max(topWidth,botWidth);
+            width = Max(topWidth,botWidth);
          }
 
          // deal with joints
@@ -445,7 +445,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
          TributaryFlangeWidthBySegment(bridge,gdrID,startSegmentKey.segmentIndex, 0.0,leftGdrID,rightGdrID,&S1);
          TributaryFlangeWidthBySegment(bridge,gdrID,endSegmentKey.segmentIndex,   L,  leftGdrID,rightGdrID,&S2);
 
-         Float64 S = _cpp_max(S1,S2);
+         Float64 S = Max(S1,S2);
 
 	      if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() && L/S < 2.0 )
 	      {
@@ -541,7 +541,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	                  if ( M_PI < angle_value )
 	                     angle_value = TWO_PI - angle_value;
       	
-	                  maxSkew = _cpp_max(maxSkew,angle_value);
+	                  maxSkew = Max(maxSkew,angle_value);
 	               }
 	            }
                bMaxSkewAngleComputed = true;
@@ -815,7 +815,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
           (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << xdim2.SetValue(tSlab) << _T(") + greater of [ ");
           (*pPara) << xdim2.SetValue(tWeb) << _T(" : (0.5)(");
           (*pPara) << xdim2.SetValue(wFlange) << _T(") ] = ");
-          (*pPara) << xdim2.SetValue( 12*tSlab + _cpp_max(tWeb,0.5*wFlange) ) << rptNewLine;
+          (*pPara) << xdim2.SetValue( 12*tSlab + Max(tWeb,0.5*wFlange) ) << rptNewLine;
 
           (*pPara) << Sub2(_T("w"),_T("3")) << _T(" = (") << xdim.SetValue(lSpacing*2) << _T(" + ");
           (*pPara) << xdim.SetValue(rSpacing*2) << _T(")/2 = ");
@@ -978,7 +978,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
       (*table)(row,1) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
       (*table)(row,1) << length.SetValue(tWeb) << _T(" : (0.5)(");
       (*table)(row,1) << length.SetValue(wFlange) << _T(") ] = ");
-      (*table)(row,1) << length.SetValue( 12*tSlab + _cpp_max(tWeb,0.5*wFlange) ) << rptNewLine;
+      (*table)(row,1) << length.SetValue( 12*tSlab + Max(tWeb,0.5*wFlange) ) << rptNewLine;
 
       (*table)(row,1) << Sub2(_T("w"),_T("3")) << _T(" = (") << spanLength.SetValue(lSpacing*2) << _T(" + ");
       (*table)(row,1) << spanLength.SetValue(rSpacing*2) << _T(")/2 = ");
@@ -1291,7 +1291,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
             (*table)(row,col) << Sub2(_T("w"),_T("2")) << _T(" = (6.0)(") << length.SetValue(tSlab) << _T(") + greater of [ (0.5)(");
             (*table)(row,col) << length.SetValue(tWeb) << _T(") : (0.25)(");
             (*table)(row,col) << length.SetValue(wFlange) << _T(") ] = ");
-            (*table)(row,col) << length.SetValue( 6*tSlab + _cpp_max(0.5*tWeb,0.25*wFlange) ) << rptNewLine;
+            (*table)(row,col) << length.SetValue( 6*tSlab + Max(0.5*tWeb,0.25*wFlange) ) << rptNewLine;
 
             Float64 overhang = (bLeftGirder ? lSpacing : rSpacing);
             (*table)(row,col) << Sub2(_T("w"),_T("3")) << _T(" = ") << spanLength.SetValue(overhang);
@@ -1413,7 +1413,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
       (*pPara) << length.SetValue(tWeb) << _T(" : (0.5)(");
       (*pPara) << length.SetValue(wFlange) << _T(") ] = ");
-      (*pPara) << length.SetValue( 12*tSlab + _cpp_max(tWeb,0.5*wFlange) ) << rptNewLine;
+      (*pPara) << length.SetValue( 12*tSlab + Max(tWeb,0.5*wFlange) ) << rptNewLine;
 
       if ( bLeftGirder && flangeIdx == 0 )
         {
@@ -1536,7 +1536,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
          (*table)(row,1) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
          (*table)(row,1) << length.SetValue(tWeb) << _T(" : (0.5)(");
          (*table)(row,1) << length.SetValue(wFlange) << _T(") ] = ");
-         (*table)(row,1) << length.SetValue( 12*tSlab + _cpp_max(tWeb,0.5*wFlange) ) << rptNewLine;
+         (*table)(row,1) << length.SetValue( 12*tSlab + Max(tWeb,0.5*wFlange) ) << rptNewLine;
 
          if ( bLeftGirder && flangeIdx == 0 )
          {

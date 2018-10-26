@@ -26,9 +26,10 @@
 
 IMPLEMENT_DYNAMIC(CErectSegmentsDlg, CDialog)
 
-CErectSegmentsDlg::CErectSegmentsDlg(const CTimelineManager* pTimelineMgr,CWnd* pParent /*=NULL*/)
+CErectSegmentsDlg::CErectSegmentsDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent /*=NULL*/)
 	: CDialog(CErectSegmentsDlg::IDD, pParent),
-   m_pTimelineMgr(pTimelineMgr)
+   m_pTimelineMgr(pTimelineMgr),
+   m_EventIndex(eventIdx)
 {
    m_pBridgeDesc = m_pTimelineMgr->GetBridgeDescription();
 }
@@ -44,12 +45,6 @@ void CErectSegmentsDlg::DoDataExchange(CDataExchange* pDX)
    {
       m_ErectSegments.Clear();
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
-      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
       CListBox* pTargetList = (CListBox*)GetDlgItem(IDC_TARGET_LIST);
       int nItems = pTargetList->GetCount();
       m_ErectSegments.Enable(nItems == 0 ? false : true);
@@ -57,12 +52,12 @@ void CErectSegmentsDlg::DoDataExchange(CDataExchange* pDX)
       for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
       {
          SegmentIDType segID = (SegmentIDType)pTargetList->GetItemData(itemIdx);
-         const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segID);
+         const CPrecastSegmentData* pSegment = m_pBridgeDesc->FindSegment(segID);
          const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
          ATLASSERT(segmentKey.girderIndex == 0);
 
          // add the segment at segmentKey.segmentIndex for all girders in this group
-         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+         const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
          GirderIndexType nGirders = pGroup->GetGirderCount();
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
@@ -164,16 +159,10 @@ void CErectSegmentsDlg::FillSourceList()
 {
    CListBox* pSourceList = (CListBox*)GetDlgItem(IDC_SOURCE_LIST);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
    for( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(grpIdx);
 
       const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -182,7 +171,14 @@ void CErectSegmentsDlg::FillSourceList()
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
          SegmentIDType segID = pSegment->GetID();
 
-         if ( !m_pTimelineMgr->IsSegmentErected(segID) )
+         bool bIsSegmentErected = m_pTimelineMgr->IsSegmentErected(segID);
+         EventIndexType erectionEventIdx = m_pTimelineMgr->GetSegmentErectionEventIndex(segID);
+         if ( bIsSegmentErected && erectionEventIdx == m_EventIndex )
+         {
+            if ( !m_ErectSegments.HasSegment(segID) )
+               bIsSegmentErected = false;
+         }
+         if ( !bIsSegmentErected )
          {
             CString label;
             label.Format(_T("Group %d, Segment %d"),LABEL_GROUP(grpIdx),LABEL_SEGMENT(segIdx));

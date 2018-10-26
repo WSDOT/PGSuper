@@ -718,19 +718,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\CapacityToDemand.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\CastDeckActivity.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ClosurePourArtifact.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ClosurePourData.cpp"
+				RelativePath=".\ClosureJointData.cpp"
 				>
 			</File>
 			<File
@@ -3201,11 +3193,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\ClosurePourArtifact.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\PgsExt\ClosurePourData.h"
+				RelativePath="..\Include\PgsExt\ClosureJointData.h"
 				>
 			</File>
 			<File

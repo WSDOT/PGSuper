@@ -43,8 +43,8 @@ txnEditLiveLoad::txnEditLiveLoad(const txnEditLiveLoadData& oldDesign,const txnE
    m_Fatigue[1]  = newFatigue;
    m_Permit[0]   = oldPermit;
    m_Permit[1]   = newPermit;
-   m_EventIdx[0] = oldEventIdx;
-   m_EventIdx[1] = newEventIdx;
+   m_EventIndex[0] = oldEventIdx;
+   m_EventIndex[1] = newEventIdx;
 }
 
 txnEditLiveLoad::~txnEditLiveLoad()
@@ -64,7 +64,7 @@ void txnEditLiveLoad::Undo()
 
 txnTransaction* txnEditLiveLoad::CreateClone() const
 {
-   return new txnEditLiveLoad(m_Design[0],m_Design[1],m_Fatigue[0],m_Fatigue[1],m_Permit[0],m_Permit[1],m_EventIdx[0],m_EventIdx[1]);
+   return new txnEditLiveLoad(m_Design[0],m_Design[1],m_Fatigue[0],m_Fatigue[1],m_Permit[0],m_Permit[1],m_EventIndex[0],m_EventIndex[1]);
 }
 
 std::_tstring txnEditLiveLoad::Name() const
@@ -108,7 +108,7 @@ void txnEditLiveLoad::DoExecute(int i)
    pLiveLoad->SetPedestrianLoadApplication(pgsTypes::lltPermit,m_Permit[i].m_PedestrianLoadApplicationType);
 
    GET_IFACE2( pBroker, IBridgeDescription, pIBridgeDesc );
-   pIBridgeDesc->SetLiveLoadEventByIndex(m_EventIdx[i]);
+   pIBridgeDesc->SetLiveLoadEventByIndex(m_EventIndex[i]);
 
    pEvents->FirePendingEvents();
 }

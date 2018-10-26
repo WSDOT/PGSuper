@@ -57,7 +57,7 @@ CInsertSpanDlg::CInsertSpanDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pPar
    m_SpanLength = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
    m_bCreateNewGroup = false;
    m_pBridgeDesc = pBridgeDesc;
-   m_EventIdx = 0;
+   m_EventIndex = 0;
 }
 
 
@@ -74,7 +74,7 @@ void CInsertSpanDlg::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
    DDX_CBIndex(pDX,IDC_LOCATION,m_LocationIdx);
    DDX_Check_Bool(pDX,IDC_NEW_GROUP,m_bCreateNewGroup);
-   DDX_CBItemData(pDX,IDC_EVENT,m_EventIdx);
+   DDX_CBItemData(pDX,IDC_EVENT,m_EventIndex);
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -122,8 +122,8 @@ BOOL CInsertSpanDlg::OnInitDialog()
 
    // Use the current selection to guide the defaults
    GET_IFACE2(pBroker,ISelection,pSelection);
-   PierIndexType selectedPierIdx = pSelection->GetPierIndex();
-   SpanIndexType selectedSpanIdx = pSelection->GetSpanIndex();
+   PierIndexType selectedPierIdx = pSelection->GetSelectedPier();
+   SpanIndexType selectedSpanIdx = pSelection->GetSelectedSpan();
 
    if ( selectedPierIdx != INVALID_INDEX )
    {
@@ -141,7 +141,7 @@ BOOL CInsertSpanDlg::OnInitDialog()
    if ( m_RefPierIdx == INVALID_INDEX )
       m_LocationIdx = pcbPiers->GetCount()-1;
    else
-      m_LocationIdx = (int)2*m_RefPierIdx+1;
+      m_LocationIdx = (int)(2*m_RefPierIdx+1);
 
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
@@ -149,7 +149,7 @@ BOOL CInsertSpanDlg::OnInitDialog()
       m_bCreateNewGroup = true;
       GetDlgItem(IDC_NEW_GROUP)->ShowWindow(SW_HIDE);
 
-      m_EventIdx = 0;
+      m_EventIndex = 0;
       GetDlgItem(IDC_EVENT_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_EVENT)->ShowWindow(SW_HIDE);
    }
@@ -244,6 +244,7 @@ void CInsertSpanDlg::OnEventChanging()
 
 void CInsertSpanDlg::OnEventChanged()
 {
+#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
    int curSel = pCB->GetCurSel();
    if ( pCB->GetItemData(curSel) == CREATE_TIMELINE_EVENT )
@@ -252,7 +253,7 @@ void CInsertSpanDlg::OnEventChanged()
       
       if ( eventIdx != INVALID_INDEX )
       {
-         m_EventIdx = eventIdx;
+         m_EventIndex = eventIdx;
          FillEventList();
          pCB->SetCurSel((int)eventIdx);
       }
@@ -271,6 +272,7 @@ void CInsertSpanDlg::FillEventList()
 
    pcbEvent->ResetContent();
 
+#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);

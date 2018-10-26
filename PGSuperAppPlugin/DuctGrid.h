@@ -39,7 +39,7 @@ public:
 
 public:
    // custom stuff for grid
-   void CustomInit(const CSplicedGirderData* pGirder);
+   void CustomInit(CSplicedGirderData* pGirder);
 
    void AddDuct(EventIndexType stressingEvent);
    void DeleteDuct();

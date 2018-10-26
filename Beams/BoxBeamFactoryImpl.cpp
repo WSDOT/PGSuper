@@ -562,3 +562,8 @@ std::_tstring CBoxBeamFactoryImpl::GetExteriorGirderEffectiveFlangeWidthImage(IB
 
    return strImage;
 }
+
+GirderIndexType CBoxBeamFactoryImpl::GetMinimumBeamCount()
+{
+   return 1;
+}

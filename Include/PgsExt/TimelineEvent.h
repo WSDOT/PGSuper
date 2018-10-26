@@ -56,17 +56,26 @@ public:
    bool operator==(const CTimelineEvent& rOther) const;
    bool operator!=(const CTimelineEvent& rOther) const;
 
+   // Returns the timeline manager that manages this timeline event
    CTimelineManager* GetTimelineManager();
    const CTimelineManager* GetTimelineManager() const;
 
+   // Set/Get the ID
    void SetID(EventIDType id);
    EventIDType GetID() const;
 
+   // Set/Get the description
    void SetDescription(LPCTSTR description);
    LPCTSTR GetDescription() const;
 
+   // Set/Get the day this timeline event occurs. If this timeline
+   // event is associated with a timeline manager the timeline manager
+   // will sort all of the timeline events and reposition this event
+   // into the correct position in the timeline.
    void SetDay(Float64 day);
    Float64 GetDay() const;
+
+   // Set/Get the various activities the can occur during a timeline event
 
    void SetConstructSegmentsActivity(const CConstructSegmentActivity& activity);
    const CConstructSegmentActivity& GetConstructSegmentsActivity() const;
@@ -84,9 +93,9 @@ public:
    const CRemoveTemporarySupportsActivity& GetRemoveTempSupportsActivity() const;
    CRemoveTemporarySupportsActivity& GetRemoveTempSupportsActivity();
 
-   void SetCastClosurePourActivity(const CCastClosurePourActivity& activity);
-   const CCastClosurePourActivity& GetCastClosurePourActivity() const;
-   CCastClosurePourActivity& GetCastClosurePourActivity();
+   void SetCastClosureJointActivity(const CCastClosureJointActivity& activity);
+   const CCastClosureJointActivity& GetCastClosureJointActivity() const;
+   CCastClosureJointActivity& GetCastClosureJointActivity();
 
    void SetCastDeckActivity(const CCastDeckActivity& activity);
    const CCastDeckActivity& GetCastDeckActivity() const;
@@ -100,13 +109,12 @@ public:
    const CApplyLoadActivity& GetApplyLoadActivity() const;
    CApplyLoadActivity& GetApplyLoadActivity();
 
-   // Returns the minimum duration for an event. The minimum duration is
-   // the sum of the time parameters associated with the activities
+   // Returns the minimum elapsed time to the next event. The minimum elapsed time
+   // is the sum of the time parameters associated with the activities
    // that are active during this event. This method is used to help
-   // validate input parameters (you can't have 10 days from stressing to
-   // prestress release when the event after construction occurs 5 days before
-   // the stressing event)
-   Float64 GetMinimumDuration() const;
+   // validate input parameters (the next event cannot occur
+   // before all of the activities in this event have been completed)
+   Float64 GetMinElapsedTime() const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
@@ -127,7 +135,7 @@ protected:
    CErectPiersActivity m_ErectPiers;
    CErectSegmentActivity m_ErectSegments;
    CRemoveTemporarySupportsActivity m_RemoveTempSupports;
-   CCastClosurePourActivity m_CastClosurePours;
+   CCastClosureJointActivity m_CastClosureJoints;
    CCastDeckActivity m_CastDeck;
    CApplyLoadActivity m_ApplyLoads;
    CStressTendonActivity m_StressTendons;

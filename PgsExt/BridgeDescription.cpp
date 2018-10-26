@@ -77,6 +77,11 @@ CBridgeDescription::CBridgeDescription()
    m_Deck.SetBridgeDescription(this);
 }
 
+CBridgeDescription::~CBridgeDescription()
+{
+   Clear();
+}
+
 HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    // Use this version of Load if you are directly loading an old version
@@ -1250,7 +1255,7 @@ Float64 CBridgeDescription::GetMaxSlabOffset() const
          Float64 startSlabOffset = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart);
          Float64 endSlabOffset   = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd);
 
-         maxSlabOffset = ::Max3(maxSlabOffset,startSlabOffset,endSlabOffset);
+         maxSlabOffset = ::Max(maxSlabOffset,startSlabOffset,endSlabOffset);
       }
 
       pSpan = pSpan->GetNextPier()->GetNextSpan();

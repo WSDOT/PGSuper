@@ -41,6 +41,9 @@ class CAlignmentDisplayObjectEvents : public CCmdTarget
 {
 public:
 	CAlignmentDisplayObjectEvents(IBroker* pDoc, CBridgeModelViewChildFrame* pFrame);
+   ~CAlignmentDisplayObjectEvents();
+
+   virtual void OnFinalRelease();
 
 protected:
 

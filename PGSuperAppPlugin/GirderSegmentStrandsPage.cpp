@@ -165,6 +165,43 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+
+   // Get key segment dimensions
+   IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
+
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_RELEASED_SEGMENT | POI_0L);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiStart(vPoi.front());
+
+   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_RELEASED_SEGMENT | POI_10L);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiEnd(vPoi.front());
+
+   m_HgStart = pSectProp->GetHg(intervalIdx,poiStart);
+   m_HgEnd   = pSectProp->GetHg(intervalIdx,poiEnd);
+
+   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_HARPINGPOINT);
+   ATLASSERT(vPoi.size() == 1 || vPoi.size() == 2);
+   if ( 0 < vPoi.size() )
+   {
+      pgsPointOfInterest poiHp1(vPoi.front());
+      pgsPointOfInterest poiHp2(vPoi.back());
+      m_HgHp1 = pSectProp->GetHg(intervalIdx,poiHp1);
+      m_HgHp2 = pSectProp->GetHg(intervalIdx,poiHp2);
+   }
+   else
+   {
+      m_HgHp1 = m_HgStart;
+      m_HgHp2 = m_HgEnd;
+   }
+
+
    // Fill the strand size combo box.
    UpdateStrandList(IDC_STRAND_SIZE);
 
@@ -306,6 +343,8 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
    //
    // This exception adversely impacts the behavior of this dialog. To prevent these problems, capture the current ROA setting, change ROA to
    // "Ignore", compute PjackMax, and then restore the ROA setting.
+   GET_IFACE2(pBroker,IEvents,pEvents);
+   pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    LldfRangeOfApplicabilityAction action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
@@ -323,6 +362,7 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
    }
 
    pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+   pEvents->CancelPendingEvents();
 
    return PjackMax;
 }
@@ -606,6 +646,8 @@ void CGirderSegmentStrandsPage::OnPaint()
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
    pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
+#pragma Reminder("UPDATE: review this code... it seems out of place")
+   // Top center is already at (0,0), why move it?
    CComQIPtr<IXYPosition> position(shape);
    CComPtr<IPoint2d> lp;
    position->get_LocatorPoint(lpBottomCenter,&lp);
@@ -633,8 +675,8 @@ void CGirderSegmentStrandsPage::OnPaint()
    //   points->get_Item(strIdx,&point);
    //   Float64 y;
    //   point->get_Y(&y);
-   //   y_min = _cpp_min(y,y_min);
-   //   y_max = _cpp_max(y,y_max);
+   //   y_min = Min(y,y_min);
+   //   y_max = Max(y,y_max);
    //}
    gpSize2d size;
    
@@ -786,13 +828,13 @@ void CGirderSegmentStrandsPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    config.SetStrandFill(pgsTypes::Straight, straightStrandFill);
 
    CComPtr<IPoint2dCollection> points;
-   pStrandGeometry->GetStrandPositionsEx(pParent->m_Girder.GetGirderName(),config,pgsTypes::Straight,pgsTypes::metStart,&points);
+   pStrandGeometry->GetStrandPositionsEx(pParent->m_Girder.GetGirderName(),m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,config,pgsTypes::Straight,pgsTypes::metStart,&points);
 
    CComPtr<IIndexArray> debondables;
    pStrandGeometry->ListDebondableStrands(pParent->m_Girder.GetGirderName(), straightStrandFill,pgsTypes::Straight, &debondables); 
 
    const int strand_size = 2;
-   for ( StrandIndexType strIdx = 0; strIdx <nStrands; strIdx++ )
+   for ( StrandIndexType strIdx = 0; strIdx < nStrands; strIdx++ )
    {
       CComPtr<IPoint2d> point;
       points->get_Item(strIdx,&point);

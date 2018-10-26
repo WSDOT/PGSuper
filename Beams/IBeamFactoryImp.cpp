@@ -387,7 +387,7 @@ void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    Float64 ebWidth,ebLength,ebTransition;
    GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,w1,w2,w3,w4,t1,t2,c1,ebWidth,ebLength,ebTransition);
 
-   Float64 width = min(t1,t2);
+   Float64 width = Min(t1,t2);
    Float64 depth = d1 + d2 + d3 + d4 + d5 + d6 + d7;
 
    harp_rect->put_Width(width);
@@ -407,12 +407,12 @@ void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -1007,7 +1007,7 @@ void CIBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dim
    Float64 top_w = T1 + 2.0*(W1+W2);
    Float64 bot_w = T2 + 2.0*(W3+W4);
 
-   Float64 gw = max(top_w, bot_w);
+   Float64 gw = Max(top_w, bot_w);
 
 
    if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
@@ -1058,7 +1058,7 @@ Float64 CIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,p
    Float64 top = 2*(W1+W2) + T1;
    Float64 bot = 2*(W3+W4) + T2;
 
-   return max(top,bot);
+   return Max(top,bot);
 }
 
 bool CIBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
@@ -1070,4 +1070,9 @@ void CIBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions,
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
+}
+
+GirderIndexType CIBeamFactory::GetMinimumBeamCount()
+{
+   return 2;
 }

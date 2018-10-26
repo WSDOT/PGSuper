@@ -280,20 +280,20 @@ void CSupportActivityBase::MakeAssignment(const CSupportActivityBase& rOther)
 
 
 ////////////////////////////////////////////////////////////////
-// CCastClosurePourActivity
+// CCastClosureJointActivity
 ////////////////////////////////////////////////////////////////
-CCastClosurePourActivity::CCastClosurePourActivity()
+CCastClosureJointActivity::CCastClosureJointActivity()
 {
    m_Age = 7.0; // days
 }
 
-CCastClosurePourActivity::CCastClosurePourActivity(const CCastClosurePourActivity& rOther) :
+CCastClosureJointActivity::CCastClosureJointActivity(const CCastClosureJointActivity& rOther) :
 CSupportActivityBase(rOther)
 {
    MakeCopy(rOther);
 }
 
-CCastClosurePourActivity& CCastClosurePourActivity::operator= (const CCastClosurePourActivity& rOther)
+CCastClosureJointActivity& CCastClosureJointActivity::operator= (const CCastClosureJointActivity& rOther)
 {
    if( this != &rOther )
    {
@@ -303,7 +303,7 @@ CCastClosurePourActivity& CCastClosurePourActivity::operator= (const CCastClosur
    return *this;
 }
 
-bool CCastClosurePourActivity::operator==(const CCastClosurePourActivity& rOther) const
+bool CCastClosureJointActivity::operator==(const CCastClosureJointActivity& rOther) const
 {
    if ( CSupportActivityBase::operator !=(rOther) )
       return false;
@@ -314,33 +314,33 @@ bool CCastClosurePourActivity::operator==(const CCastClosurePourActivity& rOther
    return true;
 }
 
-bool CCastClosurePourActivity::operator!=(const CCastClosurePourActivity& rOther) const
+bool CCastClosureJointActivity::operator!=(const CCastClosureJointActivity& rOther) const
 {
    return !operator==(rOther);
 }
 
-Float64 CCastClosurePourActivity::GetConcreteAgeAtContinuity() const
+Float64 CCastClosureJointActivity::GetConcreteAgeAtContinuity() const
 {
    return m_Age;
 }
 
-void CCastClosurePourActivity::SetConcreteAgeAtContinuity(Float64 age)
+void CCastClosureJointActivity::SetConcreteAgeAtContinuity(Float64 age)
 {
    m_Age = age;
 }
 
-void CCastClosurePourActivity::MakeCopy(const CCastClosurePourActivity& rOther)
+void CCastClosureJointActivity::MakeCopy(const CCastClosureJointActivity& rOther)
 {
    m_Age = rOther.m_Age;
 }
 
-void CCastClosurePourActivity::MakeAssignment(const CCastClosurePourActivity& rOther)
+void CCastClosureJointActivity::MakeAssignment(const CCastClosureJointActivity& rOther)
 {
    CSupportActivityBase::MakeAssignment(rOther);
    MakeCopy(rOther);
 }
 
-HRESULT CCastClosurePourActivity::LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress)
+HRESULT CCastClosureJointActivity::LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    if ( m_bEnabled )
    {
@@ -355,7 +355,7 @@ HRESULT CCastClosurePourActivity::LoadSubclassData(IStructuredLoad* pStrLoad,IPr
    return S_OK;
 }
 
-HRESULT CCastClosurePourActivity::SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CCastClosureJointActivity::SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    if ( m_bEnabled )
    {

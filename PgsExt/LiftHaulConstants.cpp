@@ -42,6 +42,6 @@ Float64 CompareConcreteStrength(Float64 maxConc, Float64 newConc)
    }
    else
    {
-      return max(maxConc, newConc);
+      return Max(maxConc, newConc);
    }
 }

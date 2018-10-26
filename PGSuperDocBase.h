@@ -88,7 +88,7 @@ public:
    void SelectSpan(SpanIndexType spanIdx);
    void SelectGirder(const CGirderKey& girderKey);
    void SelectSegment(const CSegmentKey& segmentKey);
-   void SelectClosurePour(const CSegmentKey& closureKey);
+   void SelectClosureJoint(const CSegmentKey& closureKey);
    void SelectTemporarySupport(SupportIDType tsID);
    void SelectDeck();
    void SelectAlignment();
@@ -137,6 +137,7 @@ public:
 
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) = 0;
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) = 0;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) = 0;
 
    void AddPointLoad(const CPointLoadData& loadData);
    bool EditPointLoad(CollectionIndexType loadIdx);

@@ -242,7 +242,7 @@ rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,F
 
    // allow int to floor
    StrandIndexType nMaxStrands2 = StrandIndexType(floor(fraMaxStrands * nDebondedStrands));
-   StrandIndexType nMaxStrands = _cpp_max(nMaxStrands1,nMaxStrands2);
+   StrandIndexType nMaxStrands = Max(nMaxStrands1,nMaxStrands2);
 
    SectionIndexType nSections = pDebondArtifact->GetNumDebondSections();
    for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )

@@ -371,7 +371,7 @@ void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
 {
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-   m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(ptLoad.m_EventIdx));
+   m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(ptLoad.m_EventIndex));
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(ptLoad.m_LoadCase).c_str());
 
    CString strSpan;
@@ -425,7 +425,7 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
       m_LoadsListCtrl.SetItemText(irow, 0, _T("Trapezoidal"));
    }
 
-   m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(load.m_EventIdx));
+   m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(load.m_EventIndex));
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
 
    CString strSpan;
@@ -484,7 +484,7 @@ void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& load)
 {
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-   m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(load.m_EventIdx));
+   m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(load.m_EventIndex));
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
 
    CString strSpan;
@@ -672,8 +672,8 @@ void CEditLoadsView::OnSize(UINT nType, int cx, int cy)
    CRect rc;
    GetClientRect(&rc);
 
-   int width  = max(m_MinSize.cx, rc.Width());
-   int height = max(m_MinSize.cy, rc.Height());
+   int width  = Max((int)m_MinSize.cx, rc.Width());
+   int height = Max((int)m_MinSize.cy, rc.Height());
 
    // static
    int w = width - 2*BORDER;
@@ -762,17 +762,17 @@ std::_tstring SortObject::GetEvent(LPARAM lParam)
    if ( load_type == W_POINT_LOAD )
    {
       const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIdx) );
+      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIndex) );
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
       const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIdx) );
+      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIndex) );
    }
    else
    {
       const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIdx) );
+      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIndex) );
    }
 }
 

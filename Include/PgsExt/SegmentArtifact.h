@@ -40,6 +40,12 @@
 
 #include <map>
 
+#define PTZ_NONE 0
+#define PTZ_TOP_YES 0x0001
+#define PTZ_TOP_NO  0x0002
+#define PTZ_BOTTOM_YES 0x0010
+#define PTZ_BOTTOM_NO  0x0020
+
 
 /*****************************************************************************
    pgsSegmentArtifact
@@ -112,8 +118,21 @@ public:
    void SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact*  artifact);
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
 
-   void SetCastingYardCapacityWithMildRebar(Float64 fAllow);
-   Float64 GetCastingYardCapacityWithMildRebar() const;
+   // Returns true if flexural stress checks are applicable anywhere along the segment
+   bool IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::GirderFace face) const;
+
+   // returns true if the allowable tension capacity with adequate reinforcement
+   // was used at any POI in this segment. If attribute = 0, only segments are checked
+   // if attribute is POI_CLOSURE, only closure joints are checked
+   bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face,PoiAttributeType attribute = 0) const;
+
+   // returns one of the PTZ flags that indicate where the precompressed tensile zone
+   // is on this segment
+   void GetPrecompressedTensileZone(IntervalIndexType intervalIdx,int* ptzTop,int* ptzBottom) const;
+
+   void SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face,Float64 fAllow);
+   Float64 GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const;
+
    pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType);
    const pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType) const;
    
@@ -191,5 +210,7 @@ private:
    const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object
 
    pgsDebondArtifact m_DebondArtifact[3];
-   Float64 m_CastingYardAllowable; // allowable tensile stress for casting yard with required mild rebar
+   
+   mutable std::map<StressKey,Float64> m_AllowableWithRebar[2]; // allowable tensile stress with required mild rebar (access array with pgsTypes::GirderFace)
+   Float64& GetAllowableWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const;
 };

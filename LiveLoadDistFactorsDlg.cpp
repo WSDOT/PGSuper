@@ -232,7 +232,7 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
    for (GirderGridIterator ig=m_GirderGrids.begin(); ig!=m_GirderGrids.end(); ig++)
    {
       ROWCOL nrows = ig->get()->GetRowCount();
-      growhgt = max(growhgt, ig->get()->CalcSumOfRowHeights(0,nrows-1)); 
+      growhgt = Max(growhgt, ig->get()->CalcSumOfRowHeights(0,nrows-1)); 
    }
 
    m_GirderTabWnd.ShowScrollBar(SB_HORZ, FALSE);
@@ -446,10 +446,10 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
                }
 
                PierLLDF lldf;
-               lldf.pgNMService= max(lldf_Back.pgNMService, lldf_Ahead.pgNMService);
-               lldf.pgRService = max(lldf_Back.pgRService , lldf_Ahead.pgRService);
-               lldf.pgNMFatigue= max(lldf_Back.pgNMFatigue, lldf_Ahead.pgNMFatigue);
-               lldf.pgRFatigue = max(lldf_Back.pgRFatigue,  lldf_Ahead.pgRFatigue);
+               lldf.pgNMService= Max(lldf_Back.pgNMService, lldf_Ahead.pgNMService);
+               lldf.pgRService = Max(lldf_Back.pgRService , lldf_Ahead.pgRService);
+               lldf.pgNMFatigue= Max(lldf_Back.pgNMFatigue, lldf_Ahead.pgNMFatigue);
+               lldf.pgRFatigue = Max(lldf_Back.pgRFatigue,  lldf_Ahead.pgRFatigue);
 
                pier_lldfs.push_back(lldf);
 

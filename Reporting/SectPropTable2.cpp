@@ -65,7 +65,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    std::_tostringstream os;
-   os << "Interval: " << LABEL_INTERVAL(intervalIdx) << _T(", ") <<  pIntervals->GetDescription(intervalIdx);
+   os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(intervalIdx);
 
    bool bIsCompositeDeck = pBridge->IsCompositeDeck();
 

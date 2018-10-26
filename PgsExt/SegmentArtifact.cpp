@@ -125,13 +125,19 @@ CollectionIndexType pgsSegmentArtifact::GetFlexuralStressArtifactCount(IntervalI
 const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx) const
 {
    const std::vector<pgsFlexuralStressArtifact>& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
-   return &artifacts[idx];
+   if ( idx < artifacts.size() )
+      return &artifacts[idx];
+   else
+      return NULL;
 }
 
 pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx)
 {
    std::vector<pgsFlexuralStressArtifact>& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
-   return &artifacts[idx];
+   if ( idx < artifacts.size() )
+      return &artifacts[idx];
+   else
+      return NULL;
 }
 
 const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifactAtPoi(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,PoiIDType poiID) const
@@ -204,14 +210,83 @@ const pgsHaulingAnalysisArtifact* pgsSegmentArtifact::GetHaulingAnalysisArtifact
    return m_pHaulingAnalysisArtifact;
 }
 
-void pgsSegmentArtifact::SetCastingYardCapacityWithMildRebar(Float64 fAllow)
+bool pgsSegmentArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::GirderFace face) const
 {
-    m_CastingYardAllowable = fAllow;
+   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,stressType));
+   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
+   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      pgsFlexuralStressArtifact& artifact(*iter);
+      bool bIsApplicableTop = artifact.IsApplicable(pgsTypes::TopGirder);
+      bool bIsApplicableBot = artifact.IsApplicable(pgsTypes::BottomGirder);
+      if ( (face == pgsTypes::GirderTop && bIsApplicableTop) || (face == pgsTypes::GirderBottom && bIsApplicableBot) )
+         return true;
+   }
+
+   return false;
 }
 
-Float64 pgsSegmentArtifact::GetCastingYardCapacityWithMildRebar() const
+bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face,PoiAttributeType attribute) const
 {
-    return m_CastingYardAllowable;
+   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
+   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      pgsFlexuralStressArtifact& artifact(*iter);
+      const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
+      bool bIsClosure = poi.HasAttribute(POI_CLOSURE);
+      if ( (attribute == POI_CLOSURE &&  bIsClosure) || // test if attribute is POI_CLOSURE and artifact is for a closure -OR-
+           (attribute == 0           && !bIsClosure)    // test if attribute is 0 and artifact is not for a closure
+          )
+      {
+         if ( artifact.WasWithRebarAllowableStressUsed(face) )
+            return true;
+      }
+   }
+
+   return false;
+}
+
+void pgsSegmentArtifact::GetPrecompressedTensileZone(IntervalIndexType intervalIdx,int* ptzTop,int* ptzBottom) const
+{
+   *ptzTop    = 0;
+   *ptzBottom = 0;
+
+   for ( int ls = 0; ls < 2; ls++ )
+   {
+      pgsTypes::LimitState limitState = (ls == 0 ? pgsTypes::ServiceI : pgsTypes::ServiceIII);
+      std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,limitState,pgsTypes::Tension));
+      std::vector<pgsFlexuralStressArtifact>::const_iterator iter(vArtifacts.begin());
+      std::vector<pgsFlexuralStressArtifact>::const_iterator iterEnd(vArtifacts.end());
+      for ( ; iter != iterEnd; iter++ )
+      {
+         const pgsFlexuralStressArtifact& artifact(*iter);
+         bool bPTZTop    = artifact.IsInPrecompressedTensileZone(pgsTypes::TopGirder);
+         bool bPTZBottom = artifact.IsInPrecompressedTensileZone(pgsTypes::BottomGirder);
+
+         if ( bPTZTop )
+            *ptzTop |= PTZ_TOP_YES;
+         else
+            *ptzTop |= PTZ_TOP_NO;
+
+         if ( bPTZBottom )
+            *ptzBottom |= PTZ_BOTTOM_YES;
+         else
+            *ptzBottom |= PTZ_BOTTOM_NO;
+      }
+   }
+}
+
+void pgsSegmentArtifact::SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face,Float64 fAllow)
+{
+   GetAllowableWithRebar(intervalIdx,ls,face) = fAllow;
+}
+
+Float64 pgsSegmentArtifact::GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const
+{
+   return GetAllowableWithRebar(intervalIdx,ls,face);
 }
 
 pgsDebondArtifact* pgsSegmentArtifact::GetDebondArtifact(pgsTypes::StrandType strandType)
@@ -294,7 +369,7 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength(IntervalIndexType interv
                return fc;
 
             if ( 0 < fc )
-               fc_reqd = _cpp_max(fc,fc_reqd);
+               fc_reqd = Max(fc,fc_reqd);
          }
       }
    }
@@ -332,7 +407,7 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength() const
             return fc;
 
          if ( 0 < fc )
-            fc_reqd = _cpp_max(fc,fc_reqd);
+            fc_reqd = Max(fc,fc_reqd);
       }
    }
 
@@ -344,12 +419,12 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength() const
       Float64 fc_reqd_Lifting_comp, fc_reqd_Lifting_tens, fc_reqd_Lifting_tens_wbar;
       m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_Lifting_comp,&fc_reqd_Lifting_tens, &fc_reqd_Lifting_tens_wbar);
 
-      Float64 fc_reqd_Lifting = max(fc_reqd_Lifting_tens_wbar,fc_reqd_Lifting_comp);
+      Float64 fc_reqd_Lifting = Max(fc_reqd_Lifting_tens_wbar,fc_reqd_Lifting_comp);
 
       if ( fc_reqd_Lifting < 0 ) // there is no concrete strength that will work
          return fc_reqd_Lifting;
 
-      fc_reqd = _cpp_max(fc_reqd,fc_reqd_Lifting);
+      fc_reqd = Max(fc_reqd,fc_reqd_Lifting);
    }
 
    if (m_pHaulingAnalysisArtifact != NULL)
@@ -357,12 +432,12 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength() const
       Float64 fc_reqd_hauling_comp, fc_reqd_hauling_tens, fc_reqd_hauling_tens_wbar;
       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_hauling_comp,&fc_reqd_hauling_tens, &fc_reqd_hauling_tens_wbar);
 
-      Float64 fc_reqd_hauling = max(fc_reqd_hauling_tens_wbar,fc_reqd_hauling_comp);
+      Float64 fc_reqd_hauling = Max(fc_reqd_hauling_tens_wbar,fc_reqd_hauling_comp);
 
       if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
          return fc_reqd_hauling;
 
-      fc_reqd = _cpp_max(fc_reqd,fc_reqd_hauling);
+      fc_reqd = Max(fc_reqd,fc_reqd_hauling);
    }
 
    return fc_reqd;
@@ -398,7 +473,7 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
             return fc;
 
          if ( 0 < fc )
-            fc_reqd = _cpp_max(fc,fc_reqd);
+            fc_reqd = Max(fc,fc_reqd);
       }
    }
  
@@ -407,9 +482,9 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
       Float64 fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar;
       m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_lifting_comp,&fc_reqd_lifting_tens_norebar,&fc_reqd_lifting_tens_withrebar);
 
-      Float64 fc_reqd_lifting = Max3(fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar);
+      Float64 fc_reqd_lifting = Max(fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar);
 
-      fc_reqd = _cpp_max(fc_reqd,fc_reqd_lifting);
+      fc_reqd = Max(fc_reqd,fc_reqd_lifting);
    }
 
    return fc_reqd;
@@ -435,7 +510,9 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
    m_pLiftingAnalysisArtifact = rOther.m_pLiftingAnalysisArtifact;
    m_pHaulingAnalysisArtifact = rOther.m_pHaulingAnalysisArtifact;
 
-   m_CastingYardAllowable            = rOther.m_CastingYardAllowable;
+   m_AllowableWithRebar[pgsTypes::GirderTop]    = rOther.m_AllowableWithRebar[pgsTypes::GirderTop];
+   m_AllowableWithRebar[pgsTypes::GirderBottom] = rOther.m_AllowableWithRebar[pgsTypes::GirderBottom];
+
    for ( Uint16 i = 0; i < 3; i++ )
       m_DebondArtifact[i] = rOther.m_DebondArtifact[i];
 }
@@ -456,6 +533,22 @@ std::vector<pgsFlexuralStressArtifact>& pgsSegmentArtifact::GetFlexuralStressArt
    if ( found == m_FlexuralStressArtifacts.end() )
    {
       std::pair<std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::iterator,bool> result(m_FlexuralStressArtifacts.insert(std::make_pair(key,std::vector<pgsFlexuralStressArtifact>())));
+      found = result.first;
+   }
+
+   return found->second;
+}
+
+Float64& pgsSegmentArtifact::GetAllowableWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const
+{
+   StressKey key;
+   key.intervalIdx = intervalIdx;
+   key.ls = ls;
+   key.stress = pgsTypes::Tension;
+   std::map<StressKey,Float64>::iterator found(m_AllowableWithRebar[face].find(key));
+   if ( found == m_AllowableWithRebar[face].end() )
+   {
+      std::pair<std::map<StressKey,Float64>::iterator,bool> result(m_AllowableWithRebar[face].insert(std::make_pair(key,-1.0)));
       found = result.first;
    }
 

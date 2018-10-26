@@ -62,15 +62,16 @@ PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 #define LOSSES_WSDOT_REFINED_2005   8 // 2005 AASHTO, WSDOT (includes initial relaxation loss)
 #define LOSSES_WSDOT_REFINED        9
 #define LOSSES_TXDOT_REFINED_2004   10 // TxDOT's May, 09 decision is to use refined losses from AASHTO 2004
-#define LOSSES_TIME_STEP            11 // Losses are computed with a time-step method
+#define LOSSES_TXDOT_REFINED_2013   11 // TxDOT's Method based on Report No. FHWA/TX-12/0-6374-2
+#define LOSSES_TIME_STEP            12 // Losses are computed with a time-step method
 
-#define AT_JACKING       0
-#define BEFORE_TRANSFER  1
-#define AFTER_TRANSFER   2
-#define AFTER_ALL_LOSSES 3
-#define PRIOR_TO_SEATING 1
-#define ANCHORAGES_AFTER_SEATING 2
-#define ELSEWHERE_AFTER_SEATING 4
+#define CSS_AT_JACKING       0
+#define CSS_BEFORE_TRANSFER  1
+#define CSS_AFTER_TRANSFER   2
+#define CSS_AFTER_ALL_LOSSES 3
+#define CSS_PRIOR_TO_SEATING 1
+#define CSS_ANCHORAGES_AFTER_SEATING 2
+#define CSS_ELSEWHERE_AFTER_SEATING 4
 
 #define STRESS_REL 0
 #define LOW_RELAX  1
@@ -147,852 +148,514 @@ class PSGLIBCLASS SpecLibraryEntry : public libLibraryEntry, public ISupportIcon
    friend CSpecMainSheet;
 public:
 
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    SpecLibraryEntry();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
    SpecLibraryEntry(const SpecLibraryEntry& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
    virtual ~SpecLibraryEntry();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
    SpecLibraryEntry& operator = (const SpecLibraryEntry& rOther);
 
-   // GROUP: OPERATIONS
+   //////////////////////////////////////
+   // General
+   //////////////////////////////////////
 
-   //------------------------------------------------------------------------
-   // Edit the entry
+   // Causes the editing dialog to be displayed. if allowEditing is false
+   // the dialog is opened in a read-only mode
    virtual bool Edit(bool allowEditing);
 
-   //------------------------------------------------------------------------
    // Save to structured storage
    virtual bool SaveMe(sysIStructuredSave* pSave);
 
-   //------------------------------------------------------------------------
    // Load from structured storage
    virtual bool LoadMe(sysIStructuredLoad* pLoad);
 
-   //------------------------------------------------------------------------
-   // Equality - test if two entries are equal. Ignore names by default
+   // test if two entries are equal. Ignore names by default
    virtual bool IsEqual(const SpecLibraryEntry& rOther, bool considerName=false) const;
 
-   //------------------------------------------------------------------------
    // Get the icon for this entry
    virtual HICON GetIcon() const;
 
-   // GROUP: ACCESS
 
-   //------------------------------------------------------------------------
-   // Set specification type we are based on
+   //////////////////////////////////////
+   //
+   // General Specification Properties
+   //
+   //////////////////////////////////////
+
+   pgsTypes::AnalysisType GetAnalysisType() const;
+
+   // Set/Get specification type we are based on
    void SetSpecificationType(lrfdVersionMgr::Version type);
-
-   //------------------------------------------------------------------------
-   // Get specification type we are based on
    lrfdVersionMgr::Version GetSpecificationType() const;
 
-   //------------------------------------------------------------------------
-   // Set specification Units we are based on
+   // Set/Get specification Units we are based on
    void SetSpecificationUnits(lrfdVersionMgr::Units Units);
-
-   //------------------------------------------------------------------------
-   // Get specification Units we are based on
    lrfdVersionMgr::Units GetSpecificationUnits() const;
 
-   //------------------------------------------------------------------------
-   // Set string to describe specification
+   // Set/Get string to describe specification
    void SetDescription(LPCTSTR name);
-
-   //------------------------------------------------------------------------
-   // Get string to describe specification
    std::_tstring GetDescription() const;
 
+   // Set/Get the method of computing section properties
    void SetSectionPropertyMode(pgsTypes::SectionPropertyMode mode);
    pgsTypes::SectionPropertyMode GetSectionPropertyMode() const;
 
-   //------------------------------------------------------------------------
-   // Get Max strand slope for 0.5 and 0.6" strands. If bool value is false,
+   // Set/Get the method for computing effective flange width
+   void SetEffectiveFlangeWidthMethod(pgsTypes::EffectiveFlangeWidthMethod efwMethod);
+   pgsTypes::EffectiveFlangeWidthMethod GetEffectiveFlangeWidthMethod() const;
+
+   //////////////////////////////////////
+   //
+   // Design and Spec Checking
+   //
+   //////////////////////////////////////
+
+   // Set/Get maximum strand slope for 0.5", 0.6", and 0.6" strands. If bool value is false,
    // then slope values do not need to be checked and slope values are 
    // undefined.
    void GetMaxStrandSlope(bool* doCheck, bool* doDesign, Float64* slope05, Float64* slope06,Float64* slope07) const;
-
-   //------------------------------------------------------------------------
-   // Set Max strand slope for 0.5 and 0.6" strands. If bool value is false,
-   // then slope values do not need to be checked and slope values are 
-   // undefined.
    void SetMaxStrandSlope(bool doCheck, bool doDesign, Float64 slope05=0.0, Float64 slope06=0.0,Float64 slope07=0.0);
 
-   //------------------------------------------------------------------------
-   //  Get Max allowable force to hold down strand bundles at harp point.
+   //  Set/Get maximum allowable force to hold down strand bundles at harp point.
    //  If doCheck is false, then hold down forces do not need to be 
    //  checked and hold down force value is undefined.
    void GetHoldDownForce(bool* doCheck, bool* doDesign, Float64* force) const;
-
-   //------------------------------------------------------------------------
-   //  Set Max allowable force to hold down strand bundles at harp point.
-   //  If bool value is false, then hold down forces do not need to be 
-   //  checked and hold down force value is undefined.
    void SetHoldDownForce(bool doCheck, bool doDesign, Float64 force=0.0);
-
-   //------------------------------------------------------------------------
-   // Enable check and design for anchorage splitting and confinement 5.10.10
-   void EnableSplittingCheck(bool enable);
-   bool IsSplittingCheckEnabled() const;
-
-   void EnableSplittingDesign(bool enable);
-   bool IsSplittingDesignEnabled() const;
-
-   void EnableConfinementCheck(bool enable);
-   bool IsConfinementCheckEnabled() const;
-
-   void EnableConfinementDesign(bool enable);
-   bool IsConfinementDesignEnabled() const;
-
-   //------------------------------------------------------------------------
-   // Get Max allowable stirrup spacing for girder.
-   Float64 GetMaxStirrupSpacing() const;
-
-   //------------------------------------------------------------------------
-   // Set Max allowable stirrup spacing for girder.
-   void SetMaxStirrupSpacing(Float64 space);
-
-   //------------------------------------------------------------------------
-   // Enable check and design for lifting in casting yard
-   void EnableLiftingCheck(bool enable);
-   bool IsLiftingAnalysisEnabled() const;
-
-   void EnableLiftingDesign(bool enable);
-   bool IsLiftingDesignEnabled() const;
-
-   //------------------------------------------------------------------------
-   // Get minimum factor of safety against cracking for Lifting in the 
-   // casting yard
-   Float64 GetCyLiftingCrackFs() const;
-
-   //------------------------------------------------------------------------
-   // Set minimum factor of safety against cracking for Lifting in the 
-   // casting yard
-   void SetCyLiftingCrackFs(Float64 fs);
-
-   //------------------------------------------------------------------------
-   // Get minimum factor of safety against failure for Lifting in the 
-   // casting yard
-   Float64 GetCyLiftingFailFs() const;
-
-   //------------------------------------------------------------------------
-   // Get upward impact for lifting in the casting yard
-   Float64 GetCyLiftingUpwardImpact() const;
-
-   //------------------------------------------------------------------------
-   // Set upward impact for lifting in the casting yard
-   void SetCyLiftingUpwardImpact(Float64 impact);
-
-   //------------------------------------------------------------------------
-   // Get downward impact for lifting in the casting yard
-   Float64 GetCyLiftingDownwardImpact() const;
-
-   //------------------------------------------------------------------------
-   // Set downward impact for lifting in the casting yard
-   void SetCyLiftingDownwardImpact(Float64 impact);
 
    // Splitting zone length h/n (h/4 or h/5) per LRFD 5.10.10.1
    void SetSplittingZoneLengthFactor(Float64 n);
    Float64 GetSplittingZoneLengthFactor() const;
 
-   //------------------------------------------------------------------------
-   // Enable check and design for hauling in casting yard
+   // Get/Set the parameter that determines if the slab offset ("A" Dimension)
+   // is checked
+   void EnableSlabOffsetCheck(bool enable);
+   bool IsSlabOffsetCheckEnabled() const;
+
+   // Get/Set the parameter that determines if the slab offset ("A" Dimension)
+   // is designed
+   void EnableSlabOffsetDesign(bool enable);
+   bool IsSlabOffsetDesignEnabled() const;
+
+   // Enable check for lifting
+   void EnableLiftingCheck(bool enable);
+   bool IsLiftingAnalysisEnabled() const;
+
+   // Enable design for lifting
+   void EnableLiftingDesign(bool enable);
+   bool IsLiftingDesignEnabled() const;
+
+   // Enable check for hauling
    void EnableHaulingCheck(bool enable);
    bool IsHaulingAnalysisEnabled() const;
 
+   // Enable design for hauling
    void EnableHaulingDesign(bool enable);
    bool IsHaulingDesignEnabled() const;
 
-   void SetHaulingAnalysisMethod(pgsTypes::HaulingAnalysisMethod method);
-   pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const;
+   // Enable check for splitting resistance 5.10.10.1
+   void EnableSplittingCheck(bool enable);
+   bool IsSplittingCheckEnabled() const;
 
-   //------------------------------------------------------------------------
-   // Get upward impact for hauling
-   Float64 GetHaulingUpwardImpact() const;
+   // Enable design for splitting resistance 5.10.10.1
+   void EnableSplittingDesign(bool enable);
+   bool IsSplittingDesignEnabled() const;
 
-   //------------------------------------------------------------------------
-   // Set upward impact for hauling
-   void SetHaulingUpwardImpact(Float64 impact);
+   // Enable check for adequate confinement reinforcement 5.10.10.2
+   void EnableConfinementCheck(bool enable);
+   bool IsConfinementCheckEnabled() const;
 
-   //------------------------------------------------------------------------
-   // Get downward impact for hauling
-   Float64 GetHaulingDownwardImpact() const;
+   // Enable design for adequate confinement reinforcement 5.10.10.2
+   void EnableConfinementDesign(bool enable);
+   bool IsConfinementDesignEnabled() const;
 
-   //------------------------------------------------------------------------
-   // Get downward impact for hauling
-   void SetHaulingDownwardImpact(Float64 impact);
+   // Set/Get method for filling the strand pattern during design
+   void SetDesignStrandFillType(arDesignStrandFillType type);
+   arDesignStrandFillType GetDesignStrandFillType() const;
 
-   //------------------------------------------------------------------------
-   // Set minimum factor of safety against failure for Lifting in the 
-   // casting yard
-   void SetCyLiftingFailFs(Float64 fs);
-
-   //------------------------------------------------------------------------
-   // Get the max allowable compressive concrete stress for service loading
-   // in the casting yard as a factor times f'ci
-   Float64 GetCyCompStressService() const;
-
-   //------------------------------------------------------------------------
-   // Set the max allowable compressive concrete stress for service loading
-   // in the casting yard as a factor times f'ci
-   void SetCyCompStressService(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the max allowable compressive concrete stress for Lifting loading
-   // in the casting yard as a factor times f'ci
-   Float64 GetCyCompStressLifting() const;
-
-   //------------------------------------------------------------------------
-   // Set the max allowable compressive concrete stress for Lifting loading
-   // in the casting yard as a factor times f'ci
-   void SetCyCompStressLifting(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
-   // at the casting yard stage for service
-   Float64 GetCyMaxConcreteTens() const;
-
-   //------------------------------------------------------------------------
-   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
-   // concrete at the casting yard stage for service
-   void SetCyMaxConcreteTens(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the absolute maximum allowable tensile stress in concrete
-   // at the casting yard stage  for service
-   // If the bool is false, this check is not made and the stress value is 
-   // undefined.
-   void GetCyAbsMaxConcreteTens(bool* doCheck, Float64* stress) const;
-
-   //------------------------------------------------------------------------
-   // Set the absolute maximum allowable tensile stress in 
-   // concrete at the casting yard stage for service
-   // If the bool is false, this check is not made and the stress value is undefined.
-   void SetCyAbsMaxConcreteTens(bool doCheck, Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
-   // at the casting yard stage for lifting
-   Float64 GetCyMaxConcreteTensLifting() const;
-
-   //------------------------------------------------------------------------
-   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
-   // concrete at the casting yard stage for lifting
-   void SetCyMaxConcreteTensLifting(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the absolute maximum allowable tensile stress in concrete
-   // at the casting yard stage  for lifting
-   // If the bool is false, this check is not made and the stress value is 
-   // undefined.
-   void GetCyAbsMaxConcreteTensLifting(bool* doCheck, Float64* stress) const;
-
-   //------------------------------------------------------------------------
-   // Set the absolute maximum allowable tensile stress in 
-   // concrete at the casting yard stage for lifting
-   // If the bool is false, this check is not made and the stress value is undefined.
-   void SetCyAbsMaxConcreteTensLifting(bool doCheck, Float64 stress);
-
-   //------------------------------------------------------------------------
-   int GetCuringMethod() const;
-
-   //------------------------------------------------------------------------
-   void SetCuringMethod(int method);
-
-   //------------------------------------------------------------------------
-   // Get the pick point height.
-   Float64 GetPickPointHeight() const;
-
-   //------------------------------------------------------------------------
-   // Set the pick point height.
-   void SetPickPointHeight(Float64 hgt);
-
-   //------------------------------------------------------------------------
-   // Get the lifting loop placement tolerance
-   Float64 GetLiftingLoopTolerance() const;
-
-   //------------------------------------------------------------------------
-   // Set the lifting loop placement tolerance
-   void SetLiftingLoopTolerance(Float64 hgt);
-
-   //------------------------------------------------------------------------
-   // Get the minimum lifting cable inclination angle measured from horizontal
-   Float64 GetMinCableInclination() const;
-
-   //------------------------------------------------------------------------
-   // Set the min lifting cable inclination angle measured from horizontal
-   void SetMinCableInclination(Float64 angle);
-
-   //------------------------------------------------------------------------
-   // Get the max girder sweep tolerance for lifting
-   Float64 GetMaxGirderSweepLifting() const;
-
-   //------------------------------------------------------------------------
-   // Set the max girder sweep tolerance for lifting
-   void SetMaxGirderSweepLifting(Float64 sweep);
-
-   //------------------------------------------------------------------------
-   // Get the max girder sweep tolerance for Hauling
-   Float64 GetMaxGirderSweepHauling() const;
-
-   //------------------------------------------------------------------------
-   // Set the max girder sweep tolerance for Hauling
-   void SetMaxGirderSweepHauling(Float64 sweep);
-
-   //------------------------------------------------------------------------
-   // Get the max allowable distance between hauling supports
-   Float64 GetHaulingSupportDistance() const;
-
-   //------------------------------------------------------------------------
-   // Set the max allowable distance between hauling supports
-   void SetHaulingSupportDistance(Float64 d);
-
-   Float64 GetMaxHaulingOverhang() const;
-   void SetMaxHaulingOverhang(Float64 oh);
-
-   //------------------------------------------------------------------------
-   // Get the max lateral tolerance for hauling support placement
-   Float64 GetHaulingSupportPlacementTolerance() const;
-
-   //------------------------------------------------------------------------
-   // Set the max lateral tolerance for hauling support placement
-   void SetHaulingSupportPlacementTolerance(Float64 tol);
-
-   //------------------------------------------------------------------------
-   // Get the percent the radius of stability is to be increased for camber
-   Float64 GetHaulingCamberPercentEstimate() const;
-
-   //------------------------------------------------------------------------
-   // Set the percent the radius of stability is to be increased for camber
-   void SetHaulingCamberPercentEstimate(Float64 per);
-
-   //------------------------------------------------------------------------
-   // Get the max allowable compressive concrete stress for transporation
-   // to the site as a factor times f'c
-   Float64 GetHaulingCompStress() const;
-
-   //------------------------------------------------------------------------
-   // Set the max allowable compressive concrete stress for transporation
-   // to the site as a factor times f'c
-   void SetHaulingCompStress(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
-   //  for Hauling
-   Float64 GetMaxConcreteTensHauling() const;
-
-   //------------------------------------------------------------------------
-   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
-   // for Hauling
-   void SetMaxConcreteTensHauling(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the absolute maximum allowable tensile stress in concrete
-   // for Hauling
-   // If the bool is false, this check is not made and the stress value is 
-   // undefined.
-   void GetAbsMaxConcreteTensHauling(bool* doCheck, Float64* stress) const;
-
-   //------------------------------------------------------------------------
-   // Set the absolute maximum allowable tensile stress in 
-   // concrete for Hauling
-   // If the bool is false, this check is not made and the stress value is undefined.
-   void SetAbsMaxConcreteTensHauling(bool doCheck, Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get minimum factor of safety against cracking 
-   // during transporation to the bridge site
-   Float64 GetHaulingCrackFs() const;
-
-   //------------------------------------------------------------------------
-   // Set minimum factor of safety against cracking 
-   // during transporation to the bridge site
-   void SetHaulingCrackFs(Float64 fs);
-
-   //------------------------------------------------------------------------
-   // Get minimum factor of safety against failure 
-   // during transporation to the bridge site
-   Float64 GetHaulingFailFs() const;
-
-   //------------------------------------------------------------------------
-   // Set minimum factor of safety against failure 
-   // during transporation to the bridge site
-   void SetHaulingFailFs(Float64 fs);
-
-   int GetTruckRollStiffnessMethod() const;
-   void SetTruckRollStiffnessMethod(int method);
-   Float64 GetAxleWeightLimit() const;
-   void SetAxleWeightLimit(Float64 limit);
-   Float64 GetAxleStiffness() const;
-   void SetAxleStiffness(Float64 stiffness);
-   Float64 GetMinRollStiffness() const;
-   void SetMinRollStiffness(Float64 stiffness);
-
-   //------------------------------------------------------------------------
-   // Get truck roll stiffness
-   Float64 GetTruckRollStiffness() const;
-
-   //------------------------------------------------------------------------
-   // Set truck roll stiffness
-   void SetTruckRollStiffness(Float64 stiff);
-
-   //------------------------------------------------------------------------
-   // Get height of bottom of girder above roadway during transport
-   Float64 GetTruckGirderHeight() const;
-
-   //------------------------------------------------------------------------
-   // Set height of bottom of girder above roadway during transport
-   void SetTruckGirderHeight(Float64 height);
-
-   //------------------------------------------------------------------------
-   // Get height of truck roll center above roadway.
-   Float64 GetTruckRollCenterHeight() const;
-
-   //------------------------------------------------------------------------
-   // Get height of truck roll center above roadway.
-   void SetTruckRollCenterHeight(Float64 height);
-
-   //------------------------------------------------------------------------
-   // Get center-to-center distance between truck tires
-   Float64 GetTruckAxleWidth() const;
-
-   //------------------------------------------------------------------------
-   // Set center-to-center distance between truck tires
-   void SetTruckAxleWidth(Float64 dist);
-
-   //------------------------------------------------------------------------
-   // Get max expected roadway superelevation angle during hauling
-   Float64 GetRoadwaySuperelevation() const;
-
-   //------------------------------------------------------------------------
-   // Set max expected roadway superelevation angle during hauling
-   void SetRoadwaySuperelevation(Float64 dist);
-
-   //------------------------------------------------------------------------
-   // Get minimum factor of safety against cracking for erection
-   Float64 GetErectionCrackFs() const;
-
-   //------------------------------------------------------------------------
-   // Set minimum factor of safety against cracking for erection
-   void SetErectionCrackFs(Float64 fs);
-
-   //------------------------------------------------------------------------
-   // Get minimum factor of safety against failure for erection
-   Float64 GetErectionFailFs() const;
-
-   //------------------------------------------------------------------------
-   // Set minimum factor of safety against failure for erection
-   void SetErectionFailFs(Float64 fs);
-
-   void SetHaulingModulusOfRuptureCoefficient(Float64 fr,pgsTypes::ConcreteType type);
-   Float64 GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
-
-   void SetLiftingModulusOfRuptureCoefficient(Float64 fr,pgsTypes::ConcreteType type);
-   Float64 GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
-
-   void SetMaxGirderWeight(Float64 wgt);
-   Float64 GetMaxGirderWeight() const;
-
-   //------------------------------------------------------------------------
-   // Set/Get coefficient for max concrete stress when adequate mild rebar is provided
-   Float64 GetCyMaxConcreteTensWithRebar() const;
-   void SetCyMaxConcreteTensWithRebar(Float64 stress);
-   Float64 GetMaxConcreteTensWithRebarLifting() const;
-   void SetMaxConcreteTensWithRebarLifting(Float64 stress);
-   Float64 GetMaxConcreteTensWithRebarHauling() const;
-   void SetMaxConcreteTensWithRebarHauling(Float64 stress);
-
-
-
-   //------------------------------------------------------------------------
-   // Get the max allowable compressive concrete stress for service loading
-   // at temporary strand removal as a factor times f'c
-   Float64 GetTempStrandRemovalCompStress() const;
-
-   //------------------------------------------------------------------------
-   // Set the max allowable compressive concrete stress for  loading
-   // at temporary strand removal as a factor times f'c
-   void SetTempStrandRemovalCompStress(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
-   // at the temporary strand removal
-   Float64 GetTempStrandRemovalMaxConcreteTens() const;
-
-   //------------------------------------------------------------------------
-   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
-   // concrete at the temporary strand removal
-   void SetTempStrandRemovalMaxConcreteTens(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the absolute maximum allowable tensile stress in concrete
-   // at the temporary strand removal
-   // If the bool is false, this check is not made and the stress value is 
-   // undefined.
-   void GetTempStrandRemovalAbsMaxConcreteTens(bool* doCheck, Float64* stress) const;
-
-   //------------------------------------------------------------------------
-   // Set the absolute maximum allowable tensile stress in 
-   // concrete at the temporary strand removal
-   // If the bool is false, this check is not made and the stress value is undefined.
-   void SetTempStrandRemovalAbsMaxConcreteTens(bool doCheck, Float64 stress);
-
-
-   //------------------------------------------------------------------------
-   // Get the max allowable compressive concrete stress for service loading
-   // at bridge site 1 as a factor times f'c
-   Float64 GetBs1CompStress() const;
-
-   //------------------------------------------------------------------------
-   // Set the max allowable compressive concrete stress for  loading
-   // at bridge site 1 as a factor times f'c
-   void SetBs1CompStress(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
-   // at the bridge site stage 1
-   Float64 GetBs1MaxConcreteTens() const;
-
-   //------------------------------------------------------------------------
-   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
-   // concrete at the bridge site stage 1
-   void SetBs1MaxConcreteTens(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the absolute maximum allowable tensile stress in concrete
-   // at the bridge site stage 1
-   // If the bool is false, this check is not made and the stress value is 
-   // undefined.
-   void GetBs1AbsMaxConcreteTens(bool* doCheck, Float64* stress) const;
-
-   //------------------------------------------------------------------------
-   // Set the absolute maximum allowable tensile stress in 
-   // concrete at the bridge site stage 1
-   // If the bool is false, this check is not made and the stress value is undefined.
-   void SetBs1AbsMaxConcreteTens(bool doCheck, Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the max allowable compressive concrete stress for  loading
-   // at bridge site 2 as a factor times f'c
-   Float64 GetBs2CompStress() const;
-
-   //------------------------------------------------------------------------
-   // Set the max allowable compressive concrete stress for  loading
-   // at bridge site 2 as a factor times f'c
-   void SetBs2CompStress(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the max allowable compressive concrete stress for service loading
-   // at bridge site 3 as a factor times f'c
-   Float64 GetBs3CompStressService() const;
-
-   //------------------------------------------------------------------------
-   // Set the max allowable compressive concrete stress for service loading
-   // at bridge site 3 as a factor times f'c
-   void SetBs3CompStressService(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the max allowable compressive concrete stress for the live load plus
-   // one-half permanent loads at bridge site 3 as a factor times f'c 
-   // This is also used for the Fatigue I limit state (lrfd 5.5.3.1)
-   Float64 GetBs3CompStressService1A() const;
-
-   //------------------------------------------------------------------------
-   // Set the max allowable compressive concrete stress for the live load plus
-   // one-half permanent loads at bridge site 3 as a factor times f'c
-   void SetBs3CompStressService1A(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
-   // for normal exposure conditions at the bridge site stage 3
-   Float64 GetBs3MaxConcreteTensNc() const;
-
-   //------------------------------------------------------------------------
-   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
-   // concrete for normal exposure conditions at the bridge site stage 3
-   void SetBs3MaxConcreteTensNc(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the absolute maximum allowable tensile stress in concrete
-   // for normal exposure conditions at the bridge site stage 3
-   // If the bool is false, this check is not made and the stress value is 
-   // undefined.
-   void GetBs3AbsMaxConcreteTensNc(bool* doCheck, Float64* stress) const;
-
-   //------------------------------------------------------------------------
-   // Set the absolute maximum allowable tensile stress in 
-   // concrete for normal exposure conditions at the bridge site stage 3
-   // If the bool is false, this check is not made and the stress value is undefined.
-   void SetBs3AbsMaxConcreteTensNc(bool doCheck, Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
-   // for severe corrosive conditions  at the bridge site stage 3
-   Float64 GetBs3MaxConcreteTensSc() const;
-
-   //------------------------------------------------------------------------
-   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
-   // concrete for severe corrosive conditions
-   void SetBs3MaxConcreteTensSc(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the absolute maximum allowable tensile stress in concrete
-   // for severe corrosive conditions. If the bool is false, this check is not
-   // made and the stress value is undefined.
-   void GetBs3AbsMaxConcreteTensSc(bool* doCheck, Float64* stress) const;
-
-   //------------------------------------------------------------------------
-   // Set the absolute maximum allowable tensile stress in 
-   // concrete for severe corrosive conditions.  
-   // If the bool is false, this check is not made and the stress value is 
-   // undefined.
-   void SetBs3AbsMaxConcreteTensSc(bool doCheck, Float64 stress);
-
-   // If true, over reinforced moment capacity computed per LRFD C5.7.3.3.1
-   // otherwise computed by WSDOT method
-   void SetBs3LRFDOverreinforcedMomentCapacity(bool bSet);
-   bool GetBs3LRFDOverreinforcedMomentCapacity() const;
-
-   //------------------------------------------------------------------------
-   // Get the maximum number of girders that traffic barrier loads may be
-   // distributed over.
-   GirderIndexType GetMaxGirdersDistTrafficBarrier() const;
-
-   //------------------------------------------------------------------------
-   // Set the maximum number of girders that traffic barrier loads may be
-   // distributed over.
-   void SetMaxGirdersDistTrafficBarrier(GirderIndexType num);
-
-   void SetTrafficBarrierDistibutionType(pgsTypes::TrafficBarrierDistribution tbd);
-   pgsTypes::TrafficBarrierDistribution GetTrafficBarrierDistributionType() const;
-
-   //------------------------------------------------------------------------
-   // Get how overlay loads are distributed to each girder
-   pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const;
-
-   //------------------------------------------------------------------------
-   void SetCreepMethod(int method);
-
-   //------------------------------------------------------------------------
-   int GetCreepMethod() const;
-
-   //------------------------------------------------------------------------
-   void SetXferTime(Float64 time);
-
-   //------------------------------------------------------------------------
-   Float64 GetXferTime() const;
-
-   //------------------------------------------------------------------------
-   // Returns the creep factor.
-   Float64 GetCreepFactor() const;
-
-   //------------------------------------------------------------------------
-   // Sets the creep factor.
-   void SetCreepFactor(Float64 cf);
-
-   //------------------------------------------------------------------------
-   // Returns the number of days from prestress release until temporary strand
-   // removal (or diaphragm loading).
-   Float64 GetCreepDuration1Min() const;
-   Float64 GetCreepDuration1Max() const;
-
-   //------------------------------------------------------------------------
-   void SetCreepDuration1(Float64 min,Float64 max);
-
-   //------------------------------------------------------------------------
-   // Returns the number of days from prestress release until the slab
-   // is acting composite with the girder.
-   Float64 GetCreepDuration2Min() const;
-   Float64 GetCreepDuration2Max() const;
-
-   //------------------------------------------------------------------------
-   void SetCreepDuration2(Float64 min,Float64 max);
-
-   void SetTotalCreepDuration(Float64 duration);
-   Float64 GetTotalCreepDuration() const;
-
-   //------------------------------------------------------------------------
-   // Returns the method for computing losses. The return value will be
-   // one of the LOSSES_XXX constants
-   int GetLossMethod() const;
-
-   //------------------------------------------------------------------------
-   // Sets the method for computing losses
-   void SetLossMethod(int method);
-
-   // Set/Get the time-dependent model type
-   int GetTimeDependentModel() const;
-   void SetTimeDependentModel(int model);
-
-   //------------------------------------------------------------------------
-   // Returns the shipping losses for a lump sum method or for a method
-   // that does not support computing losses at shipping.
-   Float64 GetShippingLosses() const;
-   void SetShippingLosses(Float64 loss);
-
-   //------------------------------------------------------------------------
-   // Set/get the time when shipping occurs. Used when shipping losses are 
-   // computed by the LRFD refined method after LRFD 2005
-   void SetShippingTime(Float64 time);
-   Float64 GetShippingTime() const;
-
-   //------------------------------------------------------------------------
-   // Set/Get load effectiveness for elastic gains
-   Float64 GetSlabElasticGain() const;
-   void SetSlabElasticGain(Float64 f);
-
-   Float64 GetSlabPadElasticGain() const;
-   void SetSlabPadElasticGain(Float64 f);
-
-   Float64 GetDiaphragmElasticGain() const;
-   void SetDiaphragmElasticGain(Float64 f);
-
-   Float64 GetUserLoadBeforeDeckDCElasticGain() const;
-   void SetUserLoadBeforeDeckDCElasticGain(Float64 f);
-
-   Float64 GetUserLoadAfterDeckDCElasticGain() const;
-   void SetUserLoadAfterDeckDCElasticGain(Float64 f);
-
-   Float64 GetUserLoadBeforeDeckDWElasticGain() const;
-   void SetUserLoadBeforeDeckDWElasticGain(Float64 f);
-
-   Float64 GetUserLoadAfterDeckDWElasticGain() const;
-   void SetUserLoadAfterDeckDWElasticGain(Float64 f);
-
-   Float64 GetRailingSystemElasticGain() const;
-   void SetRailingSystemElasticGain(Float64 f);
-
-   Float64 GetOverlayElasticGain() const;
-   void SetOverlayElasticGain(Float64 f);
-
-   Float64 GetDeckShrinkageElasticGain() const;
-   void SetDeckShrinkageElasticGain(Float64 f);
-
-   Float64 GetLiveLoadElasticGain() const;
-   void SetLiveLoadElasticGain(Float64 f);
-
-   void SetRelaxationLossMethod(Int16 method);
-   Int16 GetRelaxationLossMethod() const;
-
-   //------------------------------------------------------------------------
-   // Returns a LLDF_XXXX constant for the live load distribution factor
-   // calculation method
-   Int16 GetLiveLoadDistributionMethod() const;
-
-   //------------------------------------------------------------------------
-   // Sets the live load distribution factor calculation method. Use on of the
-   // LLDF_XXXX constants.
-   void SetLiveLoadDistributionMethod(Int16 method);
-
-   //------------------------------------------------------------------------
-   // Returns a LRSH_XXXX constant for the method for determining 
-   // longitudinal reinforcement shear capacity calculation method
-   Int16 GetLongReinfShearMethod() const;
-
-   //------------------------------------------------------------------------
-   // Sets the method for determining longitudinal reinforcement shear capacity
-   // Uses the LRSH_XXXX constants.
-   void SetLongReinfShearMethod(Int16 method);
-
-
-   void IgnoreRangeOfApplicabilityRequirements(bool bIgnore);
-   bool IgnoreRangeOfApplicabilityRequirements() const;
-
-   void CheckStrandStress(UINT stage,bool bCheck);
-   bool CheckStrandStress(UINT stage) const;
-   void SetStrandStressCoefficient(UINT stage,UINT strandType, Float64 coeff);
-   Float64 GetStrandStressCoefficient(UINT stage,UINT strandType) const;
-
-   bool CheckTendonStressAtJacking() const;
-   bool CheckTendonStressPriorToSeating() const;
-   Float64 GetTendonStressCoefficient(UINT state,UINT strandType) const;
-
-   //------------------------------------------------------------------------
    // Determine if we want to evaluate deflection due to live load ala LRFD 2.5.2.5.2
    bool GetDoEvaluateLLDeflection() const;
    void SetDoEvaluateLLDeflection(bool doit);
 
-   //------------------------------------------------------------------------
    // Set/Get span deflection limit criteria. Limit is Span / value.
    Float64 GetLLDeflectionLimit() const;
    void SetLLDeflectionLimit(Float64 limit);
 
-//  All debonding criteria was moved to the girder library for version 27
-// 
-//   void SetMaxDebondStrands(Float64 max);
-//   Float64 GetMaxDebondStrands() const;
-//   void SetMaxDebondStrandsPerRow(Float64 max);
-//   Float64 GetMaxDebondStrandsPerRow() const;
-//   void SetMaxDebondStrandsPerSection(long nMax,Float64 fMax);
-//   void GetMaxDebondStrandsPerSection(long* nMax,Float64* fMax) const;
-//   void SetDefaultDebondLength(Float64 l);
-//   Float64 GetDefaultDebondLength() const;
+   // Set/Get the minimum location for the lift point
+   void SetMininumLiftingPointLocation(Float64 x); // < 0 means use Hg
+   Float64 GetMininumLiftingPointLocation() const;
 
-   void IncludeRebarForMoment(bool bInclude);
-   bool IncludeRebarForMoment() const;
+   // Set/Get the accuracy of the lift point placement during automated design
+   void SetLiftingPointLocationAccuracy(Float64 x);
+   Float64 GetLiftingPointLocationAccuracy() const;
 
-   void IncludeRebarForShear(bool bInclude);
-   bool IncludeRebarForShear() const;
-
-   pgsTypes::AnalysisType GetAnalysisType() const;
-
-   void SetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
-   Float64 GetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
-   
-   void SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
-   Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
-   
-   void SetMaxSlabFc(pgsTypes::ConcreteType type,Float64 fc);
-   Float64 GetMaxSlabFc(pgsTypes::ConcreteType type) const;
-   void SetMaxSegmentFc(pgsTypes::ConcreteType type,Float64 fc);
-   Float64 GetMaxSegmentFc(pgsTypes::ConcreteType type) const;
-   void SetMaxSegmentFci(pgsTypes::ConcreteType type,Float64 fci);
-   Float64 GetMaxSegmentFci(pgsTypes::ConcreteType type) const;
-   void SetMaxConcreteUnitWeight(pgsTypes::ConcreteType type,Float64 wc);
-   Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType type) const;
-   void SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64 agg);
-   Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const;
-
-   //------------------------------------------------------------------------
-   // Enable check and design for "A" dimension (Slab Offset
-   void EnableSlabOffsetCheck(bool enable);
-   bool IsSlabOffsetCheckEnabled() const;
-
-   void EnableSlabOffsetDesign(bool enable);
-   bool IsSlabOffsetDesignEnabled() const;
-
-   void SetDesignStrandFillType(arDesignStrandFillType type);
-   arDesignStrandFillType GetDesignStrandFillType() const;
-
-   void SetEffectiveFlangeWidthMethod(pgsTypes::EffectiveFlangeWidthMethod efwMethod);
-   pgsTypes::EffectiveFlangeWidthMethod GetEffectiveFlangeWidthMethod() const;
-
-   void SetShearFlowMethod(ShearFlowMethod method);
-   ShearFlowMethod GetShearFlowMethod() const;
-
-   void SetShearCapacityMethod(ShearCapacityMethod method);
-   ShearCapacityMethod GetShearCapacityMethod() const;
-
-   void SetCuringMethodTimeAdjustmentFactor(Float64 f);
-   Float64 GetCuringMethodTimeAdjustmentFactor() const;
-
+   // Set/Get the minimum location of the truck support location
    void SetMininumTruckSupportLocation(Float64 x); // < 0 means use Hg
    Float64 GetMininumTruckSupportLocation() const;
+
+   // Set/Get the accuracy of the truck support location during automated design
    void SetTruckSupportLocationAccuracy(Float64 x);
    Float64 GetTruckSupportLocationAccuracy() const;
 
+   //////////////////////////////////////
+   //
+   // Precast Elements
+   //
+   //////////////////////////////////////
+
+   // Set/Get the maximum allowable concrete compression stress at release as a factor times f'ci
+   Float64 GetAtReleaseCompressionStressFactor() const;
+   void SetAtReleaseCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tension stress at release as a factor times sqrt(f'ci)
+   Float64 GetAtReleaseTensionStressFactor() const;
+   void SetAtReleaseTensionStressFactor(Float64 stress);
+
+   // Set/Get the absolute maximum allowable concrete tension stress at release.
+   // If bIsApplicable is false the allowable concrete tension stress is not limited
+   // and maxStress is undefined
+   void GetAtReleaseMaximumTensionStress(bool* bIsApplicable, Float64* maxStress) const;
+   void SetAtReleaseMaximumTensionStress(bool bIsApplicable, Float64 maxStress);
+
+   // Set/Get the maximum allowable concrete tension stress at release as a factor times sqrt(f'ci)
+   // when adequate mild rebar is provided
+   Float64 GetAtReleaseTensionStressFactorWithRebar() const;
+   void SetAtReleaseTensionStressFactorWithRebar(Float64 stress);
+
+   // Set/Get the maximum allowable concrete compressive stress at erection as a factor times f'c
+   Float64 GetErectionCompressionStressFactor() const;
+   void SetErectionCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maxumum allowable concrete tension stress at erection as a factor times sqrt(f'c)
+   Float64 GetErectionTensionStressFactor() const;
+   void SetErectionTensionStressFactor(Float64 stress);
+
+   // Set/Get the absolute maximum allowable concrete tension stress at erection.
+   // If bIsApplicable is false the allowable concrete tension stress is not limited
+   // and maxStress is undefined
+   void GetErectionMaximumTensionStress(bool* bIsApplicable, Float64* maxStress) const;
+   void SetErectionMaximumTensionStress(bool bIsApplicable, Float64 maxStress);
+   
+   // Set/Get the maximum allowable concrete compressive stress after temporary strand removal 
+   // as a factor times f'c
+   Float64 GetTempStrandRemovalCompressionStressFactor() const;
+   void SetTempStrandRemovalCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tension stress after temporary strand removal 
+   // as a factor times sqrt(f'c)
+   Float64 GetTempStrandRemovalTensionStressFactor() const;
+   void SetTempStrandRemovalTensionStressFactor(Float64 stress);
+
+   // Set/Get the absolute maximum allowable concrete tension stress after temporary strand removal.
+   // If bIsApplicable is false the allowable concrete tension stress is not limited
+   // and maxStress is undefined
+   void GetTempStrandRemovalMaximumTensionStress(bool* bIsApplicable, Float64* maxStress) const;
+   void SetTempStrandRemovalMaximumTensionStress(bool bIsApplicable, Float64 maxStress);
+
+   // Set/Get the maximum allowable concrete compressive stress at the serivce limit state,
+   // without live load, as a factor times f'c
+   Float64 GetFinalWithoutLiveLoadCompressionStressFactor() const;
+   void SetFinalWithoutLiveLoadCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete compressive stress at the service limit state,
+   // with live load, as a factor times f'c
+   Float64 GetFinalWithLiveLoadCompressionStressFactor() const;
+   void SetFinalWithLiveLoadCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tension stress after the service limit state
+   // as a factor times sqrt(f'c). Use the EXPOSURE_xxx constants
+   Float64 GetFinalTensionStressFactor(int exposureCondition) const;
+   void SetFinalTensionStressFactor(int exposureCondition,Float64 stress);
+
+   // Set/Get the absolute maximum allowable concrete tension stress at the service limit state.
+   // If bIsApplicable is false the allowable concrete tension stress is not limited
+   // and maxStress is undefined
+   void GetFinalTensionStressFactor(int exposureCondition,bool* bIsApplicable, Float64* maxStress) const;
+   void SetFinalTensionStressFactor(int exposureCondition,bool bIsApplicable, Float64 maxStress);
+
+   // Set/Get the maximum allowable concrete compressive stress at the fatigue limit state,
+   // as a factor times f'c
+   Float64 GetFatigueCompressionStressFactor() const;
+   void SetFatigueCompressionStressFactor(Float64 stress);
+
+   //////////////////////////////////////
+   //
+   // Closure Joints
+   //
+   //////////////////////////////////////
+
+   // Set/Get the maximum allowable concrete compressive stress at stressing in a closure joint as a factor times f'ci
+   Float64 GetAtStressingCompressingStressFactor() const;
+   void SetAtStressingCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tensile stress at stressing in a closure joint as a factor times sqrt(f'ci)
+   // for a section in the precompressed tensile zone without minimum bonded auxiliary reinforcment
+   Float64 GetAtStressingPrecompressedTensileZoneTensionStressFactor() const;
+   void SetAtStressingPrecompressedTensileZoneTensionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tensile stress at stressing in a closure joint as a factor times sqrt(f'ci)
+   // for a section in the precompressed tensile zone with minimum bonded auxiliary reinforcment
+   Float64 GetAtStressingPrecompressedTensileZoneTensionStressFactorWithRebar() const;
+   void SetAtStressingPrecompressedTensileZoneTensionStressFactorWithRebar(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tensile stress at stressing in a closure joint as a factor times sqrt(f'ci)
+   // for a section other than in the precompressed tensile zone without minimum bonded auxiliary reinforcment
+   Float64 GetAtStressingOtherLocationTensionStressFactor() const;
+   void SetAtStressingOtherLocationTensileZoneTensionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tensile stress at stressing in a closure joint as a factor times sqrt(f'ci)
+   // for a section other than in the precompressed tensile zone with minimum bonded auxiliary reinforcment
+   Float64 GetAtStressingOtherLocationTensionStressFactorWithRebar() const;
+   void SetAtStressingOtherLocationTensionStressFactorWithRebar(Float64 stress);
+
+   // Set/Get the maximum allowable concrete compressive stress at service limit state in a closure joint as a factor times f'ci
+   Float64 GetAtServiceCompressingStressFactor() const;
+   void SetAtServiceCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete compressive stress at service limit state in a closure joint as a factor times f'ci
+   Float64 GetAtServiceWithLiveLoadCompressingStressFactor() const;
+   void SetAtServiceWithLiveLoadCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tensile stress at service limit state in a closure joint as a factor times sqrt(f'ci)
+   // for a section in the precompressed tensile zone without minimum bonded auxiliary reinforcment
+   Float64 GetAtServicePrecompressedTensileZoneTensionStressFactor() const;
+   void SetAtServicePrecompressedTensileZoneTensionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tensile stress at service limit state in a closure joint as a factor times sqrt(f'ci)
+   // for a section in the precompressed tensile zone with minimum bonded auxiliary reinforcment
+   Float64 GetAtServicePrecompressedTensileZoneTensionStressFactorWithRebar() const;
+   void SetAtServicePrecompressedTensileZoneTensionStressFactorWithRebar(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tensile stress at service limit state in a closure joint as a factor times sqrt(f'ci)
+   // for a section other than in the precompressed tensile zone without minimum bonded auxiliary reinforcment
+   Float64 GetAtServiceOtherLocationTensionStressFactor() const;
+   void SetAtServiceOtherLocationTensileZoneTensionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tensile stress at service limit state in a closure joint as a factor times sqrt(f'ci)
+   // for a section other than in the precompressed tensile zone with minimum bonded auxiliary reinforcment
+   Float64 GetAtServiceOtherLocationTensionStressFactorWithRebar() const;
+   void SetAtServiceOtherLocationTensionStressFactorWithRebar(Float64 stress);
+
+   // Set/Get the maximum allowable concrete compressive stress at the fatigue limit state,
+   // as a factor times f'c
+   Float64 GetClosureFatigueCompressionStressFactor() const;
+   void SetClosureFatigueCompressionStressFactor(Float64 stress);
+
+   //////////////////////////////////////
+   //
+   // Strands
+   //
+   //////////////////////////////////////
+
+   // Set/Get parameter indicating if strand stresses should be evaluated
+   // during a particular stage. Use one of the CSS_xxx constants
+   void CheckStrandStress(UINT stage,bool bCheck);
+   bool CheckStrandStress(UINT stage) const;
+
+   // Set/Get the allowable strand stress as a coefficient times fpu
+   // Use one of the CSS_xxx constants for stage and LOW_RELAX or STRESS_REL
+   // for strandType
+   Float64 GetStrandStressCoefficient(UINT stage,UINT strandType) const;
+   void SetStrandStressCoefficient(UINT stage,UINT strandType, Float64 coeff);
+
+   // Returns true if tendon stresses are to be check at jacking
+   bool CheckTendonStressAtJacking() const;
+
+   // Returns true if tendon stresses are to be check just prior to seating
+   bool CheckTendonStressPriorToSeating() const;
+
+   // Returns the allowable tendon stress as a coefficient times fpu
+   // Use one of the CSS_xxx constants for stage and LOW_RELAX or STRESS_REL
+   // for strandType
+   Float64 GetTendonStressCoefficient(UINT stage,UINT strandType) const;
+
+   // Set/Get parameter that indicates if straigh strands are allowed to be extended
+   void AllowStraightStrandExtensions(bool bAllow);
+   bool AllowStraightStrandExtensions() const;
+
+   // Set/Get the method for computing prestress transfer length
+   pgsTypes::PrestressTransferComputationType GetPrestressTransferComputationType() const;
+   void SetPrestressTransferComputationType(pgsTypes::PrestressTransferComputationType type);
+
+   //////////////////////////////////////
+   //
+   // Lifting Parameters
+   //
+   //////////////////////////////////////
+
+   // Set/Get minimum factor of safety against cracking for lifting
+   Float64 GetCrackingFOSLifting() const;
+   void SetCrackingFOSLifting(Float64 fs);
+
+   // Set/Get minimum factor of safety against failure for lifting
+   Float64 GetLiftingFailureFOS() const;
+   void SetLiftingFailureFOS(Float64 fs);
+
+   // Set/Get upward impact for lifting
+   Float64 GetLiftingUpwardImpactFactor() const;
+   void SetLiftingUpwardImpactFactor(Float64 impact);
+
+   // Set/Get downward impact for lifting in the casting yard
+   Float64 GetLiftingDownwardImpactFactor() const;
+   void SetLiftingDownwardImpactFactor(Float64 impact);
+
+   // Set/Get the max allowable compressive concrete stress for lifting as a factor times f'ci
+   Float64 GetLiftingCompressionStressFactor() const;
+   void SetLiftingCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tension stress during lifting as a factor times sqrt(f'ci)
+   Float64 GetLiftingTensionStressFactor() const;
+   void SetLiftingTensionStressFactor(Float64 stress);
+
+   // Set/Get the absolute maximum allowable concrete tension stress during lifting.
+   // If bIsApplicable is false the allowable concrete tension stress is not limited
+   // and maxStress is undefined
+   void GetLiftingMaximumTensionStress(bool* bIsApplicable, Float64* maxStress) const;
+   void SetLiftingMaximumTensionStress(bool bIsApplicable, Float64 maxStress);
+
+   // Set/Get the maximum allowable concrete tension stress during lifting as a factor times sqrt(f'ci)
+   // when adequate mild rebar is provided
+   Float64 GetLiftingTensionStressFactorWithRebar() const;
+   void SetLiftingTensionStressFactorWithRebar(Float64 stress);
+
+   // Set/Get the pick point height.
+   Float64 GetPickPointHeight() const;
+   void SetPickPointHeight(Float64 hgt);
+
+   // Set/Get the lifting loop placement tolerance
+   Float64 GetLiftingLoopTolerance() const;
+   void SetLiftingLoopTolerance(Float64 hgt);
+
+   // Set/Get the minimum lifting cable inclination angle measured from horizontal
+   Float64 GetMinCableInclination() const;
+   void SetMinCableInclination(Float64 angle);
+
+   // Set/Get the maximum girder sweep tolerance for lifting
+   Float64 GetLiftingMaximumGirderSweepTolerance() const;
+   void SetLiftingMaximumGirderSweepTolerance(Float64 sweep);
+
+   // Set/Get the coefficient used to compute the modulus of rupture of concrete for lifting as a factor times sqrt(f'c)
+   Float64 GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const;
+   void SetLiftingModulusOfRuptureFactor(Float64 fr,pgsTypes::ConcreteType type);
+
+   //////////////////////////////////////
+   //
+   // Hauling/Shipping Parameters
+   //
+   //////////////////////////////////////
+
+   // General hauling parameters
+
+   // Set/Get the hauling analysis method
+   void SetHaulingAnalysisMethod(pgsTypes::HaulingAnalysisMethod method);
+   pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const;
+
+   // Set/Get upward impact for hauling
+   Float64 GetHaulingUpwardImpactFactor() const;
+   void SetHaulingUpwardImpactFactor(Float64 impact);
+
+   // Set/Get downward impact for hauling
+   Float64 GetHaulingDownwardImpactFactor() const;
+   void SetHaulingDownwardImpactFactor(Float64 impact);
+
+   // Set/Get the maximum girder sweep tolerance for Hauling
+   Float64 GetHaulingMaximumGirderSweepTolerance() const;
+   void SetHaulingMaximumGirderSweepTolerance(Float64 sweep);
+
+   // Set/Get the maximum allowable distance between hauling supports
+   Float64 GetHaulingSupportDistance() const;
+   void SetHaulingSupportDistance(Float64 d);
+
+   // Set/Get the maximum leading overhang distance during hauling
+   Float64 GetHaulingMaximumLeadingOverhang() const;
+   void SetHaulingMaximumLeadingOverhang(Float64 oh);
+
+   // Set/Get the maximum lateral tolerance for hauling support placement
+   Float64 GetHaulingSupportPlacementTolerance() const;
+   void SetHaulingSupportPlacementTolerance(Float64 tol);
+
+   // Set/Get the percent the radius of stability is to be increased for camber
+   Float64 GetHaulingCamberPercentEstimate() const;
+   void SetHaulingCamberPercentEstimate(Float64 per);
+
+   // Set/Get height of bottom of girder above roadway during transport
+   Float64 GetTruckGirderHeight() const;
+   void SetTruckGirderHeight(Float64 height);
+
+   // Set/Get height of truck roll center above roadway.
+   Float64 GetTruckRollCenterHeight() const;
+   void SetTruckRollCenterHeight(Float64 height);
+
+   // Set/Get center-to-center distance between truck tires
+   Float64 GetTruckAxleWidth() const;
+   void SetTruckAxleWidth(Float64 dist);
+
+   // Set/Get max expected roadway superelevation angle during hauling
+   Float64 GetRoadwaySuperelevation() const;
+   void SetRoadwaySuperelevation(Float64 dist);
+
+   // Set/Get maximum girder weight for transportation
+   void SetMaxGirderWeight(Float64 wgt);
+   Float64 GetMaxGirderWeight() const;
+
+   // Set/Get method of computing the truck roll stiffness
+   // Use one of the ROLLSTIFFNESS_xxx constants
+   int GetTruckRollStiffnessMethod() const;
+   void SetTruckRollStiffnessMethod(int method);
+
+   // Parameters for roll stiffness method ROLLSTIFFNESS_LUMPSUM
+
+   // Set/Get truck roll stiffness
+   Float64 GetTruckRollStiffness() const;
+   void SetTruckRollStiffness(Float64 stiff);
+
+   // Parameters for roll stiffness method ROLLSTIFFNESS_PERAXLE
+
+   // Set/Get the per axle weight limit used to estimate the number of
+   // axles required to haul a girder
+   Float64 GetAxleWeightLimit() const;
+   void SetAxleWeightLimit(Float64 limit);
+
+   // Set/Get the per axle stiffness
+   Float64 GetAxleStiffness() const;
+   void SetAxleStiffness(Float64 stiffness);
+
+   // Set/Get the minimum roll stiffness of a haul truck
+   Float64 GetMinRollStiffness() const;
+   void SetMinRollStiffness(Float64 stiffness);
+
+   // Set/Get the max allowable compressive concrete stress for hauling as a factor times f'ci
+   Float64 GetHaulingCompressionStressFactor() const;
+   void SetHaulingCompressionStressFactor(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tension stress during during hauling as a factor times sqrt(f'ci)
+   Float64 GetHaulingTensionStressFactor() const;
+   void SetHaulingTensionStressFactor(Float64 stress);
+
+   // Set/Get the absolute maximum allowable concrete tension stress during hauling.
+   // If bIsApplicable is false the allowable concrete tension stress is not limited
+   // and maxStress is undefined
+   void GetHaulingMaximumTensionStress(bool* bIsApplicable, Float64* maxStress) const;
+   void SetHaulingMaximumTensionStress(bool bIsApplicable, Float64 maxStress);
+
+   // Set/Get the maximum allowable concrete tension stress during hauling as a factor times sqrt(f'c)
+   // when adequate mild rebar is provided
+   Float64 GetHaulingTensionStressFactorWithRebar() const;
+   void SetHaulingTensionStressFactorWithRebar(Float64 stress);
+
+   // Set/Get minimum factor of safety against cracking for hauling
+   Float64 GetHaulingCrackingFOS() const;
+   void SetHaulingCrackingFOS(Float64 fs);
+
+   // Set/Get minimum factor of safety against failure for hauling
+   Float64 GetHaulingFailureFOS() const;
+   void SetHaulingFailureFOS(Float64 fs);
+
+   // Set/Get the coefficient used to compute the modulus of rupture of concrete during hauling as a factor times sqrt(f'c)
+   Float64 GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const;
+   void SetHaulingModulusOfRuptureFactor(Float64 fr,pgsTypes::ConcreteType type);
+
+   //
    // Values used for KDOT method only
+   //
    void SetUseMinTruckSupportLocationFactor(bool factor);
    bool GetUseMinTruckSupportLocationFactor() const;
    void SetMinTruckSupportLocationFactor(Float64 factor);
@@ -1003,60 +666,352 @@ public:
    void SetInteriorGFactor(Float64 factor);
    Float64 GetInteriorGFactor() const;
 
-   void SetMininumLiftingPointLocation(Float64 x); // < 0 means use Hg
-   Float64 GetMininumLiftingPointLocation() const;
-   void SetLiftingPointLocationAccuracy(Float64 x);
-   Float64 GetLiftingPointLocationAccuracy() const;
+   //////////////////////////////////////
+   //
+   // Loads
+   //
+   //////////////////////////////////////
 
-   void SetPedestrianLiveLoad(Float64 w);
+   // Set/Get the maximum number of girders that traffic barrier loads may be
+   // distributed over.
+   GirderIndexType GetMaxGirdersDistTrafficBarrier() const;
+   void SetMaxGirdersDistTrafficBarrier(GirderIndexType num);
+
+   // Set/Get the traffic barrier load distribution type
+   pgsTypes::TrafficBarrierDistribution GetTrafficBarrierDistributionType() const;
+   void SetTrafficBarrierDistibutionType(pgsTypes::TrafficBarrierDistribution tbd);
+
+   // Set/Get the overlay load distribution type
+   pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const;
+   void SetOverlayLoadDistributionType(pgsTypes::OverlayLoadDistributionType type);
+
+   // Set/Get the magnitude of the pedestrian live load
    Float64 GetPedestrianLiveLoad() const;
-   void SetMinSidewalkWidth(Float64 Wmin);
+   void SetPedestrianLiveLoad(Float64 w);
+
+   // Set/Get the minimum width of sidewalk on which pedestrian live load is applied
    Float64 GetMinSidewalkWidth() const;
+   void SetMinSidewalkWidth(Float64 Wmin);
 
-   void SetMaxAngularDeviationBetweenGirders(Float64 angle);
-   Float64 GetMaxAngularDeviationBetweenGirders() const;
-   void SetMinGirderStiffnessRatio(Float64 r);
-   Float64 GetMinGirderStiffnessRatio() const;
-   void SetLLDFGirderSpacingLocation(Float64 fra);
-   Float64 GetLLDFGirderSpacingLocation() const;
+   // Set/Get the method of compute live load distribution factors.
+   // Use one of the LLDF_XXXX constants
+   Int16 GetLiveLoadDistributionMethod() const;
+   void SetLiveLoadDistributionMethod(Int16 method);
 
-   // impose a lower limit on distribution factors?
+   // Set/Get decision to impose a lower limit on distribution factors
+   // If true, live load distribution factors are never taken less than
+   // the number of lanes divided by the number of girders
    void LimitDistributionFactorsToLanesBeams(bool bInclude);
    bool LimitDistributionFactorsToLanesBeams() const;
 
-   // method for computing transfer length
-   pgsTypes::PrestressTransferComputationType GetPrestressTransferComputationType() const;
-   void SetPrestressTransferComputationType(pgsTypes::PrestressTransferComputationType type);
+   // Set/Get maxumum angular deviation between girders
+   // This parameter is used to determine if girders are approximately parallel
+   // per LRFD 4.6.2.2.1
+   void SetMaxAngularDeviationBetweenGirders(Float64 angle);
+   Float64 GetMaxAngularDeviationBetweenGirders() const;
 
-   void SetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64 phiTensionPS,Float64 phiTensionRC,Float64 phiCompression);
-   void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression) const;
-   void SetShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi);
-   Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type) const;
+   // Set/Get the minimum girder stiffness ratio. The girder stiffness ratio
+   // is the ratio of EI for adjacent girders. This parameter is used to 
+   // determine if girders have approximately the same stiffness per LRFD 4.6.2.2.1
+   void SetMinGirderStiffnessRatio(Float64 r);
+   Float64 GetMinGirderStiffnessRatio() const;
 
+   // Set/Get the location along a span where the spacing between girders is
+   // computed. Distribution factors are computed per span based on a single 
+   // spacing.
+   void SetLLDFGirderSpacingLocation(Float64 fra);
+   Float64 GetLLDFGirderSpacingLocation() const;
+
+   //////////////////////////////////////
+   //
+   // Moment Capacity Parameters
+   //
+   //////////////////////////////////////
+
+   // Set/Get the method for computing over reinforced section moment capacity.
+   // If true, over reinforced moment capacity computed per LRFD C5.7.3.3.1
+   // otherwise computed by WSDOT method
+   bool GetLRFDOverreinforcedMomentCapacity() const;
+   void SetLRFDOverreinforcedMomentCapacity(bool bSet);
+
+   // Set/Get a parameter that indicates if girder rebar is included in moment capacity calculations.
+   // If true, girder mild reinforcement is included in the moment capacity calculations.
+   void IncludeRebarForMoment(bool bInclude);
+   bool IncludeRebarForMoment() const;
+
+   // Set/Get the coefficient for computing modulus of rupture for moment capacity analysis
+   void SetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
+   Float64 GetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
+
+   // Set/Get the moment capacity resistance factors
+   void SetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64 phiTensionPS,Float64 phiTensionRC,Float64 phiTensionSpliced,Float64 phiCompression);
+   void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const;
+
+   // Set/Get parameter that indicates if non-composite moments are included in negative moment (deck)
+   // design. If true, Mu for deck design includes moments on the non-composite section.
    void IncludeNoncompositeMomentsForNegMomentDesign(bool bInclude);
    bool IncludeNoncompositeMomentsForNegMomentDesign() const;
 
-   void AllowStraightStrandExtensions(bool bAllow);
-   bool AllowStraightStrandExtensions() const;
+   //////////////////////////////////////
+   //
+   // Shear Capacity Parameters
+   //
+   //////////////////////////////////////
 
-   // GROUP: INQUIRY
+   // Set/Get the shear capacity calculation method
+   void SetShearCapacityMethod(ShearCapacityMethod method);
+   ShearCapacityMethod GetShearCapacityMethod() const;
+
+   // Set/Get the coefficient for computing modulus of rupture for shear capacity analysis
+   void SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
+   Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
+
+   // Set/Get the shear capacity resistance factors
+   void SetShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi);
+   Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type) const;
+
+   // Longitudinal Reinforcement for shear
+
+   // Set/Get a parameter that indicates if girder rebar is included in longitudinal reinforcement
+   // for shear calculations.
+   // If true, girder mild reinforcement is included in the longitindal reinforcement for shear calculations.
+   void IncludeRebarForShear(bool bInclude);
+   bool IncludeRebarForShear() const;
+
+   // Set/Get maximum allowable stirrup spacing for girder.
+   Float64 GetMaxStirrupSpacing() const;
+   void SetMaxStirrupSpacing(Float64 space);
+
+   // Set/Get the concrete curing method
+   // Use one of the CURING_xxx constants
+   int GetCuringMethod() const;
+   void SetCuringMethod(int method);
+
+   // Set/Get the longitudinal reinforcement for shear calculation method.
+   // Use one of the LRSH_XXXX constants
+   Int16 GetLongReinfShearMethod() const;
+   void SetLongReinfShearMethod(Int16 method);
+
+   // Horizontal Interface Shear
+
+   // Set/Get the shear flow calculation method
+   void SetShearFlowMethod(ShearFlowMethod method);
+   ShearFlowMethod GetShearFlowMethod() const;
+
+   //////////////////////////////////////
+   //
+   // Creep and Camber Parameters
+   //
+   //////////////////////////////////////
+
+   // Set/Get the creep analysis method. 
+   // Use one of the CREEP_xxx constants
+   // NOTE: The option to select a creep calculation method was
+   // removed with LRFD 2006 as WSDOT dropped its creep method
+   // in favor of the LRFD method. This parameter is only applicable
+   // with the LRFD code is 2005 or earlier.
+   int GetCreepMethod() const;
+   void SetCreepMethod(int method);
+
+   // Set/Get the creep factor for the WSDOT creep method (BDM 6.1.2c.2)
+   // NOTE: The option to select a creep calculation method was
+   // removed with LRFD 2006 as WSDOT dropped its creep method
+   // in favor of the LRFD method. This parameter is only applicable
+   // with the LRFD code is 2005 or earlier.
+   Float64 GetCreepFactor() const;
+   void SetCreepFactor(Float64 cf);
+
+   // Get/Set the time from strand stressing to prestress transfer
+   // Used for computing relaxation losses prior to prestress transfer.
+   // NOTE: this is only applicable to non-time step loss methods
+   Float64 GetXferTime() const;
+   void SetXferTime(Float64 time);
+
+   // Set/Get the number of days from prestress release until temporary strand
+   // removal (or diaphragm loading for structures without temporary strands).
+   // NOTE: this is only applicable to non-time step loss methods
+   Float64 GetCreepDuration1Min() const;
+   Float64 GetCreepDuration1Max() const;
+   void SetCreepDuration1(Float64 min,Float64 max);
+
+   // Set/Get the number of days from prestress release until the slab
+   // is acting composite with the girder.
+   // NOTE: this is only applicable to non-time step loss methods
+   Float64 GetCreepDuration2Min() const;
+   Float64 GetCreepDuration2Max() const;
+   void SetCreepDuration2(Float64 min,Float64 max);
+
+   // Set/Get the total creep duration.
+   // NOTE: this is only applicable to non-time step loss methods
+   void SetTotalCreepDuration(Float64 duration);
+   Float64 GetTotalCreepDuration() const;
+
+   // Set/Get the curing method time adjustment factor
+   // Form LRFD, 1 day of steam curing = 7 days of moist curing
+   void SetCuringMethodTimeAdjustmentFactor(Float64 f);
+   Float64 GetCuringMethodTimeAdjustmentFactor() const;
+
+   //////////////////////////////////////
+   //
+   // Prestress Loss Parameters
+   //
+   //////////////////////////////////////
+
+   // Set/Get method for computing losses. 
+   // Use one of the LOSSES_xxx constants
+   int GetLossMethod() const;
+   void SetLossMethod(int method);
+
+   // Set/Get the time-dependent model type for time-step loss calculations
+   // Use on of the TDM_xxx constants
+   int GetTimeDependentModel() const;
+   void SetTimeDependentModel(int model);
+
+   // Set/Get the shipping losses for lump sum loss methods or for a method
+   // that does not support computing losses at shipping.
+   Float64 GetShippingLosses() const;
+   void SetShippingLosses(Float64 loss);
+
+   // Set/Get the time when shipping occurs. Used when shipping losses are 
+   // computed by the LRFD refined method after LRFD 2005
+   void SetShippingTime(Float64 time);
+   Float64 GetShippingTime() const;
+
+   // Set/Get the method for computing relaxation losses.
+   // Use one of the RLM_xxx constants
+   void SetRelaxationLossMethod(Int16 method);
+   Int16 GetRelaxationLossMethod() const;
+
+   // Set/Get load effectiveness for elastic gains due to the main slab dead load
+   // (including deck panels if present)
+   Float64 GetSlabElasticGain() const;
+   void SetSlabElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to the slab haunch dead load
+   Float64 GetSlabPadElasticGain() const;
+   void SetSlabPadElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to the diaphragm dead load
+   Float64 GetDiaphragmElasticGain() const;
+   void SetDiaphragmElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to user defined DC loads
+   // applied to the non-composite section
+   Float64 GetUserLoadBeforeDeckDCElasticGain() const;
+   void SetUserLoadBeforeDeckDCElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to user defined DC loads
+   // applied to the composite section
+   Float64 GetUserLoadAfterDeckDCElasticGain() const;
+   void SetUserLoadAfterDeckDCElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to user defined DW loads
+   // applied to the non-composite section
+   Float64 GetUserLoadBeforeDeckDWElasticGain() const;
+   void SetUserLoadBeforeDeckDWElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to user defined DW loads
+   // applied to the composite section
+   Float64 GetUserLoadAfterDeckDWElasticGain() const;
+   void SetUserLoadAfterDeckDWElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to the railing system dead load
+   Float64 GetRailingSystemElasticGain() const;
+   void SetRailingSystemElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to the overlay dead load
+   Float64 GetOverlayElasticGain() const;
+   void SetOverlayElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to deck shrinkage
+   Float64 GetDeckShrinkageElasticGain() const;
+   void SetDeckShrinkageElasticGain(Float64 f);
+
+   // Set/Get load effectiveness for elastic gains due to live load
+   Float64 GetLiveLoadElasticGain() const;
+   void SetLiveLoadElasticGain(Float64 f);
+
+   //------------------------------------------------------------------------
+   // Get/Set a FCGP_XXXX constant to determine the method used to compute fcgp
+   // for losses. This option is only used for the TxDOT 2013 losses method
+   void SetFcgpComputationMethod(Int16 method);
+   Int16 GetFcgpComputationMethod() const;
+
+   //////////////////////////////////////
+   //
+   // Limits Parameters
+   //
+   //////////////////////////////////////
+
+   // Set/Get the threshold value for slab concrete strength for which the user be warned
+   // that it is excess. A warning will be issued for any value greater than the threshold.
+   void SetMaxSlabFc(pgsTypes::ConcreteType type,Float64 fc);
+   Float64 GetMaxSlabFc(pgsTypes::ConcreteType type) const;
+
+   // Set/Get the threshold value for specified 28-day segment strength for which the user be warned
+   // that it is excess. A warning will be issued for any value greater than the threshold.
+   void SetMaxSegmentFc(pgsTypes::ConcreteType type,Float64 fc);
+   Float64 GetMaxSegmentFc(pgsTypes::ConcreteType type) const;
+
+   // Set/Get the threshold value for specified segment strength at initial loading for which the user be warned
+   // that it is excess. A warning will be issued for any value greater than the threshold.
+   void SetMaxSegmentFci(pgsTypes::ConcreteType type,Float64 fci);
+   Float64 GetMaxSegmentFci(pgsTypes::ConcreteType type) const;
+
+   // Set/Get the threshold value for specified 28-day closure joint strength for which the user be warned
+   // that it is excess. A warning will be issued for any value greater than the threshold.
+   void SetMaxClosureFc(pgsTypes::ConcreteType type,Float64 fc);
+   Float64 GetMaxClosureFc(pgsTypes::ConcreteType type) const;
+
+   // Set/Get the threshold value for specified closure joint strength at initial loading for which the user be warned
+   // that it is excess. A warning will be issued for any value greater than the threshold.
+   void SetMaxClosureFci(pgsTypes::ConcreteType type,Float64 fci);
+   Float64 GetMaxClosureFci(pgsTypes::ConcreteType type) const;
+
+   // Set/Get the threshold value for concrete unit weight for which the user will be warned
+   // that it is excessive. A warning will be issued for any value greater than the threshold.
+   void SetMaxConcreteUnitWeight(pgsTypes::ConcreteType type,Float64 wc);
+   Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType type) const;
+
+   // Set/Get the threshold value for concrete maximum aggregate size for which the user will be warned
+   // that it is excessive. A warning will be issued for any value greater than the threshold.
+   void SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64 agg);
+   Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const;
+
+
+   ////////////////////////////////////////
+   //
+   // Legacy Functions
+   //
+   ////////////////////////////////////////
+
+   // Returns parameters that were once in an older version of this object.
+   // These methods are obsolete and should only be used by the Project Agent
+   // to get data the was at one time in the library and is now part of the
+   // project data
+
+   // Gets parameter that indicates if the range of applicability for the LRFD
+   // live load distribution factors is to be ignored.
+   bool IgnoreRangeOfApplicabilityRequirements() const;
+
+
+   
+   //------------------------------------------------------------------------
+   // OBSOLETE: NEED TO BE REMOVED
+   Float64 GetErectionCrackFs() const;
+   void SetErectionCrackFs(Float64 fs);
+   Float64 GetErectionFailFs() const;
+   void SetErectionFailFs(Float64 fs);
+
+   // set version of these methods are obsolete and should be removed
+   void IgnoreRangeOfApplicabilityRequirements(bool bIgnore);
+
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
    void MakeCopy(const SpecLibraryEntry& rOther);
-
-   //------------------------------------------------------------------------
    virtual void MakeAssignment(const SpecLibraryEntry& rOther);
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
 
    // general
    lrfdVersionMgr::Version m_SpecificationType;
@@ -1193,6 +1148,21 @@ private:
    Float64  m_FlexureModulusOfRuptureCoefficient[3]; // index is pgsTypes::ConcreteType enum
    Float64  m_ShearModulusOfRuptureCoefficient[3];   // index is pgsTypes::ConcreteType enum
 
+   // Closure Joint Allowable Stresses
+   Float64 m_ClosureCompStressAtStressing;
+   Float64 m_ClosureTensStressPTZAtStressing; // in precompressed tensile zone
+   Float64 m_ClosureTensStressPTZWithRebarAtStressing;
+   Float64 m_ClosureTensStressAtStressing; // in other areas
+   Float64 m_ClosureTensStressWithRebarAtStressing;
+   Float64 m_ClosureCompStressAtService;
+   Float64 m_ClosureCompStressWithLiveLoadAtService;
+   Float64 m_ClosureTensStressPTZAtService;
+   Float64 m_ClosureTensStressPTZWithRebarAtService;
+   Float64 m_ClosureTensStressAtService;
+   Float64 m_ClosureTensStressWithRebarAtService;
+   Float64 m_ClosureCompStressFatigue;
+
+
    // Creep
    int     m_CreepMethod;
    Float64 m_XferTime;
@@ -1246,6 +1216,8 @@ private:
    Float64 m_MaxSlabFc[3];
    Float64 m_MaxSegmentFci[3];
    Float64 m_MaxSegmentFc[3];
+   Float64 m_MaxClosureFci[3];
+   Float64 m_MaxClosureFc[3];
    Float64 m_MaxConcreteUnitWeight[3];
    Float64 m_MaxConcreteAggSize[3];
    
@@ -1276,25 +1248,15 @@ private:
 
    Float64 m_PhiFlexureTensionPS[3]; // tension controlled, prestressed
    Float64 m_PhiFlexureTensionRC[3]; // tension controlled, reinforced
+   Float64 m_PhiFlexureTensionSpliced[3]; // tension controlled, spliced girders
    Float64 m_PhiFlexureCompression[3];
    Float64 m_PhiShear[3];
 
-   Int16 m_RelaxationLossMethod; // method for computing relaxation losses for LRFD 2005 and later, refined method
+   Int16 m_RelaxationLossMethod;  // method for computing relaxation losses for LRFD 2005 and later, refined method
+   Int16 m_FcgpComputationMethod; // method for computing fcgp for losses. only used for txdot 2013
    bool m_bIncludeForNegMoment;
 
    bool m_bAllowStraightStrandExtensions;
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
 
 #endif // INCLUDED_PSGLIB_SPECLIBRARYENTRY_H_

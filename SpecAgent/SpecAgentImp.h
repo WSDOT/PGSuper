@@ -112,12 +112,16 @@ public:
 
 // IAllowableConcreteStress
 public:
-   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement);
-   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement);
-   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement);
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone);
+   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone);
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone);
 
    virtual Float64 GetAllowableCompressiveStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls);
-   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue);
+   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue);
+
+   virtual std::vector<pgsTypes::LimitState> GetStressCheckLimitStates();
+   virtual bool IsStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType);
+   virtual bool HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey);
 
 // ITransverseReinforcementSpec
 public:
@@ -157,7 +161,7 @@ public:
    virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci);
    virtual Float64 GetLiftingModulusOfRupture(const CSegmentKey& segmentKey);
    virtual Float64 GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType);
-   virtual Float64 GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType);
+   virtual Float64 GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType concType);
    virtual Float64 GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const;
    virtual Float64 GetLiftingPointLocationAccuracy() const;
 
@@ -194,7 +198,7 @@ public:
    virtual Float64 GetHaulingWithMildRebarAllowableStressFactor();
    virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey);
    virtual Float64 GetHaulingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType);
-   virtual Float64 GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType);
+   virtual Float64 GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType);
    virtual Float64 GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const;
    virtual Float64 GetHaulingSupportLocationAccuracy() const;
 
@@ -225,7 +229,7 @@ public:
 
 // IResistanceFactors
 public:
-   virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression);
+   virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression);
    virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl);
    virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl);
    virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type);
@@ -238,7 +242,7 @@ private:
    const SpecLibraryEntry* GetSpec() const;
 
    Float64 GetAllowableCompressiveStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc);
-   Float64 GetAllowableTensileStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc, bool bWithBondedReinforcement);
+   Float64 GetAllowableTensileStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc, bool bWithBondedReinforcement,bool bInPrecompressedTensileZone);
 };
 
 #endif //__SPECAGENT_H_

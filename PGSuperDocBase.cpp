@@ -450,20 +450,18 @@ bool CPGSuperDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
-   const CBridgeDescription2* pBridge = pBridgeDesc->GetBridgeDescription();
- 
-   const CPierData2* pPierData = pBridge->GetPier(pierIdx);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   CPierDetailsDlg dlg(pPierData);
+   // This dialog makes a copy of the bridge model because it changes it.
+   // If the user presses the Cancel button, we don't have to figure out
+   // what got changed.
+   CPierDetailsDlg dlg(pBridgeDesc,pierIdx);
    dlg.SetActivePage(nPage);
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditPierData oldPierData(pPierData);
-      txnEditPierData newPierData = dlg.GetEditPierData();
-
-      txnEditPier* pTxn = new txnEditPier(pierIdx,oldPierData,newPierData,dlg.GetMovePierOption());
+      txnEditPier* pTxn = new txnEditPier(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -475,19 +473,18 @@ bool CPGSuperDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
-   const CBridgeDescription2* pBridge = pBridgeDesc->GetBridgeDescription();
-   const CSpanData2* pSpanData = pBridgeDesc->GetSpan(spanIdx);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   CSpanDetailsDlg dlg(pSpanData);
-   txnEditSpanData oldData(pSpanData);
-
+   // This dialog makes a copy of the bridge model because it changes it.
+   // If the user presses the Cancel button, we don't have to figure out
+   // what got changed.
+   CSpanDetailsDlg dlg(pBridgeDesc,spanIdx);
    dlg.SetActivePage(nPage);
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditSpanData newData = dlg.GetEditSpanData();
-      txnEditSpan* pTxn = new txnEditSpan(spanIdx,oldData,newData);
+      txnEditSpan* pTxn = new txnEditSpan(spanIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -2151,12 +2148,12 @@ void CPGSuperDocBase::SelectSegment(const CSegmentKey& segmentKey)
    }
 }
 
-void CPGSuperDocBase::SelectClosurePour(const CSegmentKey& closureKey)
+void CPGSuperDocBase::SelectClosureJoint(const CSegmentKey& closureKey)
 {
-   if ( m_Selection.Type == CSelection::ClosurePour && m_Selection.GroupIdx == closureKey.groupIndex && m_Selection.GirderIdx == closureKey.girderIndex && m_Selection.SegmentIdx == closureKey.segmentIndex )
+   if ( m_Selection.Type == CSelection::ClosureJoint && m_Selection.GroupIdx == closureKey.groupIndex && m_Selection.GirderIdx == closureKey.girderIndex && m_Selection.SegmentIdx == closureKey.segmentIndex )
       return;
 
-   m_Selection.Type       = CSelection::ClosurePour;
+   m_Selection.Type       = CSelection::ClosureJoint;
    m_Selection.GroupIdx   = closureKey.groupIndex;
    m_Selection.GirderIdx  = closureKey.girderIndex;
    m_Selection.SegmentIdx = closureKey.segmentIndex;
@@ -2625,11 +2622,16 @@ BOOL CPGSuperDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
 
 void CPGSuperDocBase::CreateReportView(CollectionIndexType rptIdx,bool bPrompt)
 {
-   if ( !bPrompt )
+   if ( !bPrompt && m_Selection.Type == CSelection::None)
    {
       // this is a quick report... make sure there is a current span and girder
-      m_Selection.SpanIdx   = (m_Selection.SpanIdx   == INVALID_INDEX ? 0 : m_Selection.SpanIdx);
-      m_Selection.GirderIdx = (m_Selection.GirderIdx == INVALID_INDEX ? 0 : m_Selection.GirderIdx);
+      m_Selection.Type       = CSelection::Girder;
+      m_Selection.GroupIdx   = 0;
+      m_Selection.GirderIdx  = 0;
+      m_Selection.SpanIdx    = INVALID_INDEX;
+      m_Selection.PierIdx    = INVALID_INDEX;
+      m_Selection.SegmentIdx = INVALID_INDEX;
+      m_Selection.tsID       = INVALID_ID;
    }
 
    m_pPGSuperDocProxyAgent->CreateReportView(rptIdx,bPrompt);
@@ -2895,7 +2897,7 @@ void CPGSuperDocBase::OnInsert()
       PierIndexType refPierIdx    = dlg.m_RefPierIdx;
       pgsTypes::PierFaceType face = dlg.m_PierFace;
       bool bCreateNewGroup        = dlg.m_bCreateNewGroup;
-      EventIndexType eventIdx     = dlg.m_EventIdx;
+      EventIndexType eventIdx     = dlg.m_EventIndex;
       InsertSpan(refPierIdx,face,span_length,bCreateNewGroup,eventIdx);
    }
 }
@@ -2944,7 +2946,8 @@ void CPGSuperDocBase::OnLosses()
    CLossParametersDlg dlg;
    GET_IFACE(ILossParameters,pLossParameters);
    txnEditLossParametersData oldData;
-   pLossParameters->GetPostTensionParameters(&oldData.Dset,&oldData.WobbleFriction,&oldData.FrictionCoefficient);
+   pLossParameters->GetTendonPostTensionParameters(&oldData.Dset_PT,&oldData.WobbleFriction_PT,&oldData.FrictionCoefficient_PT);
+   pLossParameters->GetTemporaryStrandPostTensionParameters(&oldData.Dset_TTS,&oldData.WobbleFriction_TTS,&oldData.FrictionCoefficient_TTS);
 
    oldData.bUseLumpSumLosses             = pLossParameters->UseGeneralLumpSumLosses();
    oldData.BeforeXferLosses              = pLossParameters->GetBeforeXferLosses();
@@ -2957,9 +2960,13 @@ void CPGSuperDocBase::OnLosses()
    oldData.AfterSIDLLosses               = pLossParameters->GetAfterSIDLLosses();
    oldData.FinalLosses                   = pLossParameters->GetFinalLosses();
 
-   dlg.m_PostTensioning.Dset                = oldData.Dset;
-   dlg.m_PostTensioning.WobbleFriction      = oldData.WobbleFriction;
-   dlg.m_PostTensioning.FrictionCoefficient = oldData.FrictionCoefficient;
+   dlg.m_PostTensioning.Dset_PT                = oldData.Dset_PT;
+   dlg.m_PostTensioning.WobbleFriction_PT      = oldData.WobbleFriction_PT;
+   dlg.m_PostTensioning.FrictionCoefficient_PT = oldData.FrictionCoefficient_PT;
+
+   dlg.m_PostTensioning.Dset_TTS                = oldData.Dset_TTS;
+   dlg.m_PostTensioning.WobbleFriction_TTS      = oldData.WobbleFriction_TTS;
+   dlg.m_PostTensioning.FrictionCoefficient_TTS = oldData.FrictionCoefficient_TTS;
 
    dlg.m_Pretensioning.bUseLumpSumLosses             = oldData.bUseLumpSumLosses;
    dlg.m_Pretensioning.BeforeXferLosses              = oldData.BeforeXferLosses;
@@ -2975,9 +2982,13 @@ void CPGSuperDocBase::OnLosses()
    if ( dlg.DoModal() == IDOK )
    {
       txnEditLossParametersData newData;
-      newData.Dset                = dlg.m_PostTensioning.Dset;
-      newData.WobbleFriction      = dlg.m_PostTensioning.WobbleFriction;
-      newData.FrictionCoefficient = dlg.m_PostTensioning.FrictionCoefficient;
+      newData.Dset_PT                = dlg.m_PostTensioning.Dset_PT;
+      newData.WobbleFriction_PT      = dlg.m_PostTensioning.WobbleFriction_PT;
+      newData.FrictionCoefficient_PT = dlg.m_PostTensioning.FrictionCoefficient_PT;
+
+      newData.Dset_TTS                = dlg.m_PostTensioning.Dset_TTS;
+      newData.WobbleFriction_TTS      = dlg.m_PostTensioning.WobbleFriction_TTS;
+      newData.FrictionCoefficient_TTS = dlg.m_PostTensioning.FrictionCoefficient_TTS;
 
       newData.bUseLumpSumLosses             = dlg.m_Pretensioning.bUseLumpSumLosses;
       newData.BeforeXferLosses              = dlg.m_Pretensioning.BeforeXferLosses;

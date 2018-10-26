@@ -273,7 +273,7 @@ bool pgsDebondArtifact::RowPassed(CollectionIndexType rowIndex) const
 bool pgsDebondArtifact::SectionPassed(CollectionIndexType sectionIndex) const
 {
    StrandIndexType nMaxStrands2 = (StrandIndexType)floor(m_fraMaxDebondedAtSection * m_nDebondedStrands); // allow int to floor
-   StrandIndexType nMaxStrands  = _cpp_max(m_nMaxDebondedAtSection,nMaxStrands2);
+   StrandIndexType nMaxStrands  = Max(m_nMaxDebondedAtSection,nMaxStrands2);
 
    return m_Sections[sectionIndex].nDebonded <= nMaxStrands;
 }

@@ -50,6 +50,7 @@ public:
 class ATL_NO_VTABLE CPGSuperAppPlugin : 
    public CPGSuperBaseAppPlugin,
    public CComObjectRootEx<CComSingleThreadModel>,
+   //public CComRefCountTracer<CPGSuperAppPlugin,CComObjectRootEx<CComSingleThreadModel>>,
    public CComCoClass<CPGSuperAppPlugin, &CLSID_PGSuperAppPlugin>,
    public IEAFAppPlugin,
    public IEAFAppCommandLine,

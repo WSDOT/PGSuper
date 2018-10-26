@@ -66,8 +66,8 @@ interface IBridgePlanViewEventCallback
    // called when a context menu is created for a girder segment
    virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey,CEAFMenu* pMenu) = 0;
 
-   // called when a context menu is created for a closure pour
-   virtual void OnClosurePourContextMenu(const CSegmentKey& closureKey,CEAFMenu* pMenu) = 0;
+   // called when a context menu is created for a closure joint
+   virtual void OnClosureJointContextMenu(const CSegmentKey& closureKey,CEAFMenu* pMenu) = 0;
 };
 
 

@@ -81,7 +81,7 @@ void CEditMomentLoadDlg::DoDataExchange(CDataExchange* pDX)
    // magnitude is easy part
    DDX_UnitValueAndTag( pDX, IDC_MAGNITUDE, IDC_MAGNITUDE_UNITS, m_Load.m_Magnitude, pDisplayUnits->GetMomentUnit() );
 
-   DDX_CBItemData(pDX,IDC_EVENT,m_Load.m_EventIdx);
+   DDX_CBItemData(pDX,IDC_EVENT,m_Load.m_EventIndex);
 
    // other values need to be done manually
    if (pDX->m_bSaveAndValidate)
@@ -95,7 +95,7 @@ void CEditMomentLoadDlg::DoDataExchange(CDataExchange* pDX)
       const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
       EventIndexType liveLoadEventIdx = pTimelineMgr->GetLiveLoadEventIndex();
 
-      if ( m_Load.m_LoadCase == UserLoads::LL_IM && m_Load.m_EventIdx < liveLoadEventIdx )
+      if ( m_Load.m_LoadCase == UserLoads::LL_IM && m_Load.m_EventIndex < liveLoadEventIdx )
       {
          AfxMessageBox(_T("The LL+IM load case can only be used in the events when live load is defined.\n\nChange the Load Case or Event."));
          pDX->PrepareCtrl(IDC_LOADCASE);
@@ -164,11 +164,11 @@ BOOL CEditMomentLoadDlg::OnInitDialog()
    pCB->SetCurSel(m_Load.m_LoadCase);
 
    FillEventList();
-   if ( m_Load.m_EventIdx == INVALID_INDEX )
+   if ( m_Load.m_EventIndex == INVALID_INDEX )
    {
       CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
       pcbEvent->SetCurSel(0);
-      m_Load.m_EventIdx = (EventIndexType)pcbEvent->GetItemData(0);
+      m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(0);
    }
 
    CDialog::OnInitDialog();
@@ -285,14 +285,14 @@ void CEditMomentLoadDlg::UpdateEventLoadCase(bool isInitial)
 
          if (isInitial)
          {
-            if ( m_Load.m_EventIdx == castDeckEventIdx )
+            if ( m_Load.m_EventIndex == castDeckEventIdx )
                pcbEvent->SetCurSel(0);
-            else if ( m_Load.m_EventIdx == railingSystemEventIdx )
+            else if ( m_Load.m_EventIndex == railingSystemEventIdx )
                pcbEvent->SetCurSel(1);
             else
             {
                pcbEvent->SetCurSel(0);
-               m_Load.m_EventIdx = castDeckEventIdx;
+               m_Load.m_EventIndex = castDeckEventIdx;
             }
          }
          else
@@ -451,7 +451,7 @@ void CEditMomentLoadDlg::FillEventList()
       if ( selEventIdx != CB_ERR )
       {
          pcbEvent->SetCurSel(selEventIdx);
-         m_Load.m_EventIdx = (EventIndexType)pcbEvent->GetItemData(selEventIdx);
+         m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(selEventIdx);
       }
    }
 }
@@ -464,6 +464,7 @@ void CEditMomentLoadDlg::OnEventChanging()
 
 void CEditMomentLoadDlg::OnEventChanged()
 {
+#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
    {
@@ -489,6 +490,7 @@ void CEditMomentLoadDlg::OnEventChanged()
 
 EventIndexType CEditMomentLoadDlg::CreateEvent()
 {
+#pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 

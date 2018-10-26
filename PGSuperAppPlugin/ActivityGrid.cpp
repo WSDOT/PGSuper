@@ -33,7 +33,7 @@
 #include "ErectPiersDlg.h"
 #include "ErectSegmentsDlg.h"
 #include "RemoveTempSupportsDlg.h"
-#include "CastClosurePourDlg.h"
+#include "CastClosureJointDlg.h"
 #include "ApplyLoadsDlg.h"
 #include "StressTendonDlg.h"
 #include "CastDeckDlg.h"
@@ -46,7 +46,7 @@ static char THIS_FILE[] = __FILE__;
 
 #define CONSTRUCT_SEGMENTS    0
 #define ERECT_PIERS           1
-#define CAST_CLOSURE_POURS    2
+#define CAST_CLOSURE_JOINTS    2
 #define ERECT_SEGMENTS        3
 #define STRESS_TENDONS        4
 #define REMOVE_TS             5
@@ -159,9 +159,9 @@ void CActivityGrid::Refresh()
       AddActivity(_T("Erect Piers/Temporary Supports"),ERECT_PIERS);
    }
 
-   if ( pParent->m_TimelineEvent.GetCastClosurePourActivity().IsEnabled() )
+   if ( pParent->m_TimelineEvent.GetCastClosureJointActivity().IsEnabled() )
    {
-      AddActivity(_T("Cast Closure Pours"),CAST_CLOSURE_POURS);
+      AddActivity(_T("Cast Closure Joints"),CAST_CLOSURE_JOINTS);
    }
 
    if ( pParent->m_TimelineEvent.GetErectSegmentsActivity().IsEnabled() )
@@ -227,7 +227,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
       return;
 
    CTimelineEventDlg* pParent = (CTimelineEventDlg*)GetParent();
-   EventIndexType eventIdx = pParent->m_EventIdx;
+   EventIndexType eventIdx = pParent->m_EventIndex;
 
    CGXStyle style;
    GetStyleRowCol(nRow,nCol,style);
@@ -242,7 +242,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == ERECT_PIERS )
    {
-      CErectPiersDlg dlg(pParent->m_pTimelineMgr);
+      CErectPiersDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
       dlg.m_ErectPiers = pParent->m_TimelineEvent.GetErectPiersActivity();
       if ( dlg.DoModal() == IDOK )
       {
@@ -251,7 +251,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == ERECT_SEGMENTS )
    {
-      CErectSegmentsDlg dlg(pParent->m_pTimelineMgr);
+      CErectSegmentsDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
       dlg.m_ErectSegments = pParent->m_TimelineEvent.GetErectSegmentsActivity();
       if ( dlg.DoModal() == IDOK )
       {
@@ -260,29 +260,29 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (int)style.GetItemDataPtr() == STRESS_TENDONS )
    {
-      CStressTendonDlg dlg;
-      dlg.m_StressTendons = pParent->m_TimelineEvent.GetStressTendonActivity();
+      CStressTendonDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
+      dlg.m_StressTendonActivity = pParent->m_TimelineEvent.GetStressTendonActivity();
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetStressTendonActivity(dlg.m_StressTendons);
+         pParent->m_TimelineEvent.SetStressTendonActivity(dlg.m_StressTendonActivity);
       }
    }
    else if ( (int)style.GetItemDataPtr() == REMOVE_TS )
    {
-      CRemoveTempSupportsDlg dlg(pParent->m_pTimelineMgr);
+      CRemoveTempSupportsDlg dlg(pParent->m_pTimelineMgr,pParent->m_EventIndex);
       dlg.m_RemoveTempSupports = pParent->m_TimelineEvent.GetRemoveTempSupportsActivity();
       if ( dlg.DoModal() == IDOK )
       {
          pParent->m_TimelineEvent.SetRemoveTempSupportsActivity(dlg.m_RemoveTempSupports);
       }
    }
-   else if ( (int)style.GetItemDataPtr() == CAST_CLOSURE_POURS )
+   else if ( (int)style.GetItemDataPtr() == CAST_CLOSURE_JOINTS )
    {
-      CCastClosurePourDlg dlg(pParent->m_pTimelineMgr);
-      dlg.m_CastClosurePours = pParent->m_TimelineEvent.GetCastClosurePourActivity();
+      CCastClosureJointDlg dlg(pParent->m_pTimelineMgr);
+      dlg.m_CastClosureJoints = pParent->m_TimelineEvent.GetCastClosureJointActivity();
       if ( dlg.DoModal() == IDOK )
       {
-         pParent->m_TimelineEvent.SetCastClosurePourActivity(dlg.m_CastClosurePours);
+         pParent->m_TimelineEvent.SetCastClosureJointActivity(dlg.m_CastClosureJoints);
       }
    }
    else if ( (int)style.GetItemDataPtr() == CAST_DECK )
@@ -333,7 +333,7 @@ void CActivityGrid::RemoveActivity()
       {
          if ( pParent->m_TimelineEvent.GetConstructSegmentsActivity().IsEnabled() )
          {
-            AfxMessageBox(_T("This activity cannot be removed. The girder segments are constructed during this activity. Construct them in a different event in the timeline."));
+            AfxMessageBox(_T("This activity cannot be directly removed. Add a Construct Segments activity to a different timeline event to remove it from this event."));
             return;
          }
          else
@@ -357,16 +357,16 @@ void CActivityGrid::RemoveActivity()
          }
       }
 
-      if ( activityType == CAST_CLOSURE_POURS )
+      if ( activityType == CAST_CLOSURE_JOINTS )
       {
-         if ( pParent->m_TimelineEvent.GetCastClosurePourActivity().GetTemporarySupportCount() == 0 )
+         if ( pParent->m_TimelineEvent.GetCastClosureJointActivity().GetTemporarySupportCount() == 0 )
          {
-            pParent->m_TimelineEvent.GetCastClosurePourActivity().Enable(false);
-            pParent->m_TimelineEvent.GetCastClosurePourActivity().Clear();
+            pParent->m_TimelineEvent.GetCastClosureJointActivity().Enable(false);
+            pParent->m_TimelineEvent.GetCastClosureJointActivity().Clear();
          }
          else
          {
-            AfxMessageBox(_T("This activity cannot be removed. Closure pours are cast during this activity. Cast these closure pours in a different event in the timeline."));
+            AfxMessageBox(_T("This activity cannot be removed. Closure joints are cast during this activity. Cast these closure joints in a different event in the timeline."));
             return;
          }
       }

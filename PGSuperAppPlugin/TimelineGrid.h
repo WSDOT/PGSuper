@@ -64,7 +64,7 @@ protected:
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
 
-   void AddEvent(const CTimelineEvent* pTimelineEvent);
+   void AddEvent(const CTimelineEvent* pTimelineEvent,const CTimelineEvent* pNextTimelineEvent);
    
    virtual void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);
    virtual BOOL OnValidateCell(ROWCOL nRow,ROWCOL nCol);

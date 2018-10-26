@@ -275,14 +275,14 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
       bool candb;
       m_pGdrEntry->GetStraightStrandCoordinates(igrid, &xs, &ys, &xe, &ye, &candb);
 
-      xmax = max(xmax, xs);
-      ymax = max(ymax, ys);
+      xmax = Max(xmax, xs);
+      ymax = Max(ymax, ys);
    }
 
    gpRect2d strand_bounds(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
 
    gpSize2d world_size;
-   world_size.Dx() = max(bottom_width,strand_bounds.Width());
+   world_size.Dx() = Max(bottom_width,strand_bounds.Width());
 
    world_size.Dy() = strand_bounds.Height();
    if ( IsZero(world_size.Dy()) )

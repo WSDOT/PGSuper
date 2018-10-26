@@ -36,7 +36,7 @@ public:
 	CTimelineEventDlg(const CTimelineManager* pTimelineMgr,BOOL bEditEvent,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CTimelineEventDlg();
 
-   EventIndexType m_EventIdx;
+   EventIndexType m_EventIndex;
    CTimelineEvent m_TimelineEvent;
    const CTimelineManager* m_pTimelineMgr;
 
@@ -58,7 +58,7 @@ protected:
    afx_msg void OnErectSegments();
    afx_msg void OnRemoveTempSupports();
    afx_msg void OnRemoveActivities();
-   afx_msg void OnCastClosurePours();
+   afx_msg void OnCastClosureJoints();
    afx_msg void OnCastDeck();
    afx_msg void OnApplyLoads();
    afx_msg void OnStressTendons();

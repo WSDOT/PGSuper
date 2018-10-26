@@ -30,7 +30,7 @@
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\TimelineManager.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -139,12 +139,12 @@ void txnCopyGirder::DoCopyGirderData(bool bExecute)
          const CPrecastSegmentData* pSegment = pSourceData->m_Girder.GetSegment(segIdx);
          CPrecastSegmentData* pTargetSegment = targetData.m_Girder.GetSegment(segIdx);
 
-         const CClosurePourData* pClosure = NULL;
-         CClosurePourData* pTargetClosure = NULL;
+         const CClosureJointData* pClosure = NULL;
+         CClosureJointData* pTargetClosure = NULL;
          if ( segIdx < nSegments-1 )
          {
-            pClosure = pSourceData->m_Girder.GetClosurePour(segIdx);
-            pTargetClosure = targetData.m_Girder.GetClosurePour(segIdx);
+            pClosure = pSourceData->m_Girder.GetClosureJoint(segIdx);
+            pTargetClosure = targetData.m_Girder.GetClosureJoint(segIdx);
          }
          
 
@@ -241,7 +241,7 @@ void txnCopyGirder::GetGirderData(const CGirderKey& girderKey,txnCopyGirderData*
 
    GirderIDType gdrID = pIBridgeDesc->GetGirderID(girderKey);
 
-   // Get segment construction and erection stages as well as closure pour casting stage
+   // Get segment construction and erection stages as well as closure joint casting stage
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
    SegmentIndexType nSegments = ptxnGirderData->m_Girder.GetSegmentCount();
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )

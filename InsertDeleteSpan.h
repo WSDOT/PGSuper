@@ -32,7 +32,7 @@
 class txnInsertSpan : public txnTransaction
 {
 public:
-   txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face,Float64 spanLength,bool bCreateNewGroup,EventIndexType eventIdx);
+   txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face,Float64 spanLength,bool bCreateNewGroup,EventIndexType pierErectionEventIdx);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -41,12 +41,15 @@ public:
    virtual bool IsRepeatable();
 
 private:
+   void Init();
+   void DoExecute(int i);
+   CBridgeDescription2 m_BridgeDescription[2];
+
    PierIndexType m_RefPierIdx;
    pgsTypes::PierFaceType m_PierFace;
    Float64 m_SpanLength;
    bool m_bCreateNewGroup;
-   EventIndexType m_EventIdx;
-   pgsTypes::PierConnectionType m_RefPierConnectionType;
+   EventIndexType m_PierErectionEventIndex;
 };
 
 class txnDeleteSpan : public txnTransaction
@@ -64,21 +67,9 @@ public:
 private:
    PierIndexType m_RefPierIdx;
    pgsTypes::PierFaceType m_PierFace;
-   EventIndexType m_EventIdx;
-   GroupIndexType m_nGirderGroups;
-   Float64  m_SpanLength; // length of deleted span
-   pgsTypes::PierConnectionType m_RefPierConnectionType;
-
-   CSpanData2* m_pDeletedSpan;
-   CPierData2* m_pDeletedPier;
-
-   struct TSItem
-   {
-      CTemporarySupportData TempSupport;
-      EventIndexType ErectionEventIdx;
-      EventIndexType RemovalEventIdx;
-   };
-   std::vector<TSItem> m_TempSupports; // temporary supports that were in the span that got deleted
+   void Init();
+   void DoExecute(int i);
+   CBridgeDescription2 m_BridgeDescription[2];
 };
 
 #endif // INCLUDED_INSERTDELETESPAN_H_

@@ -132,6 +132,7 @@ public:
    virtual Float64 GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx);
    virtual Float64 GetAnchorSetZoneLength(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
    virtual Float64 GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx);
+   virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
 
 // IPretensionForce
 public:
@@ -174,6 +175,7 @@ public:
    virtual Float64 GetPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands);
    virtual Float64 GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad);
    virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad);
+   virtual Float64 GetVerticalTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,DuctIndexType ductIdx);
 
 
 // ILiveLoadDistributionFactors
@@ -223,6 +225,7 @@ public:
 
 // IShearCapacity
 public:
+   virtual pgsTypes::GirderFace GetFlexuralTensionSide(pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual std::vector<Float64> GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi);
    virtual void GetShearCapacityDetails(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd);
@@ -257,7 +260,6 @@ public:
    virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey);
    virtual const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact(const CSegmentKey& segmentKey);
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey);
-   virtual const pgsClosurePourArtifact* GetClosurePourArtifact(const CSegmentKey& segmentKey);
    virtual const pgsDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,arDesignOptions design);
    virtual const pgsDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey);
    virtual void CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);

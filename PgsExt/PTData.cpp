@@ -36,6 +36,12 @@ CLASS
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\SplicedGirderData.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 Float64 gs_DefaultOffset2 = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
 
 const CDuctSize CDuctSize::DuctSizes[] = {CDuctSize(_T("4\""),    ::ConvertToSysUnits(4.0,unitMeasure::Inch),31,22,::ConvertToSysUnits(0.55,unitMeasure::Inch),::ConvertToSysUnits(0.70,unitMeasure::Inch)),
@@ -960,6 +966,7 @@ CPTData::CPTData(const CPTData& rOther)
 
 CPTData::~CPTData()
 {
+   RemoveFromTimeline();
 }
 
 //======================== OPERATORS  =======================================
@@ -1002,7 +1009,7 @@ bool CPTData::operator!=(const CPTData& rOther) const
 }
 
 //======================== OPERATIONS =======================================
-void CPTData::SetGirder(const CSplicedGirderData* pGirder)
+void CPTData::SetGirder(CSplicedGirderData* pGirder)
 {
    m_pGirder = pGirder;
 
@@ -1013,6 +1020,11 @@ void CPTData::SetGirder(const CSplicedGirderData* pGirder)
       CDuctData& duct = *iter;
       duct.Init(m_pGirder);
    }
+}
+
+CSplicedGirderData* CPTData::GetGirder()
+{
+   return m_pGirder;
 }
 
 const CSplicedGirderData* CPTData::GetGirder() const
@@ -1202,6 +1214,8 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 void CPTData::MakeCopy(const CPTData& rOther)
 {
+   RemoveFromTimeline();
+
    nTempStrands   = rOther.nTempStrands;
    PjTemp         = rOther.PjTemp;
    bPjTempCalc    = rOther.bPjTempCalc;
@@ -1222,4 +1236,38 @@ void CPTData::MakeCopy(const CPTData& rOther)
 void CPTData::MakeAssignment(const CPTData& rOther)
 {
    MakeCopy( rOther );
+}
+
+CTimelineManager* CPTData::GetTimelineManager()
+{
+   if ( m_pGirder )
+   {
+      CGirderGroupData* pGroup = m_pGirder->GetGirderGroup();
+      if ( pGroup )
+      {
+         CBridgeDescription2* pBridgeDesc = pGroup->GetBridgeDescription();
+         if ( pBridgeDesc )
+         {
+            return pBridgeDesc->GetTimelineManager();
+         }
+      }
+   }
+
+   return NULL;
+}
+
+void CPTData::RemoveFromTimeline()
+{
+   CTimelineManager* pTimelineMgr = GetTimelineManager();
+   if ( m_pGirder && pTimelineMgr )
+   {
+      CGirderKey girderKey(m_pGirder->GetGirderKey());
+      DuctIndexType nDucts = GetDuctCount();
+      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      {
+         EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(girderKey,ductIdx);
+         CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+         pTimelineEvent->GetStressTendonActivity().RemoveTendon(girderKey,ductIdx);
+      }
+   }
 }

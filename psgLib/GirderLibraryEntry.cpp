@@ -3324,7 +3324,7 @@ HICON  GirderLibraryEntry::GetIcon() const
       return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_GIRDER_ENTRY) );
 }
 
-void GirderLibraryEntry::ConfigureStraightStrandGrid(IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const
+void GirderLibraryEntry::ConfigureStraightStrandGrid(Float64 HgStart,Float64 HgEnd,IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const
 {
    // need to break local data structures into IPoints
    CComPtr<IPoint2dCollection> startPoints, endPoints;
@@ -3335,16 +3335,17 @@ void GirderLibraryEntry::ConfigureStraightStrandGrid(IStrandGrid* pStartGrid,ISt
    ConstStraightStrandIterator end(m_StraightStrands.end());
    for ( ; iter != end; iter++ )
    {
-      const StraightStrandLocation& strandLocation = *iter;
+      const StraightStrandLocation& strandLocation = *iter; // located up from the bottom of the girder
 
       CComPtr<IPoint2d> startPoint, endPoint;
       startPoint.CoCreateInstance(CLSID_Point2d);
       endPoint.CoCreateInstance(CLSID_Point2d);
 
-      startPoint->Move(strandLocation.m_Xstart,strandLocation.m_Ystart);
+      // Adjust Y elevation so that the strand point is in Girder Section Coordinates (0,0 at top center of girder)
+      startPoint->Move(strandLocation.m_Xstart,strandLocation.m_Ystart-HgStart);
       startPoints->Add(startPoint);
 
-      endPoint->Move(strandLocation.m_Xend,strandLocation.m_Yend);
+      endPoint->Move(strandLocation.m_Xend,strandLocation.m_Yend-HgEnd);
       endPoints->Add(endPoint);
    }
 
@@ -3355,13 +3356,14 @@ void GirderLibraryEntry::ConfigureStraightStrandGrid(IStrandGrid* pStartGrid,ISt
    pEndGrid->AddGridPoints(endPoints);
 }
 
-void GirderLibraryEntry::ConfigureHarpedStrandGrids(IStrandGrid* pEndGridAtStart, IStrandGrid* pHPGridAtStart, IStrandGrid* pHPGridAtEnd, IStrandGrid* pEndGridAtEnd) const
+void GirderLibraryEntry::ConfigureHarpedStrandGrids(Float64 HgStart,Float64 HgHP1,Float64 HgHP2,Float64 HgEnd,IStrandGrid* pEndGridAtStart, IStrandGrid* pHPGridAtStart, IStrandGrid* pHPGridAtEnd, IStrandGrid* pEndGridAtEnd) const
 {
    // need to break local data structures into IPoints
-   CComPtr<IPoint2dCollection> start_pts, end_pts, hp_pts;
+   CComPtr<IPoint2dCollection> start_pts, hp1_pts, hp2_pts, end_pts;
    end_pts.CoCreateInstance(CLSID_Point2dCollection);
    start_pts.CoCreateInstance(CLSID_Point2dCollection);
-   hp_pts.CoCreateInstance(CLSID_Point2dCollection);
+   hp1_pts.CoCreateInstance(CLSID_Point2dCollection);
+   hp2_pts.CoCreateInstance(CLSID_Point2dCollection);
 
    ConstHarpedStrandIterator iter(m_HarpedStrands.begin());
    ConstHarpedStrandIterator end(m_HarpedStrands.end());
@@ -3369,23 +3371,28 @@ void GirderLibraryEntry::ConfigureHarpedStrandGrids(IStrandGrid* pEndGridAtStart
    {
       const HarpedStrandLocation& strandLocation = *iter;
 
-      CComPtr<IPoint2d> start_point, hp_point, end_point;
+      CComPtr<IPoint2d> start_point, hp1_point, hp2_point, end_point;
       start_point.CoCreateInstance(CLSID_Point2d);
-      hp_point.CoCreateInstance(CLSID_Point2d);
+      hp1_point.CoCreateInstance(CLSID_Point2d);
+      hp2_point.CoCreateInstance(CLSID_Point2d);
       end_point.CoCreateInstance(CLSID_Point2d);
 
-      // assume harped points are used at the ends as well
-      start_point->Move(strandLocation.m_Xhp,strandLocation.m_Yhp);
-      hp_point->Move(strandLocation.m_Xhp,strandLocation.m_Yhp);
-      end_point->Move(strandLocation.m_Xhp,strandLocation.m_Yhp);
+      // Adjust Y elevation so that the strand point is in Girder Section Coordinates (0,0 at top center of girder)
 
-      hp_pts->Add(hp_point);
+      // assume harped points are used at the ends as well
+      start_point->Move(strandLocation.m_Xhp,strandLocation.m_Yhp-HgStart);
+      hp1_point->Move(strandLocation.m_Xhp,strandLocation.m_Yhp-HgHP1);
+      hp2_point->Move(strandLocation.m_Xhp,strandLocation.m_Yhp-HgHP2);
+      end_point->Move(strandLocation.m_Xhp,strandLocation.m_Yhp-HgEnd);
+
+      hp1_pts->Add(hp1_point);
+      hp2_pts->Add(hp2_point);
 
       if (m_bUseDifferentHarpedGridAtEnds)
       {
          // different points are used at the end of the girder
-         start_point->Move(strandLocation.m_Xstart,strandLocation.m_Ystart);
-         end_point->Move(strandLocation.m_Xend,strandLocation.m_Yend);
+         start_point->Move(strandLocation.m_Xstart,strandLocation.m_Ystart-HgStart);
+         end_point->Move(strandLocation.m_Xend,strandLocation.m_Yend-HgEnd);
       }
 
       start_pts->Add(start_point);
@@ -3396,16 +3403,16 @@ void GirderLibraryEntry::ConfigureHarpedStrandGrids(IStrandGrid* pEndGridAtStart
    pEndGridAtStart->AddGridPoints(start_pts);
 
    pHPGridAtStart->ClearGridPoints();
-   pHPGridAtStart->AddGridPoints(hp_pts);
+   pHPGridAtStart->AddGridPoints(hp1_pts);
 
    pHPGridAtEnd->ClearGridPoints();
-   pHPGridAtEnd->AddGridPoints(hp_pts);
+   pHPGridAtEnd->AddGridPoints(hp2_pts);
 
    pEndGridAtEnd->ClearGridPoints();
    pEndGridAtEnd->AddGridPoints(end_pts);
 }
 
-void GirderLibraryEntry::ConfigureTemporaryStrandGrid(IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const
+void GirderLibraryEntry::ConfigureTemporaryStrandGrid(Float64 HgStart,Float64 HgEnd,IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const
 {
    // need to break local data structures into IPoints
    CComPtr<IPoint2dCollection> startPoints, endPoints;
@@ -3422,10 +3429,11 @@ void GirderLibraryEntry::ConfigureTemporaryStrandGrid(IStrandGrid* pStartGrid,IS
       startPoint.CoCreateInstance(CLSID_Point2d);
       endPoint.CoCreateInstance(CLSID_Point2d);
 
-      startPoint->Move(strandLocation.m_Xstart,strandLocation.m_Ystart);
+      // Adjust Y elevation so that the strand point is in Girder Section Coordinates (0,0 at top center of girder)
+      startPoint->Move(strandLocation.m_Xstart,strandLocation.m_Ystart-HgStart);
       startPoints->Add(startPoint);
 
-      endPoint->Move(strandLocation.m_Xend,strandLocation.m_Yend);
+      endPoint->Move(strandLocation.m_Xend,strandLocation.m_Yend-HgEnd);
       endPoints->Add(endPoint);
    }
 

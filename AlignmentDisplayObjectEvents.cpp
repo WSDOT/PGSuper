@@ -50,6 +50,16 @@ CAlignmentDisplayObjectEvents::CAlignmentDisplayObjectEvents(IBroker* pBroker, C
    m_pFrame = pFrame;
 }
 
+CAlignmentDisplayObjectEvents::~CAlignmentDisplayObjectEvents()
+{
+}
+
+void CAlignmentDisplayObjectEvents::OnFinalRelease()
+{
+   m_DispObj.Detach();
+   CCmdTarget::OnFinalRelease();
+}
+
 BEGIN_INTERFACE_MAP(CAlignmentDisplayObjectEvents, CCmdTarget)
 	INTERFACE_PART(CAlignmentDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
    INTERFACE_PART(CAlignmentDisplayObjectEvents,IID_iDropSite,DropSite)
@@ -283,7 +293,8 @@ STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XDropSite::OnDropped(COleData
 STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XDropSite::SetDisplayObject(iDisplayObject* pDO)
 {
    METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,DropSite);
-   pThis->m_DispObj = pDO;
+   pThis->m_DispObj.Detach();
+   pThis->m_DispObj.Attach(pDO);
 }
 
 STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XDropSite::GetDisplayObject(iDisplayObject** dispObj)

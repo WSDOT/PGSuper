@@ -98,15 +98,23 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
 
 void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
    if ( m_pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
       (*this)(row,1) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
    else
-      (*this)(row,1) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + pDetails->RefinedLosses2005.GetDeltaFpp());
+      (*this)(row,1) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + ptl->GetDeltaFpp());
 
-   (*this)(row,2) << scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToDeck().GetKtd());
-   (*this)(row,3) << time.SetValue(pDetails->RefinedLosses2005.GetAdjustedInitialAge());
-   (*this)(row,4) << time.SetValue(pDetails->RefinedLosses2005.GetAgeAtDeckPlacement());
-   (*this)(row,5) << scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToDeck().GetCreepCoefficient());
-   (*this)(row,6) << scalar.SetValue(pDetails->RefinedLosses2005.GetKid());
-   (*this)(row,7) << stress.SetValue(pDetails->RefinedLosses2005.CreepLossBeforeDeckPlacement() );
+   (*this)(row,2) << scalar.SetValue(ptl->GetCreepInitialToDeck().GetKtd());
+   (*this)(row,3) << time.SetValue(ptl->GetAdjustedInitialAge());
+   (*this)(row,4) << time.SetValue(ptl->GetAgeAtDeckPlacement());
+   (*this)(row,5) << scalar.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient());
+   (*this)(row,6) << scalar.SetValue(ptl->GetKid());
+   (*this)(row,7) << stress.SetValue(ptl->CreepLossBeforeDeckPlacement() );
 }

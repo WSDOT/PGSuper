@@ -149,7 +149,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
 
    std::vector<pgsPointOfInterest> pois(pPoi->GetPointsOfInterest(segmentKey));
    pPoi->RemovePointsOfInterest(pois,POI_CLOSURE);
-   pPoi->RemovePointsOfInterest(pois,POI_PIER);
+   pPoi->RemovePointsOfInterest(pois,POI_BOUNDARY_PIER);
 
    pgsPointOfInterest prev_poi(segmentKey,0);
    bool bSkipToNextRow = false;
@@ -214,12 +214,15 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
          if ( 0 < Nh )
          {
             Float64 avg_slope = pStrandGeom->GetAvgStrandSlope( poi );
+            avg_slope = fabs(avg_slope);
+
             if ( IsZero( 1./avg_slope ) )
                (*p_table)(row,col++) << symbol(INFINITY);
             else
                (*p_table)(row,col++) << avg_slope;
 
             Float64 max_slope = pStrandGeom->GetMaxStrandSlope( poi );
+            max_slope = fabs(max_slope);
             if ( IsZero( 1./max_slope ) )
                (*p_table)(row,col++) << symbol(INFINITY);
             else

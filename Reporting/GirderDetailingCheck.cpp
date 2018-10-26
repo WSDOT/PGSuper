@@ -190,10 +190,14 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
       {
          (*pTable)(1,1) << dim.SetValue(pArtifact->GetMinTopFlangeThickness());
          (*pTable)(1,2) << dim.SetValue(pArtifact->GetProvidedTopFlangeThickness());
-         if ( pArtifact->GetMinTopFlangeThickness() > pArtifact->GetProvidedTopFlangeThickness())
+         if ( pArtifact->GetProvidedTopFlangeThickness() < pArtifact->GetMinTopFlangeThickness() )
+         {
             (*pTable)(1,3) << RPT_FAIL;
+         }
          else
+         {
             (*pTable)(1,3) << RPT_PASS;
+         }
       }
 
       if ( IsZero(pArtifact->GetProvidedWebThickness()) )
@@ -207,10 +211,14 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
       {
          (*pTable)(2,1) << dim.SetValue(pArtifact->GetMinWebThickness());
          (*pTable)(2,2) << dim.SetValue(pArtifact->GetProvidedWebThickness());
-         if ( pArtifact->GetMinWebThickness() > pArtifact->GetProvidedWebThickness())
+         if ( pArtifact->GetProvidedWebThickness() < pArtifact->GetMinWebThickness() )
+         {
             (*pTable)(2,3) << RPT_FAIL;
+         }
          else
+         {
             (*pTable)(2,3) << RPT_PASS;
+         }
       }
 
       if ( IsZero(pArtifact->GetProvidedBottomFlangeThickness()) )
@@ -224,10 +232,14 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
       {
          (*pTable)(3,1) << dim.SetValue(pArtifact->GetMinBottomFlangeThickness());
          (*pTable)(3,2) << dim.SetValue(pArtifact->GetProvidedBottomFlangeThickness());
-         if ( pArtifact->GetMinBottomFlangeThickness() > pArtifact->GetProvidedBottomFlangeThickness())
+         if ( pArtifact->GetProvidedBottomFlangeThickness() < pArtifact->GetMinBottomFlangeThickness() )
+         {
             (*pTable)(3,3) << RPT_FAIL;
+         }
          else
+         {
             (*pTable)(3,3) << RPT_PASS;
+         }
       }
    }
 }
@@ -239,7 +251,11 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
 
+#pragma Reminder("UPDATE: need to report stirrup layout check for closure joints")
 
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Stirrup Layout Geometry Check") << rptNewLine;
 
    INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,  IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, true );
    rptRcScalar scalar;
@@ -260,7 +276,7 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Stirrup Layout Geometry Check"));
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3);
       *pPara << p_table;
 
       (*p_table)(0,0) << _T("Zone");

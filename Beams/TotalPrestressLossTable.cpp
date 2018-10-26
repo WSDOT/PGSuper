@@ -53,15 +53,12 @@ rptRcTable(NumColumns,0)
    scalar.SetTolerance(1.0e-6);
 }
 
-CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
-
-   bool bIgnoreInitialRelaxation = ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::WSDOT_LUMPSUM ) ? false : true;
+   bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    bool bUseGrossProperties = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false;

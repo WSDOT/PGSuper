@@ -57,18 +57,18 @@ public:
    Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey);
    Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey);
 
-   pgsTypes::ConcreteType GetClosurePourConcreteType(const CSegmentKey& closureKey);
-   bool DoesClosurePourConcreteHaveAggSplittingStrength(const CSegmentKey& closureKey);
-   Float64 GetClosurePourConcreteAggSplittingStrength(const CSegmentKey& closureKey);
-   Float64 GetClosurePourMaxAggrSize(const CSegmentKey& closureKey);
-   Float64 GetClosurePourStrengthDensity(const CSegmentKey& closureKey);
-   Float64 GetClosurePourWeightDensity(const CSegmentKey& closureKey);
-   Float64 GetClosurePourEccK1(const CSegmentKey& closureKey);
-   Float64 GetClosurePourEccK2(const CSegmentKey& closureKey);
-   Float64 GetClosurePourCreepK1(const CSegmentKey& closureKey);
-   Float64 GetClosurePourCreepK2(const CSegmentKey& closureKey);
-   Float64 GetClosurePourShrinkageK1(const CSegmentKey& closureKey);
-   Float64 GetClosurePourShrinkageK2(const CSegmentKey& closureKey);
+   pgsTypes::ConcreteType GetClosureJointConcreteType(const CSegmentKey& closureKey);
+   bool DoesClosureJointConcreteHaveAggSplittingStrength(const CSegmentKey& closureKey);
+   Float64 GetClosureJointConcreteAggSplittingStrength(const CSegmentKey& closureKey);
+   Float64 GetClosureJointMaxAggrSize(const CSegmentKey& closureKey);
+   Float64 GetClosureJointStrengthDensity(const CSegmentKey& closureKey);
+   Float64 GetClosureJointWeightDensity(const CSegmentKey& closureKey);
+   Float64 GetClosureJointEccK1(const CSegmentKey& closureKey);
+   Float64 GetClosureJointEccK2(const CSegmentKey& closureKey);
+   Float64 GetClosureJointCreepK1(const CSegmentKey& closureKey);
+   Float64 GetClosureJointCreepK2(const CSegmentKey& closureKey);
+   Float64 GetClosureJointShrinkageK1(const CSegmentKey& closureKey);
+   Float64 GetClosureJointShrinkageK2(const CSegmentKey& closureKey);
 
    pgsTypes::ConcreteType GetDeckConcreteType();
    bool DoesDeckConcreteHaveAggSplittingStrength();
@@ -116,13 +116,13 @@ public:
    Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla);
 
-   Float64 GetClosurePourCastingTime(const CSegmentKey& closureKey);
-   Float64 GetClosurePourFc(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosurePourEc(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosurePourFlexureFr(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosurePourShearFr(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosurePourFreeShrinkageStrain(const CSegmentKey& closureKey,Float64 t);
-   Float64 GetClosurePourCreepCoefficient(const CSegmentKey& closureKey,Float64 t,Float64 tla);
+   Float64 GetClosureJointCastingTime(const CSegmentKey& closureKey);
+   Float64 GetClosureJointFc(const CSegmentKey& closureKey,Float64 t);
+   Float64 GetClosureJointEc(const CSegmentKey& closureKey,Float64 t);
+   Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,Float64 t);
+   Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,Float64 t);
+   Float64 GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,Float64 t);
+   Float64 GetClosureJointCreepCoefficient(const CSegmentKey& closureKey,Float64 t,Float64 tla);
 
    Float64 GetRailingSystemCastingTime(pgsTypes::TrafficBarrierOrientation orientation);
    Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
@@ -157,7 +157,7 @@ private:
    // Material model for precast girder segments
    std::map< CSegmentKey, boost::shared_ptr<matConcreteBase> > m_pSegmentConcrete;
 
-   // Material model for cast-in-place closure pours
+   // Material model for cast-in-place closure joint
    std::map< CSegmentKey, boost::shared_ptr<matConcreteBase> > m_pClosureConcrete;
 
    Float64 m_DeckEcK1;

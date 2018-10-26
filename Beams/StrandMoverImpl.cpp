@@ -211,20 +211,24 @@ STDMETHODIMP CStrandMoverImpl::SetHarpedStrandOffsetBounds(Float64 topElevation,
                                           Float64 topEndElevationBoundary,Float64 botEndElevationBoundary,
                                           Float64 endIncrement,Float64 hpIncrement)
 {
-   if (topElevation<topHpElevationBoundary || topHpElevationBoundary<0.0 || botHpElevationBoundary<0.0  ||
-       topElevation<topEndElevationBoundary || topEndElevationBoundary<0.0 || botEndElevationBoundary<0.0)
+   if (topElevation < topHpElevationBoundary  ||  // elevation boundaries must be below the top of girder elevation
+       topElevation < topEndElevationBoundary ||
+       0 < topHpElevationBoundary || // elevation boundaries must be < zero because top of girder is at elevation 0
+       0 < botHpElevationBoundary ||
+       0 < topEndElevationBoundary ||
+       0 < botEndElevationBoundary )
    {
       ATLASSERT(0);
       return E_INVALIDARG;
    }
 
-   m_TopElevation         = topElevation;
-   m_HpTopElevationBoundary = topHpElevationBoundary;
-   m_HpBotElevationBoundary = botHpElevationBoundary;
+   m_TopElevation            = topElevation;
+   m_HpTopElevationBoundary  = topHpElevationBoundary;
+   m_HpBotElevationBoundary  = botHpElevationBoundary;
    m_EndTopElevationBoundary = topEndElevationBoundary;
    m_EndBotElevationBoundary = botEndElevationBoundary;
-   m_EndIncrement = endIncrement;
-   m_HpIncrement = hpIncrement;
+   m_EndIncrement            = endIncrement;
+   m_HpIncrement             = hpIncrement;
 
    return S_OK;
 }

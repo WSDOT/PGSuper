@@ -148,7 +148,7 @@ void CShearSteelGrid::InsertRow(bool bAppend)
 	else
       nRow = bAppend ? GetRowCount()+1 : 0;
 
-	nRow = max(1, nRow);
+	nRow = Max((ROWCOL)1, nRow);
 
 	InsertRows(nRow, 1);
    SetRowStyle(nRow);

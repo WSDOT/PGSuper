@@ -113,19 +113,33 @@ DEFINE_GUID(IID_IAllowableConcreteStress,
 interface IAllowableConcreteStress : IUnknown
 {
    // Returns the allowable concrete stress at a point of interest or for a specified concrete strength. 
-   // if bWithBondedReinforcement is true, the allowable tensile stress for the "with bonded reinforcement" 
+   // If bWithBondedReinforcement is true, the allowable tensile stress for the "with bonded reinforcement" 
    // case is returned. bWithBondedReinforcement is ignored if the stress type is pgsTypes::Compression 
-   // and intervals that occur after shipping.
-   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement=false) = 0;
-   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement=false) = 0;
-   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement=false) = 0;
+   // and intervals that occur after shipping. If bInPrecompressedTensileZone is true and the stress type
+   // is pgsTypes::Tension, the allowable stress for the precompressed tensile zone is returned, otherwise
+   // the allowable for locations other than the precompressed tensile zone is returned.
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
+   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
 
    // Returns the coefficient for allowable compressive stress (x*fc)
    virtual Float64 GetAllowableCompressiveStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
 
    // Returns the coefficient for allowable tension stress (x*sqrt(fc)), a boolean value indicating if the allowable tension stress has a maximum value
    // and the maxiumum value
-   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
+   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
+
+   // Returns a vector of limit states that are to be spec-checked in for service stresses
+   virtual std::vector<pgsTypes::LimitState> GetStressCheckLimitStates() = 0;
+
+   // Returns true if the stress check is applicable to this interval, limit state, and stress type
+   virtual bool IsStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType) = 0;
+
+   // Returns true if the the allowable tension stress in the specified interval has a "with bonded reinforcement"
+   // option. If bInPTZ is true, the result is for the precompressed tensile zone, otherwise it is for areas other than the
+   // precompressed tensile zone. If bSegment is true the result is for a precast segment and segmentKey is for that segment
+   // otherwise it is for a closure joint and segmentKey is the closure key
+   virtual bool HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) = 0;
 };
 
 

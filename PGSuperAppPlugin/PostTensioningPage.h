@@ -37,7 +37,8 @@ public:
 // Dialog Data
 	enum { IDD = IDD_POSTTENSION_PARAMETERS };
 
-   Float64 Dset,WobbleFriction,FrictionCoefficient;
+   Float64 Dset_PT,WobbleFriction_PT,FrictionCoefficient_PT;
+   Float64 Dset_TTS,WobbleFriction_TTS,FrictionCoefficient_TTS;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

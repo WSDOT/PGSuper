@@ -191,7 +191,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    // assume that last contiguous string is type
    size_t start = str.rfind(_T(" "));
    str.erase(0,start+1);
-   size_t cnt = min(5, str.length());
+   size_t cnt = Min((size_t)5, str.length());
 
    // if string doesn't fill, leave first char blank
    TCHAR* cnxt = beamType;
@@ -262,14 +262,16 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
    pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetID() );
-   pArtifact->GetExternalEffects( &fcTop, &fcBot );
+   fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
+   fcBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 	value = -fcTop;
 
 	Float64 designLoadCompStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
 
 	/* 15. DESIGN LOAD TENSILE STRESS (BOT CL) */
    pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid[0].GetID() );
-   pArtifact->GetExternalEffects( &ftTop, &ftBot );
+   ftTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
+   ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 	value = -ftBot;
 
 	Float64 designLoadTensileStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
@@ -277,7 +279,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    /* 16. REQUIRED MINIMUM ULTIMATE MOMENT CAPACITY */
    MINMOMENTCAPDETAILS mmcd;
    pMomentCapacity->GetMinMomentCapacityDetails(liveLoadIntervalIdx,pmid[0],true,&mmcd);
-   value = max(mmcd.Mu,mmcd.MrMin);
+   value = Max(mmcd.Mu,mmcd.MrMin);
 
 	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
 
@@ -363,7 +365,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    if (do_write_ns_data)
    {
-      StrandIndexType cnt = max(ns_strand_str.size(), 7);
+      StrandIndexType cnt = Max(ns_strand_str.size(), (size_t)7);
       workerB.WriteString(ns_strand_str.c_str(),_T("NS Data"),(Int16)cnt,_T("%s"),true);
    }
 
@@ -517,7 +519,7 @@ void CadWriterWorkerBee::WriteInt16(Int16 val, LPCTSTR title, Int16 nchars, LPCT
 void CadWriterWorkerBee::WriteString(LPCTSTR val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim)
 {
    int nr = _stprintf_s(m_DataLineCursor, DataBufferRemaining(), format, val);
-   m_DataLineCursor += max(nchars,nr);
+   m_DataLineCursor += Max((int)nchars,nr);
 
 //   ATLASSERT(nr==nchars);
 

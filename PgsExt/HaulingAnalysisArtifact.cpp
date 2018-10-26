@@ -125,7 +125,7 @@ bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
    // Inclined girder
    Float64 ftu,ftd,fbu,fbd;
    GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
-   Float64 fmax = Max4(ftu,ftd,fbu,fbd);
+   Float64 fmax = Max(ftu,ftd,fbu,fbd);
    Float64 fcap = GetInclinedTensileCapacity();
    if (  IsGT(fcap,fmax) )
    {
@@ -137,7 +137,7 @@ bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
 
 bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassed() const
 {
-   Float64 comp_stress = _cpp_min( GetMaximumConcreteCompressiveStress(),
+   Float64 comp_stress = Min( GetMaximumConcreteCompressiveStress(),
                                         GetMaximumInclinedConcreteCompressiveStress() );
 
    Float64 max_comp_stress = GetCompressiveCapacity();
@@ -256,11 +256,11 @@ void pgsWsdotHaulingStressAnalysisArtifact::GetMaxPlumbCompressiveStress(Float64
    Float64 fps, fNone;
    Float64 fTopUp, fTopDown;
    this->GetTopFiberStress(&fps, &fTopUp, &fNone, &fTopDown);
-   *fTop    = max(fTopUp, fTopDown);
+   *fTop    = Max(fTopUp, fTopDown);
 
    Float64 fBotUp, fBotDown;
    this->GetBottomFiberStress(&fps, &fBotUp, &fNone, &fBotDown);
-   *fBottom = max(fBotUp, fBotDown);
+   *fBottom = Max(fBotUp, fBotDown);
    *Capacity = m_AllowableCompression;
 }
 
@@ -306,22 +306,22 @@ void pgsWsdotHaulingStressAnalysisArtifact::SetInclinedGirderStresses(Float64 ft
 
 Float64 pgsWsdotHaulingStressAnalysisArtifact::GetMaximumInclinedConcreteCompressiveStress() const
 {
-   return Min4(m_ftu,m_ftd,m_fbu,m_fbd);
+   return Min(m_ftu,m_ftd,m_fbu,m_fbd);
 }
 
 Float64 pgsWsdotHaulingStressAnalysisArtifact::GetMaximumInclinedConcreteTensileStress() const
 {
-   return Max4(m_ftu,m_ftd,m_fbu,m_fbd);
+   return Max(m_ftu,m_ftd,m_fbu,m_fbd);
 }
 
 Float64 pgsWsdotHaulingStressAnalysisArtifact::GetMaximumConcreteCompressiveStress() const
 {
-   return Min4(m_TopFiberStressUpward, m_TopFiberStressDownward, m_BottomFiberStressUpward, m_BottomFiberStressDownward);
+   return Min(m_TopFiberStressUpward, m_TopFiberStressDownward, m_BottomFiberStressUpward, m_BottomFiberStressDownward);
 }
 
 Float64 pgsWsdotHaulingStressAnalysisArtifact::GetMaximumConcreteTensileStress() const
 {
-   return Max4(m_TopFiberStressUpward, m_TopFiberStressDownward, m_BottomFiberStressUpward, m_BottomFiberStressDownward);
+   return Max(m_TopFiberStressUpward, m_TopFiberStressDownward, m_BottomFiberStressUpward, m_BottomFiberStressDownward);
 }
 
 void pgsWsdotHaulingStressAnalysisArtifact::SetAlternativeTensileStressParameters(ImpactDir impactdir, Float64 Yna,   Float64 At,   Float64 T,
@@ -1385,7 +1385,7 @@ Float64 pgsWsdotHaulingAnalysisArtifact::GetMinFsForCracking() const
         i!=m_HaulingCrackingAnalysisArtifacts.end(); i++)
    {
       Float64 fs = i->second.GetFsCracking();
-      min_fs = min(min_fs,fs);
+      min_fs = Min(min_fs,fs);
    }
    return min_fs;
 }
@@ -1463,8 +1463,8 @@ void pgsWsdotHaulingAnalysisArtifact::GetMinMaxStresses(Float64* minStress, Floa
    for (std::map<Float64,pgsWsdotHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin(); 
         is!=m_HaulingStressAnalysisArtifacts.end(); is++)
    {
-      min_stress = min(min_stress, is->second.GetMaximumConcreteCompressiveStress());
-      max_stress = max(max_stress, is->second.GetMaximumConcreteTensileStress());
+      min_stress = Min(min_stress, is->second.GetMaximumConcreteCompressiveStress());
+      max_stress = Max(max_stress, is->second.GetMaximumConcreteTensileStress());
    }
 
    *minStress = min_stress;
@@ -1505,14 +1505,14 @@ void pgsWsdotHaulingAnalysisArtifact::GetMinMaxHaulingStresses(MaxHaulingStressC
       Float64 top_stress, up, no, dn;
       rart.GetTopFiberStress(&stps, &up, &no, &dn);
 
-      top_stress = Max3(up, no, dn);
+      top_stress = Max(up, no, dn);
 
       // bottom fiber
       // subtract out stress due to prestressing
       Float64 sbps;
       rart.GetBottomFiberStress(&sbps, &up, &no, &dn);
 
-      Float64 bot_stress = Min3(up, no, dn);
+      Float64 bot_stress = Min(up, no, dn);
 
       // prestress force
       Float64 ps_force = rart.GetEffectiveHorizPsForce();
@@ -1544,15 +1544,15 @@ void pgsWsdotHaulingAnalysisArtifact::GetMinMaxInclinedStresses(Float64* pftuMin
            Float64 ftu,ftd,fbu,fbd;
            is->second.GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
 
-           *pftuMin = min(*pftuMin,ftu);
-           *pftdMin = min(*pftdMin,ftd);
-           *pfbuMin = min(*pfbuMin,fbu);
-           *pfbdMin = min(*pfbdMin,fbd);
+           *pftuMin = Min(*pftuMin,ftu);
+           *pftdMin = Min(*pftdMin,ftd);
+           *pfbuMin = Min(*pfbuMin,fbu);
+           *pfbdMin = Min(*pfbdMin,fbd);
 
-           *pftuMax = max(*pftuMax,ftu);
-           *pftdMax = max(*pftdMax,ftd);
-           *pfbuMax = max(*pfbuMax,fbu);
-           *pfbdMax = max(*pfbdMax,fbd);
+           *pftuMax = Max(*pftuMax,ftu);
+           *pftdMax = Max(*pftdMax,ftd);
+           *pfbuMax = Max(*pfbuMax,fbu);
+           *pfbdMax = Max(*pfbdMax,fbd);
    }
 }
 
@@ -1661,11 +1661,11 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
    Float64 t_max; // maximum allowable tension
    bool b_t_max; // true if max allowable tension is applicable
 
-   c = pSpecEntry->GetHaulingCompStress();
-   t = pSpecEntry->GetMaxConcreteTensHauling();
-   pSpecEntry->GetAbsMaxConcreteTensHauling(&b_t_max,&t_max);
+   c = pSpecEntry->GetHaulingCompressionStressFactor();
+   t = pSpecEntry->GetHaulingTensionStressFactor();
+   pSpecEntry->GetHaulingMaximumTensionStress(&b_t_max,&t_max);
 
-   Float64 t2 = pSpecEntry->GetMaxConcreteTensWithRebarHauling();
+   Float64 t2 = pSpecEntry->GetHaulingTensionStressFactorWithRebar();
 
    Float64 capCompression = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
 
@@ -1782,8 +1782,8 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
       Float64 fBotUpward, fBotNoImpact, fBotDownward;
       stressArtifact->GetBottomFiberStress(&fPs, &fBotUpward, &fBotNoImpact, &fBotDownward);
 
-      Float64 fTopMin = Min3(fTopUpward, fTopNoImpact, fTopDownward);
-      Float64 fBotMin = Min3(fBotUpward, fBotNoImpact, fBotDownward);
+      Float64 fTopMin = Min(fTopUpward, fTopNoImpact, fTopDownward);
+      Float64 fBotMin = Min(fBotUpward, fBotNoImpact, fBotDownward);
 
       ColumnIndexType col = 1;
       (*p_table)(row,col++) << stress.SetValue(fTensTop);
@@ -1827,7 +1827,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
       else
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,false)<<_T(")");
 
-      Float64 fComp = min(fTopMin, fBotMin);
+      Float64 fComp = Min(fTopMin, fBotMin);
       
       if ( stressArtifact->CompressionPassed() )
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");
@@ -1869,7 +1869,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
    std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
 
-   Float64 c = pSpecEntry->GetHaulingCompStress(); // compression coefficient
+   Float64 c = pSpecEntry->GetHaulingCompressionStressFactor(); // compression coefficient
 
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
    Float64 all_comp = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
@@ -1919,8 +1919,8 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
       (*p_table)(row,3) << stress.SetValue(fbu);
       (*p_table)(row,4) << stress.SetValue(fbd);
 
-      Float64 fTens = Max4(ftu, ftd, fbu, fbd);
-      Float64 fComp = Min4(ftu, ftd, fbu, fbd);
+      Float64 fTens = Max(ftu, ftd, fbu, fbd);
+      Float64 fComp = Min(ftu, ftd, fbu, fbd);
       
       if ( fTens <= mod_rupture )
           (*p_table)(row,5) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(mod_rupture,fTens,true)<<_T(")");

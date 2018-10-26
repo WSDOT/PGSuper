@@ -52,7 +52,7 @@ public:
 
    // properties
    IDType                         m_ID;
-   EventIndexType                 m_EventIdx;
+   EventIndexType                 m_EventIndex;
    UserLoads::LoadCase            m_LoadCase;
    UserLoads::DistributedLoadType m_Type;
 

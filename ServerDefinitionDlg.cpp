@@ -220,11 +220,10 @@ void CServerDefinitionDlg::ConfigureControls(SharedResourceType type)
 
 void CServerDefinitionDlg::OnBnClickedTestServer()
 {
-   BOOL st = UpdateData(true);
-   if (st!=0)
+   if (UpdateData(true))
    {
-      CPGSuperCatalogServer* psvr = CreateServer();
-      if (psvr==NULL)
+      CPGSuperCatalogServer* pServer = CreateServer();
+      if (pServer == NULL)
       {
          AfxMessageBox(_T("Failed to create server. Check your input data"));
       }
@@ -238,17 +237,17 @@ void CServerDefinitionDlg::OnBnClickedTestServer()
          wndProgress->Show(CComBSTR("Attempting to connect to and test server...."),GetSafeHwnd());
 
          CString msg;
-         bool st = psvr->TestServer(msg);
-
-         if (!st)
-         {
-            ::AfxMessageBox(msg,MB_OK|MB_ICONEXCLAMATION);
-         }
-         else
+         if ( pServer->TestServer(msg) )
          {
             AfxMessageBox(_T("Connected to server successfully"));
          }
+         else
+         {
+            ::AfxMessageBox(msg,MB_OK|MB_ICONEXCLAMATION);
+         }
       }
+
+      delete pServer;
    }
 }
 

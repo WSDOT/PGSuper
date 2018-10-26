@@ -109,7 +109,7 @@ Float64 GetVertPsComponent(IBroker* pBroker,
    Float64 vz = 0.00;
    
    if (ss < Float64_Max)
-      vz = 1.0/sqrt(1*1 + ss*ss);
+      vz = ::BinarySign(ss)*1.0/sqrt(1*1 + ss*ss);
 
    return vz;
 }
@@ -1377,6 +1377,11 @@ Float64 CEngAgentImp::GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexTy
    return pLossDetails->FrictionLossDetails[ductIdx].dfpA;
 }
 
+Float64 CEngAgentImp::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
+{
+   return m_PsForceEngineer.GetElongation(girderKey,ductIdx,endType);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // IPretensionForce
 
@@ -1466,25 +1471,96 @@ Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCO
 Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
    Float64 cos = GetHorizPsComponent(m_pBroker,poi);
-   return cos * GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 Hp = fabs(cos*P); // this should always be positive
+   return Hp;
 }
 
 Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
    Float64 cos = GetHorizPsComponent(m_pBroker,poi,config);
-   return cos * GetPrestressForce(poi,config,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 P = GetPrestressForce(poi,config,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 Hp = fabs(cos*P); // this should always be positive
+   return Hp;
 }
 
 Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
    Float64 sin = GetVertPsComponent(m_pBroker,poi);
-   return sin * GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime);
+   if ( IsZero(P) )
+      return 0;
+
+   Float64 Vp = sin*P;
+
+   // determine sign of Vp. If Vp has the opposite sign as the shear due to the externally applied
+   // loads, it resists shear and it is taken as a positive value (See LRFD 5.2 and 5.8.3.3)
+   GET_IFACE(IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType batMax = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   GET_IFACE(ILimitStateForces,pLsForces);
+   sysSectionValue Vmin, Vmax, dummy;
+   pLsForces->GetShear(pgsTypes::StrengthI,intervalIdx,poi,batMax,&dummy,&Vmax);
+   pLsForces->GetShear(pgsTypes::StrengthI,intervalIdx,poi,batMin,&Vmin,&dummy);
+
+   Float64 max = Max(Vmax.Left(),Vmax.Right());
+   Float64 min = Min(Vmin.Left(),Vmin.Right());
+   max = IsZero(max) ? 0 : max;
+   min = IsZero(min) ? 0 : min;
+
+   Float64 sign;
+   if ( fabs(min) < fabs(max) )
+      sign = ::Sign(max); // returns -1,0,1
+   else
+      sign = ::Sign(min);
+
+   sign *= -1; // sign of Vp is opposite sign of Vu
+
+   if ( IsZero(sign) ) // if Vu is zero, sign is zero... Vp is just Vp and it should be a positive value
+      Vp = fabs(Vp);
+   else
+      Vp *= sign;
+
+   return Vp;
 }
 
 Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
    Float64 sin = GetVertPsComponent(m_pBroker,poi);
-   return sin * GetPrestressForce(poi,config,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 P = GetPrestressForce(poi,config,pgsTypes::Harped,intervalIdx,intervalTime);
+   Float64 Vp = sin*P;
+
+   // determine sign of Vp. If Vp has the opposite sign as the shear due to the externally applied
+   // loads, it resists shear and it is taken as a positive value (See LRFD 5.2 and 5.8.3.3)
+   GET_IFACE(IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType batMax = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   GET_IFACE(ILimitStateForces,pLsForces);
+   sysSectionValue Vmin, Vmax, dummy;
+   pLsForces->GetShear(pgsTypes::StrengthI,intervalIdx,poi,batMax,&dummy,&Vmax);
+   pLsForces->GetShear(pgsTypes::StrengthI,intervalIdx,poi,batMin,&Vmin,&dummy);
+
+   Float64 max = Max(Vmax.Left(),Vmax.Right());
+   Float64 min = Min(Vmin.Left(),Vmin.Right());
+   max = IsZero(max) ? 0 : max;
+   min = IsZero(min) ? 0 : min;
+
+   Float64 sign;
+   if ( fabs(min) < fabs(max) )
+      sign = ::Sign(max); // returns -1,0,1
+   else
+      sign = ::Sign(min);
+
+   sign *= -1; // sign of Vp is opposite sign of Vu
+
+   if ( IsZero(sign) ) // if Vu is zero, sign is zero... Vp is just Vp and it should be a positive value
+      Vp = fabs(Vp);
+   else
+      Vp *= sign;
+
+   return Vp;
 }
 
 Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
@@ -1598,28 +1674,20 @@ Float64 CEngAgentImp::GetPjackMax(const CGirderKey& girderKey,const matPsStrand&
 Float64 CEngAgentImp::GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CSplicedGirderData*  pGirder = pIBridgeDesc->GetGirder(segmentKey);
-   const CPTData*             pPTData = pGirder->GetPostTensioning();
+   CGirderKey girderKey(segmentKey);
 
-   GET_IFACE(IGirder,pIGirder);
-   WebIndexType nWebs = pIGirder->GetWebCount(poi.GetSegmentKey());
-
-   Float64 aps = pPTData->pStrand->GetNominalArea();
+   GET_IFACE(ITendonGeometry,pTendonGeom);
 
    Float64 Fpe = 0;
-   DuctIndexType nDucts = pPTData->GetDuctCount();
-   DuctIndexType firstDuctIdx = (ductIdx == ALL_DUCTS ? 0 : ductIdx);
-   DuctIndexType lastDuctIdx  = (ductIdx == ALL_DUCTS ? nDucts-1 : firstDuctIdx);
-   for ( DuctIndexType idx = firstDuctIdx; idx <= lastDuctIdx; idx++ )
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   DuctIndexType firstTendonIdx = (ductIdx == ALL_DUCTS ? 0 : ductIdx);
+   DuctIndexType lastTendonIdx  = (ductIdx == ALL_DUCTS ? nDucts-1 : firstTendonIdx);
+   for ( DuctIndexType tendonIdx = firstTendonIdx; tendonIdx <= lastTendonIdx; tendonIdx++ )
    {
-      Float64 fpe = GetTendonStress(poi,intervalIdx,time,idx,bIncludeMinLiveLoad,bIncludeMaxLiveLoad); // get the tendon stress
+      Float64 fpe = GetTendonStress(poi,intervalIdx,time,tendonIdx,bIncludeMinLiveLoad,bIncludeMaxLiveLoad);
+      Float64 Apt = pTendonGeom->GetTendonArea(girderKey,intervalIdx,tendonIdx);
 
-      // get number of strands in the tendon
-      const CDuctData* pDuct = pPTData->GetDuct(idx/nWebs);
-      StrandIndexType nStrands = pDuct->nStrands;
-
-      Fpe += fpe*aps*nStrands;
+      Fpe += fpe*Apt;
    }
 
    return Fpe;
@@ -1630,11 +1698,20 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
    ATLASSERT(ductIdx != ALL_DUCTS);
    ATLASSERT(time != pgsTypes::Middle); // can only get tendon stress at start or end of interval
 
+   const CGirderKey& girderKey(poi.GetSegmentKey());
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   if ( nDucts == 0 )
+   {
+      // no ducts... get the heck outta here
+      return 0;
+   }
+
+
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
 
    GET_IFACE(IIntervals,pIntervals);
-   const CGirderKey& girderKey(poi.GetSegmentKey());
    IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
 
    // the Time Step Loss details has the tendon stress at the end of an interval
@@ -1667,8 +1744,8 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
    else
    {
       if ( bIncludeMinLiveLoad && bIncludeMaxLiveLoad )
-         fpe = max(pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMin,pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMax);
-      if ( bIncludeMinLiveLoad )
+         fpe = Max(pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMin,pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMax);
+      else if ( bIncludeMinLiveLoad )
          fpe = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMin;
       else if ( bIncludeMaxLiveLoad )
          fpe = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMax;
@@ -1677,6 +1754,67 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
    }
 
    return fpe;
+}
+
+Float64 CEngAgentImp::GetVerticalTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,DuctIndexType ductIdx)
+{
+   CGirderKey girderKey(poi.GetSegmentKey());
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nTendons = pTendonGeom->GetDuctCount(girderKey);
+   if ( nTendons == 0 )
+   {
+      return 0.0;
+   }
+
+   DuctIndexType firstTendonIdx = (ductIdx == ALL_DUCTS ? 0 : ductIdx);
+   DuctIndexType lastTendonIdx  = (ductIdx == ALL_DUCTS ? nTendons-1 : firstTendonIdx);
+
+   GET_IFACE(IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType batMax = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   GET_IFACE(ILimitStateForces,pLsForces);
+   sysSectionValue Vmin, Vmax, dummy;
+   pLsForces->GetShear(pgsTypes::StrengthI,intervalIdx,poi,batMax,&dummy,&Vmax);
+   pLsForces->GetShear(pgsTypes::StrengthI,intervalIdx,poi,batMin,&Vmin,&dummy);
+
+   Float64 max = Max(Vmax.Left(),Vmax.Right());
+   Float64 min = Min(Vmin.Left(),Vmin.Right());
+   max = IsZero(max) ? 0 : max;
+   min = IsZero(min) ? 0 : min;
+
+   Float64 sign;
+   if ( fabs(min) < fabs(max) )
+      sign = ::Sign(max);
+   else
+      sign = ::Sign(min);
+
+   sign *= -1;
+
+   Float64 Vp = 0;
+   for ( DuctIndexType tendonIdx = firstTendonIdx; tendonIdx <= lastTendonIdx; tendonIdx++ )
+   {
+      Float64 Fpt = GetTendonForce(poi,intervalIdx,intervalTime,tendonIdx,true,true);
+
+      CComPtr<IVector3d> slope;
+      pTendonGeom->GetTendonSlope(poi,tendonIdx,&slope);
+
+      Float64 Y, Z;
+      slope->get_Y(&Y);
+      slope->get_Z(&Z);
+
+      // for the case of zero shear due to external loads,
+      // we want Vp to always be positive. 
+      if ( IsZero(sign) )
+      {
+         Y = fabs(Y);
+         sign = 1;
+      }
+
+      Vp += sign*Fpt*Y/sqrt(Y*Y + Z*Z);
+   }
+
+   return Vp;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1827,8 +1965,8 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
       pgsPointOfInterest current_poi(current_segment_key,poi.GetDistFromStart());
       
       Float64 I = pSectProp->GetIx(intervalIdx,current_poi);
-      Imin = _cpp_min(Imin,I);
-      Imax = _cpp_max(Imax,I);
+      Imin = Min(Imin,I);
+      Imax = Max(Imax,I);
    }
 
    Float64 ratio = Imin/Imax;
@@ -1897,7 +2035,7 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
             dir_of_this_girder = TWO_PI - dir_of_this_girder;
 
          Float64 angular_diff = fabs(dir_of_this_girder - dir_of_prev_girder);
-         maxAngularDifference = _cpp_max(angular_diff,maxAngularDifference);
+         maxAngularDifference = Max(angular_diff,maxAngularDifference);
       } // next girder
 
       if ( maxAllowableAngle < maxAngularDifference )
@@ -2668,7 +2806,7 @@ Float64 CEngAgentImp::GetCrackingMoment(IntervalIndexType intervalIdx,const pgsP
    bool bAfter2002 = ( lrfdVersionMgr::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationType() ? true : false );
    if ( bAfter2002 )
    {
-      Mcr = _cpp_min(cmd.Mcr,cmd.McrLimit);
+      Mcr = Min(cmd.Mcr,cmd.McrLimit);
    }
 
    return Mcr;
@@ -2805,6 +2943,44 @@ std::vector<CRACKINGMOMENTDETAILS> CEngAgentImp::GetCrackingMomentDetails(Interv
 
 /////////////////////////////////////////////////////////////////////////////
 // IShearCapacity
+pgsTypes::GirderFace CEngAgentImp::GetFlexuralTensionSide(pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
+{
+   // determine the "flexural tension side". See LRFD Figure C5.8.3.4.2-2
+
+   GET_IFACE(ISpecification,pSpec);
+
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+   GET_IFACE(ILimitStateForces,pLsForces);
+
+   Float64 Mu_max, Mu_min;
+
+   if ( analysisType == pgsTypes::Envelope )
+   {
+      Float64 Mmin,Mmax;
+
+      pLsForces->GetMoment( limitState, intervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, &Mmin, &Mmax );
+      Mu_max = Mmax;
+
+      pLsForces->GetMoment( limitState, intervalIdx, poi, pgsTypes::MinSimpleContinuousEnvelope, &Mmin, &Mmax );
+      Mu_min = Mmin;
+   }
+   else
+   {
+      pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+      pLsForces->GetMoment( limitState, intervalIdx, poi, bat, &Mu_min, &Mu_max );
+   }
+
+   Mu_max = IsZero(Mu_max) ? 0 : Mu_max;
+   Mu_min = IsZero(Mu_min) ? 0 : Mu_min;
+
+   // Determine if the tension side is on the top half or bottom half of the girder
+   // The flexural tension side is on the bottom when the maximum (positive) bending moment
+   // exceeds the minimum (negative) bending moment
+   pgsTypes::GirderFace tensionSide = (fabs(Mu_min) <= fabs(Mu_max) ? pgsTypes::GirderBottom : pgsTypes::GirderTop);
+   return tensionSide;
+}
+
 Float64 CEngAgentImp::GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
 {
    SHEARCAPACITYDETAILS scd;
@@ -2961,7 +3137,11 @@ void CEngAgentImp::GetCriticalSectionZoneBoundary(pgsTypes::LimitState ls,const 
    // this method is supposed to return them in girder coordinates.
    // do the coordinate coversion.
    GET_IFACE(IPointOfInterest,pPoi);
-   const pgsPointOfInterest& csPoi(csDetails.pCriticalSection->Poi);
+   pgsPointOfInterest csPoi;
+   if ( csDetails.bAtFaceOfSupport )
+      csPoi = csDetails.poiFaceOfSupport;
+   else 
+      csPoi = csDetails.pCriticalSection->Poi;
 
    *pStart = pPoi->ConvertPoiToGirderCoordinate(pgsPointOfInterest(csPoi.GetSegmentKey(),csDetails.Start));
    *pEnd   = pPoi->ConvertPoiToGirderCoordinate(pgsPointOfInterest(csPoi.GetSegmentKey(),csDetails.End));
@@ -3111,7 +3291,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       Float64 fci_tens, fci_comp, fci_tens_wrebar;
       artifact1.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
       bool minRebarRequired = fci_tens<0;
-      fci = Max3(fci_tens, fci_comp, fci_tens_wrebar);
+      fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
       pDetails->Fci[PS_TTS] = fci;
 
       // without TTS
@@ -3128,7 +3308,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    
       artifact2.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
       minRebarRequired = fci_tens<0;
-      fci = Max3(fci_tens, fci_comp, fci_tens_wrebar);
+      fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
       pDetails->Fci[NO_TTS] = fci;
 
 
@@ -3151,7 +3331,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
 
       artifact3.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
       minRebarRequired = fci_tens<0;
-      fci = Max3(fci_tens, fci_comp, fci_tens_wrebar);
+      fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
       pDetails->Fci[PT_TTS_OPTIONAL] = fci;
 
       // lifting at location for PS_TTS (required TTS)
@@ -3169,7 +3349,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    
       artifact4.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
       minRebarRequired = fci_tens<0;
-      fci = Max3(fci_tens, fci_comp, fci_tens_wrebar);
+      fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
       pDetails->Fci[PT_TTS_REQUIRED] = fci;
    }
 
@@ -3218,8 +3398,8 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       Float64 fBotMin_WithoutTTS = fBotLimitStateMin + fBotPre_WithoutTTS;
       Float64 fBotMax_WithoutTTS = fBotLimitStateMax + fBotPre_WithoutTTS;
 
-      min_stress_WithoutTTS = Min3(fBotMin_WithoutTTS,fTopMin_WithoutTTS,min_stress_WithoutTTS);
-      max_stress_WithoutTTS = Max3(fBotMax_WithoutTTS,fTopMax_WithoutTTS,max_stress_WithoutTTS);
+      min_stress_WithoutTTS = Min(fBotMin_WithoutTTS,fTopMin_WithoutTTS,min_stress_WithoutTTS);
+      max_stress_WithoutTTS = Max(fBotMax_WithoutTTS,fTopMax_WithoutTTS,max_stress_WithoutTTS);
    }
 
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
@@ -3227,7 +3407,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    Float64 c = -pAllowStress->GetAllowableCompressiveStressCoefficient(dummyPOI,releaseIntervalIdx,pgsTypes::ServiceI);
    Float64 t, fmax;
    bool bfMax;
-   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,releaseIntervalIdx,pgsTypes::ServiceI,false/*without rebar*/,&t,&bfMax,&fmax);
+   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,releaseIntervalIdx,pgsTypes::ServiceI,false/*without rebar*/,false,&t,&bfMax,&fmax);
 
    Float64 fc_reqd_compression = min_stress_WithoutTTS/c;
    Float64 fc_reqd_tension = 0;
@@ -3244,7 +3424,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
             bool bCheckMaxAlt;
             Float64 fMaxAlt;
             Float64 talt;
-            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,releaseIntervalIdx,pgsTypes::ServiceI,true/*with rebar*/,&talt,&bCheckMaxAlt,&fMaxAlt);
+            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,releaseIntervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
             fc_reqd_tension = pow(max_stress_WithoutTTS/talt,2);
          }
       }
@@ -3253,7 +3433,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    if ( fc_reqd_tension < 0 )
       pDetails->Fci_FormStripping_WithoutTTS = -1;
    else
-      pDetails->Fci_FormStripping_WithoutTTS = max(fc_reqd_tension,fc_reqd_compression);
+      pDetails->Fci_FormStripping_WithoutTTS = Max(fc_reqd_tension,fc_reqd_compression);
 
    /////////////////////////////////////////////////////////////
    // Shipping with equal cantilevers
@@ -3292,7 +3472,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    ATLASSERT( IsEqual(hauling_artifact->GetLeadingOverhang(),hauling_artifact->GetTrailingOverhang()) );
 
    GET_IFACE(IGirderHaulingSpecCriteria,pCriteria);
-   Float64 min_location = max(pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart),
+   Float64 min_location = Max(pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart),
                               pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metEnd));
 
    Float64 location_accuracy = pCriteria->GetHaulingSupportLocationAccuracy();
@@ -3318,7 +3498,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       Float64 fc_tens, fc_comp, fc_tens_wrebar;
       hauling_artifact2->GetRequiredConcreteStrength(&fc_comp,&fc_tens,&fc_tens_wrebar);
       bool minRebarRequired = fc_tens<0;
-      fc = Max3(fc_tens, fc_comp, fc_tens_wrebar);
+      fc = Max(fc_tens, fc_comp, fc_tens_wrebar);
 
       if ( fcMax < fc )
       {
@@ -3338,7 +3518,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
          }
       }
 
-      fcReqd = max(fc,fcReqd);
+      fcReqd = Max(fc,fcReqd);
    }
 
    pDetails->Lmin = hauling_artifact->GetLeadingOverhang();
@@ -3378,7 +3558,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       Float64 fc_tens, fc_comp, fc_tens_wrebar;
       hauling_artifact2->GetRequiredConcreteStrength(&fc_comp,&fc_tens,&fc_tens_wrebar);
       bool minRebarRequired = fc_tens<0;
-      fc = Max3(fc_tens, fc_comp, fc_tens_wrebar);
+      fc = Max(fc_tens, fc_comp, fc_tens_wrebar);
 
       // check factors of safety
       Float64 FSr  = hauling_artifact2->GetFsRollover();
@@ -3422,7 +3602,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
          bDone = true;
       }
 
-      fcReqd = max(fc,fcReqd);
+      fcReqd = Max(fc,fcReqd);
    }
 
    pDetails->LUmin = leading_overhang;
@@ -3454,12 +3634,6 @@ const pgsLiftingAnalysisArtifact* CEngAgentImp::GetLiftingAnalysisArtifact(const
 const pgsHaulingAnalysisArtifact* CEngAgentImp::GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey)
 {
    return m_Designer.CheckHauling(segmentKey);
-}
-
-const pgsClosurePourArtifact* CEngAgentImp::GetClosurePourArtifact(const CSegmentKey& closurePourKey)
-{
-   const pgsGirderArtifact* pArtifact = GetGirderArtifact(closurePourKey);
-   return pArtifact->GetClosurePourArtifact(closurePourKey.segmentIndex);
 }
 
 const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)

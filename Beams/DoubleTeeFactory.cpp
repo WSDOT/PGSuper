@@ -275,7 +275,7 @@ void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    WebIndexType nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
 
-   Float64 width = min(t1,t2);
+   Float64 width = Min(t1,t2);
    Float64 depth = d1 + d2;
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
@@ -312,10 +312,10 @@ void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -803,4 +803,9 @@ void CDoubleTeeFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensi
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
+}
+
+GirderIndexType CDoubleTeeFactory::GetMinimumBeamCount()
+{
+   return 1;
 }

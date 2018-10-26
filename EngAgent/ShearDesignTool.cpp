@@ -378,7 +378,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    Float64 S_over;
    pTransverseReinforcementSpec->GetMaxStirrupSpacing(&m_SMaxMax, &S_over); // includes user-input limit
-   m_SMaxMax = min( m_SMaxMax, m_AvailableBarSpacings.back() );
+   m_SMaxMax = Min( m_SMaxMax, m_AvailableBarSpacings.back() );
 
    // Compute splitting zone lengths if we need them
    if (m_bDoDesignForSplitting)
@@ -725,7 +725,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
             //        by just a smidge...
             fcreq *= 1.01;
 
-            FcRequiredForStrutTieStress = max(FcRequiredForStrutTieStress, fcreq);
+            FcRequiredForStrutTieStress = Max(FcRequiredForStrutTieStress, fcreq);
          }
          
          if (m_bIsPermit)
@@ -748,11 +748,11 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
 
             Float64 fcreq = fabs(scd.vfc * config.Fc / 0.18); // LRFD 5.8.3.2
 
-            FcRequiredForStrutTieStress = max(FcRequiredForStrutTieStress, fcreq);
+            FcRequiredForStrutTieStress = Max(FcRequiredForStrutTieStress, fcreq);
 
             LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
 
-            avs_val = max( avs_val, avs_II );
+            avs_val = Max( avs_val, avs_II );
          }
          else
          {
@@ -827,7 +827,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
          Float64& ry  = rDemandAtPois[idx]; // grab reference for reassignment below
          Float64 mry = mirror_avs.Evaluate(x);
 
-         Float64 maxy = max(ry, mry);
+         Float64 maxy = Max(ry, mry);
 
          ry = maxy;
 
@@ -1003,7 +1003,7 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand()
 
             LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
 
-            avs_val = max( avs_val, avs_II );
+            avs_val = Max( avs_val, avs_II );
          }
          else
          {
@@ -1261,7 +1261,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
             Uint32 num_spacings4zone;
             Float64 min_zone_len;
             this->GetMinZoneLength(&num_spacings4zone, &min_zone_len);
-            L_zone_min = max(S_reqd*num_spacings4zone, min_zone_len);
+            L_zone_min = Max(S_reqd*num_spacings4zone, min_zone_len);
 
             // Store zone data that doesn't change from first zone
             zone_data.VertBarSize = bar_size;
@@ -1285,7 +1285,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
                   }
 
                   // Create splitting zone
-                  L_zone_min = Max3(L_zone_min, m_StartSplittingZl, m_EndSplittingZl);
+                  L_zone_min = Max(L_zone_min, m_StartSplittingZl, m_EndSplittingZl);
                }
             }
 
@@ -1373,7 +1373,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
          Uint32 num_spacings4zone;
          Float64 min_zone_len;
          this->GetMinZoneLength(&num_spacings4zone, &min_zone_len);
-         L_zone_min = max(zone_data.BarSpacing*num_spacings4zone, min_zone_len);
+         L_zone_min = Max(zone_data.BarSpacing*num_spacings4zone, min_zone_len);
 
          // Max bar spacing for next zone after this
          S_max_next = ComputeMaxNextSpacing( zone_data.BarSpacing );
@@ -1515,7 +1515,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
          if ( rzdata.VertBarSize!=matRebar::bsNone && 
               GetBarSpacingForAvs(avs_demand, S_max_next, rzdata.VertBarSize, av, &new_spacing) )
          {
-            rzdata.BarSpacing = min(new_spacing, max_spacing); // kept bar size, changed spacing
+            rzdata.BarSpacing = Min(new_spacing, max_spacing); // kept bar size, changed spacing
          }
          else
          {
@@ -1527,7 +1527,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
             {
                rzdata.VertBarSize = new_size;
                rzdata.nVertBars   = new_nlegs;
-               rzdata.BarSpacing  = min(new_spacing, max_spacing);
+               rzdata.BarSpacing  = Min(new_spacing, max_spacing);
 
                rzdata.nHorzInterfaceBars = GetExtendBarsIntoDeck() ? rzdata.nVertBars : 0.0;
             }
@@ -1867,7 +1867,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
                   const matRebar* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
                   Float64 avs = pRebar->GetNominalArea() * sz_item.pShearZoneData->nVertBars / sz_item.pShearZoneData->BarSpacing;
 
-                  avs_primary = min(avs_primary, avs);
+                  avs_primary = Min(avs_primary, avs);
                }
 
                if (sz_item.rightEnd >= m_StartSplittingZl)
@@ -1891,7 +1891,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
                      const matRebar* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
                      Float64 avs = pRebar->GetNominalArea() * sz_item.pShearZoneData->nVertBars / sz_item.pShearZoneData->BarSpacing;
 
-                     avs_primary = min(avs_primary, avs);
+                     avs_primary = Min(avs_primary, avs);
                   }
 
                   if (sz_item.leftEnd <= right_zoneloc)
@@ -1910,7 +1910,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
          if (avs_req > 0.0)
          {
             // Additional splitting reinforcement is required
-            Float64 splitting_zone_len = max(m_StartSplittingZl, m_EndSplittingZl);
+            Float64 splitting_zone_len = Max(m_StartSplittingZl, m_EndSplittingZl);
 
             // See if existing layout does the job. If so, keep it.
             bool use_current(false);
@@ -1918,7 +1918,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
             {
                if (m_ShearData.SplittingBarSize!=matRebar::bsNone)
                {
-                  Float64 szone_length = min(m_ShearData.SplittingZoneLength, splitting_zone_len);
+                  Float64 szone_length = Min(m_ShearData.SplittingZoneLength, splitting_zone_len);
 
                   const matRebar* pRebar = pool->GetRebar(barType, barGrade, m_ShearData.SplittingBarSize);
                   Float64 sarea = pRebar->GetNominalArea() * m_ShearData.nSplittingBars;
@@ -2068,7 +2068,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement()
             // Create additional rebar for confinement if needed
             if (need_additional)
             {
-               Float64 zone_len = max(min_start_zl, rConfinementArtifact.GetEndRequiredZoneLength());
+               Float64 zone_len = Max(min_start_zl, rConfinementArtifact.GetEndRequiredZoneLength());
 
                // See if there is existing, and if it does the job
                bool use_current(false);
@@ -2177,7 +2177,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                   {
                      // Must adjust for development. We are using #5 bars per above
                      Float64 dev_fac(1.0);
-                     Float64 min_dist_from_ends = min(location, m_SegmentLength-location);
+                     Float64 min_dist_from_ends = Min(location, m_SegmentLength-location);
                      if ( min_dist_from_ends <= 0.0 )
                      {
                         // Can't develop rebar
@@ -2199,11 +2199,11 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                         ATLASSERT(0);
                      }
    
-                     As = max(As, as);
+                     As = Max(As, as);
                   }
                   else if(m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingStrands)
                   {
-                     Float64 min_dist_from_ends = min(location, m_SegmentLength-location);
+                     Float64 min_dist_from_ends = Min(location, m_SegmentLength-location);
                      if ( min_dist_from_ends <= 0.0 )
                      {
                         // Can't develop strands
@@ -2219,7 +2219,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      }
    
                      Float64 as = (demand-capacity)/fps;
-                     As = max(As, as);
+                     As = Max(As, as);
                   }
                   else
                   {
@@ -2277,7 +2277,7 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
       const pgsStirrupCheckAtPoisArtifact* pStrII_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(liveLoadIntervalIdx,pgsTypes::StrengthII,PoiIdx);
       const pgsStirrupDetailArtifact* pDet = pStrII_artf->GetStirrupDetailArtifact();
       Float64 spacingII = pDet->GetSMax();
-      spec_spacing = min(spec_spacing, spacingII);
+      spec_spacing = Min(spec_spacing, spacingII);
    }
 
    Float64 spacing = spec_spacing;
@@ -2290,11 +2290,11 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 
       Float64 confine_spacing = rConfine.GetSMax();
 
-      spacing = min(spec_spacing, confine_spacing);
+      spacing = Min(spec_spacing, confine_spacing);
    }
 
    // Spacing can never exceed max max
-   spacing = min(spacing, m_SMaxMax);
+   spacing = Min(spacing, m_SMaxMax);
 
    return spacing;
 }
@@ -2482,7 +2482,7 @@ bool pgsShearDesignTool::GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpaci
 Float64 pgsShearDesignTool::ComputeMaxNextSpacing(Float64 currentSpacing)
 {
    // Get a candidate spacing from required criteria, then get nearest spacing from our list
-   Float64 candidate = Min3(currentSpacing + m_MaxSpacingChangeInZone, 
+   Float64 candidate = Min(currentSpacing + m_MaxSpacingChangeInZone, 
                             currentSpacing * (1 + m_MaxShearCapacityChangeInZone),
                             m_SMaxMax);
 
@@ -2526,6 +2526,6 @@ Float64 pgsShearDesignTool::GetAvsReqdForSplitting() const
    Float64 avs_req_start = pSplittingArtifact->GetStartSplittingForce() / (pSplittingArtifact->GetStartFs() * m_StartSplittingZl);
    Float64 avs_req_end   = pSplittingArtifact->GetEndSplittingForce()   / (pSplittingArtifact->GetEndFs()   * m_EndSplittingZl);
 
-   Float64 avs_req = max(avs_req_start, avs_req_end);
+   Float64 avs_req = Max(avs_req_start, avs_req_end);
    return avs_req;
 }

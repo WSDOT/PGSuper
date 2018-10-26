@@ -588,9 +588,9 @@ public:
    bool IsForceHarpedStrandsStraight() const;
    void ForceHarpedStrandsStraight(bool bEnable);
 
-   void ConfigureStraightStrandGrid(IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
-   void ConfigureHarpedStrandGrids(IStrandGrid* pEndGridAtStart, IStrandGrid* pHPGridAtStart, IStrandGrid* pHPGridAtEnd, IStrandGrid* pEndGridAtEnd) const;
-   void ConfigureTemporaryStrandGrid(IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
+   void ConfigureStraightStrandGrid(Float64 HgStart,Float64 HgEnd,IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
+   void ConfigureHarpedStrandGrids(Float64 HgStart,Float64 HgHP1,Float64 HgHP2,Float64 HgEnd,IStrandGrid* pEndGridAtStart, IStrandGrid* pHPGridAtStart, IStrandGrid* pHPGridAtEnd, IStrandGrid* pEndGridAtEnd) const;
+   void ConfigureTemporaryStrandGrid(Float64 HgStart,Float64 HgEnd,IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
 
    bool CanDebondStraightStrands() const;
    void CanDebondStraightStrands(bool bCanDebond);

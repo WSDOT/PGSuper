@@ -55,6 +55,9 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool bHasUserLoads = pUDL->DoUserLoadsExist(segmentKey);
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bHasDeckPanel = pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false;
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
@@ -63,9 +66,13 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    if ( bHasUserLoads )
       numColumns += 2;
 
+   if ( bHasDeckPanel )
+      numColumns++;
+
    CElasticGainDueToDeckPlacementTable* table = new CElasticGainDueToDeckPlacementTable( numColumns, pDisplayUnits);
    pgsReportStyleHolder::ConfigureTable(table);
 
+   table->m_bHasDeckPanel = bHasDeckPanel;
    table->m_bHasUserLoads = bHasUserLoads;
    table->scalar.SetFormat(sysNumericFormatTool::Fixed);
    table->scalar.SetWidth(5);
@@ -90,7 +97,15 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
    *pParagraph << _T("Change in strand stress due to loads applied to the non-composite girder") << rptNewLine;
    *pParagraph << rptNewLine;
-   if ( bHasUserLoads )
+   if ( bHasDeckPanel && bHasUserLoads )
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Madl4.png"))        << rptNewLine;
+   }
+   else if ( bHasDeckPanel && !bHasUserLoads )
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Madl3.png"))        << rptNewLine;
+   }
+   else if ( !bHasDeckPanel && bHasUserLoads )
    {
       *pParagraph << rptRcImage(strImagePath + _T("Madl2.png"))        << rptNewLine;
    }
@@ -123,7 +138,11 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
 
    *pParagraph << rptNewLine;
-   *pParagraph << _T("Slab: ")       << Sub2(_T("K"),_T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain())      << rptNewLine;
+   if ( bHasDeckPanel )
+      *pParagraph << _T("Slab+Panel: ")       << Sub2(_T("K"),_T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain())      << rptNewLine;
+   else
+      *pParagraph << _T("Slab: ")       << Sub2(_T("K"),_T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain())      << rptNewLine;
+
    *pParagraph << _T("Haunch: " )    << Sub2(_T("K"),_T("h")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabPadElasticGain())   << rptNewLine;
    *pParagraph << _T("Diaphragms: ") << Sub2(_T("K"),_T("d")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetDiaphragmElasticGain()) << rptNewLine;
 
@@ -138,6 +157,10 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    ColumnIndexType col = 0;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("Slab")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   if ( bHasDeckPanel )
+   {
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("Panel")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   }
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("Haunch")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("Diaphragm")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    if ( bHasUserLoads )
@@ -170,6 +193,10 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* p
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
    (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlab,      poi, m_BAT ) );
+   if ( m_bHasDeckPanel )
+   {
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPanel,      poi, m_BAT ) );
+   }
    (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPad,   poi, m_BAT ) );
    (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pftDiaphragm, poi, m_BAT ) + 
                                           pProdForces->GetMoment( castDeckIntervalIdx, pftShearKey,  poi, m_BAT ));

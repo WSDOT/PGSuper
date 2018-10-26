@@ -103,6 +103,10 @@ public:
    const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx);
 
    //------------------------------------------------------------------------
+   // Computes the tendon elongation during jacking
+   Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
+
+   //------------------------------------------------------------------------
    // Returns the maximum jacking force
    Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands);
    Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands);

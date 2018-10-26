@@ -103,7 +103,7 @@ void CBridgeDescDeckRebarGrid::AddRow()
 {
 	ROWCOL nRow = 0;
    nRow = GetRowCount()+1;
-	nRow = max(1, nRow);
+	nRow = Max((ROWCOL)1, nRow);
 
 	InsertRows(nRow, 1);
    SetRowStyle(nRow);
@@ -559,7 +559,7 @@ void CBridgeDescDeckRebarGrid::FillGrid(const std::vector<CDeckRebarData::NegMom
    {
 	   ROWCOL nRow = 0;
       nRow = GetRowCount()+1;
-	   nRow = max(1, nRow);
+	   nRow = Max((ROWCOL)1, nRow);
 
 	   InsertRows(nRow, 1);
       SetRowStyle(nRow);

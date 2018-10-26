@@ -134,6 +134,12 @@ const ANCHORSETDETAILS* pgsPsForceEng::GetAnchorSetDetails(const CGirderKey& gir
    return m_LossEngineer->GetAnchorSetDetails(girderKey,ductIdx);
 }
 
+Float64 pgsPsForceEng::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
+{
+   CreateLossEngineer(girderKey);
+   return m_LossEngineer->GetElongation(girderKey,ductIdx,endType);
+}
+
 const LOSSDETAILS* pgsPsForceEng::GetLosses(const pgsPointOfInterest& poi)
 {
    CreateLossEngineer(poi.GetSegmentKey());
@@ -164,13 +170,13 @@ Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const matPsStra
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    Float64 Pjack = 0.0;
-   if ( pSpecEntry->CheckStrandStress(AT_JACKING) )
+   if ( pSpecEntry->CheckStrandStress(CSS_AT_JACKING) )
    {
       Float64 coeff;
       if ( strand.GetType() == matPsStrand::LowRelaxation )
-         coeff = pSpecEntry->GetStrandStressCoefficient(AT_JACKING,LOW_RELAX);
+         coeff = pSpecEntry->GetStrandStressCoefficient(CSS_AT_JACKING,LOW_RELAX);
       else
-         coeff = pSpecEntry->GetStrandStressCoefficient(AT_JACKING,STRESS_REL);
+         coeff = pSpecEntry->GetStrandStressCoefficient(CSS_AT_JACKING,STRESS_REL);
 
       Float64 fpu;
       Float64 aps;
@@ -186,9 +192,9 @@ Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const matPsStra
    {
       Float64 coeff;
       if ( strand.GetType() == matPsStrand::LowRelaxation )
-         coeff = pSpecEntry->GetStrandStressCoefficient(BEFORE_TRANSFER,LOW_RELAX);
+         coeff = pSpecEntry->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,LOW_RELAX);
       else
-         coeff = pSpecEntry->GetStrandStressCoefficient(BEFORE_TRANSFER,STRESS_REL);
+         coeff = pSpecEntry->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,STRESS_REL);
 
       // fake up some data so losses are computed before transfer
       GET_IFACE(IPointOfInterest,pPOI);
@@ -312,7 +318,7 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgs
             // compute minimum bonded length from poi
             Float64 left_len = dist_from_left_end - debond_info.LeftDebondLength;
             Float64 rgt_len  = right_db_from_left - dist_from_left_end;
-            Float64 min_db_len = min(left_len, rgt_len);
+            Float64 min_db_len = Min(left_len, rgt_len);
 
             if (min_db_len<xfer_length)
                nDebondedEffective += min_db_len/xfer_length;
@@ -425,7 +431,7 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,
             // compute minimum bonded length from poi
             Float64 left_len = dist_from_left_end - debond_info.LeftDebondLength;
             Float64 rgt_len  = right_db_from_left - dist_from_left_end;
-            Float64 min_db_len = min(left_len, rgt_len);
+            Float64 min_db_len = Min(left_len, rgt_len);
 
             if (min_db_len<xfer_length)
                nDebondedEffective += min_db_len/xfer_length;
@@ -643,7 +649,7 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
       right_bonded_length = gdr_length - poi_loc;
    }
 
-   Float64 lpx = min(left_bonded_length, right_bonded_length);
+   Float64 lpx = Min(left_bonded_length, right_bonded_length);
 
    if (lpx <= 0.0)
    {
@@ -810,7 +816,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
 
 Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig)
 {
-   if ( poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_PIER) )
+   if ( poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_BOUNDARY_PIER) )
       return 0;
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -889,7 +895,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
 
 Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig)
 {
-   if ( poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_PIER) )
+   if ( poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_BOUNDARY_PIER) )
       return 0;
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();

@@ -60,8 +60,9 @@ public:
 
    void DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType spanIdx,GirderIndexType gdrIdx);
 
-   bool EditGirderDescription(const CGirderKey& girderKey,int nPage);
-   bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage);
+   virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage);
+   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage);
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage);
 
    // flags for design dialog
    bool IsDesignFlexureEnabled() const;

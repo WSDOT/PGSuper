@@ -27,7 +27,6 @@
 
 interface IEAFDisplayUnits;
 class pgsGirderArtifact;
-class pgsClosurePourArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -76,11 +75,6 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                             IEAFDisplayUnits* pDisplayUnits,
-                             IntervalIndexType intervalIdx,
-                             pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const;
-
-   virtual rptRcTable* Build(IBroker* pBroker,const pgsClosurePourArtifact* pClosureArtifact,
                              IEAFDisplayUnits* pDisplayUnits,
                              IntervalIndexType intervalIdx,
                              pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const;

@@ -85,17 +85,34 @@ private:
    SamePlace m_SamePlace;
 };
 
-class SameAttribute
+class RemoveTest
 {
 public:
-   SameAttribute(PoiAttributeType targetAttribute,PoiAttributeType exceptAttribute) : m_TargetAttribute(targetAttribute), m_ExceptAttribute(exceptAttribute) {}
+   RemoveTest(PoiAttributeType targetAttribute,PoiAttributeType exceptAttribute) : m_TargetAttribute(targetAttribute), m_ExceptAttribute(exceptAttribute) {}
 
-   bool operator()(const pgsPointOfInterest& other) const
+   bool operator()(pgsPointOfInterest& poi)
    {
       // return true if the poi has the target attribute, except if it has the exception attribute
-      if ( other.HasAttribute(m_TargetAttribute) && !other.HasAttribute(m_ExceptAttribute) )
+      if ( poi.HasAttribute(m_TargetAttribute) && !poi.HasAttribute(m_ExceptAttribute) )
       {
-         return true;
+         // the poi can possibly be removed... more testing is needed
+         // at minimum we can remove the target attribute, but the actual poi may need to
+         // stay in the container (example, removing lifting 10th points pois and the point
+         // of prestress transfer is at a tenth poi.. we want to remove the lifting attributes
+         // but retain the poi)
+         if ( pgsPointOfInterest::IsReferenceAttribute(m_TargetAttribute) )
+         {
+            poi.RemoveAttributes(m_TargetAttribute | POI_TENTH_POINTS | POI_H | POI_15H | POI_MIDSPAN);
+         }
+         else
+         {
+            poi.RemoveAttributes(m_TargetAttribute);
+         }
+
+         if ( poi.GetAttributes() == 0 )
+            return true; // no other attributes, remove the poi from the container
+
+         return false; // still has some attributes... keep the poi
       }
 
       return false;
@@ -253,7 +270,7 @@ bool pgsPoiMgr::RemovePointOfInterest(const pgsPointOfInterest& poi,bool bConsid
 
 void pgsPoiMgr::RemovePointsOfInterest(PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute)
 {
-   std::vector<pgsPointOfInterest>::iterator newEnd( std::remove_if(m_Poi.begin(),m_Poi.end(),SameAttribute(targetAttribute,exceptionAttribute)) );
+   std::vector<pgsPointOfInterest>::iterator newEnd( std::remove_if(m_Poi.begin(),m_Poi.end(),RemoveTest(targetAttribute,exceptionAttribute)) );
    m_Poi.erase(newEnd,m_Poi.end());
 
    ASSERTVALID;
@@ -498,7 +515,8 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segment
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION) ? poi.HasAttribute(POI_SECTCHANGE_TRANSITION) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(POI_FACEOFSUPPORT) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_PIER) ? poi.HasAttribute(POI_INTERMEDIATE_PIER) : true ) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PIER)   ? poi.HasAttribute(POI_PIER) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BOUNDARY_PIER)   ? poi.HasAttribute(POI_BOUNDARY_PIER) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_ABUTMENT)   ? poi.HasAttribute(POI_ABUTMENT) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)   ? poi.HasAttribute(POI_STIRRUP_ZONE) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TEMPSUPPORT)   ? poi.HasAttribute(POI_TEMPSUPPORT) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)   ? poi.HasAttribute(POI_CLOSURE) : true)
@@ -591,7 +609,8 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentK
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION)      ? poi.HasAttribute(POI_SECTCHANGE_TRANSITION) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(POI_FACEOFSUPPORT) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_PIER) ? poi.HasAttribute(POI_INTERMEDIATE_PIER) : false) ||
-    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PIER)   ? poi.HasAttribute(POI_PIER) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BOUNDARY_PIER)   ? poi.HasAttribute(POI_BOUNDARY_PIER) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_ABUTMENT)   ? poi.HasAttribute(POI_ABUTMENT) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)   ? poi.HasAttribute(POI_STIRRUP_ZONE) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TEMPSUPPORT)   ? poi.HasAttribute(POI_TEMPSUPPORT) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)   ? poi.HasAttribute(POI_CLOSURE) : false)

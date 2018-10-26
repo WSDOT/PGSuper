@@ -61,10 +61,6 @@ public:
 
 // Implementation
 public:
-   void HideControls(bool hide);
-
-public:
-   bool m_IsHaulingEnabled;
    pgsTypes::HaulingAnalysisMethod m_HaulingAnalysisMethod;
 
 private:
@@ -77,16 +73,12 @@ private:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSpecHaulingErectionPage)
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
    virtual BOOL OnInitDialog();
-   virtual BOOL OnSetActive();
-   virtual BOOL OnKillActive();
 
-   static BOOL CALLBACK EnableWindows(HWND hwnd,LPARAM lParam);
 public:
    afx_msg void OnCbnSelchangeHaulingMethod();
 

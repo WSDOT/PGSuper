@@ -20,23 +20,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSpecDesignPage)
 	enum { IDD = IDD_SPEC_DESIGN };
-	BOOL	m_CheckA;
-	BOOL	m_CheckHauling;
-	BOOL	m_CheckHoldDown;
-	BOOL	m_CheckLifting;
-	BOOL	m_CheckSlope;
-	BOOL	m_DesignA;
-	BOOL	m_DesignHauling;
-	BOOL	m_DesignHoldDown;
-	BOOL	m_DesignLifting;
-	BOOL	m_DesignSlope;
-	BOOL	m_CheckSplitting;
-	BOOL	m_DesignSplitting;
-	BOOL	m_CheckConfinement;
-	BOOL	m_DesignConfinement;
 	//}}AFX_DATA
-
-   int m_FillMethod;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -47,6 +31,7 @@ public:
 
 // Implementation
 protected:
+	virtual BOOL OnInitDialog();
 
 	// Generated message map functions
 	//{{AFX_MSG(CSpecDesignPage)
@@ -57,6 +42,7 @@ protected:
 	afx_msg void OnCheckSlope();
 	afx_msg void OnCheckSplitting();
 	afx_msg void OnCheckConfinement();
+   afx_msg void OnBnClickedIsSupportLessThan();
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()

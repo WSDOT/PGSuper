@@ -133,7 +133,7 @@ void CSelectGirderDlg::OnGroupChanged()
 		pGirderBox->AddString( strLabel );
 	}
 
-   girder = (int)min(GirderIndexType(girder), nGirders-1); // don't allow out of bounds if ng decreases between spans
+   girder = (int)Min(GirderIndexType(girder), nGirders-1); // don't allow out of bounds if ng decreases between spans
 
    pGirderBox->SetCurSel(girder);
 }

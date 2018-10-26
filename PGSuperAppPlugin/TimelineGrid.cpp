@@ -79,7 +79,7 @@ void CTimelineGrid::CustomInit()
    GetParam()->EnableMoveCols(FALSE);
 
    const int num_rows = 0;
-   const int num_cols = 3;
+   const int num_cols = 4;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -106,7 +106,15 @@ void CTimelineGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("Day"))
+			.SetValue(_T("Occurance\n(Day)"))
+		);
+
+	SetStyleRange(CGXRange(0,col++), CGXStyle()
+         .SetWrapText(TRUE)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_VCENTER)
+			.SetValue(_T("Elapsed Time\n(Days)"))
 		);
 
 	SetStyleRange(CGXRange(0,col++), CGXStyle()
@@ -124,6 +132,9 @@ void CTimelineGrid::CustomInit()
          .SetVerticalAlignment(DT_VCENTER)
 			.SetValue(_T(""))
 		);
+
+   ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
+   ResizeColWidthsToFit(CGXRange(0,0,0,num_cols));
 
    // don't allow users to resize grids
    GetParam( )->EnableTrackColWidth(0); 
@@ -149,11 +160,14 @@ void CTimelineGrid::Refresh()
    if ( 0 < GetRowCount() )
       RemoveRows(1,GetRowCount());
 
-   for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   for ( EventIndexType eventIdx = 0; eventIdx < nEvents-1; eventIdx++ )
    {
       const CTimelineEvent* pTimelineEvent = pParent->m_TimelineManager.GetEventByIndex(eventIdx);
-      AddEvent(pTimelineEvent);
+      const CTimelineEvent* pNextTimelineEvent = pParent->m_TimelineManager.GetEventByIndex(eventIdx+1);
+      AddEvent(pTimelineEvent,pNextTimelineEvent);
    }
+   const CTimelineEvent* pTimelineEvent = pParent->m_TimelineManager.GetEventByIndex(nEvents-1);
+   AddEvent(pTimelineEvent,NULL);
 
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 
@@ -164,7 +178,7 @@ void CTimelineGrid::Refresh()
    }
 }
 
-void CTimelineGrid::AddEvent(const CTimelineEvent* pTimelineEvent)
+void CTimelineGrid::AddEvent(const CTimelineEvent* pTimelineEvent,const CTimelineEvent* pNextTimelineEvent)
 {
    ROWCOL row = GetRowCount()+1;
 
@@ -188,6 +202,25 @@ void CTimelineGrid::AddEvent(const CTimelineEvent* pTimelineEvent)
 			.SetValue(pTimelineEvent->GetDay())
 		);
 
+   if ( pNextTimelineEvent )
+   {
+      Float64 elapsed_time = pNextTimelineEvent->GetDay() - pTimelineEvent->GetDay();
+      SetStyleRange(CGXRange(row,col++), CGXStyle()
+            .SetHorizontalAlignment(DT_RIGHT)
+            .SetVerticalAlignment(DT_VCENTER)
+			   .SetValue(elapsed_time)
+   		);
+   }
+   else
+   {
+      SetStyleRange(CGXRange(row,col++), CGXStyle()
+            .SetHorizontalAlignment(DT_RIGHT)
+            .SetVerticalAlignment(DT_VCENTER)
+            .SetEnabled(FALSE)
+            .SetInterior(::GetSysColor(COLOR_BTNFACE))
+   		);
+   }
+
 	SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetHorizontalAlignment(DT_LEFT)
          .SetVerticalAlignment(DT_VCENTER)
@@ -204,13 +237,13 @@ void CTimelineGrid::AddEvent(const CTimelineEvent* pTimelineEvent)
 
 void CTimelineGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
 {
-   if ( nCol != 3 )
+   if ( nCol != 4 )
       return;
 
    CEditTimelineDlg* pParent = (CEditTimelineDlg*)GetParent();
    CTimelineEventDlg dlg(&pParent->m_TimelineManager,TRUE);
    EventIndexType eventIdx = (IndexType)(nRow-1);
-   dlg.m_EventIdx = eventIdx;
+   dlg.m_EventIndex = eventIdx;
    dlg.m_TimelineEvent = *pParent->m_TimelineManager.GetEventByIndex(eventIdx);
    dlg.m_TimelineEvent.SetID( pParent->m_TimelineManager.GetEventByIndex(eventIdx)->GetID() );
    if ( dlg.DoModal() == IDOK )
@@ -312,8 +345,8 @@ void CTimelineGrid::RemoveEvents()
             strMsg.Format(_T("Cannot remove Event %d because it contains an activity for removing temporary supports."),LABEL_EVENT(eventIdx));
             break;
 
-         case TLM_CAST_CLOSURE_POUR_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains an activity for casting closure pours."),LABEL_EVENT(eventIdx));
+         case TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED:
+            strMsg.Format(_T("Cannot remove Event %d because it contains an activity for casting closure joints."),LABEL_EVENT(eventIdx));
             break;
 
          case TLM_STRESS_TENDONS_ACTIVITY_REQUIRED:
@@ -344,6 +377,9 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
 {
    if ( nCol == 1 )
    {
+      // The day the event occured changed...
+      // Check to see if this event conflicts with its adjacent events... if so,
+      // ask the user if the timeline should be adjusted.
       CEditTimelineDlg* pParent = (CEditTimelineDlg*)GetParent();
       EventIndexType eventIdx = IndexType(nRow-1);
 
@@ -354,9 +390,10 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
       VERIFY(sysTokenizer::ParseDouble(strDay,&day));
 
       bool bDone = false;
-      bool bAdjustTimeline = false;
+      bool bAdjustTimeline = false; // first time adjusting the event day, don't adjust the timeline
       while ( !bDone )
       {
+         // update the timeline. the result indicates if there was a problem
          int result = pParent->m_TimelineManager.AdjustDayByIndex(eventIdx,day,bAdjustTimeline);
          if ( result == TLM_SUCCESS )
          {
@@ -376,7 +413,7 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
             strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
             if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
             {
-               bAdjustTimeline = true;
+               bAdjustTimeline = true; // user wants to adjust the timeline... the code will loop back to AdjustDayByIndex above
             }
             else
             {
@@ -402,9 +439,22 @@ BOOL CTimelineGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    bHasThisMethodBeenCalled = true;
    if ( nCol == 1 )
    {
+      // the event occurance day changed
       Refresh();
    }
    else if ( nCol == 2 )
+   {
+      CString strElapsedTime = GetValueRowCol(nRow,nCol);
+      Float64 elapsed_time; 
+      VERIFY(sysTokenizer::ParseDouble(strElapsedTime,&elapsed_time));
+
+      CEditTimelineDlg* pParent = (CEditTimelineDlg*)GetParent();
+      EventIndexType thisEventIdx = IndexType(nRow-1);
+      pParent->m_TimelineManager.SetElapsedTime(thisEventIdx,elapsed_time);
+
+      Refresh();
+   }
+   else if ( nCol == 3 )
    {
       CEditTimelineDlg* pParent = (CEditTimelineDlg*)GetParent();
       EventIndexType eventIdx = IndexType(nRow-1);

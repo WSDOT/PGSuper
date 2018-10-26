@@ -313,8 +313,8 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
 
    CString template_name = GetTOGAFolder() + CString(_T("\\")) + m_BeamType + _T(".") + suffix;
 
-   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry;
-   if(!::ParseTemplateFile(template_name, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry))
+   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName;
+   if(!::DoParseTemplateFile(template_name, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName))
    {
       return false;
    }
@@ -451,7 +451,7 @@ void CTxDOTOptionalDesignBridgeInputPage::OnCbnSelchangeProjectCriteria()
       const SpecLibraryEntry* pEntry = (const SpecLibraryEntry*)pLib->GetEntry(libname);
       if (pEntry!=NULL)
       {
-         Float64 factor = pEntry->GetCyCompStressService();
+         Float64 factor = pEntry->GetAtReleaseCompressionStressFactor();
          CString msg;
          msg.Format(_T("(Allowable compression stress factor at release = %.2f)"),factor);
 

@@ -41,6 +41,8 @@ public:
 	CGirderDropSite(CPGSuperDocBase* pDoc, const CSpanGirderKey& spanGirderKey, CGirderModelChildFrame* pFrame);
 	virtual ~CGirderDropSite();
 
+   virtual void OnFinalRelease();
+
    DECLARE_INTERFACE_MAP()
 
 

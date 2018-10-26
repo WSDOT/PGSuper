@@ -30,6 +30,7 @@
 
 class CPTData;
 class CSplicedGirderData;
+class CTimelineManager;
 
 
 /*****************************************************************************
@@ -489,7 +490,8 @@ public:
    bool operator==(const CPTData& rOther) const;
    bool operator!=(const CPTData& rOther) const;
 
-   void SetGirder(const CSplicedGirderData* pSplicedGirder);
+   void SetGirder(CSplicedGirderData* pSplicedGirder);
+   CSplicedGirderData* GetGirder();
    const CSplicedGirderData* GetGirder() const;
 
    void AddDuct(CDuctData& duct);
@@ -522,5 +524,8 @@ protected:
    virtual void MakeAssignment(const CPTData& rOther);
 
 private:
-   const CSplicedGirderData* m_pGirder; // weak reference
+   CSplicedGirderData* m_pGirder; // weak reference
+
+   CTimelineManager* GetTimelineManager();
+   void RemoveFromTimeline();
 };

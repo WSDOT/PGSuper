@@ -45,88 +45,31 @@ void CKdotHaulingDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 }
 
+BOOL CKdotHaulingDlg::OnInitDialog()
+{
+   CDialog::OnInitDialog();
+
+   OnBnClickedCheckHaulingTensMax();
+
+   return TRUE;  // return TRUE unless you set the focus to a control
+   // EXCEPTION: OCX Property Pages should return FALSE
+}
+
 
 BEGIN_MESSAGE_MAP(CKdotHaulingDlg, CDialog)
-   ON_BN_CLICKED(IDC_CHECK_HAULING_TENS_MAX, &CKdotHaulingDlg::OnBnClickedCheckHaulingTensMax)
-   ON_BN_CLICKED(IDC_IS_SUPPORT_LESS_THAN, &CKdotHaulingDlg::OnBnClickedIsSupportLessThan)
+   ON_BN_CLICKED(IDC_CHECK_HAULING_TENSION_MAX, &CKdotHaulingDlg::OnBnClickedCheckHaulingTensMax)
 END_MESSAGE_MAP()
-
-
-void CKdotHaulingDlg::HideControls(bool hide)
-{
-   bool enable = !hide;
-
-   // disable all of the windows
-   EnumChildWindows(GetSafeHwnd(),CKdotHaulingDlg::EnableWindows,(LPARAM)enable);
-
-   if (enable)
-   {
-      DoCheckMax();
-      DoCheckMinLocation();
-   }
-}
-
-BOOL CKdotHaulingDlg::EnableWindows(HWND hwnd,LPARAM lParam)
-{
-   ::EnableWindow(hwnd,(BOOL)lParam);
-   return TRUE;
-}
 
 void CKdotHaulingDlg::OnBnClickedCheckHaulingTensMax()
 {
-   DoCheckMax();
-}
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_HAULING_TENSION_MAX);
+   ASSERT(pchk);
+   BOOL ischk = pchk->GetCheck() == BST_CHECKED;
 
-void CKdotHaulingDlg::DoCheckMax()
-{
-   if(m_IsHaulingEnabled)
-   {
-      CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_HAULING_TENS_MAX);
-      ASSERT(pchk);
-      BOOL ischk = pchk->GetCheck() == BST_CHECKED;
-
-      CWnd* pwnd = GetDlgItem(IDC_HAULING_TENS_MAX);
-      ASSERT(pwnd);
-      pwnd->EnableWindow(ischk);
-      pwnd = GetDlgItem(IDC_HAULING_TENS_MAX_UNITS);
-      ASSERT(pwnd);
-      pwnd->EnableWindow(ischk);
-   }
-}
-
-void CKdotHaulingDlg::DoCheckMinLocation()
-{
-   if(m_IsHaulingEnabled)
-   {
-      CButton* pchk = (CButton*)GetDlgItem(IDC_IS_SUPPORT_LESS_THAN);
-      ASSERT(pchk);
-      BOOL ischk = pchk->GetCheck() == BST_CHECKED;
-
-      CWnd* pwnd = GetDlgItem(IDC_SUPPORT_LESS_THAN);
-      ASSERT(pwnd);
-      pwnd->EnableWindow(ischk);
-
-      pwnd = GetDlgItem(IDC_SUPPORT_LESS_THAN_UNIT);
-      ASSERT(pwnd);
-      pwnd->EnableWindow(ischk);
-
-   }
-}
-
-void CKdotHaulingDlg::OnBnClickedIsSupportLessThan()
-{
-   DoCheckMinLocation();
-}
-
-void CKdotHaulingDlg::OnOK()
-{
-   // Don't allow enter key to close dialog
-   CSpecHaulingErectionPage* parent = (CSpecHaulingErectionPage*)GetParent();
-   parent->OnOK();
-}
-
-void CKdotHaulingDlg::OnCancel()
-{
-   CSpecHaulingErectionPage* parent = (CSpecHaulingErectionPage*)GetParent();
-   parent->OnCancel();
+   CWnd* pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX);
+   ASSERT(pwnd);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX_UNIT);
+   ASSERT(pwnd);
+   pwnd->EnableWindow(ischk);
 }

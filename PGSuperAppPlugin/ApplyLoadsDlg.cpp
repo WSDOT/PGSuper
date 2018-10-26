@@ -287,7 +287,7 @@ void CApplyLoadsDlg::InitUserLoads()
          int cx1 = m_ctrlUserLoads.GetColumnWidth(i);
          m_ctrlUserLoads.SetColumnWidth(i,LVSCW_AUTOSIZE);
          int cx2 = m_ctrlUserLoads.GetColumnWidth(i);
-         m_ctrlUserLoads.SetColumnWidth(i,max(cx1,cx2));
+         m_ctrlUserLoads.SetColumnWidth(i,Max(cx1,cx2));
       }
    }
 }

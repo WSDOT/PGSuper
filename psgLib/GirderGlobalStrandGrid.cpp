@@ -417,7 +417,7 @@ void CGirderGlobalStrandGrid::RemoveSelectedRow()
 
    if (row>0)
    {
-      sel_row = min(sel_row, GetRowCount());
+      sel_row = Min(sel_row, GetRowCount());
 
       SetCurrentCell(sel_row, GetLeftCol(), GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
 	   ScrollCellInView(sel_row, GetLeftCol());
@@ -541,7 +541,7 @@ void CGirderGlobalStrandGrid::OnChangeUseHarpedGrid()
 
          RedrawGrid();
 
-         row = min(row, num_e_rows);
+         row = Min(row, num_e_rows);
 
          SetCurrentCell(row, 1, GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
 	      ScrollCellInView(row,1);
@@ -567,7 +567,7 @@ void CGirderGlobalStrandGrid::OnChangeUseHarpedGrid()
 
          RedrawGrid();
 
-         row = min(row, nrows-rows_2delete);
+         row = Min(row, nrows-rows_2delete);
 
          SetCurrentCell(row, 1, GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
 	      ScrollCellInView(row,1);

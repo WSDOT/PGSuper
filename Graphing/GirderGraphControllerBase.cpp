@@ -67,23 +67,45 @@ BOOL CGirderGraphControllerBase::OnInitDialog()
    FillGirderCtrl();
 
    // Set initial value based on the current selection
-   GET_IFACE(ISelectionEx,pSelection);
+   GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
+
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);
-   pcbGroup->SetCurSel( selection.GroupIdx == ALL_GROUPS ? 0 : (int)selection.GroupIdx+1);
-   m_GroupIdx  = (GroupIndexType)(pcbGroup->GetItemData(pcbGroup->GetCurSel()));
+   if ( pcbGroup )
+   {
+      pcbGroup->SetCurSel( selection.GroupIdx == ALL_GROUPS ? 0 : (int)selection.GroupIdx+1);
+      m_GroupIdx  = (GroupIndexType)(pcbGroup->GetItemData(pcbGroup->GetCurSel()));
+   }
+   else
+   {
+      m_GroupIdx = INVALID_INDEX;
+   }
 
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
-   pcbGirder->SetCurSel(selection.GirderIdx == ALL_GIRDERS ? 0 : (int)selection.GirderIdx);
-   m_GirderIdx = (GirderIndexType)(pcbGirder->GetItemData(pcbGirder->GetCurSel()));
+   if ( pcbGirder )
+   {
+      pcbGirder->SetCurSel(selection.GirderIdx == ALL_GIRDERS ? 0 : (int)selection.GirderIdx);
+      m_GirderIdx = (GirderIndexType)(pcbGirder->GetItemData(pcbGirder->GetCurSel()));
+   }
+   else
+   {
+      m_GirderIdx = INVALID_INDEX;
+   }
 
    // Fill the interval combo box
    FillIntervalCtrl();
 
    // Set initial value
    CComboBox* pcbInterval = (CComboBox*)GetDlgItem(IDC_INTERVAL);
-   pcbInterval->SetCurSel(0);
-   m_IntervalIdx = (IntervalIndexType)pcbInterval->GetItemData(pcbInterval->GetCurSel());
+   if ( pcbInterval )
+   {
+      pcbInterval->SetCurSel(0);
+      m_IntervalIdx = (IntervalIndexType)pcbInterval->GetItemData(pcbInterval->GetCurSel());
+   }
+   else
+   {
+      m_IntervalIdx = INVALID_INDEX;
+   }
 
    return TRUE;
 }
@@ -205,6 +227,9 @@ void CGirderGraphControllerBase::OnIntervalChanged()
 void CGirderGraphControllerBase::FillGroupCtrl()
 {
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);
+   if ( pcbGroup == NULL )
+      return; // not using a group list
+
    pcbGroup->ResetContent();
 
    GET_IFACE(IDocumentType,pDocType);
@@ -217,7 +242,6 @@ void CGirderGraphControllerBase::FillGroupCtrl()
       idx = pcbGroup->AddString(pDocType->IsPGSuperDocument() ? _T("All Spans") : _T("All Groups"));
       pcbGroup->SetItemData(idx,ALL_GROUPS);
    }
-
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -238,6 +262,9 @@ void CGirderGraphControllerBase::FillGirderCtrl()
    GroupIndexType grpIdx = GetGirderGroup();
 
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+   if ( pcbGirder == NULL )
+      return; // not using a girder list
+
    int curSel = pcbGirder->GetCurSel();
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -249,7 +276,7 @@ void CGirderGraphControllerBase::FillGirderCtrl()
       GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
       for ( GroupIndexType gIdx = 0; gIdx < nGroups; gIdx++ )
       {
-         nGirders = min(nGirders,pBridgeDesc->GetGirderGroup(gIdx)->GetGirderCount());
+         nGirders = Min(nGirders,pBridgeDesc->GetGirderGroup(gIdx)->GetGirderCount());
       }
    }
    else
@@ -278,6 +305,12 @@ void CGirderGraphControllerBase::FillGirderCtrl()
 void CGirderGraphControllerBase::FillIntervalCtrl()
 {
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
+   if ( pcbIntervals == NULL )
+      return; // not using an intervals list
+
+   int curSel = pcbIntervals->GetCurSel();
+
+   pcbIntervals->ResetContent();
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0));
@@ -290,7 +323,11 @@ void CGirderGraphControllerBase::FillIntervalCtrl()
       pcbIntervals->SetItemData(idx,intervalIdx);
    }
 
-   pcbIntervals->SetCurSel(0);
+   curSel = pcbIntervals->SetCurSel(curSel);
+   if ( curSel == CB_ERR )
+   {
+      pcbIntervals->SetCurSel(0);
+   }
 }
 
 void CGirderGraphControllerBase::UpdateGraph()

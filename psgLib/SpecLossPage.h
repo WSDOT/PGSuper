@@ -73,6 +73,7 @@ protected:
    void EnableApproximateShippingTime(BOOL bEnable);
    void EnableElasticGains(BOOL bEnable);
    void EnableTimeDependentModel(BOOL bEnable);
+   void EnableTxDOT2013(BOOL bEnable);
    BOOL IsFractionalShippingLoss();
 };
 

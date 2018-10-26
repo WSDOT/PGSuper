@@ -84,9 +84,9 @@ void CTemporarySupportActivityBase::Clear()
    m_TempSupports.clear();
 }
 
-void CTemporarySupportActivityBase::AddTempSupport(SupportIDType tsIdx)
+void CTemporarySupportActivityBase::AddTempSupport(SupportIDType tsID)
 {
-   m_TempSupports.push_back(tsIdx);
+   m_TempSupports.push_back(tsID);
    std::sort(m_TempSupports.begin(),m_TempSupports.end());
 }
 
@@ -101,15 +101,15 @@ const std::vector<SupportIDType>& CTemporarySupportActivityBase::GetTempSupports
    return m_TempSupports;
 }
 
-bool CTemporarySupportActivityBase::HasTempSupport(SupportIDType tsIdx) const
+bool CTemporarySupportActivityBase::HasTempSupport(SupportIDType tsID) const
 {
-   std::vector<SupportIDType>::const_iterator found( std::find(m_TempSupports.begin(),m_TempSupports.end(),tsIdx) );
+   std::vector<SupportIDType>::const_iterator found( std::find(m_TempSupports.begin(),m_TempSupports.end(),tsID) );
    return ( found != m_TempSupports.end() );
 }
 
-void CTemporarySupportActivityBase::RemoveTempSupport(SupportIDType tsIdx)
+void CTemporarySupportActivityBase::RemoveTempSupport(SupportIDType tsID)
 {
-   std::vector<SupportIDType>::iterator found( std::find(m_TempSupports.begin(),m_TempSupports.end(),tsIdx) );
+   std::vector<SupportIDType>::iterator found( std::find(m_TempSupports.begin(),m_TempSupports.end(),tsID) );
    if ( found != m_TempSupports.end() )
    {
       m_TempSupports.erase(found);

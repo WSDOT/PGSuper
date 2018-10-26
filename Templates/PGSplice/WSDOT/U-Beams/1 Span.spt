@@ -770,7 +770,7 @@
                 <CreepDuration2Max>10368000</CreepDuration2Max>
                 <XferTime>86400</XferTime>
                 <TotalCreepDuration>172800000</TotalCreepDuration>
-                <LossMethod>11</LossMethod>
+                <LossMethod>12</LossMethod>
                 <TimeDependentModel>1</TimeDependentModel>
                 <ShippingLosses>137895145.86340001</ShippingLosses>
                 <ShippingTime>864000</ShippingTime>

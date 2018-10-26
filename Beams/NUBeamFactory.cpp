@@ -286,10 +286,10 @@ void CNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -823,7 +823,7 @@ void CNUBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& di
    Float64 W1 = GetDimension(dimensions,_T("W1"));
    Float64 W2 = GetDimension(dimensions,_T("W2"));
 
-   Float64 gw = max(W1, W2);
+   Float64 gw = Max(W1, W2);
 
 
    if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
@@ -862,7 +862,7 @@ Float64 CNUBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions
 
 Float64 CNUBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   return max(GetDimension(dimensions,_T("W1")),GetDimension(dimensions,_T("W2")));
+   return Max(GetDimension(dimensions,_T("W1")),GetDimension(dimensions,_T("W2")));
 }
 
 bool CNUBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
@@ -874,4 +874,9 @@ void CNUBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
+}
+
+GirderIndexType CNUBeamFactory::GetMinimumBeamCount()
+{
+   return 2;
 }

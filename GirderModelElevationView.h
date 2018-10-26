@@ -119,7 +119,7 @@ private:
    void BuildStrandDisplayObjects(          CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildStrandCGDisplayObjects(        CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildSegmentDisplayObjects(         CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
-   void BuildClosurePourDisplayObjects(     CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildClosureJointDisplayObjects(     CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildTendonDisplayObjects(          CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildRebarDisplayObjects(           CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildPointLoadDisplayObjects(       CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr, bool* casesExist);
@@ -130,7 +130,7 @@ private:
    void BuildSectionCutDisplayObjects(      CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildStirrupDisplayObjects(         CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    
-   iDimensionLine* BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension);
+   void BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension,iDimensionLine** ppDimLine = NULL);
    void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color,iDisplayObject** ppDO = NULL);
    void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color1, COLORREF color2,iDisplayObject** ppDO = NULL);
    void BuildDebondTick(iDisplayList* pDL, IPoint2d* tickPoint,COLORREF color);
@@ -146,7 +146,11 @@ private:
 
    CGirderKey GetGirderKey();
 
-   void CreateSegmentEndSupportDisplayObject(Float64 firstStation,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL);
+   CString GetSegmentTooltip(IBroker* pBroker, const CSegmentKey& segmentKey);
+   CString GetClosureTooltip(IBroker* pBroker, const CClosureKey& closureKey);
+
+
+   void CreateSegmentEndSupportDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL);
    void CreateIntermediatePierDisplayObject(Float64 firstStation,const CPrecastSegmentData* pSegment,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL);
    void CreateIntermediateTemporarySupportDisplayObject(Float64 firstStation,const CPrecastSegmentData* pSegment,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL);
 

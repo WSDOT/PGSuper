@@ -53,9 +53,14 @@ void CPostTensioningPage::DoDataExchange(CDataExchange* pDX)
 
    CPropertyPage::DoDataExchange(pDX);
 
-   DDX_UnitValueAndTag(pDX, IDC_ANCHORSET,  IDC_ANCHORSET_TAG,  Dset, pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX, IDC_WOBBLE, IDC_WOBBLE_TAG, WobbleFriction, pDisplayUnits->GetPerLengthUnit());
-   DDX_Text(pDX,IDC_FRICTION,FrictionCoefficient);
+   DDX_UnitValueAndTag(pDX, IDC_ANCHORSET_PT,  IDC_ANCHORSET_PT_TAG,  Dset_PT, pDisplayUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX, IDC_WOBBLE_PT, IDC_WOBBLE_PT_TAG, WobbleFriction_PT, pDisplayUnits->GetPerLengthUnit());
+   DDX_Text(pDX,IDC_FRICTION_PT,FrictionCoefficient_PT);
+
+   DDX_UnitValueAndTag(pDX, IDC_ANCHORSET_TTS,  IDC_ANCHORSET_TTS_TAG,  Dset_TTS, pDisplayUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX, IDC_WOBBLE_TTS, IDC_WOBBLE_TTS_TAG, WobbleFriction_TTS, pDisplayUnits->GetPerLengthUnit());
+   DDX_Text(pDX,IDC_FRICTION_TTS,FrictionCoefficient_TTS);
+
    DDX_Control(pDX, IDC_DESCRIPTION, m_ctrlDescription);
 }
 
@@ -72,15 +77,25 @@ BOOL CPostTensioningPage::OnInitDialog()
    CPropertyPage::OnInitDialog();
 
    // TODO:  Add extra initialization here
+   BOOL bShow;
    CEAFDocument* pEAFDoc = EAFGetDocument();
    if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
       m_ctrlDescription.SetWindowText(_T("These parameters are used for determining initial losses in post-tensioned temporary strands"));
+      bShow = FALSE;
    }
    else
    {
       m_ctrlDescription.SetWindowText(_T("These parameters are used for determining initial losses in post-tensioned tendons and temporary strands"));
+      bShow = TRUE;
    }
+
+   GetDlgItem(IDC_TENDON_LABEL)->ShowWindow(bShow ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_ANCHORSET_PT)->ShowWindow(bShow ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_ANCHORSET_PT_TAG)->ShowWindow(bShow ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_WOBBLE_PT)->ShowWindow(bShow ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_WOBBLE_PT_TAG)->ShowWindow(bShow ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_FRICTION_PT)->ShowWindow(bShow ? SW_SHOW : SW_HIDE);
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE

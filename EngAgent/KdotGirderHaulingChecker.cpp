@@ -243,7 +243,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
    Float64 softMinHaulingDistance(hardMinHaulingDistance);
    if(bUseHaulingDistanceFactor)
    {
-      softMinHaulingDistance = max(Ls*haulingDistanceFactor, hardMinHaulingDistance);
+      softMinHaulingDistance = Max(Ls*haulingDistanceFactor, hardMinHaulingDistance);
    }
 
    const Float64 max_overhang = 0.4 * Ls;
@@ -443,7 +443,7 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
    if (use_length_factor)
    {
       soft_limit = girder_length * length_factor;
-      soft_limit = max(soft_limit, min_bunk_point_loc);
+      soft_limit = Max(soft_limit, min_bunk_point_loc);
    }
    else
    {
@@ -523,9 +523,9 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
    pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressParameters(&rcsT,&rcsBfmax,&rcsFmax);
    Float64 rcsTalt = pHaulingSpecCriteria->GetKdotHaulingWithMildRebarAllowableStressFactor();
 
-   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
+   bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
    // Use calculator object to deal with casting yard higher allowable stress
-   pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials,bUnitsSI);
+   pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials,true/*limit bar stress*/, bSISpec);
 
    IndexType psiz = rpoiVec.size();
    IndexType msiz = momVec.size();

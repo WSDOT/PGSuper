@@ -37,7 +37,7 @@ class lrfdLosses;
 class CElasticShorteningTable : public rptRcTable
 {
 public:
-   static CElasticShorteningTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   static CElasticShorteningTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:

@@ -24,7 +24,6 @@
 
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\SegmentArtifact.h>
-#include <PgsExt\ClosurePourArtifact.h>
 #include <PgsExt\TendonStressArtifact.h>
 #include <set>
 
@@ -79,10 +78,6 @@ public:
    // if a previously stored one does not exist
    pgsSegmentArtifact* GetSegmentArtifact(SegmentIndexType segIdx);
 
-   void AddClosurePourArtifact(const pgsClosurePourArtifact& artifact);
-   const pgsClosurePourArtifact* GetClosurePourArtifact(SegmentIndexType segIdx) const;
-   pgsClosurePourArtifact* GetClosurePourArtifact(SegmentIndexType segIdx);
-
    void SetTendonStressArtifact(DuctIndexType ductIdx,const pgsTendonStressArtifact& artifact);
    const pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx) const;
    pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx);
@@ -91,6 +86,14 @@ public:
    IndexType GetDeflectionCheckArtifactCount();
    pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact(IndexType idx);
    const pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact(IndexType idx) const;
+
+
+   // Returns true if a "with rebar" allowable tension stress was used anywhere along the girder
+   bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const;
+
+   // Returns true if a flexural stress check is applicable anywhere along the girder
+   bool IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::GirderFace face) const;
+
 
    Float64 GetRequiredConcreteStrength() const;
    Float64 GetRequiredReleaseStrength() const;
@@ -108,8 +111,6 @@ private:
    std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>> m_FlexuralCapacityArtifacts[pgsTypes::LimitStateCount];
 
    std::set<pgsSegmentArtifact> m_SegmentArtifacts;
-   std::set<pgsClosurePourArtifact> m_ClosurePourArtifacts;
-
 
    std::vector<pgsDeflectionCheckArtifact> m_DeflectionCheckArtifact;
 };

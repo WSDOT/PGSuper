@@ -56,6 +56,25 @@ struct UserData
    StrandIndexType strandIdx1, strandIdx2;
 };
 
+
+class CDebondGridData : public CGXAbstractUserAttribute
+{
+public:
+   CDebondGridData(GridIndexType gridIdx,StrandIndexType strandIdx1,StrandIndexType strandIdx2) :
+      m_GridIdx(gridIdx), m_StrandIdx1(strandIdx1), m_StrandIdx2(strandIdx2)
+   {
+   }
+
+   virtual CGXAbstractUserAttribute* Clone() const
+   {
+      return new CDebondGridData(m_GridIdx,m_StrandIdx1,m_StrandIdx2);
+   }
+
+   GridIndexType m_GridIdx;
+   StrandIndexType m_StrandIdx1, m_StrandIdx2;
+};
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDebondGrid
 
@@ -334,10 +353,7 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
       if (strandIdx1 != INVALID_INDEX)
       {
          // put the strand number in the first column
-         UserData* pUserData = new UserData;
-         pUserData->gridIdx = gridIdx;
-         pUserData->strandIdx1 = strandIdx1;
-         pUserData->strandIdx2 = strandIdx2;
+         CDebondGridData userData(gridIdx,strandIdx1,strandIdx2);
 
          StrandIndexType permIdx1;
          strandids->get_Item(strandIdx1, &permIdx1); // Get permanent strand index from library
@@ -357,7 +373,7 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
             str.Format(_T("%d-%d"),permIdx1+1,permIdx2+1);
          }
 
-         SetStyleRange(CGXRange(row,0),CGXStyle().SetValue(str).SetItemDataPtr((void*)pUserData));
+         SetStyleRange(CGXRange(row,0),CGXStyle().SetValue(str).SetUserAttribute(0,userData));
 
          // disable debond cells for rows where the strands cannot be debonded
          StrandIndexType is_debondable = 0;
@@ -506,7 +522,8 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
    {
       CGXStyle style;
       GetStyleRowCol(row+1,0,style);
-      UserData* pUserData = (UserData*)style.GetItemDataPtr(); // user data we set at fill time
+
+      const CDebondGridData& userData = dynamic_cast<const CDebondGridData&>(style.GetUserAttribute(0));
 
       ////////////// Strand Index ////////////////////
       CString strDebondCheck = GetCellValue(row+1,1);
@@ -514,7 +531,7 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
       {
          CDebondData debond_info;
 
-         debond_info.strandTypeGridIdx = pUserData->gridIdx;
+         debond_info.strandTypeGridIdx = userData.m_GridIdx;
 
          ///////// Debond Length - Left ///////////////
          Float64 length = GetLeftDebondLength(row+1);
@@ -540,8 +557,8 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
             CString strCheck = GetCellValue(row+1,c);
             if ( strCheck == _T("1") )
             {
-               ATLASSERT( pUserData->gridIdx != INVALID_INDEX );
-               segment.Strands.AddExtendedStrand(pgsTypes::Straight,c == FIRST_EXTEND_COL ? pgsTypes::metStart : pgsTypes::metEnd,pUserData->gridIdx);
+               ATLASSERT( userData.m_GridIdx != INVALID_INDEX );
+               segment.Strands.AddExtendedStrand(pgsTypes::Straight,c == FIRST_EXTEND_COL ? pgsTypes::metStart : pgsTypes::metEnd,userData.m_GridIdx);
             }
          }
       }
@@ -582,9 +599,9 @@ ROWCOL CGirderDescDebondGrid::GetRow(GridIndexType gridIdx)
       CGXStyle style;
       GetStyleRowCol(row+1,0,style);
 
-      UserData* pUserData = (UserData*)style.GetItemDataPtr(); // user data we set at fill time
+      const CDebondGridData& userData = dynamic_cast<const CDebondGridData&>(style.GetUserAttribute(0));
 
-      if ( pUserData->gridIdx == gridIdx )
+      if ( userData.m_GridIdx == gridIdx )
          return row+1;
    }
 
@@ -675,13 +692,13 @@ StrandIndexType CGirderDescDebondGrid::GetNumDebondedStrands()
    {
       CGXStyle style;
       GetStyleRowCol(row+1,0,style);
-      UserData* pUserData = (UserData*)style.GetItemDataPtr();
+      const CDebondGridData& userData = dynamic_cast<const CDebondGridData&>(style.GetUserAttribute(0));
 
       CString strDebondCheck = GetCellValue(row+1, DEBOND_CHECK_COL);
-      if ( pUserData->strandIdx1 != INVALID_INDEX && strDebondCheck == _T("1") )
+      if ( userData.m_StrandIdx1 != INVALID_INDEX && strDebondCheck == _T("1") )
          nStrands++;
 
-      if ( pUserData->strandIdx2 != INVALID_INDEX && strDebondCheck == _T("1") )
+      if ( userData.m_StrandIdx2 != INVALID_INDEX && strDebondCheck == _T("1") )
          nStrands++;
    }
 
@@ -697,17 +714,17 @@ StrandIndexType CGirderDescDebondGrid::GetNumExtendedStrands(pgsTypes::MemberEnd
    {
       CGXStyle style;
       GetStyleRowCol(row+1,0,style);
-      UserData* pUserData = (UserData*)style.GetItemDataPtr();
+      const CDebondGridData& userData = dynamic_cast<const CDebondGridData&>(style.GetUserAttribute(0));
 
       if (endType==pgsTypes::metStart)
       {
          CString strExtendLeft  = GetCellValue(row+1, FIRST_EXTEND_COL);
          if ( strExtendLeft == _T("1") )
          {
-            if(pUserData->strandIdx1!=INVALID_INDEX)
+            if(userData.m_StrandIdx1!=INVALID_INDEX)
                nStrands++;
 
-            if(pUserData->strandIdx2!=INVALID_INDEX)
+            if(userData.m_StrandIdx2!=INVALID_INDEX)
                nStrands++;
          }
       }
@@ -716,10 +733,10 @@ StrandIndexType CGirderDescDebondGrid::GetNumExtendedStrands(pgsTypes::MemberEnd
          CString strExtendRight = GetCellValue(row+1, LAST_EXTEND_COL);
          if ( strExtendRight == _T("1") )
          {
-            if(pUserData->strandIdx1!=INVALID_INDEX)
+            if(userData.m_StrandIdx1!=INVALID_INDEX)
                nStrands++;
 
-            if(pUserData->strandIdx2!=INVALID_INDEX)
+            if(userData.m_StrandIdx2!=INVALID_INDEX)
                nStrands++;
          }
       }

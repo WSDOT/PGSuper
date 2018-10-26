@@ -32,7 +32,7 @@
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\PhysicalConverter.h>
 
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -72,7 +72,7 @@ m_XAxisType(X_AXIS_TIME_LOG)
 {
    m_pGraphController = new CConcretePropertyGraphController;
 
-   m_Scalar.Width = 5;
+   m_Scalar.Width = 7;
    m_Scalar.Precision = 0;
    m_Scalar.Format = sysNumericFormatTool::Fixed;
 
@@ -89,7 +89,7 @@ m_XAxisType(X_AXIS_TIME_LOG)
 {
    m_pGraphController = new CConcretePropertyGraphController;
 
-   m_Scalar.Width = 5;
+   m_Scalar.Width = 7;
    m_Scalar.Precision = 0;
    m_Scalar.Format = sysNumericFormatTool::Fixed;
 }
@@ -158,10 +158,10 @@ int CConcretePropertyGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
 
    m_Graph.SetTitle(_T("Concrete Properties"));
 
-   // x axis
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtScalar& timeUnit = pDisplayUnits->GetScalarFormat();
-   m_pTimeFormat = new ScalarTool(timeUnit);
+
+   // x axis
+   m_pTimeFormat = new ScalarTool(m_Scalar);
    m_pIntervalFormat = new ScalarTool(m_Scalar);
    m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
@@ -308,7 +308,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphTitle()
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      const CClosurePourData* pClosure = pIBridgeDesc->GetClosurePourData(m_ClosureKey);
+      const CClosureJointData* pClosure = pIBridgeDesc->GetClosureJointData(m_ClosureKey);
       CString strLabel;
       if ( pClosure->GetTemporarySupport() )
          strLabel = GetLabel(pClosure->GetTemporarySupport(),pDisplayUnits);
@@ -316,7 +316,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphTitle()
          strLabel = GetLabel(pClosure->GetPier(),pDisplayUnits);
 
 
-      strElement.Format(_T("Closure Pour at %s"),strLabel);
+      strElement.Format(_T("Closure Joint at %s"),strLabel);
    }
    else
    {
@@ -345,7 +345,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
          startIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
       else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
-         startIntervalIdx = pIntervals->GetCompositeClosurePourInterval(m_ClosureKey);
+         startIntervalIdx = pIntervals->GetCompositeClosureJointInterval(m_ClosureKey);
       else
          startIntervalIdx = pIntervals->GetCompositeDeckInterval();
    }
@@ -363,7 +363,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
          if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
             xMiddle = pMaterials->GetSegmentConcreteAge(m_SegmentKey,intervalIdx);
          else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
-            xMiddle = pMaterials->GetClosurePourConcreteAge(m_ClosureKey,intervalIdx);
+            xMiddle = pMaterials->GetClosureJointConcreteAge(m_ClosureKey,intervalIdx);
          else
             xMiddle = pMaterials->GetDeckConcreteAge(intervalIdx);
       }
@@ -389,11 +389,11 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       {
          if ( m_GraphType == GRAPH_TYPE_FC )
          {
-            value = pMaterials->GetClosurePourFc(m_ClosureKey,intervalIdx);
+            value = pMaterials->GetClosureJointFc(m_ClosureKey,intervalIdx);
          }
          else
          {
-            value = pMaterials->GetClosurePourEc(m_ClosureKey,intervalIdx);
+            value = pMaterials->GetClosureJointEc(m_ClosureKey,intervalIdx);
          }
       }
       else if ( m_GraphElement = GRAPH_ELEMENT_DECK )

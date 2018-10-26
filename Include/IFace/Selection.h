@@ -25,6 +25,18 @@
 #include <WbflTypes.h>
 #include <PgsExt\SegmentKey.h>
 
+struct CSelection
+{
+public:
+   enum Type { None, Pier, Span, Girder, Segment, ClosureJoint, TemporarySupport, Deck, Alignment } Type;
+   SpanIndexType SpanIdx;
+   PierIndexType PierIdx;
+   GroupIndexType GroupIdx;
+   GirderIndexType GirderIdx;
+   SegmentIndexType SegmentIdx;
+   SupportIDType tsID; // ID of the selected temporary support
+};
+
 /*****************************************************************************
 INTERFACE
    ISelection
@@ -39,52 +51,26 @@ DEFINE_GUID(IID_ISelection,
 0xa37216c6, 0xe800, 0x4ac9, 0x89, 0x9d, 0x25, 0x18, 0x40, 0x7e, 0x8, 0x1c);
 interface ISelection : IUnknown
 {
-   virtual PierIndexType GetPierIndex() = 0;
-   virtual SpanIndexType GetSpanIndex() = 0;
-   virtual GirderIndexType GetGirderIndex() = 0;
+   virtual CSelection GetSelection() = 0;
+   virtual void ClearSelection() = 0;
+
+   virtual PierIndexType GetSelectedPier() = 0;
+   virtual SpanIndexType GetSelectedSpan() = 0;
+   virtual CGirderKey GetSelectedGirder() = 0;
+   virtual CSegmentKey GetSelectedSegment() = 0;
+   virtual CClosureKey GetSelectedClosureJoint() = 0;
+   virtual SupportIDType GetSelectedTemporarySupport() = 0;
+   virtual bool IsDeckSelected() = 0;
+   virtual bool IsAlignmentSelected() = 0;
+
    virtual void SelectPier(PierIndexType pierIdx) = 0;
    virtual void SelectSpan(SpanIndexType spanIdx) = 0;
    virtual void SelectGirder(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetSectionCutStation() = 0; // bridge model view section cut station
-};
-
-
-struct CSelection
-{
-public:
-   enum Type { None, Pier, Span, Girder, Segment, ClosurePour, TemporarySupport, Deck, Alignment } Type;
-   SpanIndexType SpanIdx;
-   PierIndexType PierIdx;
-   GroupIndexType GroupIdx;
-   GirderIndexType GirderIdx;
-   SegmentIndexType SegmentIdx;
-   
-   SupportIDType tsID; // ID of the selected temporary support
-};
-
-
-/*****************************************************************************
-INTERFACE
-   ISelectionEx
-
-   Interface for interrogating the UI for the current selection
-
-DESCRIPTION
-   Interface for interrogating the UI for the current selection.
-
-   ISelection is obsolute, use ISelectionEx
-*****************************************************************************/
-// {7CDC51A1-57DF-43bc-A828-5933AC369766}
-DEFINE_GUID(IID_ISelectionEx, 
-0x7cdc51a1, 0x57df, 0x43bc, 0xa8, 0x28, 0x59, 0x33, 0xac, 0x36, 0x97, 0x66);
-interface ISelectionEx : ISelection
-{
-   // returns information about the current selection
-   virtual CSelection GetSelection() = 0;
-
+   virtual void SelectSegment(const CSegmentKey& segmentKey) = 0;
+   virtual void SelectClosureJoint(const CClosureKey& closureKey) = 0;
+   virtual void SelectTemporarySupport(SupportIDType tsID) = 0;
    virtual void SelectDeck() = 0;
    virtual void SelectAlignment() = 0;
-   virtual void ClearSelection() = 0;
 
-   virtual void SelectSegment(const CSegmentKey& segmentKey) = 0;
+   virtual Float64 GetSectionCutStation() = 0; // bridge model view section cut station
 };

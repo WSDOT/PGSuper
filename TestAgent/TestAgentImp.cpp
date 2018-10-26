@@ -653,8 +653,8 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
       // unit conversions
       pm = ::ConvertFromSysUnits(pm, unitMeasure::NewtonMillimeter);
       nm = ::ConvertFromSysUnits(nm, unitMeasure::NewtonMillimeter);
-      Float64 ps = ::ConvertFromSysUnits(max(sps.Left(),sps.Right()), unitMeasure::Newton);
-      Float64 ns = ::ConvertFromSysUnits(min(sns.Left(),sns.Right()), unitMeasure::Newton);
+      Float64 ps = ::ConvertFromSysUnits(Max(sps.Left(),sps.Right()), unitMeasure::Newton);
+      Float64 ns = ::ConvertFromSysUnits(Min(sns.Left(),sns.Right()), unitMeasure::Newton);
       pd = ::ConvertFromSysUnits(pd, unitMeasure::Millimeter);
       nd = ::ConvertFromSysUnits(nd, unitMeasure::Millimeter);
 
@@ -1600,8 +1600,11 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50054, "<<loc<<", "<< QUITE(scd.ex) <<",15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50055, "<<loc<<", "<< QUITE(scd.Fe) <<",15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50056, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Theta, unitMeasure::Degree)) <<",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50057, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpo, unitMeasure::MPa)) <<",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50058, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpe, unitMeasure::MPa)) <<",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50057, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpops, unitMeasure::MPa)) <<",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50058, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpeps, unitMeasure::MPa)) <<",15, "<<gdrIdx<<std::endl;
+#pragma Reminder("UPDATE: add these tests after matching with old results")
+      //resultsFile<<bridgeId<<", "<<pid<<", 50059, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpopt, unitMeasure::MPa)) <<",15, "<<gdrIdx<<std::endl;
+      //resultsFile<<bridgeId<<", "<<pid<<", 50060, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpept, unitMeasure::MPa)) <<",15, "<<gdrIdx<<std::endl;
 
       IndexType idx = it - vPoi.begin();
 

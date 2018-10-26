@@ -70,7 +70,7 @@ public:
    void SelectSpan(SpanIndexType spanIdx);
    void SelectGirder(const CGirderKey& girderKey);
    void SelectSegment(const CSegmentKey& segmentKey);
-   void SelectClosurePour(const CSegmentKey& closureKey);
+   void SelectClosureJoint(const CSegmentKey& closureKey);
    void SelectTemporarySupport(SupportIDType tsID);
    void SelectDeck();
    void SelectAlignment();

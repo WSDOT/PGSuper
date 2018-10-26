@@ -300,10 +300,10 @@ void CUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : height-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : height-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : height-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : height-endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - height : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - height : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - height : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - height : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(height, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -837,7 +837,7 @@ void CUBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dim
    Float64 W1 = GetDimension(dimensions,_T("W1"));
    Float64 W2 = GetDimension(dimensions,_T("W2"));
 
-   Float64 gw = max(W1, W2);
+   Float64 gw = Max(W1, W2);
 
 
    if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
@@ -904,4 +904,9 @@ void CUBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions,
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
+}
+
+GirderIndexType CUBeamFactory::GetMinimumBeamCount()
+{
+   return 1;
 }

@@ -121,11 +121,15 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
    IntervalIndexType lastIntervalIdx = vIntervals.back();
-   IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(CSegmentKey(girderKey,0));
-   IntervalIndexType liftingIntervalIdx       = pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,0));
-   IntervalIndexType haulingIntervalIdx       = pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,0));
+   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(CSegmentKey(girderKey,0));
+   IntervalIndexType liftingIntervalIdx   = pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,0));
+   IntervalIndexType haulingIntervalIdx   = pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,0));
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
+
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
+   std::vector<pgsTypes::LimitState> vLimitStates(pAllowableConcreteStress->GetStressCheckLimitStates());
+
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pPara << _T("Stress Limitations on Prestressing Tendons [5.9.3]");
@@ -148,7 +152,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
 
-#pragma Reminder("UPDATE: need to include closure pour strength requirements")
    Float64 fci_reqd = pGirderArtifact->GetRequiredReleaseStrength();
    Float64 fc_reqd  = pGirderArtifact->GetRequiredConcreteStrength();
    if ( 0 <= fci_reqd )
@@ -197,9 +200,10 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       *p << _T("Actual ") << RPT_FC << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc(segmentKey,lastIntervalIdx)) << rptNewLine;
    }
 
-   // report flexural stresses at various stages
+   // information about continuity and how it impacts the analysis
    CContinuityCheck().Build(pChapter,pBroker,girderKey,pDisplayUnits);
 
+   // report flexural stresses at various intervals
    std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
    std::vector<IntervalIndexType>::iterator end(vIntervals.end());
    for ( ; iter != end; iter++ )
@@ -210,28 +214,36 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       if ( intervalIdx == liftingIntervalIdx || intervalIdx == haulingIntervalIdx )
          continue;
 
-      if ( intervalIdx != lastIntervalIdx )
+      std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
+      std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());
+      for ( ; lsIter != lsIterEnd; lsIter++ )
       {
-         CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,pgsTypes::ServiceI);
-      }
-      else
-      {
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+         pgsTypes::LimitState limitState = *lsIter;
+         if ( pAllowableConcreteStress->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression) ||
+              pAllowableConcreteStress->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension)
+            )
          {
-            CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::ServiceIA,  pgsTypes::Compression);
-         }
-
-         CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression);
-         CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::ServiceIII, pgsTypes::Tension);
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::FatigueI,  pgsTypes::Compression);
+            CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState);
          }
       }
-   }
+
+      //// Deck Stresses
+      //if ( pGirderArtifact->DeckStresses() )
+      //{
+      //   p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      //   p->SetName(_T("Deck Stresses"));
+      //   *p << p->GetName() << rptNewLine;
+      //   *pChapter << p;
+
+      //   CDeckStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState);
+      //}
+   } // next interval
 
    // Flexural Capacity
+   p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   p->SetName(_T("Ultimate Moment Capacity"));
+   *p << p->GetName() << rptNewLine;
+   *pChapter << p;
 
    // NOTE
    // No longer designing/checking for ultimate moment in temporary construction state
@@ -242,7 +254,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    p = new rptParagraph;
    bool bOverReinforced;
-   p->SetName(_T("Moment Capacities"));
    *p << CFlexuralCapacityCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::StrengthI,true,&bOverReinforced) << rptNewLine;
    if ( bOverReinforced )
    {
@@ -308,9 +319,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // Vertical Shear check
-   p = new rptParagraph;
-   p->SetName(_T("Shear"));
+   p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   p->SetName(_T("Ultimate Shear Capacity"));
+   *p << p->GetName() << rptNewLine;
    *pChapter << p;
+
+   p = new rptParagraph;
+   *pChapter << p;
+
    bool bStrutAndTieRequired;
    *p << CShearCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
 
@@ -407,6 +423,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       *p << atable << rptNewLine;
       *pChapter << p;
    }
+
+   // Camber Check
+   CConstructabilityCheckTable().BuildCamberCheck(pChapter,pBroker,girderKey,pDisplayUnits);
 
    // Global Stability Check
    CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,pGirderArtifact,pDisplayUnits);

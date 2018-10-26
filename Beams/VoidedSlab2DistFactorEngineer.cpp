@@ -593,7 +593,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
 
       // s and t for top and bottom
       Float64 s_top = Width - t_ext;
-      Float64 t_top = (Height - (nIntVoids == 0 ? ExtVoidDiameter : max(IntVoidDiameter,ExtVoidDiameter)))/2;
+      Float64 t_top = (Height - (nIntVoids == 0 ? ExtVoidDiameter : Max(IntVoidDiameter,ExtVoidDiameter)))/2;
 
       // length of internal, vertical elements between voids
       Float64 s_int = Height - t_top;

@@ -104,7 +104,7 @@ interface IGirderLiftingSpecCriteria : IUnknown
 
    virtual Float64 GetLiftingModulusOfRupture(const CSegmentKey& segmentKey)= 0;
    virtual Float64 GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType) = 0;
-   virtual Float64 GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) = 0;
 
    virtual Float64 GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const = 0;
    virtual Float64 GetLiftingPointLocationAccuracy() const = 0;
@@ -151,7 +151,7 @@ interface IGirderHaulingSpecCriteria : IUnknown
 
    virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey)= 0;
    virtual Float64 GetHaulingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType) = 0;
-   virtual Float64 GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) = 0;
 
    // Truck parameters
    virtual RollStiffnessMethod GetRollStiffnessMethod() const = 0;

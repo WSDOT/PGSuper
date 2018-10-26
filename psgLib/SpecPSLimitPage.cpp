@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// SpecPSLimitPage.cpp : implementation file
+// SpecStrandPage.cpp : implementation file
 //
 
 #include "stdafx.h"
@@ -36,34 +36,34 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CSpecPSLimitPage property page
+// CSpecStrandPage property page
 
-IMPLEMENT_DYNCREATE(CSpecPSLimitPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CSpecStrandPage, CPropertyPage)
 
-CSpecPSLimitPage::CSpecPSLimitPage() : CPropertyPage(CSpecPSLimitPage::IDD,IDS_SPEC_STRAND)
+CSpecStrandPage::CSpecStrandPage() : CPropertyPage(CSpecStrandPage::IDD)
 {
-	//{{AFX_DATA_INIT(CSpecPSLimitPage)
+	//{{AFX_DATA_INIT(CSpecStrandPage)
 	//}}AFX_DATA_INIT
 }
 
-CSpecPSLimitPage::~CSpecPSLimitPage()
+CSpecStrandPage::~CSpecStrandPage()
 {
 }
 
-void CSpecPSLimitPage::DoDataExchange(CDataExchange* pDX)
+void CSpecStrandPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CSpecPSLimitPage)
+	//{{AFX_DATA_MAP(CSpecStrandPage)
 	//}}AFX_DATA_MAP
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
    // dad is a friend of the entry. use him to transfer data.
-   pDad->ExchangePSLimitData(pDX);
+   pDad->ExchangeStrandData(pDX);
 
 }
 
 
-BEGIN_MESSAGE_MAP(CSpecPSLimitPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CSpecPSLimitPage)
+BEGIN_MESSAGE_MAP(CSpecStrandPage, CPropertyPage)
+	//{{AFX_MSG_MAP(CSpecStrandPage)
 	ON_BN_CLICKED(IDC_CHECK_PS_AT_JACKING, OnPsChecked)
 	ON_BN_CLICKED(IDC_CHECK_PS_BEFORE_TRANSFER, OnPsChecked)
 	ON_BN_CLICKED(IDC_CHECK_PT_AT_JACKING, OnPtChecked)
@@ -74,9 +74,9 @@ BEGIN_MESSAGE_MAP(CSpecPSLimitPage, CPropertyPage)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CSpecPSLimitPage message handlers
+// CSpecStrandPage message handlers
 
-BOOL CSpecPSLimitPage::OnInitDialog() 
+BOOL CSpecStrandPage::OnInitDialog() 
 {
 	CPropertyPage::OnInitDialog();
 	
@@ -89,31 +89,31 @@ BOOL CSpecPSLimitPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-LRESULT CSpecPSLimitPage::OnCommandHelp(WPARAM, LPARAM lParam)
+LRESULT CSpecStrandPage::OnCommandHelp(WPARAM, LPARAM lParam)
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SPEC_STRAND );
    return TRUE;
 }
 
-void CSpecPSLimitPage::OnPsChecked() 
+void CSpecStrandPage::OnPsChecked() 
 {
 	EnableControls(IsDlgButtonChecked(IDC_CHECK_PS_AT_JACKING),IDC_PS_AT_JACKING_SR,IDC_PS_AT_JACKING_LR);
 	EnableControls(IsDlgButtonChecked(IDC_CHECK_PS_BEFORE_TRANSFER),IDC_PS_BEFORE_TRANSFER_SR,IDC_PS_BEFORE_TRANSFER_LR);
 }
 
-void CSpecPSLimitPage::OnPtChecked() 
+void CSpecStrandPage::OnPtChecked() 
 {
 	EnableControls(IsDlgButtonChecked(IDC_CHECK_PT_AT_JACKING),IDC_PT_AT_JACKING_SR,IDC_PT_AT_JACKING_LR);
 	EnableControls(IsDlgButtonChecked(IDC_CHECK_PT_BEFORE_TRANSFER),IDC_PT_BEFORE_TRANSFER_SR,IDC_PT_BEFORE_TRANSFER_LR);
 }
 
-void CSpecPSLimitPage::EnableControls(BOOL bEnable,UINT nSR,UINT nLR)
+void CSpecStrandPage::EnableControls(BOOL bEnable,UINT nSR,UINT nLR)
 {
    GetDlgItem(nSR)->EnableWindow(bEnable);
    GetDlgItem(nLR)->EnableWindow(bEnable);
 }
 
-void CSpecPSLimitPage::OnCheckPsAfterTransfer() 
+void CSpecStrandPage::OnCheckPsAfterTransfer() 
 {
 	EnableControls(IsDlgButtonChecked(IDC_CHECK_PS_AFTER_TRANSFER),IDC_PS_AFTER_TRANSFER_SR,IDC_PS_AFTER_TRANSFER_LR);
 }

@@ -363,7 +363,7 @@ STDMETHODIMP_(HRESULT) CPointLoadDrawStrategyImpl::XEditLoad::DeleteLoad()
 
 void CPointLoadDrawStrategyImpl::GetTSymbolSize(iCoordinateMap* pMap, long* psx, long* psy)
 {
-   Float64 frac = max( (fabs(m_Load.m_Magnitude)/m_MaxMagnitude), 1.0/6.0); // minimum symbol size
+   Float64 frac = Max( (fabs(m_Load.m_Magnitude)/m_MaxMagnitude), 1.0/6.0); // minimum symbol size
    if (frac!=0.0)
       *psy = long(floor(frac * SSIZE));
    else

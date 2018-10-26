@@ -132,6 +132,9 @@ interface IPosttensionForce : IUnknown
    // if bIncludeMaxLiveLoad is true, the elastic stress due to the maximum Service III live load is included in the tendon stress.
    // if both bIncludeMinLiveLoad and bIncludeMaxLiveLoad are true, the live load stress that maximizes the tendon stress is used.
    virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad=false,bool bIncludeMaxLiveLoad=false) = 0;
+
+   // returns the vertical component of the post-tension force
+   virtual Float64 GetVerticalTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,DuctIndexType ductIdx) = 0;
 };
 
 /*****************************************************************************
@@ -170,6 +173,7 @@ interface ILosses : IUnknown
    virtual Float64 GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) = 0;
    virtual Float64 GetAnchorSetZoneLength(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) = 0;
    virtual Float64 GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) = 0;
+   virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) = 0;
 };
 
 #endif // INCLUDED_IFACE_PRESTRESS_H_

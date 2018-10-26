@@ -306,8 +306,10 @@ void CBridgeSectionView::OnInitialUpdate()
 
    CDisplayView::OnInitialUpdate();
 
-   UpdateDisplayObjects();
-   UpdateDrawingScale();
+   // OnInitialUpdate eventually calls OnUpdate... OnUpdate calls the
+   // following two methods so there isn't any need to call them here
+   //UpdateDisplayObjects();
+   //UpdateDrawingScale();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -402,7 +404,7 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
       case CSelection::Girder:
       case CSelection::Segment:
-      case CSelection::ClosurePour:
+      case CSelection::ClosureJoint:
          this->SelectGirder( CSegmentKey(pSelection->GroupIdx,pSelection->GirderIdx,INVALID_INDEX),true);
          break;
 
@@ -498,8 +500,8 @@ void CBridgeSectionView::OnSize(UINT nType, int cx, int cy)
    rect.DeflateRect(15,15,15,15);
 
    CSize size = rect.Size();
-   size.cx = max(0,size.cx);
-   size.cy = max(0,size.cy);
+   size.cx = Max(0L,size.cx);
+   size.cy = Max(0L,size.cy);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -625,6 +627,11 @@ void CBridgeSectionView::UpdateGirderTooltips()
                LABEL_SEGMENT(segmentKey.segmentIndex));
 
             strMsg += strSegID;
+
+            CString strGirderID;
+            strGirderID.Format(_T("\r\n\r\nGirder ID: %d"),pSegment->GetGirder()->GetID());
+
+            strMsg += strGirderID;
 #endif // _DEBUG
 
       pDO->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -926,6 +933,9 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
 
    dispObj->RegisterEventSink(events);
 
+   unk->Release();
+   events.Release();
+
    
    CString strMsg1(_T("Double click to edit slab.\r\nRight click for more options."));
 
@@ -1181,7 +1191,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    Float64 left_elev  = pRoadway->GetElevation(m_pFrame->GetCurrentCutLocation(),left_offset);
    Float64 right_elev = pRoadway->GetElevation(m_pFrame->GetCurrentCutLocation(),right_offset);
 
-   Float64 elev = _cpp_max(left_elev,right_elev);
+   Float64 elev = Max(left_elev,right_elev);
 
    CComPtr<IPoint2d> p1, p2;
    p1.CoCreateInstance(CLSID_Point2d);
@@ -1351,7 +1361,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       Float64 y;
       p->get_Y(&y);
-      yLowest = _cpp_min(y,yLowest);
+      yLowest = Min(y,yLowest);
    }
 
    // make a dimension line for each spacing group

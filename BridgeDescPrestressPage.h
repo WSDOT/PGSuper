@@ -131,6 +131,11 @@ protected:
    StrandIndexType StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
    StrandIndexType PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd );
 
+   Float64 m_HgStart;
+   Float64 m_HgHp1;
+   Float64 m_HgHp2;
+   Float64 m_HgEnd;
+
    HarpedStrandOffsetType m_OldHpMeasureType;
    HarpedStrandOffsetType m_OldEndMeasureType;
 

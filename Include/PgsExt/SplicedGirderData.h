@@ -29,7 +29,8 @@
 
 class CGirderGroupData;
 class CPierData2;
-class CClosurePourData;
+class CClosureJointData;
+class CTimelineManager;
 
 /*****************************************************************************
 CLASS 
@@ -105,12 +106,12 @@ public:
 
 
    // =================================================================================
-   // Closure Pours (occuring between segments)
+   // Closure Joints (occuring between segments)
    // =================================================================================
-   CollectionIndexType GetClosurePourCount() const;
-   CClosurePourData* GetClosurePour(CollectionIndexType idx);
-   const CClosurePourData* GetClosurePour(CollectionIndexType idx) const;
-   void SetClosurePour(CollectionIndexType idx,const CClosurePourData& closure);
+   CollectionIndexType GetClosureJointCount() const;
+   CClosureJointData* GetClosureJoint(CollectionIndexType idx);
+   const CClosureJointData* GetClosureJoint(CollectionIndexType idx) const;
+   void SetClosureJoint(CollectionIndexType idx,const CClosureJointData& closure);
 
 
    // =================================================================================
@@ -152,28 +153,32 @@ protected:
 
    void UpdateLinks();
    void UpdateSegments();
-   void ClearSegments();
-   void ClearClosures();
+   void DeleteSegments();
+   void DeleteClosures();
    void Resize(SegmentIndexType nSegments);
 
    // Call this method when a segment is being removed from a girder
    // It removes references to this segment from the timeline manager
    void RemoveSegmentFromTimelineManager(const CPrecastSegmentData* pSegment);
+   void RemoveSegmentsFromTimelineManager();
 
    void AddSegmentToTimelineManager(const CPrecastSegmentData* pSegment,const CPrecastSegmentData* pNewSegment);
 
    // Call this method when a closure is being removed from a girder
    // It removes references to this closure from the timeline manager
-   void RemoveClosurePourFromTimelineManager(const CClosurePourData* pClosure);
+   void RemoveClosureJointFromTimelineManager(const CClosureJointData* pClosure);
+   void RemoveClosureJointsFromTimelineManager();
 
-   // Call this method when a closure pour is created.
-   void AddClosureToTimelineManager(const CClosurePourData* pClosure,EventIndexType castClosureEventIdx);
+   // Call this method when a closure joint is created.
+   void AddClosureToTimelineManager(const CClosureJointData* pClosure,EventIndexType castClosureEventIdx);
 
    // Initializes the girder by creating a single segment. 
    // Called by CGirderGroupData when new girders are created. 
    // In this context "new" means a 100% new girder, not a new girder that is a copy
    // of another girder.
    void Initialize();
+
+   CTimelineManager* GetTimelineManager();
 
    // Girder Group Reference
 
@@ -183,7 +188,7 @@ protected:
    CGirderGroupData* m_pGirderGroup;
 
    std::vector<CPrecastSegmentData*> m_Segments; // owned by this object
-   std::vector<CClosurePourData*> m_Closures;    // owned by this object
+   std::vector<CClosureJointData*> m_Closures;    // owned by this object
 
    std::_tstring m_GirderType;
    const GirderLibraryEntry* m_pGirderLibraryEntry;
@@ -202,4 +207,5 @@ protected:
    friend CBridgeDescription2;
    friend CGirderGroupData;
    friend CPierData2;
+   friend CTemporarySupportData;
 };

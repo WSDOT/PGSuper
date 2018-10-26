@@ -24,6 +24,11 @@
 #include <PgsExt\PgsExtExp.h>
 #include <Reporter\Reporter.h>
 
+#define CDR_NA   -1  // reports "N/A"
+#define CDR_SKIP -2  // reports "-"
+#define CDR_INF  9999999 // reports infinity symbol
+#define CDR_LARGE 10 // anything larger than this value is reported as 10+
+
 /*****************************************************************************
 CLASS 
    rptCapacityToDemand
@@ -78,6 +83,7 @@ public:
    virtual rptReportContent* CreateClone() const;
 
    //------------------------------------------------------------------------
+   virtual rptReportContent& SetValue(Float64 cdr);
    virtual rptReportContent& SetValue(Float64 capacity, Float64 demand, bool passed);
 
    //------------------------------------------------------------------------
@@ -94,6 +100,8 @@ private:
    Float64 m_Capacity;
    Float64 m_Demand;
    bool    m_Passed;
+
+   Float64 m_CDR;
 
    sysNumericFormatTool m_FormatTool;
    rptRcSymbol m_RcSymbolInfinity;

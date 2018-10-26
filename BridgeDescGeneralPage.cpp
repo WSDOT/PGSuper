@@ -949,19 +949,7 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
 
 void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
 {
-   // Determine minimum number of girders
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(m_GirderName);
-
-   CComPtr<IGirderSection> section;
-   m_Factory->CreateGirderSection(pBroker,0,pGdrEntry->GetDimensions(),-1,-1,&section);
-
-   WebIndexType nWebs;
-   section->get_WebCount(&nWebs);
-
-   m_MinGirderCount = (1 < nWebs ? 1 : 2);
+   m_MinGirderCount = m_Factory->GetMinimumBeamCount();
 
    if ( m_NumGdrSpinner.GetSafeHwnd() != NULL )
       m_NumGdrSpinner.SetRange(short(m_MinGirderCount),MAX_GIRDERS_PER_SPAN);
@@ -1195,7 +1183,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
             const GirderLibraryEntry* pEntry = pGroup->GetGirderLibraryEntry(gdrIdx);
-            w += max(pEntry->GetBeamWidth(pgsTypes::metStart),pEntry->GetBeamWidth(pgsTypes::metEnd));
+            w += Max(pEntry->GetBeamWidth(pgsTypes::metStart),pEntry->GetBeamWidth(pgsTypes::metEnd));
          }
 
          CDeckPoint deckPoint;
@@ -1309,14 +1297,14 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          if ( IsGirderSpacing(m_GirderSpacingType) )
          {
             // girder spacing
-            m_MinGirderSpacing = _cpp_max(_cpp_max(min1,min2),m_MinGirderSpacing);
-            m_MaxGirderSpacing = _cpp_min(_cpp_min(max1,max2),m_MaxGirderSpacing);
+            m_MinGirderSpacing = Max(Max(min1,min2),m_MinGirderSpacing);
+            m_MaxGirderSpacing = Min(Min(max1,max2),m_MaxGirderSpacing);
          }
          else
          {
             // joint spacing
             m_MinGirderSpacing = 0;
-            m_MaxGirderSpacing = _cpp_min(_cpp_min(max1-min1,max2-min2),m_MaxGirderSpacing);
+            m_MaxGirderSpacing = Min(Min(max1-min1,max2-min2),m_MaxGirderSpacing);
          }
       }
    } // group loop

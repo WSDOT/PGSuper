@@ -56,7 +56,7 @@ inline GirderIndexType GetPierGirderCount(const CPierData2* pPier)
       nNextGirders = pGroup->GetGirderCount();
    }
 
-   GirderIndexType nGirders = max(nPrevGirders, nNextGirders);
+   GirderIndexType nGirders = Max(nPrevGirders, nNextGirders);
    return nGirders;
 }
 

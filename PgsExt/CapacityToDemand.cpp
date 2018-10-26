@@ -137,7 +137,7 @@ void DetermineControllingTensileStress(Float64 fUp, Float64 fNone, Float64 fDown
    if (fUp<=TOLERANCE && fNone<=TOLERANCE && fDown<=TOLERANCE)
    {
       // Entire section is in compression always. Just use max stress for demand and min for capacity
-      *pfCtrl = Max3(fUp, fNone, fDown);
+      *pfCtrl = Max(fUp, fNone, fDown);
       *pCapCtrl = capUp; // which doesn't matter. since we have all compression, they are all minimum
    }
    else
@@ -216,6 +216,21 @@ rptCapacityToDemand& rptCapacityToDemand::operator = (const rptCapacityToDemand&
 rptReportContent* rptCapacityToDemand::CreateClone() const
 {
    return new rptCapacityToDemand( *this );
+}
+
+rptReportContent& rptCapacityToDemand::SetValue(Float64 cdr)
+{
+   m_CDR = cdr;
+   if ( cdr == CDR_INF )
+      return m_RcSymbolInfinity;
+   else if ( cdr == CDR_NA )
+      return rptRcString::SetValue(_T("N/A"));
+   else if ( cdr == CDR_SKIP )
+      return rptRcString::SetValue(_T("-"));
+   else if ( CDR_LARGE <= cdr )
+      return rptRcString::SetValue(_T("10+"));
+   else
+      return rptRcString::SetValue(m_FormatTool.AsString(cdr).c_str());
 }
 
 rptReportContent& rptCapacityToDemand::SetValue(Float64 capacity, Float64 demand, bool passed)

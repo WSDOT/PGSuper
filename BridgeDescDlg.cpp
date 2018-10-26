@@ -105,12 +105,22 @@ BOOL CBridgeDescDlg::OnInitDialog()
 
 BOOL CBridgeDescDlg::OnOK()
 {
-   BOOL bOK = UpdateData(TRUE);
+   BOOL bOK = UpdateData(TRUE); // calls DoDataExchange
    return !bOK;
 }
 
 void CBridgeDescDlg::DoDataExchange(CDataExchange* pDX)
 {
+   // Call UpdateData on the active page because the
+   // various pages depend on each other. This gets
+   // all values out of the controls
+   //
+   // NOTE: if there is an error on the active page
+   // the error message dialog gets displayed twice.
+   // Once when this UpdateData is called and once
+   // after this method returns and MFC processes
+   // the OnKillActive message which inturn calls
+   // UpdateData again.
    CPropertySheet::DoDataExchange(pDX);
    if ( pDX->m_bSaveAndValidate )
    {

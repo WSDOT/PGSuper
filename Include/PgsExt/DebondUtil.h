@@ -244,7 +244,7 @@ inline void TxDOTDebondTool::Compute()
          {
             Float64 curr = *fsit;
 
-            smallest = min(smallest, curr-last);
+            smallest = Min(smallest, curr-last);
             last = curr;
          }
 

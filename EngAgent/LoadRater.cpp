@@ -327,19 +327,19 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
 
       Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
 
-      Float64 DCmin   = min(vDCmin[i].Left(),  vDCmin[i].Right());
-      Float64 DCmax   = max(vDCmax[i].Left(),  vDCmax[i].Right());
-      Float64 DWmin   = min(vDWmin[i].Left(),  vDWmin[i].Right());
-      Float64 DWmax   = max(vDWmax[i].Left(),  vDWmax[i].Right());
-      Float64 LLIMmin = min(vLLIMmin[i].Left(),vLLIMmin[i].Right());
-      Float64 LLIMmax = max(vLLIMmax[i].Left(),vLLIMmax[i].Right());
-      Float64 PLmin   = min(vPLmin[i].Left(),  vPLmin[i].Right());
-      Float64 PLmax   = max(vPLmax[i].Left(),  vPLmax[i].Right());
+      Float64 DCmin   = Min(vDCmin[i].Left(),  vDCmin[i].Right());
+      Float64 DCmax   = Max(vDCmax[i].Left(),  vDCmax[i].Right());
+      Float64 DWmin   = Min(vDWmin[i].Left(),  vDWmin[i].Right());
+      Float64 DWmax   = Max(vDWmax[i].Left(),  vDWmax[i].Right());
+      Float64 LLIMmin = Min(vLLIMmin[i].Left(),vLLIMmin[i].Right());
+      Float64 LLIMmax = Max(vLLIMmax[i].Left(),vLLIMmax[i].Right());
+      Float64 PLmin   = Min(vPLmin[i].Left(),  vPLmin[i].Right());
+      Float64 PLmax   = Max(vPLmax[i].Left(),  vPLmax[i].Right());
 
-      Float64 DC   = max(fabs(DCmin),fabs(DCmax));
-      Float64 DW   = max(fabs(DWmin),fabs(DWmax));
-      Float64 LLIM = max(fabs(LLIMmin),fabs(LLIMmax));
-      Float64 PL   = (bIncludePL ? max(fabs(PLmin),fabs(PLmax)) : 0);
+      Float64 DC   = Max(fabs(DCmin),fabs(DCmax));
+      Float64 DW   = Max(fabs(DWmin),fabs(DWmax));
+      Float64 LLIM = Max(fabs(LLIMmin),fabs(LLIMmax));
+      Float64 PL   = (bIncludePL ? Max(fabs(PLmin),fabs(PLmax)) : 0);
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
          truck_index = (fabs(LLIMmin) < fabs(LLIMmax) ? vMaxTruckIndex[i] : vMinTruckIndex[i]);

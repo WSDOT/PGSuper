@@ -63,8 +63,7 @@ public:
                       const pgsGirderArtifact* pGirderArtifact,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,
-                      pgsTypes::LimitState ls,
-                      pgsTypes::StressType stress=pgsTypes::Tension
+                      pgsTypes::LimitState ls
                       ) const;
 
    //------------------------------------------------------------------------
@@ -76,10 +75,10 @@ public:
                       SegmentIndexType segIdx,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,
-                      pgsTypes::LimitState ls,
-                      pgsTypes::StressType stress=pgsTypes::Tension
+                      pgsTypes::LimitState ls
                       ) const;
 
+   /* Dummy */
    virtual void Build(rptChapter* pChapter,
                       IBroker* pBroker,
                       const pgsSegmentArtifact* pSegmentArtifact,
@@ -93,16 +92,16 @@ public:
    // Builds the notes above stress table
    void BuildNotes(rptChapter* pChapter, 
                    IBroker* pBroker,
-                   const pgsSegmentArtifact* pSegmentArtifact,
-                   IEAFDisplayUnits* pDisplayUnits,
-                   IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   pgsTypes::StressType stress=pgsTypes::Tension) const;
-
-   void BuildNotes(rptChapter* pChapter, 
-                   IBroker* pBroker,
                    const pgsGirderArtifact* pGirderArtifact,
                    SegmentIndexType segIdx,
+                   IEAFDisplayUnits* pDisplayUnits,
+                   IntervalIndexType intervalIdx,
+                   pgsTypes::LimitState ls) const;
+
+   /* Dummy */
+   void BuildNotes(rptChapter* pChapter, 
+                   IBroker* pBroker,
+                   const pgsSegmentArtifact* pSegmentArtifact,
                    IEAFDisplayUnits* pDisplayUnits,
                    IntervalIndexType intervalIdx,
                    pgsTypes::LimitState ls,
@@ -116,8 +115,7 @@ public:
                    SegmentIndexType segIdx,
                    IEAFDisplayUnits* pDisplayUnits,
                    IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   pgsTypes::StressType stress=pgsTypes::Tension) const;
+                   pgsTypes::LimitState ls) const;
 
 protected:
    void MakeCopy(const CFlexuralStressCheckTable& rOther);
@@ -130,8 +128,7 @@ protected:
                    SegmentIndexType segIdx,
                    IEAFDisplayUnits* pDisplayUnits,
                    IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   pgsTypes::StressType stress) const;
+                   pgsTypes::LimitState ls) const;
 
    void BuildAllowStressInformation(rptChapter* pChapter, 
                    IBroker* pBroker,
@@ -139,8 +136,15 @@ protected:
                    SegmentIndexType segIdx,
                    IEAFDisplayUnits* pDisplayUnits,
                    IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   pgsTypes::StressType stress) const;
+                   pgsTypes::LimitState ls) const;
+
+   void BuildAllowStressInformation(rptParagraph* pPara, 
+                                    IBroker* pBroker,
+                                    const pgsSegmentArtifact* pSegmentArtifact,
+                                    IndexType artifactIdx,
+                                    IEAFDisplayUnits* pDisplayUnits,
+                                    IntervalIndexType intervalIdx,
+                                    pgsTypes::LimitState limitState) const;
 
 
 private:

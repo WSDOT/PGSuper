@@ -244,6 +244,12 @@ interface IBeamFactory : IUnknown
    virtual bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)=0;
    virtual void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)=0;
 
+   //---------------------------------------------------------------------------------
+   // Returns the minimum number of girders that can be in a cross section.
+   // Two girders is the typical minimum for single-stem sections. One girder can
+   // be used in a section for multi-step sections like double-tees and U-beams. One
+   // girder can also be used for "wide" girders such as box beams and voided slabs
+   virtual GirderIndexType GetMinimumBeamCount() = 0;
 };
 
 // {E97F7992-BE87-43cf-8657-A477EFC32B47}

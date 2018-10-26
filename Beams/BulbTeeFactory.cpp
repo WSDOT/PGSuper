@@ -394,7 +394,7 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    Float64 t1,t2;
    GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
 
-   Float64 width = min(t1,t2);
+   Float64 width = Min(t1,t2);
    Float64 depth = d1 + d2 + d3 + d4 + d5 + d6 + d7;
 
    harp_rect->put_Width(width);
@@ -414,10 +414,10 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -1069,4 +1069,9 @@ void CBulbTeeFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
+}
+
+GirderIndexType CBulbTeeFactory::GetMinimumBeamCount()
+{
+   return 2;
 }

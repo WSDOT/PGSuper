@@ -71,6 +71,8 @@ DEFINE_GUID(IID_IShearCapacity,
 0xd8882b20, 0x9127, 0x11d2, 0x9d, 0xa0, 0x0, 0x60, 0x97, 0x10, 0xe6, 0xce);
 interface IShearCapacity : IUnknown
 {
+   virtual pgsTypes::GirderFace GetFlexuralTensionSide(pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
+
    virtual Float64 GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
    virtual std::vector<Float64> GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi) = 0;
    virtual void GetShearCapacityDetails(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd) = 0;

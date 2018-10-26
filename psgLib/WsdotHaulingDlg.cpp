@@ -46,6 +46,8 @@ BOOL CWsdotHaulingDlg::OnInitDialog()
 {
    CDialog::OnInitDialog();
 
+   OnCheckHaulingTensMax();
+
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -57,33 +59,25 @@ void CWsdotHaulingDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CWsdotHaulingDlg, CDialog)
-	ON_BN_CLICKED(IDC_CHECK_HAULING_TENS_MAX, OnCheckHaulingTensMax)
+	ON_BN_CLICKED(IDC_CHECK_HAULING_TENSION_MAX, OnCheckHaulingTensMax)
 	ON_BN_CLICKED(IDC_LUMPSUM_METHOD, OnLumpSumMethod)
 	ON_BN_CLICKED(IDC_PERAXLE_METHOD, OnPerAxleMethod)
 END_MESSAGE_MAP()
 
 // CWsdotHaulingDlg message handlers
 
-void CWsdotHaulingDlg::OnCheckHaulingTensMax() 
+void CWsdotHaulingDlg::OnCheckHaulingTensMax()
 {
-	DoCheckMax();
-}
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_HAULING_TENSION_MAX);
+   ASSERT(pchk);
+   BOOL ischk = pchk->GetCheck() == BST_CHECKED;
 
-void CWsdotHaulingDlg::DoCheckMax()
-{
-   if(m_IsHaulingEnabled)
-   {
-      CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_HAULING_TENS_MAX);
-      ASSERT(pchk);
-      BOOL ischk = pchk->GetCheck() == BST_CHECKED;
-
-      CWnd* pwnd = GetDlgItem(IDC_HAULING_TENS_MAX);
-      ASSERT(pwnd);
-      pwnd->EnableWindow(ischk);
-      pwnd = GetDlgItem(IDC_HAULING_TENS_MAX_UNITS);
-      ASSERT(pwnd);
-      pwnd->EnableWindow(ischk);
-   }
+   CWnd* pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX);
+   ASSERT(pwnd);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX_UNIT);
+   ASSERT(pwnd);
+   pwnd->EnableWindow(ischk);
 }
 
 void CWsdotHaulingDlg::OnLumpSumMethod() 
@@ -107,44 +101,4 @@ void CWsdotHaulingDlg::EnableLumpSumMethod(BOOL bEnable)
    GetDlgItem(IDC_AXLE_STIFFNESS_UNITS)->EnableWindow(!bEnable);
    GetDlgItem(IDC_MIN_ROLL_STIFFNESS)->EnableWindow(!bEnable);
    GetDlgItem(IDC_MIN_ROLL_STIFFNESS_UNITS)->EnableWindow(!bEnable);
-}
-
-void CWsdotHaulingDlg::HideControls(bool hide)
-{
-   bool enable = !hide;
-
-   // disable all of the windows
-   EnumChildWindows(GetSafeHwnd(),CWsdotHaulingDlg::EnableWindows,(LPARAM)enable);
-
-   // if controls are enabled, then get the lump sup/per axle roll stiffness parameters enabled correctly
-   if (enable)
-   {
-      int method = GetCheckedRadioButton(IDC_LUMPSUM_METHOD,IDC_PERAXLE_METHOD);
-      if ( method == IDC_LUMPSUM_METHOD )
-         OnLumpSumMethod();
-      else
-         OnPerAxleMethod();
-
-      DoCheckMax();
-   }
-}
-
-BOOL CWsdotHaulingDlg::EnableWindows(HWND hwnd,LPARAM lParam)
-{
-   ::EnableWindow(hwnd,(BOOL)lParam);
-   return TRUE;
-}
-
-
-void CWsdotHaulingDlg::OnCancel()
-{
-   // Don't allow enter key to close dialog
-   CSpecHaulingErectionPage* parent = (CSpecHaulingErectionPage*)GetParent();
-   parent->OnOK();
-}
-
-void CWsdotHaulingDlg::OnOK()
-{
-   CSpecHaulingErectionPage* parent = (CSpecHaulingErectionPage*)GetParent();
-   parent->OnCancel();
 }

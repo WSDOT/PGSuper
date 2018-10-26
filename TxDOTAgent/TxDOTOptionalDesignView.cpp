@@ -158,8 +158,8 @@ void CTxDOTOptionalDesignView::OnInitialUpdate()
    m_szMin.cy = rcView.Height();
 
    // Don't shrink window, only grow
-   cxMin = max(cxMin, rcMainFrame.Width());
-   cyMin = max(cyMin, rcMainFrame.Height());
+   cxMin = Max(cxMin, rcMainFrame.Width());
+   cyMin = Max(cyMin, rcMainFrame.Height());
 
    pMainFrame->SetWindowPos(NULL,0,0,cxMin,cyMin,SWP_NOMOVE | SWP_NOZORDER);
 }
@@ -192,8 +192,8 @@ void CTxDOTOptionalDesignView::OnSize(UINT nType, int cx, int cy)
          // window is maximized so the only way it can resize is if
          // the main frame is resizing... limit the size of the
          // property sheet to its minimum size
-         cx = max(cx,m_szMin.cx);
-         cy = max(cy,m_szMin.cy);
+         cx = Max(cx,(int)m_szMin.cx);
+         cy = Max(cy,(int)m_szMin.cy);
       }
 
 	   m_pPropSheet->SetWindowPos(this, 0, 0, cx, cy, SWP_NOZORDER);

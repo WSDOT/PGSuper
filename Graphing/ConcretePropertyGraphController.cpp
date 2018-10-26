@@ -38,7 +38,7 @@
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #include <PGSuperUnits.h>
 
@@ -55,7 +55,7 @@ CConcretePropertyGraphController::CConcretePropertyGraphController()
 BEGIN_MESSAGE_MAP(CConcretePropertyGraphController, CEAFGraphControlWindow)
 	//{{AFX_MSG_MAP(CConcretePropertyGraphController)
    ON_BN_CLICKED(IDC_PRECAST_SEGMENT,OnGraphElement)
-   ON_BN_CLICKED(IDC_CLOSURE_POUR,OnGraphElement)
+   ON_BN_CLICKED(IDC_CLOSURE_JOINT,OnGraphElement)
    ON_BN_CLICKED(IDC_DECK,OnGraphElement)
    ON_BN_CLICKED(IDC_FC,OnGraphType)
    ON_BN_CLICKED(IDC_EC,OnGraphType)
@@ -99,7 +99,7 @@ int CConcretePropertyGraphController::GetGraphElement()
    case IDC_PRECAST_SEGMENT:
       return GRAPH_ELEMENT_SEGMENT;
 
-   case IDC_CLOSURE_POUR:
+   case IDC_CLOSURE_JOINT:
       return GRAPH_ELEMENT_CLOSURE;
 
    case IDC_DECK:
@@ -153,7 +153,7 @@ void CConcretePropertyGraphController::UpdateElementControls()
       bEnableClosure = FALSE;
       break;
 
-   case IDC_CLOSURE_POUR:
+   case IDC_CLOSURE_JOINT:
       bEnableSegment = FALSE;
       bEnableClosure = TRUE;
       break;
@@ -256,7 +256,7 @@ void CConcretePropertyGraphController::FillClosureControl()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(GroupIndexType(0))->GetGirder(0);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
-   const CClosurePourData* pClosure = pSegment->GetRightClosure();
+   const CClosureJointData* pClosure = pSegment->GetRightClosure();
 
    while ( pClosure )
    {
@@ -347,14 +347,14 @@ CClosureKey CConcretePropertyGraphController::GetClosureKey()
    {
       SupportIndexType tsIdx = DecodeTSIndex(idx);
       const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
-      const CClosurePourData* pClosure = pTS->GetClosurePour(0);
+      const CClosureJointData* pClosure = pTS->GetClosureJoint(0);
       return pClosure->GetClosureKey();
    }
    else
    {
       PierIndexType pierIdx = (PierIndexType)idx;
       const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-      const CClosurePourData* pClosure = pPier->GetClosurePour(0);
+      const CClosureJointData* pClosure = pPier->GetClosureJoint(0);
       return pClosure->GetClosureKey();
    }
 }

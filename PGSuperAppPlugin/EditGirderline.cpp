@@ -25,7 +25,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PTData.h>
 #include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,12 +80,12 @@ bool txnEditGirderline::Execute()
          oldData.m_StressingEvent.push_back(eventIdx);
       }
 
-      EventIndexType nClosurePours = pGirder->GetClosurePourCount();
-      for ( EventIndexType idx = 0; idx < nClosurePours; idx++ )
+      EventIndexType nClosureJoints = pGirder->GetClosureJointCount();
+      for ( EventIndexType idx = 0; idx < nClosureJoints; idx++ )
       {
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(idx);
          SegmentIDType segID = pSegment->GetID();
-         EventIndexType eventIdx = pTimelineMgr->GetCastClosurePourEventIndex(segID);
+         EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(segID);
          oldData.m_ClosureEvent.push_back(eventIdx);
       }
 
@@ -162,6 +162,6 @@ void txnEditGirderline::SetGirderData(const CGirderKey& girderKey,const txnEditG
    {
       EventIndexType eventIdx = *iter;
       SegmentIndexType segIdx = iter - gdrData.m_ClosureEvent.begin();
-      pIBridgeDesc->SetCastClosurePourEventByIndex(girderKey.groupIndex,segIdx,eventIdx);
+      pIBridgeDesc->SetCastClosureJointEventByIndex(girderKey.groupIndex,segIdx,eventIdx);
    }
 }

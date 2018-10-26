@@ -100,12 +100,26 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	TCHAR	strFilter[] = {_T("CAD Export Files (*.txt)|*.txt||")};
 
    GET_IFACE2(pBroker,ISelection,pSelection);
-   SpanIndexType spanIdx = pSelection->GetSpanIndex();
-   spanIdx = spanIdx<0 ? 0 : spanIdx; // default to 0
-   GirderIndexType gdrIdx = pSelection->GetGirderIndex();
-   gdrIdx = gdrIdx<0 ? 0 : gdrIdx;
+   CSelection selection = pSelection->GetSelection();
 
-   CGirderKey girderKey(spanIdx,gdrIdx);
+   CGirderKey girderKey;
+   if ( selection.Type == CSelection::Span )
+   {
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
+      girderKey.girderIndex = 0;
+   }
+   else if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint )
+   {
+      girderKey.groupIndex  = selection.GroupIdx;
+      girderKey.girderIndex = selection.GirderIdx;
+   }
+   else
+   {
+      girderKey.groupIndex  = 0;
+      girderKey.girderIndex = 0;
+   }
+
    std::vector<CGirderKey> girderKeys;
    girderKeys.push_back(girderKey);
 

@@ -62,7 +62,7 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    std::_tostringstream os;
-   os << "Interval: " << LABEL_INTERVAL(intervalIdx) << _T(", ") <<  pIntervals->GetDescription(intervalIdx);
+   os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(intervalIdx);
 
    rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(9,os.str().c_str());
    xs_table->SetNumberOfHeaderRows(2);

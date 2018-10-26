@@ -84,7 +84,7 @@ bool CTimelineEvent::operator==(const CTimelineEvent& rOther) const
    if ( m_RemoveTempSupports != rOther.m_RemoveTempSupports )
       return false;
 
-   if ( m_CastClosurePours != rOther.m_CastClosurePours )
+   if ( m_CastClosureJoints != rOther.m_CastClosureJoints )
       return false;
 
    if ( m_CastDeck != rOther.m_CastDeck )
@@ -211,19 +211,19 @@ CRemoveTemporarySupportsActivity& CTimelineEvent::GetRemoveTempSupportsActivity(
    return m_RemoveTempSupports;
 }
 
-void CTimelineEvent::SetCastClosurePourActivity(const CCastClosurePourActivity& activity)
+void CTimelineEvent::SetCastClosureJointActivity(const CCastClosureJointActivity& activity)
 {
-   m_CastClosurePours = activity;
+   m_CastClosureJoints = activity;
 }
 
-const CCastClosurePourActivity& CTimelineEvent::GetCastClosurePourActivity() const
+const CCastClosureJointActivity& CTimelineEvent::GetCastClosureJointActivity() const
 {
-   return m_CastClosurePours;
+   return m_CastClosureJoints;
 }
 
-CCastClosurePourActivity& CTimelineEvent::GetCastClosurePourActivity()
+CCastClosureJointActivity& CTimelineEvent::GetCastClosureJointActivity()
 {
-   return m_CastClosurePours;
+   return m_CastClosureJoints;
 }
 
 void CTimelineEvent::SetCastDeckActivity(const CCastDeckActivity& activity)
@@ -271,58 +271,58 @@ CApplyLoadActivity& CTimelineEvent::GetApplyLoadActivity()
    return m_ApplyLoads;
 }
 
-Float64 CTimelineEvent::GetMinimumDuration() const
+Float64 CTimelineEvent::GetMinElapsedTime() const
 {
-   Float64 duration = 0;
+   Float64 elapsedTime = 0;
 
    if ( m_ConstructSegments.IsEnabled() )
    {
       // the duration of this activity is the time from strand stressing to release
-      duration = max(duration,m_ConstructSegments.GetRelaxationTime());
+      elapsedTime = Max(elapsedTime,m_ConstructSegments.GetRelaxationTime());
    }
 
    //if ( m_ErectPiers.IsEnabled() )
    //{
    //   // zero duration activity
-   //   duration += 0;
+   //   elapsedTime += 0;
    //}
 
    //if ( m_ErectSegments.IsEnabled() )
    //{
    //   // zero duration activity
-   //   duration += 0;
+   //   elapsedTime += 0;
    //}
 
    //if ( m_RemoveTempSupports.IsEnabled() )
    //{
    //   // zero duration activity
-   //   duration += 0;
+   //   elapsedTime += 0;
    //}
 
-   if ( m_CastClosurePours.IsEnabled() )
+   if ( m_CastClosureJoints.IsEnabled() )
    {
-      duration = max(duration,m_CastClosurePours.GetConcreteAgeAtContinuity());
+      elapsedTime = Max(elapsedTime,m_CastClosureJoints.GetConcreteAgeAtContinuity());
    }
 
 
    if ( m_CastDeck.IsEnabled() )
    {
-      duration = max(duration,m_CastDeck.GetConcreteAgeAtContinuity());
+      elapsedTime = Max(elapsedTime,m_CastDeck.GetConcreteAgeAtContinuity());
    }
 
    //if ( m_ApplyLoads.IsEnabled() )
    //{
    //   // zero duration activity
-   //   duration += 0;
+   //   elapsedTime += 0;
    //}
 
    //if ( m_StressTendons.IsEnabled() )
    //{
    //   // zero duration activity
-   //   duration += 0;
+   //   elapsedTime += 0;
    //}
 
-   return duration;
+   return elapsedTime;
 }
 
 HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
@@ -350,7 +350,7 @@ HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = m_ConstructSegments.Load(pStrLoad,pProgress);
       hr = m_ErectPiers.Load(pStrLoad,pProgress);
       hr = m_ErectSegments.Load(pStrLoad,pProgress);
-      hr = m_CastClosurePours.Load(pStrLoad,pProgress);
+      hr = m_CastClosureJoints.Load(pStrLoad,pProgress);
       hr = m_StressTendons.Load(pStrLoad,pProgress);
       hr = m_RemoveTempSupports.Load(pStrLoad,pProgress);
       hr = m_CastDeck.Load(pStrLoad,pProgress);
@@ -377,7 +377,7 @@ HRESULT CTimelineEvent::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    m_ConstructSegments.Save(pStrSave,pProgress);
    m_ErectPiers.Save(pStrSave,pProgress);
    m_ErectSegments.Save(pStrSave,pProgress);
-   m_CastClosurePours.Save(pStrSave,pProgress);
+   m_CastClosureJoints.Save(pStrSave,pProgress);
    m_StressTendons.Save(pStrSave,pProgress);
    m_RemoveTempSupports.Save(pStrSave,pProgress);
    m_CastDeck.Save(pStrSave,pProgress);
@@ -396,7 +396,7 @@ void CTimelineEvent::MakeCopy(const CTimelineEvent& rOther)
    m_ConstructSegments  = rOther.m_ConstructSegments;
    m_ErectPiers         = rOther.m_ErectPiers;
    m_ErectSegments      = rOther.m_ErectSegments;
-   m_CastClosurePours   = rOther.m_CastClosurePours;
+   m_CastClosureJoints   = rOther.m_CastClosureJoints;
    m_RemoveTempSupports = rOther.m_RemoveTempSupports;
    m_CastDeck           = rOther.m_CastDeck;
    m_ApplyLoads         = rOther.m_ApplyLoads;
@@ -417,7 +417,7 @@ void CTimelineEvent::AssertValid() const
    //m_ConstructSegments.AssertValid();
    //m_ErectPiers.AssertValid();
    //m_ErectSegments.AssertValid();
-   //m_CastClosurePours.AssertValid();
+   //m_CastClosureJoints.AssertValid();
    //m_RemoveTempSupports.AssertValid();
    //m_CastDeck.AssertValid();
    //m_ApplyLoads.AssertValid();

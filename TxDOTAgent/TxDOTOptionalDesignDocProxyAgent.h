@@ -107,12 +107,24 @@ public:
 
    // ISelection
 public:
-   virtual PierIndexType GetPierIndex();
-   virtual SpanIndexType GetSpanIndex();
-   virtual GirderIndexType GetGirderIndex();
+   virtual CSelection GetSelection();
+   virtual void ClearSelection();
+   virtual PierIndexType GetSelectedPier();
+   virtual SpanIndexType GetSelectedSpan();
+   virtual CGirderKey GetSelectedGirder();
+   virtual CSegmentKey GetSelectedSegment();
+   virtual CClosureKey GetSelectedClosureJoint();
+   virtual SupportIDType GetSelectedTemporarySupport();
+   virtual bool IsDeckSelected();
+   virtual bool IsAlignmentSelected();
    virtual void SelectPier(PierIndexType pierIdx);
    virtual void SelectSpan(SpanIndexType spanIdx);
    virtual void SelectGirder(const CGirderKey& girderKey);
+   virtual void SelectSegment(const CSegmentKey& segmentKey);
+   virtual void SelectClosureJoint(const CClosureKey& closureKey);
+   virtual void SelectTemporarySupport(SupportIDType tsID);
+   virtual void SelectDeck();
+   virtual void SelectAlignment();
    virtual Float64 GetSectionCutStation();
 
 // IVersionInfo

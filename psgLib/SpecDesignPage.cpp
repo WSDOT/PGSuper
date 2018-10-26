@@ -27,6 +27,8 @@
 #include <psgLib\psglib.h>
 #include "SpecDesignPage.h"
 
+#include <EAF\EAFApp.h>
+
 #include "SpecMainSheet.h"
 #include "..\htmlhelp\HelpTopics.hh"
 
@@ -46,21 +48,7 @@ CSpecDesignPage::CSpecDesignPage(CWnd* pParent /*=NULL*/)
 	: CPropertyPage(CSpecDesignPage::IDD)
 {
 	//{{AFX_DATA_INIT(CSpecDesignPage)
-	m_CheckA = FALSE;
-	m_CheckHauling = FALSE;
-	m_CheckHoldDown = FALSE;
-	m_CheckLifting = FALSE;
-	m_CheckSlope = FALSE;
-	m_DesignA = FALSE;
-	m_DesignHauling = FALSE;
-	m_DesignHoldDown = FALSE;
-	m_DesignLifting = FALSE;
-	m_DesignSlope = FALSE;
-	m_CheckSplitting = FALSE;
-	m_DesignSplitting = FALSE;
-	m_CheckConfinement = FALSE;
-	m_DesignConfinement = FALSE;
-	//}}AFX_DATA_INIT
+   //}}AFX_DATA_INIT
 }
 
 
@@ -71,46 +59,10 @@ void CSpecDesignPage::DoDataExchange(CDataExchange* pDX)
    // dad is a friend of the entry. use him to transfer data.
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
 
-
-   if (!pDX->m_bSaveAndValidate)
-   {
-      pDad->UploadDesignData(pDX);
-   }
+   pDad->ExchangeDesignData(pDX);
 
 	//{{AFX_DATA_MAP(CSpecDesignPage)
-	DDX_Check(pDX, IDC_CHECK_A, m_CheckA);
-	DDX_Check(pDX, IDC_CHECK_HAULING, m_CheckHauling);
-	DDX_Check(pDX, IDC_CHECK_HD, m_CheckHoldDown);
-	DDX_Check(pDX, IDC_CHECK_LIFTING, m_CheckLifting);
-	DDX_Check(pDX, IDC_CHECK_SLOPE, m_CheckSlope);
-	DDX_Check(pDX, IDC_DESIGN_A, m_DesignA);
-	DDX_Check(pDX, IDC_DESIGN_HAULING, m_DesignHauling);
-	DDX_Check(pDX, IDC_DESIGN_HD, m_DesignHoldDown);
-	DDX_Check(pDX, IDC_DESIGN_LIFTING, m_DesignLifting);
-	DDX_Check(pDX, IDC_DESIGN_SLOPE, m_DesignSlope);
-	DDX_Check(pDX, IDC_CHECK_SPLITTING, m_CheckSplitting);
-	DDX_Check(pDX, IDC_DESIGN_SPLITTING, m_DesignSplitting);
-	DDX_Check(pDX, IDC_CHECK_CONFINEMENT, m_CheckConfinement);
-	DDX_Check(pDX, IDC_DESIGN_CONFINEMENT, m_DesignConfinement);
 	//}}AFX_DATA_MAP
-
-   DDX_Radio(pDX,IDC_RADIO_FILL_PERMANENT,m_FillMethod);
-
-
-   if (pDX->m_bSaveAndValidate)
-   {
-      pDad->DownloadDesignData(pDX);
-   }
-   else
-   {
-      OnCheckA();
-      OnCheckHauling();
-      OnCheckHd();
-      OnCheckLifting();
-      OnCheckSlope();
-      OnCheckSplitting();
-      OnCheckConfinement();
-   }
 }
 
 
@@ -123,12 +75,48 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_SLOPE, OnCheckSlope)
 	ON_BN_CLICKED(IDC_CHECK_SPLITTING, OnCheckSplitting)
 	ON_BN_CLICKED(IDC_CHECK_CONFINEMENT, OnCheckConfinement)
+   ON_BN_CLICKED(IDC_IS_SUPPORT_LESS_THAN,OnBnClickedIsSupportLessThan)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecDesignPage message handlers
+BOOL CSpecDesignPage::OnInitDialog()
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+	
+   // set statics for strand slope
+   CString sl05, sl06, sl07;
+   if (pApp->GetUnitsMode() == eafTypes::umSI)
+   {
+      VERIFY(sl05.LoadString(IDS_SLOPE_O5_SI));
+      VERIFY(sl06.LoadString(IDS_SLOPE_O6_SI));
+      VERIFY(sl07.LoadString(IDS_SLOPE_O7_SI));
+   }
+   else
+   {
+      VERIFY(sl05.LoadString(IDS_SLOPE_O5_US));
+      VERIFY(sl06.LoadString(IDS_SLOPE_O6_US));
+      VERIFY(sl07.LoadString(IDS_SLOPE_O7_US));
+   }
+
+   CPropertyPage::OnInitDialog();
+
+   OnCheckA();
+   OnCheckHauling();
+   OnCheckHd();
+   OnCheckLifting();
+   OnCheckSlope();
+   OnCheckSplitting();
+   OnCheckConfinement();
+
+   OnBnClickedIsSupportLessThan();
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
 
 // Don't allow design if check is disabled.
 inline void CheckDesignCtrl(int idc, int idd, CWnd* pme)
@@ -188,4 +176,19 @@ LRESULT CSpecDesignPage::OnCommandHelp(WPARAM, LPARAM lParam)
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SPEC_DESIGN );
    return TRUE;
+}
+
+void CSpecDesignPage::OnBnClickedIsSupportLessThan()
+{
+   CButton* pchk = (CButton*)GetDlgItem(IDC_IS_SUPPORT_LESS_THAN);
+   ASSERT(pchk);
+   BOOL ischk = pchk->GetCheck() == BST_CHECKED;
+
+   CWnd* pwnd = GetDlgItem(IDC_SUPPORT_LESS_THAN);
+   ASSERT(pwnd);
+   pwnd->EnableWindow(ischk);
+
+   pwnd = GetDlgItem(IDC_SUPPORT_LESS_THAN_UNIT);
+   ASSERT(pwnd);
+   pwnd->EnableWindow(ischk);
 }

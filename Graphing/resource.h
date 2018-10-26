@@ -16,7 +16,8 @@
 #define IDC_SIMPLE3                     1480
 #define IDC_ANALYSISTYPE                1744
 #define IDC_PRECAST_SEGMENT             3009
-#define IDC_CLOSURE_POUR                3010
+#define IDC_CLOSURE_JOINT                3010
+#define IDD_INFLUENCELINE_GRAPH_CONTROLLER 3010
 #define IDC_DECK                        3011
 #define IDC_GROUP                       3012
 #define IDC_GIRDER                      3013
@@ -50,7 +51,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        3010
+#define _APS_NEXT_RESOURCE_VALUE        3011
 #define _APS_NEXT_COMMAND_VALUE         32774
 #define _APS_NEXT_CONTROL_VALUE         3046
 #define _APS_NEXT_SYMED_VALUE           3000

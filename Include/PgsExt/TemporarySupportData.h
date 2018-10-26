@@ -27,7 +27,8 @@
 #include <PsgLib\ConnectionLibraryEntry.h>
 
 class CSpanData2;
-class CClosurePourData;
+class CClosureJointData;
+class CBridgeDescription2;
 
 /*****************************************************************************
 CLASS 
@@ -60,8 +61,13 @@ public:
    void SetSupportType(pgsTypes::TemporarySupportType type);
    pgsTypes::TemporarySupportType GetSupportType() const;
 
-   // Set/Get the connection type when the temporary support this is Erection Tower
-   void SetConnectionType(pgsTypes::SegmentConnectionType type);
+   // Set/Get the connection type when the temporary support type is Erection Tower.
+   // When setting the connection type to pgsTypes::sctClosureJoint the casting event
+   // for the closures that are created at this temporary support are set to castClosureJointEvent
+   // otherwise this parameter is not used.
+   // When setting the connection type to pgsTypes::sctContinuousSegment the casting event
+   // for the closure joints that are removed are automatically removed from the timeline manager
+   void SetConnectionType(pgsTypes::SegmentConnectionType type,EventIndexType castClosureJointEvent);
    pgsTypes::SegmentConnectionType GetConnectionType() const;
 
    void SetID(SupportIDType id);
@@ -76,7 +82,8 @@ public:
    CSpanData2* GetSpan();
    const CSpanData2* GetSpan() const;
 
-   const CClosurePourData* GetClosurePour(GirderIndexType gdrIdx) const;
+   CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx);
+   const CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx) const;
 
    // returns the station where the temporary support is located
    void SetStation(Float64 station);
@@ -107,7 +114,7 @@ public:
    bool operator!=(const CTemporarySupportData& rOther) const;
    bool operator<(const CTemporarySupportData& rOther) const;
 
-   HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
+   HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress,CBridgeDescription2* pBridgeDesc);
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
    
    static LPCTSTR AsString(pgsTypes::TemporarySupportType type);
@@ -140,4 +147,6 @@ private:
 
    // Reference to the span that this temporary support is part of
    CSpanData2* m_pSpan;
+
+   void RemoveFromTimeline();
 };

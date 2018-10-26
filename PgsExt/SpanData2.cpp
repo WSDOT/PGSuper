@@ -102,6 +102,11 @@ CPierData2* CSpanData2::GetNextPier()
    return m_pNextPier;
 }
 
+CPierData2* CSpanData2::GetPier(pgsTypes::MemberEndType end)
+{
+   return ( end == pgsTypes::metStart ? m_pPrevPier : m_pNextPier );
+}
+
 const CPierData2* CSpanData2::GetPrevPier() const
 {
    return m_pPrevPier;
@@ -110,6 +115,11 @@ const CPierData2* CSpanData2::GetPrevPier() const
 const CPierData2* CSpanData2::GetNextPier() const
 {
    return m_pNextPier;
+}
+
+const CPierData2* CSpanData2::GetPier(pgsTypes::MemberEndType end) const
+{
+   return ( end == pgsTypes::metStart ? m_pPrevPier : m_pNextPier );
 }
 
 CSpanData2& CSpanData2::operator= (const CSpanData2& rOther)
@@ -481,6 +491,22 @@ std::vector<const CTemporarySupportData*> CSpanData2::GetTemporarySupports() con
       for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
       {
          const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
+         if ( pTS->GetSpan() == this )
+            vTS.push_back(pTS);
+      }
+   }
+   return vTS;
+}
+
+std::vector<CTemporarySupportData*> CSpanData2::GetTemporarySupports()
+{
+   std::vector<CTemporarySupportData*> vTS;
+   if ( m_pBridgeDesc != NULL )
+   {
+      SupportIndexType nTS = m_pBridgeDesc->GetTemporarySupportCount();
+      for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
+      {
+         CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
          if ( pTS->GetSpan() == this )
             vTS.push_back(pTS);
       }

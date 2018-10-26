@@ -161,7 +161,15 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             if ( overlayEventIdx == INVALID_INDEX ) // the choice is invalid... alert the user
             {
                pDX->PrepareCtrl(IDC_OVERLAY_EVENT);
-               AfxMessageBox(_T("Select the event when the overlay is installed"));
+               AfxMessageBox(_T("Select the event when the overlay is installed."));
+               pDX->Fail();
+            }
+
+            EventIndexType railingSystemEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetRailingSystemLoadEventIndex();
+            if ( overlayEventIdx < railingSystemEventIdx )
+            {
+               pDX->PrepareCtrl(IDC_OVERLAY_EVENT);
+               AfxMessageBox(_T("The overlay cannot be installed prior to the railing system."));
                pDX->Fail();
             }
          }
@@ -648,6 +656,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    int idx = pCB->GetCurSel();
 
    BOOL bSacDepth;
+   BOOL bOverlayEvent;
    BOOL bOverlayLabel;
    BOOL bOverlayWeight;
    BOOL bOverlayDepthAndDensity;
@@ -667,6 +676,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    if ( ws == pgsTypes::wstSacrificialDepth )
    {
       bSacDepth               = TRUE;
+      bOverlayEvent           = FALSE;
       bOverlayLabel           = FALSE;
       bOverlayWeight          = FALSE;
       bOverlayDepthAndDensity = FALSE;
@@ -675,6 +685,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    {
       ATLASSERT(bPGSuperDoc == true); // future overlay only used for PGSuper... should not get here if PGSplice
       bSacDepth               = TRUE;
+      bOverlayEvent           = FALSE;
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
@@ -682,12 +693,13 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    else
    {
       bSacDepth               = (bPGSuperDoc ? FALSE : TRUE); // If regular overlay in PGSuper, no sacrifical depth. In PGSplice, sacrifical depth applies until overlay is applied
+      bOverlayEvent           = (bPGSuperDoc ? FALSE : TRUE);
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
    }
 
-   GetDlgItem(IDC_OVERLAY_EVENT)->EnableWindow( !bSacDepth );
+   GetDlgItem(IDC_OVERLAY_EVENT)->EnableWindow( bOverlayEvent );
 
    GetDlgItem(IDC_OLAY_WEIGHT_LABEL)->EnableWindow( bOverlayLabel );
    GetDlgItem(IDC_OLAY_WEIGHT)->EnableWindow( bOverlayWeight );
@@ -961,8 +973,6 @@ void CBridgeDescDeckDetailsPage::OnBnClickedSameslaboffset()
    }
 
    UpdateSlabOffsetControls();
-
-
 }
 
 void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()

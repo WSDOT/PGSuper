@@ -693,7 +693,7 @@ bool pgsHorizontalShearArtifact::Passed() const
 Float64 pgsHorizontalShearArtifact::GetCapacity() const
 {
    ASSERTVALID;
-   return m_Phi * min(m_Vn1, min(m_Vn2, m_Vn3));
+   return m_Phi * Min(m_Vn1, m_Vn2, m_Vn3);
 }
 
 Float64 pgsHorizontalShearArtifact::GetAvOverS() const
@@ -718,9 +718,9 @@ Float64 pgsHorizontalShearArtifact::GetAvOverS() const
 Float64 pgsHorizontalShearArtifact::GetSMax() const
 {
    if (0.0 < m_AvfGirder && 0.0 < m_AvfAdditional)
-      return min(m_SGirder, m_SAdditional);
+      return Min(m_SGirder, m_SAdditional);
    else
-      return max(m_SGirder, m_SAdditional);
+      return Max(m_SGirder, m_SAdditional);
 }
 
 //======================== ACCESS     =======================================

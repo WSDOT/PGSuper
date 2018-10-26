@@ -80,48 +80,62 @@ public:
    // Destructor
    virtual ~pgsFlexuralStressArtifact();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
    pgsFlexuralStressArtifact& operator = (const pgsFlexuralStressArtifact& rOther);
    bool operator<(const pgsFlexuralStressArtifact& rOther) const;
 
+   // Set/Get the point of interest where this stress check occurs
    void SetPointOfInterest(const pgsPointOfInterest& poi);
    const pgsPointOfInterest& GetPointOfInterest() const;
 
-   //------------------------------------------------------------------------
+   // Set/Get Limit State used in this stress check
+   void SetLimitState(pgsTypes::LimitState limitState);
+   pgsTypes::LimitState GetLimitState() const;
+
+   // Set/Get the type of stress check that was performed
+   void SetStressType(pgsTypes::StressType stressType);
+   pgsTypes::StressType GetStressType() const;
+
+   // Set/Get applicability of this stress check
+   void IsApplicable(pgsTypes::StressLocation stressLocation,bool bIsApplicable);
+   bool IsApplicable(pgsTypes::StressLocation stressLocation) const;
+
    // Set/Get the top/bottom girder stresses due to pre-tensioning
-   void SetPretensionEffects(Float64 fTop,Float64 fBot);
-   void GetPretensionEffects(Float64* pfTop,Float64* pfBot) const;
+   void SetPretensionEffects(pgsTypes::StressLocation stressLocation,Float64 fPS);
+   Float64 GetPretensionEffects(pgsTypes::StressLocation stressLocation) const;
 
    // Set/Get the top/bottom girder stresses due to post-tensioning
-   void SetPosttensionEffects(Float64 fTop,Float64 fBot);
-   void GetPosttensionEffects(Float64* pfTop,Float64* pfBot) const;
+   void SetPosttensionEffects(pgsTypes::StressLocation stressLocation,Float64 fPT);
+   Float64 GetPosttensionEffects(pgsTypes::StressLocation stressLocation) const;
 
    // Set/Get the top/bottom girder stresses due to externally applied loads
-   void SetExternalEffects(Float64 fTop,Float64 fBot);
-   void GetExternalEffects(Float64* pfTop,Float64* pfBot) const;
+   void SetExternalEffects(pgsTypes::StressLocation stressLocation,Float64 f);
+   Float64 GetExternalEffects(pgsTypes::StressLocation stressLocation) const;
 
    // Set/Get the top/bottom girder stresses demand (external loads + pre-tension + post-tension)
-   void SetDemand(Float64 fTop,Float64 fBot);
-   void GetDemand(Float64* pfTop,Float64* pfBot) const;
+   void SetDemand(pgsTypes::StressLocation stressLocation,Float64 fDemand);
+   Float64 GetDemand(pgsTypes::StressLocation stressLocation) const;
+
+   // Indicates if this point is in the precompressed tensile zone
+   void IsInPrecompressedTensileZone(pgsTypes::StressLocation stressLocation,bool bIsInPTZ);
+   bool IsInPrecompressedTensileZone(pgsTypes::StressLocation stressLocation) const;
 
    // Set/Get the allowable stress "capacity"
-   void SetCapacity(Float64 fAllowable,pgsTypes::LimitState ls,pgsTypes::StressType stressType);
-   Float64 GetCapacity() const;
-   pgsTypes::LimitState GetLimitState() const;
-   pgsTypes::StressType GetStressType() const;
+   void SetCapacity(pgsTypes::StressLocation stressLocation,Float64 fAllowable);
+   Float64 GetCapacity(pgsTypes::StressLocation stressLocation) const;
 
    void SetRequiredConcreteStrength(Float64 fcReqd);
    Float64 GetRequiredConcreteStrength() const;
 
-   void SetAlternativeTensileStressParameters(Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fHigherAllow);
-   void GetAlternativeTensileStressParameters(Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const;
-   bool WasHigherAllowableStressUsed() const;
+   void SetAlternativeTensileStressParameters(pgsTypes::GirderFace face,Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fAllowableWithRebar);
+   void GetAlternativeTensileStressParameters(pgsTypes::GirderFace face,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const;
+   Float64 GetAlternativeAllowableTensileStress(pgsTypes::GirderFace face) const;
+   bool WasWithRebarAllowableStressUsed(pgsTypes::GirderFace face) const;
 
    bool TopPassed() const;
    bool BottomPassed() const;
    bool Passed() const;
+
+   Float64 GetCDRatio() const;
 
 
 protected:
@@ -131,43 +145,39 @@ protected:
 private:
    pgsPointOfInterest m_Poi;
 
-   // Stresses caused by pre-tensioning
-   Float64 m_fTopPretension;
-   Float64 m_fBotPretension;
+   // In the following arrays, use the pgsTypes::StressLocation enum to access the values
+   bool    m_bIsApplicable[4]; // Applicability of the stress check
+   Float64 m_fPretension[4];   // Stresses caused by pre-tensioning
+   Float64 m_fPosttension[4];  // Stresses caused by post-tensioning
+   Float64 m_fExternal[4];     // Stresses caused by externally applied loads
+   bool    m_bIsInPTZ[4];      // Is the location in the Precompressed Tensile Zone
+   Float64 m_fDemand[4];       // Total stress demand
+   Float64 m_fAllowable[4];    // Allowable stresses
 
-   // Stresses caused by post-tensioning
-   Float64 m_fTopPosttension;
-   Float64 m_fBotPosttension;
-
-   // Stresses caused by externally applied loads
-   Float64 m_fTopExternal;
-   Float64 m_fBotExternal;
-
-   // Demand
-   Float64 m_fTopDemand;
-   Float64 m_fBotDemand;
-
-   // Allowable stresses
-   Float64 m_fAllowableStress;
    pgsTypes::LimitState m_LimitState;
    pgsTypes::StressType m_StressType;
 
    // Alternative tensile stress parameters
-   bool   m_bIsAltTensileStressApplicable;
-   Float64 m_Yna;
-   Float64 m_At;
-   Float64 m_T;
-   Float64 m_AsProvided;
-   Float64 m_AsRequired;
-   Float64 m_fAltAllowableStress;
+   // access array with pgsTypes::GirderFace constant
+   bool   m_bIsAltTensileStressApplicable[2];
+   Float64 m_Yna[2];
+   Float64 m_At[2];
+   Float64 m_T[2];
+   Float64 m_AsProvided[2];
+   Float64 m_AsRequired[2];
+   Float64 m_fAltAllowableStress[2];
 
    // Other
    Float64 m_FcReqd; // concrete strenght required to satisfy allowable for this section
                     // No concrete strength work if < 0
 
-   bool StressedPassed(Float64 fStress) const;
-   bool TensionPassedWithRebar(Float64 fTens) const;
-   bool TensionPassedWithoutRebar(Float64 fTens) const;
+   bool StressedPassed(Float64 fStress,pgsTypes::GirderFace face) const;
+   bool TensionPassedWithRebar(Float64 fTens,pgsTypes::GirderFace face) const;
+   bool TensionPassedWithoutRebar(Float64 fTens,pgsTypes::GirderFace face) const;
+
+   Float64 GetCDRatio(Float64 c,Float64 d) const;
+   Float64 GetTopCDRatio() const;
+   Float64 GetBottomCDRatio() const;
 };
 
 #endif // INCLUDED_PGSEXT_FLEXURALSTRESSARTIFACT_H_

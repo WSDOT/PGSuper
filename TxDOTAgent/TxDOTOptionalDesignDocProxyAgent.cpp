@@ -130,35 +130,100 @@ bool CTxDOTOptionalDesignDocProxyAgent::UpdatingTemplates()
 // ISelection
 
 // NOTE: Not really utilizing this interface - just appealing functions that need it.
+CSelection CTxDOTOptionalDesignDocProxyAgent::GetSelection()
+{
+   ATLASSERT(false); // not using this method
+   return CSelection();
+}
 
-PierIndexType CTxDOTOptionalDesignDocProxyAgent::GetPierIndex()
+void CTxDOTOptionalDesignDocProxyAgent::ClearSelection()
+{
+   ATLASSERT(false); // not using this method
+}
+
+PierIndexType CTxDOTOptionalDesignDocProxyAgent::GetSelectedPier()
 {
    return TOGA_SPAN;
 }
 
-SpanIndexType CTxDOTOptionalDesignDocProxyAgent::GetSpanIndex()
+SpanIndexType CTxDOTOptionalDesignDocProxyAgent::GetSelectedSpan()
 {
    return TOGA_SPAN;
 }
 
-GirderIndexType CTxDOTOptionalDesignDocProxyAgent::GetGirderIndex()
+CGirderKey CTxDOTOptionalDesignDocProxyAgent::GetSelectedGirder()
 {
-   return TOGA_FABR_GDR;
+   return CGirderKey(TOGA_SPAN,TOGA_FABR_GDR);
+}
+
+CSegmentKey CTxDOTOptionalDesignDocProxyAgent::GetSelectedSegment()
+{
+   ATLASSERT(false); // not using this method
+   return CSegmentKey();
+}
+
+CClosureKey CTxDOTOptionalDesignDocProxyAgent::GetSelectedClosureJoint()
+{
+   ATLASSERT(false); // not using this method
+   return CClosureKey();
+}
+
+SupportIDType CTxDOTOptionalDesignDocProxyAgent::GetSelectedTemporarySupport()
+{
+   ATLASSERT(false); // not using this method
+   return INVALID_ID;
+}
+
+bool CTxDOTOptionalDesignDocProxyAgent::IsDeckSelected()
+{
+   ATLASSERT(false); // not using this method
+   return false;
+}
+
+bool CTxDOTOptionalDesignDocProxyAgent::IsAlignmentSelected()
+{
+   ATLASSERT(false); // not using this method
+   return false;
 }
 
 void CTxDOTOptionalDesignDocProxyAgent::SelectPier(PierIndexType pierIdx)
 {
-   ASSERT(0);
+   ATLASSERT(false); // not using this method
 }
 
 void CTxDOTOptionalDesignDocProxyAgent::SelectSpan(SpanIndexType spanIdx)
 {
-   ASSERT(0);
+   ATLASSERT(false); // not using this method
 }
 
 void CTxDOTOptionalDesignDocProxyAgent::SelectGirder(const CGirderKey& girderKey)
 {
-   ASSERT(0);
+   ATLASSERT(false); // not using this method
+}
+
+void CTxDOTOptionalDesignDocProxyAgent::SelectSegment(const CSegmentKey& segmentKey)
+{
+   ATLASSERT(false); // not using this method
+}
+
+void CTxDOTOptionalDesignDocProxyAgent::SelectClosureJoint(const CClosureKey& closureKey)
+{
+   ATLASSERT(false); // not using this method
+}
+
+void CTxDOTOptionalDesignDocProxyAgent::SelectTemporarySupport(SupportIDType tsID)
+{
+   ATLASSERT(false); // not using this method
+}
+
+void CTxDOTOptionalDesignDocProxyAgent::SelectDeck()
+{
+   ATLASSERT(false); // not using this method
+}
+
+void CTxDOTOptionalDesignDocProxyAgent::SelectAlignment()
+{
+   ATLASSERT(false); // not using this method
 }
 
 Float64 CTxDOTOptionalDesignDocProxyAgent::GetSectionCutStation()
@@ -336,8 +401,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       const pgsFlexuralStressArtifact* pOriginalStressArtifact;
       pOriginalStressArtifact = pOriginalSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,orig_ms_poi.GetID());
 
-      Float64 fTop, fBot;
-      pOriginalStressArtifact->GetExternalEffects( &fTop, &fBot );
+      Float64 fTop = pOriginalStressArtifact->GetExternalEffects(pgsTypes::TopGirder);
 
       m_CtrlCompressiveStress = fTop;
       m_CtrlCompressiveStressLocation = orig_ms_poi.GetDistFromStart();
@@ -347,7 +411,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       // Tensile stress factor
       pOriginalStressArtifact = pOriginalSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,orig_ms_poi.GetID());
-      pOriginalStressArtifact->GetExternalEffects( &fTop, &fBot );
+      Float64 fBot = pOriginalStressArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
       m_CtrlTensileStress = fBot;
       m_CtrlTensileStressLocation = orig_ms_poi.GetDistFromStart();
@@ -416,28 +480,30 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             const pgsPointOfInterest& poi(pFabrStressArtifact->GetPointOfInterest());
 
             // factor external stresses
-            Float64 fTopExt, fBotExt;
-            pFabrStressArtifact->GetExternalEffects( &fTopExt, &fBotExt );
+            Float64 fTopExt = pFabrStressArtifact->GetExternalEffects(pgsTypes::TopGirder);
+            Float64 fBotExt = pFabrStressArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
             fTopExt *= m_CtrlCompressiveStressFactor;
             fBotExt *= m_CtrlTensileStressFactor;
 
-            pFabrStressArtifact->SetExternalEffects( fTopExt, fBotExt );
+            pFabrStressArtifact->SetExternalEffects( pgsTypes::TopGirder,    fTopExt);
+            pFabrStressArtifact->SetExternalEffects( pgsTypes::BottomGirder, fBotExt);
 
             // recompute demand
-            Float64 fTopPs, fBotPs;
-            pFabrStressArtifact->GetPretensionEffects( &fTopPs, &fBotPs );
+            Float64 fTopPs = pFabrStressArtifact->GetPretensionEffects(pgsTypes::TopGirder);
+            Float64 fBotPs = pFabrStressArtifact->GetPretensionEffects(pgsTypes::BottomGirder);
 
             fTop = k*fTopPs + fTopExt;
             fBot = k*fBotPs + fBotExt;
 
-            pFabrStressArtifact->SetDemand(fTop, fBot);
+            pFabrStressArtifact->SetDemand(pgsTypes::TopGirder,   fTop);
+            pFabrStressArtifact->SetDemand(pgsTypes::BottomGirder,fBot);
 
             // Compute and store required concrete strength
             if ( ststype[icase] == pgsTypes::Compression )
             {
                Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(poi,intervals[icase],lstates[icase]);
-               Float64 fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
+               Float64 fc_reqd = (IsZero(c) ? 0 : Min(fTop,fBot)/-c);
                
                if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
                   fc_reqd = 0;
@@ -450,11 +516,11 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
                bool bCheckMax;
                Float64 fmax;
 
-               pAllowable->GetAllowableTensionStressCoefficient(poi,intervals[icase],lstates[icase],false/*without rebar*/,&t,&bCheckMax,&fmax);
+               pAllowable->GetAllowableTensionStressCoefficient(poi,intervals[icase],lstates[icase],false/*without rebar*/,false,&t,&bCheckMax,&fmax);
 
                // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
                // otherwise, take the controlling tension
-               Float64 f = (intervals[icase] == liveLoadIntervalIdx ? fBot : _cpp_max(fTop,fBot));
+               Float64 f = (intervals[icase] == liveLoadIntervalIdx ? fBot : Max(fTop,fBot));
 
                Float64 fc_reqd;
                if (f>0.0)
@@ -496,11 +562,11 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       pOrigCap = pOriginalGdrArtifact->FindPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,orig_ms_poi);
       ATLASSERT(pOrigCap != NULL);
 
-      m_RequiredUltimateMoment = _cpp_max(pOrigCap->GetDemand(),pOrigCap->GetMinCapacity());
+      m_RequiredUltimateMoment = Max(pOrigCap->GetDemand(),pOrigCap->GetMinCapacity());
 
       // Required concrete strengths - fabricator model
-      m_RequiredFci =  _cpp_max(m_GirderArtifact.GetRequiredReleaseStrength(),  ::ConvertToSysUnits(4.0, unitMeasure::KSI));
-      m_RequiredFc  =  _cpp_max(m_GirderArtifact.GetRequiredConcreteStrength(), ::ConvertToSysUnits(5.0, unitMeasure::KSI));
+      m_RequiredFci =  Max(m_GirderArtifact.GetRequiredReleaseStrength(),  ::ConvertToSysUnits(4.0, unitMeasure::KSI));
+      m_RequiredFc  =  Max(m_GirderArtifact.GetRequiredConcreteStrength(), ::ConvertToSysUnits(5.0, unitMeasure::KSI));
 
       // Get camber from fabricator model
       m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderSchedule(fabr_ms_poi,CREEP_MAXTIME);

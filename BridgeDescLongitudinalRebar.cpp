@@ -141,10 +141,10 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          // make sure bars are inside of girder - use shape symmetry
          gpPoint2d testpnt;
          testpnt.X() = row.BarSpacing * (row.NumberOfBars-1)/2.;
-         if (row.Face==pgsTypes::GirderBottom)
-            testpnt.Y() = row.Cover;
+         if (row.Face == pgsTypes::GirderTop)
+            testpnt.Y() = -row.Cover;
          else
-            testpnt.Y() = height-row.Cover;
+            testpnt.Y() = -(height-row.Cover);
 
          point->Move(testpnt.X(),testpnt.Y());
          VARIANT_BOOL bPointInShape;
@@ -161,7 +161,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
       if ( idx == CB_ERR )
       {
-         rebarData.BarType = matRebar::A615;
+         rebarData.BarType  = matRebar::A615;
          rebarData.BarGrade = matRebar::Grade60;
       }
       else

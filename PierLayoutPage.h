@@ -76,9 +76,11 @@ protected:
    afx_msg void OnHelp();
    afx_msg void OnErectionStageChanged();
    afx_msg void OnErectionStageChanging();
+   afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   CComPtr<IStation> m_objStation;
    Float64 m_FromStation;
    Float64 m_NextPierStation;
    Float64 m_PrevPierStation;
@@ -91,6 +93,7 @@ protected:
    void UpdateChildWindowState();
    void FillEventList();
    EventIndexType CreateEvent();
+   BOOL IsValidStation(Float64* pStation);
 
    int m_PrevEventIdx;
 };

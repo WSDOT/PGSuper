@@ -53,7 +53,7 @@ private:
 class pgsConcreteStrengthStatusItem : public pgsSegmentRelatedStatusItem
 {
 public:
-   enum ConcreteType { Slab, RailingSystem, GirderSegment, ClosurePour  };
+   enum ConcreteType { Slab, RailingSystem, GirderSegment, ClosureJoint  };
    enum ElementType { ReleaseStrength, FinalStrength, Density, DensityForWeight, AggSize, Modulus };
    pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);

@@ -43,7 +43,7 @@ IDType UserLoads::ms_NextMomentLoadID = 20000;
 CPointLoadData::CPointLoadData():
 m_ID(INVALID_ID),
 m_LoadCase(UserLoads::DC),
-m_EventIdx(INVALID_INDEX),
+m_EventIndex(INVALID_INDEX),
 m_SpanGirderKey(0,0),
 m_Magnitude(0.0),
 m_Location(0.5),
@@ -60,7 +60,7 @@ CPointLoadData::~CPointLoadData()
 
 bool CPointLoadData::operator == (const CPointLoadData& rOther) const
 {
-   if (m_EventIdx != rOther.m_EventIdx)
+   if (m_EventIndex != rOther.m_EventIndex)
       return false;
 
    if (m_LoadCase != rOther.m_LoadCase)
@@ -104,7 +104,7 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property(_T("EventIndex"),CComVariant((long)m_EventIdx));
+   hr = pSave->put_Property(_T("EventIndex"),CComVariant((long)m_EventIndex));
    if ( FAILED(hr) )
       return hr;
 
@@ -165,7 +165,7 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
          return hr;
 
       m_ID = VARIANT2ID(var);
-      UserLoads::ms_NextPointLoadID = max(UserLoads::ms_NextPointLoadID,m_ID);
+      UserLoads::ms_NextPointLoadID = Max(UserLoads::ms_NextPointLoadID,m_ID);
    }
    else
    {
@@ -207,19 +207,19 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
    if ( FAILED(hr) )
       return hr;
 
-   m_EventIdx = VARIANT2INDEX(var);
+   m_EventIndex = VARIANT2INDEX(var);
    // prior to version 3, stages were 0=BridgeSite1, 1=BridgeSite2, 2=BridgeSite3
    // Version 3 and later, stages are pgsTypes::BridgeSite1, pgsTypes::BridgeSite2, pgsTypes::BridgeSite3
    // adjust the stage value here
    if ( version < 3 )
    {
-      switch(m_EventIdx)
+      switch(m_EventIndex)
       {
          // when the generalized stage model was created (PGSplice) the BridgeSiteX constants where removed
          // use the equivalent value
-      case 0: m_EventIdx = 2;/*pgsTypes::BridgeSite1;*/ break;
-      case 1: m_EventIdx = 3;/*pgsTypes::BridgeSite2;*/ break;
-      case 2: m_EventIdx = 4;/*pgsTypes::BridgeSite3;*/ break;
+      case 0: m_EventIndex = 2;/*pgsTypes::BridgeSite1;*/ break;
+      case 1: m_EventIndex = 3;/*pgsTypes::BridgeSite2;*/ break;
+      case 2: m_EventIndex = 4;/*pgsTypes::BridgeSite3;*/ break;
       default:
          ATLASSERT(false);
       }

@@ -123,6 +123,10 @@ void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    {
       pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_CONCRETE);
    }
+   else if ( pItem->m_ConcreteType == pgsConcreteStrengthStatusItem::ClosureJoint )
+   {
+      pEdit->EditClosureJointDescription(pItem->m_SegmentKey,EGD_CONCRETE);
+   }
    else
    {
       pEdit->EditBridgeDescription(EBD_RAILING);

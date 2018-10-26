@@ -249,16 +249,19 @@ void CGirderDescDebondPage::OnPaint()
    PRESTRESSCONFIG config;
    config.SetStrandFill(pgsTypes::Straight, fillvec);
 
+#pragma Reminder("UPDATE: need to get section height to draw strands")
+   // using 0 as a dummy value
+   ATLASSERT(false); // just a reminder that this needs to be addressed
    CComPtr<IPoint2dCollection> points;
-   pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,pgsTypes::metStart,&points);
+   pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),0,0,0,0,config,pgsTypes::Straight,pgsTypes::metStart,&points);
    for ( StrandIndexType strIdx = 0; strIdx < nStrands; strIdx++ )
    {
       CComPtr<IPoint2d> point;
       points->get_Item(strIdx,&point);
       Float64 y;
       point->get_Y(&y);
-      y_min = _cpp_min(y,y_min);
-      y_max = _cpp_max(y,y_max);
+      y_min = Min(y,y_min);
+      y_max = Max(y,y_max);
    }
    gpSize2d size;
    
@@ -412,8 +415,11 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    config.SetStrandFill(pgsTypes::Straight, straightStrandFill);
    config.SetStrandFill(pgsTypes::Harped,   harpedStrandFill);
 
+#pragma Reminder("UPDATE: need to get section height to draw strands")
+   // using 0 as a dummy value
+   ATLASSERT(false); // just a reminder that this needs to be addressed
    CComPtr<IPoint2dCollection> points;
-   pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,pgsTypes::metStart,&points);
+   pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),0,0,0,0,config,pgsTypes::Straight,pgsTypes::metStart,&points);
 
    CComPtr<IIndexArray> strandids;
    pStrandGeometry->ComputePermanentStrandIndices(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,&strandids);

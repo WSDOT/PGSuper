@@ -82,220 +82,7 @@ rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference,const 
 
 std::_tstring rptPointOfInterest::AsString() const
 {
-   std::_tstring strAttrib;
-   Uint16 nAttributes = 0;
-   PoiAttributeType attributes = m_POI.GetAttributes();
-
-   strAttrib = _T("(");
-
-   if ( m_POI.IsHarpingPoint() )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("HP");
-      nAttributes++;
-   }
-
-   if ( m_POI.IsAtH(m_Reference) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("H");
-      nAttributes++;
-   }
-
-   if ( m_POI.IsAt15H(m_Reference) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("1.5H");
-      nAttributes++;
-   }
-   
-   if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
-   {
-      if ( m_POI.HasAttribute(POI_CRITSECTSHEAR1) || m_POI.HasAttribute(POI_CRITSECTSHEAR2) )
-      {
-         if ( 0 < nAttributes )
-            strAttrib += _T(", ");
-
-         strAttrib += _T("CS");
-         nAttributes++;
-      }
-   }
-   else
-   {
-      if ( m_POI.HasAttribute(POI_CRITSECTSHEAR1) )
-      {
-         if ( 0 < nAttributes )
-            strAttrib += _T(", ");
-
-         strAttrib += _T("DCS");
-         nAttributes++;
-      }
-      
-      if ( m_POI.HasAttribute(POI_CRITSECTSHEAR2) )
-      {
-         if ( 0 < nAttributes )
-            strAttrib += _T(", ");
-
-         strAttrib += _T("PCS");
-         nAttributes++;
-      }
-   }
-
-   if ( m_POI.HasAttribute(POI_PSXFER) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("PSXFR");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_PSDEV) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Ld");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_DEBOND) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Debond");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_DECKBARCUTOFF) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Bar Cutoff");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_BARCUTOFF) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Bar Cutoff");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_BARDEVELOP) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Bar Develop.");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_PICKPOINT) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Pick Point");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_BUNKPOINT) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Bunk Point");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_FACEOFSUPPORT) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("FoS");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_CLOSURE) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("CP");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_SECTCHANGE_TRANSITION) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("ST");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_INTERMEDIATE_PIER) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("IP");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_STIRRUP_ZONE) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("SZB");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(POI_TEMPSUPPORT) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("ITS");
-      nAttributes++;
-   }
-
-   Uint16 tenpt = m_POI.IsTenthPoint(m_Reference);
-   if (0 < tenpt)
-   {
-      ATLASSERT(tenpt<12);
-      // for the sake of efficiency, dont use a stringstream
-      LPCTSTR release_label[]={_T("err"),_T("0.0L<sub>s</sub>"),_T("0.1L<sub>s</sub>"),_T("0.2L<sub>s</sub>"),_T("0.3L<sub>s</sub>"),_T("0.4L<sub>s</sub>"),
-         _T("0.5L<sub>s</sub>"),_T("0.6L<sub>s</sub>"),_T("0.7L<sub>s</sub>"),_T("0.8L<sub>s</sub>"),_T("0.9L<sub>s</sub>"),_T("1.0L<sub>s</sub>")};
-
-      LPCTSTR girder_label[]={_T("err"),_T("0.0L<sub>g</sub>"),_T("0.1L<sub>g</sub>"),_T("0.2L<sub>g</sub>"),_T("0.3L<sub>g</sub>"),_T("0.4L<sub>g</sub>"),
-         _T("0.5L<sub>g</sub>"),_T("0.6L<sub>g</sub>"),_T("0.7L<sub>g</sub>"),_T("0.8L<sub>g</sub>"),_T("0.9L<sub>g</sub>"),_T("1.0L<sub>g</sub>")};
-
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      if ( sysFlags<PoiAttributeType>::IsSet(m_Reference,POI_ERECTED_SEGMENT) )
-         strAttrib += std::_tstring(girder_label[tenpt]);
-      else
-         strAttrib += std::_tstring(release_label[tenpt]);
-
-      nAttributes++;
-   }
-   strAttrib += _T(")");
-
+   std::_tstring strAttrib = m_POI.GetAttributes(m_Reference,true);
    std::_tstring strValue = rptLengthUnitValue::AsString();
 
    std::_tstring str;
@@ -312,16 +99,16 @@ std::_tstring rptPointOfInterest::AsString() const
       str = str1;
    }
 
-   if ( nAttributes == 0 )
+   if ( strAttrib.size() == 0 )
    {
       str += strValue;
    }
    else
    {
       if ( m_bPrefixAttributes )
-         str += strAttrib + _T(" ") + strValue;
+         str += _T("(") + strAttrib + _T(") ") + strValue;
       else
-         str += strValue + _T(" ") + strAttrib;
+         str += strValue + _T(" (") + strAttrib + _T(")");
    }
 
    return str;

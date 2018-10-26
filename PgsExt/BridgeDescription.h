@@ -56,6 +56,7 @@ class CBridgeDescription
 {
 public:
    CBridgeDescription();
+   ~CBridgeDescription();
 
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
    HRESULT Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress);

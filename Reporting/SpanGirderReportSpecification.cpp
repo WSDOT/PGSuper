@@ -326,7 +326,7 @@ HRESULT CGirderReportSpecification::Validate() const
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      nGirders = max(nGirders,pBridge->GetGirderCount(grpIdx));
+      nGirders = Max(nGirders,pBridge->GetGirderCount(grpIdx));
    }
 
    if ( nGirders <= m_GirderKey.girderIndex )

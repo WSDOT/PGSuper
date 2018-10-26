@@ -113,7 +113,6 @@ public:
    //------------------------------------------------------------------------ 
    // Returns a pointer to a dynamically allocated defaultly configured table 
    // with 0.75" wide columns
-   // If bLoadingColumn is true, column 1 is 1.5" wide
    static rptRcTable* CreateDefaultTable(ColumnIndexType numColumns, LPCTSTR lpszLabel=NULL);
    static rptRcTable* CreateDefaultTable(ColumnIndexType numColumns, const std::_tstring& strLabel);
 

@@ -31,15 +31,15 @@
 #include "SelectGirderDlg.h"
 #include "PGSuperAppPlugin\EditGirderlineDlg.h"
 #include "PGSuperAppPlugin\SelectGirderSegmentDlg.h"
-#include "PGSuperAppPlugin\SelectClosurePourDlg.h"
+#include "PGSuperAppPlugin\SelectClosureJointDlg.h"
 #include "PGSuperAppPlugin\GirderSegmentDlg.h"
 #include "PGSuperAppPlugin\TemporarySupportDlg.h"
 #include "PGSuperAppPlugin\EditTimelineDlg.h"
-#include "PGSuperAppPlugin\CastClosurePourDlg.h" // for Temporary Support labeling
-#include "PGSuperAppPlugin\ClosurePourDlg.h"
+#include "PGSuperAppPlugin\CastClosureJointDlg.h" // for Temporary Support labeling
+#include "PGSuperAppPlugin\ClosureJointDlg.h"
 
 // Transactions
-#include "PGSuperAppPlugin\EditClosurePour.h"
+#include "PGSuperAppPlugin\EditClosureJoint.h"
 #include "PGSuperAppPlugin\EditTemporarySupport.h"
 #include "PGSuperAppPlugin\InsertDeleteTemporarySupport.h"
 #include "PGSuperAppPlugin\EditGirderline.h"
@@ -52,7 +52,7 @@
 #include <IFace\EditByUI.h> // for EDG_GENERAL
 
 
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,8 +70,8 @@ BEGIN_MESSAGE_MAP(CPGSpliceDoc, CPGSuperDocBase)
 	ON_COMMAND(ID_PROJECT_BRIDGEDESC, OnEditBridgeDescription)
    ON_COMMAND_RANGE(ID_EDIT_SEGMENT,ID_EDIT_SEGMENT_MAX,OnEditSegment)
 	ON_COMMAND(ID_EDIT_GIRDER, OnEditGirder)
-	ON_COMMAND(ID_EDIT_CLOSURE, OnEditClosurePour)
-   ON_UPDATE_COMMAND_UI(ID_EDIT_CLOSURE,OnUpdateEditClosurePour)
+	ON_COMMAND(ID_EDIT_CLOSURE, OnEditClosureJoint)
+   ON_UPDATE_COMMAND_UI(ID_EDIT_CLOSURE,OnUpdateEditClosureJoint)
 	ON_COMMAND(ID_EDIT_GIRDERLINE, OnEditGirderline)
    ON_COMMAND(ID_INSERT_TEMPORARY_SUPPORT,OnInsertTemporarySupport)
    ON_UPDATE_COMMAND_UI(ID_EDIT_TEMPORARY_SUPPORT,OnUpdateEditTemporarySupport)
@@ -251,7 +251,7 @@ void CPGSpliceDoc::OnEditGirder()
       EditGirderSegmentDescription(segmentKey,EGS_GENERAL);
 }
 
-void CPGSpliceDoc::OnEditClosurePour()
+void CPGSpliceDoc::OnEditClosureJoint()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -262,7 +262,7 @@ void CPGSpliceDoc::OnEditClosurePour()
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   if ( selection.Type == CSelection::ClosurePour )
+   if ( selection.Type == CSelection::ClosureJoint )
    {
       closureKey.groupIndex   = selection.GroupIdx;
       closureKey.girderIndex  = selection.GirderIdx;
@@ -270,22 +270,22 @@ void CPGSpliceDoc::OnEditClosurePour()
    }
    else
    {
-      // a closure pour is not selected
+      // a closure joint is not selected
       // ask to use which one to edit
-      CSelectClosurePourDlg dlg(pBridgeDesc);
+      CSelectClosureJointDlg dlg(pBridgeDesc);
       dlg.m_GirderIdx     = selection.GirderIdx == INVALID_INDEX ? 0 : selection.GirderIdx;
       dlg.m_PierIdx       = selection.PierIdx;
       dlg.m_TempSupportID = selection.tsID;
 
       if ( dlg.m_PierIdx == INVALID_INDEX && dlg.m_TempSupportID == INVALID_ID )
       {
-         // The default parameters aren't valid. Find the first object with a closure pour
+         // The default parameters aren't valid. Find the first object with a closure joint
          // and use it as the default
          SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
          for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
          {
             const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
-            if ( pTS->GetClosurePour(dlg.m_GirderIdx) )
+            if ( pTS->GetClosureJoint(dlg.m_GirderIdx) )
             {
                dlg.m_TempSupportID = pTS->GetID();
                break;
@@ -299,7 +299,7 @@ void CPGSpliceDoc::OnEditClosurePour()
             for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
             {
                const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-               if ( pPier->GetClosurePour(dlg.m_GirderIdx) )
+               if ( pPier->GetClosureJoint(dlg.m_GirderIdx) )
                {
                   dlg.m_PierIdx = pPier->GetIndex();
                   break;
@@ -321,20 +321,20 @@ void CPGSpliceDoc::OnEditClosurePour()
       if (dlg.m_TempSupportID != INVALID_ID )
       {
          const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(dlg.m_TempSupportID);
-         const CClosurePourData* pClosure = pTS->GetClosurePour(dlg.m_GirderIdx);
+         const CClosureJointData* pClosure = pTS->GetClosureJoint(dlg.m_GirderIdx);
          closureKey = pClosure->GetClosureKey();
       }
       else
       {
          const CPierData2* pPier = pBridgeDesc->GetPier(dlg.m_PierIdx);
-         const CClosurePourData* pClosure = pPier->GetClosurePour(dlg.m_GirderIdx);
+         const CClosureJointData* pClosure = pPier->GetClosureJoint(dlg.m_GirderIdx);
          closureKey = pClosure->GetClosureKey();
       }
    }
 
-   const CClosurePourData* pClosure = pBridgeDesc->GetClosurePour(closureKey);
+   const CClosureJointData* pClosure = pBridgeDesc->GetClosureJoint(closureKey);
    ATLASSERT(pClosure != NULL);
-   EditClosurePourDescription(pClosure,EGS_GENERAL);
+   EditClosureJointDescription(pClosure,EGS_GENERAL);
 }
 
 void CPGSpliceDoc::OnEditGirderline()
@@ -423,11 +423,11 @@ void CPGSpliceDoc::OnUpdateEditTemporarySupport(CCmdUI* pCmdUI)
    pCmdUI->Enable(0 < nTS);
 }
 
-void CPGSpliceDoc::OnUpdateEditClosurePour(CCmdUI* pCmdUI)
+void CPGSpliceDoc::OnUpdateEditClosureJoint(CCmdUI* pCmdUI)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   IndexType nClosures = pBridgeDesc->GetClosurePourCount();
+   IndexType nClosures = pBridgeDesc->GetClosureJointCount();
 
    pCmdUI->Enable(0 < nClosures);
 }
@@ -438,45 +438,11 @@ void CPGSpliceDoc::OnInsertTemporarySupport()
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
 
    CTemporarySupportDlg dlg(pBridgeDesc,INVALID_INDEX,EAFGetMainFrame());
-   //if ( nTS != 0 )
-   //{
-   //   // If there are temporary supports, initialize the dialog with the data
-   //   // of the first TS. Use the center of the bridge for the default location
-   //   const CTemporarySupportData* pRefTS = pBridgeDesc->GetTemporarySupport(0);
-   //   SupportIDType refTempSupportID = pRefTS->GetID();
-   //   CTemporarySupportData ts = *pRefTS;
-   //   ts.SetStation(pBridgeDesc->GetPier(0)->GetStation() + pBridgeDesc->GetLength()/2);
-
-   //   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
-   //   EventIndexType erectionEvent,removalEvent;
-   //   pTimelineMgr->GetTempSupportEvents(refTempSupportID,&erectionEvent,&removalEvent);
-
-   //   EventIndexType closureEvent = erectionEvent;
-   //   if ( ts.GetConnectionType() == pgsTypes::sctClosurePour )
-   //   {
-   //      EventIndexType nEvents = pTimelineMgr->GetEventCount();
-   //      for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
-   //      {
-   //         const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-   //         if ( pTimelineEvent->GetCastClosurePourActivity().IsEnabled() )
-   //         {
-   //            closureEvent = eventIdx;
-   //            break;
-   //         }
-   //      }
-   //   }
-
-   //   pgsTypes::SupportedBeamSpacing girderSpacingType = pBridgeDesc->GetGirderSpacingType();
-   //   pgsTypes::MeasurementLocation spacingMeasureLocation = pBridgeDesc->GetMeasurementLocation();
-   //   dlg.Init(ts,erectionEvent,removalEvent,girderSpacingType,spacingMeasureLocation,closureEvent);
-   //}
-
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertTemporarySupport* pTxn = new txnInsertTemporarySupport(dlg.GetTemporarySupport(),dlg.GetErectionEventIndex(),dlg.GetRemovalEventIndex());
+      txnInsertTemporarySupport* pTxn = new txnInsertTemporarySupport(dlg.GetTempSupportIndex(),*pBridgeDesc,*dlg.GetBridgeDescription());
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -500,7 +466,6 @@ void CPGSpliceDoc::OnEditTimeline()
 
    CEditTimelineDlg dlg;
    dlg.m_TimelineManager = *pBridgeDesc->GetTimelineManager();
-   dlg.m_TimelineManager.SetBridgeDescription(pBridgeDesc);
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -558,7 +523,9 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
 
       CSegmentKey thisSegmentKey(segmentKey);
       if ( dlg.m_bCopyToAll )
+      {
          thisSegmentKey.girderIndex = ALL_GIRDERS;
+      }
 
       txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(thisSegmentKey,newData);
 
@@ -569,32 +536,39 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
    return true;
 }
 
-bool CPGSpliceDoc::EditClosurePourDescription(const CClosurePourData* pClosure,int nPage)
+bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int nPage)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CClosureJointData* pClosure = pIBridgeDesc->GetClosureJointData(closureKey);
+   return EditClosureJointDescription(pClosure,nPage);
+}
+
+bool CPGSpliceDoc::EditClosureJointDescription(const CClosureJointData* pClosure,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    CSegmentKey closureKey(pClosure->GetClosureKey());
 
-   EventIndexType closureEventIdx = pIBridgeDesc->GetCastClosurePourEventIndex(closureKey.groupIndex,closureKey.segmentIndex);
+   EventIndexType closureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(closureKey.groupIndex,closureKey.segmentIndex);
 
-   CClosurePourData closurePour(*pClosure);
-   CClosurePourDlg dlg(_T("Closure Pour / Splice"),closureKey,pClosure,closureEventIdx,false/*editing as an indepenent object*/);
+   CClosureJointData ClosureJoint(*pClosure);
+   CClosureJointDlg dlg(_T("Closure Joint"),closureKey,pClosure,closureEventIdx,false/*editing as an indepenent object*/);
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditClosurePourData newData;
+      txnEditClosureJointData newData;
       newData.m_PierIdx         = pClosure->GetPierIndex();
       newData.m_TSIdx           = pClosure->GetTemporarySupportIndex();
-      newData.m_ClosurePour     = dlg.m_ClosurePour;
-      newData.m_ClosureEventIdx = dlg.m_EventIdx;
+      newData.m_ClosureJoint    = dlg.m_ClosureJoint;
+      newData.m_ClosureEventIdx = dlg.m_EventIndex;
 
-      if ( dlg.m_bCopyToAllClosurePours )
+      if ( dlg.m_bCopyToAllClosureJoints )
       {
          closureKey.girderIndex = ALL_GIRDERS;
       }
 
-      txnEditClosurePour* pTxn = new txnEditClosurePour(closureKey,newData);
+      txnEditClosureJoint* pTxn = new txnEditClosureJoint(closureKey,newData);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -633,7 +607,16 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
 
 void CPGSpliceDoc::DeleteTemporarySupport(SupportIDType tsID)
 {
-   txnDeleteTemporarySupport* pTxn = new txnDeleteTemporarySupport(tsID);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   CBridgeDescription2 oldBridgeDesc = *pBridgeDesc;
+   CBridgeDescription2 newBridgeDesc = *pBridgeDesc;
+
+   const CTemporarySupportData* pTS = newBridgeDesc.FindTemporarySupport(tsID);
+   SupportIndexType tsIdx = pTS->GetIndex();
+   newBridgeDesc.RemoveTemporarySupportByIndex(tsIdx);
+
+   txnDeleteTemporarySupport* pTxn = new txnDeleteTemporarySupport(tsIdx,oldBridgeDesc,newBridgeDesc);
    GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(pTxn);
 }
@@ -648,49 +631,11 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
    const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
    SupportIndexType tsIdx = pTS->GetIndex();
 
-   CTemporarySupportDlg dlg(pBridgeDesc,tsIdx,EAFGetMainFrame());
-
-   EventIndexType oldErectEvent, oldRemoveEvent;
-   pBridgeDesc->GetTimelineManager()->GetTempSupportEvents(tsID,&oldErectEvent, &oldRemoveEvent);
-
-   pgsTypes::SupportedBeamSpacing oldGirderSpacingType = pBridgeDesc->GetGirderSpacingType();
-   pgsTypes::MeasurementLocation oldGirderMeasurementLocation = pBridgeDesc->GetMeasurementLocation();
-
-   EventIndexType oldClosureEvent = INVALID_INDEX;
-   if ( pTS->GetConnectionType() == pgsTypes::sctClosurePour )
-   {
-#pragma Reminder("REVIEW: possible bug")
-      // using girder index 0 to get the closure pour. I think this is ok because all closures
-      // at a TS or Pier are cast at the same time.
-      const CClosurePourData* pClosure = pBridgeDesc->GetTemporarySupport(tsIdx)->GetClosurePour(0);
-      if ( pClosure )
-      {
-         oldClosureEvent = pBridgeDesc->GetTimelineManager()->GetCastClosurePourEventIndex(pClosure->GetID());
-      }
-   }
-
-//   dlg.Init(*pTS,oldErectEvent,oldRemoveEvent,oldGirderSpacingType,oldGirderMeasurementLocation,oldClosureEvent);
-
-   txnEditTemporarySupportData oldData;
-   oldData.m_TS = *pTS;
-   oldData.m_ErectionEvent = oldErectEvent;
-   oldData.m_RemovalEvent = oldRemoveEvent;
-   oldData.m_GirderSpacingType = oldGirderSpacingType;
-   oldData.m_GirderMeasurementLocation = oldGirderMeasurementLocation;
-   oldData.m_ClosureEvent = oldClosureEvent;
-
+   CTemporarySupportDlg dlg(pBridgeDesc,tsIdx);
    dlg.SetActivePage(nPage);
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditTemporarySupportData newData;
-      newData.m_TS                        = dlg.GetTemporarySupport();
-      newData.m_ErectionEvent             = dlg.GetErectionEventIndex();
-      newData.m_RemovalEvent              = dlg.GetRemovalEventIndex();
-      newData.m_GirderSpacingType         = dlg.GetGirderSpacingType();
-      newData.m_GirderMeasurementLocation = dlg.GetSpacingMeasurementLocation();
-      newData.m_ClosureEvent              = dlg.GetClosurePourEventIndex();
-
-      txnEditTemporarySupport* pTxn = new txnEditTemporarySupport(tsID,oldData,newData);
+      txnEditTemporarySupport* pTxn = new txnEditTemporarySupport(tsIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }

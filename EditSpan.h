@@ -20,74 +20,20 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_EDITSPAN_H_
-#define INCLUDED_EDITSPAN_H_
+#include <PGSuperAppPlugin\EditBridge.h>
 
-#include <System\Transaction.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\GirderSpacing2.h>
-#include <IFace\Project.h>
+#pragma once
 
-struct txnEditSpanData
-{
-   txnEditSpanData();
-   txnEditSpanData(const txnEditSpanData& other);
-   txnEditSpanData(const CSpanData2* pSpan);
-
-   // General
-   Float64 m_SpanLength;
-
-   // All the data after this point only applies to PGSuper
-
-   // Connections
-   pgsTypes::PierConnectionType m_ConnectionType[2];
-
-   // first index is MemberEndType, second index is PierFaceType
-   // Example, bearing offset at back side of pier at the start of this span
-   // m_BearingOffset[pgsTypes::metStart][pgsTypes::Back]
-   ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType[2][2];
-   Float64 m_EndDistance[2][2];
-   ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType[2][2];
-   Float64 m_BearingOffset[2][2]; 
-   Float64 m_SupportWidth[2][2];
-
-   Float64 m_DiaphragmHeight[2];
-   Float64 m_DiaphragmWidth[2];
-   ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType[2];
-   Float64 m_DiaphragmLoadLocation[2];
-
-   // Spacing
-   GirderIndexType m_nGirders;
-   bool m_bUseSameNumGirders;
-   bool m_bUseSameGirderType;
-   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
-   pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
-   CGirderGroupData m_GirderGroup;
-   CGirderSpacing2 m_GirderSpacing[2];
-
-   pgsTypes::SlabOffsetType m_SlabOffsetType;
-   Float64 m_SlabOffset[2];
-};
-
-class txnEditSpan : public txnTransaction
+class txnEditSpan : public txnEditBridgeDescription
 {
 public:
-   txnEditSpan(SpanIndexType spanIdx,const txnEditSpanData& oldData,const txnEditSpanData& newData);
+   txnEditSpan(SpanIndexType spanIdx,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
 
-   ~txnEditSpan();
+   virtual ~txnEditSpan();
 
-   virtual bool Execute();
-   virtual void Undo();
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
 
 private:
-   void DoExecute(int i);
    SpanIndexType m_SpanIdx;
-   txnEditSpanData m_SpanData[2];
 };
-
-#endif // INCLUDED_EDITSPAN_H_

@@ -250,7 +250,7 @@ bool CStabilityGraphBuilder::UpdateNow()
          Float64 FS1 = pGirderHaulingSpecCriteria->GetHaulingCrackingFs();
          Float64 FS2 = pGirderHaulingSpecCriteria->GetHaulingRolloverFs();
 
-         Float64 loc = min(pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart),
+         Float64 loc = Min(pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart),
                            pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metEnd));
          Float64 stepSize = (hp1-loc)/20;
          while ( loc <= hp1 )
@@ -270,15 +270,14 @@ bool CStabilityGraphBuilder::UpdateNow()
 
                AddGraphPoint(limitFS1,loc,FS1);
                AddGraphPoint(limitFS2,loc,FS2);
-
-               loc += stepSize;
             }
             else
             {
                ATLASSERT(false); // should not happent
             }
-         }
 
+            loc += stepSize;
+         }
       }
    }
 
@@ -411,12 +410,12 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
 
    if (  m_pGraphController->GetGraphType() == GT_LIFTING )
    {
-      legend1 = _T("Min. F.S. Against Cracking (FScr)");
+      legend1 = _T("F.S. Against Cracking (FScr)");
       legend2 = _T("F.S. Against Failure (FSf)");
    }
    else
    {
-      legend1 = _T("Min. F.S. Against Cracking (FScr)");
+      legend1 = _T("F.S. Against Cracking (FScr)");
       legend2 = _T("F.S. Against Rollover (FSr)");
    }
    
@@ -428,19 +427,19 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
    int legendLength = logPixelsX/2;
 
    CPoint bottomRight;
-   bottomRight.x = 5 + topLeft.x + max(size1.cx,size2.cx) + 5 + legendLength + 5;
+   bottomRight.x = 5 + topLeft.x + Max(size1.cx,size2.cx) + 5 + legendLength + 5;
    bottomRight.y = 5 + topLeft.y + size1.cy + 5 + size2.cy + 5;
 
    pDC->Rectangle(CRect(topLeft,bottomRight));
    pDC->TextOut(5 + topLeft.x,5 + topLeft.y,legend1);
    CPen* oldPen = pDC->SelectObject(&pen1);
-   pDC->MoveTo(5 + topLeft.x + max(size1.cx,size1.cx) + 5,5 + topLeft.y + size1.cy/2);
-   pDC->LineTo(5 + topLeft.x + max(size1.cx,size1.cx) + 5 + legendLength,5 + topLeft.y + size1.cy/2);
+   pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size1.cx) + 5,5 + topLeft.y + size1.cy/2);
+   pDC->LineTo(5 + topLeft.x + Max(size1.cx,size1.cx) + 5 + legendLength,5 + topLeft.y + size1.cy/2);
 
    pDC->SelectObject(&pen2);
    pDC->TextOut(5 + topLeft.x,5 + topLeft.y + size1.cy + 5, legend2);
-   pDC->MoveTo(5 + topLeft.x + max(size1.cx,size1.cx) + 5,5 + topLeft.y + size1.cy + 5 + size2.cy/2);
-   pDC->LineTo(5 + topLeft.x + max(size1.cx,size1.cx) + 5 + legendLength,5 + topLeft.y + size1.cy + 5 + size2.cy/2);
+   pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size1.cx) + 5,5 + topLeft.y + size1.cy + 5 + size2.cy/2);
+   pDC->LineTo(5 + topLeft.x + Max(size1.cx,size1.cx) + 5 + legendLength,5 + topLeft.y + size1.cy + 5 + size2.cy/2);
 
 
    pDC->SelectObject(oldPen);

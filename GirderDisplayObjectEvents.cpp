@@ -345,9 +345,9 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectPrevSegment()
       }
       else
       {
-         // select closure pour at left end of this segment
+         // select closure joint at left end of this segment
          CSegmentKey closureKey(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex,m_SegmentKey.segmentIndex-1);
-         m_pFrame->SelectClosurePour(closureKey);
+         m_pFrame->SelectClosureJoint(closureKey);
       }
    }
 }
@@ -362,9 +362,9 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectNextSegment()
    }
    else
    {
-      // select closure pour at the right end of this segment
+      // select closure joint at the right end of this segment
       CSegmentKey closureKey(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex,m_SegmentKey.segmentIndex);
-      m_pFrame->SelectClosurePour(closureKey);
+      m_pFrame->SelectClosureJoint(closureKey);
    }
 }
 
@@ -380,9 +380,9 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectAdjacentPrevSegment()
       }
       else
       {
-         // select the closure pour at the right end of the previous segment in the right-most girderline
+         // select the closure joint at the right end of the previous segment in the right-most girderline
          CSegmentKey closureKey(m_SegmentKey.groupIndex,m_nGirders-1,m_SegmentKey.segmentIndex-1);
-         m_pFrame->SelectClosurePour(closureKey);
+         m_pFrame->SelectClosureJoint(closureKey);
       }
    }
    else
@@ -406,9 +406,9 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectAdjacentNextSegment()
       }
       else
       {
-         // select the closure pour at the end of the this segment in the left-most girderline
+         // select the closure joint at the end of the this segment in the left-most girderline
          CSegmentKey closureKey(m_SegmentKey.groupIndex,0,m_SegmentKey.segmentIndex);
-         m_pFrame->SelectClosurePour(closureKey);
+         m_pFrame->SelectClosureJoint(closureKey);
       }
    }
    else

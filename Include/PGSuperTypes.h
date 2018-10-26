@@ -50,9 +50,23 @@ class dbgDumpContext;
 #define CURING_NORMAL           0
 #define CURING_ACCELERATED      1
 
+// truck roll stiffness method
+#define ROLLSTIFFNESS_LUMPSUM 0
+#define ROLLSTIFFNESS_PERAXLE 1
+
+// exposure conditions
+#define EXPOSURE_NORMAL 0
+#define EXPOSURE_SEVERE 1
+
 // defines the creep time frame (ie. D40 and D120 for WSDOT)
 #define CREEP_MINTIME           0
 #define CREEP_MAXTIME           1
+
+// method for computing fcgp - the concrete stress at the center of gravity of prestressing tendons at transfer
+// this method is only used for the TxDOT 2013 loss method
+#define FCGP_07FPU              0 // assume stress is 0.7fpu 
+#define FCGP_ITERATIVE          1 // iterate to find value
+#define FCGP_HYBRID             2 // iterate unless initial stress is 0.75fpu, then use 0.7fpu
 
 // methods for distribution factor calculation
 #define LLDF_LRFD               0
@@ -150,7 +164,7 @@ struct pgsTypes
    // at a temporary support.
    enum SegmentConnectionType
    {
-      sctClosurePour,
+      sctClosureJoint,
       sctContinuousSegment
    };
 
@@ -158,8 +172,8 @@ struct pgsTypes
    // at an intermediate/permanent pier.
    enum PierSegmentConnectionType
    {
-      psctContinousClosurePour, // CIP closure pour that makes the adjacent segments continuous but there is no moment connection with the pier
-      psctIntegralClosurePour,  // CIP closure pour that makes the adjacent segments and pier integral
+      psctContinousClosureJoint, // CIP closure joint that makes the adjacent segments continuous but there is no moment connection with the pier
+      psctIntegralClosureJoint,  // CIP closure joint that makes the adjacent segments and pier integral
       psctContinuousSegment,    // Precast segment spans over pier with no moment connection to the pier
       psctIntegralSegment       // Precast segment spans over pier and has a moment connection with the pier
    };
@@ -187,7 +201,8 @@ struct pgsTypes
                      LimitStateCount // this should always be the last one as it will define the total number of limit states
                    }; 
 
-   enum StressLocation { BottomGirder, TopGirder, TopDeck };
+   enum StressLocation { BottomGirder, TopGirder, BottomDeck, TopDeck };
+
    // Note that Permanent was added below when input for total permanent strands was added in 12/06
    enum StrandType { Straight, Harped, Temporary, Permanent };
    enum AnalysisType { Simple, Continuous, Envelope };
@@ -489,7 +504,8 @@ struct pgsTypes
       WSDOT_REFINED_2005  = 8, // 2005 AASHTO, WSDOT (includes initial relaxation loss)
       WSDOT_REFINED       = 9,
       TXDOT_REFINED_2004  = 10, // TxDOT's May, 09 decision is to use refined losses from AASHTO 2004
-      TIME_STEP           = 11, // Losses are computed with a time-step method
+      TXDOT_REFINED_2013  = 11, // TxDOT's Method based on Report No. FHWA/TX-12/0-6374-2
+      TIME_STEP           = 12  // Losses are computed with a time-step method
    } LossMethod;
 
    typedef enum JackingEndType

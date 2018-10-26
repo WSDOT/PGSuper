@@ -58,7 +58,7 @@ public:
 	void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
    // status of the current views
-   EventIndexType GetEvent() const {return m_EventIdx;}
+   EventIndexType GetEvent() const {return m_EventIndex;}
 
    // iCutLocation
    Float64 GetCurrentCutLocation() {return m_CurrentCutLocation;}
@@ -150,7 +150,7 @@ private:
    CutLocation m_CutLocation;
    Float64 m_MaxCutLocation;
    
-   EventIndexType m_EventIdx; 
+   EventIndexType m_EventIndex; 
 
    CGirderKey m_GirderKey;
    bool m_bIsAfterFirstUpdate;

@@ -228,7 +228,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
       if ( segIdx < nSegments-1 )
       {
-         *pPara << _T("Closure Pour ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         *pPara << _T("Closure Joint ") << LABEL_SEGMENT(segIdx) << rptNewLine;
 
          const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
          const pgsStirrupCheckArtifact* pstirrup_artifact= pSegmentArtifact->GetStirrupCheckArtifact();

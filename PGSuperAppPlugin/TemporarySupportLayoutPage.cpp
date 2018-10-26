@@ -29,6 +29,7 @@
 #include "PGSuperAppPlugin\TemporarySupportDlg.h"
 #include "TemporarySupportLayoutPage.h"
 #include "TimelineEventDlg.h"
+#include "SelectItemDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
 
@@ -54,15 +55,15 @@ CTemporarySupportLayoutPage::~CTemporarySupportLayoutPage()
 {
 }
 
-void CTemporarySupportLayoutPage::Init(const CTemporarySupportData& tsData)
+void CTemporarySupportLayoutPage::Init(const CTemporarySupportData* pTS)
 {
-   m_Station        = tsData.GetStation();
-   m_strOrientation = tsData.GetOrientation();
-   m_Type           = tsData.GetSupportType();
+   m_Station        = pTS->GetStation();
+   m_strOrientation = pTS->GetOrientation();
+   m_Type           = pTS->GetSupportType();
 
-   SupportIDType tsID = tsData.GetID();
+   SupportIDType tsID = pTS->GetID();
 
-   const CSpanData2* pSpanData = tsData.GetSpan();
+   const CSpanData2* pSpanData = pTS->GetSpan();
    const CBridgeDescription2* pBridge = pSpanData->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridge->GetTimelineManager();
    pTimelineMgr->GetTempSupportEvents(tsID,&m_ErectionEventIndex,&m_RemovalEventIndex);
@@ -88,6 +89,19 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
+      if ( pParent->m_BridgeDesc.GetTimelineManager()->GetEventCount() <= m_ErectionEventIndex )
+      {
+         pDX->PrepareCtrl(IDC_ERECTION_EVENT);
+         AfxMessageBox(_T("Select an erection event"));
+         pDX->Fail();
+      }
+
+      if ( pParent->m_BridgeDesc.GetTimelineManager()->GetEventCount() <= m_RemovalEventIndex )
+      {
+         pDX->PrepareCtrl(IDC_REMOVAL_EVENT);
+         AfxMessageBox(_T("Select an removal event"));
+         pDX->Fail();
+      }
 #pragma Reminder("Validate temporary support orientation")
       //pDX->PrepareEditCtrl(IDC_ORIENTATION);
       //GET_IFACE2(pBroker,IBridge,pBridge);
@@ -104,7 +118,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       //   pDX->Fail();
       //}
 
-      const CBridgeDescription2* pBridgeDesc = pParent->GetBridgeDescription();
+      CBridgeDescription2* pBridgeDesc = pParent->GetBridgeDescription();
       if ( !pBridgeDesc->IsOnBridge(m_Station) )
       {
          pDX->PrepareEditCtrl(IDC_STATION);
@@ -123,13 +137,24 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       }
 
       SupportIndexType tsIdx = pBridgeDesc->IsTemporarySupportLocation(m_Station);
-      if ( tsIdx != INVALID_INDEX && tsIdx != pParent->GetTemporarySupportIndex() )
+      if ( tsIdx != INVALID_INDEX && tsIdx != pParent->m_pTS->GetIndex() )
       {
          pDX->PrepareEditCtrl(IDC_STATION);
          CString strMsg;
          strMsg.Format(_T("Temporary support cannot be at the same location as Temporary Support %d"),LABEL_TEMPORARY_SUPPORT(tsIdx));
          AfxMessageBox(strMsg,MB_OK | MB_ICONSTOP);
          pDX->Fail();
+      }
+
+      // copy the local page data in the bridge model owned by the parent property sheet
+      pParent->m_pTS->SetOrientation(m_strOrientation.c_str());
+      pParent->m_pTS->SetSupportType(m_Type);
+      pBridgeDesc->GetTimelineManager()->SetTempSupportEvents(pParent->m_pTS->GetID(),m_ErectionEventIndex,m_RemovalEventIndex);
+
+      // don't use pParent->m_pTS->SetStation().... we have to move the TS within the bridge model
+      if ( !IsEqual(pParent->m_pTS->GetStation(),m_Station) )
+      {
+         pBridgeDesc->MoveTemporarySupport(pParent->m_pTS->GetIndex(),m_Station);
       }
    }
 }
@@ -175,10 +200,44 @@ void CTemporarySupportLayoutPage::OnSupportTypeChanged()
    pgsTypes::TemporarySupportType type = (pgsTypes::TemporarySupportType)pCB->GetItemData(cursel);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
-   if ( type == pgsTypes::StrongBack && pParent->GetConnectionType() == pgsTypes::sctContinuousSegment )
+   if ( type == pgsTypes::StrongBack && pParent->m_pTS->GetConnectionType() == pgsTypes::sctContinuousSegment )
    {
-      AfxMessageBox(_T("Precast segments must be spliced with a closure pour at strong back supports. Connection type changed to Closure Pour"),MB_OK);
-      pParent->SetConnectionType(pgsTypes::sctClosurePour);
+#pragma Reminder("UPDATE: add option to create an event on the fly")
+      // Adding this option will make this UI element consistent with all the other UI elements that
+      // ask the user to select an event
+      CSelectItemDlg dlg;
+      dlg.m_strLabel = _T("Precast segments must be spliced with a closure joint at strong back supports. Select the event when the closure joints are cast.");
+      dlg.m_strTitle = _T("Select Event");
+      dlg.m_ItemIdx = 0;
+
+      CString strItems;
+      CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+      EventIndexType nEvents = pTimelineMgr->GetEventCount();
+      for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+      {
+         const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+
+         CString strItem;
+         strItem.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
+
+         if ( eventIdx != 0 )
+            strItems += _T("\n");
+
+         strItems += strItem;
+      }
+
+      dlg.m_strItems = strItems;
+      EventIndexType castClosureEventIndex;
+      if ( dlg.DoModal() == IDOK )
+      {
+         castClosureEventIndex = dlg.m_ItemIdx;
+      }
+      else
+      {
+         return;
+      }
+
+      pParent->m_pTS->SetConnectionType(pgsTypes::sctClosureJoint,castClosureEventIndex);
    }
 }
 
@@ -276,19 +335,16 @@ void CTemporarySupportLayoutPage::OnRemovalEventChanged()
 
 EventIndexType CTemporarySupportLayoutPage::CreateEvent()
 {
-#pragma Reminder("REVIEW:UPDATE:BUG: Should we be using the global timeline manager or the one associted with the bridge held in the parent dialog?")
-   // If this event is being created when the bridge is being edited from the master edite bridge dialog, 
-   // the the event should be kept local until all the changes are commited
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->GetBridgeDescription();
+   CTimelineManager* pTimelineMgr = pBridge->GetTimelineManager();
 
    CTimelineEventDlg dlg(pTimelineMgr,FALSE);
    if ( dlg.DoModal() == IDOK )
    {
-      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+      EventIndexType idx;
+      pTimelineMgr->AddTimelineEvent(dlg.m_TimelineEvent,true,&idx);
+      return idx;
   }
 
    return INVALID_INDEX;

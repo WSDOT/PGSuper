@@ -35,13 +35,6 @@
 
 class CGirderSpacingGrid;
 
-struct CGirderSpacingGridData
-{
-   pgsTypes::PierFaceType m_PierFace;
-   CGirderGroupData m_GirderGroup;
-   CGirderSpacing2 m_GirderSpacing;
-};
-
 void DDV_SpacingGrid(CDataExchange* pDX,int nIDC,CGirderSpacingGrid* pGrid);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -59,21 +52,9 @@ public:
 
 // Operations
 public:
-   void AddGirders(GirderIndexType nGirders);
-   void RemoveGirders(GirderIndexType nGirders);
-   void SetGirderCount(GirderIndexType nGirders);
-
    void Enable(BOOL bEnable);
-   void SetLinkedGrid(CGirderSpacingGrid* pLinkedGrid);
-   bool IsLinked(bool bLinked);
-
-   const CGirderSpacingGridData& GetGirderSpacingData() const;
-   void SetGirderSpacingData(const CGirderSpacingGridData& gridData);
 
    void SetPierSkewAngle(Float64 skewAngle);
-
-   void SetMeasurementType(pgsTypes::MeasurementType mt);
-   void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
 
    bool InputSpacing() const;
 
@@ -97,14 +78,9 @@ protected:
 
 public:
    // custom stuff for grid
-   void Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing2* pGirderSpacing,const CGirderGroupData* pGirderGroup,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment,pgsTypes::SupportedDeckType deckType);
-   void CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing2* pGirderSpacing,const CGirderGroupData* pGirderGroup,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment,pgsTypes::SupportedDeckType deckType);
    void CustomInit();
-   void FillGrid(const CGirderSpacing2* pGirderSpacing);
-   void FillGrid();
-
-   void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing girderSpacingType);
-   void SharedGirderCount(bool bShare);
+   void InitializeGridData(CGirderSpacing2* pGirderSpacing,CGirderGroupData* pGirderGroup,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment,pgsTypes::SupportedDeckType deckType);
+   void UpdateGrid();
 
    BOOL ValidateGirderSpacing();
 
@@ -115,19 +91,12 @@ private:
    Float64 m_PierSkewAngle;
    pgsTypes::SupportedDeckType m_DeckType;
    
-   CGirderSpacingGridData m_GridData;
+   pgsTypes::PierFaceType m_PierFace;
+   CGirderGroupData* m_pGirderGroup;
+   CGirderSpacing2* m_pGirderSpacing;
 
    std::vector<Float64> m_MinGirderSpacing;
    std::vector<Float64> m_MaxGirderSpacing;
-
-   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
-
-   bool m_bSharedGirderCount;
-
-   CGirderSpacingGrid* m_pLinkedGrid;
-   bool m_bLinked;
-
-   typedef std::pair<GirderIndexType,GirderIndexType> UserData;
 
    virtual BOOL OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT nFlags,WORD nHitState);
    BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);

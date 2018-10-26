@@ -280,7 +280,7 @@ void CMultiWebFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
    ATLASSERT(nWebs==3);
 
-   Float64 width = min(t1,t2);
+   Float64 width = Min(t1,t2);
    Float64 depth = d1 + d2;
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect, ctr_harp_rect;
@@ -327,10 +327,10 @@ void CMultiWebFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -841,4 +841,9 @@ void CMultiWebFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensio
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
+}
+
+GirderIndexType CMultiWebFactory::GetMinimumBeamCount()
+{
+   return 1;
 }

@@ -184,39 +184,6 @@ pgsSegmentArtifact* pgsGirderArtifact::GetSegmentArtifact(SegmentIndexType segId
    return &(*found);
 }
 
-void pgsGirderArtifact::AddClosurePourArtifact(const pgsClosurePourArtifact& artifact)
-{
-   ATLASSERT(artifact.GetClosurePourKey().groupIndex  == m_GirderKey.groupIndex);
-   ATLASSERT(artifact.GetClosurePourKey().girderIndex == m_GirderKey.girderIndex);
-   m_ClosurePourArtifacts.insert(artifact);
-}
-
-const pgsClosurePourArtifact* pgsGirderArtifact::GetClosurePourArtifact(SegmentIndexType segIdx) const
-{
-   pgsClosurePourArtifact key(CSegmentKey(m_GirderKey,segIdx));
-   std::set<pgsClosurePourArtifact>::const_iterator found = m_ClosurePourArtifacts.find(key);
-   ATLASSERT(found != m_ClosurePourArtifacts.end());
-   if ( found == m_ClosurePourArtifacts.end() )
-      return NULL;
-
-   return &(*found);
-}
-
-pgsClosurePourArtifact* pgsGirderArtifact::GetClosurePourArtifact(SegmentIndexType segIdx)
-{
-   pgsClosurePourArtifact key(CSegmentKey(m_GirderKey,segIdx));
-   std::set<pgsClosurePourArtifact>::iterator found = m_ClosurePourArtifacts.find(key);
-   if ( found == m_ClosurePourArtifacts.end() )
-   {
-      std::pair<std::set<pgsClosurePourArtifact>::iterator,bool> result = m_ClosurePourArtifacts.insert(key);
-      ATLASSERT(result.second == true);
-      found = result.first;
-   }
-
-   ATLASSERT(found != m_ClosurePourArtifacts.end());
-   return &(*found);
-}
-
 void pgsGirderArtifact::SetTendonStressArtifact(DuctIndexType ductIdx,const pgsTendonStressArtifact& artifact)
 {
    m_TendonStressArtifacts.insert(std::make_pair(ductIdx,artifact));
@@ -255,6 +222,37 @@ const pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact(
    return &m_DeflectionCheckArtifact[idx];
 }
 
+bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const
+{
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      if ( artifact.WasWithRebarAllowableStressUsed(intervalIdx,ls,face,0) ||
+           artifact.WasWithRebarAllowableStressUsed(intervalIdx,ls,face,POI_CLOSURE) )
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+bool pgsGirderArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::GirderFace face) const
+{
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      if ( artifact.IsFlexuralStressCheckApplicable(intervalIdx,ls,stressType,face) )
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
 Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
 {
    Float64 f = 0;
@@ -263,7 +261,11 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
    for ( ; iter != end; iter++ )
    {
       const pgsSegmentArtifact& artifact = *iter;
-      f = max(f,artifact.GetRequiredConcreteStrength());
+      Float64 required = artifact.GetRequiredConcreteStrength();
+      if ( required < 0 )
+         return required;
+
+      f = Max(f,required);
    }
    return f;
 }
@@ -276,7 +278,11 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
    for ( ; iter != end; iter++ )
    {
       const pgsSegmentArtifact& artifact = *iter;
-      f = max(f,artifact.GetRequiredReleaseStrength());
+      Float64 required = artifact.GetRequiredReleaseStrength();
+      if ( required < 0 )
+         return required;
+
+      f = Max(f,required);
    }
    return f;
 }
@@ -347,7 +353,6 @@ void pgsGirderArtifact::MakeCopy(const pgsGirderArtifact& rOther)
    }
 
    m_SegmentArtifacts          = rOther.m_SegmentArtifacts;
-   m_ClosurePourArtifacts      = rOther.m_ClosurePourArtifacts;
    m_DeflectionCheckArtifact   = rOther.m_DeflectionCheckArtifact;
 }
 

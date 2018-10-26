@@ -39,12 +39,14 @@ txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTy
    m_PierConnectionType[1] = newBC;
 }
 
-txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType oldBC,pgsTypes::PierSegmentConnectionType newBC)
+txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType oldBC,EventIndexType oldEventIdx,pgsTypes::PierSegmentConnectionType newBC,EventIndexType newEventIdx)
 {
    m_bIsBoundaryPier = false;
    m_PierIdx = pierIdx;
    m_SegmentConnectionType[0] = oldBC;
    m_SegmentConnectionType[1] = newBC;
+   m_CastClosureJointEventIdx[0] = oldEventIdx;
+   m_CastClosureJointEventIdx[1] = newEventIdx;
 }
 
 std::_tstring txnEditBoundaryConditions::Name() const
@@ -57,7 +59,7 @@ txnTransaction* txnEditBoundaryConditions::CreateClone() const
    if ( m_bIsBoundaryPier )
       return new txnEditBoundaryConditions(m_PierIdx,m_PierConnectionType[0],m_PierConnectionType[1]);
    else
-      return new txnEditBoundaryConditions(m_PierIdx,m_SegmentConnectionType[0],m_SegmentConnectionType[1]);
+      return new txnEditBoundaryConditions(m_PierIdx,m_SegmentConnectionType[0],m_CastClosureJointEventIdx[0],m_SegmentConnectionType[1],m_CastClosureJointEventIdx[1]);
 }
 
 bool txnEditBoundaryConditions::IsUndoable()
@@ -97,7 +99,7 @@ bool txnEditBoundaryConditions::DoExecute(int i)
    else
    {
       ATLASSERT( pBridgeDesc->GetPier(m_PierIdx)->IsInteriorPier() );
-      pBridgeDesc->SetBoundaryCondition( m_PierIdx, m_SegmentConnectionType[i] );
+      pBridgeDesc->SetBoundaryCondition( m_PierIdx, m_SegmentConnectionType[i], m_CastClosureJointEventIdx[i] );
    }
 
    pEvents->FirePendingEvents();

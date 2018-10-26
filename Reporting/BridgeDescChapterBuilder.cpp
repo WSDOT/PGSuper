@@ -38,7 +38,7 @@
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PierData2.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 #include <PgsExt\GirderLabel.h>
 
 #include <Material\Material.h>
@@ -824,8 +824,8 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType firstGirderIdx = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
+      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
+      GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
       
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
@@ -856,11 +856,11 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
             write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,pSegment->Material.Concrete,row);
             row++;
 
-            const CClosurePourData* pClosure = pSegment->GetRightClosure();
+            const CClosureJointData* pClosure = pSegment->GetRightClosure();
             if ( pClosure )
             {
                ATLASSERT(false); // this should never happen because the basic concrete model
-                                 // can't be used with PGSplice (PGSuper doesn't use closure pours)
+                                 // can't be used with PGSplice (PGSuper doesn't use closure joints)
             }
          } // segIdx
       } // gdrIdx
@@ -979,8 +979,8 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType firstGirderIdx = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
+      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
+      GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
       
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
@@ -1003,13 +1003,13 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
             write_aci209_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pSegment->Material.Concrete,row);
             row++;
 
-            const CClosurePourData* pClosure = pSegment->GetRightClosure();
+            const CClosureJointData* pClosure = pSegment->GetRightClosure();
             if ( pClosure )
             {
-               Float64 fc28 = pMaterials->GetClosurePourFc28(thisSegmentKey);
-               Float64 Ec28 = pMaterials->GetClosurePourEc28(thisSegmentKey);
+               Float64 fc28 = pMaterials->GetClosureJointFc28(thisSegmentKey);
+               Float64 Ec28 = pMaterials->GetClosureJointEc28(thisSegmentKey);
 
-               (*pTable)(row,0) << _T("Closure Pour ") << LABEL_SEGMENT(segIdx);
+               (*pTable)(row,0) << _T("Closure Joint ") << LABEL_SEGMENT(segIdx);
                write_aci209_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pClosure->GetConcrete(),row);
                row++;
             }
@@ -1477,7 +1477,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       (*pConnectionsTable)(row2,0) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
       (*pConnectionsTable)(row2,1) << CTemporarySupportData::AsString(pTS->GetConnectionType());
 
-      if ( pTS->GetConnectionType() == pgsTypes::sctClosurePour )
+      if ( pTS->GetConnectionType() == pgsTypes::sctClosureJoint )
       {
          Float64 brgOffset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
@@ -1491,9 +1491,9 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pConnectionsTable)(row2,4) << cmpdim.SetValue(endDist);
          (*pConnectionsTable)(row2,5) << GetEndDistanceMeasureString(endDistMeasure,false).c_str();
 
-         const CClosurePourData* pClosurePour = pTS->GetClosurePour(0);
-         IDType cpID = pClosurePour->GetID();
-         EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosurePourEventIndex(cpID);
+         const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(0);
+         IDType cpID = pClosureJoint->GetID();
+         EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(cpID);
          const CTimelineEvent* pCastClosureEvent = pTimelineMgr->GetEventByIndex(castClosureEventIdx);
          (*pConnectionsTable)(row2,7) << _T("Event ") << LABEL_EVENT(castClosureEventIdx) << _T(": ") << pCastClosureEvent->GetDescription();
       }
@@ -1552,7 +1552,7 @@ void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    {
       const CPierData2* pPier = NULL;
       const CTemporarySupportData* pTS = NULL;
-      const CClosurePourData* pClosure = pSegment->GetRightClosure();
+      const CClosureJointData* pClosure = pSegment->GetRightClosure();
       if ( pClosure == NULL )
       {
          pPier = pGirder->GetPier(pgsTypes::metEnd);
@@ -1772,8 +1772,8 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType firstGirderIdx = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex ));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (girderKey.girderIndex == ALL_GIRDERS ? nGirders : firstGirderIdx));
+      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex ));
+      GirderIndexType lastGirderIdx  = Min(nGirders,  (girderKey.girderIndex == ALL_GIRDERS ? nGirders : firstGirderIdx));
       
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
@@ -2110,7 +2110,6 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    INIT_UV_PROTOTYPE( rptForceUnitValue,   force,   pDisplayUnits->GetGeneralForceUnit(), true );
 
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker, IClosurePour,      pClosurePour);
    GET_IFACE2(pBroker, IBridge,           pBridge);
 
    rptParagraph* pPara;
@@ -2517,7 +2516,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
             CollectionIndexType closureIdx = segIdx;
 
             std::_tostringstream os;
-            os << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Closure Pour ") << LABEL_SEGMENT(closureIdx) <<std::endl;
+            os << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Closure Joint ") << LABEL_SEGMENT(closureIdx) <<std::endl;
             rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,os.str().c_str());
             pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
             pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -2528,12 +2527,12 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
             RowIndexType row = 0;
 
             (*pTable)(row,0) << _T("Length");
-            (*pTable)(row,1) << xdim.SetValue(pClosurePour->GetClosurePourLength(segmentKey));
+            (*pTable)(row,1) << xdim.SetValue(pBridge->GetClosureJointLength(segmentKey));
             row++;
 
             SegmentIDType closureID = pIBridgeDesc->GetSegmentID(segmentKey);
 
-            EventIndexType eventIdx = pTimelineMgr->GetCastClosurePourEventIndex(closureID);
+            EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(closureID);
             const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
 
             (*pTable)(row,0) << _T("Closure Event");

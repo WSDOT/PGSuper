@@ -61,6 +61,10 @@ CPGSuperBaseAppPlugin::CPGSuperBaseAppPlugin()
    m_SharedResourceType = srtInternetFtp;
 }
 
+CPGSuperBaseAppPlugin::~CPGSuperBaseAppPlugin()
+{
+}
+
 HRESULT CPGSuperBaseAppPlugin::OnFinalConstruct()
 {
    if ( !CreateAppUnitSystem(&m_AppUnitSystem) )
@@ -87,8 +91,7 @@ void CPGSuperBaseAppPlugin::DefaultTerminate()
 
 void CPGSuperBaseAppPlugin::GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem)
 {
-   (*ppAppUnitSystem) = m_AppUnitSystem;
-   (*ppAppUnitSystem)->AddRef();
+   m_AppUnitSystem.CopyTo(ppAppUnitSystem);
 }
 
 

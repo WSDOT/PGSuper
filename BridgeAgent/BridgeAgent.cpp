@@ -53,6 +53,7 @@
 #include <IFace\StatusCenter.h>
 #include <IFace\EditByUI.h>
 #include <IFace\DocumentType.h>
+#include <IFace\MomentCapacity.h>
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"

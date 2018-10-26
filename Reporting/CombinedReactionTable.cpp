@@ -68,8 +68,8 @@ inline void CombineReportPedResult(ILiveLoads::PedestrianLoadApplicationType app
    else if (appType==ILiveLoads::PedEnvelopeWithVehicular)
    {
      // envelope
-     (*pTable)(row,pedCol++) << reaction.SetValue( max(llMax, pedMax) );
-     (*pTable)(row,pedCol++) << reaction.SetValue( min(llMin, pedMin) );
+     (*pTable)(row,pedCol++) << reaction.SetValue( Max(llMax, pedMax) );
+     (*pTable)(row,pedCol++) << reaction.SetValue( Min(llMin, pedMin) );
    }
    else
    {
@@ -205,8 +205,8 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
       {
          EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
          pBridge->GetContinuityEventIndex(reactionLocation.PierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-         continuityEventIndex = _cpp_min(continuityEventIndex,leftContinuityEventIdx);
-         continuityEventIndex = _cpp_min(continuityEventIndex,rightContinuityEventIdx);
+         continuityEventIndex = Min(continuityEventIndex,leftContinuityEventIdx);
+         continuityEventIndex = Min(continuityEventIndex,rightContinuityEventIdx);
       }
    }
    IntervalIndexType continuityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);

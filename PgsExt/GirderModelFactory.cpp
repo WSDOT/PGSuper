@@ -26,6 +26,12 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\AnalysisResults.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 PoiIDType pgsGirderModelFactory::ms_FemModelPoiID = 0;
 
 pgsGirderModelFactory::pgsGirderModelFactory(void)
@@ -81,11 +87,25 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
    pPOI->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT);
 
 
-   // add section data for the support locations
-   if ( !IsEqual(leftSupportLoc,xsPOI.front().GetDistFromStart()) )
+   // add support locations if there aren't already POIs at those locations
+   bool bLeftSupportLoc  = true;
+   bool bRightSupportLoc = true;
+   std::vector<pgsPointOfInterest>::iterator xsIter(xsPOI.begin());
+   std::vector<pgsPointOfInterest>::iterator xsIterEnd(xsPOI.end());
+   for ( ; xsIter != xsIterEnd && (bLeftSupportLoc == true || bRightSupportLoc == true); xsIter++ )
+   {
+      pgsPointOfInterest& poi(*xsIter);
+      if ( IsEqual(leftSupportLoc,poi.GetDistFromStart()) )
+         bLeftSupportLoc = false;
+
+      if ( IsEqual(rightSupportLoc,poi.GetDistFromStart()) )
+         bRightSupportLoc = false;
+   }
+
+   if ( bLeftSupportLoc )
       xsPOI.push_back(pgsPointOfInterest(segmentKey,leftSupportLoc));
 
-   if ( !IsEqual(rightSupportLoc,xsPOI.back().GetDistFromStart()) )
+   if ( bRightSupportLoc )
       xsPOI.push_back(pgsPointOfInterest(segmentKey,rightSupportLoc));
 
    // sort the POI
@@ -100,7 +120,7 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
    std::vector<pgsPointOfInterest>::iterator jointIterEnd(xsPOI.end());
    for ( ; jointIter < jointIterEnd; jointIter++ )
    {
-      pgsPointOfInterest poi( *jointIter );
+      pgsPointOfInterest& poi( *jointIter );
       Float64 poi_loc = poi.GetDistFromStart();
       if ( !bIncludeCantilevers && (poi_loc < leftSupportLoc || rightSupportLoc < poi_loc) )
       {
@@ -129,7 +149,7 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
       {
          // jump over the right face
          jointIter++;
-         if ( jointIter == xsPOI.end() )
+         if ( jointIter == jointIterEnd )
             break;
       }
 
@@ -180,7 +200,7 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
          prevJointIter++;
          jointIter++;
 
-         if ( jointIter == xsPOI.end() )
+         if ( jointIter == jointIterEnd )
             break;
       }
    }

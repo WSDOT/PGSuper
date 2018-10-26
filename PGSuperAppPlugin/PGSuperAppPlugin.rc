@@ -288,7 +288,7 @@ BEGIN
         MENUITEM "&Bridge...",                  ID_PROJECT_BRIDGEDESC
         MENUITEM "&Abutment\\Pier...",          ID_PROJECT_PIERDESC
         MENUITEM "&Temporary Support...",       ID_EDIT_TEMPORARY_SUPPORT
-        MENUITEM "&Closure Pour...",            ID_EDIT_CLOSURE
+        MENUITEM "&Closure Joint...",           ID_EDIT_CLOSURE
         MENUITEM "&Girder Segment...",          ID_EDIT_GIRDER
         MENUITEM "&Spliced Girder...",          ID_EDIT_GIRDERLINE
         MENUITEM SEPARATOR
@@ -759,8 +759,8 @@ BEGIN
     POPUP "Activities"
     BEGIN
         MENUITEM "Erect Piers",                 ID_ACTIVITIES_ERECT_PIERS
-        MENUITEM "Remove Temporary Supports",   33247
-        MENUITEM "Cast Closure Pours",          ID_ACTIVITIES_CASTCLOSUREPOURS
+        MENUITEM "Remove Temporary Supports",   ID_ACTIVITIES_REMOVE_TS
+        MENUITEM "Cast Closure Joints",         ID_ACTIVITIES_CASTCLOSUREJOINTS
         MENUITEM "Cast Deck",                   ID_ACTIVITIES_CASTDECK
         MENUITEM "Apply Loads",                 ID_ACTIVITIES_APPLYLOADS
         MENUITEM "Construct Segment",           ID_ACTIVITIES_CONSTRUCTSEGMENT
@@ -788,14 +788,10 @@ IDR_BRIDGEMODELEDITOR ACCELERATORS
 BEGIN
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
-    VK_INSERT,      ID_INSERT,              VIRTKEY, NOINVERT
-    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
-    "X",            ID_SCALETOFIT,          VIRTKEY, CONTROL, ALT, NOINVERT
     "A",            ID_VIEW_ANALYSISRESULTS, VIRTKEY, CONTROL, NOINVERT
     "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
     "G",            ID_VIEW_GIRDEREDITOR,   VIRTKEY, CONTROL, NOINVERT
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
-    "Z",            ID_ZOOM,                VIRTKEY, CONTROL, ALT, NOINVERT
 END
 
 IDR_PGSPLICE ACCELERATORS 
@@ -804,12 +800,20 @@ BEGIN
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_INSERT,              VIRTKEY, NOINVERT
     VK_INSERT,      ID_INSERT_TEMPORARY_SUPPORT, VIRTKEY, SHIFT, NOINVERT
-    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
-    "X",            ID_SCALETOFIT,          VIRTKEY, CONTROL, ALT, NOINVERT
     "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
     "G",            ID_VIEW_GIRDEREDITOR,   VIRTKEY, CONTROL, NOINVERT
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
-    "Z",            ID_ZOOM,                VIRTKEY, CONTROL, ALT, NOINVERT
+END
+
+IDR_PGSUPER ACCELERATORS 
+BEGIN
+    "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_INSERT,              VIRTKEY, NOINVERT
+    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
+    "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_VIEW_GIRDEREDITOR,   VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_GIRDERMODELEDITOR ACCELERATORS 
@@ -1960,7 +1964,7 @@ BEGIN
     LTEXT           "Static",IDC_BACK_SLAB_OFFSET_UNIT,279,33,19,8
     LTEXT           "Slab Offset",IDC_BACK_SLAB_OFFSET_LABEL,195,33,36,8
     LTEXT           "Slab Offset Note",IDC_AHEAD_SLAB_OFFSET_NOTE,199,176,126,8
-    EDITTEXT        IDC_AHEAD_SLAB_OFFSET,238,187,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AHEAD_SLAB_OFFSET,238,187,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_AHEAD_SLAB_OFFSET_UNIT,283,187,19,8
     LTEXT           "Slab Offset",IDC_AHEAD_SLAB_OFFSET_LABEL,199,187,36,8
 END
@@ -2117,16 +2121,16 @@ BEGIN
     CONTROL         "Don't show this hint again",IDC_DONTSHOWAGAIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,115,151,10
 END
 
-IDD_RESOLVE_GIRDER_SPACING DIALOG  0, 0, 246, 99
+IDD_RESOLVE_GIRDER_SPACING DIALOGEX 0, 0, 246, 99
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select Spacing"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,133,78,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,189,78,50,14
-    LTEXT           "Select Spacing",IDC_STATIC,7,7,49,8
-    COMBOBOX        IDC_SPACING,7,18,232,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_MEASUREMENT_DATUM,7,37,232,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Different spacings are used between the various girders in this span. Select a single girder spacing and spacing datum to be used for the entire bridge.",IDC_STATIC,7,7,232,24
+    COMBOBOX        IDC_SPACING,7,39,48,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MEASUREMENT_DATUM,65,39,174,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_GIRDERLABELFORMAT DIALOGEX 0, 0, 316, 84
@@ -2663,7 +2667,7 @@ BEGIN
     EDITTEXT        IDC_SUPPORT_WIDTH,87,142,34,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_SUPPORT_WIDTH_T,126,144,27,8
     CONTROL         "",IDC_CONNECTION_MF,"Static",SS_ENHMETAFILE | WS_BORDER,198,57,197,109
-    LTEXT           "NOTE: Changes to the Installation Event apply to all closure pours at this temporary support.",IDC_STATIC,7,37,299,8
+    LTEXT           "NOTE: Changes to the Installation Event apply to all closure joints at this temporary support.",IDC_STATIC,7,37,299,8
     LTEXT           "Connection Type",IDC_STATIC,7,7,55,8
     LTEXT           "Installation Event",IDC_EVENT_LABEL,167,7,57,8
 END
@@ -2688,7 +2692,7 @@ BEGIN
     EDITTEXT        IDC_SUPPORT_WIDTH,87,142,34,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_SUPPORT_WIDTH_T,126,144,27,8
     CONTROL         "",IDC_CONNECTION_MF,"Static",SS_ENHMETAFILE | WS_BORDER,198,57,197,109
-    LTEXT           "NOTE: Changes to the Installation Event apply to all closure pours at this pier.",IDC_STATIC,7,37,251,8
+    LTEXT           "NOTE: Changes to the Installation Event apply to all closure joints at this pier.",IDC_STATIC,7,37,251,8
     LTEXT           "Connection Type",IDC_STATIC,7,7,55,8
     LTEXT           "Installation Event",IDC_EVENT_LABEL,167,7,57,8
 END
@@ -2702,7 +2706,7 @@ BEGIN
     LTEXT           "Length",IDC_LENGTH,7,25,93,8
     LTEXT           "Installation Event",IDC_STATIC,7,42,38,17
     COMBOBOX        IDC_EVENT,47,44,181,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "NOTE: Changes to the Installation Event apply to all closure pours at this temporary support.",IDC_STATIC,7,65,221,20
+    LTEXT           "NOTE: Changes to the Installation Event apply to all closure joints at this temporary support.",IDC_STATIC,7,65,221,20
     LTEXT           "concrete type",IDC_CONCRETE_TYPE_LABEL,7,94,221,8
     CONTROL         "f'ci",IDC_FC1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,110,25,10
     CONTROL         "f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON,7,128,23,10
@@ -3003,9 +3007,9 @@ BEGIN
     PUSHBUTTON      "<",IDC_MOVE_LEFT,145,72,27,14
 END
 
-IDD_CAST_CLOSOURE_POUR DIALOGEX 0, 0, 316, 200
+IDD_CAST_CLOSOURE_JOINT DIALOGEX 0, 0, 316, 200
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Cast Closure Pours"
+CAPTION "Cast Closure Joints"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,205,179,50,14
@@ -3096,17 +3100,17 @@ BEGIN
     LTEXT           "Static",IDC_SPAN_LENGTH_UNIT,97,9,19,8
     LTEXT           "Location",IDC_STATIC,7,25,28,8
     COMBOBOX        IDC_LOCATION,7,35,210,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Create New Girders",IDC_NEW_GROUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,54,79,10
-    LTEXT           "Pier Construction",IDC_EVENT_LABEL,7,68,76,8
+    CONTROL         "Create New Group",IDC_NEW_GROUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,54,75,10
+    LTEXT           "Pier Construction",IDC_EVENT_LABEL,7,68,124,8
     COMBOBOX        IDC_EVENT,7,78,214,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,64,96,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,118,96,50,14
     PUSHBUTTON      "Help",ID_HELP,171,96,50,14
 END
 
-IDD_SELECT_CLOSURE_POUR DIALOGEX 0, 0, 306, 108
+IDD_SELECT_CLOSURE_JOINT DIALOGEX 0, 0, 306, 108
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Select Closure Pour"
+CAPTION "Select Closure Joint"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,195,87,50,14
@@ -3177,16 +3181,23 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Post Tensioning"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Static",IDC_DESCRIPTION,18,22,246,22
     GROUPBOX        "Post-Tensioning Parameters",IDC_STATIC,7,7,268,102
+    LTEXT           "Static",IDC_DESCRIPTION,18,22,246,22
+    LTEXT           "Temporary Strands",IDC_STATIC,124,42,62,8
+    LTEXT           "Tendons",IDC_TENDON_LABEL,208,42,28,8
     LTEXT           "Anchor Set",IDC_STATIC,18,62,36,8
-    EDITTEXT        IDC_ANCHORSET,141,57,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ANCHORSET_TAG,183,60,19,8
     LTEXT           "Wobble Friction Coefficient (K)",IDC_STATIC,18,76,96,8
-    EDITTEXT        IDC_WOBBLE,141,73,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_WOBBLE_TAG,183,75,19,8
     LTEXT           "Coefficient of Friction (u)",IDC_STATIC,18,91,77,8
-    EDITTEXT        IDC_FRICTION,141,89,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_ANCHORSET_TTS,124,57,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ANCHORSET_TTS_TAG,166,60,19,8
+    EDITTEXT        IDC_WOBBLE_TTS,124,73,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_WOBBLE_TTS_TAG,166,75,19,8
+    EDITTEXT        IDC_FRICTION_TTS,124,89,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_ANCHORSET_PT,197,57,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ANCHORSET_PT_TAG,239,60,19,8
+    EDITTEXT        IDC_WOBBLE_PT,197,73,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_WOBBLE_PT_TAG,239,75,19,8
+    EDITTEXT        IDC_FRICTION_PT,197,89,40,14,ES_RIGHT | ES_AUTOHSCROLL
 END
 
 IDD_PRETENSION_PARAMETERS DIALOGEX 0, 0, 280, 216
@@ -3194,15 +3205,15 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Pretension Losses"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Lump Sum Losses",IDC_STATIC,7,43,266,166
     LTEXT           "Static",IDC_LABEL,7,7,266,17
-    LTEXT           "After Prestress Transfer",IDC_AFTER_XFER_LABEL,25,74,89,8
-    LTEXT           "Static",IDC_AFTER_XFER_TAG,179,71,18,8
-    LTEXT           "At Lifting Losses",IDC_LIFTING_LABEL,25,88,55,8
+    CONTROL         "Use Lump Sum Losses",IDC_USE_LUMPSUM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,28,85,10
     LTEXT           "Before Prestress Transfer",IDC_BEFORE_XFER_LABEL,25,61,98,8
     EDITTEXT        IDC_BEFORE_XFER,137,56,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BEFORE_XFER_TAG,179,56,18,8
+    LTEXT           "After Prestress Transfer",IDC_AFTER_XFER_LABEL,25,74,89,8
     EDITTEXT        IDC_AFTER_XFER,137,71,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_AFTER_XFER_TAG,179,71,18,8
+    LTEXT           "At Lifting Losses",IDC_LIFTING_LABEL,25,88,55,8
     EDITTEXT        IDC_LIFTING,137,88,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LIFTING_TAG,179,88,18,8
     LTEXT           "At Shipping Losses",IDC_SHIPPING_LABEL,25,104,88,8
@@ -3219,11 +3230,11 @@ BEGIN
     LTEXT           "Static",IDC_AFTER_DECK_PLACEMENT_TAG,179,154,18,8
     LTEXT           "After Superimposed Dead Loads",IDC_AFTER_SIDL_LABEL,25,171,104,8
     EDITTEXT        IDC_AFTER_SIDL,137,171,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_AFTER_SIDL_TAG,179,171,18,8
     LTEXT           "Final",IDC_FINAL_LABEL,25,188,31,8
     EDITTEXT        IDC_FINAL,137,188,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_FINAL_TAG,179,188,18,8
-    LTEXT           "Static",IDC_AFTER_SIDL_TAG,179,171,18,8
-    CONTROL         "Use Lump Sum Losses",IDC_USE_LUMPSUM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,28,85,10
+    GROUPBOX        "Lump Sum Losses",IDC_STATIC,7,43,266,166
 END
 
 IDD_ACI_PARAMETERS DIALOGEX 0, 0, 316, 183
@@ -3251,8 +3262,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,6
- PRODUCTVERSION 3,0,0,6
+ FILEVERSION 3,0,0,7
+ PRODUCTVERSION 3,0,0,7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3269,12 +3280,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.6"
+            VALUE "FileVersion", "3.0.0.7"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.6"
+            VALUE "ProductVersion", "3.0.0.7"
         END
     END
     BLOCK "VarFileInfo"
@@ -3968,7 +3979,7 @@ BEGIN
         BOTTOMMARGIN, 178
     END
 
-    IDD_CAST_CLOSOURE_POUR, DIALOG
+    IDD_CAST_CLOSOURE_JOINT, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 309
@@ -4016,7 +4027,7 @@ BEGIN
         BOTTOMMARGIN, 110
     END
 
-    IDD_SELECT_CLOSURE_POUR, DIALOG
+    IDD_SELECT_CLOSURE_JOINT, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 299
@@ -4638,7 +4649,7 @@ STRINGTABLE
 BEGIN
     ID_PROJECT_EFFECTIVEFLANGEWIDTH 
                             "Modify effective flange width calculations\nEffective Flange Width"
-    ID_EDIT_CLOSURE         "Edit a Closure Pour\nEdit a Closure Pour"
+    ID_EDIT_CLOSURE         "Edit a Closure Joint\nEdit a Closure Joint"
     ID_LOADS_LOADFACTORS    "Edit the load factors\nLoad factors"
     ID_PROJECT_LOSSES       "Set prestress loss method and parameters\nPrestress Losses"
     ID_VIEW_GRAPHS          "View a graph\nGraphs"

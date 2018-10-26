@@ -53,13 +53,7 @@ public:
 public:
    void Enable(BOOL bEnable);
 
-   CGirderSpacingData2& GetSpacingData();
-   void SetSpacingData(const CGirderSpacingData2& spacing);
-
    void SetSkewAngle(Float64 skewAngle);
-
-   void SetMeasurementType(pgsTypes::MeasurementType mt);
-   void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
 
    bool InputSpacing() const;
 
@@ -84,11 +78,9 @@ protected:
 public:
    // custom stuff for grid
    void CustomInit();
+   void InitializeGridData(CGirderSpacing2* pSpacing);
 
-   void FillGrid(const CGirderSpacing2* pGirderSpacing);
-   void FillGrid();
-
-   void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing girderSpacingType);
+   void UpdateGrid();
 
    BOOL ValidateSpacing();
 
@@ -96,14 +88,10 @@ private:
    BOOL m_bEnabled;
    Float64 m_SkewAngle;
 
-   CGirderSpacingData2 m_SpacingData;
+   CGirderSpacing2* m_pSpacing;
 
    std::vector<Float64> m_MinGirderSpacing;
    std::vector<Float64> m_MaxGirderSpacing;
-
-   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
-
-   typedef std::pair<GirderIndexType,GirderIndexType> UserData;
 
    virtual BOOL OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT nFlags,WORD nHitState);
    BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);

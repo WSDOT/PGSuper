@@ -31,6 +31,12 @@
 #include <EAF\EAFUtilities.h>
 #include <IFace\Project.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 bool pgsGirderLabel::ms_bUseAlpha = true;
 
 std::_tstring pgsGirderLabel::GetGirderLabel(GirderIndexType gdrIdx)

@@ -791,7 +791,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
          }
          else
          {
-            (*pPara) << _T("Controlling mg") << Super(_T("ME"))  << _T(" = ") << scalar.SetValue(max(gM1.mg,gM2.mg)) << rptNewLine;
+            (*pPara) << _T("Controlling mg") << Super(_T("ME"))  << _T(" = ") << scalar.SetValue(Max(gM1.mg,gM2.mg)) << rptNewLine;
          }
       }
 
@@ -961,7 +961,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
          }
          else
          {
-            (*pPara) << _T("Controlling mg") << Super(_T("MI"))  << _T(" = ") << scalar.SetValue(max(gM1.mg,gM2.mg)) << rptNewLine;
+            (*pPara) << _T("Controlling mg") << Super(_T("MI"))  << _T(" = ") << scalar.SetValue(Max(gM1.mg,gM2.mg)) << rptNewLine;
          }
       }
 
@@ -1087,7 +1087,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          else
          {
             // skew makes no sense for unconnected
-            (*pPara) << _T("Controlling Factor: mg") << Super(_T("VE")) << _T(" = ") << scalar.SetValue(max(gV1.mg,gV2.mg));
+            (*pPara) << _T("Controlling Factor: mg") << Super(_T("VE")) << _T(" = ") << scalar.SetValue(Max(gV1.mg,gV2.mg));
          }
       }
    }
@@ -1184,7 +1184,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          else
          {
             // skew makes no sense for unconnected
-            (*pPara) << _T("Controlling Factor: mg") << Super(_T("VE")) << _T(" = ") << scalar.SetValue(max(gV1.mg,gV2.mg));
+            (*pPara) << _T("Controlling Factor: mg") << Super(_T("VE")) << _T(" = ") << scalar.SetValue(Max(gV1.mg,gV2.mg));
          }
       }
    }

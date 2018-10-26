@@ -68,4 +68,9 @@ protected:
    CComPtr<IIndexArray> m_Debondables;
 
    CGirderDescDebondGrid m_Grid;
+
+   Float64 m_HgStart;
+   Float64 m_HgHp1;
+   Float64 m_HgHp2;
+   Float64 m_HgEnd;
 };

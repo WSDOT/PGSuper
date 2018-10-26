@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,6
- PRODUCTVERSION 3,0,0,6
+ FILEVERSION 3,0,0,7
+ PRODUCTVERSION 3,0,0,7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Graphing"
-            VALUE "FileVersion", "3.0.0.6"
+            VALUE "FileVersion", "3.0.0.7"
             VALUE "InternalName", "Graphing"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperGraphing.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.6"
+            VALUE "ProductVersion", "3.0.0.7"
         END
     END
     BLOCK "VarFileInfo"
@@ -174,7 +174,6 @@ BEGIN
     CONTROL         "Time (Logarithmic Scale)",IDC_TIME_LOG,"Button",BS_AUTORADIOBUTTON,11,114,93,10
     CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON,11,127,41,10
     CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,160,48,10
-    EDITTEXT        IDC_INTERVAL_LIST,6,179,142,183,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | WS_VSCROLL | WS_HSCROLL
 END
 
 IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 150
@@ -198,7 +197,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     GROUPBOX        "Element",IDC_STATIC,6,7,142,113
     CONTROL         "Precast Segment",IDC_PRECAST_SEGMENT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,14,22,70,10
-    CONTROL         "Closure Pour",IDC_CLOSURE_POUR,"Button",BS_AUTORADIOBUTTON,14,79,57,10
+    CONTROL         "Closure Joint",IDC_CLOSURE_JOINT,"Button",BS_AUTORADIOBUTTON,14,79,57,10
     CONTROL         "Bridge Deck",IDC_DECK,"Button",BS_AUTORADIOBUTTON,14,106,53,10
     COMBOBOX        IDC_GROUP,13,33,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_GIRDER,13,48,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -214,6 +213,15 @@ BEGIN
     CONTROL         "Age (Logarithmic Scale)",IDC_AGE_LOG,"Button",BS_AUTORADIOBUTTON,13,239,91,10
     CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON,13,251,41,10
     CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,276,48,10
+END
+
+IDD_INFLUENCELINE_GRAPH_CONTROLLER DIALOGEX 0, 0, 159, 88
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_GIRDER,7,7,145,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,71,48,10
+    CONTROL         "Show Girder",IDC_BEAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,67,71,55,10
 END
 
 
@@ -280,6 +288,14 @@ BEGIN
         VERTGUIDE, 13
         TOPMARGIN, 7
         BOTTOMMARGIN, 362
+    END
+
+    IDD_INFLUENCELINE_GRAPH_CONTROLLER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 152
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 81
     END
 END
 #endif    // APSTUDIO_INVOKED

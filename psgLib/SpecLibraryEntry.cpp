@@ -40,7 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 45.0
+#define CURRENT_VERSION 50.0
 
 
 /****************************************************************************
@@ -196,34 +196,47 @@ m_LimitDistributionFactorsToLanesBeams(false),
 m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification),
 m_bIncludeForNegMoment(true),
 m_bAllowStraightStrandExtensions(false),
-m_RelaxationLossMethod(RLM_REFINED)
+m_RelaxationLossMethod(RLM_REFINED),
+m_FcgpComputationMethod(FCGP_HYBRID),
+m_ClosureCompStressAtStressing(0.60),
+m_ClosureTensStressPTZAtStressing(0.0),
+m_ClosureTensStressPTZWithRebarAtStressing(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
+m_ClosureTensStressAtStressing(0.0),
+m_ClosureTensStressWithRebarAtStressing(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
+m_ClosureCompStressAtService(0.45),
+m_ClosureCompStressWithLiveLoadAtService(0.60),
+m_ClosureTensStressPTZAtService(0.0),
+m_ClosureTensStressPTZWithRebarAtService(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
+m_ClosureTensStressAtService(0.0),
+m_ClosureTensStressWithRebarAtService(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
+m_ClosureCompStressFatigue(0.40)
 {
-   m_bCheckStrandStress[AT_JACKING]       = false;
-   m_bCheckStrandStress[BEFORE_TRANSFER]  = true;
-   m_bCheckStrandStress[AFTER_TRANSFER]   = false;
-   m_bCheckStrandStress[AFTER_ALL_LOSSES] = true;
+   m_bCheckStrandStress[CSS_AT_JACKING]       = false;
+   m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
+   m_bCheckStrandStress[CSS_AFTER_TRANSFER]   = false;
+   m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] = true;
 
-   m_StrandStressCoeff[AT_JACKING][STRESS_REL]       = 0.72;
-   m_StrandStressCoeff[AT_JACKING][LOW_RELAX]        = 0.78;
-   m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]  = 0.70;
-   m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]   = 0.75;
-   m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]   = 0.70;
-   m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]    = 0.74;
-   m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL] = 0.80;
-   m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]  = 0.80;
+   m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]       = 0.72;
+   m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]        = 0.78;
+   m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]  = 0.70;
+   m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]   = 0.75;
+   m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]   = 0.70;
+   m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]    = 0.74;
+   m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL] = 0.80;
+   m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]  = 0.80;
 
    m_bCheckTendonStressAtJacking      = false;
    m_bCheckTendonStressPriorToSeating = true;
-   m_TendonStressCoeff[AT_JACKING][STRESS_REL]               = 0.76;
-   m_TendonStressCoeff[AT_JACKING][LOW_RELAX]                = 0.80;
-   m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]         = 0.90;
-   m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]          = 0.90;
-   m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL] = 0.70;
-   m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]  = 0.70;
-   m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]  = 0.70;
-   m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]   = 0.74;
-   m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]         = 0.80;
-   m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]          = 0.80;
+   m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]               = 0.76;
+   m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX]                = 0.80;
+   m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL]         = 0.90;
+   m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX]          = 0.90;
+   m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL] = 0.70;
+   m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX]  = 0.70;
+   m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL]  = 0.70;
+   m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX]   = 0.74;
+   m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]         = 0.80;
+   m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]          = 0.80;
 
 
    m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.37,unitMeasure::SqrtKSI);
@@ -238,41 +251,50 @@ m_RelaxationLossMethod(RLM_REFINED)
    m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.21,unitMeasure::SqrtKSI);
    m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.18,unitMeasure::SqrtKSI);
 
-   m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal] = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
+   m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
    m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.21,unitMeasure::SqrtKSI);
-   m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight] = ::ConvertToSysUnits(0.18,unitMeasure::SqrtKSI);
+   m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.18,unitMeasure::SqrtKSI);
 
-   m_PhiFlexureTensionPS[pgsTypes::Normal] = 1.0;
-   m_PhiFlexureTensionRC[pgsTypes::Normal] = 0.9;
-   m_PhiFlexureCompression[pgsTypes::Normal] = 0.75;
+   m_PhiFlexureTensionPS[pgsTypes::Normal]      = 1.00;
+   m_PhiFlexureTensionRC[pgsTypes::Normal]      = 0.90;
+   m_PhiFlexureTensionSpliced[pgsTypes::Normal] = 0.95;
+   m_PhiFlexureCompression[pgsTypes::Normal]    = 0.75;
 
-   m_PhiFlexureTensionPS[pgsTypes::SandLightweight] = 1.0;
-   m_PhiFlexureTensionRC[pgsTypes::SandLightweight] = 0.9;
-   m_PhiFlexureCompression[pgsTypes::SandLightweight] = 0.75;
+   m_PhiFlexureTensionPS[pgsTypes::SandLightweight]      = 1.00;
+   m_PhiFlexureTensionRC[pgsTypes::SandLightweight]      = 0.90;
+   m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight] = 0.95;
+   m_PhiFlexureCompression[pgsTypes::SandLightweight]    = 0.75;
 
-   m_PhiFlexureTensionPS[pgsTypes::AllLightweight] = 1.0;
-   m_PhiFlexureTensionRC[pgsTypes::AllLightweight] = 0.9;
-   m_PhiFlexureCompression[pgsTypes::AllLightweight] = 0.75;
+   m_PhiFlexureTensionPS[pgsTypes::AllLightweight]      = 1.00;
+   m_PhiFlexureTensionRC[pgsTypes::AllLightweight]      = 0.90;
+   m_PhiFlexureTensionSpliced[pgsTypes::AllLightweight] = 0.95;
+   m_PhiFlexureCompression[pgsTypes::AllLightweight]    = 0.75;
 
-   m_PhiShear[pgsTypes::Normal] = 0.9;
+   m_PhiShear[pgsTypes::Normal]          = 0.9;
    m_PhiShear[pgsTypes::SandLightweight] = 0.7;
-   m_PhiShear[pgsTypes::AllLightweight] = 0.7;
+   m_PhiShear[pgsTypes::AllLightweight]  = 0.7;
 
    m_MaxSlabFc[pgsTypes::Normal]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxSegmentFci[pgsTypes::Normal]          = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
-   m_MaxSegmentFc[pgsTypes::Normal]           = ::ConvertToSysUnits(10.0,unitMeasure::KSI);
+   m_MaxSegmentFci[pgsTypes::Normal]         = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
+   m_MaxSegmentFc[pgsTypes::Normal]          = ::ConvertToSysUnits(10.0,unitMeasure::KSI);
+   m_MaxClosureFci[pgsTypes::Normal]         = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
+   m_MaxClosureFc[pgsTypes::Normal]          = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::Normal] = ::ConvertToSysUnits(165.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::Normal]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
 
    m_MaxSlabFc[pgsTypes::AllLightweight]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxSegmentFci[pgsTypes::AllLightweight]          = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
-   m_MaxSegmentFc[pgsTypes::AllLightweight]           = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
+   m_MaxSegmentFci[pgsTypes::AllLightweight]         = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
+   m_MaxSegmentFc[pgsTypes::AllLightweight]          = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
+   m_MaxClosureFci[pgsTypes::AllLightweight]         = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
+   m_MaxClosureFc[pgsTypes::AllLightweight]          = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::AllLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::AllLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
 
    m_MaxSlabFc[pgsTypes::SandLightweight]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxSegmentFci[pgsTypes::SandLightweight]          = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
-   m_MaxSegmentFc[pgsTypes::SandLightweight]           = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
+   m_MaxSegmentFci[pgsTypes::SandLightweight]         = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
+   m_MaxSegmentFc[pgsTypes::SandLightweight]          = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
+   m_MaxClosureFci[pgsTypes::SandLightweight]         = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
+   m_MaxClosureFc[pgsTypes::SandLightweight]          = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::SandLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
 }
@@ -500,19 +522,22 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("IncludeRebarForCapacity"),m_bIncludeRebar_Moment);
       pSave->Property(_T("IncludeNoncompositeMomentForNegMomentDesign"),m_bIncludeForNegMoment); // added version 2 of this data block
       pSave->BeginUnit(_T("ReductionFactor"),1.0);
-         pSave->BeginUnit(_T("NormalWeight"),1.0);
+         pSave->BeginUnit(_T("NormalWeight"),2.0);
             pSave->Property(_T("TensionControlled_RC"),m_PhiFlexureTensionRC[pgsTypes::Normal]);
             pSave->Property(_T("TensionControlled_PS"),m_PhiFlexureTensionPS[pgsTypes::Normal]);
+            pSave->Property(_T("TensionControlled_Spliced"),m_PhiFlexureTensionSpliced[pgsTypes::Normal]);
             pSave->Property(_T("CompressionControlled"),m_PhiFlexureCompression[pgsTypes::Normal]);
          pSave->EndUnit(); // NormalWeight
-         pSave->BeginUnit(_T("AllLightweight"),1.0);
+         pSave->BeginUnit(_T("AllLightweight"),2.0);
             pSave->Property(_T("TensionControlled_RC"),m_PhiFlexureTensionRC[pgsTypes::AllLightweight]);
             pSave->Property(_T("TensionControlled_PS"),m_PhiFlexureTensionPS[pgsTypes::AllLightweight]);
+            pSave->Property(_T("TensionControlled_Spliced"),m_PhiFlexureTensionSpliced[pgsTypes::AllLightweight]);
             pSave->Property(_T("CompressionControlled"),m_PhiFlexureCompression[pgsTypes::AllLightweight]);
          pSave->EndUnit(); // AllLightweight
-         pSave->BeginUnit(_T("SandLightweight"),1.0);
+         pSave->BeginUnit(_T("SandLightweight"),2.0);
             pSave->Property(_T("TensionControlled_RC"),m_PhiFlexureTensionRC[pgsTypes::SandLightweight]);
             pSave->Property(_T("TensionControlled_PS"),m_PhiFlexureTensionPS[pgsTypes::SandLightweight]);
+            pSave->Property(_T("TensionControlled_Spliced"),m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight]);
             pSave->Property(_T("CompressionControlled"),m_PhiFlexureCompression[pgsTypes::SandLightweight]);
          pSave->EndUnit(); // SandLightweight
       pSave->EndUnit(); // ReductionFactor
@@ -566,7 +591,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("TotalCreepDuration"),m_TotalCreepDuration);
 
    pSave->Property(_T("LossMethod"),(Int16)m_LossMethod);
-   pSave->Property(_T("TimeDependentModel"),(Int16)m_TimeDependentModel); // added in version 42
+   pSave->Property(_T("TimeDependentModel"),(Int16)m_TimeDependentModel); // added in version 43
    //pSave->Property(_T("FinalLosses"),m_FinalLosses); // removed version 44
    pSave->Property(_T("ShippingLosses"),m_ShippingLosses);
    //pSave->Property(_T("BeforeXferLosses"),m_BeforeXferLosses);// removed version 44
@@ -584,35 +609,35 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CuringMethodFactor"),m_CuringMethodTimeAdjustmentFactor);
 
    // Added in version 1.5
-   pSave->Property(_T("CheckStrandStressAtJacking"),m_bCheckStrandStress[AT_JACKING]);
-   pSave->Property(_T("Coeff_AtJacking_StressRel"),m_StrandStressCoeff[AT_JACKING][STRESS_REL]);
-   pSave->Property(_T("Coeff_AtJacking_LowRelax"),m_StrandStressCoeff[AT_JACKING][LOW_RELAX]);
+   pSave->Property(_T("CheckStrandStressAtJacking"),m_bCheckStrandStress[CSS_AT_JACKING]);
+   pSave->Property(_T("Coeff_AtJacking_StressRel"),m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]);
+   pSave->Property(_T("Coeff_AtJacking_LowRelax"),m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]);
 
-   pSave->Property(_T("CheckStrandStressBeforeTransfer"),m_bCheckStrandStress[BEFORE_TRANSFER]);
-   pSave->Property(_T("Coeff_BeforeTransfer_StressRel"),m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]);
-   pSave->Property(_T("Coeff_BeforeTransfer_LowRelax"),m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]);
+   pSave->Property(_T("CheckStrandStressBeforeTransfer"),m_bCheckStrandStress[CSS_BEFORE_TRANSFER]);
+   pSave->Property(_T("Coeff_BeforeTransfer_StressRel"),m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]);
+   pSave->Property(_T("Coeff_BeforeTransfer_LowRelax"),m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]);
 
-   pSave->Property(_T("CheckStrandStressAfterTransfer"),m_bCheckStrandStress[AFTER_TRANSFER]);
-   pSave->Property(_T("Coeff_AfterTransfer_StressRel"),m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]);
-   pSave->Property(_T("Coeff_AfterTransfer_LowRelax"),m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]);
+   pSave->Property(_T("CheckStrandStressAfterTransfer"),m_bCheckStrandStress[CSS_AFTER_TRANSFER]);
+   pSave->Property(_T("Coeff_AfterTransfer_StressRel"),m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]);
+   pSave->Property(_T("Coeff_AfterTransfer_LowRelax"),m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]);
 
-   pSave->Property(_T("CheckStrandStressAfterAllLosses"),m_bCheckStrandStress[AFTER_ALL_LOSSES]);
-   pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
-   pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+   pSave->Property(_T("CheckStrandStressAfterAllLosses"),m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES]);
+   pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]);
+   pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
 
    // added in version 45
    pSave->Property(_T("CheckTendonStressAtJacking"),m_bCheckTendonStressAtJacking);
    pSave->Property(_T("CheckTendonStressPriorToSeating"),m_bCheckTendonStressPriorToSeating);
-   pSave->Property(_T("Coeff_AtJacking_StressRel"),m_TendonStressCoeff[AT_JACKING][STRESS_REL]);
-   pSave->Property(_T("Coeff_AtJacking_LowRelax"),m_TendonStressCoeff[AT_JACKING][LOW_RELAX]);
-   pSave->Property(_T("Coeff_PriorToSeating_StressRel"),m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]);
-   pSave->Property(_T("Coeff_PriorToSeating_LowRelax"),m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]);
-   pSave->Property(_T("Coeff_AtAnchoragesAfterSeating_StressRel"),m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL]);
-   pSave->Property(_T("Coeff_AtAnchoragesAfterSeating_LowRelax"),m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
-   pSave->Property(_T("Coeff_ElsewhereAfterSeating_StressRel"),m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]);
-   pSave->Property(_T("Coeff_ElsewhereAfterSeating_LowRelax"),m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
-   pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
-   pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+   pSave->Property(_T("Coeff_AtJacking_StressRel"),m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]);
+   pSave->Property(_T("Coeff_AtJacking_LowRelax"),m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX]);
+   pSave->Property(_T("Coeff_PriorToSeating_StressRel"),m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL]);
+   pSave->Property(_T("Coeff_PriorToSeating_LowRelax"),m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX]);
+   pSave->Property(_T("Coeff_AtAnchoragesAfterSeating_StressRel"),m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL]);
+   pSave->Property(_T("Coeff_AtAnchoragesAfterSeating_LowRelax"),m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
+   pSave->Property(_T("Coeff_ElsewhereAfterSeating_StressRel"),m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL]);
+   pSave->Property(_T("Coeff_ElsewhereAfterSeating_LowRelax"),m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
+   pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]);
+   pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
    
 
    // added in version 23, removed version 4
@@ -634,6 +659,12 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("SlabShrinkageElasticGain"),m_SlabShrinkageElasticGain);
    pSave->Property(_T("LiveLoadElasticGain"),m_LiveLoadElasticGain); // added in version 42
 
+   // added in version 44
+   if ( m_LossMethod == LOSSES_TXDOT_REFINED_2013 )
+   {
+      pSave->Property(_T("FcgpComputationMethod"),m_FcgpComputationMethod);
+   }
+
    // Added in 1.7
    pSave->Property(_T("CheckLiveLoadDeflection"),m_bDoEvaluateDeflection);
    pSave->Property(_T("LiveLoadDeflectionLimit"),m_DeflectionLimit);
@@ -643,24 +674,30 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    // Added in 10.0, updated in version 37
    pSave->BeginUnit(_T("Limits"),1.0);
-      pSave->BeginUnit(_T("Normal"),1.0);
+      pSave->BeginUnit(_T("Normal"),2.0);
          pSave->Property(_T("MaxSlabFc"),             m_MaxSlabFc[pgsTypes::Normal]);
          pSave->Property(_T("MaxGirderFci"),          m_MaxSegmentFci[pgsTypes::Normal]);
          pSave->Property(_T("MaxGirderFc"),           m_MaxSegmentFc[pgsTypes::Normal]);
+         pSave->Property(_T("MaxClosureFci"),         m_MaxClosureFci[pgsTypes::Normal]); // added in version 2.0
+         pSave->Property(_T("MaxClosureFc"),          m_MaxClosureFc[pgsTypes::Normal]); // added in version 2.0
          pSave->Property(_T("MaxConcreteUnitWeight"), m_MaxConcreteUnitWeight[pgsTypes::Normal]);
          pSave->Property(_T("MaxConcreteAggSize"),    m_MaxConcreteAggSize[pgsTypes::Normal]);
       pSave->EndUnit(); // Normal;
-      pSave->BeginUnit(_T("AllLightweight"),1.0);
+      pSave->BeginUnit(_T("AllLightweight"),2.0);
          pSave->Property(_T("MaxSlabFc"),             m_MaxSlabFc[pgsTypes::AllLightweight]);
          pSave->Property(_T("MaxGirderFci"),          m_MaxSegmentFci[pgsTypes::AllLightweight]);
          pSave->Property(_T("MaxGirderFc"),           m_MaxSegmentFc[pgsTypes::AllLightweight]);
+         pSave->Property(_T("MaxClosureFci"),         m_MaxClosureFci[pgsTypes::AllLightweight]); // added in version 2.0
+         pSave->Property(_T("MaxClosureFc"),          m_MaxClosureFc[pgsTypes::AllLightweight]); // added in version 2.0
          pSave->Property(_T("MaxConcreteUnitWeight"), m_MaxConcreteUnitWeight[pgsTypes::AllLightweight]);
          pSave->Property(_T("MaxConcreteAggSize"),    m_MaxConcreteAggSize[pgsTypes::AllLightweight]);
       pSave->EndUnit(); // AllLightweight;
-      pSave->BeginUnit(_T("SandLightweight"),1.0);
+      pSave->BeginUnit(_T("SandLightweight"),2.0);
          pSave->Property(_T("MaxSlabFc"),             m_MaxSlabFc[pgsTypes::SandLightweight]);
          pSave->Property(_T("MaxGirderFci"),          m_MaxSegmentFci[pgsTypes::SandLightweight]);
          pSave->Property(_T("MaxGirderFc"),           m_MaxSegmentFc[pgsTypes::SandLightweight]);
+         pSave->Property(_T("MaxClosureFci"),         m_MaxClosureFci[pgsTypes::SandLightweight]); // added in version 2.0
+         pSave->Property(_T("MaxClosureFc"),          m_MaxClosureFc[pgsTypes::SandLightweight]); // added in version 2.0
          pSave->Property(_T("MaxConcreteUnitWeight"), m_MaxConcreteUnitWeight[pgsTypes::SandLightweight]);
          pSave->Property(_T("MaxConcreteAggSize"),    m_MaxConcreteAggSize[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // SandLightweight;
@@ -729,6 +766,22 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->BeginUnit(_T("StrandExtensions"),1.0);
    pSave->Property(_T("AllowStraightStrandExtensions"),m_bAllowStraightStrandExtensions);
    pSave->EndUnit();
+
+   // added version 50
+   pSave->BeginUnit(_T("ClosureJoint"),1.0);
+      pSave->Property(_T("ClosureCompStressAtStressing"),             m_ClosureCompStressAtStressing);
+      pSave->Property(_T("ClosureTensStressPTZAtStressing"),          m_ClosureTensStressPTZAtStressing);
+      pSave->Property(_T("ClosureTensStressPTZWithRebarAtStressing"), m_ClosureTensStressPTZWithRebarAtStressing);
+      pSave->Property(_T("ClosureTensStressAtStressing"),             m_ClosureTensStressAtStressing);
+      pSave->Property(_T("ClosureTensStressWithRebarAtStressing"),    m_ClosureTensStressWithRebarAtStressing);
+      pSave->Property(_T("ClosureCompStressAtService"),               m_ClosureCompStressAtService);
+      pSave->Property(_T("ClosureCompStressWithLiveLoadAtService"),   m_ClosureCompStressWithLiveLoadAtService);
+      pSave->Property(_T("ClosureTensStressPTZAtService"),            m_ClosureTensStressPTZAtService);
+      pSave->Property(_T("ClosureTensStressPTZWithRebarAtService"),   m_ClosureTensStressPTZWithRebarAtService);
+      pSave->Property(_T("ClosureTensStressAtService"),               m_ClosureTensStressAtService);
+      pSave->Property(_T("ClosureTensStressWithRebarAtService"),      m_ClosureTensStressWithRebarAtService);
+      pSave->Property(_T("ClosureCompStressFatigue"),                 m_ClosureCompStressFatigue);
+   pSave->EndUnit(); // Closure Joint
 
    pSave->EndUnit();
 
@@ -817,8 +870,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( 42 < version )
+      if ( 43 < version )
       {
+         // added in version 44
          int value;
          if (!pLoad->Property(_T("SectionPropertyType"),&value))
          {
@@ -868,8 +922,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if(!pLoad->Property(_T("HoldDownForce"), &m_HoldDownForce))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if (version>32 && version<39)
+      if (32 < version && version < 39)
       {
+         // added in version 33 and removed in version 38
          bool check_anchor;
          if(!pLoad->Property(_T("DoCheckAnchorage"), &check_anchor))
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -879,7 +934,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_DoDesignSplitting = check_anchor;
          m_DoDesignConfinement = check_anchor;
       }
-      else if(version>=39)
+      else if (39 <= version)
       {
          if(!pLoad->Property(_T("DoCheckSplitting"), &m_DoCheckSplitting))
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -928,7 +983,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
 
      // at version 27 we moved debonding to the girder library. Data here is ignored
-	  if ( 6.0 <= version && 27 > version)
+	  if ( 6.0 <= version && version < 27)
 	  {
         Float64 debond_junk;
 		  if (!pLoad->Property(_T("MaxDebondStrands"),&debond_junk))
@@ -1462,6 +1517,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::Normal]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
+            Float64 nwc_version = pLoad->GetVersion();
+            if ( 1.0 < nwc_version )
+            {
+               if ( !pLoad->Property(_T("TensionControlled_Spliced"),&m_PhiFlexureTensionSpliced[pgsTypes::Normal]) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
             if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::Normal]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1476,6 +1538,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::AllLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
+
+            Float64 alc_version = pLoad->GetVersion();
+            if ( 1.0 < alc_version )
+            {
+               if ( !pLoad->Property(_T("TensionControlled_Spliced"),&m_PhiFlexureTensionSpliced[pgsTypes::AllLightweight]) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::AllLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1492,6 +1561,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::SandLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
+
+            Float64 slc_version = pLoad->GetVersion();
+            if ( 1.0 < slc_version )
+            {
+               if ( !pLoad->Property(_T("TensionControlled_Spliced"),&m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight]) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::SandLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1746,7 +1822,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       Float64 AfterDeckPlacementLosses;
       Float64 AfterSIDLLosses;
       Float64 FinalLosses;
-      if ( 42 < version )
+      if ( 43 < version )
       {
          if ( !pLoad->Property(_T("ShippingLosses"),&m_ShippingLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad );
@@ -1843,43 +1919,43 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // added in version 1.6
       if ( 1.5 <= version )
       {
-         if (!pLoad->Property(_T("CheckStrandStressAtJacking"),&m_bCheckStrandStress[AT_JACKING]))
+         if (!pLoad->Property(_T("CheckStrandStressAtJacking"),&m_bCheckStrandStress[CSS_AT_JACKING]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property(_T("Coeff_AtJacking_StressRel"),&m_StrandStressCoeff[AT_JACKING][STRESS_REL]))
+         if (!pLoad->Property(_T("Coeff_AtJacking_StressRel"),&m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property(_T("Coeff_AtJacking_LowRelax"),&m_StrandStressCoeff[AT_JACKING][LOW_RELAX]))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-
-         if (!pLoad->Property(_T("CheckStrandStressBeforeTransfer"),&m_bCheckStrandStress[BEFORE_TRANSFER]))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if (!pLoad->Property(_T("Coeff_BeforeTransfer_StressRel"),&m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if (!pLoad->Property(_T("Coeff_BeforeTransfer_LowRelax"),&m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]))
+         if (!pLoad->Property(_T("Coeff_AtJacking_LowRelax"),&m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-         if (!pLoad->Property(_T("CheckStrandStressAfterTransfer"),&m_bCheckStrandStress[AFTER_TRANSFER]))
+         if (!pLoad->Property(_T("CheckStrandStressBeforeTransfer"),&m_bCheckStrandStress[CSS_BEFORE_TRANSFER]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property(_T("Coeff_AfterTransfer_StressRel"),&m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]))
+         if (!pLoad->Property(_T("Coeff_BeforeTransfer_StressRel"),&m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property(_T("Coeff_AfterTransfer_LowRelax"),&m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]))
+         if (!pLoad->Property(_T("Coeff_BeforeTransfer_LowRelax"),&m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-         if (!pLoad->Property(_T("CheckStrandStressAfterAllLosses"),&m_bCheckStrandStress[AFTER_ALL_LOSSES]))
+         if (!pLoad->Property(_T("CheckStrandStressAfterTransfer"),&m_bCheckStrandStress[CSS_AFTER_TRANSFER]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property(_T("Coeff_AfterAllLosses_StressRel"),&m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]))
+         if (!pLoad->Property(_T("Coeff_AfterTransfer_StressRel"),&m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property(_T("Coeff_AfterAllLosses_LowRelax"),&m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]))
+         if (!pLoad->Property(_T("Coeff_AfterTransfer_LowRelax"),&m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+
+         if (!pLoad->Property(_T("CheckStrandStressAfterAllLosses"),&m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES]))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if (!pLoad->Property(_T("Coeff_AfterAllLosses_StressRel"),&m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if (!pLoad->Property(_T("Coeff_AfterAllLosses_LowRelax"),&m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
       }
@@ -1888,10 +1964,10 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          switch( m_SpecificationType )
          {
          case lrfdVersionMgr::FirstEdition1994:
-            m_bCheckStrandStress[AT_JACKING]       = true;
-            m_bCheckStrandStress[BEFORE_TRANSFER]  = false;
-            m_bCheckStrandStress[AFTER_TRANSFER]   = true;
-            m_bCheckStrandStress[AFTER_ALL_LOSSES] = true;
+            m_bCheckStrandStress[CSS_AT_JACKING]       = true;
+            m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = false;
+            m_bCheckStrandStress[CSS_AFTER_TRANSFER]   = true;
+            m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] = true;
             break;
 
          case lrfdVersionMgr::FirstEditionWith1996Interims:
@@ -1900,10 +1976,10 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          case lrfdVersionMgr::SecondEditionWith1999Interims:
          case lrfdVersionMgr::SecondEditionWith2000Interims:
          case lrfdVersionMgr::SecondEditionWith2001Interims:
-            m_bCheckStrandStress[AT_JACKING]       = false;
-            m_bCheckStrandStress[BEFORE_TRANSFER]  = true;
-            m_bCheckStrandStress[AFTER_TRANSFER]   = false;
-            m_bCheckStrandStress[AFTER_ALL_LOSSES] = true;
+            m_bCheckStrandStress[CSS_AT_JACKING]       = false;
+            m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
+            m_bCheckStrandStress[CSS_AFTER_TRANSFER]   = false;
+            m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] = true;
             break;
          }
       }
@@ -1917,34 +1993,34 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("CheckTendonStressPriorToSeating"),&m_bCheckTendonStressPriorToSeating) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_AtJacking_StressRel"),&m_TendonStressCoeff[AT_JACKING][STRESS_REL]) )
+         if ( !pLoad->Property(_T("Coeff_AtJacking_StressRel"),&m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_AtJacking_LowRelax"),&m_TendonStressCoeff[AT_JACKING][LOW_RELAX]) )
+         if ( !pLoad->Property(_T("Coeff_AtJacking_LowRelax"),&m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_PriorToSeating_StressRel"),&m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]) )
+         if ( !pLoad->Property(_T("Coeff_PriorToSeating_StressRel"),&m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_PriorToSeating_LowRelax"),&m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]) )
+         if ( !pLoad->Property(_T("Coeff_PriorToSeating_LowRelax"),&m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_AtAnchoragesAfterSeating_StressRel"),&m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL]) )
+         if ( !pLoad->Property(_T("Coeff_AtAnchoragesAfterSeating_StressRel"),&m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_AtAnchoragesAfterSeating_LowRelax"),&m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]) )
+         if ( !pLoad->Property(_T("Coeff_AtAnchoragesAfterSeating_LowRelax"),&m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_ElsewhereAfterSeating_StressRel"),&m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]) )
+         if ( !pLoad->Property(_T("Coeff_ElsewhereAfterSeating_StressRel"),&m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_ElsewhereAfterSeating_LowRelax"),&m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]) )
+         if ( !pLoad->Property(_T("Coeff_ElsewhereAfterSeating_LowRelax"),&m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_AfterAllLosses_StressRel"),&m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]) )
+         if ( !pLoad->Property(_T("Coeff_AfterAllLosses_StressRel"),&m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("Coeff_AfterAllLosses_LowRelax"),&m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]) )
+         if ( !pLoad->Property(_T("Coeff_AfterAllLosses_LowRelax"),&m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -2016,6 +2092,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if ( !pLoad->Property(_T("LiveLoadElasticGain"),&m_LiveLoadElasticGain) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
+
+         if ( 43 < version )
+         {
+            if( m_LossMethod == LOSSES_TXDOT_REFINED_2013 )
+            {
+               if ( !pLoad->Property(_T("FcgpComputationMethod"),&m_FcgpComputationMethod) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
       }
 
       // added in version 1.7
@@ -2069,6 +2154,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if ( !pLoad->BeginUnit(_T("Normal")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
+               Float64 normal_version = pLoad->GetVersion();
+
                if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2077,6 +2164,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
                if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+               if ( 1.0 < normal_version ) // added in version 2.0
+               {
+                  if ( !pLoad->Property(_T("MaxClosureFci"),&m_MaxClosureFci[pgsTypes::Normal]) )
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+
+                  if ( !pLoad->Property(_T("MaxClosureFc"),&m_MaxClosureFc[pgsTypes::Normal]) )
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2091,6 +2187,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if ( !pLoad->BeginUnit(_T("AllLightweight")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
+               Float64 alw_version = pLoad->GetVersion();
+
                if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2099,6 +2197,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
                if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+               if ( 1.0 < alw_version ) // added in version 2.0
+               {
+                  if ( !pLoad->Property(_T("MaxClosureFci"),&m_MaxClosureFci[pgsTypes::AllLightweight]) )
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+
+                  if ( !pLoad->Property(_T("MaxClosureFc"),&m_MaxClosureFc[pgsTypes::AllLightweight]) )
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2112,6 +2219,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if ( !pLoad->BeginUnit(_T("SandLightweight")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
+               Float64 slw_version = pLoad->GetVersion();
+
                if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2120,6 +2229,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
                if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+               if ( 1.0 < slw_version ) // added in version 2.0
+               {
+                  if ( !pLoad->Property(_T("MaxClosureFci"),&m_MaxClosureFci[pgsTypes::SandLightweight]) )
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+
+                  if ( !pLoad->Property(_T("MaxClosureFc"),&m_MaxClosureFc[pgsTypes::SandLightweight]) )
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2389,6 +2507,51 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+
+      if ( 50 <= version )
+      {
+         // added version 50
+         pLoad->BeginUnit(_T("ClosureJoint"));
+         if ( !pLoad->Property(_T("ClosureCompStressAtStressing"),             &m_ClosureCompStressAtStressing) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureTensStressPTZAtStressing"),          &m_ClosureTensStressPTZAtStressing) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureTensStressPTZWithRebarAtStressing"), &m_ClosureTensStressPTZWithRebarAtStressing) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureTensStressAtStressing"),             &m_ClosureTensStressAtStressing) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureTensStressWithRebarAtStressing"),    &m_ClosureTensStressWithRebarAtStressing) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureCompStressAtService"),               &m_ClosureCompStressAtService) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureCompStressWithLiveLoadAtService"),   &m_ClosureCompStressWithLiveLoadAtService) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureTensStressPTZAtService"),            &m_ClosureTensStressPTZAtService) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureTensStressPTZWithRebarAtService"),   &m_ClosureTensStressPTZWithRebarAtService) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureTensStressAtService"),               &m_ClosureTensStressAtService) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureTensStressWithRebarAtService"),      &m_ClosureTensStressWithRebarAtService) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ClosureCompStressFatigue"),                 &m_ClosureCompStressFatigue) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         pLoad->EndUnit(); // Closure Joint
+      }
+
+
       if(!pLoad->EndUnit())
          THROW_LOAD(InvalidFileFormat,pLoad);
    }
@@ -2539,32 +2702,32 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_LldfMethod                 , rOther.m_LldfMethod                 );
    TEST (m_LongReinfShearMethod       , rOther.m_LongReinfShearMethod       );
 
-   TEST (m_bCheckStrandStress[AT_JACKING],        rOther.m_bCheckStrandStress[AT_JACKING]);
-   TEST (m_bCheckStrandStress[BEFORE_TRANSFER],   rOther.m_bCheckStrandStress[BEFORE_TRANSFER]);
-   TEST (m_bCheckStrandStress[AFTER_TRANSFER],   rOther.m_bCheckStrandStress[AFTER_TRANSFER]);
-   TEST (m_bCheckStrandStress[AFTER_ALL_LOSSES], rOther.m_bCheckStrandStress[AFTER_ALL_LOSSES]);
+   TEST (m_bCheckStrandStress[CSS_AT_JACKING],        rOther.m_bCheckStrandStress[CSS_AT_JACKING]);
+   TEST (m_bCheckStrandStress[CSS_BEFORE_TRANSFER],   rOther.m_bCheckStrandStress[CSS_BEFORE_TRANSFER]);
+   TEST (m_bCheckStrandStress[CSS_AFTER_TRANSFER],   rOther.m_bCheckStrandStress[CSS_AFTER_TRANSFER]);
+   TEST (m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES], rOther.m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES]);
 
-   TESTD(m_StrandStressCoeff[AT_JACKING][STRESS_REL], rOther.m_StrandStressCoeff[AT_JACKING][STRESS_REL]       );
-   TESTD(m_StrandStressCoeff[AT_JACKING][LOW_RELAX], rOther.m_StrandStressCoeff[AT_JACKING][LOW_RELAX]        );
-   TESTD(m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL], rOther.m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]  );
-   TESTD(m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX], rOther.m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]   );
-   TESTD(m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL], rOther.m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]   );
-   TESTD(m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX], rOther.m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]    );
-   TESTD(m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL], rOther.m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL] );
-   TESTD(m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX], rOther.m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]  );
+   TESTD(m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL], rOther.m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]       );
+   TESTD(m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]        );
+   TESTD(m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL], rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]  );
+   TESTD(m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]   );
+   TESTD(m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL], rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]   );
+   TESTD(m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]    );
+   TESTD(m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL], rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL] );
+   TESTD(m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]  );
 
    TEST(m_bCheckTendonStressAtJacking,rOther.m_bCheckTendonStressAtJacking);
    TEST(m_bCheckTendonStressPriorToSeating,rOther.m_bCheckTendonStressPriorToSeating);
-   TESTD(m_TendonStressCoeff[AT_JACKING][STRESS_REL],rOther.m_TendonStressCoeff[AT_JACKING][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[AT_JACKING][LOW_RELAX],rOther.m_TendonStressCoeff[AT_JACKING][LOW_RELAX]);
-   TESTD(m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]);
-   TESTD(m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
-   TESTD(m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
-   TESTD(m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL],rOther.m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX],rOther.m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+   TESTD(m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX]);
+   TESTD(m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX]);
+   TESTD(m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
+   TESTD(m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
+   TESTD(m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL],rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
 
    TEST (m_bDoEvaluateDeflection , rOther.m_bDoEvaluateDeflection );
    TESTD(m_DeflectionLimit       , rOther.m_DeflectionLimit );
@@ -2611,17 +2774,33 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_PrestressTransferComputationType, rOther.m_PrestressTransferComputationType);
 
    TEST(m_RelaxationLossMethod,rOther.m_RelaxationLossMethod);
+   TEST(m_FcgpComputationMethod,rOther.m_FcgpComputationMethod);
 
    for ( int i = 0; i < 3; i++ )
    {
       TESTD(m_PhiFlexureTensionPS[i],rOther.m_PhiFlexureTensionPS[i]);
       TESTD(m_PhiFlexureTensionRC[i],rOther.m_PhiFlexureTensionRC[i]);
+      TESTD(m_PhiFlexureTensionSpliced[i],rOther.m_PhiFlexureTensionSpliced[i]);
       TESTD(m_PhiFlexureCompression[i],rOther.m_PhiFlexureCompression[i]);
       TESTD(m_PhiShear[i],rOther.m_PhiShear[i]);
    }
 
    TEST( m_bIncludeForNegMoment, rOther.m_bIncludeForNegMoment);
    TEST( m_bAllowStraightStrandExtensions, rOther.m_bAllowStraightStrandExtensions);
+
+   TESTD(m_ClosureCompStressAtStressing             , rOther.m_ClosureCompStressAtStressing);
+   TESTD(m_ClosureTensStressPTZAtStressing          , rOther.m_ClosureTensStressPTZAtStressing);
+   TESTD(m_ClosureTensStressPTZWithRebarAtStressing , rOther.m_ClosureTensStressPTZWithRebarAtStressing);
+   TESTD(m_ClosureTensStressAtStressing             , rOther.m_ClosureTensStressAtStressing);
+   TESTD(m_ClosureTensStressWithRebarAtStressing    , rOther.m_ClosureTensStressWithRebarAtStressing);
+   TESTD(m_ClosureCompStressAtService               , rOther.m_ClosureCompStressAtService);
+   TESTD(m_ClosureCompStressWithLiveLoadAtService   , rOther.m_ClosureCompStressWithLiveLoadAtService);
+   TESTD(m_ClosureTensStressPTZAtService            , rOther.m_ClosureTensStressPTZAtService);
+   TESTD(m_ClosureTensStressPTZWithRebarAtService   , rOther.m_ClosureTensStressPTZWithRebarAtService);
+   TESTD(m_ClosureTensStressAtService               , rOther.m_ClosureTensStressAtService);
+   TESTD(m_ClosureTensStressWithRebarAtService      , rOther.m_ClosureTensStressWithRebarAtService);
+   TESTD(m_ClosureCompStressFatigue                 , rOther.m_ClosureCompStressFatigue);
+
 
    if (considerName)
    {
@@ -2793,43 +2972,43 @@ bool SpecLibraryEntry::IsLiftingDesignEnabled() const
    }
 }
 
-Float64 SpecLibraryEntry::GetCyLiftingCrackFs() const
+Float64 SpecLibraryEntry::GetCrackingFOSLifting() const
 {
    return m_CyLiftingCrackFs;
 }
 
-void SpecLibraryEntry::SetCyLiftingCrackFs(Float64 fs)
+void SpecLibraryEntry::SetCrackingFOSLifting(Float64 fs)
 {
    m_CyLiftingCrackFs = fs;
 }
 
-Float64 SpecLibraryEntry::GetCyLiftingFailFs() const
+Float64 SpecLibraryEntry::GetLiftingFailureFOS() const
 {
    return m_CyLiftingFailFs;
 }
 
-void SpecLibraryEntry::SetCyLiftingFailFs(Float64 fs)
+void SpecLibraryEntry::SetLiftingFailureFOS(Float64 fs)
 {
    m_CyLiftingFailFs = fs;
 }
 
 
-Float64 SpecLibraryEntry::GetCyLiftingUpwardImpact() const
+Float64 SpecLibraryEntry::GetLiftingUpwardImpactFactor() const
 {
    return m_LiftingUpwardImpact;
 }
 
-void SpecLibraryEntry::SetCyLiftingUpwardImpact(Float64 impact)
+void SpecLibraryEntry::SetLiftingUpwardImpactFactor(Float64 impact)
 {
    m_LiftingUpwardImpact = impact;
 }
 
-Float64 SpecLibraryEntry::GetCyLiftingDownwardImpact() const
+Float64 SpecLibraryEntry::GetLiftingDownwardImpactFactor() const
 {
    return m_LiftingDownwardImpact;
 }
 
-void SpecLibraryEntry::SetCyLiftingDownwardImpact(Float64 impact)
+void SpecLibraryEntry::SetLiftingDownwardImpactFactor(Float64 impact)
 {
    m_LiftingDownwardImpact = impact;
 }
@@ -2882,85 +3061,85 @@ pgsTypes::HaulingAnalysisMethod SpecLibraryEntry::GetHaulingAnalysisMethod() con
    return m_HaulingAnalysisMethod;
 }
 
-Float64 SpecLibraryEntry::GetHaulingUpwardImpact() const
+Float64 SpecLibraryEntry::GetHaulingUpwardImpactFactor() const
 {
    return m_HaulingUpwardImpact;
 }
 
-void SpecLibraryEntry::SetHaulingUpwardImpact(Float64 impact)
+void SpecLibraryEntry::SetHaulingUpwardImpactFactor(Float64 impact)
 {
    m_HaulingUpwardImpact = impact;
 }
 
-Float64 SpecLibraryEntry::GetHaulingDownwardImpact() const
+Float64 SpecLibraryEntry::GetHaulingDownwardImpactFactor() const
 {
    return m_HaulingDownwardImpact;
 }
 
-void SpecLibraryEntry::SetHaulingDownwardImpact(Float64 impact)
+void SpecLibraryEntry::SetHaulingDownwardImpactFactor(Float64 impact)
 {
    m_HaulingDownwardImpact = impact;
 }
 
-Float64 SpecLibraryEntry::GetCyCompStressService() const
+Float64 SpecLibraryEntry::GetAtReleaseCompressionStressFactor() const
 {
    return m_CyCompStressServ;
 }
 
-void SpecLibraryEntry::SetCyCompStressService(Float64 stress)
+void SpecLibraryEntry::SetAtReleaseCompressionStressFactor(Float64 stress)
 {
    m_CyCompStressServ = stress;
 }
 
-Float64 SpecLibraryEntry::GetCyCompStressLifting() const
+Float64 SpecLibraryEntry::GetLiftingCompressionStressFactor() const
 {
    return m_CyCompStressLifting;
 }
 
-void SpecLibraryEntry::SetCyCompStressLifting(Float64 stress)
+void SpecLibraryEntry::SetLiftingCompressionStressFactor(Float64 stress)
 {
    m_CyCompStressLifting = stress;
 }
 
-Float64 SpecLibraryEntry::GetCyMaxConcreteTens() const
+Float64 SpecLibraryEntry::GetAtReleaseTensionStressFactor() const
 {
    return m_CyTensStressServ;
 }
 
-void SpecLibraryEntry::SetCyMaxConcreteTens(Float64 stress)
+void SpecLibraryEntry::SetAtReleaseTensionStressFactor(Float64 stress)
 {
    m_CyTensStressServ = stress;
 }
 
-void SpecLibraryEntry::GetCyAbsMaxConcreteTens(bool* doCheck, Float64* stress) const
+void SpecLibraryEntry::GetAtReleaseMaximumTensionStress(bool* doCheck, Float64* stress) const
 {
    *doCheck = m_CyDoTensStressServMax;
    *stress  = m_CyTensStressServMax;
 }
 
-void SpecLibraryEntry::SetCyAbsMaxConcreteTens(bool doCheck, Float64 stress)
+void SpecLibraryEntry::SetAtReleaseMaximumTensionStress(bool doCheck, Float64 stress)
 {
    m_CyDoTensStressServMax = doCheck;
    m_CyTensStressServMax   = stress;
 }
 
-Float64 SpecLibraryEntry::GetCyMaxConcreteTensLifting() const
+Float64 SpecLibraryEntry::GetLiftingTensionStressFactor() const
 {
    return m_CyTensStressLifting;
 }
 
-void SpecLibraryEntry::SetCyMaxConcreteTensLifting(Float64 stress)
+void SpecLibraryEntry::SetLiftingTensionStressFactor(Float64 stress)
 {
    m_CyTensStressLifting = stress;
 }
 
-void SpecLibraryEntry::GetCyAbsMaxConcreteTensLifting(bool* doCheck, Float64* stress) const
+void SpecLibraryEntry::GetLiftingMaximumTensionStress(bool* doCheck, Float64* stress) const
 {
    *doCheck = m_CyDoTensStressLiftingMax;
    *stress  = m_CyTensStressLiftingMax;
 }
 
-void SpecLibraryEntry::SetCyAbsMaxConcreteTensLifting(bool doCheck, Float64 stress)
+void SpecLibraryEntry::SetLiftingMaximumTensionStress(bool doCheck, Float64 stress)
 {
    m_CyDoTensStressLiftingMax = doCheck;
    m_CyTensStressLiftingMax   = stress;
@@ -3006,22 +3185,22 @@ void SpecLibraryEntry::SetMinCableInclination(Float64 angle)
    m_MinCableInclination = angle;
 }
 
-Float64 SpecLibraryEntry::GetMaxGirderSweepLifting() const
+Float64 SpecLibraryEntry::GetLiftingMaximumGirderSweepTolerance() const
 {
    return m_MaxGirderSweepLifting;
 }
 
-void SpecLibraryEntry::SetMaxGirderSweepLifting(Float64 sweep)
+void SpecLibraryEntry::SetLiftingMaximumGirderSweepTolerance(Float64 sweep)
 {
    m_MaxGirderSweepLifting = sweep;
 }
 
-Float64 SpecLibraryEntry::GetMaxGirderSweepHauling() const
+Float64 SpecLibraryEntry::GetHaulingMaximumGirderSweepTolerance() const
 {
    return m_MaxGirderSweepHauling;
 }
 
-void SpecLibraryEntry::SetMaxGirderSweepHauling(Float64 sweep)
+void SpecLibraryEntry::SetHaulingMaximumGirderSweepTolerance(Float64 sweep)
 {
    m_MaxGirderSweepHauling = sweep;
 }
@@ -3036,12 +3215,12 @@ void SpecLibraryEntry::SetHaulingSupportDistance(Float64 d)
    m_HaulingSupportDistance = d;
 }
 
-Float64 SpecLibraryEntry::GetMaxHaulingOverhang() const
+Float64 SpecLibraryEntry::GetHaulingMaximumLeadingOverhang() const
 {
    return m_MaxHaulingOverhang;
 }
 
-void SpecLibraryEntry::SetMaxHaulingOverhang(Float64 oh)
+void SpecLibraryEntry::SetHaulingMaximumLeadingOverhang(Float64 oh)
 {
    m_MaxHaulingOverhang = oh;
 }
@@ -3066,54 +3245,54 @@ void SpecLibraryEntry::SetHaulingCamberPercentEstimate(Float64 per)
    m_HaulingCamberPercentEstimate = per;
 }
 
-Float64 SpecLibraryEntry::GetHaulingCompStress() const
+Float64 SpecLibraryEntry::GetHaulingCompressionStressFactor() const
 {
    return m_CompStressHauling;
 }
 
-void SpecLibraryEntry::SetHaulingCompStress(Float64 stress)
+void SpecLibraryEntry::SetHaulingCompressionStressFactor(Float64 stress)
 {
    m_CompStressHauling = stress;
 }
 
-Float64 SpecLibraryEntry::GetMaxConcreteTensHauling() const
+Float64 SpecLibraryEntry::GetHaulingTensionStressFactor() const
 {
    return m_TensStressHauling;
 }
 
-void SpecLibraryEntry::SetMaxConcreteTensHauling(Float64 stress)
+void SpecLibraryEntry::SetHaulingTensionStressFactor(Float64 stress)
 {
    m_TensStressHauling = stress;
 }
 
-void SpecLibraryEntry::GetAbsMaxConcreteTensHauling(bool* doCheck, Float64* stress) const
+void SpecLibraryEntry::GetHaulingMaximumTensionStress(bool* doCheck, Float64* stress) const
 {
    *doCheck = m_DoTensStressHaulingMax;
    *stress  = m_TensStressHaulingMax;
 }
 
-void SpecLibraryEntry::SetAbsMaxConcreteTensHauling(bool doCheck, Float64 stress)
+void SpecLibraryEntry::SetHaulingMaximumTensionStress(bool doCheck, Float64 stress)
 {
    m_DoTensStressHaulingMax = doCheck;
    m_TensStressHaulingMax = stress;
 }
 
-Float64 SpecLibraryEntry::GetHaulingCrackFs() const
+Float64 SpecLibraryEntry::GetHaulingCrackingFOS() const
 {
    return m_HeHaulingCrackFs;
 }
 
-void SpecLibraryEntry::SetHaulingCrackFs(Float64 fs)
+void SpecLibraryEntry::SetHaulingCrackingFOS(Float64 fs)
 {
    m_HeHaulingCrackFs = fs;
 }
 
-Float64 SpecLibraryEntry::GetHaulingFailFs() const
+Float64 SpecLibraryEntry::GetHaulingFailureFOS() const
 {
    return m_HeHaulingRollFs;
 }
 
-void SpecLibraryEntry::SetHaulingFailFs(Float64 fs)
+void SpecLibraryEntry::SetHaulingFailureFOS(Float64 fs)
 {
    m_HeHaulingRollFs = fs;
 }
@@ -3228,22 +3407,22 @@ void SpecLibraryEntry::SetErectionFailFs(Float64 fs)
    m_HeErectionFailFs = fs;
 }
 
-void SpecLibraryEntry::SetHaulingModulusOfRuptureCoefficient(Float64 fr,pgsTypes::ConcreteType type)
+void SpecLibraryEntry::SetHaulingModulusOfRuptureFactor(Float64 fr,pgsTypes::ConcreteType type)
 {
    m_HaulingModulusOfRuptureCoefficient[type] = fr;
 }
 
-Float64 SpecLibraryEntry::GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const
+Float64 SpecLibraryEntry::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const
 {
    return m_HaulingModulusOfRuptureCoefficient[type];
 }
 
-void SpecLibraryEntry::SetLiftingModulusOfRuptureCoefficient(Float64 fr,pgsTypes::ConcreteType type)
+void SpecLibraryEntry::SetLiftingModulusOfRuptureFactor(Float64 fr,pgsTypes::ConcreteType type)
 {
    m_LiftingModulusOfRuptureCoefficient[type] = fr;
 }
 
-Float64 SpecLibraryEntry::GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const
+Float64 SpecLibraryEntry::GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const
 {
    return m_LiftingModulusOfRuptureCoefficient[type];
 }
@@ -3258,64 +3437,64 @@ Float64 SpecLibraryEntry::GetMaxGirderWeight() const
    return m_MaxGirderWgt;
 }
 
-Float64 SpecLibraryEntry::GetCyMaxConcreteTensWithRebar() const
+Float64 SpecLibraryEntry::GetAtReleaseTensionStressFactorWithRebar() const
 {
    return m_CyTensStressServWithRebar;
 }
 
-void SpecLibraryEntry::SetCyMaxConcreteTensWithRebar(Float64 stress)
+void SpecLibraryEntry::SetAtReleaseTensionStressFactorWithRebar(Float64 stress)
 {
    m_CyTensStressServWithRebar = stress;
 }
 
-Float64 SpecLibraryEntry::GetMaxConcreteTensWithRebarLifting() const
+Float64 SpecLibraryEntry::GetLiftingTensionStressFactorWithRebar() const
 {
    return m_TensStressLiftingWithRebar;
 }
 
-void SpecLibraryEntry::SetMaxConcreteTensWithRebarLifting(Float64 stress)
+void SpecLibraryEntry::SetLiftingTensionStressFactorWithRebar(Float64 stress)
 {
     m_TensStressLiftingWithRebar = stress;
 }
 
-Float64 SpecLibraryEntry::GetMaxConcreteTensWithRebarHauling() const
+Float64 SpecLibraryEntry::GetHaulingTensionStressFactorWithRebar() const
 {
    return m_TensStressHaulingWithRebar;
 }
 
-void SpecLibraryEntry::SetMaxConcreteTensWithRebarHauling(Float64 stress)
+void SpecLibraryEntry::SetHaulingTensionStressFactorWithRebar(Float64 stress)
 {
     m_TensStressHaulingWithRebar = stress;
 }
 
 
-Float64 SpecLibraryEntry::GetTempStrandRemovalCompStress() const
+Float64 SpecLibraryEntry::GetTempStrandRemovalCompressionStressFactor() const
 {
    return m_TempStrandRemovalCompStress;
 }
 
-void SpecLibraryEntry::SetTempStrandRemovalCompStress(Float64 stress)
+void SpecLibraryEntry::SetTempStrandRemovalCompressionStressFactor(Float64 stress)
 {
    m_TempStrandRemovalCompStress = stress;
 }
 
-Float64 SpecLibraryEntry::GetTempStrandRemovalMaxConcreteTens() const
+Float64 SpecLibraryEntry::GetTempStrandRemovalTensionStressFactor() const
 {
    return m_TempStrandRemovalTensStress;
 }
 
-void SpecLibraryEntry::SetTempStrandRemovalMaxConcreteTens(Float64 stress)
+void SpecLibraryEntry::SetTempStrandRemovalTensionStressFactor(Float64 stress)
 {
    m_TempStrandRemovalTensStress = stress;
 }
 
-void SpecLibraryEntry::GetTempStrandRemovalAbsMaxConcreteTens(bool* doCheck, Float64* stress) const
+void SpecLibraryEntry::GetTempStrandRemovalMaximumTensionStress(bool* doCheck, Float64* stress) const
 {
    *doCheck = m_TempStrandRemovalDoTensStressMax;
    *stress  = m_TempStrandRemovalTensStressMax;
 }
 
-void SpecLibraryEntry::SetTempStrandRemovalAbsMaxConcreteTens(bool doCheck, Float64 stress)
+void SpecLibraryEntry::SetTempStrandRemovalMaximumTensionStress(bool doCheck, Float64 stress)
 {
    m_TempStrandRemovalDoTensStressMax = doCheck;
    m_TempStrandRemovalTensStressMax   = stress;
@@ -3324,118 +3503,115 @@ void SpecLibraryEntry::SetTempStrandRemovalAbsMaxConcreteTens(bool doCheck, Floa
 
 
 
-Float64 SpecLibraryEntry::GetBs1CompStress() const
+Float64 SpecLibraryEntry::GetErectionCompressionStressFactor() const
 {
    return m_Bs1CompStress;
 }
 
-void SpecLibraryEntry::SetBs1CompStress(Float64 stress)
+void SpecLibraryEntry::SetErectionCompressionStressFactor(Float64 stress)
 {
    m_Bs1CompStress = stress;
 }
 
-Float64 SpecLibraryEntry::GetBs1MaxConcreteTens() const
+Float64 SpecLibraryEntry::GetErectionTensionStressFactor() const
 {
    return m_Bs1TensStress;
 }
 
-void SpecLibraryEntry::SetBs1MaxConcreteTens(Float64 stress)
+void SpecLibraryEntry::SetErectionTensionStressFactor(Float64 stress)
 {
    m_Bs1TensStress = stress;
 }
 
-void SpecLibraryEntry::GetBs1AbsMaxConcreteTens(bool* doCheck, Float64* stress) const
+void SpecLibraryEntry::GetErectionMaximumTensionStress(bool* doCheck, Float64* stress) const
 {
    *doCheck = m_Bs1DoTensStressMax;
    *stress  = m_Bs1TensStressMax;
 }
 
-void SpecLibraryEntry::SetBs1AbsMaxConcreteTens(bool doCheck, Float64 stress)
+void SpecLibraryEntry::SetErectionMaximumTensionStress(bool doCheck, Float64 stress)
 {
    m_Bs1DoTensStressMax = doCheck;
    m_Bs1TensStressMax   = stress;
 }
 
-Float64 SpecLibraryEntry::GetBs2CompStress() const
+Float64 SpecLibraryEntry::GetFinalWithoutLiveLoadCompressionStressFactor() const
 {
    return m_Bs2CompStress;
 }
 
-void SpecLibraryEntry::SetBs2CompStress(Float64 stress)
+void SpecLibraryEntry::SetFinalWithoutLiveLoadCompressionStressFactor(Float64 stress)
 {
    m_Bs2CompStress = stress;
 }
 
-Float64 SpecLibraryEntry::GetBs3CompStressService() const
+Float64 SpecLibraryEntry::GetFinalWithLiveLoadCompressionStressFactor() const
 {
    return m_Bs3CompStressServ;
 }
 
-void SpecLibraryEntry::SetBs3CompStressService(Float64 stress)
+void SpecLibraryEntry::SetFinalWithLiveLoadCompressionStressFactor(Float64 stress)
 {
    m_Bs3CompStressServ = stress;
 }
 
-Float64 SpecLibraryEntry::GetBs3CompStressService1A() const
+Float64 SpecLibraryEntry::GetFatigueCompressionStressFactor() const
 {
    return m_Bs3CompStressService1A;
 }
 
-void SpecLibraryEntry::SetBs3CompStressService1A(Float64 stress)
+void SpecLibraryEntry::SetFatigueCompressionStressFactor(Float64 stress)
 {
    m_Bs3CompStressService1A = stress;
 }
 
-Float64 SpecLibraryEntry::GetBs3MaxConcreteTensNc() const
+Float64 SpecLibraryEntry::GetFinalTensionStressFactor(int exposureCondition) const
 {
-   return m_Bs3TensStressServNc;
+   return exposureCondition == EXPOSURE_NORMAL ? m_Bs3TensStressServNc : m_Bs3TensStressServSc;
 }
 
-void SpecLibraryEntry::SetBs3MaxConcreteTensNc(Float64 stress)
+void SpecLibraryEntry::SetFinalTensionStressFactor(int exposureCondition,Float64 stress)
 {
-   m_Bs3TensStressServNc = stress;
+   if ( exposureCondition == EXPOSURE_NORMAL )
+      m_Bs3TensStressServNc = stress;
+   else
+      m_Bs3TensStressServSc = stress;
 }
 
-void SpecLibraryEntry::GetBs3AbsMaxConcreteTensNc(bool* doCheck, Float64* stress) const
+void SpecLibraryEntry::GetFinalTensionStressFactor(int exposureCondition,bool* doCheck, Float64* stress) const
 {
-   *doCheck = m_Bs3DoTensStressServNcMax;
-   *stress  = m_Bs3TensStressServNcMax;
+   if ( exposureCondition == EXPOSURE_NORMAL )
+   {
+      *doCheck = m_Bs3DoTensStressServNcMax;
+      *stress  = m_Bs3TensStressServNcMax;
+   }
+   else
+   {
+      *doCheck = m_Bs3DoTensStressServScMax;
+      *stress  = m_Bs3TensStressServScMax;
+   }
 }
 
-void SpecLibraryEntry::SetBs3AbsMaxConcreteTensNc(bool doCheck, Float64 stress)
+void SpecLibraryEntry::SetFinalTensionStressFactor(int exposureCondition,bool doCheck, Float64 stress)
 {
-   m_Bs3DoTensStressServNcMax = doCheck;
-   m_Bs3TensStressServNcMax   = stress;
+   if ( exposureCondition == EXPOSURE_NORMAL )
+   {
+      m_Bs3DoTensStressServNcMax = doCheck;
+      m_Bs3TensStressServNcMax   = stress;
+   }
+   else
+   {
+      m_Bs3DoTensStressServScMax = doCheck;
+      m_Bs3TensStressServScMax   = stress;
+   }
 }
 
-Float64 SpecLibraryEntry::GetBs3MaxConcreteTensSc() const
-{
-   return m_Bs3TensStressServSc;
-}
-
-void SpecLibraryEntry::SetBs3MaxConcreteTensSc(Float64 stress)
-{
-   m_Bs3TensStressServSc = stress;
-}
-
-void SpecLibraryEntry::GetBs3AbsMaxConcreteTensSc(bool* doCheck, Float64* stress) const
-{
-   *doCheck = m_Bs3DoTensStressServNcMax;
-   *stress  = m_Bs3TensStressServNcMax;
-}
-
-void SpecLibraryEntry::SetBs3AbsMaxConcreteTensSc(bool doCheck, Float64 stress)
-{
-   m_Bs3DoTensStressServNcMax = doCheck;
-   m_Bs3TensStressServNcMax   = stress;
-}
-
-void SpecLibraryEntry::SetBs3LRFDOverreinforcedMomentCapacity(bool bSet)
+void SpecLibraryEntry::SetLRFDOverreinforcedMomentCapacity(bool bSet)
 {
    m_Bs3LRFDOverReinforcedMomentCapacity = bSet ? 0 : 1;
 }
 
-bool SpecLibraryEntry::GetBs3LRFDOverreinforcedMomentCapacity() const
+bool SpecLibraryEntry::GetLRFDOverreinforcedMomentCapacity() const
 {
    return m_Bs3LRFDOverReinforcedMomentCapacity == 0 ? true : false;
 }
@@ -3508,6 +3684,11 @@ pgsTypes::TrafficBarrierDistribution SpecLibraryEntry::GetTrafficBarrierDistribu
 pgsTypes::OverlayLoadDistributionType SpecLibraryEntry::GetOverlayLoadDistributionType() const
 {
    return m_OverlayLoadDistribution;
+}
+
+void SpecLibraryEntry::SetOverlayLoadDistributionType(pgsTypes::OverlayLoadDistributionType type)
+{
+   m_OverlayLoadDistribution = type;
 }
 
 void SpecLibraryEntry::SetCreepMethod(int method)
@@ -3744,6 +3925,16 @@ Int16 SpecLibraryEntry::GetRelaxationLossMethod() const
    return m_RelaxationLossMethod;
 }
 
+void SpecLibraryEntry::SetFcgpComputationMethod(Int16 method)
+{
+   m_FcgpComputationMethod = method;
+}
+
+Int16 SpecLibraryEntry::GetFcgpComputationMethod() const
+{
+   return m_FcgpComputationMethod;
+}
+
 Int16 SpecLibraryEntry::GetLiveLoadDistributionMethod() const
 {
    return m_LldfMethod;
@@ -3865,6 +4056,26 @@ void SpecLibraryEntry::SetMaxSegmentFci(pgsTypes::ConcreteType type,Float64 fci)
 Float64 SpecLibraryEntry::GetMaxSegmentFci(pgsTypes::ConcreteType type) const
 {
    return m_MaxSegmentFci[type];
+}
+
+void SpecLibraryEntry::SetMaxClosureFc(pgsTypes::ConcreteType type,Float64 fc)
+{
+   m_MaxClosureFc[type] = fc;
+}
+
+Float64 SpecLibraryEntry::GetMaxClosureFc(pgsTypes::ConcreteType type) const
+{
+   return m_MaxClosureFc[type];
+}
+
+void SpecLibraryEntry::SetMaxClosureFci(pgsTypes::ConcreteType type,Float64 fci)
+{
+   m_MaxClosureFci[type] = fci;
+}
+
+Float64 SpecLibraryEntry::GetMaxClosureFci(pgsTypes::ConcreteType type) const
+{
+   return m_MaxClosureFci[type];
 }
 
 void SpecLibraryEntry::SetMaxConcreteUnitWeight(pgsTypes::ConcreteType type,Float64 wc)
@@ -4115,18 +4326,20 @@ void SpecLibraryEntry::SetPrestressTransferComputationType(pgsTypes::PrestressTr
    m_PrestressTransferComputationType = type;
 }
 
-void SpecLibraryEntry::SetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64 phiTensionPS,Float64 phiTensionRC,Float64 phiCompression)
+void SpecLibraryEntry::SetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64 phiTensionPS,Float64 phiTensionRC,Float64 phiTensionSpliced,Float64 phiCompression)
 {
-   m_PhiFlexureTensionPS[type]   = phiTensionPS;
-   m_PhiFlexureTensionRC[type]   = phiTensionRC;
-   m_PhiFlexureCompression[type] = phiCompression;
+   m_PhiFlexureTensionPS[type]      = phiTensionPS;
+   m_PhiFlexureTensionRC[type]      = phiTensionRC;
+   m_PhiFlexureTensionSpliced[type] = phiTensionSpliced;
+   m_PhiFlexureCompression[type]    = phiCompression;
 }
 
-void SpecLibraryEntry::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression) const
+void SpecLibraryEntry::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const
 {
-   *phiTensionPS   = m_PhiFlexureTensionPS[type];
-   *phiTensionRC   = m_PhiFlexureTensionRC[type];
-   *phiCompression = m_PhiFlexureCompression[type];
+   *phiTensionPS      = m_PhiFlexureTensionPS[type];
+   *phiTensionRC      = m_PhiFlexureTensionRC[type];
+   *phiTensionSpliced = m_PhiFlexureTensionSpliced[type];
+   *phiCompression    = m_PhiFlexureCompression[type];
 }
 
 void SpecLibraryEntry::SetShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi)
@@ -4157,6 +4370,126 @@ void SpecLibraryEntry::AllowStraightStrandExtensions(bool bAllow)
 bool SpecLibraryEntry::AllowStraightStrandExtensions() const
 {
    return m_bAllowStraightStrandExtensions;
+}
+
+Float64 SpecLibraryEntry::GetAtStressingCompressingStressFactor() const
+{
+   return m_ClosureCompStressAtStressing;
+}
+
+void SpecLibraryEntry::SetAtStressingCompressionStressFactor(Float64 stress)
+{
+   m_ClosureCompStressAtStressing = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtStressingPrecompressedTensileZoneTensionStressFactor() const
+{
+   return m_ClosureTensStressPTZAtStressing;
+}
+
+void SpecLibraryEntry::SetAtStressingPrecompressedTensileZoneTensionStressFactor(Float64 stress)
+{
+   m_ClosureTensStressPTZAtStressing = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtStressingPrecompressedTensileZoneTensionStressFactorWithRebar() const
+{
+   return m_ClosureTensStressPTZWithRebarAtStressing;
+}
+
+void SpecLibraryEntry::SetAtStressingPrecompressedTensileZoneTensionStressFactorWithRebar(Float64 stress)
+{
+   m_ClosureTensStressPTZWithRebarAtStressing = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtStressingOtherLocationTensionStressFactor() const
+{
+   return m_ClosureTensStressAtStressing;
+}
+
+void SpecLibraryEntry::SetAtStressingOtherLocationTensileZoneTensionStressFactor(Float64 stress)
+{
+   m_ClosureTensStressAtStressing = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtStressingOtherLocationTensionStressFactorWithRebar() const
+{
+   return m_ClosureTensStressWithRebarAtStressing;
+}
+
+void SpecLibraryEntry::SetAtStressingOtherLocationTensionStressFactorWithRebar(Float64 stress)
+{
+   m_ClosureTensStressWithRebarAtStressing = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtServiceCompressingStressFactor() const
+{
+   return m_ClosureCompStressAtService;
+}
+
+void SpecLibraryEntry::SetAtServiceCompressionStressFactor(Float64 stress)
+{
+   m_ClosureCompStressAtService = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtServiceWithLiveLoadCompressingStressFactor() const
+{
+   return m_ClosureCompStressWithLiveLoadAtService;
+}
+
+void SpecLibraryEntry::SetAtServiceWithLiveLoadCompressionStressFactor(Float64 stress)
+{
+   m_ClosureCompStressWithLiveLoadAtService = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtServicePrecompressedTensileZoneTensionStressFactor() const
+{
+   return m_ClosureTensStressPTZAtService;
+}
+
+void SpecLibraryEntry::SetAtServicePrecompressedTensileZoneTensionStressFactor(Float64 stress)
+{
+   m_ClosureTensStressPTZAtService = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtServicePrecompressedTensileZoneTensionStressFactorWithRebar() const
+{
+   return m_ClosureTensStressPTZWithRebarAtService;
+}
+
+void SpecLibraryEntry::SetAtServicePrecompressedTensileZoneTensionStressFactorWithRebar(Float64 stress)
+{
+   m_ClosureTensStressPTZWithRebarAtService = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtServiceOtherLocationTensionStressFactor() const
+{
+   return m_ClosureTensStressAtService;
+}
+
+void SpecLibraryEntry::SetAtServiceOtherLocationTensileZoneTensionStressFactor(Float64 stress)
+{
+   m_ClosureTensStressAtService = stress;
+}
+
+Float64 SpecLibraryEntry::GetAtServiceOtherLocationTensionStressFactorWithRebar() const
+{
+   return m_ClosureTensStressWithRebarAtService;
+}
+
+void SpecLibraryEntry::SetAtServiceOtherLocationTensionStressFactorWithRebar(Float64 stress)
+{
+   m_ClosureTensStressWithRebarAtService = stress;
+}
+
+Float64 SpecLibraryEntry::GetClosureFatigueCompressionStressFactor() const
+{
+   return m_ClosureCompStressFatigue;
+}
+
+void SpecLibraryEntry::SetClosureFatigueCompressionStressFactor(Float64 stress)
+{
+   m_ClosureCompStressFatigue = stress;
 }
 
 //======================== INQUIRY    =======================================
@@ -4309,32 +4642,32 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_LldfMethod                 = rOther.m_LldfMethod;
    m_LongReinfShearMethod       = rOther.m_LongReinfShearMethod;
 
-   m_bCheckStrandStress[AT_JACKING]       = rOther.m_bCheckStrandStress[AT_JACKING];
-   m_bCheckStrandStress[BEFORE_TRANSFER]  = rOther.m_bCheckStrandStress[BEFORE_TRANSFER];
-   m_bCheckStrandStress[AFTER_TRANSFER]   = rOther.m_bCheckStrandStress[AFTER_TRANSFER];
-   m_bCheckStrandStress[AFTER_ALL_LOSSES] = rOther.m_bCheckStrandStress[AFTER_ALL_LOSSES];
+   m_bCheckStrandStress[CSS_AT_JACKING]       = rOther.m_bCheckStrandStress[CSS_AT_JACKING];
+   m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = rOther.m_bCheckStrandStress[CSS_BEFORE_TRANSFER];
+   m_bCheckStrandStress[CSS_AFTER_TRANSFER]   = rOther.m_bCheckStrandStress[CSS_AFTER_TRANSFER];
+   m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] = rOther.m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES];
 
-   m_StrandStressCoeff[AT_JACKING][STRESS_REL]       = rOther.m_StrandStressCoeff[AT_JACKING][STRESS_REL];
-   m_StrandStressCoeff[AT_JACKING][LOW_RELAX]        = rOther.m_StrandStressCoeff[AT_JACKING][LOW_RELAX];
-   m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]  = rOther.m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL];
-   m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]   = rOther.m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX];
-   m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]   = rOther.m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL];
-   m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]    = rOther.m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX];
-   m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL] = rOther.m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL];
-   m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]  = rOther.m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX];
+   m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]       = rOther.m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL];
+   m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]        = rOther.m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX];
+   m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]  = rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL];
+   m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]   = rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX];
+   m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]   = rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL];
+   m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]    = rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX];
+   m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL] = rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL];
+   m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]  = rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX];
 
    m_bCheckTendonStressAtJacking = rOther.m_bCheckTendonStressAtJacking;
    m_bCheckTendonStressPriorToSeating = rOther.m_bCheckTendonStressPriorToSeating;
-   m_TendonStressCoeff[AT_JACKING][STRESS_REL] = rOther.m_TendonStressCoeff[AT_JACKING][STRESS_REL];
-   m_TendonStressCoeff[AT_JACKING][LOW_RELAX] = rOther.m_TendonStressCoeff[AT_JACKING][LOW_RELAX];
-   m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL];
-   m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX];
-   m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL];
-   m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX];
-   m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL];
-   m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX];
-   m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL] = rOther.m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL];
-   m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX] = rOther.m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX];
+   m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL];
+   m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX];
+   m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL];
+   m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX];
+   m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL];
+   m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX];
+   m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL];
+   m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX];
+   m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL];
+   m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX];
 
    m_bDoEvaluateDeflection = rOther.m_bDoEvaluateDeflection;
    m_DeflectionLimit       = rOther.m_DeflectionLimit;
@@ -4345,8 +4678,10 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    for ( int i = 0; i < 3; i++ )
    {
       m_MaxSlabFc[i]             = rOther.m_MaxSlabFc[i];
-      m_MaxSegmentFci[i]          = rOther.m_MaxSegmentFci[i];
-      m_MaxSegmentFc[i]           = rOther.m_MaxSegmentFc[i];
+      m_MaxSegmentFci[i]         = rOther.m_MaxSegmentFci[i];
+      m_MaxSegmentFc[i]          = rOther.m_MaxSegmentFc[i];
+      m_MaxClosureFci[i]         = rOther.m_MaxClosureFci[i];
+      m_MaxClosureFc[i]          = rOther.m_MaxClosureFc[i];
       m_MaxConcreteUnitWeight[i] = rOther.m_MaxConcreteUnitWeight[i];
       m_MaxConcreteAggSize[i]    = rOther.m_MaxConcreteAggSize[i];
    }
@@ -4386,16 +4721,32 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_RelaxationLossMethod = rOther.m_RelaxationLossMethod;
 
+   m_FcgpComputationMethod = rOther.m_FcgpComputationMethod;
+
    for ( int i = 0; i < 3; i++ )
    {
-      m_PhiFlexureTensionPS[i]   = rOther.m_PhiFlexureTensionPS[i];
-      m_PhiFlexureTensionRC[i]   = rOther.m_PhiFlexureTensionRC[i];
-      m_PhiFlexureCompression[i] = rOther.m_PhiFlexureCompression[i];
-      m_PhiShear[i]              = rOther.m_PhiShear[i];
+      m_PhiFlexureTensionPS[i]      = rOther.m_PhiFlexureTensionPS[i];
+      m_PhiFlexureTensionRC[i]      = rOther.m_PhiFlexureTensionRC[i];
+      m_PhiFlexureTensionSpliced[i] = rOther.m_PhiFlexureTensionSpliced[i];
+      m_PhiFlexureCompression[i]    = rOther.m_PhiFlexureCompression[i];
+      m_PhiShear[i]                 = rOther.m_PhiShear[i];
    }
 
    m_bIncludeForNegMoment = rOther.m_bIncludeForNegMoment;
    m_bAllowStraightStrandExtensions = rOther.m_bAllowStraightStrandExtensions;
+
+   m_ClosureCompStressAtStressing             = rOther.m_ClosureCompStressAtStressing;
+   m_ClosureTensStressPTZAtStressing          = rOther.m_ClosureTensStressPTZAtStressing;
+   m_ClosureTensStressPTZWithRebarAtStressing = rOther.m_ClosureTensStressPTZWithRebarAtStressing;
+   m_ClosureTensStressAtStressing             = rOther.m_ClosureTensStressAtStressing;
+   m_ClosureTensStressWithRebarAtStressing    = rOther.m_ClosureTensStressWithRebarAtStressing;
+   m_ClosureCompStressAtService               = rOther.m_ClosureCompStressAtService;
+   m_ClosureCompStressWithLiveLoadAtService   = rOther.m_ClosureCompStressWithLiveLoadAtService;
+   m_ClosureTensStressPTZAtService            = rOther.m_ClosureTensStressPTZAtService;
+   m_ClosureTensStressPTZWithRebarAtService   = rOther.m_ClosureTensStressPTZWithRebarAtService;
+   m_ClosureTensStressAtService               = rOther.m_ClosureTensStressAtService;
+   m_ClosureTensStressWithRebarAtService      = rOther.m_ClosureTensStressWithRebarAtService;
+   m_ClosureCompStressFatigue                 = rOther.m_ClosureCompStressFatigue;
 }
 
 void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)

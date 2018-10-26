@@ -47,10 +47,14 @@ protected: // create from serialization only
 	//{{AFX_VIRTUAL(CPGSpliceDoc)
 	//}}AFX_VIRTUAL
 
-   bool EditClosurePourDescription(const CClosurePourData* pClosure,int nPage);
-   bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage);
-   bool EditGirderDescription(const CGirderKey& girderKey,int nPage);
+   bool EditClosureJointDescription(const CClosureJointData* pClosure,int nPage);
    bool EditTemporarySupportDescription(SupportIDType tsID,int nPage);
+   
+   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage);
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage);
+   virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage);
+   
+
    void DeleteTemporarySupport(SupportIDType tsID);
 
 // Implementation
@@ -76,8 +80,8 @@ protected:
 	afx_msg void OnUpdateDeleteSelection(CCmdUI* pCmdUI);
 	afx_msg void OnEditBridgeDescription();
    afx_msg void OnEditSegment(UINT nID);
-   afx_msg void OnEditClosurePour();
-   afx_msg void OnUpdateEditClosurePour(CCmdUI* pCmdUI);
+   afx_msg void OnEditClosureJoint();
+   afx_msg void OnUpdateEditClosureJoint(CCmdUI* pCmdUI);
    afx_msg void OnEditGirder();
    afx_msg void OnEditGirderline();
    afx_msg void OnEditTemporarySupport();

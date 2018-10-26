@@ -40,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CSpecCreepPage, CPropertyPage)
 
-CSpecCreepPage::CSpecCreepPage() : CPropertyPage(CSpecCreepPage::IDD,IDS_SPEC_CREEP)
+CSpecCreepPage::CSpecCreepPage() : CPropertyPage(CSpecCreepPage::IDD)
 {
 	//{{AFX_DATA_INIT(CSpecCreepPage)
 	//}}AFX_DATA_INIT

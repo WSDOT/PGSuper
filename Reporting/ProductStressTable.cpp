@@ -130,8 +130,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       {
          EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
          pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-         continuityEventIdx = _cpp_min(continuityEventIdx,leftContinuityEventIdx);
-         continuityEventIdx = _cpp_min(continuityEventIdx,rightContinuityEventIdx);
+         continuityEventIdx = Min(continuityEventIdx,leftContinuityEventIdx);
+         continuityEventIdx = Min(continuityEventIdx,rightContinuityEventIdx);
       }
    }
 

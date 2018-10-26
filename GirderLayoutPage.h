@@ -37,9 +37,10 @@
 #include "SameGirderTypeHyperLink.h"
 #include "SameSlabOffsetHyperLink.h"
 
+class CSpanDetailsDlg;
+
 /////////////////////////////////////////////////////////////////////////////
 // CSpanGirderLayoutPage dialog
-
 class CSpanGirderLayoutPage : public CPropertyPage
 {
 	DECLARE_DYNCREATE(CSpanGirderLayoutPage)
@@ -48,6 +49,8 @@ class CSpanGirderLayoutPage : public CPropertyPage
 public:
 	CSpanGirderLayoutPage();
 	~CSpanGirderLayoutPage();
+
+   void Init(CSpanDetailsDlg* pParent);
 
    GirderIndexType m_MinGirderCount;
 
@@ -73,37 +76,27 @@ public:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
-public:
+private:
    // array index is pgsTypes::MemberEndType constant
-   GirderIndexType m_nGirders;
-   DWORD m_GirderSpacingMeasure[2];
-
    CGirderNameGrid    m_GirderNameGrid;
    CGirderSpacingGrid m_SpacingGrid[2];
+
+   GirderIndexType m_nGirders;
+   DWORD m_GirderSpacingMeasure[2];
 
    GirderIndexType m_RefGirderIdx[2];
    Float64 m_RefGirderOffset[2];
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType[2];
-
-   // global bridge settings
-   bool m_bUseSameNumGirders;
-   bool m_bUseSameGirderType;
-   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
-   pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
 
    pgsTypes::SlabOffsetType m_SlabOffsetType;
    pgsTypes::SlabOffsetType m_SlabOffsetTypeCache;
    Float64 m_SlabOffset[2];
    CString m_strSlabOffsetCache[2];
 
-   void Init(const CSpanData2* pSpan);
-
-   bool AllowConnectionChange(pgsTypes::MemberEndType end, const CString& conectionName);
 // Implementation
 protected:
 
    void UpdateChildWindowState();
-   void ToggleGirderSpacingType();
 
 	// Generated message map functions
 	//{{AFX_MSG(CSpanGirderLayoutPage)
@@ -135,7 +128,7 @@ protected:
    void UpdateGirderSpacingState();
 
    DWORD m_CacheGirderSpacingMeasure[2];
-   CGirderSpacingGridData m_GirderSpacingCache[2];
+   CGirderSpacing2 m_GirderSpacingCache[2];
 
    GirderIndexType m_CacheRefGirderIdx[2];
    Float64 m_CacheRefGirderOffset[2];

@@ -88,22 +88,12 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
 
    // Create and configure the table
    ColumnIndexType numColumns = 9;
-   if ( !bIgnoreInitialRelaxation )
-      numColumns++;
-
-   if ( pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross )
-      numColumns++;
 
    CTemporaryStrandRemovalTable* table = new CTemporaryStrandRemovalTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
 
    *pParagraph << Sub2(_T("P"),_T("tr")) << _T(" = ") << Sub2(_T("A"),_T("t")) << _T("(") << Sub2(_T("f"),_T("pj")) << _T(" - ");
-   if ( !bIgnoreInitialRelaxation )
-      *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("pR0")) << _T(" - ");
-
-   if ( pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross )
-      *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("pES")) << _T(" - ");
 
    if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
    {
@@ -112,7 +102,7 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
       *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("pt")) << _T(" - ");
    }
 
-   *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("pLTH")) << _T(")") << rptNewLine;
+   *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("pH")) << _T(")") << rptNewLine;
 
    *pParagraph << rptRcImage(strImagePath + _T("Delta_Fptr.png")) << rptNewLine;
 
@@ -134,23 +124,13 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    ColumnIndexType col = 0;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pj")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   
-   if ( !bIgnoreInitialRelaxation )
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-   if ( pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross )
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("P"),_T("tr")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
    (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
    (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
    (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ptr")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptr")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-   table->m_bIgnoreInitialRelaxation = bIgnoreInitialRelaxation;
-   table->m_bUseGrossProperties = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false;
 
    return table;
 }
@@ -160,13 +140,6 @@ void CTemporaryStrandRemovalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,
 //   (*this)(row,0) << spanloc.SetValue(poi,end_size);
    ColumnIndexType col = 1;
    (*this)(row,col++) << stress.SetValue(pDetails->pLosses->GetFpjTemporary());
-
-   if ( !m_bIgnoreInitialRelaxation )
-      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_RelaxationLossesBeforeTransfer());
-
-   if ( m_bUseGrossProperties )
-      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().TemporaryStrand_ElasticShorteningLosses());
-
    (*this)(row,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_AtShipping());
    (*this)(row,col++) << force.SetValue(pDetails->pLosses->GetPtr());
    (*this)(row,col++) << area.SetValue(pDetails->pLosses->GetAg());

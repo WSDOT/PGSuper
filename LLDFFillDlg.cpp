@@ -262,7 +262,7 @@ void CLLDFFillDlg::ComputeMaxNumGirders()
       const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(pSpan);
       GirderIndexType ngdrs = pGroup->GetGirderCount();
 
-      m_MaxNumGirders = max(m_MaxNumGirders, ngdrs);
+      m_MaxNumGirders = Max(m_MaxNumGirders, ngdrs);
    }
 }
 

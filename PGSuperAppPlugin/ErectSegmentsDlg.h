@@ -10,7 +10,7 @@ class CErectSegmentsDlg : public CDialog
 	DECLARE_DYNAMIC(CErectSegmentsDlg)
 
 public:
-	CErectSegmentsDlg(const CTimelineManager* pTimelineMgr,CWnd* pParent = NULL);   // standard constructor
+	CErectSegmentsDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CErectSegmentsDlg();
 
 // Dialog Data
@@ -24,6 +24,7 @@ protected:
 
    const CTimelineManager* m_pTimelineMgr;
    const CBridgeDescription2* m_pBridgeDesc;
+   EventIndexType m_EventIndex;
 
 	DECLARE_MESSAGE_MAP()
 public:

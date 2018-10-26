@@ -24,42 +24,27 @@
 
 #include <System\Transaction.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
+#include "EditBridge.h"
 #include <IFace\Project.h>
 
-class txnInsertTemporarySupport : public txnTransaction
+class txnInsertTemporarySupport : public txnEditBridgeDescription
 {
 public:
-   txnInsertTemporarySupport(const CTemporarySupportData& tsData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx);
+   txnInsertTemporarySupport(SupportIndexType tsIdx,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
-   virtual bool Execute();
-   virtual void Undo();
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
 
 private:
-   SupportIDType m_tsID;
-   CTemporarySupportData m_TSData;
-   EventIndexType m_ErectionEventIdx;
-   EventIndexType m_RemovalEventIdx;
+   SupportIndexType m_tsIndex;
 };
 
-class txnDeleteTemporarySupport : public txnTransaction
+class txnDeleteTemporarySupport : public txnEditBridgeDescription
 {
 public:
-   txnDeleteTemporarySupport(SupportIDType tsID);
-   ~txnDeleteTemporarySupport();
+   txnDeleteTemporarySupport(SupportIndexType tsIdx,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
-   virtual bool Execute();
-   virtual void Undo();
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
 
 private:
-   SupportIDType m_tsID;
-   CTemporarySupportData m_TSData;
-   EventIndexType m_ErectionEventIdx;
-   EventIndexType m_RemovalEventIdx;
+   SupportIndexType m_tsIndex;
 };

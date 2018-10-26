@@ -12,13 +12,14 @@ class CRemoveTempSupportsDlg : public CDialog
 	DECLARE_DYNAMIC(CRemoveTempSupportsDlg)
 
 public:
-	CRemoveTempSupportsDlg(const CTimelineManager* pTimelineMgr,CWnd* pParent = NULL);   // standard constructor
+	CRemoveTempSupportsDlg(const CTimelineManager* pTimelineMgr,EventIndexType eventIdx,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CRemoveTempSupportsDlg();
 
 // Dialog Data
 	enum { IDD = IDD_REMOVE_TS };
    CRemoveTemporarySupportsActivity m_RemoveTempSupports;
    const CTimelineManager* m_pTimelineMgr;
+   EventIndexType m_EventIndex;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

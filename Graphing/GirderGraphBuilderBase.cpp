@@ -198,7 +198,7 @@ bool CGirderGraphBuilderBase::UpdateNow()
    GET_IFACE(IIntervals,pIntervals);
    if ( intervalIdx == pIntervals->GetPrestressReleaseInterval(segmentKey) )
    {
-      m_GraphStartOffset = -start_offset;
+      m_GraphStartOffset = 0;
    }
    else if ( intervalIdx == pIntervals->GetStorageInterval(segmentKey) )
    {
@@ -209,7 +209,7 @@ bool CGirderGraphBuilderBase::UpdateNow()
    }
    else
    {
-      m_GraphStartOffset = -brgOffset;
+      m_GraphStartOffset = -end_dist;
    }
 
    return true;
@@ -220,34 +220,25 @@ void CGirderGraphBuilderBase::GetXValues(const std::vector<pgsPointOfInterest>& 
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IPointOfInterest,pPoi);
 
-   Float64 graphStartOffset = m_GraphStartOffset;
-
-   CSegmentKey segmentKey(vPoi.front().GetSegmentKey());
-
    xVals.clear();
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator e(vPoi.end());
-   for ( ; i != e; i++ )
-   {
-      const pgsPointOfInterest& poi = *i;
-      if ( segmentKey.groupIndex != poi.GetSegmentKey().groupIndex )
-      {
-         // group is changing
-         ATLASSERT(segmentKey.groupIndex == poi.GetSegmentKey().groupIndex-1); // better be next group
-         graphStartOffset += pBridge->GetGirderLayoutLength(segmentKey); // segment key can Float64 as a girder key
-         segmentKey = poi.GetSegmentKey();
-      }
 
-      Float64 Xgp = pPoi->ConvertPoiToGirderPathCoordinate(poi);
-      Float64 x = graphStartOffset + Xgp;
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
+   {
+      const pgsPointOfInterest& poi(*poiIter);
+
+      Float64 Xg = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+      Float64 x = Xg + m_GraphStartOffset;
       xVals.push_back(x);
    }
 }
 
 void CGirderGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals)
 {
-   std::vector<Float64>::const_iterator xIter, yIter;
-   for ( xIter = xvals.begin(), yIter = yvals.begin(); xIter != xvals.end() && yIter != yvals.end(); xIter++, yIter++ )
+   std::vector<Float64>::const_iterator xIter(xvals.begin()), yIter(yvals.begin());
+   std::vector<Float64>::const_iterator xIterEnd(xvals.end()), yIterEnd(yvals.end());
+   for ( ; xIter != xIterEnd && yIter != yIterEnd; xIter++, yIter++ )
    {
       Float64 X = *xIter;
       Float64 Y = *yIter;

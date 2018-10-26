@@ -24,19 +24,23 @@
 #include "InsertDeleteSpan.h"
 #include "PGSuperDocBase.h"
 
+#include <PgsExt\ClosureJointData.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnInsertSpan::txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,IndexType eventIdx)
+txnInsertSpan::txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,IndexType pierErectionEventIdx)
 {
    m_RefPierIdx = refPierIdx;
    m_PierFace   = pierFace;
    m_SpanLength = spanLength;
    m_bCreateNewGroup = bCreateNewGroup;
-   m_EventIdx = eventIdx;
+   m_PierErectionEventIndex = pierErectionEventIdx;
+
+   Init();
 }
 
 std::_tstring txnInsertSpan::Name() const
@@ -46,7 +50,7 @@ std::_tstring txnInsertSpan::Name() const
 
 txnTransaction* txnInsertSpan::CreateClone() const
 {
-   return new txnInsertSpan(m_RefPierIdx, m_PierFace,m_SpanLength,m_bCreateNewGroup,m_EventIdx);
+   return new txnInsertSpan(m_RefPierIdx, m_PierFace,m_SpanLength,m_bCreateNewGroup,m_PierErectionEventIndex);
 }
 
 bool txnInsertSpan::IsUndoable()
@@ -61,28 +65,29 @@ bool txnInsertSpan::IsRepeatable()
 
 bool txnInsertSpan::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
-   // save the connection type, sometimes it doesn't get automatically reverted during an UNDO
-   const CPierData2* pPier = pIBridgeDesc->GetPier(m_RefPierIdx);
-   ATLASSERT(pPier->IsBoundaryPier());
-   m_RefPierConnectionType = pPier->GetPierConnectionType();
-
-   // Default length for new spans
-   pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,NULL,NULL,m_bCreateNewGroup,m_EventIdx);
-
-   pEvents->FirePendingEvents();
-
+   DoExecute(1);
    return true;
 }
 
 void txnInsertSpan::Undo()
+{
+   DoExecute(0);
+}
+
+void txnInsertSpan::Init()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+
+   m_BridgeDescription[0] = *(pIBridgeDesc->GetBridgeDescription());
+   m_BridgeDescription[1] = m_BridgeDescription[0];
+
+   m_BridgeDescription[1].InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,NULL,NULL,m_bCreateNewGroup,m_PierErectionEventIndex);
+}
+
+void txnInsertSpan::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -92,14 +97,7 @@ void txnInsertSpan::Undo()
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   PierIndexType newPierIdx = m_RefPierIdx + (m_PierFace == pgsTypes::Ahead ? 1 : 0);
-   pgsTypes::PierFaceType newPierFace = (m_PierFace == pgsTypes::Ahead ? pgsTypes::Back : pgsTypes::Ahead);
-   pIBridgeDesc->DeletePier(newPierIdx,newPierFace);
-
-   CPierData2 pier = *pIBridgeDesc->GetPier(m_RefPierIdx);
-   pier.SetPierConnectionType(m_RefPierConnectionType);
-   pIBridgeDesc->SetPierByIndex(m_RefPierIdx,pier);
-
+   pIBridgeDesc->SetBridgeDescription(m_BridgeDescription[i]);
 
    pEvents->FirePendingEvents();
 }
@@ -111,14 +109,11 @@ txnDeleteSpan::txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pie
    m_RefPierIdx = refPierIdx;
    m_PierFace   = pierFace;
 
-   m_pDeletedSpan = NULL;
-   m_pDeletedPier = NULL;
+   Init();
 }
 
 txnDeleteSpan::~txnDeleteSpan()
 {
-   delete m_pDeletedSpan;
-   delete m_pDeletedPier;
 }
 
 std::_tstring txnDeleteSpan::Name() const
@@ -143,73 +138,42 @@ bool txnDeleteSpan::IsRepeatable()
 
 bool txnDeleteSpan::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
-
-   // save the span/pier that are going to be deleted for undo
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData2* pRefPier = pBridgeDesc->GetPier(m_RefPierIdx);
-   const CSpanData2* pSpan = (m_PierFace == pgsTypes::Back ? pRefPier->GetPrevSpan() : pRefPier->GetNextSpan());
-
-   ASSERT(pSpan != NULL); // I don't think this should happen
-
-   // save any temporary supports that are in the span being removed
-   std::vector<const CTemporarySupportData*> tempSupports(pSpan->GetTemporarySupports());
-   std::vector<const CTemporarySupportData*>::iterator tsIter(tempSupports.begin());
-   std::vector<const CTemporarySupportData*>::iterator tsIterEnd(tempSupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
-   {
-      const CTemporarySupportData* pTS = *tsIter;
-      TSItem item;
-      item.TempSupport = *pTS;
-
-      SupportIDType tsID = pTS->GetID();
-
-      pBridgeDesc->GetTimelineManager()->GetTempSupportEvents(tsID,&item.ErectionEventIdx,&item.RemovalEventIdx);
-      
-      m_TempSupports.push_back(item);
-   }
-
-   m_pDeletedPier = new CPierData2(*pRefPier);
-   if ( pSpan )
-      m_pDeletedSpan = new CSpanData2(*pSpan);
-
-   m_nGirderGroups = pBridgeDesc->GetGirderGroupCount();
-
-   // save span length for undo
-   m_SpanLength = pSpan->GetSpanLength();
-
-   // save pier stage
-   m_EventIdx = pBridgeDesc->GetTimelineManager()->GetPierErectionEventIndex(pRefPier->GetID());
-
-   // save the connection type, sometimes it doesn't get automatically reverted during an UNDO
-   const CPierData2* pPier = pIBridgeDesc->GetPier(m_RefPierIdx);
-   ATLASSERT(pPier->IsBoundaryPier());
-   m_RefPierConnectionType = pPier->GetPierConnectionType();
-
-   // Delete the pier, span is deleted along with it
-   pIBridgeDesc->DeletePier(m_RefPierIdx,m_PierFace);
-   pRefPier = NULL;
-   pSpan = NULL;
-
-
-   GET_IFACE2(pBroker,ISelectionEx,pSelection);
-   CSelection selection = pSelection->GetSelection();
-   if ( selection.Type == CSelection::Span && selection.SpanIdx == m_pDeletedSpan->GetIndex() )
-      pSelection->ClearSelection();
-
-   if ( selection.Type == CSelection::Pier && selection.PierIdx == m_RefPierIdx )
-      pSelection->ClearSelection();
-
-   pEvents->FirePendingEvents();
-
+   DoExecute(1);
    return true;
 }
 
 void txnDeleteSpan::Undo()
+{
+   DoExecute(0);
+}
+
+void txnDeleteSpan::Init()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+
+   m_BridgeDescription[0] = *(pIBridgeDesc->GetBridgeDescription());
+   m_BridgeDescription[1] = m_BridgeDescription[0];
+
+   SpanIndexType spanIdx;
+   pgsTypes::RemovePierType removePierType;
+
+   if (m_PierFace == pgsTypes::Back )
+   {
+      spanIdx = m_RefPierIdx - 1;
+      removePierType = pgsTypes::NextPier;
+   }
+   else
+   {
+      spanIdx = m_RefPierIdx;
+      removePierType = pgsTypes::PrevPier;
+   }
+
+   m_BridgeDescription[1].RemoveSpan(spanIdx,removePierType);
+}
+
+void txnDeleteSpan::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -219,34 +183,7 @@ void txnDeleteSpan::Undo()
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   PierIndexType pierIdx = (m_PierFace == pgsTypes::Back ? m_RefPierIdx-1 : m_RefPierIdx);
-   pgsTypes::PierFaceType face = (m_PierFace == pgsTypes::Back ? pgsTypes::Ahead : pgsTypes::Back);
-
-   // create a new group if one was removed (the girder group count would have changed)
-   bool bCreateNewGroup = (m_nGirderGroups != pIBridgeDesc->GetBridgeDescription()->GetGirderGroupCount());
-   pIBridgeDesc->InsertSpan(pierIdx,face,m_SpanLength,m_pDeletedSpan,m_pDeletedPier,bCreateNewGroup,m_EventIdx);
-
-   std::vector<TSItem>::iterator iter(m_TempSupports.begin());
-   std::vector<TSItem>::iterator loop_end(m_TempSupports.end());
-   for ( ; iter != loop_end; iter++ )
-   {
-      TSItem& item = *iter;
-      CTemporarySupportData* pTS = new CTemporarySupportData(item.TempSupport);
-      pIBridgeDesc->InsertTemporarySupport(pTS,item.ErectionEventIdx,item.RemovalEventIdx);
-   }
-
-
-   CPierData2 pier = *pIBridgeDesc->GetPier(m_RefPierIdx);
-   pier.SetPierConnectionType(m_RefPierConnectionType);
-   pIBridgeDesc->SetPierByIndex(m_RefPierIdx,pier);
-
-   delete m_pDeletedSpan;
-   m_pDeletedSpan = NULL;
-   
-   delete m_pDeletedPier;
-   m_pDeletedPier = NULL;
-
-   m_TempSupports.clear();
+   pIBridgeDesc->SetBridgeDescription(m_BridgeDescription[i]);
 
    pEvents->FirePendingEvents();
 }

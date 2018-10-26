@@ -171,12 +171,12 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
       if ( segIdx != nSegments-1 )
       {
          CClosureKey closureKey(girderKey,segIdx);
-         pgsTypes::ConcreteType concType = pMaterial->GetClosurePourConcreteType(closureKey);
-         bool bHasAggSplittingStrength = pMaterial->DoesClosurePourConcreteHaveAggSplittingStrength(closureKey);
+         pgsTypes::ConcreteType concType = pMaterial->GetClosureJointConcreteType(closureKey);
+         bool bHasAggSplittingStrength = pMaterial->DoesClosureJointConcreteHaveAggSplittingStrength(closureKey);
 
          pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
          *pChapter << pParagraph;
-         *pParagraph << _T("Closure Pour ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         *pParagraph << _T("Closure Joint ") << LABEL_SEGMENT(segIdx) << rptNewLine;
 
          pParagraph = new rptParagraph;
          *pChapter << pParagraph;
@@ -219,7 +219,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 
          if ( concType != pgsTypes::Normal && bHasAggSplittingStrength )
          {
-            *pParagraph << RPT_STRESS(_T("ct")) << _T(" = ")<<stress.SetValue(pMaterial->GetClosurePourConcreteAggSplittingStrength(closureKey))<<_T(" ")<< stress.GetUnitTag()<<rptNewLine;
+            *pParagraph << RPT_STRESS(_T("ct")) << _T(" = ")<<stress.SetValue(pMaterial->GetClosureJointConcreteAggSplittingStrength(closureKey))<<_T(" ")<< stress.GetUnitTag()<<rptNewLine;
          }
       }
    } // next segment

@@ -652,8 +652,8 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
             Float64 xstart, ystart, xhp, yhp, xend, yend;
             pGdrEntry->GetHarpedStrandCoordinates(ih,&xstart,&ystart,&xhp,&yhp,&xend,&yend);
 
-            ymin = min(ymin,ystart);
-            ymax = max(ymax,ystart);
+            ymin = Min(ymin,ystart);
+            ymax = Max(ymax,ystart);
 
             currHarped += (xstart>0.0 || xhp>0.0) ? 2 : 1;
 
@@ -766,8 +766,8 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
          Float64 Xstart, Ystart, Xhp, Yhp, Xend, Yend;
          pGdrEntry->GetHarpedStrandCoordinates(currIdx, &Xstart, &Ystart, &Xhp, &Yhp, &Xend, &Yend);
 
-         ymin = min(ymin,Ystart);
-         ymax = max(ymax,Ystart);
+         ymin = Min(ymin,Ystart);
+         ymax = Max(ymax,Ystart);
 
          if (Xstart>0.0 || Xhp>0.0)
          {
@@ -1073,7 +1073,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       if (avit!=avail_rows.end())
       {
          // Harped strands are always first strands placed in a row
-         nh = min(no_cl, avit->MaxHarped);
+         nh = Min(no_cl, avit->MaxHarped);
 
          tot_nh_cl += nh;
       }
@@ -1131,7 +1131,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       if (no_end >= no_cl)
       {
          // This is a harped location
-         nh = min(no_end,nh_max);
+         nh = Min(no_end,nh_max);
          tot_nh_end += nh;
       }
 

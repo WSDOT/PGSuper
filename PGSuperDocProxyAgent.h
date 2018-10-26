@@ -84,8 +84,7 @@ class CPGSuperDocProxyAgent :
    public ILibraryConflictEventSink,
    public IUIEvents,
    public IUpdateTemplates,
-   //public ISelection,
-   public ISelectionEx,
+   public ISelection,
    public IEditByUIEx,
    public IDesign,
    public IViews,
@@ -112,7 +111,6 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IUIEvents)
    COM_INTERFACE_ENTRY(IUpdateTemplates)
    COM_INTERFACE_ENTRY(ISelection)
-   COM_INTERFACE_ENTRY(ISelectionEx)
    COM_INTERFACE_ENTRY(IEditByUI)
    COM_INTERFACE_ENTRY(IEditByUIEx)
    COM_INTERFACE_ENTRY(IDesign)
@@ -198,27 +196,32 @@ public:
 
 // ISelection
 public:
-   virtual PierIndexType GetPierIndex();
-   virtual SpanIndexType GetSpanIndex();
-   virtual GirderIndexType GetGirderIndex();
+   virtual CSelection GetSelection();
+   virtual void ClearSelection();
+   virtual PierIndexType GetSelectedPier();
+   virtual SpanIndexType GetSelectedSpan();
+   virtual CGirderKey GetSelectedGirder();
+   virtual CSegmentKey GetSelectedSegment();
+   virtual CClosureKey GetSelectedClosureJoint();
+   virtual SupportIDType GetSelectedTemporarySupport();
+   virtual bool IsDeckSelected();
+   virtual bool IsAlignmentSelected();
    virtual void SelectPier(PierIndexType pierIdx);
    virtual void SelectSpan(SpanIndexType spanIdx);
    virtual void SelectGirder(const CGirderKey& girderKey);
-   virtual Float64 GetSectionCutStation();
-
-// ISelectionEx
-public:
-   virtual CSelection GetSelection();
+   virtual void SelectSegment(const CSegmentKey& segmentKey);
+   virtual void SelectClosureJoint(const CClosureKey& closureKey);
+   virtual void SelectTemporarySupport(SupportIDType tsID);
    virtual void SelectDeck();
    virtual void SelectAlignment();
-   virtual void ClearSelection();
-   virtual void SelectSegment(const CSegmentKey& segmentKey);
+   virtual Float64 GetSectionCutStation();
 
 // IEditByUI
 public:
    virtual void EditBridgeDescription(int nPage);
    virtual void EditAlignmentDescription(int nPage);
    virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage);
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage);
    virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage);
    virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage);

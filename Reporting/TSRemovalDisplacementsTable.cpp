@@ -108,7 +108,7 @@ void CTSRemovalDisplacementsTable::Build(rptChapter* pChapter,IBroker* pBroker,c
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = min(girderKey.girderIndex,nGirders-1);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
       // Get the intervals when temporary supports are removed for this group
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);

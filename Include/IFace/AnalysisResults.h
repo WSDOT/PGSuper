@@ -767,15 +767,39 @@ interface IBearingDesign : IUnknown
                                              Float64* pRightRmin,Float64* pRightRmax)=0;
 };
 
+/*****************************************************************************
+INTERFACE
+   IPrecompressedTensileZone
+
+   Interface to get information about the precompressed tensile zone
+
+DESCRIPTION
+   Interface to get information about the precompressed tensile zone
+*****************************************************************************/
+// {1A7DFED9-6DE6-4bd1-8A41-D603CFD53C14}
+DEFINE_GUID(IID_IPrecompressedTensileZone, 
+0x1a7dfed9, 0x6de6, 0x4bd1, 0x8a, 0x41, 0xd6, 0x3, 0xcf, 0xd5, 0x3c, 0x14);
+interface IPrecompressedTensileZone : IUnknown
+{
+   // Returns true of the specified location is in the precompressed tensile zone
+   // stressingIntervalIdx is the interveral to consider for determining if the
+   // prestress causes compression
+   virtual bool IsInPrecompressedTensileZone(IntervalIndexType stressingIntervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat) = 0;
+
+   // Returns true of the specified location is in the precompressed tensile zone
+   // stressingIntervalIdx is the interveral to consider for determining if the
+   // prestress causes compression
+   virtual bool IsInPrecompressedTensileZone(IntervalIndexType stressingIntervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat, const GDRCONFIG* pConfig) = 0;
+};
 
 /*****************************************************************************
 INTERFACE
    IInfluenceResults
 
-   Interface to get influence lines are related information.
+   Interface to get influence lines and related information.
 
 DESCRIPTION
-   Interface to get influence lines are related information.
+   Interface to get influence lines and related information.
 *****************************************************************************/
 // {4C72198B-4DA4-424d-BD6F-12AD394D84B6}
 DEFINE_GUID(IID_IInfluenceResults, 

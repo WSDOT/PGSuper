@@ -49,11 +49,6 @@ COPYRIGHT
 LOG
    rab : 04.25.208 : Created file
 *****************************************************************************/
-#if defined _DEBUG
-#define IS_VALID AssertValid();
-#else
-#define IS_VALID
-#endif
 
 class PGSEXTCLASS CGirderSpacingData2
 {
@@ -99,7 +94,7 @@ public:
 
 #if defined _DEBUG
    GirderIndexType Debug_GetGirderCount() const { return m_GirderSpacing.size()+1; }
-   void AssertValid() const;
+   virtual void AssertValid() const;
 #endif
 
 protected:
@@ -122,6 +117,13 @@ protected:
 
    typedef std::pair<GirderIndexType,GirderIndexType> SpacingGroup; // first and second can never be the same value
    std::vector<SpacingGroup> m_SpacingGroups; // defines how girder lines are grouped
+
+   // secret backdoor that CGirderGroupData and CBridgeDescription2 can initialize
+   // this girder spacing so the internal m_GirderSpacing vector has the right
+   // number of entires.
+   void InitGirderCount(GirderIndexType nGirders);
+   friend CGirderGroupData;
+   friend CBridgeDescription2;
 };
 
 class PGSEXTCLASS CGirderSpacing2 : public CGirderSpacingData2
@@ -171,4 +173,8 @@ protected:
    GirderIndexType GetGirderCount() const;
    const CGirderGroupData* GetGirderGroup() const;
    Float64 GetGirderWidth(const CSplicedGirderData* pGirder) const;
+
+#if defined _DEBUG
+   virtual void AssertValid() const;
+#endif
 };

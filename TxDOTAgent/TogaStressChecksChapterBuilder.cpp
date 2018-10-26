@@ -281,21 +281,19 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 
    Float64 allowable_tension;
    Float64 allowable_tension_with_rebar;
-   Float64 allowable_compression;
 
    if (stressType==pgsTypes::Tension && (intervalIdx != compositeDeckIntervalIdx))
    {
       pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,0 );
-      allowable_tension = pFactoredStressArtifact->GetCapacity();
-      allowable_tension_with_rebar = pFactoredGdrArtifact->GetCastingYardCapacityWithMildRebar();
+      allowable_tension = pFactoredStressArtifact->GetCapacity(pgsTypes::TopGirder);
+      ATLASSERT(IsEqual(allowable_tension,pFactoredStressArtifact->GetCapacity(pgsTypes::BottomGirder)));
+      allowable_tension_with_rebar = pFactoredGdrArtifact->GetCapacityWithRebar(intervalIdx,limitState,pgsTypes::GirderTop);
    }
 
    if (stressType==pgsTypes::Compression || intervalIdx != liveLoadIntervalIdx)
    {
       pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Compression,0 );
-      allowable_compression = pFactoredStressArtifact->GetCapacity();
    }
-
 
    if (intervalIdx == compositeDeckIntervalIdx || intervalIdx == liveLoadIntervalIdx )
    {
@@ -385,7 +383,8 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 
       Float64 fTop, fBot;
       // prestress
-      pFactoredStressArtifact->GetPretensionEffects( &fTop, &fBot );
+      fTop = pFactoredStressArtifact->GetPretensionEffects(pgsTypes::TopGirder);
+      fBot = pFactoredStressArtifact->GetPretensionEffects(pgsTypes::BottomGirder);
       if (limitState != pgsTypes::ServiceIII)
       {
          (*p_table)(row,++col) << stress.SetValue( fTop );
@@ -396,7 +395,8 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       // Calculated
       if (intervalIdx != releaseIntervalIdx)
       {
-         pUnfactoredStressArtifact->GetExternalEffects( &fTop, &fBot );
+         fTop = pUnfactoredStressArtifact->GetExternalEffects(pgsTypes::TopGirder);
+         fBot = pUnfactoredStressArtifact->GetExternalEffects(pgsTypes::BottomGirder);
          if (limitState != pgsTypes::ServiceIII)
          {
             (*p_table)(row,++col) << stress.SetValue( fTop );
@@ -406,7 +406,8 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       }
 
       // Analysis
-      pFactoredStressArtifact->GetExternalEffects( &fTop, &fBot );
+      fTop = pFactoredStressArtifact->GetExternalEffects(pgsTypes::TopGirder);
+      fBot = pFactoredStressArtifact->GetExternalEffects(pgsTypes::BottomGirder);
       if (limitState != pgsTypes::ServiceIII)
       {
          (*p_table)(row,++col) << stress.SetValue( fTop );
@@ -415,7 +416,8 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       (*p_table)(row,++col) << stress.SetValue( fBot );
 
       // Demands
-      pFactoredStressArtifact->GetDemand( &fTop, &fBot );
+      fTop = pFactoredStressArtifact->GetDemand(pgsTypes::TopGirder);
+      fBot = pFactoredStressArtifact->GetDemand(pgsTypes::BottomGirder);
       if (limitState != pgsTypes::ServiceIII)
       {
          (*p_table)(row,++col) << stress.SetValue( fTop );
@@ -436,9 +438,18 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 	      else
 		     (*p_table)(row,++col) << RPT_FAIL;
 
+
+         Float64 fAllowTop,fAllowBot,allowable_tension;
+         fAllowTop = pFactoredStressArtifact->GetCapacity(pgsTypes::TopGirder);
+         fAllowBot = pFactoredStressArtifact->GetCapacity(pgsTypes::BottomGirder);
+         if (fTop < fBot )
+            allowable_tension = fAllowBot;
+         else
+            allowable_tension = fAllowTop;
+
          if ( !IsZero(allowable_tension) )
          {
-            Float64 f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
+            Float64 f = (limitState == pgsTypes::ServiceIII ? fBot : Max(fBot,fTop));
            (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension,f,bPassed)<<_T(")");
          }
       }
@@ -458,7 +469,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 
          if ( !IsZero(allowable_tension_with_rebar) )
          {
-            Float64 f = max(fTop,fBot);
+            Float64 f = Max(fTop,fBot);
             (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension_with_rebar,f,bPassed)<<_T(")");
           }
       }
@@ -478,7 +489,8 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          else
          {
             bPassed = pFactoredOtherStressArtifact->Passed();
-            pFactoredOtherStressArtifact->GetDemand( &fTop, &fBot );
+            fTop = pFactoredOtherStressArtifact->GetDemand(pgsTypes::TopGirder);
+            fBot = pFactoredOtherStressArtifact->GetDemand(pgsTypes::BottomGirder);
          }
 
          if ( bPassed )
@@ -486,7 +498,15 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 	      else
 		      (*p_table)(row, ++col) << RPT_FAIL;
 
-         Float64 f = min(fTop,fBot);
+         Float64 fAllowTop,fAllowBot,allowable_compression;
+         fAllowTop = pFactoredStressArtifact->GetCapacity(pgsTypes::TopGirder);
+         fAllowBot = pFactoredStressArtifact->GetCapacity(pgsTypes::BottomGirder);
+         if (fTop < fBot )
+            allowable_compression = fAllowTop;
+         else
+            allowable_compression = fAllowBot;
+
+         Float64 f = Min(fTop,fBot);
          (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_compression,f,bPassed)<<_T(")");
       }
 

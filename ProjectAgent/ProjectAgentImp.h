@@ -46,7 +46,7 @@
 #include <PgsExt\LongitudinalRebarData.h>
 
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosurePourData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #include "LibraryEntryObserver.h"
 
@@ -223,8 +223,8 @@ public:
    virtual void SetPostTensioning(const CGirderKey& girderKey,const CPTData& ptData);
    virtual const CPrecastSegmentData* GetPrecastSegmentData(const CSegmentKey& segmentKey);
    virtual void SetPrecastSegmentData(const CSegmentKey& segmentKey,const CPrecastSegmentData& segment);
-   virtual const CClosurePourData* GetClosurePourData(const CSegmentKey& closureKey);
-   virtual void SetClosurePourData(const CSegmentKey& closureKey,const CClosurePourData& closure);
+   virtual const CClosureJointData* GetClosureJointData(const CSegmentKey& closureKey);
+   virtual void SetClosureJointData(const CSegmentKey& closureKey,const CClosureJointData& closure);
    virtual void SetSpanLength(SpanIndexType spanIdx,Float64 newLength);
    virtual void MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption);
    virtual SupportIndexType MoveTemporarySupport(SupportIndexType tsIdx,Float64 newStation);
@@ -237,10 +237,10 @@ public:
    virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup);
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders);
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType);
-   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType);
+   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType,EventIndexType castClosureEventIdx);
    virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan);
    virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace, Float64 spanLength, const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx);
-   virtual void InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx);
+   virtual void InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType castClosureJointEventIdx);
    virtual void DeleteTemporarySupportByIndex(SupportIndexType tsIdx);
    virtual void DeleteTemporarySupportByID(SupportIDType tsID);
    virtual void SetLiveLoadDistributionFactorMethod(pgsTypes::DistributionFactorMethod method);
@@ -285,10 +285,10 @@ public:
    virtual void SetSegmentErectionEventByID(const CSegmentKey& segmentKey,EventIDType eventID);
    virtual EventIndexType GetSegmentErectionEventIndex(const CSegmentKey& segmentKey);
    virtual EventIDType GetSegmentErectionEventID(const CSegmentKey& segmentKey);
-   virtual EventIndexType GetCastClosurePourEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx);
-   virtual EventIDType GetCastClosurePourEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx);
-   virtual void SetCastClosurePourEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx);
-   virtual void SetCastClosurePourEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIDType eventID);
+   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx);
+   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx);
+   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx);
+   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIDType eventID);
    virtual EventIndexType GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual EventIDType GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual void SetStressTendonEventByIndex(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIndexType eventIdx);
@@ -333,11 +333,11 @@ public:
    virtual void SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade);
    virtual const CShearData2* GetSegmentShearData(const CSegmentKey& segmentKey) const;
    virtual void SetSegmentShearData(const CSegmentKey& segmentKey,const CShearData2& data);
-   virtual std::_tstring GetClosurePourStirrupMaterial(const CClosureKey& closureKey) const;
-   virtual void GetClosurePourStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
-   virtual void SetClosurePourStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade);
-   virtual const CShearData2* GetClosurePourShearData(const CClosureKey& closureKey) const;
-   virtual void SetClosurePourShearData(const CClosureKey& closureKey,const CShearData2& data);
+   virtual std::_tstring GetClosureJointStirrupMaterial(const CClosureKey& closureKey) const;
+   virtual void GetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
+   virtual void SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade);
+   virtual const CShearData2* GetClosureJointShearData(const CClosureKey& closureKey) const;
+   virtual void SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& data);
 
 // ILongitudinalRebar
 public:
@@ -347,11 +347,11 @@ public:
    virtual const CLongitudinalRebarData* GetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey) const;
    virtual void SetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey,const CLongitudinalRebarData& data);
 
-   virtual std::_tstring GetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey) const;
-   virtual void GetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
-   virtual void SetClosurePourLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade);
-   virtual const CLongitudinalRebarData* GetClosurePourLongitudinalRebarData(const CClosureKey& closureKey) const;
-   virtual void SetClosurePourLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data);
+   virtual std::_tstring GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey) const;
+   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
+   virtual void SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade);
+   virtual const CLongitudinalRebarData* GetClosureJointLongitudinalRebarData(const CClosureKey& closureKey) const;
+   virtual void SetClosureJointLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data);
 
 // ISpecification
 public:
@@ -532,6 +532,8 @@ public:
    virtual Float64 GetMaxSlabFc(pgsTypes::ConcreteType concType);
    virtual Float64 GetMaxSegmentFci(pgsTypes::ConcreteType concType);
    virtual Float64 GetMaxSegmentFc(pgsTypes::ConcreteType concType);
+   virtual Float64 GetMaxClosureFci(pgsTypes::ConcreteType concType);
+   virtual Float64 GetMaxClosureFc(pgsTypes::ConcreteType concType);
    virtual Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType);
    virtual Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType concType);
 
@@ -554,8 +556,10 @@ public:
 // ILossParameters
 public:
    virtual pgsTypes::LossMethod GetLossMethod();
-   virtual void SetPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction);
-   virtual void GetPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction);
+   virtual void SetTendonPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction);
+   virtual void GetTendonPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction);
+   virtual void SetTemporaryStrandPostTensionParameters(Float64 Dset,Float64 wobble,Float64 friction);
+   virtual void GetTemporaryStrandPostTensionParameters(Float64* Dset,Float64* wobble,Float64* friction);
    virtual void UseGeneralLumpSumLosses(bool bLumpSum);
    virtual bool UseGeneralLumpSumLosses();
    virtual Float64 GetBeforeXferLosses();
@@ -719,11 +723,15 @@ private:
    Float64 m_AfterSIDLLosses;
    Float64 m_FinalLosses;
 
-   // Post-tensioning
-   Float64 m_Dset;
-   Float64 m_WobbleFriction;
-   Float64 m_FrictionCoefficient;
+   // Post-tension Tendon
+   Float64 m_Dset_PT;
+   Float64 m_WobbleFriction_PT;
+   Float64 m_FrictionCoefficient_PT;
 
+   // Post-tension Temporary Top Strand
+   Float64 m_Dset_TTS;
+   Float64 m_WobbleFriction_TTS;
+   Float64 m_FrictionCoefficient_TTS;
 
    // user defined loads
    typedef std::vector<CPointLoadData> PointLoadList;

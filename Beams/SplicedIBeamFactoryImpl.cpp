@@ -268,7 +268,7 @@ void CSplicedIBeamFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType s
       if ( bHasClosure[etStart] )
       {
          CClosureKey closureKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
-         E = pMaterial->GetClosurePourAgeAdjustedEc(closureKey,intervalIdx);
+         E = pMaterial->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
          D = pMaterial->GetSegmentWeightDensity(closureKey,intervalIdx);
          closureMaterial[etStart]->put_E(intervalIdx,E);
          closureMaterial[etStart]->put_Density(intervalIdx,D);
@@ -277,7 +277,7 @@ void CSplicedIBeamFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType s
       if ( bHasClosure[etEnd] )
       {
          CClosureKey closureKey(segmentKey);
-         E = pMaterial->GetClosurePourAgeAdjustedEc(closureKey,intervalIdx);
+         E = pMaterial->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
          D = pMaterial->GetSegmentWeightDensity(closureKey,intervalIdx);
          closureMaterial[etEnd]->put_E(intervalIdx,E);
          closureMaterial[etEnd]->put_Density(intervalIdx,D);
@@ -290,14 +290,14 @@ void CSplicedIBeamFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType s
 
    if ( bHasClosure[etStart] )
    {
-      segment->put_ClosurePourForegroundMaterial(etStart,closureMaterial[etStart]);
-      segment->put_ClosurePourBackgroundMaterial(etStart,NULL);
+      segment->put_ClosureJointForegroundMaterial(etStart,closureMaterial[etStart]);
+      segment->put_ClosureJointBackgroundMaterial(etStart,NULL);
    }
 
    if ( bHasClosure[etEnd] )
    {
-      segment->put_ClosurePourForegroundMaterial(etEnd,closureMaterial[etEnd]);
-      segment->put_ClosurePourBackgroundMaterial(etEnd,NULL);
+      segment->put_ClosureJointForegroundMaterial(etEnd,closureMaterial[etEnd]);
+      segment->put_ClosureJointBackgroundMaterial(etEnd,NULL);
    }
 
    ssmbr->AddSegment(segment);
@@ -323,6 +323,13 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
+   Float64 start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+   Float64 end_brg_offset   = pBridge->GetSegmentEndBearingOffset(segmentKey);
+   Float64 start_end_dist   = pBridge->GetSegmentStartEndDistance(segmentKey);
+   Float64 end_end_dist     = pBridge->GetSegmentEndEndDistance(segmentKey);
+
+   Float64 start_offset = start_brg_offset - start_end_dist; // dist from CL Pier/TS to face of beam
+   Float64 end_offset   = end_brg_offset - end_end_dist;
 
    //
    // POI at start and end of segment
@@ -367,6 +374,12 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       Float64 xLeft  = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
       Float64 xRight = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
 
+      if ( !IsZero(xLeft) )
+         xLeft -= start_offset;
+
+      if ( !IsZero(xRight) )
+         xRight -= end_offset;
+
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiStart );
 
@@ -375,8 +388,14 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    }
    else if ( variationType == pgsTypes::svtDoubleLinear || variationType == pgsTypes::svtDoubleParabolic )
    {
-      Float64 xLeft  = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
-      Float64 xRight = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
+      Float64 xLeft  = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);  // measured from CL Pier/TS
+      Float64 xRight = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic); // measured from CL Pier/TS
+
+      if ( !IsZero(xLeft) )
+         xLeft -= start_offset;
+
+      if ( !IsZero(xRight) )
+         xRight -= end_offset;
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiStart );
@@ -439,15 +458,15 @@ void CSplicedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    Float64 t1,t2;
    GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,w1,w2,w3,w4,t1,t2,c1);
 
-   Float64 width = min(t1,t2);
-   Float64 depth = d1 + d2 + d3 + d4 + d5 + d6 + d7;
+   Float64 width = Min(t1,t2);
+   Float64 height = d1 + d2 + d3 + d4 + d5 + d6 + d7;
 
    harp_rect->put_Width(width);
-   harp_rect->put_Height(depth);
+   harp_rect->put_Height(height);
 
    CComPtr<IPoint2d> hook;
    hook.CoCreateInstance(CLSID_Point2d);
-   hook->Move(0, depth/2.0);
+   hook->Move(0, height/2.0);
 
    harp_rect->putref_HookPoint(hook);
 
@@ -459,12 +478,12 @@ void CSplicedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     : depth-hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  : depth-hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    : depth-endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - height : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - height : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - height : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - height : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(height, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -1026,7 +1045,7 @@ void CSplicedIBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensio
    Float64 top_w = T1 + 2.0*(W1+W2);
    Float64 bot_w = T2 + 2.0*(W3+W4);
 
-   Float64 gw = max(top_w, bot_w);
+   Float64 gw = Max(top_w, bot_w);
 
 
    if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
@@ -1077,7 +1096,7 @@ Float64 CSplicedIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimen
    Float64 top = 2*(W1+W2) + T1;
    Float64 bot = 2*(W3+W4) + T2;
 
-   return max(top,bot);
+   return Max(top,bot);
 }
 
 bool CSplicedIBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
@@ -1089,6 +1108,11 @@ void CSplicedIBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dime
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
+}
+
+GirderIndexType CSplicedIBeamFactory::GetMinimumBeamCount()
+{
+   return 2;
 }
 
 // ISplicedBeamFactory

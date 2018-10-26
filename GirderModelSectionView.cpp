@@ -162,14 +162,16 @@ void CGirderModelSectionView::OnInitialUpdate()
    dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
    dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   CDisplayObjectFactory* factory = new CDisplayObjectFactory(pDoc);
-   IUnknown* unk = factory->GetInterface(&IID_iDisplayObjectFactory);
-   dispMgr->AddDisplayObjectFactory((iDisplayObjectFactory*)unk);
+   CDisplayObjectFactory* pFactory = new CDisplayObjectFactory(pDoc);
+   CComPtr<iDisplayObjectFactory> factory;
+   factory.Attach((iDisplayObjectFactory*)pFactory->GetInterface(&IID_iDisplayObjectFactory));
+   dispMgr->AddDisplayObjectFactory(factory);
 
    // set up default event handler for canvas
-   CGMDisplayMgrEventsImpl* events = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this, false);
-   unk = events->GetInterface(&IID_iDisplayMgrEvents);
-   dispMgr->RegisterEventSink((iDisplayMgrEvents*)unk);
+   CGMDisplayMgrEventsImpl* pEvents = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this, false);
+   CComPtr<iDisplayMgrEvents> events;
+   events.Attach((iDisplayMgrEvents*)pEvents->GetInterface(&IID_iDisplayMgrEvents));
+   dispMgr->RegisterEventSink(events);
 
    CSelection selection = pDoc->GetSelection();
    if ( selection.Type != CSelection::Girder )
@@ -295,7 +297,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,I
    doPnt->SetDrawingStrategy(strategy);
 
    // Get the shape in Girder Section Coordinates so that it is in the same coordinate system
-   // as the items internal to the section (strand, rebar, etc.)
+   // as the items internal to the section (strand, rebar, etc.) (0,0 is at top center of girder)
    CComPtr<IShape> shape;
    pShapes->GetSegmentShape(intervalIdx,poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,&shape);
    strategy->SetShape(shape);
@@ -467,13 +469,19 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSuperDocBase* pDoc,IBro
    const CGirderKey& girderKey(segmentKey);
 
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   Float64 Xg = pPoi->ConvertPoiToGirderPathCoordinate(poi);
+   Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
+
+#pragma Reminder("REVIEW: assuming tendon starts/ends at start/end face of girder")
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 Lg = pBridge->GetGirderLength(girderKey);
+   if ( Xg < 0 || Lg < Xg )
+      return; // poi is not within the extent of the tendon
 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      StrandIndexType nStrands = pTendonGeom->GetStrandCount(girderKey,ductIdx);
+      StrandIndexType nStrands = pTendonGeom->GetTendonStrandCount(girderKey,ductIdx);
       CString strStrands;
       strStrands.Format(_T("%d"),nStrands);
 
@@ -543,9 +551,20 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSuperDocBase* pDoc,IBroke
    ATLASSERT(pDL);
    pDL->Clear();
 
+   // nothing to draw if poi is in a closure joint
+   // (poi object won't necessarily have the POI_CLOSURE attribute so just check to see
+   // if it is beyond the end of the segment)
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 segment_length = pBridge->GetSegmentLength(poi.GetSegmentKey());
+   if ( segment_length < poi.GetDistFromStart() )
+      return;
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    EventIndexType eventIdx = m_pFrame->GetEvent();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
+   if ( intervalIdx < releaseIntervalIdx )
+      intervalIdx = releaseIntervalIdx;
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 nEff;
@@ -553,10 +572,11 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSuperDocBase* pDoc,IBroke
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    Float64 Yb = pSectProp->GetYb(intervalIdx,poi);
+   Float64 Hg = pSectProp->GetHg(intervalIdx,poi);
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(__uuidof(Point2d));
-   point->Move(0,Yb - ecc);
+   point->Move(0,Yb - (Hg+ecc));
 
    CComPtr<iPointDisplayObject> doPnt;
    ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
@@ -637,8 +657,11 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
 
       CComPtr<iDisplayObject> doCGPS;
       pCGList->GetDisplayObject(0,&doCGPS);
-      CComQIPtr<iConnectable> connectableCGPS(doCGPS);
-      connectableCGPS->GetSocket(SOCKET_CGPS, atByID, &socketCGPS);
+      if ( doCGPS )
+      {
+         CComQIPtr<iConnectable> connectableCGPS(doCGPS);
+         connectableCGPS->GetSocket(SOCKET_CGPS, atByID, &socketCGPS);
+      }
    }
 
    // get the connector interface from the dimension lines
@@ -674,7 +697,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    socketHT->Connect(endPlug,&dwCookie);
 
    // connect cg ps dimension line (bottom center to cg symbol)
-   if (settings & IDG_SV_SHOW_PS_CG)
+   if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS)
    {
       startPlug.Release();
       endPlug.Release();
@@ -693,16 +716,13 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
-   IntervalIndexType intervalIdx = max(pIntervals->GetInterval(m_pFrame->GetEvent()), pIntervals->GetPrestressReleaseInterval(segmentKey) );
+   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(m_pFrame->GetEvent()), pIntervals->GetPrestressReleaseInterval(segmentKey) );
 
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
 
    Float64 top_width    = (eventIdx <= castDeckEventIdx ? pGirder->GetTopWidth(poi) : pSectProp->GetTributaryFlangeWidth(poi));
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
    Float64 height       = pSectProp->GetHg(intervalIdx,poi);
-   Float64 nEff;
-   Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi,true, &nEff);
-   Float64 yps = pSectProp->GetYb(intervalIdx,poi) - ecc;
 
    CString strDim;
    CComPtr<iTextBlock> textBlock;
@@ -727,8 +747,12 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    textBlock->SetText(strDim);
    doDimLineHeight->SetTextBlock(textBlock);
 
-   if (settings & IDG_SV_SHOW_PS_CG)
+   if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS )
    {
+      Float64 nEff;
+      Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi,true, &nEff);
+      Float64 yps = pSectProp->GetYb(intervalIdx,poi) - ecc;
+
       textBlock.Release();
       textBlock.CoCreateInstance(CLSID_TextBlock);
       strDim = FormatDimension(yps,length_unit);
@@ -750,8 +774,10 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    pDL->AddDisplayObject(doDimLineBottomFlangeWidth);
    pDL->AddDisplayObject(doDimLineHeight);
 
-   if (settings & IDG_SV_SHOW_PS_CG)
+   if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS )
+   {
       pDL->AddDisplayObject(doDimLineCGPS);
+   }
 }
 
 void CGirderModelSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
@@ -890,8 +916,8 @@ void CGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
    rect.DeflateRect(5,5,5,5);
 
    CSize size = rect.Size();
-   size.cx = max(0,size.cx);
-   size.cy = max(0,size.cy);
+   size.cx = Max(0L,size.cx);
+   size.cy = Max(0L,size.cy);
 
    SetLogicalViewRect(MM_TEXT,rect);
 

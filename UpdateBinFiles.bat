@@ -21,6 +21,7 @@ copy /Y %REGFREECOM%\x64\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT\x64
 copy /Y TOGA.chm				%BINTARGET%\Extensions\TxDOT\
 copy /Y TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 copy /Y TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
+copy /Y TxDOTAgent\TogaTemplates\*.ico		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 
 REM - Image files
 copy /Y images\*.gif				%BINTARGET%\images\

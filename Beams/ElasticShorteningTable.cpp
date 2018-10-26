@@ -48,7 +48,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // create and configure the table
    ColumnIndexType numColumns = 10;
@@ -63,6 +63,10 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 
    if ( bIsPrismatic )
       numColumns -= 2;
+
+   lrfdElasticShortening::FcgpComputationMethod fcgpMethod = pDetails->pLosses->ElasticShortening().GetFcgpComputationMethod();
+   if (lrfdElasticShortening::fcgp07Fpu==fcgpMethod)
+      numColumns--;
 
    CElasticShorteningTable* table = new CElasticShorteningTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
@@ -79,7 +83,18 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Prestress loss due to Elastic Shortening [5.9.5.2.3a]") << rptNewLine;
+   if (lrfdElasticShortening::fcgpIterative==fcgpMethod)
+   {
+      *pParagraph << _T("Prestress loss due to Elastic Shortening [5.9.5.2.3a]") << rptNewLine;
+   }
+   else if (lrfdElasticShortening::fcgp07Fpu==fcgpMethod)
+   {
+      *pParagraph << _T("Prestress loss due to Elastic Shortening [TxDOT Research Report 0-6374-2]") << rptNewLine;
+   }
+   else
+   {
+      ATLASSERT(0); // new method?
+   }
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -87,15 +102,29 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   if ( spMode == pgsTypes::spmGross )
-      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpES_Gross.png")) << rptNewLine;
+   if (fcgpMethod == lrfdElasticShortening::fcgpIterative)
+   {
+      if ( spMode == pgsTypes::spmGross )
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpES_Gross.png")) << rptNewLine;
+      else
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpES_Transformed.png")) << rptNewLine;
+   }
    else
-      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpES_Transformed.png")) << rptNewLine;
+   {
+#pragma Reminder("UPDATE: gross/transformed section properties for TxDOT method")
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpES_TxDOTPerm.png")) << rptNewLine;
+      if ( bTemporaryStrands )
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpES_TxDOTTemp.png")) << rptNewLine;
+      }     
+   }
 
 
    table->mod_e.ShowUnitTag(true);
    table->area.ShowUnitTag(true);
    table->mom_inertia.ShowUnitTag(true);
+   table->stress.ShowUnitTag(true);
+   table->force.ShowUnitTag(true);
    if ( bIsPrismatic )
    {
       Float64 Ag, Ig;
@@ -124,16 +153,35 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       *pParagraph << Sub2(_T("E"),_T("p")) << _T(" = ") << table->mod_e.SetValue(Epp) << rptNewLine;
    }
    *pParagraph << Sub2(_T("E"),_T("ci")) << _T(" = ") << table->mod_e.SetValue(Eci) << rptNewLine;
+
+   if (fcgpMethod == lrfdElasticShortening::fcgp07Fpu)
+   {
+      Float64 Fpu = lrfdPsStrand::GetUltimateStrength( pDetails->pLosses->GetStrandGrade() );
+      Float64 Aps = pDetails->pLosses->GetApsPermanent();
+      Float64 P   = pDetails->pLosses->ElasticShortening().P();
+
+      *pParagraph << Sub2(_T("0.7 f"),_T("pu")) << Sub2(_T(" A"),_T("ps")) << _T(" = 0.7(") 
+                  << table->stress.SetValue(Fpu) << _T(")(") << table->area.SetValue(Aps) 
+                  <<  _T(") = ") << table->force.SetValue(-P) << rptNewLine;
+   }
+
    table->mod_e.ShowUnitTag(false);
    table->area.ShowUnitTag(false);
    table->mom_inertia.ShowUnitTag(false);
+   table->stress.ShowUnitTag(false);
+   table->force.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;
 
    ColumnIndexType col = 0;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR(_T("P"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+
+   if (fcgpMethod != lrfdElasticShortening::fcgp07Fpu)
+   {
+      (*table)(0,col++) << COLHDR(_T("P"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   }
+
 
    if ( !bIsPrismatic )
    {
@@ -337,7 +385,11 @@ void CElasticShorteningTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const
 
    const lrfdElasticShortening& es = pDetails->pLosses->ElasticShortening();
 
-   (*this)(row+rowOffset,col++) << force.SetValue( -es.P() );
+   if (es.GetFcgpComputationMethod() != lrfdElasticShortening::fcgp07Fpu)
+   {
+      (*this)(row+rowOffset,col++) << force.SetValue( -es.P() );
+   }
+
 
    if ( !m_bIsPrismatic )
    {
