@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -477,7 +477,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    Float64 mbrDepth = pGirder->GetHeight(poi);
 
    GET_IFACE(IPrestressForce,pPrestressForce);
-   Float64 fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad);
+   Float64 fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad,pgsTypes::ServiceIII);
 
    GET_IFACE(IMomentCapacity,pMomCap);
    MOMENTCAPACITYDETAILS mcd;
@@ -528,7 +528,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    Float64 mbrDepth = pGirder->GetHeight(poi);
 
    GET_IFACE(IPrestressForce,pPrestressForce);
-   Float64 fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,config,pgsTypes::AfterLosses);
+   Float64 fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad,pgsTypes::ServiceIII,config);
 
    GET_IFACE(IMomentCapacity,pMomCap);
    MOMENTCAPACITYDETAILS mcd;
@@ -678,7 +678,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(SpanIndexType span,GirderIndexType gdr)
       // that we are using a point on the sloped section of the strands
       poi.SetDistFromStart( poi.GetDistFromStart() - 0.01 );
 
-      Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,pgsTypes::Jacking);
+      Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,pgsTypes::Jacking,pgsTypes::ServiceI);
 
       // Adjust for slope
       Float64 slope = pStrandGeom->GetAvgStrandSlope( poi );
@@ -711,7 +711,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(SpanIndexType span,GirderIndexType gdr,c
       // that we are using a point on the sloped section of the strands
       poi.SetDistFromStart( poi.GetDistFromStart() - 0.01 );
 
-      Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,pgsTypes::Jacking,config);
+      Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,pgsTypes::Jacking,pgsTypes::ServiceI,config);
 
       // Adjust for slope
       GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -743,7 +743,8 @@ void pgsPsForceEng::MakeAssignment(const pgsPsForceEng& rOther)
 
 Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
                                          pgsTypes::StrandType strandType,
-                                         pgsTypes::LossStage stage)
+                                         pgsTypes::LossStage stage,
+                                         pgsTypes::LimitState limitState)
 {
    ////////////////////////////////////////////////////////////////////////////////
    //******************************************************************************
@@ -766,7 +767,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
    CHECK(pstrand!=0);
    
    // Get the strand stress
-   Float64 fps = GetStrandStress(poi,strandType,stage); // ( accounts for losses and adjusts for lack of development length)
+   Float64 fps = GetStrandStress(poi,strandType,stage,limitState); // ( accounts for losses and adjusts for lack of development length)
 
    pgsTypes::TTSUsage tempStrandUsage = pgirderData->PrestressData.TempStrandUsage;
 
@@ -809,6 +810,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
 Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
                                          pgsTypes::StrandType strandType,
                                          pgsTypes::LossStage stage,
+                                         pgsTypes::LimitState limitState,
                                          const GDRCONFIG& config)
 {
    ////////////////////////////////////////////////////////////////////////////////
@@ -830,7 +832,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
    CHECK(pstrand!=0);
    
    // Get the strand stress
-   Float64 fps = GetStrandStress(poi,strandType,stage,config); // ( accounts for losses and transfer length adjustment)
+   Float64 fps = GetStrandStress(poi,strandType,stage,limitState,config); // ( accounts for losses and transfer length adjustment)
 
    if ( strandType == pgsTypes::Temporary )
    {
@@ -868,14 +870,14 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
    return Fps;
 }
 
-Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage)
+Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage,pgsTypes::LimitState limitState)
 {
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
-   return GetStrandStress(poi,strandType,stage,config);
+   return GetStrandStress(poi,strandType,stage,limitState,config);
 }
 
-Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage,const GDRCONFIG& config)
+Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
@@ -981,7 +983,7 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
       break;
 
    case pgsTypes::AfterLossesWithLiveLoad:
-      loss = pLosses->GetFinalWithLiveLoad(poi,strandType,config);
+      loss = pLosses->GetFinalWithLiveLoad(poi,strandType,limitState,config);
       // Final losses are relative to stress immedately before transfer (LRFD 5.9.5.1)
       break;
 

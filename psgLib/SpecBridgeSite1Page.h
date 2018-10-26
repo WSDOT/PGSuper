@@ -47,6 +47,9 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+public:
+   afx_msg void OnBnClickedEvaluateTemporaryStresses();
+   afx_msg void OnCheckBottomFlangeClearance();
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2494,6 +2494,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    GET_IFACE( IBridgeDescription,pIBridgeDesc);
    GET_IFACE( ILibrary,         pLibrary);
    GET_IFACE( ILoadFactors,     pILoadFactors );
+   GET_IFACE( IGirder,          pGirder);
 
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
@@ -2640,9 +2641,12 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    if ( m_bComputingLossesForDesign )
    {
-      // get the additional moment caused by the difference in input and design _T("A") dimension
-      Float64 M = pProdForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
-      *pMadlg += K_slabpad*M;
+      // get the additional moment caused by the difference in input and design "A" dimension
+      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+      *pMadlg += K_slab*Mslab;
+
+      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+      *pMadlg += K_slabpad*Mslabpad;
    }
 
    Float64 K_railing = pSpecEntry->GetRailingSystemElasticGain();
@@ -2662,10 +2666,14 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
                 K_userdc2 *  pProdForces->GetMoment( pgsTypes::BridgeSite2, pftUserDC,         poi, bat ) +
                 K_userdw2 *  pProdForces->GetMoment( pgsTypes::BridgeSite2, pftUserDW,         poi, bat );
 
-      // only include overlay load if it is not a future overlay
-      if ( !pBridge->IsFutureOverlay() )
+      // include the overlay dead load. even future overlays contribute dead load and creep effects
+      // from the time it is installed until final. we don't know when "future" is and it is conservative
+      // to assume it is applied at a time when it contributes to the creep loss.
+      // See PCI BDM Example 9.1a that supports this approach
+      if ( pBridge->HasOverlay() )
       {
-         *pMsidl += K_overlay*pProdForces->GetMoment( pgsTypes::BridgeSite2, pftOverlay, poi, bat );
+         pgsTypes::Stage overlayStage = (pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2);
+         *pMsidl += K_overlay*pProdForces->GetMoment( overlayStage, pftOverlay, poi, bat );
       }
 
       
@@ -2688,8 +2696,15 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *ptf = pSpecEntry->GetTotalCreepDuration();
 
    *pAslab = pSectProp2->GetTributaryDeckArea(poi);
-   *pPslab = pSectProp2->GetTributaryFlangeWidth(poi);
-   // *NOTE* Only the top portion of the slab is exposed to drying
+
+   Float64 wTop = 0;
+   FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(span,gdr);
+   for ( FlangeIndexType flangeIdx = 0; flangeIdx < nFlanges; flangeIdx++ )
+   {
+      Float64 wtf = pGirder->GetTopFlangeWidth(poi,flangeIdx);
+      wTop += wtf;
+   }
+   *pPslab = 2*pSectProp2->GetTributaryFlangeWidth(poi) - wTop;
 
    // Update the data members of the loss calculation object.  It will take care of the rest
    switch (config.PrestressConfig.TempStrandUsage)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -59,7 +59,7 @@ void CGirderDebondCriteriaPage::DoDataExchange(CDataExchange* pDX)
 
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    // dad is a friend of the entry. use him to transfer data.
-   pDad->ExchangeDebondCriteriaData(pDX);
+   pDad->ExchangeFlexuralCriteriaData(pDX);
 
    if ( !pDX->m_bSaveAndValidate )
    {
@@ -74,6 +74,9 @@ BEGIN_MESSAGE_MAP(CGirderDebondCriteriaPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_MAX_LENGTH_FRACTION, OnCheckMaxLengthFraction)
 	ON_BN_CLICKED(IDC_CHECK_MAX_LENGTH, OnCheckMaxLength)
 	//}}AFX_MSG_MAP
+   ON_BN_CLICKED(IDC_STRAIGHT_DESIGN_CHECK, &CGirderDebondCriteriaPage::OnBnClickedStraightDesignCheck)
+   ON_BN_CLICKED(IDC_DEBOND_DESIGN_CHECK, &CGirderDebondCriteriaPage::OnBnClickedDebondDesignCheck)
+   ON_BN_CLICKED(IDC_HARPED_DESIGN_CHECK, &CGirderDebondCriteriaPage::OnBnClickedHarpedDesignCheck)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -85,6 +88,12 @@ LRESULT CGirderDebondCriteriaPage::OnCommandHelp(WPARAM, LPARAM lParam)
 }
 
 void CGirderDebondCriteriaPage::UpdateCheckBoxes()
+{
+   UpdateDebondCheckBoxes();
+   UpdateDesignCheckBoxes();
+}
+
+void CGirderDebondCriteriaPage::UpdateDebondCheckBoxes()
 {
    CButton* pbox = (CButton*)GetDlgItem(IDC_CHECK_MAX_LENGTH_FRACTION);
    ASSERT(pbox);
@@ -103,6 +112,57 @@ void CGirderDebondCriteriaPage::UpdateCheckBoxes()
    pedit->EnableWindow(is_check);
 }
 
+void CGirderDebondCriteriaPage::UpdateDesignCheckBoxes()
+{
+   CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
+   BOOL can_straight = pDad->CanDoAllStraightDesign() ? TRUE:FALSE;
+   BOOL can_harp     = pDad->CanHarpStrands() ? TRUE:FALSE;
+   BOOL can_debond   = pDad->CanDebondStrands() ? TRUE:FALSE;
+
+   int straightCtrls[] = {IDC_STRAIGHT_DESIGN_CHECK,IDC_STRAIGHT_FCI,IDC_STRAIGHT_FC,IDC_STRAIGHT_UNITS,IDC_STRAIGHT_RAISE_CHECK, NULL};
+   int debondCtrls[]   = {IDC_DEBOND_DESIGN_CHECK,IDC_DEBOND_FCI,IDC_DEBOND_FC,IDC_DEBOND_UNITS,IDC_DEBOND_RAISE_CHECK, NULL};
+   int harpedCtrls[]   = {IDC_HARPED_DESIGN_CHECK,IDC_HARPED_FCI,IDC_HARPED_FC,IDC_HARPED_UNITS, NULL};
+
+   // All straight design if possible
+   EnableCtrls(straightCtrls, can_straight);
+   if (can_straight)
+   {
+      CButton* pbox = (CButton*)GetDlgItem(IDC_STRAIGHT_DESIGN_CHECK);
+      bool is_check = pbox->GetCheck()!=0 ? TRUE:FALSE;
+      EnableCtrls(straightCtrls+1, is_check);
+   }
+
+   // enable debond and harp controls only if strands are available
+   EnableCtrls(debondCtrls, can_debond);
+   if (can_debond)
+   {
+      CButton* pbox = (CButton*)GetDlgItem(IDC_DEBOND_DESIGN_CHECK);
+      bool is_check = pbox->GetCheck()!=0 ? TRUE:FALSE;
+
+      EnableCtrls(debondCtrls+1, is_check);
+   }
+
+   EnableCtrls(harpedCtrls, can_harp);
+   if (can_harp)
+   {
+      CButton* pbox = (CButton*)GetDlgItem(IDC_HARPED_DESIGN_CHECK);
+      bool is_check = pbox->GetCheck()!=0 ? TRUE:FALSE;
+
+      EnableCtrls(harpedCtrls+1, is_check);
+   }
+}
+
+void CGirderDebondCriteriaPage::EnableCtrls(int* ctrlIDs, BOOL enable)
+{
+   while(*ctrlIDs!=NULL)
+   {
+      CWnd* pedit = GetDlgItem(*ctrlIDs);
+      pedit->EnableWindow(enable);
+
+      ctrlIDs++;
+   }
+}
+
 void CGirderDebondCriteriaPage::OnCheckMaxLengthFraction() 
 {
 	UpdateCheckBoxes();
@@ -111,4 +171,19 @@ void CGirderDebondCriteriaPage::OnCheckMaxLengthFraction()
 void CGirderDebondCriteriaPage::OnCheckMaxLength() 
 {
 	UpdateCheckBoxes();
+}
+
+void CGirderDebondCriteriaPage::OnBnClickedStraightDesignCheck()
+{
+   UpdateDesignCheckBoxes();
+}
+
+void CGirderDebondCriteriaPage::OnBnClickedDebondDesignCheck()
+{
+   UpdateDesignCheckBoxes();
+}
+
+void CGirderDebondCriteriaPage::OnBnClickedHarpedDesignCheck()
+{
+   UpdateDesignCheckBoxes();
 }

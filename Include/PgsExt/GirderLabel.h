@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,8 @@
 #define LABEL_STIRRUP_ZONE(_z_) (ZoneIndexType)(_z_ + 1)
 
 // Return string describing type of harped strands
-inline LPCTSTR LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Straight-Web") : _T("Harped"); }
+inline LPCTSTR LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Adjustable Straight") : _T("Harped"); }
+inline LPCTSTR ABR_LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Adj. Straight") : _T("Harped"); }
 
 class PGSEXTCLASS pgsGirderLabel
 {

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -267,8 +267,8 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    Float64 neff;
    Float64 e = pStrandGeometry->GetEccentricity( poi, config.PrestressConfig, false, &neff);
 
-   Float64 P = pPsForce->GetHorizHarpedStrandForce(poi, config, pgsTypes::AfterLosses)
-             + pPsForce->GetPrestressForce(poi,config,pgsTypes::Straight,pgsTypes::AfterLosses);
+   Float64 P = pPsForce->GetHorizHarpedStrandForce(poi, pgsTypes::AfterLosses,pgsTypes::ServiceI, config)
+             + pPsForce->GetPrestressForce(poi,pgsTypes::Straight,pgsTypes::AfterLosses,pgsTypes::ServiceI,config);
 
    // girder only props
    Float64 Ybg = pSectProp2->GetYb(pgsTypes::BridgeSite1,poi);
@@ -567,11 +567,11 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
    // vertical component of prestress force
    if (pConfig!=NULL)
    {
-      pscd->Vp = pPsForce->GetVertHarpedStrandForce(poi,*pConfig,pgsTypes::AfterLosses);
+      pscd->Vp = pPsForce->GetVertHarpedStrandForce(poi,pgsTypes::AfterLosses,pgsTypes::ServiceI,*pConfig);
    }
    else
    {
-      pscd->Vp = pPsForce->GetVertHarpedStrandForce(poi,pgsTypes::AfterLosses);
+      pscd->Vp = pPsForce->GetVertHarpedStrandForce(poi,pgsTypes::AfterLosses,pgsTypes::ServiceI);
    }
 
    MOMENTCAPACITYDETAILS capdet;
@@ -631,12 +631,12 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
    if (pConfig!=NULL)
    {
       pscd->fpc = pShearCapacity->GetFpc(poi, *pConfig);
-      pscd->fpe = pPsForce->GetStrandStress(poi,pgsTypes::Permanent,*pConfig,pgsTypes::AfterLosses);
+      pscd->fpe = pPsForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI,*pConfig);
    }
    else
    {
       pscd->fpc = pShearCapacity->GetFpc(poi);
-      pscd->fpe = pPsForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
+      pscd->fpe = pPsForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI);
    }
 
    // prestress area - factor for development length

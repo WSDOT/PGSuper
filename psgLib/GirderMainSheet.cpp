@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 #include "..\htmlhelp\HelpTopics.hh"
 
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <Lrfd\RebarPool.h>
 
@@ -302,26 +303,35 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
    DDV_UnitValueZeroOrMore(pDX, IDC_END_USL,m_Entry.m_EndAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
    DDX_CBIndex(pDX,IDC_COMBO_END_USL, (int&)m_Entry.m_EndAdjustment.m_TopFace);
 
+   DDX_Check_Bool(pDX,IDC_ALLOW_STR_ADJUST, m_Entry.m_StraightAdjustment.m_AllowVertAdjustment );
+   DDX_UnitValueAndTag(pDX, IDC_STR_LSL, IDC_STR_LSL_T, m_Entry.m_StraightAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_STR_LSL,m_Entry.m_StraightAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
+   DDX_CBIndex(pDX,IDC_COMBO_STR_LSL, (int&)m_Entry.m_StraightAdjustment.m_BottomFace);
+   DDX_UnitValueAndTag(pDX, IDC_STR_USL, IDC_STR_USL_T, m_Entry.m_StraightAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_STR_USL,m_Entry.m_StraightAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
+   DDX_CBIndex(pDX,IDC_COMBO_STR_USL, (int&)m_Entry.m_StraightAdjustment.m_TopFace);
+   
+
    DDX_Check_Bool(pDX,IDC_ODD_STRANDS, m_Entry.m_bOddNumberOfHarpedStrands );
    DDX_Check_Bool(pDX,IDC_USE_DIFF_GRID, m_Entry.m_bUseDifferentHarpedGridAtEnds);
 
    int idx;
    if (!pDX->m_bSaveAndValidate)
    {
-      idx = m_Entry.IsForceHarpedStrandsStraight() ? 1 : 0;
+      idx = m_Entry.GetAdjustableStrandType();
    }
 
    DDX_CBIndex(pDX,IDC_WEB_STRAND_TYPE_COMBO, idx);
 
    if (pDX->m_bSaveAndValidate)
    {
-      bool do_force_straight = idx!=0;
-      m_Entry.ForceHarpedStrandsStraight(do_force_straight);
+      pgsTypes::AdjustableStrandType as_type = (pgsTypes::AdjustableStrandType)idx;
+      m_Entry.SetAdjustableStrandType(as_type);
 
-      if(do_force_straight)
+      // Different grid at ends option is only available for pure harped strands
+      if(as_type != pgsTypes::asHarped)
       {
-         // set adjustment limits for end same as hp
-         m_Entry.m_EndAdjustment = m_Entry.m_HPAdjustment;
+         m_Entry.m_bUseDifferentHarpedGridAtEnds = false;
       }
    }
 
@@ -361,7 +371,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
 
             m_Entry.m_PermanentStrands.push_back(GirderLibraryEntry::PermanentStrand(GirderLibraryEntry::stStraight, num_straight++));
          }
-         else if (entry.m_Type == GirderLibraryEntry::stHarped)
+         else if (entry.m_Type == GirderLibraryEntry::stAdjustable)
          {
             // harped at HP
             Float64 x = ::ConvertToSysUnits(entry.m_X, pDisplayUnits->ComponentDim.UnitOfMeasure );
@@ -384,7 +394,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
             
             m_Entry.m_HarpedStrands.push_back(GirderLibraryEntry::HarpedStrandLocation(start_x,start_y,x,y,end_x,end_y));
 
-            m_Entry.m_PermanentStrands.push_back(GirderLibraryEntry::PermanentStrand(GirderLibraryEntry::stHarped, num_harped++));
+            m_Entry.m_PermanentStrands.push_back(GirderLibraryEntry::PermanentStrand(GirderLibraryEntry::stAdjustable, num_harped++));
          }
          else
             ATLASSERT(0);
@@ -418,7 +428,7 @@ void CGirderMainSheet::UploadStrandData()
          x = start_x;
          y = start_y;
       }
-      else if (strand_type == GirderLibraryEntry::stHarped)
+      else if (strand_type == GirderLibraryEntry::stAdjustable)
       {
          m_Entry.GetHarpedStrandCoordinates(strand_idx, &start_x, &start_y, &x, &y, &end_x, &end_y);
       }
@@ -543,6 +553,15 @@ void CGirderMainSheet::ExchangeHarpPointData(CDataExchange* pDX)
    DDV_UnitValueZeroOrMore(pDX, IDC_MIN_HP,m_Entry.m_MinHarpingPointLocation, pDisplayUnits->SpanLength );
 }
 
+void CGirderMainSheet::ExchangeFlexuralCriteriaData(CDataExchange* pDX)
+{
+   // debonding limits
+   ExchangeDebondCriteriaData(pDX);
+
+   // automated design strategies
+   ExchangeFlexuralDesignStrategyCriteriaData(pDX);
+}
+
 void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
@@ -610,6 +629,156 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
       }
    }
 }
+
+void CGirderMainSheet::ExchangeFlexuralDesignStrategyCriteriaData(CDataExchange* pDX)
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   DDX_Tag(pDX, IDC_STRAIGHT_UNITS, pDisplayUnits->Stress);
+   DDX_Tag(pDX, IDC_DEBOND_UNITS, pDisplayUnits->Stress);
+   DDX_Tag(pDX, IDC_HARPED_UNITS, pDisplayUnits->Stress);
+
+   if ( !pDX->m_bSaveAndValidate )
+   {
+      GirderLibraryEntry::PrestressDesignStrategyIterator it=m_Entry.m_PrestressDesignStrategies.begin();
+      while (it!=m_Entry.m_PrestressDesignStrategies.end())
+      {
+         GirderLibraryEntry::PrestressDesignStrategy& rstrat = *it;
+
+         if ( dtDesignFullyBonded       == it->m_FlexuralDesignType ||
+                   dtDesignFullyBondedRaised == it->m_FlexuralDesignType)
+         {
+            BOOL bval = TRUE;
+            DDX_Check(pDX, IDC_STRAIGHT_DESIGN_CHECK, bval);
+
+            DDX_UnitValue(pDX, IDC_STRAIGHT_FCI, rstrat.m_MaxFci, pDisplayUnits->Stress );
+            DDX_UnitValue(pDX, IDC_STRAIGHT_FC, rstrat.m_MaxFc, pDisplayUnits->Stress );
+
+            bval = dtDesignFullyBondedRaised==it->m_FlexuralDesignType ? TRUE:FALSE;
+            DDX_Check(pDX, IDC_STRAIGHT_RAISE_CHECK, bval);
+         }
+         else if ( dtDesignForDebonding       == it->m_FlexuralDesignType || 
+                   dtDesignForDebondingRaised == it->m_FlexuralDesignType)
+         {
+            BOOL bval = TRUE;
+            DDX_Check(pDX, IDC_DEBOND_DESIGN_CHECK, bval);
+
+            DDX_UnitValue(pDX, IDC_DEBOND_FCI, rstrat.m_MaxFci, pDisplayUnits->Stress );
+            DDX_UnitValue(pDX, IDC_DEBOND_FC, rstrat.m_MaxFc, pDisplayUnits->Stress );
+
+            bval = dtDesignForDebondingRaised==it->m_FlexuralDesignType ? TRUE:FALSE;
+            DDX_Check(pDX, IDC_DEBOND_RAISE_CHECK, bval);
+         }
+         else if (dtDesignForHarping == rstrat.m_FlexuralDesignType)
+         {
+            BOOL bval = TRUE;
+            DDX_Check(pDX, IDC_HARPED_DESIGN_CHECK, bval);
+
+            DDX_UnitValue(pDX, IDC_HARPED_FCI, rstrat.m_MaxFci, pDisplayUnits->Stress );
+            DDX_UnitValue(pDX, IDC_HARPED_FC,  rstrat.m_MaxFc, pDisplayUnits->Stress );
+         }
+         else
+         {
+            ATLASSERT(0); // new strategy?
+         }
+
+         it++;
+      }
+   }
+   else
+   {
+      // Hard coded min design values. 
+      bool is_si = eafTypes::umSI == pApp->GetUnitsMode();
+
+      Float64 minfci = is_si ? ::ConvertToSysUnits(28.0,unitMeasure::MPa) :
+                               ::ConvertToSysUnits( 4.0,unitMeasure::KSI); // minimum per LRFD 5.4.2.1
+
+      Float64 minfc =  is_si ? ::ConvertToSysUnits(34.5,unitMeasure::MPa) :
+                               ::ConvertToSysUnits( 5.0,unitMeasure::KSI); // agreed by wsdot and txdot
+
+      m_Entry.m_PrestressDesignStrategies.clear();
+
+      bool can_straight = CanDoAllStraightDesign();
+      bool can_harp = CanHarpStrands();
+      bool can_debond = CanDebondStrands();
+
+      BOOL bval;
+      DDX_Check(pDX, IDC_STRAIGHT_DESIGN_CHECK, bval);
+
+      // all straight bonded
+      if(bval!=FALSE && can_straight)
+      {
+         GirderLibraryEntry::PrestressDesignStrategy strat;
+
+         DDX_Check(pDX, IDC_STRAIGHT_RAISE_CHECK, bval);
+
+         strat.m_FlexuralDesignType = (bval!=FALSE) ? dtDesignFullyBondedRaised : dtDesignFullyBonded;
+
+         DDX_UnitValueAndTag(pDX, IDC_STRAIGHT_FCI, IDC_STRAIGHT_UNITS, strat.m_MaxFci, pDisplayUnits->Stress );
+         DDV_UnitValueLimitOrMore(pDX, IDC_STRAIGHT_FCI, strat.m_MaxFci, minfci, pDisplayUnits->Stress);
+         DDX_UnitValueAndTag(pDX, IDC_STRAIGHT_FC, IDC_STRAIGHT_UNITS, strat.m_MaxFc, pDisplayUnits->Stress );
+         DDV_UnitValueLimitOrMore(pDX, IDC_STRAIGHT_FC, strat.m_MaxFc, minfc, pDisplayUnits->Stress);
+
+         if (strat.m_MaxFc < strat.m_MaxFci)
+         {
+            ::AfxMessageBox(_T("Final Strength must be greater or equal to Release Strength"),MB_OK|MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+
+         m_Entry.m_PrestressDesignStrategies.push_back(strat);
+      }
+
+      // debonded
+      DDX_Check(pDX, IDC_DEBOND_DESIGN_CHECK, bval);
+
+      if(bval!=FALSE && can_debond)
+      {
+         GirderLibraryEntry::PrestressDesignStrategy strat;
+
+         DDX_Check(pDX, IDC_DEBOND_RAISE_CHECK, bval);
+
+         strat.m_FlexuralDesignType = (bval!=FALSE) ? dtDesignForDebondingRaised : dtDesignForDebonding;
+
+         DDX_UnitValueAndTag(pDX, IDC_DEBOND_FCI, IDC_DEBOND_UNITS, strat.m_MaxFci, pDisplayUnits->Stress );
+         DDV_UnitValueLimitOrMore(pDX, IDC_DEBOND_FCI, strat.m_MaxFci, minfci, pDisplayUnits->Stress);
+         DDX_UnitValueAndTag(pDX, IDC_DEBOND_FC, IDC_DEBOND_UNITS, strat.m_MaxFc, pDisplayUnits->Stress );
+         DDV_UnitValueLimitOrMore(pDX, IDC_DEBOND_FC, strat.m_MaxFc, minfc, pDisplayUnits->Stress);
+
+         if (strat.m_MaxFc < strat.m_MaxFci)
+         {
+            ::AfxMessageBox(_T("Final Strength must be greater or equal to Release Strength"),MB_OK|MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+
+         m_Entry.m_PrestressDesignStrategies.push_back(strat);
+      }
+
+      // harped
+      DDX_Check(pDX, IDC_HARPED_DESIGN_CHECK, bval);
+
+      if(bval!=FALSE && can_harp)
+      {
+         GirderLibraryEntry::PrestressDesignStrategy strat;
+
+         strat.m_FlexuralDesignType = dtDesignForHarping;
+
+         DDX_UnitValueAndTag(pDX, IDC_HARPED_FCI, IDC_HARPED_UNITS, strat.m_MaxFci, pDisplayUnits->Stress );
+         DDV_UnitValueLimitOrMore(pDX, IDC_HARPED_FCI, strat.m_MaxFci, minfci, pDisplayUnits->Stress);
+         DDX_UnitValueAndTag(pDX, IDC_HARPED_FC, IDC_HARPED_UNITS, strat.m_MaxFc, pDisplayUnits->Stress );
+         DDV_UnitValueLimitOrMore(pDX, IDC_HARPED_FC, strat.m_MaxFc, minfc, pDisplayUnits->Stress);
+
+         if (strat.m_MaxFc < strat.m_MaxFci)
+         {
+            ::AfxMessageBox(_T("Final Strength must be greater or equal to Release Strength"),MB_OK|MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+
+         m_Entry.m_PrestressDesignStrategies.push_back(strat);
+      }
+   }
+}
+
 
 void CGirderMainSheet::UploadShearDesignData(CDataExchange* pDX)
 {
@@ -761,4 +930,45 @@ void CGirderMainSheet::MiscOnAbsolute()
 
    CDataExchange dx(&m_HarpPointPage,FALSE);
    DDX_Tag(&dx, IDC_HARP_LOCATION_TAG, pDisplayUnits->SpanLength );
+}
+
+bool CGirderMainSheet::CanHarpStrands() const
+{
+   if (pgsTypes::asStraight == m_Entry.GetAdjustableStrandType())
+   {
+      return false;
+   }
+   else
+   {
+      return m_Entry.GetNumHarpedStrandCoordinates() > 0;
+   }
+}
+
+bool CGirderMainSheet::CanDebondStrands() const
+{
+   if (pgsTypes::asHarped == m_Entry.GetAdjustableStrandType())
+   {
+      return false;
+   }
+   else
+   {
+      return m_Entry.CanDebondStraightStrands();
+   }
+}
+
+bool CGirderMainSheet::CanDoAllStraightDesign() const
+{
+   // Only time we can't do straight design is if non-parallel harped strands exist
+   if (m_Entry.GetNumHarpedStrandCoordinates() == 0)
+   {
+      return true;
+   }
+   else if (pgsTypes::asHarped == m_Entry.GetAdjustableStrandType() && m_Entry.IsDifferentHarpedGridAtEndsUsed() )
+   {
+      return false;
+   }
+   else
+   {
+      return true;
+   }
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -121,12 +121,13 @@ protected:
    void InitHarpStrandOffsetMeasureComboBox(CComboBox* pCB);
 
    void HideControls(int key, int numPermStrandsType);
-   void HideEndOffsetControls(BOOL hide);
-   void HideHpOffsetControls(BOOL hide);
-   void DisappearHpOffsetControls();
+   void DisableEndOffsetControls(BOOL disable);
+   void ShowEndOffsetControls(BOOL show);
+   void DisableHpOffsetControls(BOOL disable);
+   void ShowHpOffsetControls(BOOL show);
    void ShowHideNumStrandControls(int numPermStrandsType);
    void UpdateStrandControls();
-
+   void UpdateAdjustableStrandControls();
 
    StrandIndexType StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
    StrandIndexType PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd );
@@ -137,7 +138,7 @@ protected:
    bool m_AllowHpAdjustment;
    bool m_AllowEndAdjustment;
 
-   bool m_bAreHarpedStrandsForcedStraight;
+   pgsTypes::AdjustableStrandType m_LibraryAdjustableStrandType; // in girder library
    int m_CurrNumPermStrandsType; 
 
    void UpdateStrandList(UINT nIDC);
@@ -147,6 +148,7 @@ public:
 
    ConfigStrandFillVector ComputeStraightStrandFillVector(StrandIndexType Ns);
    ConfigStrandFillVector ComputeHarpedStrandFillVector();
+   afx_msg void OnCbnSelchangeAdjustableCombo();
 };
 
 //{{AFX_INSERT_LOCATION}}

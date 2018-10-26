@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -107,6 +107,13 @@ interface IAllowableConcreteStress : IUnknown
    virtual Float64 GetFinalAllowableTensileStress(pgsTypes::Stage stage, Float64 fc)=0;
 
    virtual Float64 GetCastingYardAllowableTensionStressCoefficientWithRebar() = 0;
+
+   // returns true if the girder stress checks are to include intermediate, temporary
+   // loading conditions
+   virtual bool CheckTemporaryStresses() = 0;
+
+   // returns true if tension stresses due to final dead load are to be evaluated
+   virtual bool CheckFinalDeadLoadTensionStress() = 0;
 };
 
 

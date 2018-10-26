@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2322,6 +2322,9 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<SpanGirderHashType>& girderLi
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    GET_IFACE(ISpecification,pSpecification);
    GET_IFACE(IArtifact,pIArtifact);
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    std::vector<const pgsDesignArtifact*> pArtifacts;
 
@@ -2345,18 +2348,34 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<SpanGirderHashType>& girderLi
          GirderIndexType gdr;
          UnhashSpanGirder(*it, &span, &gdr);
 
-         arDesignOptions des_options = pSpecification->GetDesignOptions(span,gdr);
-         des_options.doDesignSlabOffset = doDesignADim;
-         des_options.doDesignStirrupLayout = IsDesignStirrupsFromScratchEnabled() ?  slLayoutStirrups : slRetainExistingLayout;
-
-         if(!this->IsDesignFlexureEnabled())
+         // For each girder we can have multiple design strategies,
+         // but only one strategy is needed if we are designing for shear only
+         std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(span,gdr);
+         if(!this->IsDesignFlexureEnabled() && des_options_coll.size() > 1)
          {
-            des_options.doDesignForFlexure = dtNoDesign;
+            arDesignOptions tmp_opt = des_options_coll.front();
+            des_options_coll.clear();
+            des_options_coll.push_back(tmp_opt);  // remove all but one option
          }
 
-         des_options.doDesignForShear = this->IsDesignShearEnabled();
+         // We must doctor options for selections from dialog
+         for(std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it!=des_options_coll.end(); it++)
+         {
+            arDesignOptions& des_options = *it;
 
-         const pgsDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( span, gdr, des_options);
+            des_options.doDesignSlabOffset = doDesignADim;
+            des_options.doDesignStirrupLayout = IsDesignStirrupsFromScratchEnabled() ?  slLayoutStirrups : slRetainExistingLayout;
+
+            if(!this->IsDesignFlexureEnabled())
+            {
+               des_options.doDesignForFlexure = dtNoDesign;
+            }
+
+            des_options.doDesignForShear = this->IsDesignShearEnabled();
+         }
+
+         // Design the girder
+         const pgsDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( span, gdr, des_options_coll);
 
          pProgress->Increment();
 

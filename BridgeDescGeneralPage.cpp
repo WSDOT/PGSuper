@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1136,15 +1136,15 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    if ( m_Deck.DeckType == pgsTypes::sdtCompositeCIP || m_Deck.DeckType == pgsTypes::sdtCompositeOverlay )
    {
-      Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
-      if ( maxSlabOffset < m_Deck.GrossDepth )
-         m_Deck.GrossDepth = maxSlabOffset;
+      Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      if ( minSlabOffset < m_Deck.GrossDepth + m_Deck.Fillet )
+         m_Deck.GrossDepth = minSlabOffset - m_Deck.Fillet;
    }
    else if ( m_Deck.DeckType == pgsTypes::sdtCompositeSIP )
    {
-      Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
-      if ( maxSlabOffset < m_Deck.GrossDepth + m_Deck.PanelDepth )
-         m_Deck.GrossDepth = maxSlabOffset - m_Deck.PanelDepth; // decrease the cast depth
+      Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      if ( minSlabOffset < m_Deck.GrossDepth + m_Deck.PanelDepth + m_Deck.Fillet )
+         m_Deck.GrossDepth = minSlabOffset - m_Deck.PanelDepth - m_Deck.Fillet; // decrease the cast depth
    }
 
    UpdateBridgeDescription();

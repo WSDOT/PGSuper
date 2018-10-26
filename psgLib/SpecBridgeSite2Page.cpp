@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,6 +68,7 @@ BEGIN_MESSAGE_MAP(CSpecBridgeSite2Page, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecBridgeSite2Page)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 	//}}AFX_MSG_MAP
+   ON_BN_CLICKED(IDC_CHECK_TENSION, &CSpecBridgeSite2Page::OnBnClickedCheckTension)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -99,6 +100,8 @@ BOOL CSpecBridgeSite2Page::OnInitDialog()
    CPropertyPage::OnInitDialog();
 
    m_TrafficSpin.SetRange(0,100);
+
+   OnBnClickedCheckTension();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -108,4 +111,14 @@ LRESULT CSpecBridgeSite2Page::OnCommandHelp(WPARAM, LPARAM lParam)
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGESITE_2_TAB );
    return TRUE;
+}
+
+void CSpecBridgeSite2Page::OnBnClickedCheckTension()
+{
+   // TODO: Add your control notification handler code here
+   BOOL bEnable = (IsDlgButtonChecked(IDC_CHECK_TENSION) == BST_CHECKED ? TRUE : FALSE);
+   GetDlgItem(IDC_NORMAL_MAX_SQRT3)->EnableWindow(bEnable);
+   GetDlgItem(IDC_CYS_TENS_BYLINE2)->EnableWindow(bEnable);
+   GetDlgItem(IDC_CHECK_NORMAL_MAX_MAX3)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NORMAL_MAX_MAX3)->EnableWindow(bEnable);
 }

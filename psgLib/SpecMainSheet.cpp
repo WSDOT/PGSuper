@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -203,6 +203,9 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
    }
 
    DDX_Radio(pDX,IDC_CURING_METHOD,m_Entry.m_CuringMethod);
+
+   DDX_Text(pDX,IDC_CURING_TIME_FACTOR,m_Entry.m_CuringMethodTimeAdjustmentFactor);
+   DDV_MinMaxDouble(pDX,m_Entry.m_CuringMethodTimeAdjustmentFactor,1,999);
 
 	DDX_Text(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_MaxSlope05);
    if (m_Entry.m_DoCheckStrandSlope) 
@@ -466,6 +469,7 @@ void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
+   DDX_Check_Bool(pDX,IDC_TEMP_STRESSES,m_Entry.m_bCheckTemporaryStresses);
 
 	DDX_Text(pDX, IDC_TEMP_REMOVE_ALLOW_SERVICE_COMP, m_Entry.m_TempStrandRemovalCompStress);
    DDV_GreaterThanZero(pDX, IDC_TEMP_REMOVE_ALLOW_SERVICE_COMP, m_Entry.m_TempStrandRemovalCompStress);
@@ -491,16 +495,35 @@ void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX2, IDC_NORMAL_MAX_MAX_UNITS2, m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
    if (m_Entry.m_Bs1DoTensStressMax)
       DDV_UnitValueGreaterThanZero(pDX, IDC_NORMAL_MAX_MAX2,m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
+
+   DDX_Check_Bool(pDX,IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,m_Entry.m_bCheckBottomFlangeClearance);
+   DDX_UnitValueAndTag(pDX,IDC_CLEARANCE,IDC_CLEARANCE_UNIT,m_Entry.m_Cmin,pDisplayUnits->SpanLength);
+   DDV_UnitValueZeroOrMore(pDX,IDC_CLEARANCE,m_Entry.m_Cmin,pDisplayUnits->SpanLength);
 }
 
 void CSpecMainSheet::ExchangeBs2Data(CDataExchange* pDX)
 {
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
 	DDX_Text(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_Bs2CompStress);
    DDV_GreaterThanZero(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_Bs2CompStress);
-   DDX_CBItemData(pDX,IDC_DIST_TRAFFIC_BARRIER_BASIS,m_Entry.m_TrafficBarrierDistributionType);
 
+   DDX_Check_Bool(pDX,IDC_CHECK_TENSION,m_Entry.m_bCheckBs2Tension);
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT3, IDC_NORMAL_MAX_SQRT_UNITS3, m_Entry.m_Bs2TensStress, pDisplayUnits->SqrtPressure );
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
+   DDX_Text(pDX,IDC_CYS_TENS_BYLINE2,tag);
+   DDV_UnitValueZeroOrMore(pDX,IDC_CYS_TENS_BYLINE2, m_Entry.m_Bs2TensStress, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX3, m_Entry.m_Bs2DoTensStressMax);
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX3, IDC_NORMAL_MAX_MAX_UNITS3, m_Entry.m_Bs2TensStressMax, pDisplayUnits->Stress );
+   if (m_Entry.m_Bs2DoTensStressMax)
+      DDV_UnitValueGreaterThanZero(pDX, IDC_NORMAL_MAX_MAX3,m_Entry.m_Bs2TensStressMax, pDisplayUnits->Stress );
+
+   DDX_CBItemData(pDX,IDC_DIST_TRAFFIC_BARRIER_BASIS,m_Entry.m_TrafficBarrierDistributionType);
 	DDX_Text(pDX, IDC_DIST_TRAFFIC_BARRIER, m_Entry.m_Bs2MaxGirdersTrafficBarrier);
+
 	DDX_CBEnum(pDX, IDC_OVERLAY_DISTR,m_Entry.m_OverlayLoadDistribution);
+
    DDX_CBEnum(pDX,IDC_EFF_FLANGE_WIDTH,m_Entry.m_EffFlangeWidthMethod);
 }
 
@@ -719,9 +742,6 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX, IDC_NC_CREEP, IDC_NC_CREEP_TAG, m_Entry.m_TotalCreepDuration, pDisplayUnits->Time2 );
    DDV_UnitValueGreaterThanLimit(pDX, IDC_NC_CREEP,m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
-
-   DDX_Text(pDX,IDC_CURING_TIME_FACTOR,m_Entry.m_CuringMethodTimeAdjustmentFactor);
-   DDV_MinMaxDouble(pDX,m_Entry.m_CuringMethodTimeAdjustmentFactor,1,999);
 
    DDX_Percentage(pDX,IDC_CAMBER_VARIABILITY, m_Entry.m_CamberVariability);
    if ( pDX->m_bSaveAndValidate )

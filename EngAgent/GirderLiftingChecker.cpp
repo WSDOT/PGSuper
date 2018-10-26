@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -549,20 +549,20 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(SpanIndexType span,GirderIn
 
       if ( bUseConfig )
       {
-         hps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Harped,pgsTypes::AtLifting);
+         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,pgsTypes::AtLifting,pgsTypes::ServiceI,liftConfig.GdrConfig);
          he        = pStrandGeometry->GetHsEccentricity(poi,liftConfig.GdrConfig.PrestressConfig, &nfh);
-         sps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Straight,pgsTypes::AtLifting);
+         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,pgsTypes::AtLifting,pgsTypes::ServiceI,liftConfig.GdrConfig);
          se        = pStrandGeometry->GetSsEccentricity(poi,liftConfig.GdrConfig.PrestressConfig, &nfs);
-         tps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Temporary,pgsTypes::AtLifting);
+         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AtLifting,pgsTypes::ServiceI,liftConfig.GdrConfig);
          te        = pStrandGeometry->GetTempEccentricity(poi,liftConfig.GdrConfig.PrestressConfig, &nft);
       }
       else
       {
-         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,pgsTypes::AtLifting);
+         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,pgsTypes::AtLifting,pgsTypes::ServiceI);
          he        = pStrandGeometry->GetHsEccentricity(poi,&nfh);
-         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,pgsTypes::AtLifting);
+         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,pgsTypes::AtLifting,pgsTypes::ServiceI);
          se        = pStrandGeometry->GetSsEccentricity(poi,&nfs);
-         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AtLifting);
+         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AtLifting,pgsTypes::ServiceI);
          te        = pStrandGeometry->GetTempEccentricity(poi,&nft);
       }
 

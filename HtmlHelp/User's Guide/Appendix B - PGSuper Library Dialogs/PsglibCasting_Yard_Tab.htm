@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1029>
-<meta name=layout-width content=801>
+<meta name=layout-height content=1151>
+<meta name=layout-width content=1289>
 
 
 <!--(Links)=========================================================-->
@@ -74,8 +74,29 @@
 
 <h3><span style="font-weight: bold;">Curing Method</span></h3>
 
-<p>Select whether a normal or accelerated (using steam or radiant heat) 
+<p>Select whether a normal (moist) or accelerated (steam or radiant heat) 
  curing method is used. This will affect creep calculations per LRFD 5.4.2.3.2.</p>
+
+<h3><span>Curing Equivalence</span></h3>
+
+<p>Enter the equivalent number of days of normal curing for accelerated 
+ curing. This is used with the initial time of loading in creep and creep 
+ loss computations.</p>
+
+<p class=Tip>NOTE: For AASHTO LRFD Third Edition 2004 with 2005 interim 
+ provisions and later editions, the equivalency was removed from the specifications. 
+ This is believed to be an editorial omission. From NCHRP Report 496, page 
+ 9, &quot;t<span style="vertical-align: Sub; font-size: 8pt;">i</span> 
+ = age of concrete, in days, when load is initially applied for accelerated 
+ curing or the age minus 6 days for moist curing&quot;. </p>
+
+<p class=Tip>When the Project Criteria is based on AASHTO LRFD Third Edition 
+ 2004 or earlier editions, the curing equivalence is added to the age at 
+ initial loading when accelerated curing is used. </p>
+
+<p class=Tip>When the Project Criteria is based on AASHTO LRFD Third Edition 
+ 2004 with 2005 interim provisions and later editions, the curing equivalence 
+ is subtracted from the age at initial load when normal curing is used.</p>
 
 <h2>Allowable Concrete Stresses</h2>
 

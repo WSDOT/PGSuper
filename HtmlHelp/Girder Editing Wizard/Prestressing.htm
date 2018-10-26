@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1093>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=1203>
+<meta name=layout-width content=1289>
 
 
 <!--(Links)=========================================================-->
@@ -48,10 +48,16 @@
 <p>Use this tab to define the filling of prestressing strand locations 
  and jacking forces for the girder.</p>
 
-<p class=Tip>Available strand locations and fill order are defined by the 
- strand grid in the Girder Library entry. </p>
+<p class=Tip>Available strand locations, fill order, and available adjustable 
+ strand types are defined by the strand grid in the Girder Library entry 
+ for the girder being edited. </p>
 
 <h2>Strand Details</h2>
+
+<h3>Adjustable Strands are</h3>
+
+<p>Select the adjustable strand type. Depending on the options defined 
+ in the girder library, adjustable strands can be either harped or straight.</p>
 
 <h3>Specify Filling of Strands Using</h3>
 
@@ -62,15 +68,15 @@
 	
 	<li class=kadov-p><p><span style="font-weight: bold;">Total Number 
  of Permanent Strands</span>. When this option is used, both straight and 
- web strands (harped or straight-web) are filled sequentially using the 
- global strand fill order (Fill #) defined by the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/PsglibGirder_Template_Editing_Dialog.htm">Girder 
+ adjustable strands (harped or straight-web) are filled sequentially using 
+ the global strand fill order (Fill #) defined by the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/PsglibGirder_Template_Editing_Dialog.htm">Girder 
  Library entry</a>'s strand grid.</p></li>
 	
 	<li class=kadov-p><p><span style="font-weight: bold;">Number of Straight 
- and Number of Harped; or Number of Straight and Straight-Web</span>. Here, 
- the number of straight and web strands are defined independently. Straight 
- and web strand locations are filled sequentially using their relative 
- orders in the Girder Library strand grid.</p></li>
+ and Adjustable (or Number of Straight and Number of Harped)</span>. Here, 
+ the number of straight and adjustable strands are defined independently. 
+ Straight and adjustable strand locations are filled sequentially using 
+ their relative orders defined in the Girder Library strand grid.</p></li>
 	
 	<li class=kadov-p><p><span style="font-weight: bold;">Direct Selection 
  of Strand Locations</span>. This option enables filling of strands out 
@@ -105,26 +111,30 @@
 
 <p>Use the drop down list to describe how temporary strands are used.</p>
 
-<h2><span>Vertical Location of Web Strands</span></h2>
+<h2><span>Vertical Location of Adjustable Strands</span></h2>
 
 <p>If enabled by the current Girder Library Entry, the location of the 
- entire web strand group (harped or straight-web strands) can be continuously 
- adjusted up and down at the girder end and/or harping point locations. 
- Several adjustment options are provided to make input easier. Enter the 
- appropriate adjustment value.</p>
+ entire adjustable strand group (harped or straight-web strands) can be 
+ continuously adjusted up and down at the girder end and/or harping point 
+ locations. Several adjustment options are provided to make input easier. 
+ Enter the appropriate adjustment value.</p>
 
 <ul style="list-style: disc;"
 	type=disc>
 	
-	<li class=kadov-p><p>Web strands must lie within the narrowest region 
- of a girder's web.</p></li>
+	<li class=kadov-p><p>Harping (draping) is created by the difference 
+ in vertical adjustment of the strand group at the girder ends or harping 
+ points.</p></li>
+	
+	<li class=kadov-p><p>Adjustable strands must lie within the narrowest 
+ region of a girder's web.</p></li>
 	
 	<li class=kadov-p><p>Strands may only be adjusted within the vertical 
  limits defined in the library. The current valid range is shown as an 
  aid to help you select adjustment values.</p></li>
 	
-	<li class=kadov-p><p>Note that increasing the number of harped strands 
- may decrease the size of the valid adjustment range.</p></li>
+	<li class=kadov-p><p>Note that increasing the number of adjustable 
+ strands may decrease the size of the valid adjustment range.</p></li>
 	
 	<li class=kadov-p><p>Hold the CTRL key down when selecting the location 
  datum and the current input value will be converted to the new basis of 

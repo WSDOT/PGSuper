@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -467,6 +467,66 @@ const Uint16 SimpleMutex::m_Default=666; // evil number to search for
 
 
 static Uint16 st_MutexValue = SimpleMutex::m_Default; // store m_level
+
+
+// There is a special case during design where the inital adjustable strand type is straight, but the designer
+// wants to do a harped design. For this case, we need to swap out the istrandmover and harping boundaries,
+// so the precast girder can deal with vertical adjustment correctly. 
+// This is definitly a hack and very inefficient, but seems the best of many hacks
+// The class below does the swap in an exception safe manner
+class CStrandMoverSwapper
+{
+public:
+   CStrandMoverSwapper(SpanIndexType span, GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,
+      CBridgeAgentImp* pBridgeAgent, IPrecastGirder* girder, IBridgeDescription* pIBridgeDesc):
+   m_Girder(girder)
+   {
+   // Save in constructor and restore in destructor - stand mover and adjustment shift values
+   if (rconfig.AdjustableStrandType==pgsTypes::asHarped)
+   {
+      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+      const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
+      const CGirderData& girderData = pGirderTypes->GetGirderData(gdr);
+      pgsTypes::AdjustableStrandType adjType = girderData.PrestressData.GetAdjustableStrandType(); 
+      if (adjType == pgsTypes::asStraight)
+      {
+         // mover will be reset later
+         girder->get_StrandMover(&m_Strandmover);
+
+         CComPtr<IStrandMover> temp_strandmover;
+         pBridgeAgent->CreateStrandMover(pGirderTypes->GetGirderName(gdr), pgsTypes::asHarped, &temp_strandmover);
+
+         girder->put_StrandMover(temp_strandmover);
+      }
+   }
+
+   // save and restore precast girders shift values, before/after geting point locations
+   girder->get_HarpedStrandAdjustmentEnd(&m_EndShift);
+   girder->get_HarpedStrandAdjustmentHP(&m_HpShift);
+
+   girder->put_HarpedStrandAdjustmentEnd(rconfig.EndOffset);
+   girder->put_HarpedStrandAdjustmentHP(rconfig.HpOffset);
+}
+
+~CStrandMoverSwapper()
+{
+   // Restore girder back to its original state
+   if (m_Strandmover)
+   {
+      m_Girder->put_StrandMover(m_Strandmover);
+   }
+
+   m_Girder->put_HarpedStrandAdjustmentEnd(m_EndShift);
+   m_Girder->put_HarpedStrandAdjustmentHP(m_HpShift);
+}
+
+private:
+   Float64 m_EndShift, m_HpShift;
+   CComPtr<IStrandMover> m_Strandmover;
+   IPrecastGirder* m_Girder;
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeAgentImp
@@ -2339,29 +2399,56 @@ bool CBridgeAgentImp::LayoutPiersAndSpans(const CBridgeDescription* pBridgeDesc)
    return true;
 }
 
-void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,IStrandMover** ppStrandMover)
+void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,pgsTypes::AdjustableStrandType adjType,IStrandMover** ppStrandMover)
 {
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry(strGirderName);
 
-   // get harped strand adjustment limits
+   // get adjustable strand adjustment limits
    pgsTypes::GirderFace endTopFace, endBottomFace;
    Float64 endTopLimit, endBottomLimit;
-   pGirderEntry->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
-
-   IBeamFactory::BeamFace etf = endTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace ebf = endBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-
+   IBeamFactory::BeamFace etf, ebf;
+   IBeamFactory::BeamFace htf, hbf;
    pgsTypes::GirderFace hpTopFace, hpBottomFace;
    Float64 hpTopLimit, hpBottomLimit;
-   pGirderEntry->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
+   Float64 end_increment, hp_increment;
 
-   IBeamFactory::BeamFace htf = hpTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace hbf = hpBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   if (adjType == pgsTypes::asHarped)
+   {
+      pGirderEntry->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
 
-   // only allow end adjustents if increment is non-negative
-   Float64 end_increment = pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;
-   Float64 hp_increment  = pGirderEntry->IsVerticalAdjustmentAllowedHP()  ?  pGirderEntry->GetHPStrandIncrement()  : -1.0;
+      etf = endTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+      ebf = endBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+
+      pGirderEntry->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
+
+      htf = hpTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+      hbf = hpBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+
+      // only allow end adjustents if increment is non-negative
+      end_increment = pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;
+      hp_increment  = pGirderEntry->IsVerticalAdjustmentAllowedHP()  ?  pGirderEntry->GetHPStrandIncrement()  : -1.0;
+   }
+   else
+   {
+      ATLASSERT(adjType == pgsTypes::asStraight); // Should be only other option
+
+      // Straight strands - ends and harp points are the same
+      pGirderEntry->GetStraightAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
+
+      hpTopLimit = endTopLimit;
+      hpBottomLimit = endBottomLimit;
+
+      etf = endTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+      ebf = endBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+
+      htf = etf;
+      hbf = ebf;
+
+      // only allow end adjustents if increment is non-negative
+      end_increment = pGirderEntry->IsVerticalAdjustmentAllowedStraight() ?  pGirderEntry->GetStraightStrandIncrement() : -1.0;
+      hp_increment  = end_increment;
+   }
 
    // create the strand mover
    CComPtr<IBeamFactory> beamFactory;
@@ -2514,9 +2601,12 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription* pBridgeDesc)
          item_data->AddItemData(CComBSTR(STARTCONNECTION),start_connection);
          item_data->AddItemData(CComBSTR(ENDCONNECTION),  end_connection);
 
+         // Tell strand mover adjustable strand type
+         pgsTypes::AdjustableStrandType adj_type = pSpan->GetGirderTypes()->GetGirderData(gdrIdx).PrestressData.GetAdjustableStrandType();
+
          // create the strand mover
          CComPtr<IStrandMover> strand_mover;
-         CreateStrandMover(strGirderName.c_str(),&strand_mover);
+         CreateStrandMover(strGirderName.c_str(),adj_type,&strand_mover);
          ATLASSERT(strand_mover != NULL);
          
          // assign a precast girder model to the superstructure member
@@ -3271,28 +3361,34 @@ void CBridgeAgentImp::UpdatePrestressing(SpanIndexType spanIdx,GirderIndexType g
          ConfigStrandFillVector hFillVec;
          IndexArray2ConfigStrandFillVec(hFillArray, hFillVec);
 
-         bool force_straight = pGirderEntry->IsForceHarpedStrandsStraight();
          Float64 adjustment(0.0);
-         if ( pGirderEntry->IsVerticalAdjustmentAllowedEnd() )
+         if (pgirderData->PrestressData.GetAdjustableStrandType() == pgsTypes::asHarped)
          {
-            adjustment = this->ComputeAbsoluteHarpedOffsetEnd(span, gdr, hFillVec, pgirderData->PrestressData.HsoEndMeasurement, pgirderData->PrestressData.HpOffsetAtEnd);
-            girder->put_HarpedStrandAdjustmentEnd(adjustment);
-
-            // use same adjustment at harping points if harped strands are forced to straight
-            if (force_straight)
+            if ( pGirderEntry->IsVerticalAdjustmentAllowedEnd() )
             {
+               adjustment = this->ComputeAbsoluteHarpedOffsetEnd(span, gdr, hFillVec, pgirderData->PrestressData.HsoEndMeasurement, pgirderData->PrestressData.HpOffsetAtEnd);
+               girder->put_HarpedStrandAdjustmentEnd(adjustment);
+            }
+
+            if ( pGirderEntry->IsVerticalAdjustmentAllowedHP() && pgirderData->PrestressData.GetAdjustableStrandType()==pgsTypes::asHarped)
+            {
+               adjustment = this->ComputeAbsoluteHarpedOffsetHp(span, gdr, hFillVec, 
+                                                                pgirderData->PrestressData.HsoHpMeasurement, pgirderData->PrestressData.HpOffsetAtHp);
+               girder->put_HarpedStrandAdjustmentHP(adjustment);
+            }
+         }
+         else
+         {
+            // Adjustable strands are straight
+            if ( pGirderEntry->IsVerticalAdjustmentAllowedStraight() )
+            {
+               adjustment = this->ComputeAbsoluteHarpedOffsetEnd(span, gdr, hFillVec, pgirderData->PrestressData.HsoEndMeasurement, pgirderData->PrestressData.HpOffsetAtEnd);
+               girder->put_HarpedStrandAdjustmentEnd(adjustment);
+               // Use same adjustment at harping points if harped strands are forced to straight
                girder->put_HarpedStrandAdjustmentHP(adjustment);
             }
          }
 
-         if ( pGirderEntry->IsVerticalAdjustmentAllowedHP() && !force_straight )
-         {
-            adjustment = this->ComputeAbsoluteHarpedOffsetHp(span, gdr, hFillVec, 
-                                                             pgirderData->PrestressData.HsoHpMeasurement, pgirderData->PrestressData.HpOffsetAtHp);
-            girder->put_HarpedStrandAdjustmentHP(adjustment);
-
-            ATLASSERT(!pGirderEntry->IsForceHarpedStrandsStraight()); // should not happen
-         }
 
          // Apply debonding
          std::vector<CDebondInfo>::const_iterator iter;
@@ -4860,6 +4956,83 @@ void CBridgeAgentImp::GetDistanceBetweenGirders(const pgsPointOfInterest& poi,Fl
       *pRight = 0;
 }
 
+void CBridgeAgentImp::GetBottomFlangeClearance(const pgsPointOfInterest& poi,Float64* pLeft,Float64* pRight)
+{
+   VALIDATE( BRIDGE );
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   SpanIndexType spanIdx = poi.GetSpan();
+   GirderIndexType gdrIdx = poi.GetGirder();
+
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(poi.GetSpan());
+   const CGirderSpacing* pStartSpacing = pSpan->GetGirderSpacing(pgsTypes::metStart);
+   const CGirderSpacing* pEndSpacing   = pSpan->GetGirderSpacing(pgsTypes::metEnd);
+
+   // girder spacing is on the right hand side of the girder
+
+   // Get spacing on the left side of the girder at start and end
+   Float64 left_start = 0;
+   Float64 left_end   = 0;
+
+   if ( 0 != gdrIdx )
+   {
+      SpacingIndexType spaceIdx = gdrIdx-1;
+      left_start = pStartSpacing->GetGirderSpacing(spaceIdx);
+      left_end   = pEndSpacing->GetGirderSpacing(spaceIdx);
+   }
+
+   // Get spacing on the right side of the girder at start and end
+   GirderIndexType nGirders = GetGirderCount(spanIdx);
+   Float64 right_start = 0;
+   Float64 right_end   = 0;
+   if ( gdrIdx < nGirders-1 )
+   {
+      SpacingIndexType spaceIdx = gdrIdx;
+      right_start = pStartSpacing->GetGirderSpacing(spaceIdx);
+      right_end   = pEndSpacing->GetGirderSpacing(spaceIdx);
+   }
+
+   Float64 gdrLength = GetGirderLength(spanIdx,gdrIdx);
+
+   Float64 left  = ::LinInterp( poi.GetDistFromStart(), left_start,  left_end,  gdrLength );
+   Float64 right = ::LinInterp( poi.GetDistFromStart(), right_start, right_end, gdrLength );
+
+   // if the spacing is a joint spacing, we have what we are after
+   if ( IsJointSpacing(pBridgeDesc->GetGirderSpacingType()) )
+   {
+      *pLeft  = left;
+      *pRight = right;
+      return;
+   }
+
+   // not a joint spacing so the spacing is between CL girders.... deduct the width
+   // of the adjacent girders and this girder
+   Float64 left_width = 0;
+   Float64 width = 0;
+   Float64 right_width = 0;
+   if ( 0 != gdrIdx )
+   {
+      pgsPointOfInterest leftPoi(poi);
+      leftPoi.SetGirder(gdrIdx-1);
+      left_width = GetBottomWidth(leftPoi);
+   }
+
+   width = GetBottomWidth(poi);
+
+   if ( gdrIdx < nGirders-1 )
+   {
+      pgsPointOfInterest rightPoi(poi);
+      rightPoi.SetGirder(gdrIdx);
+      right_width = GetBottomWidth(rightPoi);
+   }
+
+   // clear spacing is C-C spacing minus half the width of the adjacent girder minus the width of this girder
+   *pLeft  = left  - left_width/2  - width/2;
+   *pRight = right - right_width/2 - width/2;
+}
+
 std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType)
 {
    VALIDATE( BRIDGE );
@@ -5573,9 +5746,13 @@ GDRCONFIG CBridgeAgentImp::GetGirderConfiguration(SpanIndexType span,GirderIndex
    girder->get_HarpedStrandAdjustmentEnd(&config.PrestressConfig.EndOffset);
    girder->get_HarpedStrandAdjustmentHP(&config.PrestressConfig.HpOffset);
 
-   // Get jacking force and debonding
    GET_IFACE(IGirderData,pGirderData);   
    const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+
+   pgsTypes::AdjustableStrandType adj_type = pgirderData->PrestressData.GetAdjustableStrandType();
+   config.PrestressConfig.AdjustableStrandType = adj_type;
+
+   // Get jacking force and debonding
    for ( Uint16 i = 0; i < 3; i++ )
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
@@ -9695,19 +9872,14 @@ Float64 CBridgeAgentImp::GetHsEccentricity(const pgsPointOfInterest& poi, const 
       // Use wrapper to convert strand fill to IIndexArray
       CIndexArrayWrapper strand_fill(rconfig.GetStrandFill(pgsTypes::Harped));
 
-      // save and restore precast girders shift values, before/after geting point locations
-      Float64 t_end_shift, t_hp_shift;
-      girder->get_HarpedStrandAdjustmentEnd(&t_end_shift);
-      girder->get_HarpedStrandAdjustmentHP(&t_hp_shift);
-
-      girder->put_HarpedStrandAdjustmentEnd(rconfig.EndOffset);
-      girder->put_HarpedStrandAdjustmentHP(rconfig.HpOffset);
+      // Use CStrandMoverSwapper to swap out girder's strand mover and harping offset limits
+      // temporarily for design
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      CStrandMoverSwapper swapper(span, gdr, rconfig, this, girder, pIBridgeDesc);
 
       CComPtr<IPoint2dCollection> points;
       girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(), &strand_fill, &points);
 
-      girder->put_HarpedStrandAdjustmentEnd(t_end_shift);
-      girder->put_HarpedStrandAdjustmentHP(t_hp_shift);
 
       Float64 ecc=0.0;
 
@@ -10482,17 +10654,11 @@ bool CBridgeAgentImp::GetAreHarpedStrandsForcedStraight(SpanIndexType span,Girde
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+   const CGirderData& rGirder = pSpan->GetGirderTypes()->GetGirderData(gdr);
+   pgsTypes::AdjustableStrandType adj_type =rGirder.PrestressData.GetAdjustableStrandType();
 
-   return GetAreHarpedStrandsForcedStraightEx( pSpan->GetGirderTypes()->GetGirderName(gdr) );
+   return adj_type == pgsTypes::asStraight;
 }
-
-bool CBridgeAgentImp::GetAreHarpedStrandsForcedStraightEx(LPCTSTR strGirderName)
-{
-   GET_IFACE(ILibrary,pLib);
-   const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strGirderName );
-   return pGirderEntry->IsForceHarpedStrandsStraight();
-}
-
 
 Float64 CBridgeAgentImp::GetGirderTopElevation(SpanIndexType span,GirderIndexType gdr)
 {
@@ -10572,7 +10738,7 @@ void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(SpanIndexType span,GirderIndexT
    }
 }
 
-void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName, const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset)
+void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName,  pgsTypes::AdjustableStrandType adjType, const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset)
 {
    if ( !AreStrandsInConfigFillVec(rHarpedFillArray) )
    {
@@ -10621,7 +10787,7 @@ void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName, const Co
       // get max locations of strands
       Float64 bottom_min, top_max;
       CComPtr<IStrandMover> strandMover;
-      CreateStrandMover(strGirderName,&strandMover);
+      CreateStrandMover(strGirderName, adjType, &strandMover);
       hr = strandMover->get_EndStrandElevationBoundaries(&bottom_min, &top_max);
       ATLASSERT(SUCCEEDED(hr));
 
@@ -10669,7 +10835,7 @@ void CBridgeAgentImp::GetHarpedHpOffsetBoundsEx(SpanIndexType span,GirderIndexTy
    }
 }
 
-void CBridgeAgentImp::GetHarpedHpOffsetBoundsEx(LPCTSTR strGirderName, const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset)
+void CBridgeAgentImp::GetHarpedHpOffsetBoundsEx(LPCTSTR strGirderName, pgsTypes::AdjustableStrandType adjType, const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset)
 {
    if ( !AreStrandsInConfigFillVec(rHarpedFillArray) )
    {
@@ -10717,7 +10883,7 @@ void CBridgeAgentImp::GetHarpedHpOffsetBoundsEx(LPCTSTR strGirderName, const Con
       // get max locations of strands
       Float64 bottom_min, top_max;
       CComPtr<IStrandMover> strandMover;
-      CreateStrandMover(strGirderName,&strandMover);
+      CreateStrandMover(strGirderName,adjType,&strandMover);
       hr = strandMover->get_HpStrandElevationBoundaries(&bottom_min, &top_max);
       ATLASSERT(SUCCEEDED(hr));
 
@@ -10747,12 +10913,20 @@ Float64 CBridgeAgentImp::GetHarpedEndOffsetIncrement(SpanIndexType span,GirderIn
    return increment;
 }
 
-Float64 CBridgeAgentImp::GetHarpedEndOffsetIncrement(LPCTSTR strGirderName)
+Float64 CBridgeAgentImp::GetHarpedEndOffsetIncrement(LPCTSTR strGirderName, pgsTypes::AdjustableStrandType adjType)
 {
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry(strGirderName);
-   Float64 end_increment = pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;
-   Float64 hp_increment  = pGirderEntry->IsVerticalAdjustmentAllowedHP()  ?  pGirderEntry->GetHPStrandIncrement()  : -1.0;
+   Float64 end_increment;
+   if (adjType == pgsTypes::asStraight)
+   {
+      end_increment  = pGirderEntry->IsVerticalAdjustmentAllowedStraight()  ?  pGirderEntry->GetStraightStrandIncrement()  : -1.0;
+   }
+   else
+   {
+      end_increment  =pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;
+   }
+
    return end_increment;
 }
 
@@ -10770,12 +10944,20 @@ Float64 CBridgeAgentImp::GetHarpedHpOffsetIncrement(SpanIndexType span,GirderInd
    return increment;
 }
 
-Float64 CBridgeAgentImp::GetHarpedHpOffsetIncrement(LPCTSTR strGirderName)
+Float64 CBridgeAgentImp::GetHarpedHpOffsetIncrement(LPCTSTR strGirderName, pgsTypes::AdjustableStrandType adjType)
 {
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry(strGirderName);
-   Float64 end_increment = pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;
-   Float64 hp_increment  = pGirderEntry->IsVerticalAdjustmentAllowedHP()  ?  pGirderEntry->GetHPStrandIncrement()  : -1.0;
+   Float64 hp_increment;
+   if (adjType == pgsTypes::asStraight)
+   {
+      hp_increment  = pGirderEntry->IsVerticalAdjustmentAllowedStraight()  ?  pGirderEntry->GetStraightStrandIncrement()  : -1.0;
+   }
+   else
+   {
+      hp_increment = pGirderEntry->IsVerticalAdjustmentAllowedHP()  ?  pGirderEntry->GetHPStrandIncrement()  : -1.0;
+   }
+
    return hp_increment;
 }
 
@@ -11859,18 +12041,14 @@ void CBridgeAgentImp::GetStrandPositionsEx(const pgsPointOfInterest& poi,const P
       break;
 
    case pgsTypes::Harped:
-      // save and restore precast harped girders adjustment shift values, before/after geting point locations
-      Float64 t_end_shift, t_hp_shift;
-      girder->get_HarpedStrandAdjustmentEnd(&t_end_shift);
-      girder->get_HarpedStrandAdjustmentHP(&t_hp_shift);
+      // Use CStrandMoverSwapper to temporarily swap out girder's strand mover and harping offset limits
+      //  for design
+      {
+         GET_IFACE(IBridgeDescription,pIBridgeDesc);
+         CStrandMoverSwapper swapper(poi.GetSpan(), poi.GetGirder(), rconfig, this, girder, pIBridgeDesc);
 
-      girder->put_HarpedStrandAdjustmentEnd(rconfig.EndOffset);
-      girder->put_HarpedStrandAdjustmentHP(rconfig.HpOffset);
-
-      hr = girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(),&fill,ppPoints);
-
-      girder->put_HarpedStrandAdjustmentEnd(t_end_shift);
-      girder->put_HarpedStrandAdjustmentHP(t_hp_shift);
+         hr = girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(),&fill,ppPoints);
+      }
 
       break;
 
@@ -11946,7 +12124,8 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,Girde
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
    const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
    const CGirderData& girderData = pGirderTypes->GetGirderData(gdr);
-   Float64 absOffset = ComputeAbsoluteHarpedOffsetEnd(pGirderTypes->GetGirderName(gdr),rHarpedFillArray,measurementType,offset);
+   pgsTypes::AdjustableStrandType adjType = girderData.PrestressData.GetAdjustableStrandType(); 
+   Float64 absOffset = ComputeAbsoluteHarpedOffsetEnd(pGirderTypes->GetGirderName(gdr),adjType,rHarpedFillArray,measurementType,offset);
 
 #if defined _DEBUG
 
@@ -12094,7 +12273,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,Girde
    return absOffset;
 }
 
-Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset)
+Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName, pgsTypes::AdjustableStrandType adjType,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset)
 {
    // returns the offset value measured from the original strand locations defined in the girder library
    // Up is positive
@@ -12104,13 +12283,18 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,co
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   if (!pGdrEntry->IsVerticalAdjustmentAllowedEnd())
+   if (adjType==pgsTypes::asHarped)
+   {
+      if (!pGdrEntry->IsVerticalAdjustmentAllowedEnd())
+         return 0.0; // No offset allowed
+   }
+   else if (adjType==pgsTypes::asStraight && !pGdrEntry->IsVerticalAdjustmentAllowedStraight())
    {
       return 0.0; // No offset allowed
    }
 
    CComPtr<IStrandMover> pStrandMover;
-   CreateStrandMover(strGirderName,&pStrandMover);
+   CreateStrandMover(strGirderName,adjType,&pStrandMover);
 
    CComPtr<IStrandGrid> startGrid, startHPGrid, endHPGrid, endGrid;
    startGrid.CoCreateInstance(CLSID_StrandGrid);
@@ -12274,7 +12458,8 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,Girder
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
    const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
    const CGirderData& girderData = pGirderTypes->GetGirderData(gdr);
-   Float64 absOffset = ComputeAbsoluteHarpedOffsetHp(pGirderTypes->GetGirderName(gdr),rHarpedFillArray,measurementType,offset);
+   pgsTypes::AdjustableStrandType adjType = girderData.PrestressData.GetAdjustableStrandType(); 
+   Float64 absOffset = ComputeAbsoluteHarpedOffsetHp(pGirderTypes->GetGirderName(gdr),adjType,rHarpedFillArray,measurementType,offset);
 
 #if defined _DEBUG
 
@@ -12399,7 +12584,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,Girder
    return absOffset;
 }
 
-Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset)
+Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName, pgsTypes::AdjustableStrandType adjType,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset)
 {
    // returns the offset value measured from the original strand locations defined in the girder library
    // Up is positive
@@ -12409,13 +12594,18 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,con
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   if (!pGdrEntry->IsVerticalAdjustmentAllowedHP())
+   if (adjType==pgsTypes::asStraight)
+   {
+      if  (!pGdrEntry->IsVerticalAdjustmentAllowedStraight())
+         return 0.0; // No offset allowed
+   }
+   else if ( !pGdrEntry->IsVerticalAdjustmentAllowedHP())
    {
       return 0.0; // No offset allowed
    }
 
    CComPtr<IStrandMover> pStrandMover;
-   CreateStrandMover(strGirderName,&pStrandMover);
+   CreateStrandMover(strGirderName,adjType,&pStrandMover);
 
    CComPtr<IStrandGrid> startGrid, startHPGrid, endHPGrid, endGrid;
    startGrid.CoCreateInstance(CLSID_StrandGrid);
@@ -12571,11 +12761,11 @@ Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteEnd(SpanIndexType span,G
    return off;
 }
 
-Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
+Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteEnd(LPCTSTR strGirderName,pgsTypes::AdjustableStrandType adjType,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
 {
    // all we really need to know is the distance and direction between the coords, compute absolute
    // from zero
-   Float64 absol = ComputeAbsoluteHarpedOffsetEnd(strGirderName, rHarpedFillArray, measurementType, 0.0);
+   Float64 absol = ComputeAbsoluteHarpedOffsetEnd(strGirderName, adjType, rHarpedFillArray, measurementType, 0.0);
 
    Float64 off = 0.0;
    // direction depends if meassured from bottom up or top down
@@ -12616,9 +12806,9 @@ Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteHp(SpanIndexType span,Gi
    return off;
 }
 
-Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
+Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteHp(LPCTSTR strGirderName,pgsTypes::AdjustableStrandType adjType,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
 {
-   Float64 absol = ComputeAbsoluteHarpedOffsetHp(strGirderName, rHarpedFillArray, measurementType, 0.0);
+   Float64 absol = ComputeAbsoluteHarpedOffsetHp(strGirderName, adjType, rHarpedFillArray, measurementType, 0.0);
 
    Float64 off = 0.0;
    // direction depends if meassured from bottom up or top down
@@ -12655,13 +12845,13 @@ void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeEnd(SpanIndexTyp
    *highRange = offUp;
 }
 
-void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray,HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
+void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeEnd(LPCTSTR strGirderName,pgsTypes::AdjustableStrandType adjType,const ConfigStrandFillVector& rHarpedFillArray,HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
 {
    Float64 absDown, absUp;
-   GetHarpedEndOffsetBoundsEx(strGirderName,rHarpedFillArray, &absDown,&absUp);
+   GetHarpedEndOffsetBoundsEx(strGirderName,adjType,rHarpedFillArray, &absDown,&absUp);
 
-   Float64 offDown = ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,  rHarpedFillArray, measurementType, absDown);
-   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,  rHarpedFillArray, measurementType, absUp);
+   Float64 offDown = ComputeHarpedOffsetFromAbsoluteEnd(strGirderName, adjType, rHarpedFillArray, measurementType, absDown);
+   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteEnd(strGirderName, adjType, rHarpedFillArray, measurementType, absUp);
 
    *lowRange = offDown;
    *highRange = offUp;
@@ -12685,13 +12875,13 @@ void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeHp(SpanIndexType
    *highRange = offUp;
 }
 
-void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
+void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeHp(LPCTSTR strGirderName, pgsTypes::AdjustableStrandType adjType,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
 {
    Float64 absDown, absUp;
-   GetHarpedHpOffsetBoundsEx(strGirderName,rHarpedFillArray, &absDown,&absUp);
+   GetHarpedHpOffsetBoundsEx(strGirderName,adjType,rHarpedFillArray, &absDown,&absUp);
 
-   Float64 offDown = ComputeHarpedOffsetFromAbsoluteHp(strGirderName,  rHarpedFillArray, measurementType, absDown);
-   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteHp(strGirderName,  rHarpedFillArray, measurementType, absUp);
+   Float64 offDown = ComputeHarpedOffsetFromAbsoluteHp(strGirderName, adjType, rHarpedFillArray, measurementType, absDown);
+   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteHp(strGirderName, adjType, rHarpedFillArray, measurementType, absUp);
 
    *lowRange = offDown;
    *highRange = offUp;
@@ -12704,10 +12894,10 @@ Float64 CBridgeAgentImp::ConvertHarpedOffsetEnd(SpanIndexType span,GirderIndexTy
    return result;
 }
 
-Float64 CBridgeAgentImp::ConvertHarpedOffsetEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
+Float64 CBridgeAgentImp::ConvertHarpedOffsetEnd(LPCTSTR strGirderName,pgsTypes::AdjustableStrandType adjType,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
 {
-   Float64 abs_offset = ComputeAbsoluteHarpedOffsetEnd(strGirderName,rHarpedFillArray,fromMeasurementType,offset);
-   Float64 result = ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,rHarpedFillArray,toMeasurementType,abs_offset);
+   Float64 abs_offset = ComputeAbsoluteHarpedOffsetEnd(strGirderName,adjType,rHarpedFillArray,fromMeasurementType,offset);
+   Float64 result = ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,adjType,rHarpedFillArray,toMeasurementType,abs_offset);
    return result;
 }
 
@@ -12718,10 +12908,10 @@ Float64 CBridgeAgentImp::ConvertHarpedOffsetHp(SpanIndexType span,GirderIndexTyp
    return result;
 }
 
-Float64 CBridgeAgentImp::ConvertHarpedOffsetHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
+Float64 CBridgeAgentImp::ConvertHarpedOffsetHp(LPCTSTR strGirderName,pgsTypes::AdjustableStrandType adjType,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
 {
-   Float64 abs_offset = ComputeAbsoluteHarpedOffsetHp(strGirderName,rHarpedFillArray,fromMeasurementType,offset);
-   Float64 result = ComputeHarpedOffsetFromAbsoluteHp(strGirderName,rHarpedFillArray,toMeasurementType,abs_offset);
+   Float64 abs_offset = ComputeAbsoluteHarpedOffsetHp(strGirderName,adjType,rHarpedFillArray,fromMeasurementType,offset);
+   Float64 result = ComputeHarpedOffsetFromAbsoluteHp(strGirderName,adjType,rHarpedFillArray,toMeasurementType,abs_offset);
    return result;
 }
 
@@ -16742,18 +16932,12 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
    {
       CIndexArrayWrapper strand_fill(config.PrestressConfig.GetStrandFill(pgsTypes::Harped));
 
-      // save and restore precast girders shift values, before/after geting point locations
-      Float64 t_end_shift, t_hp_shift;
-      girder->get_HarpedStrandAdjustmentEnd(&t_end_shift);
-      girder->get_HarpedStrandAdjustmentHP(&t_hp_shift);
-
-      girder->put_HarpedStrandAdjustmentEnd(config.PrestressConfig.EndOffset);
-      girder->put_HarpedStrandAdjustmentHP(config.PrestressConfig.HpOffset);
+      // Use CStrandMoverSwapper to temporarily swap out girder's strand mover and harping offset limits
+      //  for design
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      CStrandMoverSwapper swapper(span, gdr, config.PrestressConfig, this, girder, pIBridgeDesc);
 
       girder->get_HarpedStrandPositionsEx(dist_from_start, &strand_fill, &strand_points);
-
-      girder->put_HarpedStrandAdjustmentEnd(t_end_shift);
-      girder->put_HarpedStrandAdjustmentHP(t_hp_shift);
    }
    else
    {

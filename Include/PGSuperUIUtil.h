@@ -109,7 +109,7 @@ void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 ma
    {
        if(idx_sel==CB_ERR && ::IsEqual(curr,selectedVal,toler))
        {
-          idx_sel = PutFloatInCB(selectedVal, pfcCtrl, tool); // put exact selected val into cb
+          idx_sel = PutFloatInCB(selectedVal, pfcCtrl, tool); // selected val fits exactly into cb
        }
        else
        {
@@ -128,6 +128,12 @@ void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 ma
 
    if (!IsEqual(endVal,maxVal,toler)) // max might not fit in increment
    {
+       if (idx_sel==CB_ERR && ::IsLT(selectedVal,maxVal,toler))
+       {
+          // Selected value is also above top of increment - put in explicitely
+          idx_sel = PutFloatInCB(selectedVal, pfcCtrl, tool);
+       }
+
        int idx = PutFloatInCB(maxVal, pfcCtrl, tool);
        if (idx_sel==CB_ERR && ::IsEqual(selectedVal,maxVal,toler))
           idx_sel = idx;

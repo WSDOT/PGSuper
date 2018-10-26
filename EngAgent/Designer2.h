@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,7 @@
 
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\PrestressForce.h>
 
 #include "StrandDesignTool.h"
 #include "ShearDesignTool.h"
@@ -65,6 +66,55 @@ struct ShearDesignAvs
 
 #define NUM_LEGS  2
 #define MAX_ZONES 4
+
+// Structure and function for computing eccentricity envelope. 
+//////////////////////////////////////////////////////////////
+struct pgsEccEnvelope
+{
+   // Upper bound (ub) and Lower bound eccentricities
+   Float64 m_UbEcc;
+   pgsTypes::StressType     m_UbStressType; // stress type (tension or compression) 
+   pgsTypes::Stage          m_UbStage;      // controlling stage
+   pgsTypes::LimitState     m_UbLimitState; // ""          ls
+   Float64 m_LbEcc;
+   pgsTypes::StressType     m_LbStressType; // stress type (tension or compression) 
+   pgsTypes::Stage          m_LbStage;      // controlling stage
+   pgsTypes::LimitState     m_LbLimitState; // ""          ls
+
+   pgsEccEnvelope():
+   m_UbEcc(Float64_Max),
+   m_LbEcc(-Float64_Max)
+   {;}
+
+   // Functions to save controlling Lb or Ub
+   bool SaveControllingUpperBound(Float64 ecc, pgsTypes::StressType type, pgsTypes::Stage stage, pgsTypes::LimitState ls)
+   {
+      if (ecc < m_UbEcc)
+      {
+         m_UbEcc        = ecc;
+         m_UbStressType = type;
+         m_UbStage      = stage;
+         m_UbLimitState = ls;
+         return true;
+      }
+      else
+         return false;
+   }
+
+   bool SaveControllingLowerBound(Float64 ecc, pgsTypes::StressType type, pgsTypes::Stage stage, pgsTypes::LimitState ls)
+   {
+      if (ecc > m_LbEcc)
+      {
+         m_LbEcc        = ecc;
+         m_LbStressType = type;
+         m_LbStage      = stage;
+         m_LbLimitState = ls;
+         return true;
+      }
+      else
+         return false;
+   }
+};
 
 /*****************************************************************************
 CLASS 
@@ -122,10 +172,13 @@ public:
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    pgsGirderArtifact Check(SpanIndexType span,GirderIndexType gdr);
-   pgsDesignArtifact Design(SpanIndexType span,GirderIndexType gdr,arDesignOptions options);
+   pgsDesignArtifact Design(SpanIndexType span,GirderIndexType gdr,const std::vector<arDesignOptions>& DesOptionsColl);
 
    void GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,HAUNCHDETAILS* pHaunchDetails);
    void GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
+
+ 
+   pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -135,6 +188,9 @@ protected:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
+
+   void DoDesign(SpanIndexType span,GirderIndexType gdr, const arDesignOptions& options, pgsDesignArtifact& artifact);
+
    //------------------------------------------------------------------------
    void MakeCopy(const pgsDesigner2& rOther);
 
@@ -171,7 +227,7 @@ private:
    // GROUP: OPERATIONS
 
    void CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pgsStrandStressArtifact* pArtifact);
-   void CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,ALLOWSTRESSCHECKTASK task,pgsGirderArtifact* pGdrArtifact);
+   void CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,const ALLOWSTRESSCHECKTASK& task,pgsGirderArtifact* pGdrArtifact);
    void CheckCastingYardGirderStresses(SpanIndexType span,GirderIndexType gdr, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsGirderArtifact* pGdrArtifact);
    void CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsGirderArtifact* pGdrArtifact);
    void CheckShear(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsPointOfInterest>& rVPoi,pgsTypes::LimitState ls,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
@@ -214,7 +270,7 @@ private:
    void DesignConcreteRelease(Float64 topStress, Float64 botStress);
 
    void RefineDesignForAllowableStress(IProgress* pProgress);
-   void RefineDesignForAllowableStress(ALLOWSTRESSCHECKTASK task,IProgress* pProgress);
+   void RefineDesignForAllowableStress(const ALLOWSTRESSCHECKTASK& task,IProgress* pProgress);
    void RefineDesignForUltimateMoment(pgsTypes::Stage stage,pgsTypes::LimitState ls,IProgress* pProgress);
    pgsPointOfInterest GetControllingFinalMidZonePoi(SpanIndexType span,GirderIndexType gdr);
 
@@ -227,7 +283,7 @@ private:
 
    pgsFlexuralCapacityArtifact CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage,pgsTypes::LimitState ls,const GDRCONFIG& config,bool bPositiveMoment);
    pgsFlexuralCapacityArtifact CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage,pgsTypes::LimitState ls,bool bPositiveMoment);
-   pgsFlexuralCapacityArtifact CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage,pgsTypes::LimitState ls,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const MINMOMENTCAPDETAILS& mmcd);
+   pgsFlexuralCapacityArtifact CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage,pgsTypes::LimitState ls,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const MINMOMENTCAPDETAILS& mmcd,bool bDesign);
 
    // poi based shear checks
    pgsStirrupCheckAtPoisArtifact CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage, pgsTypes::LimitState ls, Float64 vu,
@@ -261,6 +317,7 @@ public:
                             const SHEARCAPACITYDETAILS& scd,
                             const GDRCONFIG* pConfig,
                             pgsLongReinfShearArtifact* pArtifact );
+
 private:
 
 

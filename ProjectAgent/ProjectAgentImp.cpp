@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -3846,23 +3846,31 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
    const CSpanData* pSpan = m_BridgeDescription.GetSpan(span);
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(girder);
 
-   if (!pGirderEntry->IsVerticalAdjustmentAllowedEnd() && girder_data.PrestressData.HpOffsetAtEnd!=0.0 
-                                                       && girder_data.PrestressData.HsoEndMeasurement!=hsoLEGACY)
+   // If library entry forbids offset, reset vertical adjustment of harped strands to zero (default). This will partially avoid getting
+   // bad data into input when adjustment is turned back on. No need to tell user
+   // Bug: This however, does not handle the case when tighter offsets limits are input into library than are set in project data.
+   //      Catching this would be considerably more work.
+   if (girder_data.PrestressData.GetAdjustableStrandType() == pgsTypes::asHarped)
    {
-      girder_data.PrestressData.HpOffsetAtEnd = 0.0;
-      girder_data.PrestressData.HsoEndMeasurement = hsoLEGACY;
+      if (!pGirderEntry->IsVerticalAdjustmentAllowedEnd() && girder_data.PrestressData.HsoEndMeasurement!=hsoLEGACY)
+      {
+         girder_data.PrestressData.HpOffsetAtEnd = 0.0;
+         girder_data.PrestressData.HsoEndMeasurement = hsoLEGACY;
+      }
 
-      std::_tstring msg(_T("Vertical adjustment of harped strands at girder end reset to zero. Library entry forbids offset"));
-      AddGirderStatusItem(span, girder, msg);
+      if (!pGirderEntry->IsVerticalAdjustmentAllowedHP() && girder_data.PrestressData.HsoHpMeasurement!=hsoLEGACY)
+      {
+         girder_data.PrestressData.HpOffsetAtHp = 0.0;
+         girder_data.PrestressData.HsoHpMeasurement = hsoLEGACY;
+      }
    }
-
-   if (!pGirderEntry->IsVerticalAdjustmentAllowedHP() && girder_data.PrestressData.HpOffsetAtHp!=0.0 && girder_data.PrestressData.HsoHpMeasurement!=hsoLEGACY)
+   else
    {
-      girder_data.PrestressData.HpOffsetAtHp = 0.0;
-      girder_data.PrestressData.HsoHpMeasurement = hsoLEGACY;
-
-      std::_tstring msg(_T("Vertical adjustment of harped strands at harping points reset to zero. Library entry forbids offset"));
-      AddGirderStatusItem(span, girder, msg);
+      if (!pGirderEntry->IsVerticalAdjustmentAllowedStraight() && girder_data.PrestressData.HsoEndMeasurement!=hsoLEGACY)
+      {
+         girder_data.PrestressData.HpOffsetAtEnd = 0.0;
+         girder_data.PrestressData.HsoEndMeasurement = hsoLEGACY;
+      }
    }
 
    // There are many, many ways that strand data can get hosed if a library entry is changed for an existing project. 
@@ -5827,62 +5835,74 @@ bool CProjectAgentImp::IsSlabOffsetDesignEnabled()
    return pSpecEntry->IsSlabOffsetDesignEnabled();
 }
 
-arDesignOptions CProjectAgentImp::GetDesignOptions(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
-   arDesignOptions options;
-
-   const CSpanData* pSpan = m_BridgeDescription.GetSpan(spanIdx);
-   const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
-
-   // determine flexural design from girder attributes
-   StrandIndexType  nh = pGirderEntry->GetNumHarpedStrandCoordinates();
-   if (nh>0 && !pGirderEntry->IsForceHarpedStrandsStraight())
-   {
-      options.doDesignForFlexure = dtDesignForHarping;
-   }
-   else if (pGirderEntry->CanDebondStraightStrands())
-   {
-      options.doDesignForFlexure = dtDesignForDebonding;
-   }
-   else
-   {
-      options.doDesignForFlexure = dtDesignFullyBonded;
-   }
-
    GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(m_Spec.c_str());
 
-   options.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled();
-   options.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
-   options.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
+   const CSpanData* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+   const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+   const CPrestressData& rPrestressData = pSpan->GetGirderTypes()->GetGirderData(gdrIdx).PrestressData;
 
-   if (options.doDesignForFlexure == dtDesignForHarping)
-   {
-      bool check, design;
-      Float64 d1, d2, d3;
-      pSpecEntry->GetHoldDownForce(&check, &design, &d1);
-      options.doDesignHoldDown = design;
+   std::vector<arDesignOptions> options;
 
-      pSpecEntry->GetMaxStrandSlope(&check, &design, &d1, &d2, &d3);
-      options.doDesignSlope =  design;
-   }
-   else
+   // For each girder we can have multiple design strategies
+   IndexType numstrat = pGirderEntry->GetNumPrestressDesignStrategies();
+   for(IndexType istrat = 0; istrat< numstrat; istrat++)
    {
-      options.doDesignHoldDown = false;
-      options.doDesignSlope    = false;
+      arFlexuralDesignType design_type;
+      Float64 fc_max, fci_max;
+      pGirderEntry->GetPrestressDesignStrategy(istrat, &design_type, &fci_max, &fc_max);
+
+      arDesignOptions option;
+
+      option.doDesignForFlexure = design_type;
+      option.maxFci = fci_max;
+      option.maxFc  = fc_max;
+
+      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled();
+      option.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
+      option.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
+
+      if (option.doDesignForFlexure == dtDesignForHarping)
+      {
+         bool check, design;
+         Float64 d1, d2, d3;
+         pSpecEntry->GetHoldDownForce(&check, &design, &d1);
+         option.doDesignHoldDown = design;
+
+         pSpecEntry->GetMaxStrandSlope(&check, &design, &d1, &d2, &d3);
+         option.doDesignSlope =  design;
+      }
+      else
+      {
+         option.doDesignHoldDown = false;
+         option.doDesignSlope    = false;
+      }
+
+      option.doForceHarpedStrandsStraight = option.doDesignForFlexure  != dtDesignForHarping;
+
+      if (!option.doForceHarpedStrandsStraight)
+      {
+         // Harping uses spec order (until design algorithm is changed to work for other option)
+         option.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
+      }
+      else if (option.doDesignForFlexure == dtDesignFullyBondedRaised ||
+               option.doDesignForFlexure == dtDesignForDebondingRaised)
+      {
+         // Raised strand designs use direct fill
+         option.doStrandFillType = ftDirectFill;
+      }
+      else
+      {
+         // For other straight designs we always fill using grid order 
+         option.doStrandFillType = ftGridOrder;
+      }
+
+      options.push_back(option);
    }
 
-   options.doForceHarpedStrandsStraight = pGirderEntry->IsForceHarpedStrandsStraight();
-
-   if (!options.doForceHarpedStrandsStraight)
-   {
-      options.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
-   }
-   else
-   {
-      // For straight-web designs we always fill using grid order (until design algorithm is changed to work for other option)
-      options.doStrandFillType = ftGridOrder;
-   }
+   ATLASSERT(!options.empty());
 
    return options;
 }
@@ -6682,6 +6702,7 @@ HRESULT CProjectAgentImp::LoadMomentLoads(IStructuredLoad* pLoad)
 // IEvents
 void CProjectAgentImp::HoldEvents()
 {
+   ATLASSERT(0 <= m_EventHoldCount);
    m_EventHoldCount++;
 
    Fire_OnHoldEvents();
@@ -6692,6 +6713,11 @@ void CProjectAgentImp::HoldEvents()
 
 void CProjectAgentImp::FirePendingEvents()
 {
+   if ( m_EventHoldCount == 0 )
+   {
+      return;
+   }
+
    if ( m_EventHoldCount == 1 )
    {
       m_EventHoldCount--;
@@ -7313,6 +7339,22 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
          // Convert legacy data as needed
          ConvertLegacyDebondData(girder_data, pGdrEntry);
          ConvertLegacyExtendedStrandData(girder_data,pGdrEntry);
+
+         // rdp - 11/1/2014 - Mantis 421
+         // Added capability to change adjustable strand type from straight to harped in project data. Previously,
+         // this was set in library entry only. This is the earliest possible location to intercept discrepancy 
+         // between library entry and project data and to set project data correctly for a given library
+         // setting.
+         pgsTypes::AdjustableStrandType asType    = girder_data.PrestressData.GetAdjustableStrandType();
+         pgsTypes::AdjustableStrandType asLibType = pGdrEntry->GetAdjustableStrandType();
+         
+         if(asLibType==pgsTypes::asStraight && asType==pgsTypes::asHarped)
+         {
+            // Library and project are out of sync - this is probably due to 421 version update
+            // change project data to match library
+            girder_data.PrestressData.SetAdjustableStrandType(pgsTypes::asStraight);
+         }
+
 
          ValidateStrands(spanIdx,gdrIdx,girder_data,fromLibrary);
 

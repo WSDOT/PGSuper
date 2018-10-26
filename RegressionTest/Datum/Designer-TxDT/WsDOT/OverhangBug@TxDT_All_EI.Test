@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.29   8  6.00  1     1     III        22  0.60  270 18.81 10.62   6 36.0  5.000  6.400    3.263   -3.899   4250  0.674  0.674  0.27 -0.05  0.00 -0.02 -0.07  77.50 153.27   1.00   5.00   5.00
+ 45.29   8  6.00  1     1     III        22  0.60  270 18.81 10.62   6 36.0  5.000  6.400    3.264   -3.899   4250  0.674  0.674  0.27 -0.05  0.00 -0.02 -0.07  77.50 153.22   1.00   5.00   5.00
 
 
 Girder design was Not Successful
@@ -14,7 +14,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.29   8  6.00  1     2     III        20  0.60  270 19.08 11.28   4 43.0  4.600  5.900    2.890   -3.503   3793  0.556  0.671  0.26 -0.04  0.00 -0.02 -0.06  66.20 139.79   1.00   5.00   5.00
+ 45.29   8  6.00  1     2     III        20  0.60  270 19.08 11.28   4 43.0  4.600  5.900    2.890   -3.503   3793  0.556  0.671  0.26 -0.04  0.00 -0.02 -0.06  66.20 139.74   1.00   5.00   5.00
 
 
 Girder design was Not Successful
@@ -28,7 +28,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.29   8  6.00  1     5     III        16  0.60  270 19.33  9.58   4 43.0  4.000  5.000    2.630   -2.935   3111  0.552  0.671  0.22 -0.05 -0.00 -0.01 -0.06  42.83 104.19   1.00   5.00   5.00
+ 45.29   8  6.00  1     5     III        16  0.60  270 19.33  9.58   4 43.0  4.000  5.000    2.631   -2.935   3111  0.552  0.671  0.22 -0.05 -0.00 -0.01 -0.06  42.83 104.15   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful

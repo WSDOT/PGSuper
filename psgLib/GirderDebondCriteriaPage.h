@@ -45,7 +45,15 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    void UpdateCheckBoxes();
+   void UpdateDebondCheckBoxes();
+   void UpdateDesignCheckBoxes();
 
+   void EnableCtrls(int* ctrlIDs, BOOL enable);
+
+public:
+   afx_msg void OnBnClickedStraightDesignCheck();
+   afx_msg void OnBnClickedDebondDesignCheck();
+   afx_msg void OnBnClickedHarpedDesignCheck();
 };
 
 //{{AFX_INSERT_LOCATION}}

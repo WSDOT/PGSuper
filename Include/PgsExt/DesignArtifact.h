@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -205,18 +205,25 @@ public:
    bool DoDesignNotesExist() const;
    std::vector<DesignNote> GetDesignNotes() const;
 
+   // Any failed design strategies
+   IndexType DoPreviouslyFailedDesignsExist() const;
+   std::vector<arFlexuralDesignType> GetPreviouslyFailedFlexuralDesigns() const;
+   void AddFailedDesign(const arDesignOptions& options);
+
    //------------------------------------------------------------------------
    SpanIndexType GetSpan() const;
 
    //------------------------------------------------------------------------
    GirderIndexType GetGirder() const;
 
-   void SetDesignOptions(arDesignOptions options);
+   void InitializeDesign(const arDesignOptions& options);
+
+   void SetDesignOptions(const arDesignOptions& options);
    arDesignOptions GetDesignOptions() const;
 
    // ==== Flexure-Related Properties ======
    //------------------------------------------------------------------------
-   // DoDesignFlexure - If this is false, all flexure values are bogus.
+   // DoDesignFlexure - If this is dtNoDesign, all flexure values are bogus.
    arFlexuralDesignType GetDoDesignFlexure() const;
    
    void SetNumStraightStrands(StrandIndexType Ns);
@@ -225,8 +232,19 @@ public:
    void SetNumTempStrands(StrandIndexType Nt);
    StrandIndexType GetNumTempStrands() const;
 
+   // Return the type of adjustable strands for the design. Base on design options
+   pgsTypes::AdjustableStrandType GetAdjustableStrandType() const;
+
+   // Algorithm can design harped or raised straight for adjustable strands
+   // GetNumHarpedStrands will return the number of adjustable strands no matter what the design type
    void SetNumHarpedStrands(StrandIndexType Nh);
    StrandIndexType GetNumHarpedStrands() const;
+
+   // Functions below are only valid for dtDesignFullyBondedRaised and dtDesignForDebondingRaised
+   // and cannot be called for dtDesignForHarping, dtDesignForDebonding or dtDesignFullyBonded
+   // Pjack used for these strands is the harped strand pjack value
+   void SetRaisedAdjustableStrands(const ConfigStrandFillVector& strandFill);
+   ConfigStrandFillVector GetRaisedAdjustableStrands() const;
 
    void SetPjackStraightStrands(Float64 Pj);
    Float64 GetPjackStraightStrands() const;
@@ -330,6 +348,8 @@ private:
 
    std::vector<DesignNote> m_DesignNotes; // may want to consider making this a set if things get complicated
 
+   std::vector<arFlexuralDesignType> m_PreviouslyFailedDesigns;
+
    SpanIndexType m_Span;
    GirderIndexType m_Gdr;
 
@@ -346,6 +366,8 @@ private:
    bool    m_PjTUsedMax;
    Float64 m_HarpStrandOffsetEnd;
    Float64 m_HarpStrandOffsetHp;
+
+   ConfigStrandFillVector m_RaisedAdjustableStrandFill;
 
    DebondConfigCollection m_SsDebondInfo;
 
@@ -375,7 +397,7 @@ private:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void Init();
+   void Init(bool fromBirth);
    // GROUP: ACCESS
    // GROUP: INQUIRY
 };

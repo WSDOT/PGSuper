@@ -635,6 +635,7 @@
 #define IDC_DESIGN_PEDES_COMBO          1407
 #define IDC_COMBO_VIEWLOC               1407
 #define IDC_BACK_DIAPHRAGM_LOAD         1407
+#define IDC_ADJUSTABLE_COMBO            1407
 #define IDC_GIRDER_ORIENTATION          1408
 #define IDC_GIRDER_GIRDER               1408
 #define IDC_AHEAD_DIAPHRAGM_LOAD        1408
@@ -1268,7 +1269,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        325
+#define _APS_NEXT_RESOURCE_VALUE        326
 #define _APS_NEXT_COMMAND_VALUE         36968
 #define _APS_NEXT_CONTROL_VALUE         1643
 #define _APS_NEXT_SYMED_VALUE           111

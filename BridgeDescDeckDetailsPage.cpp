@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -203,22 +203,19 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
          Float64 grossDepth;
          bool bCheckDepth = false;
-         CString strMsg1;
-         CString strMsg2;
+         CString strMsg;
 
          if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeCIP ||
               pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay ) // CIP deck
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-            strMsg1 = _T("Slab Offset must be larger than the gross slab depth");
-            strMsg2 = _T("Overhang edge depth must be less than the gross slab depth");
+            strMsg = _T("Slab Offset must be larger than the gross slab depth + fillet");
             bCheckDepth = true;
          }
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
-            strMsg1 = _T("Slab Offset must be larger than the cast depth + panel depth");
-            strMsg2 = _T("Overhang edge depth must be less than the cast depth + panel depth");
+            strMsg = _T("Slab Offset must be larger than the cast depth + panel depth + fillet");
             bCheckDepth = true;
          }
          else
@@ -227,9 +224,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             // should not get here
          }
 
-         if ( bCheckDepth && m_SlabOffset < grossDepth )
+         if ( bCheckDepth && m_SlabOffset < grossDepth + pParent->m_BridgeDesc.GetDeckDescription()->Fillet )
          {
-            AfxMessageBox(strMsg1);
+            AfxMessageBox(strMsg);
             pDX->PrepareEditCtrl(IDC_ADIM);
             pDX->Fail();
          }
@@ -241,19 +238,21 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          
          pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotGirder); // force to girder-by-girder
 
-         Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
+         Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
 
          if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeCIP || 
               pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay )
          {
             pDX->PrepareEditCtrl(IDC_GROSS_DEPTH);
-            if ( maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
+            Float64 maxGrossDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet;
+            Float64 grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
+            if ( ::IsLT(maxGrossDepth,grossDepth) )
             {
                CString msg;
-               msg.Format(_T("Gross slab depth must less than %s to accomodate the %s fillet and maximum slab offset of %s"),
-                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
+               msg.Format(_T("Gross slab depth must less than %s to accomodate the %s fillet and minimum slab offset of %s"),
+                            FormatDimension(maxGrossDepth,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
-                            FormatDimension(maxSlabOffset,pDisplayUnits->GetComponentDimUnit()));
+                            FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
             }
@@ -261,14 +260,16 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP )
          {
             pDX->PrepareEditCtrl(IDC_PANEL_DEPTH);
-            if ( maxSlabOffset -  pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
+            Float64 maxCastDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet;
+            Float64 castDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
+            if ( ::IsLT(maxCastDepth,castDepth) )
             {
                CString msg;
-               msg.Format(_T("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and maximum slab offset of %s"),
-                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
+               msg.Format(_T("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and minimum slab offset of %s"),
+                            FormatDimension(maxCastDepth,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
-                            FormatDimension(maxSlabOffset,pDisplayUnits->GetComponentDimUnit()));
+                            FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
             }

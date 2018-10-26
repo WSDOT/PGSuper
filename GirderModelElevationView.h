@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -123,7 +123,7 @@ private:
    void BuildStirrupDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
    
    iDimensionLine* BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension);
-   void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color);
+   void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color, UINT nWidth=1);
    void BuildDebondTick(iDisplayList* pDL, IPoint2d* tickPoint,COLORREF color);
    void UpdateDisplayObjects();
 

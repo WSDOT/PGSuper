@@ -82,8 +82,8 @@ User's Guide\Girder_Editing\Transverse_Reinforcement.htm
 User's Guide\Girder_Editing\Strands.htm
 Girder Editing Wizard\Debonding.htm
 User's Guide\Girder_Editing\General.htm
-User's Guide\Design\Introduction_to_Design.htm
 User's Guide\UserDefinedLoads\Introduction.htm
+User's Guide\Design\Chapter_5.htm
 User's Guide\Girder_Editing\Copying_Girder_Properties.htm
 User's Guide\StatusCenter\Status_Center.htm
 User's Guide\StatusCenter\Chapter.htm
@@ -97,14 +97,14 @@ User's Guide\UserDefinedLoads\User_Defined_Vehicular_Live_Loads.htm
 User's Guide\UserDefinedLoads\Chapter_5.htm
 User's Guide\UserDefinedLoads\Standard_Loading.htm
 User's Guide\AnalysisControls\AnalysisControls.htm
-User's Guide\Design\Chapter_5.htm
-User's Guide\Analysis_Results\Chapter_6.htm
+User's Guide\Design\Introduction_to_Design.htm
+User's Guide\Analysis_Results\Analysis_Results_View.htm
 User's Guide\AutoCalc_Mode\Using_AutoCalc_Mode.htm
 User's Guide\Design\Design_Capabilities.htm
+User's Guide\Design\Advanced_Flexural_Design_-_Multiple_Prestress_Optimization_Strategies.htm
 User's Guide\Design\Designing_a_Girder.htm
 User's Guide\Design\Designing_Long_Girders_for_Stability.htm
 User's Guide\Working_With_Libraries\Introduction_to_Working_with_Libraries.htm
-User's Guide\Working_With_Libraries\Master_Library.htm
 User's Guide\AutoCalc_Mode\Introduction_to_AutoCalc_Mode.htm
 User's Guide\AutoCalc_Mode\Chapter_7.htm
 User's Guide\Analysis_Results\Introduction_to_Analysis_Results.htm
@@ -112,8 +112,8 @@ User's Guide\Analysis_Results\Girder_Stability_Analysis.htm
 User's Guide\Analysis_Results\Report_View.htm
 User's Guide\Analysis_Results\Understanding_Analysis_Results.htm
 User's Guide\Analysis_Results\Doing_the_Analysis.htm
-User's Guide\Analysis_Results\Analysis_Results_View.htm
 User's Guide\Working_With_Libraries\Chapter_8.htm
+User's Guide\Analysis_Results\Chapter_6.htm
 User's Guide\Customizing_PGSuper\Program_Settings.htm
 User's Guide\Customizing_PGSuper\Introduction_to_Customizing_PGSuper.htm
 User's Guide\Customizing_PGSuper\Tool_Bars.htm
@@ -122,16 +122,16 @@ User's Guide\Project_Templates\Chapter_9.htm
 User's Guide\Project_Templates\Managing_Project_Templates.htm
 User's Guide\Customizing_PGSuper\Chapter_10.htm
 User's Guide\Project_Templates\Introduction_to_Project_Templates.htm
+User's Guide\Working_With_Libraries\Master_Library.htm
 User's Guide\Working_With_Libraries\Library_View.htm
 User's Guide\Working_With_Libraries\Editing_Library_Entries.htm
 User's Guide\Working_With_Libraries\Project_Library.htm
-User's Guide\Command_Line_Options\Introduction.htm
 User's Guide\Command_Line_Options\Chapter_14.htm
 User's Guide\LoadRating\Chapter.htm
 User's Guide\LoadRating\Introduction.htm
 User's Guide\Project_Templates\Creating_Project_Templates.htm
-Bridge View\Bridge_View_Plan.htm
 Bridge Description\Condition_and_Rating.htm
+Bridge Description\BridgeDescription_Framing.htm
 Bridge Description\Superelevations.htm
 Bridge Description\BridgeDescription_RailingSystem.htm
 Bridge Description\Alignment.htm
@@ -140,29 +140,28 @@ Bridge Description\Deck_Rebar.htm
 Bridge Description\BridgeDescription_General.htm
 Bridge Description\Profile.htm
 Bridge Description\Deck_Details.htm
+User's Guide\Command_Line_Options\Introduction.htm
 User's Guide\Command_Line_Options\Command_Line_Options.htm
 User's Guide\Appendix A - PGSuper Dialogs\Appendix_A_-_PGSuper_Dialogs.htm
 User's Guide\Extending_PGSuper\Extending_PGSuper.htm
 Dialogs\Alignment_Description_Dialog.htm
 Dialogs\Bridge_Editing_Dialog.htm
-Bridge Description\BridgeDescription_Framing.htm
+User's Guide\Appendix A - PGSuper Dialogs\FavoriteReports.htm
+Dialogs\Design_Criteria.htm
 Dialogs\Construction_Loads.htm
 Dialogs\Configure_PGSuper.htm
 Dialogs\Copy_Girder_Properties.htm
 Dialogs\Design_Complete.htm
 Dialogs\CopyConcrete.htm
-Dialogs\Design_Girder.htm
 SpanDetails\Girders.htm
-User's Guide\Appendix A - PGSuper Dialogs\FavoriteReports.htm
 SpanDetails\Connections.htm
-User's Guide\Appendix A - PGSuper Dialogs\Custom_Reports.htm
-SpanDetails\General.htm
-Dialogs\Design_Criteria.htm
-Bridge View\Bridge_View_Section.htm
-PierDetails\General.htm
 PierDetails\Connections.htm
+SpanDetails\General.htm
+User's Guide\Appendix A - PGSuper Dialogs\Custom_Reports.htm
 PierDetails\Girder_Spacing.htm
-Girder Editing Wizard\Lifting_and_Shipping.htm
+Bridge View\Bridge_View_Section.htm
+Bridge View\Bridge_View_Plan.htm
+PierDetails\General.htm
 Girder Editing Wizard\Transverse_Reinforcement.htm
 Girder Editing Wizard\Condition_and_Rating_(Girder).htm
 Dialogs\Specify_User-Defined_Live_Loads.htm
@@ -175,90 +174,91 @@ Girder View\Girder_View_Elevation.htm
 Dialogs\Library_Entry_Conflict.htm
 Dialogs\Direct_Selection_of_Strand_Fill.htm
 Dialogs\Effective_Flange_Width.htm
-Dialogs\Library_Import_Entry_Conflict.htm
+Dialogs\Design_Girder.htm
 Dialogs\Girder_Editing_Dialog.htm
 Dialogs\Structural_Analysis_Method_Dialog.htm
-Dialogs\Toolbars.htm
+Girder Editing Wizard\Lifting_and_Shipping.htm
+Dialogs\Section_Cut.htm
 User's Guide\Appendix A - PGSuper Dialogs\Multi-Girder_Select_Grid.htm
 Dialogs\Reports.htm
 Dialogs\Load_Modifiers.htm
 Dialogs\Live_Load_Distibution_Factors.htm
 Dialogs\Edit_User_Defined_Loads.htm
-Dialogs\Edit_Distributed_Load.htm
-Dialogs\Rating_Options_(General).htm
-Dialogs\Section_Cut.htm
+Dialogs\Rating_Options_(Design).htm
+Dialogs\Toolbars.htm
 Dialogs\Project_Properties.htm
 Dialogs\Units.htm
 Dialogs\Fill_Live_Load_Distribution_Factors_With_Computed_Values.htm
 Dialogs\Plugins_and_Extensions.htm
 Dialogs\Rating_Options_(Permit).htm
 Dialogs\Rating_Options_(Legal).htm
-Dialogs\Rating_Options_(Design).htm
+Dialogs\Library_Import_Entry_Conflict.htm
+Dialogs\Rating_Options_(General).htm
 Dialogs\Edit_Moment_Load.htm
+Dialogs\Edit_Distributed_Load.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Harped Strands Tab.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\PsglibTransverse_Reinforcement_Tab.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\GenerateStrands.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\Shear_Design_Tab.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Template_Editing_Dialog.htm
-Dialogs\Edit_Point_Load.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Dimensions_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibStrands_Tab.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Template_Editing_Dialog.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm
+Dialogs\Edit_Point_Load.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\GenerateStrands.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Debonding_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Harping_Points_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Connection_Dialog.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibPGSuper_Library_Dialogs.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibConcrete_Entry_Dialog.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibLongitudinal_Reinforcement_Tab.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\PsglibTransverse_Reinforcement_Tab.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Dimensions_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibSpecification_Entry_Dialog.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\Moment_Capacity_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Shear_Capacity_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibTraffic_Barrier_Dialog.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Bridge_Site_1_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Strand_Stresses_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Lifting_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibHauling_and_Erection_Tab.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\Limits_Tab.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\Moment_Capacity_Tab.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\Design_Tab.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\Shear_Design_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibSpecification_Description_Tab.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\Limits_Tab.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\Losses_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibBridge_Site_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Creep_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\PsglibCasting_Yard_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Bridge_Site_2_Tab.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\Losses_Tab.htm
-Theoretical Manual\CriticalSection.htm
-Theoretical Manual\Theoretical_Manual.htm
 Theoretical Manual\Camber Calculations.htm
 Theoretical Manual\Defining_Girder_Spacing.htm
 Theoretical Manual\CreepDeflection.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Deflections_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Vehicular_Live_Loads.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\Design_Tab.htm
 User's Guide\Appendix B - PGSuper Library Dialogs\Load_Rating_Criteria.htm
-Theoretical Manual\Concrete_Material_Properties.htm
-User's Guide\Appendix B - PGSuper Library Dialogs\Live_Load_Factors.htm
 Theoretical Manual\Continuity.htm
-Theoretical Manual\Fabrication_Optimization.htm
+User's Guide\Appendix B - PGSuper Library Dialogs\Live_Load_Factors.htm
+Theoretical Manual\Theoretical_Manual.htm
+Theoretical Manual\CriticalSection.htm
 Theoretical Manual\Introduction_Theoretical_Manual.htm
 Theoretical Manual\CapacityToDemand_Ratios.htm
 Theoretical Manual\ADimension.htm
 Theoretical Manual\Composite_Section_Properties.htm
-Theoretical Manual\Lifting_of_Long_Prestressed_Girders.htm
+Theoretical Manual\Concrete_Material_Properties.htm
+Theoretical Manual\Live_Load_Distribution_Factors1.htm
 Theoretical Manual\Live_Load_Distribution_Factors.htm
 Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm
 Theoretical Manual\Live_Load_Distribution_Factors_-_TxDOT_Method.htm
 Theoretical Manual\Fatigue.htm
 Theoretical Manual\Hauling_of_Long_Prestressed_Girders.htm
+Theoretical Manual\Fabrication_Optimization.htm
 Theoretical Manual\Generalized_Resistance_Factor_for_Flexure.htm
-Theoretical Manual\txdot_research_report_0-6374-2.htm
-Theoretical Manual\PsglibLateral_Stability_of_Long_Prestr.htm
-Theoretical Manual\Live_Load_Distribution_Factors1.htm
-Theoretical Manual\Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm
 Theoretical Manual\MaximumAllowableJackingForce.htm
+Theoretical Manual\Lifting_of_Long_Prestressed_Girders.htm
+Theoretical Manual\Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm
+Theoretical Manual\PsglibLateral_Stability_of_Long_Prestr.htm
 Theoretical Manual\Light_Weight_Concrete.htm
 Theoretical Manual\Prestress_Losses.htm
 Theoretical Manual\hauling_of_long_prestressed_girders_kdot_method.htm
 Theoretical Manual\Interface_Shear_Transfer.htm
-Adminstrator's Guide\Chapter 3\Introduction_to_Project_Templates.htm
+Theoretical Manual\Ultimate_Moment_Capacity_Analysis.htm
 Adminstrator's Guide\Chapter 2\Creating_Library_Entries.htm
 Adminstrator's Guide\Chapter 2\Chapter_2.htm
 Adminstrator's Guide\Chapter 2\Deploying_the_Master_Library.htm
@@ -266,16 +266,16 @@ Adminstrator's Guide\Chapter 2\Introduction_to_Customizing_PGSuper.htm
 Adminstrator's Guide\Chapter 1\Introduction_to_Installation.htm
 Adminstrator's Guide\Chapter 1\Chapter_2.htm
 Adminstrator's Guide\Chapter 3\Creating_Project_Templates.htm
-Adminstrator's Guide\Chapter 3\Deploying_Project_Templates.htm
-Theoretical Manual\Ultimate_Moment_Capacity_Analysis.htm
+Adminstrator's Guide\Chapter 3\Introduction_to_Project_Templates.htm
 Theoretical Manual\AnalyticalModels.htm
 Theoretical Manual\Shear_Design_(Determination_of_Beta_and_Theta).htm
+Theoretical Manual\txdot_research_report_0-6374-2.htm
 Theoretical Manual\Bursting_Zone_Checks.htm
 Theoretical Manual\User-Defined_Live_Loads.htm
 Adminstrator's Guide\Chapter 3\Chapter_3.htm
 Adminstrator's Guide\Introduction_Admin_Guide.htm
+Adminstrator's Guide\Chapter 3\Deploying_Project_Templates.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_New_command.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITOREdit_the_Selected_Library_Entry.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Open_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Exit_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_menu_commands.htm
@@ -287,12 +287,12 @@ Adminstrator's Guide\Chapter 4\LIBRARYEDITORGetting_Started.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Close_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Save_As_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Save_command.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORDuplicate_the_Selected_Entry.htm
 Adminstrator's Guide\Chapter 4\Chapter_4.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITOREdit_the_Selected_Library_Entry.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORAdd_a_New_Entry_to_Library.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000004.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000021.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORtoolbar.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORView_Toolbar_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000003.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000005.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000027.htm
@@ -301,18 +301,18 @@ Adminstrator's Guide\Chapter 4\Rename_The_Selected_Entry.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORstatus_bar.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000029.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000024.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORtoolbar.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORDuplicate_the_Selected_Entry.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORUnits_menu.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORView_Toolbar_command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000030.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000020.htm
-User's Guide\Girder_Editing\Materials.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000026.htm
-Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000038.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000008.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORHelp_Using_Help_Command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORPGSuper_Project.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000041.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000042.htm
+User's Guide\Girder_Editing\Materials.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000036.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000037.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000025.htm
@@ -328,9 +328,10 @@ Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000034.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000023.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORSystem_Minimize_Command.htm
 Adminstrator's Guide\Chapter 4\LIBRARYEDITORLibrary_Entry.htm
+Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000038.htm
+Theoretical Manual\Shear_Design_Memo_June_2001.htm
 User's Guide\StatusCenter\GirderConnectionError.htm
 Theoretical Manual\Shear_Design_Memo_April_2007.htm
-Theoretical Manual\Shear_Design_Memo_June_2001.htm
 Theoretical Manual\Shear_Design_Memo_August_2007.htm
 Dialogs\environment.htm
 eHelp.xml

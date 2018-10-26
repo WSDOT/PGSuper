@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@ public:
       LiftingRedesignAfterShipping,      // Continue with lifting design after shipping is successful
       RetainStrandProportioning,       // Retain strand proportioning information for next restart
       ChangedForUltimate,
+      RaisedStraightStrands,   // Raised design will restart main design alg
       XXBogusOutcome // must be last in enum
    };
 
@@ -77,12 +78,19 @@ public:
 
    bool DidStrandsChange()
    {
-      return m_Outcomes.at(PermanentStrandsChanged) || m_Outcomes.at(TemporaryStrandsChanged);
+      return m_Outcomes.at(PermanentStrandsChanged) || 
+             m_Outcomes.at(TemporaryStrandsChanged) ||
+             m_Outcomes.at(RaisedStraightStrands);
    }
 
    bool DidRetainStrandProportioning()
    {
       return m_Outcomes.at(RetainStrandProportioning);
+   }
+
+   bool DidRaiseStraightStrands()
+   {
+      return m_Outcomes.at(RaisedStraightStrands);
    }
 
    // if true, everything is good... keep going

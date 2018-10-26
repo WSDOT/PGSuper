@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -55,7 +55,8 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    bool bHasUserLoads = pUDL->DoUserLoadsExist(span,gdr);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   bool bHasOverlay = (pBridge->IsFutureOverlay() == true ? false : true); // only include overlay if it is NOT a future overlay
+   bool bHasOverlay = pBridge->HasOverlay();
+   pgsTypes::Stage overlayStage = (pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2);
 
    GET_IFACE2(pBroker,IProductLoads,pLoad);
    bool bHasSidewalk = pLoad->HasSidewalkLoad(span,gdr);
@@ -77,6 +78,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    table->m_bHasUserLoads = bHasUserLoads;
    table->m_bHasSidewalk  = bHasSidewalk;
    table->m_bHasOverlay   = bHasOverlay;
+   table->m_OverlayStage  = overlayStage;
 
    table->scalar.SetFormat(sysNumericFormatTool::Fixed);
    table->scalar.SetWidth(5);
@@ -181,7 +183,7 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
 
    if ( m_bHasOverlay )
    {
-      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( pgsTypes::BridgeSite2, pftOverlay, poi, m_BAT ));
+      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( m_OverlayStage, pftOverlay, poi, m_BAT ));
    }
 
    if ( m_bHasUserLoads )

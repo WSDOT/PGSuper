@@ -16486,11 +16486,6 @@
     <param name="Local" value="User's Guide\Design\Design_Capabilities.htm">
   </object>
   <li><object type="text/sitemap">
-    <param name="Name" value="There's">
-    <param name="Name" value="Design Capabilities">
-    <param name="Local" value="User's Guide\Design\Design_Capabilities.htm">
-  </object>
-  <li><object type="text/sitemap">
     <param name="Name" value="Templates make">
     <param name="Name" value="Introduction To Project Templates">
     <param name="Local" value="Adminstrator's Guide\Chapter 3\Introduction_to_Project_Templates.htm">

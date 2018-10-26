@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -119,11 +119,11 @@ public:
    Float64 GetHoldDownForce(SpanIndexType span,GirderIndexType gdr);
    Float64 GetHoldDownForce(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config);
 
-   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType type,pgsTypes::LossStage stage);
-   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType type,pgsTypes::LossStage stage,const GDRCONFIG& config);
+   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType type,pgsTypes::LossStage stage,pgsTypes::LimitState limitState);
+   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType type,pgsTypes::LossStage stage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
 
-   Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage);
-   Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage,const GDRCONFIG& config);
+   Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage,pgsTypes::LimitState limitState);
+   Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
 
 protected:
    void MakeCopy(const pgsPsForceEng& rOther);

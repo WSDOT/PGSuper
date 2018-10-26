@@ -17,7 +17,7 @@ class CStrandGridLocation : public CDialog
 public:
 	CStrandGridLocation(CWnd* pParent = NULL);   // standard constructor
 
-   void SetEntry(const CGirderGlobalStrandGrid::GlobalStrandGridEntry& Entry, bool UseHarpedGrid, bool UseHarpedWebStrands);
+   void SetEntry(const CGirderGlobalStrandGrid::GlobalStrandGridEntry& Entry, bool UseHarpedGrid, pgsTypes::AdjustableStrandType adjustableStrandType);
    CGirderGlobalStrandGrid::GlobalStrandGridEntry GetEntry();
 
 // Dialog Data
@@ -35,7 +35,7 @@ public:
 
    ROWCOL m_Row;
    bool m_UseHarpedGrid;
-   bool m_UseHarpedWebStrands;
+   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -515,6 +515,11 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    lrfdLldfTypeAEKIJ* pLLDF;
    if ( pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_LRFD )
    {
+      bool bRigidMethod = (0 < nDiaphragms ? true : false);
+      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      {
+         bRigidMethod = false; // rigid method only used for steel bridges starting with LRFD 7th Edition, 2014
+      }
       pLLDF = new lrfdLldfTypeAEK(plldf->gdrNum,
                                   plldf->Savg,
                                   plldf->gdrSpacings,
@@ -528,7 +533,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
                                   plldf->I, 
                                   plldf->A, 
                                   plldf->eg,
-                                  (nDiaphragms > 0 ? true : false),
+                                  bRigidMethod,
                                   plldf->skew1,
                                   plldf->skew2,
                                   bSkewMoment,bSkewShear);

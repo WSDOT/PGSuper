@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -123,8 +123,8 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_LUMP_SUM,    IDC_TOP_MAT_LUMP_SUM_UNIT,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_LUMP_SUM, IDC_BOTTOM_MAT_LUMP_SUM_UNIT, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
 
-   DDV_UnitValueGreaterThanZero(pDX, IDC_TOP_MAT_LUMP_SUM,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_BOTTOM_MAT_LUMP_SUM, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_TOP_MAT_LUMP_SUM,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BOTTOM_MAT_LUMP_SUM, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
 
    DDV_GXGridWnd(pDX,&m_Grid);
    if ( pDX->m_bSaveAndValidate )

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\Allowables.h>
 #include <PgsExt\PointOfInterest.h>
 #include "PGSuperTypes.h"
 #include "PGSuperColors.h"
@@ -1128,7 +1129,10 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
 
    // Demand and Allowable
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Demand (Design)"),     pgsTypes::ServiceI,  graphDemand,    true,  false,  true,  true,  true,  true, RGB(139, 26, 26)) );
-   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Allowable (Design)"),  pgsTypes::ServiceI,  graphAllowable, true,  false,  true,  true,  true,  true, RGB(139, 26, 26)) );
+
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   bool bTempStresses = (pAllowable->CheckTemporaryStresses() ? true : false);
+   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Allowable (Design)"),  pgsTypes::ServiceI,  graphAllowable, true,  false,  bTempStresses,  bTempStresses,  true,  true, RGB(139, 26, 26)) );
    
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {

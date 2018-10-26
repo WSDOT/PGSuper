@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -123,7 +123,7 @@ public:
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
-   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
+   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState);
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi);
    virtual void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual void ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
@@ -139,7 +139,7 @@ public:
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
-   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
+   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config);
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void ClearDesignLosses();
 
@@ -160,24 +160,28 @@ public:
    virtual Float64 GetHoldDownForce(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetHoldDownForce(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config);
 
-   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage);
-   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage);
+   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState);
+   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
 
-   virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage);
-   virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage);
+   virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState);
+   virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
 
-   virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage);
-   virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::LossStage lossStage);
+   virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState);
+   virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
 
-   virtual Float64 GetVertHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage);
-   virtual Float64 GetVertHarpedStrandForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::LossStage lossStage);
+   virtual Float64 GetVertHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState);
+   virtual Float64 GetVertHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
 
-   virtual Float64 GetStrandForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage);
-   virtual Float64 GetStrandForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config,pgsTypes::LossStage lossStage);
+   virtual Float64 GetStrandForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState);
+   virtual Float64 GetStrandForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
 
-   virtual Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage);
-   virtual Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config,pgsTypes::LossStage lossStage);
+   virtual Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState);
+   virtual Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
 
+   virtual void GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config, Float64* pLowerBound, Float64* pUpperBound);
+
+   // non virtual
+   pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config);
 
 // ILiveLoadDistributionFactors
 public:
@@ -259,7 +263,7 @@ public:
 // IArtifact
 public:
    virtual const pgsGirderArtifact* GetArtifact(SpanIndexType span,GirderIndexType gdr);
-   virtual const pgsDesignArtifact* CreateDesignArtifact(SpanIndexType span,GirderIndexType gdr,arDesignOptions design);
+   virtual const pgsDesignArtifact* CreateDesignArtifact(SpanIndexType span,GirderIndexType gdr,const std::vector<arDesignOptions>& design);
    virtual const pgsDesignArtifact* GetDesignArtifact(SpanIndexType span,GirderIndexType gdr);
    virtual void CreateLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);
    virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 leftSupportLoc,Float64 rightSupportLoc);
@@ -506,6 +510,8 @@ private:
    void CheckCurvatureRequirements(const pgsPointOfInterest& poi);
    void CheckGirderStiffnessRequirements(const pgsPointOfInterest& poi);
    void CheckParallelGirderRequirements(const pgsPointOfInterest& poi);
+
+
 };
 
 #endif //__ENGAGENT_H_

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -773,9 +773,10 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
             std::vector<Float64> c,t;
 
             if ( stage == pgsTypes::CastingYard            || 
-                 stage == pgsTypes::GirderPlacement        || 
+                 ((stage == pgsTypes::GirderPlacement        || 
                  stage == pgsTypes::TemporaryStrandRemoval || 
-                 stage == pgsTypes::BridgeSite1 )
+                 stage == pgsTypes::BridgeSite1) && pAllowable->CheckTemporaryStresses())
+               )
             {
                c = pAllowable->GetAllowableStress(vPoi,stage,ls_type,pgsTypes::Compression);
                AddGraphPoints(max_data_series, xVals, c);
@@ -787,6 +788,12 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
             {
                c = pAllowable->GetAllowableStress(vPoi,stage,ls_type,pgsTypes::Compression);
                AddGraphPoints(max_data_series, xVals, c);
+
+               if ( pAllowable->CheckFinalDeadLoadTensionStress() )
+               {
+                  t = pAllowable->GetAllowableStress(vPoi,stage,ls_type,pgsTypes::Tension);
+                  AddGraphPoints(min_data_series, xVals, t);
+               }
             }
             else if ( stage == pgsTypes::BridgeSite3 )
             {

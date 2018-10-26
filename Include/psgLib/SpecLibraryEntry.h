@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -631,6 +631,11 @@ public:
    // If the bool is false, this check is not made and the stress value is undefined.
    void SetTempStrandRemovalAbsMaxConcreteTens(bool doCheck, Float64 stress);
 
+   //------------------------------------------------------------------------
+   // Set/Get flag that indicates if stresses during temporary loading conditions
+   // are to be checked (basically, Bridge Site 1 stresses)
+   void CheckTemporaryStresses(bool bCheck);
+   bool CheckTemporaryStresses() const;
 
    //------------------------------------------------------------------------
    // Get the max allowable compressive concrete stress for service loading
@@ -674,6 +679,33 @@ public:
    // Set the max allowable compressive concrete stress for  loading
    // at bridge site 2 as a factor times f'c
    void SetBs2CompStress(Float64 stress);
+
+   //------------------------------------------------------------------------
+   void CheckBs2Tension(bool bCheck);
+   bool CheckBs2Tension() const;
+
+   //------------------------------------------------------------------------
+   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
+   // at the bridge site stage 2
+   Float64 GetBs2MaxConcreteTens() const;
+
+   //------------------------------------------------------------------------
+   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
+   // concrete at the bridge site stage 2
+   void SetBs2MaxConcreteTens(Float64 stress);
+
+   //------------------------------------------------------------------------
+   // Get the absolute maximum allowable tensile stress in concrete
+   // at the bridge site stage 2
+   // If the bool is false, this check is not made and the stress value is 
+   // undefined.
+   void GetBs2AbsMaxConcreteTens(bool* doCheck, Float64* stress) const;
+
+   //------------------------------------------------------------------------
+   // Set the absolute maximum allowable tensile stress in 
+   // concrete at the bridge site stage 2
+   // If the bool is false, this check is not made and the stress value is undefined.
+   void SetBs2AbsMaxConcreteTens(bool doCheck, Float64 stress);
 
    //------------------------------------------------------------------------
    // Get the max allowable compressive concrete stress for service loading
@@ -1077,6 +1109,12 @@ public:
    void AllowStraightStrandExtensions(bool bAllow);
    bool AllowStraightStrandExtensions() const;
 
+   void CheckBottomFlangeClearance(bool bCheck);
+   bool CheckBottomFlangeClearance() const;
+   void SetMinBottomFlangeClearance(Float64 Cmin);
+   Float64 GetMinBottomFlangeClearance() const;
+
+
    // GROUP: INQUIRY
 
 protected:
@@ -1202,6 +1240,7 @@ private:
    Float64 m_TempStrandRemovalTensStressMax;
 
    // bridge site 1
+   bool m_bCheckTemporaryStresses; // indicates if limit state stresses are checked for temporary loading conditions
    Float64 m_Bs1CompStress;
    Float64 m_Bs1TensStress;
    bool    m_Bs1DoTensStressMax;
@@ -1209,6 +1248,10 @@ private:
 
    // bridge site 2
    Float64 m_Bs2CompStress;
+   bool    m_bCheckBs2Tension;
+   Float64 m_Bs2TensStress;
+   bool    m_Bs2DoTensStressMax;
+   Float64 m_Bs2TensStressMax;
    pgsTypes::TrafficBarrierDistribution m_TrafficBarrierDistributionType;
    GirderIndexType  m_Bs2MaxGirdersTrafficBarrier;
    GirderIndexType  m_Bs2MaxGirdersUtility;
@@ -1338,6 +1381,9 @@ private:
    bool m_bIncludeForNegMoment;
 
    bool m_bAllowStraightStrandExtensions;
+
+   bool m_bCheckBottomFlangeClearance;
+   Float64 m_Cmin;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

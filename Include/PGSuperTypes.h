@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -141,7 +141,8 @@ struct pgsTypes
    typedef enum StrandType { Straight, Harped, Temporary, Permanent } StrandType;
    typedef enum LossStage { Jacking, BeforeXfer, AfterXfer, AtLifting, AtShipping, BeforeTemporaryStrandRemoval, AfterTemporaryStrandRemoval, AfterDeckPlacement, AfterSIDL, AfterLosses, AfterLossesWithLiveLoad, AfterTemporaryStrandInstallation } LossStage;
    typedef enum AnalysisType { Simple, Continuous, Envelope } AnalysisType;
-
+   // Adjustable strands can be straight or harped. In library only; they can be either
+   typedef enum AdjustableStrandType {asHarped=0, asStraight=1, asStraightOrHarped = 2};
    // temporary top strand usage
    typedef enum TTSUsage
    {
@@ -652,8 +653,10 @@ struct PRESTRESSCONFIG
    Float64 HpOffset;  // Offset of harped strands at the harping point
    pgsTypes::TTSUsage TempStrandUsage;
 
+   pgsTypes::AdjustableStrandType AdjustableStrandType; // can be asHarped or asStraight only
+
    PRESTRESSCONFIG():
-   EndOffset(0.0), HpOffset(0.0), TempStrandUsage(pgsTypes::ttsPretensioned)
+   EndOffset(0.0), HpOffset(0.0), TempStrandUsage(pgsTypes::ttsPretensioned), AdjustableStrandType(pgsTypes::asHarped)
    {
       for (int i=0; i<3; i++)
       {
@@ -787,6 +790,9 @@ inline bool PRESTRESSCONFIG::operator==(const PRESTRESSCONFIG& other) const
    if (TempStrandUsage != other.TempStrandUsage)
       return false;
 
+   if (AdjustableStrandType != other.AdjustableStrandType)
+      return false;
+
    return true;
 }
 
@@ -810,6 +816,8 @@ inline void PRESTRESSCONFIG::MakeCopy( const PRESTRESSCONFIG& other )
    HpOffset  = other.HpOffset;
 
    TempStrandUsage = other.TempStrandUsage;
+
+   AdjustableStrandType = other.AdjustableStrandType;
 }
 
 //-----------------------------------------------------------------------------
@@ -923,8 +931,9 @@ struct HANDLINGCONFIG
    Float64 RightOverhang;  // overhang closest to cab of truck when used from hauling
 };
 
-enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded };
-enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping };
+enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded,
+                            dtDesignFullyBondedRaised, dtDesignForDebondingRaised }; // raised straight strands
+enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping, ftDirectFill }; // direct fill used for raised straight
 enum arDesignStirrupLayoutType { slLayoutStirrups, slRetainExistingLayout };
 
 struct arDesignOptions
@@ -939,6 +948,9 @@ struct arDesignOptions
    arDesignStrandFillType doStrandFillType;
    bool doForceHarpedStrandsStraight;
 
+   Float64 maxFci;
+   Float64 maxFc;
+
    bool doDesignForShear;
 
    arDesignStirrupLayoutType doDesignStirrupLayout;
@@ -946,7 +958,9 @@ struct arDesignOptions
    arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(false), doDesignLifting(false), doDesignHauling(false),
                       doDesignSlope(false), doDesignHoldDown(false), doDesignForShear(false), 
                       doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups),
-                      doForceHarpedStrandsStraight(false)
+                      doForceHarpedStrandsStraight(false),
+                      maxFci(0.0),
+                      maxFc(0.0)
    {;}
 };
 
@@ -1259,6 +1273,37 @@ inline CComBSTR GetLiveLoadTypeName(pgsTypes::LoadRatingType ratingType)
       bstrName += CComBSTR(" - Operating");
 
    return bstrName;
+}
+
+inline std::_tstring GetDesignTypeName(arFlexuralDesignType type)
+{
+   switch (type)
+   {
+   case dtDesignForHarping:
+      return std::_tstring(_T("Harped Strand"));
+      break;
+
+   case dtDesignForDebonding:
+      return std::_tstring(_T("Debonded Straight Strand"));
+      break;
+
+   case dtDesignFullyBonded:
+      return std::_tstring(_T("Straight Strand"));
+      break;
+
+   case dtDesignFullyBondedRaised:
+      return std::_tstring(_T("Raised Straight Strand"));
+      break;
+
+   case dtDesignForDebondingRaised:
+      return std::_tstring(_T("Debonded and Raised Straight Strand"));
+      break;
+
+   default:
+      ATLASSERT(0);
+   }
+
+   return std::_tstring(_T("Unknown Design Type"));
 }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

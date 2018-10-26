@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -204,8 +204,8 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    (*paraTable)(0,3) << Sub2(_T("k"),_T("f"));
 
    table->time.ShowUnitTag(true);
-   (*paraTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetAgeAtHauling());
-   (*paraTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetFinalAge());
+   (*paraTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Hauling") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToShipping().GetMaturity());
+   (*paraTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
    table->time.ShowUnitTag(false);
 
    (*paraTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKvs());

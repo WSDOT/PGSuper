@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -46,12 +46,12 @@ CLASS
 //======================== LIFECYCLE  =======================================
 pgsDesignArtifact::pgsDesignArtifact()
 {
-   Init();
+   Init(true);
 }
 
 pgsDesignArtifact::pgsDesignArtifact(SpanIndexType span,GirderIndexType gdr)
 {
-   Init();
+   Init(true);
 
    m_Span = span;
    m_Gdr  = gdr;
@@ -104,6 +104,21 @@ std::vector<pgsDesignArtifact::DesignNote> pgsDesignArtifact::GetDesignNotes() c
    return m_DesignNotes;
 }
 
+IndexType pgsDesignArtifact::DoPreviouslyFailedDesignsExist() const
+{
+   return !m_PreviouslyFailedDesigns.empty();
+}
+
+void pgsDesignArtifact::AddFailedDesign(const arDesignOptions& options)
+{
+   m_PreviouslyFailedDesigns.push_back(options.doDesignForFlexure);
+}
+
+std::vector<arFlexuralDesignType> pgsDesignArtifact::GetPreviouslyFailedFlexuralDesigns() const
+{
+   return m_PreviouslyFailedDesigns;
+}
+
 SpanIndexType pgsDesignArtifact::GetSpan() const
 {
    return m_Span;
@@ -114,7 +129,15 @@ GirderIndexType pgsDesignArtifact::GetGirder() const
    return m_Gdr;
 }
 
-void pgsDesignArtifact::SetDesignOptions(arDesignOptions options)
+void pgsDesignArtifact::InitializeDesign(const arDesignOptions& options)
+{
+   // Reset the artifact data
+   Init(false);
+
+   SetDesignOptions(options);
+}
+
+void pgsDesignArtifact::SetDesignOptions(const arDesignOptions& options)
 {
    m_DesignOptions = options;
 }
@@ -161,7 +184,52 @@ void pgsDesignArtifact::SetNumHarpedStrands(StrandIndexType Nh)
 
 StrandIndexType pgsDesignArtifact::GetNumHarpedStrands() const
 {
-   return m_Nh;
+   if(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure || 
+      dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure)
+   {
+      return PRESTRESSCONFIG::CountStrandsInFill(m_RaisedAdjustableStrandFill);
+   }
+   else
+   {
+      return m_Nh;
+   }
+}
+
+pgsTypes::AdjustableStrandType pgsDesignArtifact::GetAdjustableStrandType() const
+{
+   // Strand type is based on design type
+   if (m_DesignOptions.doDesignForFlexure==dtDesignForHarping)
+   {
+      return pgsTypes::asHarped;
+   }
+   else if (m_DesignOptions.doDesignForFlexure==dtDesignForDebonding || 
+            m_DesignOptions.doDesignForFlexure==dtDesignFullyBonded  ||
+            m_DesignOptions.doDesignForFlexure==dtDesignFullyBondedRaised ||
+            m_DesignOptions.doDesignForFlexure==dtDesignForDebondingRaised)
+   {
+      return pgsTypes::asStraight;
+   }
+   else
+   {
+      ATLASSERT(0);
+      return pgsTypes::asStraight;
+   }
+}
+
+void pgsDesignArtifact::SetRaisedAdjustableStrands(const ConfigStrandFillVector& strandFill)
+{
+   ATLASSERT(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure || 
+             dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure);
+
+   m_RaisedAdjustableStrandFill = strandFill;
+}
+
+ConfigStrandFillVector pgsDesignArtifact::GetRaisedAdjustableStrands() const
+{
+   ATLASSERT(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure ||
+             dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure);
+
+   return m_RaisedAdjustableStrandFill;
 }
 
 void pgsDesignArtifact::SetPjackStraightStrands(Float64 Pj)
@@ -354,7 +422,18 @@ GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
    PRESTRESSCONFIG& rpsconfig(config.PrestressConfig); // use reference as a shortcut
 
    rpsconfig.SetStrandFill(pgsTypes::Straight,  pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(),pgsTypes::Straight,  GetNumStraightStrands()));
-   rpsconfig.SetStrandFill(pgsTypes::Harped,    pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(),pgsTypes::Harped,    GetNumHarpedStrands()));
+
+   // Raised designs store strand fill directly
+   if(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure || 
+      dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure)
+   {
+      rpsconfig.SetStrandFill(pgsTypes::Harped, m_RaisedAdjustableStrandFill );
+   }
+   else
+   {
+      rpsconfig.SetStrandFill(pgsTypes::Harped, pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(), pgsTypes::Harped, GetNumHarpedStrands()));
+   }
+
    rpsconfig.SetStrandFill(pgsTypes::Temporary, pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(),pgsTypes::Temporary, GetNumTempStrands()));
 
    rpsconfig.Pjack[pgsTypes::Straight]  = GetPjackStraightStrands();
@@ -363,6 +442,8 @@ GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
 
    rpsconfig.EndOffset = GetHarpStrandOffsetEnd();
    rpsconfig.HpOffset  = GetHarpStrandOffsetHp();
+
+   rpsconfig.AdjustableStrandType = GetAdjustableStrandType();
    
    rpsconfig.Debond[pgsTypes::Straight] = m_SsDebondInfo; // we only design debond for straight strands
 
@@ -722,6 +803,7 @@ void pgsDesignArtifact::MakeCopy(const pgsDesignArtifact& rOther)
 
    m_Ns                  = rOther.m_Ns;
    m_Nh                  = rOther.m_Nh;
+   m_RaisedAdjustableStrandFill = rOther.m_RaisedAdjustableStrandFill;
    m_Nt                  = rOther.m_Nt;
    m_PjS                 = rOther.m_PjS;
    m_PjH                 = rOther.m_PjH;
@@ -756,6 +838,8 @@ void pgsDesignArtifact::MakeCopy(const pgsDesignArtifact& rOther)
 
    m_ConcreteReleaseDesignState = rOther.m_ConcreteReleaseDesignState;
    m_ConcreteFinalDesignState = rOther.m_ConcreteFinalDesignState;
+
+   m_PreviouslyFailedDesigns = rOther.m_PreviouslyFailedDesigns;
 }
 
 void pgsDesignArtifact::MakeAssignment(const pgsDesignArtifact& rOther)
@@ -771,19 +855,26 @@ void pgsDesignArtifact::MakeAssignment(const pgsDesignArtifact& rOther)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void pgsDesignArtifact::Init()
+void pgsDesignArtifact::Init(bool fromBirth)
 {
+   if (fromBirth)
+   {
+      m_Span = 0;
+      m_Gdr  = 0;
+
+      // want to keep track of previous design options
+      m_PreviouslyFailedDesigns.clear();
+   }
+
    m_Outcome = Success;
 
    m_DesignNotes.clear();
-
-   m_Span = 0;
-   m_Gdr  = 0;
 
    m_DesignOptions = arDesignOptions();
 
    m_Ns                  = 0;
    m_Nh                  = 0;
+   m_RaisedAdjustableStrandFill.clear();
    m_Nt                  = 0;
    m_PjS                 = 0;
    m_PjH                 = 0;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -521,6 +521,14 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
                var.vt = VT_BSTR;
                hr = pStrLoad->get_Property(_T("DiaphragmLoadType"),&var);
+               if ( FAILED(hr) )
+               {
+                  // there was a bug in version 2.8.2 that caused the DiaphragmLoadType to
+                  // be omitted when it was set to "DontApply". If there is a problem loading
+                  // the DiaphragmLoadType, assume it should be "DontApply"
+                  var.bstrVal = T2BSTR(_T("DontApply"));
+                  hr = S_OK;
+               }
 
                std::_tstring tmp(OLE2T(var.bstrVal));
                if (tmp == _T("ApplyAtBearingCenterline"))
@@ -582,6 +590,14 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
                var.vt = VT_BSTR;
                hr = pStrLoad->get_Property(_T("DiaphragmLoadType"),&var);
+               if ( FAILED(hr) )
+               {
+                  // there was a bug in version 2.8.2 that caused the DiaphragmLoadType to
+                  // be omitted when it was set to "DontApply". If there is a problem loading
+                  // the DiaphragmLoadType, assume it should be "DontApply"
+                  var.bstrVal = T2BSTR(_T("DontApply"));
+                  hr = S_OK;
+               }
 
                std::_tstring tmp(OLE2T(var.bstrVal));
                if (tmp == _T("ApplyAtBearingCenterline"))
@@ -910,6 +926,7 @@ HRESULT CPierData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       else
       {
          ATLASSERT(false); // is there a new load type?
+         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("DontApply")));
       }
       pStrSave->EndUnit(); // Diaphragm
    }

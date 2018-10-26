@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -154,7 +154,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    if ( bPositiveMoment )
    {
       // only for positive moment... strands are ignored for negative moment analysis
-      fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
+      fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI);
       e_initial = fpe/Eps;
    }
 
@@ -181,7 +181,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    if ( bPositiveMoment )
    {
       // only for positive moment... strands are ignored for negative moment analysis
-      fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,config,pgsTypes::AfterLosses);
+      fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI,config);
       e_initial = fpe/Eps;
    }
 
@@ -776,7 +776,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(pgsTypes::Stage stage,cons
       // Get stress at bottom of girder due to prestressing
       // Using negative because we want the amount tensile stress required to overcome the
       // precompression
-      Float64 P = pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
+      Float64 P = pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI);
       Float64 ns_eff;
       Float64 e = pStrandGeom->GetEccentricity( poi, false, &ns_eff );
 
@@ -803,7 +803,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(pgsTypes::Stage stage,cons
       // Get stress at bottom of girder due to prestressing
       // Using negative because we want the amount tensile stress required to overcome the
       // precompression
-      Float64 P = pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,config,pgsTypes::AfterLosses);
+      Float64 P = pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI,config);
       Float64 ns_eff;
       Float64 e = pStrandGeom->GetEccentricity( poi, config.PrestressConfig, false, &ns_eff);
 
@@ -896,9 +896,13 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage
 {
    GET_IFACE(IProductForces,pProductForces);
    Float64 Mdnc = GetNonCompositeDeadLoadMoment(stage,poi,bPositiveMoment);
+
    // add effect of different slab offset
-   Float64 deltaSlab = pProductForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+   Float64 deltaSlab = pProductForces->GetDesignSlabMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
    Mdnc += deltaSlab;
+
+   Float64 deltaSlabPad = pProductForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+   Mdnc += deltaSlabPad;
 
    return Mdnc;
 }

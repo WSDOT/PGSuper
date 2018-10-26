@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1816,14 +1816,14 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(SpanIndexType spa
          capTens = tensCapacityBottom;
       }
 
-      if ( stressArtifact->TensionPassedInclinedGirder() )
+      if ( stressArtifact->TensionPassedPlumbGirder() )
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,true)<<_T(")");
       else
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,false)<<_T(")");
 
       Float64 fComp = min(fTopMin, fBotMin);
       
-      if ( stressArtifact->CompressionPassedInclinedGirder() )
+      if ( stressArtifact->CompressionPassedPlumbGirder() )
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");
       else
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,false)<<_T(")");

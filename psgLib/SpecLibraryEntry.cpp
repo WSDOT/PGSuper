@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 46.0
+#define CURRENT_VERSION 48.0
 // NOTE: CURRENT_VERSION CANNOT BE GREATER THAN 49.0
 // Version 3.0 branch starts at data block version 50.0
 
@@ -123,11 +123,16 @@ m_TempStrandRemovalCompStress(0.45),
 m_TempStrandRemovalTensStress(0.0),
 m_TempStrandRemovalDoTensStressMax(false),
 m_TempStrandRemovalTensStressMax(0.0),
+m_bCheckTemporaryStresses(true), // true is consistant with the original default value
 m_Bs1CompStress(0.6),
 m_Bs1TensStress(0.0),
 m_Bs1DoTensStressMax(false),
-m_Bs1TensStressMax(0.0),
+m_Bs1TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_Bs2CompStress(0.6),
+m_bCheckBs2Tension(false), // false is consistent with the original features of the program (it didn't do this)
+m_Bs2TensStress(0.0),
+m_Bs2DoTensStressMax(false),
+m_Bs2TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_TrafficBarrierDistributionType(pgsTypes::tbdGirder),
 m_Bs2MaxGirdersTrafficBarrier(4),
 m_Bs2MaxGirdersUtility(4),
@@ -136,10 +141,10 @@ m_Bs3CompStressServ(0.6),
 m_Bs3CompStressService1A(0.4),
 m_Bs3TensStressServNc(0),
 m_Bs3DoTensStressServNcMax(false),
-m_Bs3TensStressServNcMax(0),
+m_Bs3TensStressServNcMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_Bs3TensStressServSc(0),   
 m_Bs3DoTensStressServScMax(false),
-m_Bs3TensStressServScMax(0),
+m_Bs3TensStressServScMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_Bs3IgnoreRangeOfApplicability(false),
 m_Bs3LRFDOverReinforcedMomentCapacity(0),
 m_CreepMethod(CREEP_LRFD),
@@ -209,7 +214,9 @@ m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification),
 m_bIncludeForNegMoment(true),
 m_bAllowStraightStrandExtensions(false),
 m_RelaxationLossMethod(RLM_REFINED),
-m_FcgpComputationMethod(FCGP_07FPU)
+m_FcgpComputationMethod(FCGP_07FPU),
+m_bCheckBottomFlangeClearance(false),
+m_Cmin(::ConvertToSysUnits(1.75,unitMeasure::Feet))
 {
    m_bCheckStrandStress[AT_JACKING]       = false;
    m_bCheckStrandStress[BEFORE_TRANSFER]  = true;
@@ -482,11 +489,18 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("TempStrandRemovalDoTensStressMax") ,m_TempStrandRemovalDoTensStressMax);
    pSave->Property(_T("TempStrandRemovalTensStressMax") ,  m_TempStrandRemovalTensStressMax);
 
+   pSave->Property(_T("CheckTemporaryStresses"),m_bCheckTemporaryStresses); // added in version 47
    pSave->Property(_T("Bs1CompStress") ,     m_Bs1CompStress); // removed m_ in version 30
    pSave->Property(_T("Bs1TensStress") ,     m_Bs1TensStress); // removed m_ in version 30
    pSave->Property(_T("Bs1DoTensStressMax") ,m_Bs1DoTensStressMax); // removed m_ in version 30
    pSave->Property(_T("Bs1TensStressMax") ,  m_Bs1TensStressMax); // removed m_ in version 30
    pSave->Property(_T("Bs2CompStress") ,     m_Bs2CompStress); // removed m_ in version 30
+
+   pSave->Property(_T("CheckBs2Tension"),    m_bCheckBs2Tension); // added in version 47
+   pSave->Property(_T("Bs2TensStress") ,     m_Bs2TensStress); // added in version 47
+   pSave->Property(_T("Bs2DoTensStressMax") ,m_Bs2DoTensStressMax); // added in version 47
+   pSave->Property(_T("Bs2TensStressMax") ,  m_Bs2TensStressMax); // added in version 47
+
    pSave->Property(_T("Bs2TrafficBarrierDistributionType"),(Int16)m_TrafficBarrierDistributionType); // added in version 36
    pSave->Property(_T("Bs2MaxGirdersTrafficBarrier"), m_Bs2MaxGirdersTrafficBarrier);
    pSave->Property(_T("Bs2MaxGirdersUtility"), m_Bs2MaxGirdersUtility);
@@ -742,6 +756,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("AllowStraightStrandExtensions"),m_bAllowStraightStrandExtensions);
    pSave->EndUnit();
 
+   // added in version 48
+   pSave->Property(_T("CheckBottomFlangeClearance"),m_bCheckBottomFlangeClearance);
+   pSave->Property(_T("MinBottomFlangeClearance"),m_Cmin);
+
    pSave->EndUnit();
 
    return true;
@@ -904,6 +922,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_MaxStirrupSpacing[0] = maxStirrupSpacing;
+
+         if ( m_SpecificationUnits == lrfdVersionMgr::SI )
+         {
+            // default value in SI units is 300mm
+            // default value is US units is 12"
+            // 12" = 305mm
+            m_MaxStirrupSpacing[1] = ::ConvertToSysUnits(300.0,unitMeasure::Millimeter);
+         }
+
       }
       else
       {
@@ -1289,6 +1316,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("TempStrandRemovalTensStressMax") ,  &m_TempStrandRemovalTensStressMax))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
+            if ( 46 < version )
+            {
+               // added in version 47
+               if ( !pLoad->Property(_T("CheckTemporaryStresses"),&m_bCheckTemporaryStresses) )
+               {
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+               }
+            }
+
             // for the following 5 items, the m_ was removed from the keyword in version 30
             if(!pLoad->Property(_T("Bs1CompStress") ,     &m_Bs1CompStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1304,6 +1340,22 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             if(!pLoad->Property(_T("Bs2CompStress") ,     &m_Bs2CompStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if ( 46 < version )
+            {
+               // added in version 47
+               if ( !pLoad->Property(_T("CheckBs2Tension"),&m_bCheckBs2Tension) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               if ( !pLoad->Property(_T("Bs2TensStress") , &m_Bs2TensStress) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               if ( !pLoad->Property(_T("Bs2DoTensStressMax"), &m_Bs2DoTensStressMax) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               if ( !pLoad->Property(_T("Bs2TensStressMax") ,  &m_Bs2TensStressMax) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
          else
          {
@@ -2386,6 +2438,16 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      // added in version 48
+      if ( 47 < version )
+      {
+         if ( !pLoad->Property(_T("CheckBottomFlangeClearance"),&m_bCheckBottomFlangeClearance) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("MinBottomFlangeClearance"),&m_Cmin) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
       if(!pLoad->EndUnit())
          THROW_LOAD(InvalidFileFormat,pLoad);
    }
@@ -2487,11 +2549,16 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_TempStrandRemovalDoTensStressMax, rOther.m_TempStrandRemovalDoTensStressMax         );
    TESTD(m_TempStrandRemovalTensStressMax  , rOther.m_TempStrandRemovalTensStressMax           );
 
+   TEST(m_bCheckTemporaryStresses, rOther.m_bCheckTemporaryStresses);
    TESTD(m_Bs1CompStress              , rOther.m_Bs1CompStress              );
    TESTD(m_Bs1TensStress              , rOther.m_Bs1TensStress              );
    TEST (m_Bs1DoTensStressMax         , rOther.m_Bs1DoTensStressMax         );
    TESTD(m_Bs1TensStressMax           , rOther.m_Bs1TensStressMax           );
    TESTD(m_Bs2CompStress              , rOther.m_Bs2CompStress              );
+   TEST( m_bCheckBs2Tension           , rOther.m_bCheckBs2Tension           );
+   TESTD(m_Bs2TensStress              , rOther.m_Bs2TensStress              );
+   TEST( m_Bs2DoTensStressMax         , rOther.m_Bs2DoTensStressMax         );
+   TESTD(m_Bs2TensStressMax           , rOther.m_Bs2TensStressMax           );
    TEST (m_TrafficBarrierDistributionType, rOther.m_TrafficBarrierDistributionType);
    TEST (m_Bs2MaxGirdersTrafficBarrier, rOther.m_Bs2MaxGirdersTrafficBarrier );
    TEST (m_Bs2MaxGirdersUtility       , rOther.m_Bs2MaxGirdersUtility        );
@@ -2636,6 +2703,9 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
 
    TEST( m_bIncludeForNegMoment, rOther.m_bIncludeForNegMoment);
    TEST( m_bAllowStraightStrandExtensions, rOther.m_bAllowStraightStrandExtensions);
+
+   TEST(m_bCheckBottomFlangeClearance,rOther.m_bCheckBottomFlangeClearance);
+   TESTD(m_Cmin,rOther.m_Cmin);
 
    if (considerName)
    {
@@ -3330,8 +3400,15 @@ void SpecLibraryEntry::SetTempStrandRemovalAbsMaxConcreteTens(bool doCheck, Floa
    m_TempStrandRemovalTensStressMax   = stress;
 }
 
+void SpecLibraryEntry::CheckTemporaryStresses(bool bCheck)
+{
+   m_bCheckTemporaryStresses = bCheck;
+}
 
-
+bool SpecLibraryEntry::CheckTemporaryStresses() const
+{
+   return m_bCheckTemporaryStresses;
+}
 
 Float64 SpecLibraryEntry::GetBs1CompStress() const
 {
@@ -3373,6 +3450,38 @@ Float64 SpecLibraryEntry::GetBs2CompStress() const
 void SpecLibraryEntry::SetBs2CompStress(Float64 stress)
 {
    m_Bs2CompStress = stress;
+}
+
+void SpecLibraryEntry::CheckBs2Tension(bool bCheck)
+{
+   m_bCheckBs2Tension = bCheck;
+}
+
+bool SpecLibraryEntry::CheckBs2Tension() const
+{
+   return m_bCheckBs2Tension;
+}
+
+Float64 SpecLibraryEntry::GetBs2MaxConcreteTens() const
+{
+   return m_Bs2TensStress;
+}
+
+void SpecLibraryEntry::SetBs2MaxConcreteTens(Float64 stress)
+{
+   m_Bs2TensStress = stress;
+}
+
+void SpecLibraryEntry::GetBs2AbsMaxConcreteTens(bool* doCheck, Float64* stress) const
+{
+   *doCheck = m_Bs2DoTensStressMax;
+   *stress = m_Bs2TensStressMax;
+}
+
+void SpecLibraryEntry::SetBs2AbsMaxConcreteTens(bool doCheck, Float64 stress)
+{
+   m_Bs2DoTensStressMax = doCheck;
+   m_Bs2TensStressMax = stress;
 }
 
 Float64 SpecLibraryEntry::GetBs3CompStressService() const
@@ -4309,6 +4418,26 @@ bool SpecLibraryEntry::AllowStraightStrandExtensions() const
    return m_bAllowStraightStrandExtensions;
 }
 
+void SpecLibraryEntry::CheckBottomFlangeClearance(bool bCheck)
+{
+   m_bCheckBottomFlangeClearance = bCheck;
+}
+
+bool SpecLibraryEntry::CheckBottomFlangeClearance() const
+{
+   return m_bCheckBottomFlangeClearance;
+}
+
+void SpecLibraryEntry::SetMinBottomFlangeClearance(Float64 Cmin)
+{
+   m_Cmin = Cmin;
+}
+
+Float64 SpecLibraryEntry::GetMinBottomFlangeClearance() const
+{
+   return m_Cmin;
+}
+
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -4406,11 +4535,16 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_TempStrandRemovalDoTensStressMax         = rOther.m_TempStrandRemovalDoTensStressMax;
    m_TempStrandRemovalTensStressMax           = rOther.m_TempStrandRemovalTensStressMax;
 
+   m_bCheckTemporaryStresses    = rOther.m_bCheckTemporaryStresses;
    m_Bs1CompStress              = rOther.m_Bs1CompStress;
    m_Bs1TensStress              = rOther.m_Bs1TensStress;
    m_Bs1DoTensStressMax         = rOther.m_Bs1DoTensStressMax;
    m_Bs1TensStressMax           = rOther.m_Bs1TensStressMax;
    m_Bs2CompStress              = rOther.m_Bs2CompStress;
+   m_bCheckBs2Tension           = rOther.m_bCheckBs2Tension;
+   m_Bs2TensStress              = rOther.m_Bs2TensStress;
+   m_Bs2DoTensStressMax         = rOther.m_Bs2DoTensStressMax;
+   m_Bs2TensStressMax           = rOther.m_Bs2TensStressMax;
    m_TrafficBarrierDistributionType = rOther.m_TrafficBarrierDistributionType;
    m_Bs2MaxGirdersTrafficBarrier= rOther.m_Bs2MaxGirdersTrafficBarrier;
    m_Bs2MaxGirdersUtility       = rOther.m_Bs2MaxGirdersUtility;
@@ -4556,6 +4690,9 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_bIncludeForNegMoment = rOther.m_bIncludeForNegMoment;
    m_bAllowStraightStrandExtensions = rOther.m_bAllowStraightStrandExtensions;
+
+   m_bCheckBottomFlangeClearance = rOther.m_bCheckBottomFlangeClearance;
+   m_Cmin = rOther.m_Cmin;
 }
 
 void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)

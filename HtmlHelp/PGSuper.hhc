@@ -376,6 +376,10 @@
         <param name="Name" value="Designing Long Girders for Stability">
         <param name="Local" value="User's Guide\Design\Designing_Long_Girders_for_Stability.htm">
       </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Advanced Flexural Design - Multiple Prestress Optimization Strategies">
+        <param name="Local" value="User's Guide\Design\Advanced_Flexural_Design_-_Multiple_Prestress_Optimization_Strategies.htm">
+      </object>
       </ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Chapter 9 - Analysis Results">
@@ -879,7 +883,7 @@
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibStrands_Tab.htm">
         </object>
         <li><object type="text/sitemap">
-          <param name="Name" value="Debond Criteria Tab">
+          <param name="Name" value="Flexural Design Tab">
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Debonding_Tab.htm">
         </object>
         <li><object type="text/sitemap">

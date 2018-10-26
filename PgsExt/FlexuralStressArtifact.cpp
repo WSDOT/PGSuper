@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -247,9 +247,10 @@ bool pgsFlexuralStressArtifact::Passed() const
    // Bridge Site 1,              Tension,     top and bottom
    // Bridge Site 1,              Compression, top and bottom
    // Bridge Site 2,              Compression, top and bottom
+   // Bridge Site 2,              Tension,     bottom only
    // Bridge Site 3, Service I,   Compression, top and bottom
    // Bridge Site 3, Service IA,  Compression, top and bottom
-   // Bridge Site 3, Service III, Tension,     bottom
+   // Bridge Site 3, Service III, Tension,     bottom only
 
    bool bPassed = false;
    switch( m_Key.GetStage() )
@@ -258,8 +259,18 @@ bool pgsFlexuralStressArtifact::Passed() const
 //   case pgsTypes::GirderPlacement:
    case pgsTypes::TemporaryStrandRemoval:
    case pgsTypes::BridgeSite1:
-   case pgsTypes::BridgeSite2:
       bPassed = (TopPassed() && BottomPassed());
+      break;
+
+   case pgsTypes::BridgeSite2:
+      if ( m_StressType == pgsTypes::Compression )
+      {
+         bPassed = (TopPassed() && BottomPassed());
+      }
+      else
+      {
+         bPassed = BottomPassed();
+      }
       break;
 
    case pgsTypes::BridgeSite3:

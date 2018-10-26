@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -126,6 +126,12 @@ public:
    Float64 GetMaxGirderIncline() const;
    bool GlobalGirderStabilityPassed() const;
 
+   void SetBottomFlangeClearanceApplicability(bool bSet);
+   bool IsBottomFlangeClearnceApplicable() const;
+   void SetBottomFlangeClearanceParameters(Float64 C,Float64 Cmin);
+   void GetBottomFlangeClearanceParameters(Float64* pC,Float64* pCmin) const;
+   bool BottomFlangeClearancePassed() const;
+
    bool Pass() const;
 
    // GROUP: INQUIRY
@@ -155,6 +161,10 @@ private:
    Float64 m_Wbottom;
    Float64 m_Ybottom;
    Float64 m_Orientation;
+
+   bool m_bIsBottomFlangeClearanceApplicable;
+   Float64 m_C;
+   Float64 m_Cmin;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

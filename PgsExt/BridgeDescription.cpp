@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1303,13 +1303,13 @@ Float64 CBridgeDescription::GetSlabOffset() const
    return m_SlabOffset;
 }
 
-Float64 CBridgeDescription::GetMaxSlabOffset() const
+Float64 CBridgeDescription::GetMinSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
       return GetSlabOffset();
 
    const CSpanData* pSpan = GetSpan(0);
-   Float64 maxSlabOffset = 0;
+   Float64 minSlabOffset = DBL_MAX;
    do
    {
       const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
@@ -1319,13 +1319,13 @@ Float64 CBridgeDescription::GetMaxSlabOffset() const
          Float64 startSlabOffset = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart);
          Float64 endSlabOffset   = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd);
 
-         maxSlabOffset = ::Max3(maxSlabOffset,startSlabOffset,endSlabOffset);
+         minSlabOffset = ::Min3(minSlabOffset,startSlabOffset,endSlabOffset);
       }
 
       pSpan = pSpan->GetNextPier()->GetNextSpan();
    } while (pSpan);
 
-   return maxSlabOffset;
+   return minSlabOffset;
 }
 
 void CBridgeDescription::SetDistributionFactorMethod(pgsTypes::DistributionFactorMethod method)

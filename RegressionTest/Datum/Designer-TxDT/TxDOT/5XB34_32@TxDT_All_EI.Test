@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     1   5XB34       14   1/2  270 13.11 13.11   0  2.50  14   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.662   -0.794    1866 0.736  0.875  0.03 -0.00 -0.00 -0.00 -0.00  14.95  55.55   1.00   1.00   1.00
+ 32.00   4  8.67  1     1   5XB34       14   1/2  270 13.11 13.11   0  2.50  14   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.662   -0.794    1866 0.736  0.875  0.03 -0.00 -0.00 -0.00 -0.00  14.95  55.26   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     2   5XB34       16   1/2  270 13.11 13.11   0  2.50  16   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.666   -0.802    1877 0.728  0.875  0.04 -0.00 -0.00 -0.00 -0.01  19.36  68.66   1.00   1.00   1.00
+ 32.00   4  8.67  1     2   5XB34       16   1/2  270 13.11 13.11   0  2.50  16   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.666   -0.802    1877 0.728  0.875  0.04 -0.00 -0.00 -0.00 -0.01  19.36  68.24   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  2     1   5XB34       70   1/2  270 11.22 10.66  16  2.50  28  16  6  2  4  2  2  0  0  0  0  0  5.000  5.500    3.556   -3.817    5774 0.589  0.800  0.42 -0.15 -0.01 -0.01 -0.18 198.87 543.47   1.00   1.00   1.00
+ 32.00   4  8.67  2     1   5XB34       70   1/2  270 11.22 10.66  16  2.50  28  16  6  2  4  2  2  0  0  0  0  0  5.000  5.400    3.556   -3.817    5774 0.589  0.800  0.42 -0.15 -0.01 -0.01 -0.18 198.87 535.52   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -24,7 +24,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  2     2   5XB34       72   1/2  270 11.05 10.56  14  2.50  28  14  4  4  2  2  2  0  0  0  0  0  5.200  5.600    3.595   -3.878    5854 0.582  0.800  0.43 -0.16 -0.01 -0.01 -0.19 205.79 566.66   1.00   1.00   1.00
+ 32.00   4  8.67  2     2   5XB34       72   1/2  270 11.05 10.56  14  2.50  28  14  4  4  2  2  2  0  0  0  0  0  5.200  5.600    3.595   -3.878    5854 0.582  0.800  0.42 -0.16 -0.01 -0.01 -0.19 205.79 556.53   1.00   1.00   1.00
 
 
 The Specification Check was Successful

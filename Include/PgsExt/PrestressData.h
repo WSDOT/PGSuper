@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -205,6 +205,8 @@ private:
    DirectStrandFillCollection m_HarpedStrandFill;
    DirectStrandFillCollection m_TemporaryStrandFill;
 
+   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
+
 public:
    // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
@@ -253,6 +255,10 @@ public:
 
    // Get number of strands for any fill type
    StrandIndexType GetNstrands(pgsTypes::StrandType type) const;
+
+   // Adjustable strands can be straight or harped depending on girder library and project settings
+   pgsTypes::AdjustableStrandType GetAdjustableStrandType() const;
+   void SetAdjustableStrandType(pgsTypes::AdjustableStrandType type);
 
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;

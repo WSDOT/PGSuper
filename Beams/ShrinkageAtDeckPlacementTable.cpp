@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,7 +49,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetLongTimeUnit(),        false );
 
    scalar.SetFormat( sysNumericFormatTool::Automatic );
-   scalar.SetWidth(6);
+   scalar.SetWidth(7);
    scalar.SetPrecision(3);
 
    strain.SetFormat( sysNumericFormatTool::Automatic );
@@ -154,8 +154,8 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(0,3) << Sub2(_T("k"),_T("f"));
 
    table->time.ShowUnitTag(true);
-   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToDeck().GetMaturity());
-   (*pParamTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Deck Placement") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToDeck().GetMaturity());
+   (*pParamTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
    table->time.ShowUnitTag(false);
 
    (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKvs());

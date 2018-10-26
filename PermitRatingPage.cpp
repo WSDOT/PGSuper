@@ -169,7 +169,7 @@ BOOL CPermitRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       switch(nID)
       {
       case IDC_PERMIT_TRUCK_IMPACT:
-         m_strTip = _T("MBE 6A.4.5.5 For slow moving vehicles (<= 10 mph) IM = 0%\rMBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations ar depressions IM = 20%");
+         m_strTip = _T("MBE 6A.4.5.5 For slow moving vehicles (<= 10 mph) IM = 0%\rMBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations or depressions IM = 20%");
          break;
 
       case IDC_STRENGTH_II_LL_PERMIT:

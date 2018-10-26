@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,12 +33,39 @@
 #include <IFace\GirderHandlingPointOfInterest.h>
 #include <PgsExt\PoiMgr.h>
 
+#include "RaisedStraightStrandDesignTool.h"
+
 #include <algorithm>
 #include<list>
 #include<vector>
 
 // LOCAL INCLUDES
 //
+
+struct InitialDesignParameters
+{
+   pgsTypes::Stage stage;
+   std::_tstring strLimitState;
+   std::_tstring strStressLocation;
+   pgsTypes::LimitState limit_state;
+   pgsTypes::StressLocation stress_location;
+   pgsTypes::StressType stress_type;
+   Float64 fmin;
+   Float64 fmax;
+   Float64 fAllow;
+   Float64 fpre;
+   Float64 Preqd;
+   StrandIndexType Np;
+   Float64 fN;
+
+   InitialDesignParameters(pgsTypes::Stage stage,
+                           pgsTypes::LimitState limitState,LPCTSTR lpszLimitState,
+                           pgsTypes::StressLocation stressLocation,LPCTSTR lpszStressLocation,
+                           pgsTypes::StressType stressType) :
+   stage(stage),limit_state(limitState),strLimitState(lpszLimitState),
+      stress_location(stressLocation),strStressLocation(lpszStressLocation),
+      stress_type(stressType) {}
+};
 
 typedef Int32 DebondLevelType; // want this to be a signed type!
 
@@ -119,7 +146,7 @@ public:
 
    void InitReleaseStrength(Float64 fci);
 
-   void RestoreDefaults(bool retainProportioning);
+   void RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands);
 
    // GROUP: OPERATIONS
    void FillArtifactWithFlexureValues();
@@ -144,12 +171,19 @@ public:
    bool AddStrands();
    bool AddTempStrands();
 
+   // This really doesn't actually add strands, it resequences fill to add raised straight strands for all straight designs. 
+   // Will fail if IsDesignRaisedStraight is false
+   bool AddRaisedStraightStrands();
+
+   // If fill order can be simplified - do it at final end of flexural design
+   void SimplifyDesignFillOrder(pgsDesignArtifact* pArtifact);
+
    StrandIndexType GetNextNumPermanentStrands(StrandIndexType prevNum);
    StrandIndexType GetPreviousNumPermanentStrands(StrandIndexType nextNum); 
    bool IsValidNumPermanentStrands(StrandIndexType num);
 
    void SetMinimumPermanentStrands(StrandIndexType num);
-   StrandIndexType GetMinimumPermanentStrands() const;
+   StrandIndexType GetMinimumPermanentStrands();
 
    StrandIndexType GuessInitialStrands();
    arDesignStrandFillType GetOriginalStrandFillType() const;
@@ -164,8 +198,8 @@ public:
 
    Float64 GetPrestressForceMz(pgsTypes::Stage stage,const pgsPointOfInterest& poi);
 
-   // if INVALID_INDEX, cannot handle force
-   StrandIndexType ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,Float64 force);
+   // if Np is set to INVALID_INDEX, cannot handle force
+   void ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,InitialDesignParameters* pDesignParams);
 
    Float64 ComputeEccentricity(const pgsPointOfInterest& poi, pgsTypes::Stage eccStage);
 
@@ -189,6 +223,9 @@ public:
 
    void GetEndOffsetBounds(Float64* pLower, Float64* pUpper);
    void GetHpOffsetBounds(Float64* pLower, Float64* pUpper);
+
+   Float64 GetHarpedHpOffsetIncrement(IStrandGeometry* pStrandGeom);
+   Float64 GetHarpedEndOffsetIncrement(IStrandGeometry* pStrandGeom);
 
    Float64 ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc);
    bool ComputeMinHarpedForEzEccentricity(const pgsPointOfInterest& poi, Float64 ecc, pgsTypes::Stage eccStage, StrandIndexType* pNs, StrandIndexType* pNh);
@@ -252,7 +289,9 @@ public:
    //////////
    const GDRCONFIG& GetGirderConfiguration();
 
-   arFlexuralDesignType GetFlexuralDesignType() const;
+   bool IsDesignDebonding() const;
+   bool IsDesignHarping() const;
+   bool IsDesignRaisedStraight() const;
 
    SpanIndexType GetSpan() const
    {
@@ -366,6 +405,10 @@ private:
    SpanIndexType m_Span;
    arDesignOptions m_DesignOptions;
 
+   const GirderLibraryEntry* m_pGirderEntry;
+   std::_tstring m_GirderEntryName;
+
+
    GDRCONFIG m_CachedConfig;
    bool m_bConfigDirty;
 
@@ -389,6 +432,9 @@ private:
 
    // Points of interest to be used for design
    pgsPoiMgr m_PoiMgr;
+
+   // Tool for dealing with raised straight strand design - only used if this is the design type
+   boost::shared_ptr<pgsRaisedStraightStrandDesignTool> m_pRaisedStraightStrandDesignTool;
 
    // Classes to store information on what controlled release strength
    // and to control when to set values. 
@@ -621,6 +667,9 @@ private:
 
    ConcreteStrengthController m_FciControl;
    ConcreteStrengthController m_FcControl;
+
+   Float64 m_MaxFci;
+   Float64 m_MaxFc;
 
    // store whether release strength required additional rebar
    ConcStrengthResultType m_ReleaseStrengthResult;

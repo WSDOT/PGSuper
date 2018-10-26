@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -258,6 +258,9 @@ bool CPrestressData::operator == (const CPrestressData& rOther) const
    if ( TempStrandUsage != rOther.TempStrandUsage )
       return false;
 
+   if ( m_AdjustableStrandType != rOther.m_AdjustableStrandType )
+      return false;
+
    if ( bSymmetricDebond != rOther.bSymmetricDebond )
       return false;
 
@@ -435,6 +438,24 @@ StrandIndexType CPrestressData::GetNstrands(pgsTypes::StrandType type) const
    return Nstrands[type];
 }
 
+pgsTypes::AdjustableStrandType CPrestressData::GetAdjustableStrandType() const
+{
+   return m_AdjustableStrandType;
+}
+
+void CPrestressData::SetAdjustableStrandType(pgsTypes::AdjustableStrandType type)
+{
+   if (type!=pgsTypes::asStraightOrHarped)
+   {
+      m_AdjustableStrandType = type;
+   }
+   else
+   {
+      ATLASSERT(0); // bridge project data should never be this value
+      m_AdjustableStrandType = pgsTypes::asHarped;
+   }
+}
+
 void CPrestressData::AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx)
 {
    NextendedStrands[strandType][endType].push_back(gridIdx);
@@ -480,6 +501,8 @@ void CPrestressData::ResetPrestressData()
    HpOffsetAtEnd      = 0.0;
    HsoHpMeasurement   = hsoLEGACY;
    HpOffsetAtHp       = 0.0;
+
+   m_AdjustableStrandType = pgsTypes::asHarped;
 }
 
 void CPrestressData::ClearDirectFillData()
@@ -819,6 +842,20 @@ HRESULT CPrestressData::Load(IStructuredLoad* pStrLoad)
       TempStrandUsage = pgsTypes::ttsPretensioned;
    }
 
+   if (14.0 <= version)
+   {
+      var.Clear();
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("AdjustableStrandType"),&var);
+      m_AdjustableStrandType = (pgsTypes::AdjustableStrandType)var.lVal;
+   }
+   else
+   {
+      // At this point we can assume that very old versions are harped. Howeve, very recent versions were set
+      // in the library, but we can't know that at this time. So set to harped and fix the descrepancy 
+      // later when resolving library conflicts
+      m_AdjustableStrandType = pgsTypes::asHarped;
+   }
 
    if ( 5.0 <= version )
    {
@@ -1011,6 +1048,7 @@ HRESULT CPrestressData::Save(IStructuredSave* pStrSave)
    pStrSave->put_Property(_T("LastUserPjTemp"), CComVariant(LastUserPjack[pgsTypes::Temporary]));
    pStrSave->put_Property(_T("LastUserPjPermanent"), CComVariant(LastUserPjack[pgsTypes::Permanent]));
    pStrSave->put_Property(_T("TempStrandUsage"),CComVariant(TempStrandUsage));
+   pStrSave->put_Property(_T("AdjustableStrandType"),CComVariant(m_AdjustableStrandType)); // added version 14.
 
    pStrSave->put_Property(_T("SymmetricDebond"),CComVariant(bSymmetricDebond));
 
@@ -1098,8 +1136,9 @@ void CPrestressData::MakeCopy(const CPrestressData& rOther)
       }
    }
 
-   TempStrandUsage    = rOther.TempStrandUsage;
-   bSymmetricDebond   = rOther.bSymmetricDebond;
+   TempStrandUsage        = rOther.TempStrandUsage;
+   m_AdjustableStrandType = rOther.m_AdjustableStrandType;
+   bSymmetricDebond       = rOther.bSymmetricDebond;
 
    bConvertExtendedStrands = rOther.bConvertExtendedStrands;
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1508,9 +1508,9 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
    {
       // Determine the prestress force
       if ( bUseConfig )
-         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,config,pgsTypes::Harped,pgsTypes::AfterXfer);
+         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,pgsTypes::AfterXfer,pgsTypes::ServiceI,config);
       else
-         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,pgsTypes::AfterXfer);
+         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,pgsTypes::AfterXfer,pgsTypes::ServiceI);
 
       // get harping point locations
       vPOI.clear(); // recycle the vector
@@ -1627,7 +1627,7 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
    {
       ecc_straight_start = pStrandGeom->GetSsEccentricity(poiStart, config.PrestressConfig, &nSsEffective);
       ecc_straight_end   = pStrandGeom->GetSsEccentricity(poiEnd,   config.PrestressConfig, &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,config,pgsTypes::Straight,pgsTypes::AfterXfer);
+      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,pgsTypes::AfterXfer,pgsTypes::ServiceI,config);
 
       StrandIndexType Ns = config.PrestressConfig.GetNStrands(pgsTypes::Straight);
       if ( Ns != 0 )
@@ -1638,7 +1638,7 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
       StrandIndexType Ns = pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Straight);
       ecc_straight_start = pStrandGeom->GetSsEccentricity(poiStart, &nSsEffective);
       ecc_straight_end   = pStrandGeom->GetSsEccentricity(poiEnd,   &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,pgsTypes::AfterXfer);
+      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,pgsTypes::AfterXfer,pgsTypes::ServiceI);
 
       if ( Ns != 0 )
          Ps *= nSsEffective/Ns;
@@ -1674,7 +1674,7 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
          // (ok, not at this section but lt past this section)
          Float64 nSsEffective;
 
-         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,config,pgsTypes::Straight,pgsTypes::AfterXfer);
+         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,pgsTypes::AfterXfer,pgsTypes::ServiceI,config);
          ecc_straight_debond = pStrandGeom->GetSsEccentricity(pgsPointOfInterest(spanIdx,gdrIdx,location),config.PrestressConfig, &nSsEffective);
 
          Ms = sign*Ps*ecc_straight_debond;
@@ -1695,7 +1695,7 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
 
          Float64 nSsEffective;
 
-         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,config,pgsTypes::Straight,pgsTypes::AfterXfer);
+         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,pgsTypes::AfterXfer,pgsTypes::ServiceI,config);
          ecc_straight_debond = pStrandGeom->GetSsEccentricity(pgsPointOfInterest(spanIdx,gdrIdx,location),config.PrestressConfig, &nSsEffective);
 
          Ms = sign*Ps*ecc_straight_debond;
@@ -1726,7 +1726,7 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
             // (ok, not at this section but lt past this section)
             Float64 nSsEffective;
 
-            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,pgsTypes::AfterXfer);
+            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,pgsTypes::AfterXfer,pgsTypes::ServiceI);
             ecc_straight_debond = pStrandGeom->GetSsEccentricity(pgsPointOfInterest(spanIdx,gdrIdx,location), &nSsEffective);
 
             Ms = sign*Ps*ecc_straight_debond;
@@ -1810,14 +1810,14 @@ void CAnalysisAgentImp::BuildTempCamberModel(SpanIndexType spanIdx,GirderIndexTy
 
    if ( bUseConfig )
    {
-      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,config,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation);
-      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,config,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval);
+      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI,config);
+      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval,pgsTypes::ServiceI,config);
       ecc = pStrandGeom->GetTempEccentricity(pgsPointOfInterest(spanIdx,gdrIdx,0.00),config.PrestressConfig, &nTsEffective);
    }
    else
    {
-      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation);
-      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval);
+      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI);
+      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval,pgsTypes::ServiceI);
       ecc = pStrandGeom->GetTempEccentricity(pgsPointOfInterest(spanIdx,gdrIdx,0.00),&nTsEffective);
    }
 
@@ -6630,6 +6630,135 @@ void CAnalysisAgentImp::GetDeflLiveLoadDisplacement(DeflectionLiveLoadType type,
    *pDmax = DyMaxLeft;
 }
 
+Float64 CAnalysisAgentImp::GetDesignSlabMomentAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi)
+{
+   // returns the difference in moment between the slab moment for the current value of slab offset
+   // and the input value. Adjustment is positive if the input slab offset is greater than the current value
+   SpanIndexType span  = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   rkPPPartUniformLoad beam = GetDesignSlabModel(fcgdr,startSlabOffset,endSlabOffset,poi);
+
+   GET_IFACE(IBridge,pBridge);
+
+   Float64 start_size = pBridge->GetGirderStartConnectionLength(span,gdr);
+   Float64 x = poi.GetDistFromStart() - start_size;
+   sysSectionValue M = beam.ComputeMoment(x);
+
+   ATLASSERT( IsEqual(M.Left(),M.Right()) );
+   return M.Left();
+}
+
+Float64 CAnalysisAgentImp::GetDesignSlabDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi)
+{
+   Float64 dy,rz;
+   GetDesignSlabDeflectionAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi,&dy,&rz);
+   return dy;
+}
+
+void CAnalysisAgentImp::GetDesignSlabStressAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot)
+{
+   GET_IFACE(ISectProp2,pSectProp2);
+   // returns the difference in top and bottom girder stress between the stresses caused by the current slab
+   // and the input value.
+   Float64 M = GetDesignSlabMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi);
+
+   Float64 Sbg = pSectProp2->GetSb(pgsTypes::BridgeSite1,poi);
+   Float64 Stg = pSectProp2->GetSt(pgsTypes::BridgeSite1,poi);
+
+   *pfTop = M/Stg;
+   *pfBot = M/Sbg;
+}
+
+rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabModel(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi)
+{
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridgeMaterialEx,pMat);
+   GET_IFACE(IGirder,pGdr);
+   GET_IFACE(ISectProp2,pSectProp2);
+
+   SpanIndexType span  = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   Float64 Ig = pSectProp2->GetIx( pgsTypes::BridgeSite1,poi );
+   Float64 E  = pMat->GetEconc(fcgdr,pMat->GetStrDensityGdr(span,gdr), pMat->GetEccK1Gdr(span,gdr), pMat->GetEccK2Gdr(span,gdr) );
+   Float64 L  = pBridge->GetSpanLength( span, gdr );
+
+   Float64 w;
+   bool bIsInteriorGirder = pBridge->IsInteriorGirder(span,gdr);
+   if ( bIsInteriorGirder )
+   {
+      // change in main span loading only occurs for exterior girders
+      w = 0;
+   }
+   else
+   {
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
+      if ( pDeck->DeckType == pgsTypes::sdtNone || pDeck->OverhangTaper == pgsTypes::None )
+      {
+         // there isn't a deck, or the overhang doesn't taper, so there isn't
+         // a change in loading
+         w = 0;
+      }
+      else
+      {
+         ATLASSERT( pDeck->OverhangTaper == pgsTypes::TopTopFlange || pDeck->OverhangTaper == pgsTypes::BottomTopFlange );
+         // There is a triangular shape piece of deck concrete that isn't accounted for
+         // in the main slab loading based on the input value because the "A" dimension has changed.
+         // The slab overhang tapers to either the top or bottom of the top flange and the
+         // distance to the top/bottom of the top flange depends on "A"
+
+         // Compute the change in loading due to the change in "A" dimension
+
+         // current value of "A" dimension
+         Float64 AoStart = pBridge->GetSlabOffset(span,gdr,pgsTypes::metStart);
+         Float64 AoEnd   = pBridge->GetSlabOffset(span,gdr,pgsTypes::metEnd);
+
+         // change in overhang depth at the flange tip at the start/end of the girder
+         // due to the design "A" dimension
+         Float64 delta_overhang_depth_at_flange_tip_start = startSlabOffset - AoStart;
+         Float64 delta_overhang_depth_at_flange_tip_end   = endSlabOffset   - AoEnd;
+
+         // change in flange overhang depth at this poi
+         // assuming a linear variation between start and end of span
+         Float64 delta_overhang_depth_at_flange_tip = ::LinInterp(poi.GetDistFromStart(),delta_overhang_depth_at_flange_tip_start,delta_overhang_depth_at_flange_tip_end,L);
+
+         // Determine the slab overhang at this poi
+         Float64 station,offset;
+         pBridge->GetStationAndOffset(poi,&station,&offset);
+         Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+
+         // slab overhang from CL of girder (normal to alignment)
+         Float64 slab_overhang = (gdr == 0 ? pBridge->GetLeftSlabOverhang(dist_from_start_of_bridge) : pBridge->GetRightSlabOverhang(dist_from_start_of_bridge));
+
+         if (slab_overhang < 0.0)
+         {
+            // negative overhang - girder probably has no slab over it
+            slab_overhang = 0.0;
+         }
+         else
+         {
+            Float64 top_width = pGdr->GetTopWidth(poi);
+
+            // slab overhang from edge of girder (normal to alignment)
+            slab_overhang -= top_width/2;
+         }
+
+         // cross sectional area of the missing dead load
+         Float64 delta_slab_overhang_area = slab_overhang*delta_overhang_depth_at_flange_tip/2;
+
+         w = delta_slab_overhang_area*pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
+      }
+   }
+
+#pragma Reminder("UPDATE: This is incorrect if girders are made continuous before slab casting")
+#pragma Reminder("UPDATE: Don't have a roark beam for trapezoidal loads")
+   rkPPPartUniformLoad beam(0,L,-w,L,E,Ig);
+   return beam;
+}
+
 Float64 CAnalysisAgentImp::GetDesignSlabPadMomentAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi)
 {
    // returns the difference in moment between the slab pad moment for the current value of slab offset
@@ -6693,13 +6822,12 @@ rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabPadModel(Float64 fcgdr,Float
 
    Float64 L = pBridge->GetSpanLength( span, gdr );
 
-   Float64 wStart = (AdStart - AoStart)*top_flange_width*pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
-   Float64 wEnd   = (AdEnd   - AoEnd  )*top_flange_width*pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
+   // Get change in "A" dimension at this poi
+   Float64 deltaA = ::LinInterp(poi.GetDistFromStart(),AdStart-AoStart,AdEnd-AoEnd,L);
+   Float64 w = deltaA*top_flange_width*pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
 
 #pragma Reminder("UPDATE: This is incorrect if girders are made continuous before slab casting")
 #pragma Reminder("UPDATE: Don't have a roark beam for trapezoidal loads")
-   // use the average load
-   Float64 w = (wStart + wEnd)/2;
 
    rkPPPartUniformLoad beam(0,L,-w,L,E,Ig);
    return beam;
@@ -9709,6 +9837,9 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage 
    GetStress(pgsTypes::BridgeSite1,pftSlab,poi,bat,&ft,&fb);
    ftop1 += dc*ft;   fbot1 += dc*fb;
 
+   GetDesignSlabStressAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi,&ft,&fb);
+   ftop1 += dc*ft;   fbot1 += dc*fb;
+
    GetStress(pgsTypes::BridgeSite1,pftSlabPad,poi,bat,&ft,&fb);
    ftop1 += dc*ft;   fbot1 += dc*fb;
 
@@ -10086,13 +10217,14 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
          cc.SetSurfaceArea( pSectProp2->GetSurfaceArea(span,gdr) );
          cc.SetVolume( pSectProp2->GetVolume(span,gdr) );
          cc.SetFc(fc);
+         cc.SetCuringMethodTimeAdjustmentFactor(pSpecEntry->GetCuringMethodTimeAdjustmentFactor());
 
          switch( creepPeriod )
          {
             case cpReleaseToDiaphragm:
                cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient::Accelerated : lrfdCreepCoefficient::Normal );
                cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max() );
+               cc.SetMaturity( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) - cc.GetAdjustedInitialAge() );
                break;
 
             case cpReleaseToDeck:
@@ -10181,37 +10313,37 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
             case cpReleaseToDiaphragm:
                cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal );
                cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max() );
+               cc.SetMaturity( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) - cc.GetAdjustedInitialAge() );
                break;
 
             case cpReleaseToDeck:
                cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal );
                cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max() );
+               cc.SetMaturity( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max()) - cc.GetAdjustedInitialAge() );
                break;
 
             case cpReleaseToFinal:
                cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal );
                cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() );
+               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() - cc.GetAdjustedInitialAge() );
                break;
 
             case cpDiaphragmToDeck:
                cc.SetCuringMethod( lrfdCreepCoefficient2005::Normal );
                cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max() );
-               cc.SetMaturity(  (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max()) - cc.GetInitialAge());
+               cc.SetMaturity(  (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max()) - cc.GetAdjustedInitialAge());
                break;
 
             case cpDiaphragmToFinal:
                cc.SetCuringMethod( lrfdCreepCoefficient2005::Normal );
-               cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max() );
+               cc.SetInitialAge( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) - cc.GetAdjustedInitialAge() );
                cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() );
                break;
 
             case cpDeckToFinal:
                cc.SetCuringMethod( lrfdCreepCoefficient2005::Normal );
                cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max() );
-               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() );
+               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() - cc.GetAdjustedInitialAge() );
                break;
 
             default:
@@ -10619,7 +10751,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
 
    // NOTE: No need to validate camber models
    Float64 Dslab            = 0;
-   Float64 Dslab_pad        = 0;
+   Float64 Dslab_adj        = 0;
+   Float64 Dslab_pad_adj    = 0;
    Float64 Dtrafficbarrier  = 0;
    Float64 Dsidewalk        = 0;
    Float64 Doverlay         = 0;
@@ -10628,7 +10761,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
    Float64 Duser2           = 0;
 
    Float64 Rslab            = 0;
-   Float64 Rslab_pad        = 0;
+   Float64 Rslab_adj        = 0;
+   Float64 Rslab_pad_adj    = 0;
    Float64 Rtrafficbarrier  = 0;
    Float64 Rsidewalk        = 0;
    Float64 Roverlay         = 0;
@@ -10640,7 +10774,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
    Float64 k2 = GetDeflectionAdjustmentFactor(poi,config,pgsTypes::BridgeSite2);
 
    GetDeckDeflection(poi,config,&Dslab,&Rslab);
-   GetDesignSlabPadDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_pad,&Rslab_pad);
+   GetDesignSlabDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_adj,&Rslab_adj);
+   GetDesignSlabPadDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_pad_adj,&Rslab_pad_adj);
    GetDiaphragmDeflection(poi,config,&Ddiaphragm,&Rdiaphragm);
    
    Dtrafficbarrier = k2*GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, poi, bat);
@@ -10662,8 +10797,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
       config.PrestressConfig.TempStrandUsage != pgsTypes::ttsPTBeforeShipping) ? true : false;
    if ( bTempStrands )
    {
-      *pDy = Dslab + Dslab_pad + Dtrafficbarrier + Dsidewalk + Doverlay + Duser1 + Duser2;
-      *pRz = Rslab + Rslab_pad + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser1 + Ruser2;
+      *pDy = Dslab + Dslab_adj + Dslab_pad_adj + Dtrafficbarrier + Dsidewalk + Doverlay + Duser1 + Duser2;
+      *pRz = Rslab + Rslab_adj + Rslab_pad_adj + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser1 + Ruser2;
    }
    else
    {
@@ -10674,8 +10809,8 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRC
          Rdiaphragm = 0;
       }
 
-      *pDy = Dslab + Dslab_pad + Dtrafficbarrier + Dsidewalk + Doverlay + Duser1 + Duser2 + Ddiaphragm;
-      *pRz = Rslab + Rslab_pad + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser1 + Ruser2 + Rdiaphragm;
+      *pDy = Dslab + Dslab_adj + Dslab_pad_adj + Dtrafficbarrier + Dsidewalk + Doverlay + Duser1 + Duser2 + Ddiaphragm;
+      *pRz = Rslab + Rslab_adj + Rslab_pad_adj + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser1 + Ruser2 + Rdiaphragm;
    }
 
    // Switch the sign. Negative deflection creates positive screed camber
@@ -10787,13 +10922,15 @@ void CAnalysisAgentImp::GetSlabBarrierOverlayDeflection(const pgsPointOfInterest
    // NOTE: No need to validate camber models
    GET_IFACE(IProductForces,pProductForces);
    Float64 Dslab = 0;
-   Float64 Dslab_pad = 0;
+   Float64 Dslab_adj = 0;
+   Float64 Dslab_pad_adj = 0;
    Float64 Dtrafficbarrier = 0;
    Float64 Dsidewalk = 0;
    Float64 Doverlay = 0;
 
    Float64 Rslab = 0;
-   Float64 Rslab_pad = 0;
+   Float64 Rslab_adj = 0;
+   Float64 Rslab_pad_adj = 0;
    Float64 Rtrafficbarrier = 0;
    Float64 Rsidewalk = 0;
    Float64 Roverlay = 0;
@@ -10803,7 +10940,8 @@ void CAnalysisAgentImp::GetSlabBarrierOverlayDeflection(const pgsPointOfInterest
    BridgeAnalysisType bat = GetBridgeAnalysisType();
 
    GetDeckDeflection(poi,config,&Dslab,&Rslab);
-   GetDesignSlabPadDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_pad,&Rslab_pad);
+   GetDesignSlabDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_adj,&Rslab_adj);
+   GetDesignSlabPadDeflectionAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi,&Dslab_pad_adj,&Rslab_pad_adj);
    
    Dtrafficbarrier = k2*GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
    Rtrafficbarrier = k2*GetRotation(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
@@ -10819,8 +10957,8 @@ void CAnalysisAgentImp::GetSlabBarrierOverlayDeflection(const pgsPointOfInterest
    }
 
    // Switch the sign. Negative deflection creates positive screed camber
-   *pDy = Dslab + Dslab_pad + Dtrafficbarrier + Dsidewalk + Doverlay;
-   *pRz = Rslab + Rslab_pad + Rtrafficbarrier + Rsidewalk + Roverlay;
+   *pDy = Dslab + Dslab_adj + Dslab_pad_adj + Dtrafficbarrier + Dsidewalk + Doverlay;
+   *pRz = Rslab + Rslab_adj + Rslab_pad_adj + Rtrafficbarrier + Rsidewalk + Roverlay;
 }
 
 void CAnalysisAgentImp::GetHarpedStrandEquivLoading(SpanIndexType span,GirderIndexType gdr,Float64* pMl,Float64* pMr,Float64* pNl,Float64* pNr,Float64* pXl,Float64* pXr)
@@ -10982,53 +11120,53 @@ Float64 CAnalysisAgentImp::GetStress(pgsTypes::Stage stage,const pgsPointOfInter
    switch( stage )
    {
    case pgsTypes::CastingYard:
-      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterXfer);
+      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterXfer,pgsTypes::ServiceI);
 
       if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
       {
          bIncTempStrands = true;
-         P += pPsForce->GetStrandForce(poi,pgsTypes::Temporary,pgsTypes::AfterXfer);
+         P += pPsForce->GetStrandForce(poi,pgsTypes::Temporary,pgsTypes::AfterXfer,pgsTypes::ServiceI);
       }
       break;
 
    case pgsTypes::Lifting:
-      P  = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AtLifting);
+      P  = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AtLifting,pgsTypes::ServiceI);
       if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
       {
          bIncTempStrands = true;
-         P += pPsForce->GetStrandForce(poi,pgsTypes::Temporary,pgsTypes::AtLifting);
+         P += pPsForce->GetStrandForce(poi,pgsTypes::Temporary,pgsTypes::AtLifting,pgsTypes::ServiceI);
       }
       break;
 
    case pgsTypes::Hauling:
-      P  = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AtShipping);
-      P += pPsForce->GetStrandForce(poi,pgsTypes::Temporary,pgsTypes::AtShipping);
+      P  = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AtShipping,pgsTypes::ServiceI);
+      P += pPsForce->GetStrandForce(poi,pgsTypes::Temporary,pgsTypes::AtShipping,pgsTypes::ServiceI);
       bIncTempStrands = true;
       break;
 
    case pgsTypes::GirderPlacement:
-      P  = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::BeforeTemporaryStrandRemoval);
-      P += pPsForce->GetStrandForce(poi,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval);
+      P  = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::BeforeTemporaryStrandRemoval,pgsTypes::ServiceI);
+      P += pPsForce->GetStrandForce(poi,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval,pgsTypes::ServiceI);
       bIncTempStrands = true;
       break;
 
    case pgsTypes::TemporaryStrandRemoval:
-      P  = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandRemoval);
+      P  = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandRemoval,pgsTypes::ServiceI);
       bIncTempStrands = false;
       break;
 
    case pgsTypes::BridgeSite1:
-      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterDeckPlacement);
+      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterDeckPlacement,pgsTypes::ServiceI);
       bIncTempStrands = false;
       break;
 
    case pgsTypes::BridgeSite2:
-      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterSIDL);
+      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterSIDL,pgsTypes::ServiceI);
       bIncTempStrands = false;
       break;
 
    case pgsTypes::BridgeSite3:
-      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad);
+      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad,pgsTypes::ServiceIII);
       bIncTempStrands = false;
       break;
 
@@ -11068,49 +11206,58 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(pgsTypes::Stage stage,const pgsPoi
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
    pgsTypes::LossStage lossStage;
+   pgsTypes::LimitState limitState;
    switch( stage )
    {
    case pgsTypes::CastingYard:
       lossStage = pgsTypes::AfterXfer;
+      limitState = pgsTypes::ServiceI;
       break;
 
    case pgsTypes::Lifting:
       lossStage = pgsTypes::AtLifting;
+      limitState = pgsTypes::ServiceI;
       break;
 
    case pgsTypes::Hauling:
       lossStage = pgsTypes::AtShipping;
+      limitState = pgsTypes::ServiceI;
       break;
 
    case pgsTypes::GirderPlacement:
       lossStage = pgsTypes::BeforeTemporaryStrandRemoval;
+      limitState = pgsTypes::ServiceI;
       break;
 
    case pgsTypes::TemporaryStrandRemoval:
       lossStage = pgsTypes::AfterTemporaryStrandRemoval;
+      limitState = pgsTypes::ServiceI;
       break;
 
    case pgsTypes::BridgeSite1:
       lossStage = pgsTypes::AfterDeckPlacement;
+      limitState = pgsTypes::ServiceI;
       break;
 
    case pgsTypes::BridgeSite2:
       lossStage = pgsTypes::AfterSIDL;
+      limitState = pgsTypes::ServiceI;
       break;
 
    case pgsTypes::BridgeSite3:
       lossStage = pgsTypes::AfterLosses;
+      limitState = pgsTypes::ServiceIII;
       break;
    }
 
-   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,lossStage);
+   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,lossStage,limitState);
    Float64 nSEffective;
    Float64 e = pStrandGeom->GetEccentricity(poi,strandType, &nSEffective);
 
    return GetStress(poi,loc,P,e);
 }
 
-Float64 CAnalysisAgentImp::GetDesignStress(pgsTypes::Stage stage,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config)
+Float64 CAnalysisAgentImp::GetDesignStress(pgsTypes::Stage stage,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config)
 {
    GET_IFACE(IPrestressForce,pPsForce);
    GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -11143,7 +11290,7 @@ Float64 CAnalysisAgentImp::GetDesignStress(pgsTypes::Stage stage,const pgsPointO
       break;
 
    case pgsTypes::BridgeSite2:
-      lossStage = pgsTypes::AfterSIDL;
+      lossStage = pgsTypes::AfterLosses;
       break;
 
    case pgsTypes::BridgeSite3:
@@ -11151,11 +11298,11 @@ Float64 CAnalysisAgentImp::GetDesignStress(pgsTypes::Stage stage,const pgsPointO
       break;
    }
 
-   Float64 P = pPsForce->GetPrestressForce(poi,config,pgsTypes::Permanent,lossStage);
+   Float64 P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,lossStage,limitState,config);
 
-#pragma Reminder("code below must be changed if designer ever uses post-tensioned tempoerary strands")
+#pragma Reminder("code below must be changed if designer ever uses post-tensioned temporary strands")
    if ( stage==pgsTypes::CastingYard || stage==pgsTypes::Lifting || stage==pgsTypes::Hauling || stage==pgsTypes::GirderPlacement) 
-      P += pPsForce->GetPrestressForce(poi,config,pgsTypes::Temporary,lossStage);
+      P += pPsForce->GetPrestressForce(poi,pgsTypes::Temporary,lossStage,limitState,config);
 
    Float64 nSEffective;
    bool bIncludeTemporaryStrands = StageCompare(stage,pgsTypes::TemporaryStrandRemoval) < 0 ? true : false;
@@ -12155,6 +12302,22 @@ void CAnalysisAgentImp::GetD_NoDeck(const pgsPointOfInterest& poi,bool bUseConfi
    Float64 R3 = R2 + Rdiaphragm + Ruser1;
    Float64 R4 = R3 + Rcreep2;
    *pRz = R4;
+}
+
+void CAnalysisAgentImp::GetDesignSlabDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
+{
+   SpanIndexType span  = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   rkPPPartUniformLoad beam = GetDesignSlabModel(fcgdr,startSlabOffset,endSlabOffset,poi);
+
+   GET_IFACE(IBridge,pBridge);
+
+   Float64 start_size = pBridge->GetGirderStartConnectionLength(span,gdr);
+   Float64 x = poi.GetDistFromStart() - start_size;
+
+   *pDy = beam.ComputeDeflection(x);
+   *pRz = beam.ComputeRotation(x);
 }
 
 void CAnalysisAgentImp::GetDesignSlabPadDeflectionAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
@@ -13457,15 +13620,51 @@ void CAnalysisAgentImp::ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType g
             bTaperStart = true;
             bTaperEnd = true;
          }
-#if defined _DEBUG
-         else if ( !bObtuseStart && !bObtuseEnd )
+         else
          {
-            // skew correction is not zero and yet it isn't applied
-            ATLASSERT(false); 
-            gV  /= skewFactor;
-            gFV /= skewFactor;
+            ATLASSERT(!bObtuseStart && !bObtuseEnd);
+            // neither corner is obtuse, but there is a skew correction factor
+            // that means one corner is acute and the other is a right angle
+            // the "spanning" effect of shear still applies. The shortest span
+            // is from the obtuse corner to the right angle corner
+            CComPtr<IAngle> objSkewAngle;
+            pBridge->GetPierSkew((PierIndexType)spanIdx,&objSkewAngle);
+            Float64 skewAngle;
+            objSkewAngle->get_Value(&skewAngle);
+
+            if ( IsZero(skewAngle) )
+            {
+               // right angle is at the start of the span
+               gVStart = gV;
+               gVMid   = gV/skewFactor;
+               gVEnd   = gV/skewFactor;
+
+               gFVStart = gFV;
+               gFVMid   = gFV/skewFactor;
+               gFVEnd   = gFV/skewFactor;
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+            }
+            else
+            {
+               objSkewAngle.Release();
+               pBridge->GetPierSkew((PierIndexType)(spanIdx+1),&objSkewAngle);
+               objSkewAngle->get_Value(&skewAngle);
+               ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+
+               gVStart = gV/skewFactor;
+               gVMid   = gV;
+               gVEnd   = gV;
+
+               gFVStart = gFV/skewFactor;
+               gFVMid   = gFV;
+               gFVEnd   = gFV;
+
+               bUseLinearLLDF = true;
+               bTaperEnd = true;
+            }
          }
-#endif
       }
    }
 
@@ -13616,15 +13815,51 @@ void CAnalysisAgentImp::ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType g
             bTaperStart = true;
             bTaperEnd = true;
          }
-#if defined _DEBUG
-         else if ( !bObtuseStart && !bObtuseEnd )
+         else
          {
-            // skew correction is not zero and yet it isn't applied
-            ATLASSERT(false); 
-            gV  /= skewFactor;
-            gFV /= skewFactor;
+            ATLASSERT(!bObtuseStart && !bObtuseEnd);
+            // neither corner is obtuse, but there is a skew correction factor
+            // that means one corner is acute and the other is a right angle
+            // the "spanning" effect of shear still applies. The shortest span
+            // is from the obtuse corner to the right angle corner
+            CComPtr<IAngle> objSkewAngle;
+            pBridge->GetPierSkew((PierIndexType)spanIdx,&objSkewAngle);
+            Float64 skewAngle;
+            objSkewAngle->get_Value(&skewAngle);
+
+            if ( IsZero(skewAngle) )
+            {
+               // right angle is at the start of the span
+               gVStart = gV;
+               gVMid   = gV/skewFactor;
+               gVEnd   = gV/skewFactor;
+
+               gFVStart = gFV;
+               gFVMid   = gFV/skewFactor;
+               gFVEnd   = gFV/skewFactor;
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+            }
+            else
+            {
+               objSkewAngle.Release();
+               pBridge->GetPierSkew((PierIndexType)(spanIdx+1),&objSkewAngle);
+               objSkewAngle->get_Value(&skewAngle);
+               ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+
+               gVStart = gV/skewFactor;
+               gVMid   = gV;
+               gVEnd   = gV;
+
+               gFVStart = gFV/skewFactor;
+               gFVMid   = gFV;
+               gFVEnd   = gFV;
+
+               bUseLinearLLDF = true;
+               bTaperEnd = true;
+            }
          }
-#endif
       }
    }
 
@@ -13824,15 +14059,51 @@ void CAnalysisAgentImp::ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType g
             bTaperStart = true;
             bTaperEnd = true;
          }
-#if defined _DEBUG
-         else if ( !bObtuseStart && !bObtuseEnd )
+         else
          {
-            // skew correction is not zero and yet it isn't applied
-            ATLASSERT(false); 
-            gV  /= skewFactor;
-            gFV /= skewFactor;
+            ATLASSERT(!bObtuseStart && !bObtuseEnd);
+            // neither corner is obtuse, but there is a skew correction factor
+            // that means one corner is acute and the other is a right angle
+            // the "spanning" effect of shear still applies. The shortest span
+            // is from the obtuse corner to the right angle corner
+            CComPtr<IAngle> objSkewAngle;
+            pBridge->GetPierSkew((PierIndexType)spanIdx,&objSkewAngle);
+            Float64 skewAngle;
+            objSkewAngle->get_Value(&skewAngle);
+
+            if ( IsZero(skewAngle) )
+            {
+               // right angle is at the start of the span
+               gVStart = gV;
+               gVMid   = gV/skewFactor;
+               gVEnd   = gV/skewFactor;
+
+               gFVStart = gFV;
+               gFVMid   = gFV/skewFactor;
+               gFVEnd   = gFV/skewFactor;
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+            }
+            else
+            {
+               objSkewAngle.Release();
+               pBridge->GetPierSkew((PierIndexType)(spanIdx+1),&objSkewAngle);
+               objSkewAngle->get_Value(&skewAngle);
+               ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+
+               gVStart = gV/skewFactor;
+               gVMid   = gV;
+               gVEnd   = gV;
+
+               gFVStart = gFV/skewFactor;
+               gFVMid   = gFV;
+               gFVEnd   = gFV;
+
+               bUseLinearLLDF = true;
+               bTaperEnd = true;
+            }
          }
-#endif
       }
    }
 
@@ -13989,15 +14260,51 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
                bTaperStart = true;
                bTaperEnd = true;
             }
-#if defined _DEBUG
-            else if ( !bObtuseStart && !bObtuseEnd )
-            {
-               // skew correction is not zero and yet it isn't applied
-               ATLASSERT(false); 
-               gV  /= skewFactor;
-               gFV /= skewFactor;
-            }
-#endif
+           else
+           {
+              ATLASSERT(!bObtuseStart && !bObtuseEnd);
+              // neither corner is obtuse, but there is a skew correction factor
+              // that means one corner is acute and the other is a right angle
+              // the "spanning" effect of shear still applies. The shortest span
+              // is from the obtuse corner to the right angle corner
+              CComPtr<IAngle> objSkewAngle;
+              pBridge->GetPierSkew((PierIndexType)spanIdx,&objSkewAngle);
+              Float64 skewAngle;
+              objSkewAngle->get_Value(&skewAngle);
+  
+              if ( IsZero(skewAngle) )
+              {
+                 // right angle is at the start of the span
+                 gVStart = gV;
+                 gVMid   = gV/skewFactor;
+                 gVEnd   = gV/skewFactor;
+  
+                 gFVStart = gFV;
+                 gFVMid   = gFV/skewFactor;
+                 gFVEnd   = gFV/skewFactor;
+  
+                 bUseLinearLLDF = true;
+                 bTaperStart = true;
+              }
+              else
+              {
+                 objSkewAngle.Release();
+                 pBridge->GetPierSkew((PierIndexType)(spanIdx+1),&objSkewAngle);
+                 objSkewAngle->get_Value(&skewAngle);
+                 ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+  
+                 gVStart = gV/skewFactor;
+                 gVMid   = gV;
+                 gVEnd   = gV;
+  
+                 gFVStart = gFV/skewFactor;
+                 gFVMid   = gFV;
+                 gFVEnd   = gFV;
+  
+                 bUseLinearLLDF = true;
+                 bTaperEnd = true;
+              }
+           }
          }
       }
 
@@ -14120,15 +14427,51 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
                bTaperStart = true;
                bTaperEnd = true;
             }
-#if defined _DEBUG
-            else if ( !bObtuseStart && !bObtuseEnd )
+            else
             {
-               // skew correction is not zero and yet it isn't applied
-               ATLASSERT(false); 
-               gV  /= skewFactor;
-               gFV /= skewFactor;
+               ATLASSERT(!bObtuseStart && !bObtuseEnd);
+               // neither corner is obtuse, but there is a skew correction factor
+               // that means one corner is acute and the other is a right angle
+               // the "spanning" effect of shear still applies. The shortest span
+               // is from the obtuse corner to the right angle corner
+               CComPtr<IAngle> objSkewAngle;
+               pBridge->GetPierSkew((PierIndexType)spanIdx,&objSkewAngle);
+               Float64 skewAngle;
+               objSkewAngle->get_Value(&skewAngle);
+   
+               if ( IsZero(skewAngle) )
+               {
+                  // right angle is at the start of the span
+                  gVStart = gV;
+                  gVMid   = gV/skewFactor;
+                  gVEnd   = gV/skewFactor;
+   
+                  gFVStart = gFV;
+                  gFVMid   = gFV/skewFactor;
+                  gFVEnd   = gFV/skewFactor;
+   
+                  bUseLinearLLDF = true;
+                  bTaperStart = true;
+               }
+               else
+               {
+                  objSkewAngle.Release();
+                  pBridge->GetPierSkew((PierIndexType)(spanIdx+1),&objSkewAngle);
+                  objSkewAngle->get_Value(&skewAngle);
+                  ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+   
+                  gVStart = gV/skewFactor;
+                  gVMid   = gV;
+                  gVEnd   = gV;
+   
+                  gFVStart = gFV/skewFactor;
+                  gFVMid   = gFV;
+                  gFVEnd   = gFV;
+   
+                  bUseLinearLLDF = true;
+                  bTaperEnd = true;
+               }
             }
-#endif
          }
       }
 
@@ -14295,15 +14638,51 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
                bTaperStart = true;
                bTaperEnd = true;
             }
-#if defined _DEBUG
-            else if ( !bObtuseStart && !bObtuseEnd )
+            else
             {
-               // skew correction is not zero and yet it isn't applied
-               ATLASSERT(false); 
-               gV  /= skewFactor;
-               gFV /= skewFactor;
+               ATLASSERT(!bObtuseStart && !bObtuseEnd);
+               // neither corner is obtuse, but there is a skew correction factor
+               // that means one corner is acute and the other is a right angle
+               // the "spanning" effect of shear still applies. The shortest span
+               // is from the obtuse corner to the right angle corner
+               CComPtr<IAngle> objSkewAngle;
+               pBridge->GetPierSkew((PierIndexType)spanIdx,&objSkewAngle);
+               Float64 skewAngle;
+               objSkewAngle->get_Value(&skewAngle);
+   
+               if ( IsZero(skewAngle) )
+               {
+                  // right angle is at the start of the span
+                  gVStart = gV;
+                  gVMid   = gV/skewFactor;
+                  gVEnd   = gV/skewFactor;
+   
+                  gFVStart = gFV;
+                  gFVMid   = gFV/skewFactor;
+                  gFVEnd   = gFV/skewFactor;
+   
+                  bUseLinearLLDF = true;
+                  bTaperStart = true;
+               }
+               else
+               {
+                  objSkewAngle.Release();
+                  pBridge->GetPierSkew((PierIndexType)(spanIdx+1),&objSkewAngle);
+                  objSkewAngle->get_Value(&skewAngle);
+                  ATLASSERT( IsZero(skewAngle) ); // if both piers have a skew angle of 0, the skew correction should be 1.0 and we should be here
+   
+                  gVStart = gV/skewFactor;
+                  gVMid   = gV;
+                  gVEnd   = gV;
+   
+                  gFVStart = gFV/skewFactor;
+                  gFVMid   = gFV;
+                  gFVEnd   = gFV;
+   
+                  bUseLinearLLDF = true;
+                  bTaperEnd = true;
+               }
             }
-#endif
          }
       }
 

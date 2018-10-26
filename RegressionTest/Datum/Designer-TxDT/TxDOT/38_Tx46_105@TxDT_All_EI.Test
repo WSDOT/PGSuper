@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     1     Tx46       52   1/2  270 14.83  9.60   8 42.5  5.600  5.800    3.719   -3.807   6141  0.662  0.849  0.35 -0.15  0.00 -0.01 -0.16 150.78 421.33   0.00   0.00   0.00
+ 38.00   5  8.50  1     1     Tx46       52   1/2  270 14.83 10.53   8 36.5  5.800  6.000    3.719   -3.807   6141  0.662  0.849  0.36 -0.15  0.00 -0.01 -0.16 148.69 419.95   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful

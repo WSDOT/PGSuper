@@ -1192,6 +1192,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\RaisedStraightStrandDesignTool.cpp"
+				>
+			</File>
+			<File
 				RelativePath="ShearCapacityEngineer.cpp"
 				>
 				<FileConfiguration
@@ -1422,6 +1426,10 @@
 			</File>
 			<File
 				RelativePath="PsForceEng.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RaisedStraightStrandDesignTool.h"
 				>
 			</File>
 			<File

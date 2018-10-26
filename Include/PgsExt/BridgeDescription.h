@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -148,8 +148,8 @@ public:
    void SetSlabOffset(Float64 slabOffset);
    Float64 GetSlabOffset() const;
 
-   // returns the greatest slab offset defined for the bridge
-   Float64 GetMaxSlabOffset() const;
+   // returns the least slab offset defined for the bridge
+   Float64 GetMinSlabOffset() const;
 
    bool SetSpanLength(SpanIndexType spanIdx,Float64 newLength);
    bool MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption);

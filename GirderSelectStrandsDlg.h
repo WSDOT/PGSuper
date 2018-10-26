@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -78,6 +78,8 @@ private:
    int m_RightOffset;  // distance from right edit of picture to right edge of dialog
    int m_Row1Offset;   // distance from bottom of picture to top of first row of strand data
    int m_Row2Offset;   // distance from bottom of picture to top of second row of strand data
+
+   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
 
    bool m_AllowHpAdjustment;
    bool m_AllowEndAdjustment;

@@ -42,7 +42,7 @@ public:
    // capture event fired from grid that allows deletion of rows
    virtual void OnEnableDelete(bool canDelete)=0;
    virtual bool DoUseHarpedGrid()=0;
-   virtual bool DoUseHarpedWebStrands()=0;
+   virtual pgsTypes::AdjustableStrandType GetAdjustableStrandType()=0;
    virtual void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh)=0; 
 };
 
@@ -166,7 +166,7 @@ private:
 
    bool EditEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool isNewEntry);
    // fill at the starting row - return num rows filled
-   ROWCOL FillRowsWithEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool useHarped, bool webStrandsHarped, COLORREF color);
+   ROWCOL FillRowsWithEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool useHarped, pgsTypes::AdjustableStrandType asType, COLORREF color);
 
 
    void AppendEntry(GlobalStrandGridEntry& entry);

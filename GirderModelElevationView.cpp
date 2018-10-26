@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,7 @@
 #include <IFace\DrawBridgeSettings.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
+#include <IFace\PrestressForce.h>
 
 #include <PgsExt\BridgeDescription.h>
 
@@ -1063,6 +1064,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDoc* pDoc, I
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
+   GET_IFACE2(pBroker,IPrestressForce,pPrestressForce);
 
    pgsTypes::Stage stage = (pgsTypes::Stage)(m_pFrame->GetLoadingStage()+1);
 
@@ -1090,7 +1092,16 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDoc* pDoc, I
       Float64 nEff;
       Float64 ex = pStrandGeometry->GetEccentricity(prev_poi, false, &nEff);
       from_y = ybg - ex - hg;
-
+/*
+//////////////////////////////////////////////////////////////////
+      // Eccentricity envelope - for experimental purposes only
+//////////////////////////////////////////////////////////////////
+      GDRCONFIG config = pBridge->GetGirderConfiguration(span,girder);
+      Float64 lbEcc, ubEcc;
+      pPrestressForce->GetEccentricityEnvelope(prev_poi,config, &lbEcc, &ubEcc);
+      Float64 from_envlby = ybg - hg - lbEcc;
+      Float64 from_envuby = ybg - hg - ubEcc;
+*/
       for ( ; iter!= vPOI.end(); iter++ )
       {
          pgsPointOfInterest& poi = *iter;
@@ -1110,9 +1121,26 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDoc* pDoc, I
          BuildLine(pDL, from_point, to_point, col);
 
          red = !red;
+/*
+         // ecc envelop lines
+         pPrestressForce->GetEccentricityEnvelope(poi,config, &lbEcc, &ubEcc);
+         Float64 to_envlby = ybg - hg - lbEcc;
+         Float64 to_envuby = ybg - hg - ubEcc;
 
+         from_point->put_Y(from_envlby);
+         to_point->put_Y(to_envlby);
+         BuildLine(pDL, from_point, to_point, GREEN, 2);
+
+         from_point->put_Y(from_envuby);
+         to_point->put_Y(to_envuby);
+         BuildLine(pDL, from_point, to_point, BLUE, 2);
+*/
          prev_poi = poi;
          from_y = to_y;
+/*
+         from_envlby = to_envlby;
+         from_envuby = to_envuby;
+*/
       }
    }
 }
@@ -1856,7 +1884,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDoc* pDoc, IB
    }
 }
 
-void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color)
+void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color, UINT nWidth)
 {
    // put points at locations and make them sockets
    CComPtr<iPointDisplayObject> from_rep;
@@ -1892,6 +1920,7 @@ void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint
    if (pSimple)
    {
       pSimple->SetColor(color);
+      pSimple->SetWidth(nWidth);
    }
    else
       ATLASSERT(0);

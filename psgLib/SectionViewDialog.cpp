@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -333,7 +333,7 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
 
          total_strand_cnt = DrawStrand(pDC, Mapper, xStart, yStart, total_strand_cnt);
       }
-      else if (strand_type==GirderLibraryEntry::stHarped)
+      else if (strand_type==GirderLibraryEntry::stAdjustable)
       {
          Float64 start_x, start_y, hp_x, hp_y, end_x, end_y;
          m_pGirderEntry->GetHarpedStrandCoordinates(strand_idx, &start_x, &start_y, &hp_x, &hp_y, &end_x, &end_y);
@@ -520,9 +520,9 @@ BOOL CSectionViewDialog::OnInitDialog()
    CButton* pBtn = (CButton*)GetDlgItem(IDC_SHOWS);
    pBtn->SetCheck(TRUE);
 
-   // label for harped or straight-web
+   // label for harped or adj straight
    CString hlbl;
-   hlbl.Format(_T("%s Strands"), LABEL_HARP_TYPE(m_pGirderEntry->IsForceHarpedStrandsStraight()));
+   hlbl.Format(_T("%s Strands"), LABEL_HARP_TYPE(m_pGirderEntry->GetAdjustableStrandType()!=pgsTypes::asHarped));
    CWnd* pWnd = GetDlgItem(IDC_HS);
    pWnd->SetWindowText(hlbl);
 

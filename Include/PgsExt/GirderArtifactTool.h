@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 
 #include <PgsExt\GirderArtifact.h>
 #include <IFace\Bridge.h>
+#include <IFace\Allowables.h>
 #include <LRFD\VersionMgr.h>
 
 #include <vector>
@@ -131,32 +132,44 @@ inline void list_stress_failures(IBroker* pBroker, FailureList& rFailures,SpanIn
       rFailures.push_back(_T("Tensile stress check failed for Service I for the Casting Yard Stage (At Release)."));
    }
 
-   if ( 0 < NtMax && 0 < Nt )
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   if ( pAllowable->CheckTemporaryStresses() )
    {
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+      if ( 0 < NtMax && 0 < Nt )
       {
-         rFailures.push_back(_T("Compressive stress check failed for Service I for the Temporary Strand Removal Stage."));
+         if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+         {
+            rFailures.push_back(_T("Compressive stress check failed for Service I for the Temporary Strand Removal Stage."));
+         }
+
+         if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+         {
+            rFailures.push_back(_T("Tensile stress check failed for Service I for the Temporary Strand Removal Stage."));
+         }
       }
 
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
       {
-         rFailures.push_back(_T("Tensile stress check failed for Service I for the Temporary Strand Removal Stage."));
+         rFailures.push_back(_T("Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1)."));
       }
-   }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
-   {
-      rFailures.push_back(_T("Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1)."));
-   }
-
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
-   {
-      rFailures.push_back(_T("Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1)."));
+      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+      {
+         rFailures.push_back(_T("Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1)."));
+      }
    }
 
    if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
    {
       rFailures.push_back(_T("Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2)."));
+   }
+
+   if ( pAllowable->CheckFinalDeadLoadTensionStress() )
+   {
+      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+      {
+         rFailures.push_back(_T("Tension stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2)."));
+      }
    }
 
    if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
@@ -363,6 +376,11 @@ inline void list_various_failures(IBroker* pBroker,FailureList& rFailures,SpanIn
    if ( !pConstruct->GlobalGirderStabilityPassed() )
    {
       rFailures.push_back(_T("Global Girder Stability check failed"));
+   }
+
+   if ( !pConstruct->BottomFlangeClearancePassed() )
+   {
+      rFailures.push_back(_T("Bottom flange clearance check failed"));
    }
 
    // Lifting

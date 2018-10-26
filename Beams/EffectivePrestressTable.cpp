@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,10 +86,10 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    *pParagraph << _T("Effective Prestress") << rptNewLine;
 
    GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
-   Float64 gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
+   table->m_gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
 
    std::_tostringstream os;
-   os << gLL;
+   os << table->m_gLL;
 
 
    pParagraph = new rptParagraph;
@@ -98,10 +98,12 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    {
       *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
-                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << rptNewLine;
+                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << _T(" + ")
+                  << symbol(DELTA) << RPT_STRESS(_T("pSS")) << rptNewLine;
       *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << _T(" + ")
+                  << symbol(DELTA) << RPT_STRESS(_T("pSS")) << _T(" + ")
                   << _T("(") << os.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL")) << rptNewLine;
    }
    else
@@ -152,6 +154,6 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    Float64 fpe = fpj - fpT;
    (*this)(row,col++) << stress.SetValue(fpe);
 
-   fpe += fpLL;
+   fpe += m_gLL*fpLL;
    (*this)(row,col++) << stress.SetValue(fpe);
 }

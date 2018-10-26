@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.33   5  8.50  1     1     6          24   1/2  270 22.25  9.58   8 46.0  4.000  5.000    2.645   -2.775   3970  0.776  0.797  0.18 -0.04 -0.00 -0.00 -0.04  54.67 141.15   1.00   5.00   5.00
+ 38.33   5  8.50  1     1     6          24   1/2  270 22.25  9.58   8 46.0  4.000  5.000    2.645   -2.775   3970  0.776  0.797  0.18 -0.04 -0.00 -0.00 -0.04  54.67 135.61   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -13,10 +13,9 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.33   5  8.50  1     2     6          24   1/2  270 22.25  9.58   8 46.0  4.100  5.000    2.702   -2.819   3963  0.748  0.872  0.17 -0.04 -0.00 -0.00 -0.04  54.06 134.85   1.00   5.00   5.00
+ 38.33   5  8.50  1     2     6          24   1/2  270 22.25  9.58   8 46.0  4.000  5.000    2.703   -2.819   3963  0.748  0.872  0.18 -0.04 -0.00 -0.00 -0.04  54.67 132.06   1.00   5.00   5.00
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
@@ -26,7 +25,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.33   5  8.50  1     3     6          26   1/2  270 22.07 10.38   8 46.0  4.100  5.000    2.747   -2.950   4208  0.748  0.872  0.19 -0.04 -0.00 -0.00 -0.05  63.55 152.78   1.00   5.00   5.00
+ 38.33   5  8.50  1     3     6          26   1/2  270 22.07 10.38   8 46.0  4.100  5.000    2.748   -2.950   4208  0.748  0.872  0.19 -0.04 -0.00 -0.00 -0.05  63.55 146.94   1.00   5.00   5.00
 
 
 Girder design was Not Successful

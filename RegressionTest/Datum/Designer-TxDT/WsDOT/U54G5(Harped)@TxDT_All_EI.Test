@@ -1,21 +1,22 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00  1     1    U54G5  *    66  0.60  270 16.74  7.50  14 50.0  6.300 14.300    7.371   -4.708  12976  1.016  1.016  0.39 -0.14 -0.01 -0.01 -0.15 291.39 498.12   1.75   5.00   5.00
+ 34.25   4  8.00  1     1    U54G5  *    68  0.60  270 16.72  7.75  14 50.0  6.500 15.000    7.418   -4.720  13181  1.016  1.016  0.44 -0.13 -0.01 -0.01 -0.15 305.84 553.74   1.75   5.00   5.00
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Slab Offset ("A" Dimension) check failed
 Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00  1     2    U54G5  *    52  0.60  270 16.96  6.57  12 50.0  4.800  6.900    5.939   -3.731   9960  0.557  0.773  0.30 -0.15 -0.01 -0.01 -0.18 197.10 359.03   1.75   5.00   5.00
+ 34.25   4  8.00  1     2    U54G5  *    52  0.60  270 16.96  6.57  12 50.0  4.800  6.900    5.940   -3.732   9840  0.557  0.773  0.33 -0.15 -0.01 -0.01 -0.18 197.10 381.91   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Compressive stress check failed for Service IA for the Final with Live Load Stage (Bridge Site 3).
 Hauling checks failed
 
 

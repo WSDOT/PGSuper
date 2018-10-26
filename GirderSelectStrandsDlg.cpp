@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -199,6 +199,8 @@ void CGirderSelectStrandsDlg::InitializeData(SpanIndexType span, GirderIndexType
    m_DirectFilledStraightStrands  = *(rPrestressData.GetDirectStrandFillStraight());
    m_DirectFilledHarpedStrands    = *(rPrestressData.GetDirectStrandFillHarped());
    m_DirectFilledTemporaryStrands = *(rPrestressData.GetDirectStrandFillTemporary());
+
+   m_AdjustableStrandType = rPrestressData.GetAdjustableStrandType();
 
    m_AllowEndAdjustment = allowEndAdjustment;
    m_AllowHpAdjustment  = allowHpAdjustment;
@@ -401,10 +403,10 @@ void CGirderSelectStrandsDlg::OnPaint()
                                                         m_pGdrEntry->GetName().c_str(), m_DirectFilledHarpedStrands);
 
 
-   Float64 absol_end_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(m_pGdrEntry->GetName().c_str(), 
+   Float64 absol_end_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType,
                                                         harped_fillvec, m_HsoEndMeasurement, m_HpOffsetAtEnd);
 
-   Float64 absol_hp_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(m_pGdrEntry->GetName().c_str(), 
+   Float64 absol_hp_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType,
                                                         harped_fillvec, m_HsoHpMeasurement, m_HpOffsetAtHp);
 
    // We need a strand mover to adjust harped strands
@@ -604,7 +606,7 @@ void CGirderSelectStrandsDlg::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, IS
 
          total_strand_cnt = DrawStrand(pDC, Mapper, xStart, yStart, total_strand_cnt, is_filled, grid_row);
       }
-      else if (strand_type==GirderLibraryEntry::stHarped)
+      else if (strand_type==GirderLibraryEntry::stAdjustable)
       {
          Float64 xs, ys, xe, ye, xhp, yhp;
          m_pGdrEntry->GetHarpedStrandCoordinates(strand_idx, &xs, &ys, &xhp, &yhp, &xe, &ye);
@@ -851,10 +853,9 @@ void CGirderSelectStrandsDlg::UpdateStrandInfo()
    msg.Format(_T("Straight (S)=%d"), nStraight);
    GetDlgItem(IDC_STRAIGHT)->SetWindowText(msg);
 
-   bool areHarpedStraight = m_pGdrEntry->IsForceHarpedStrandsStraight();
-   if (areHarpedStraight)
+   if (m_AdjustableStrandType==pgsTypes::asStraight)
    {
-      msg.Format(_T("Straight-Web (S-W)=%d"), nHarped);
+      msg.Format(_T("Adjustable-Straight (A-S)=%d"), nHarped);
    }
    else
    {
@@ -950,10 +951,10 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // adjustment of harped strands at ends
-   Float64 end_incr = pStrandGeometry->GetHarpedEndOffsetIncrement(m_pGdrEntry->GetName().c_str());
-   Float64 hpt_incr = pStrandGeometry->GetHarpedHpOffsetIncrement(m_pGdrEntry->GetName().c_str());
+   Float64 end_incr = pStrandGeometry->GetHarpedEndOffsetIncrement(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType);
+   Float64 hpt_incr = pStrandGeometry->GetHarpedHpOffsetIncrement(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType);
 
-   bool areHarpedStraight = m_pGdrEntry->IsForceHarpedStrandsStraight();
+   bool areHarpedStraight = m_AdjustableStrandType==pgsTypes::asStraight;
 
    if (IsLE(end_incr,0.0) && IsLE(hpt_incr,0.0))
    {
@@ -994,7 +995,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
 
 
             Float64 lowRange, highRange;
-            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeEnd(m_pGdrEntry->GetName().c_str(), harped_fillvec, m_HsoEndMeasurement, &lowRange, &highRange);
+            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeEnd(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType, harped_fillvec, m_HsoEndMeasurement, &lowRange, &highRange);
 
             Float64 low  = min(lowRange, highRange);
             Float64 high = max(lowRange, highRange);
@@ -1017,7 +1018,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
       }
 
       // Hpt Control
-      if (IsLE(hpt_incr,0.0))
+      if (IsLE(hpt_incr,0.0) || m_AdjustableStrandType==pgsTypes::asStraight)
       {
          ShowHarpedHpAdjustmentControls(FALSE);
       }
@@ -1036,7 +1037,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
                                                                  m_pGdrEntry->GetName().c_str(), m_DirectFilledHarpedStrands);
 
             Float64 lowRange, highRange;
-            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeHp(m_pGdrEntry->GetName().c_str(), harped_fillvec, m_HsoHpMeasurement, &lowRange, &highRange);
+            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeHp(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType, harped_fillvec, m_HsoHpMeasurement, &lowRange, &highRange);
 
             Float64 low  = min(lowRange, highRange);
             Float64 high = max(lowRange, highRange);
