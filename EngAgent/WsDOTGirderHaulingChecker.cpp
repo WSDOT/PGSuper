@@ -152,7 +152,7 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(SpanIndexType span,GirderIndex
       concType = pMaterial->GetGdrConcreteType(span,gdr);
 
       GET_IFACE(IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-      poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,gdr,POI_FLEXURESTRESS);
+      poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,gdr,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
    }
 
    PrepareHaulingAnalysisArtifact(span,gdr,Loh,Roh,Fc,Ec,concType,pArtifact);
@@ -261,7 +261,8 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(SpanInde
 
       LOG(_T("Trying Trailing Overhang = ") << ::ConvertFromSysUnits(shipping_config.LeftOverhang,unitMeasure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << ::ConvertFromSysUnits(shipping_config.RightOverhang,unitMeasure::Feet) << _T(" ft"));
 
-      checker.AnalyzeHauling(span,gdr,true,shipping_config,pPOId,&curr_artifact);
+      LOG_EXECUTION_TIME(checker.AnalyzeHauling(span,gdr,true,shipping_config,pPOId,&curr_artifact));
+
       FScr = curr_artifact.GetMinFsForCracking();
 
       LOG(_T("FScr = ") << FScr);

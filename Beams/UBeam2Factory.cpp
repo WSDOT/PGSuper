@@ -298,6 +298,7 @@ void CUBeam2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIn
 
       if ( end_length < endBlockLength )
       {
+         ebStages.clear();
          ebStages.push_back(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
          ebStages.push_back(pgsTypes::Lifting); // end block is after brg... only add to cy stage
          ebStages.push_back(pgsTypes::Hauling); // end block is after brg... only add to cy stage

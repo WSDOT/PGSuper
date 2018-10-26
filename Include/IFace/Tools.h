@@ -87,6 +87,12 @@ dbgLogDumpContext m_Log;
 #define LOG(x) m_Log << x << endl
 #define LOGX(x) m_Log << _T(__FILE__) << _T(" ") << _T("(") << __LINE__ << _T(") ") << x << endl
 
+#define LOG_EXECUTION_TIME(_x_) \
+   { sysTime startTime; \
+   _x_; \
+   sysTime endTime; \
+   LOG((endTime.Seconds() - startTime.Seconds()) << _T(" sec : ") << _T(#_x_)); }
+
 #define CLOSE_LOGFILE m_Log.SetLog(NULL,0)
 
 #else
@@ -95,6 +101,7 @@ dbgLogDumpContext m_Log;
 #define LOG(x)
 #define LOGX(x)
 #define CLOSE_LOGFILE
+#define LOG_EXECUTION_TIME(_x_) _x_
 
 #endif
 

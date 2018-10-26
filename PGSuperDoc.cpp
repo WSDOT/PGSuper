@@ -93,6 +93,7 @@
 #include "PGSuperCatCom.h"
 
 #include "Hints.h"
+#include "UIHintsDlg.h"
 
 #include "PGSuperException.h"
 #include <System\FileStream.h>
@@ -3751,8 +3752,30 @@ void CPGSuperDoc::ShowProjectPropertiesOnNewProject(bool bShow)
    m_bShowProjectProperties = bShow;
 }
 
-void CPGSuperDoc::OnChangedFavoriteReports(bool isFavorites)
+void CPGSuperDoc::OnChangedFavoriteReports(bool isFavorites, bool fromMenu)
 {
+
+   // Prompt user with hint about how this menu item works
+   if (fromMenu)
+   {
+      int mask = UIHINT_FAVORITES_MENU;
+      Uint32 hintSettings = GetUIHintSettings();
+      if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
+      {
+         AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+         CUIHintsDlg dlg;
+         dlg.m_strTitle = _T("Hint");
+         dlg.m_strText = _T("This menu item allows you to display only your favorite reports in the Reports menus, or display all available PGSuper reports. The change will occur the next time you open a Report menu.");
+         dlg.DoModal();
+         if ( dlg.m_bDontShowAgain )
+         {
+            sysFlags<Uint32>::Set(&hintSettings,mask);
+            SetUIHintSettings(hintSettings);
+         }
+      }
+   }
+
    // update main menu submenu
    PopulateReportMenu();
 }

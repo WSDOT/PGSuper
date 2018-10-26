@@ -392,8 +392,8 @@ void CBridgeDescGeneralPage::EnableNumGirderLines(BOOL bEnable)
 
    if ( !bEnable )
    {
-      pEdit->SetSel(0,-1);
-      pEdit->Clear();
+      // Blast number of girders text
+      pEdit->SetWindowText(_T(""));
    }
    
    GetDlgItem(IDC_NUMGDR_SPIN)->EnableWindow(bEnable);

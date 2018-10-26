@@ -376,4 +376,11 @@ void CGirderDescDlg::OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebo
 
    AddAdditionalPropertyPages(bAllowExtendedStrands,bIsDebonding);
    SetDebondTabName();
+
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator iter(m_ExtensionPages.begin());
+   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator end(m_ExtensionPages.end());
+   for ( ; iter != end; iter++ )
+   {
+      AddPage(iter->second);
+   }
 }

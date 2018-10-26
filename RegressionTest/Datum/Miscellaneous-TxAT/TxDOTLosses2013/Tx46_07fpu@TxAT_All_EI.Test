@@ -9,21 +9,19 @@ Compressive stress check failed for Service I for the Superimposed Dead Load Sta
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     Tx46       52   1/2  270 14.83  9.91   8 40.5  5.100  5.800    3.803   -3.860   6117  0.634  0.814  0.29 -0.17  0.00 -0.01 -0.18 143.48 401.60   1.00   1.00   1.00
+ 44.00   6  8.00  1     2     Tx46       52   1/2  270 14.83  9.91   8 40.5  5.100  5.800    3.803   -3.860   6117  0.634  0.814  0.29 -0.17  0.00 -0.01 -0.18 147.28 401.75   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     Tx46       52   1/2  270 14.83  9.91   8 40.5  5.100  5.800    3.803   -3.860   6117  0.634  0.814  0.29 -0.17  0.00 -0.01 -0.18 143.48 401.60   1.00   1.00   1.00
+ 44.00   6  8.00  1     4     Tx46       52   1/2  270 14.83  9.91   8 40.5  5.100  5.800    3.803   -3.860   6117  0.634  0.814  0.29 -0.17  0.00 -0.01 -0.18 147.28 401.75   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
 
 

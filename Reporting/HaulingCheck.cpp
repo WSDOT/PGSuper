@@ -81,11 +81,30 @@ void CHaulingCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
-   const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifact->GetHaulingAnalysisArtifact();
 
-   pHaulArtifact->BuildHaulingCheckReport(span, girder, pChapter, pBroker, pDisplayUnits);
+   // First check if we even need to do anything
+   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   if (!pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
+   {
+      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      *pChapter << pTitle;
+      *pTitle << _T("Check for Hauling to Bridge Site")<<rptNewLine;
+
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+
+      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
+      return;
+   }
+   else
+   {
+      // Get hauling results
+      GET_IFACE2(pBroker,IArtifact,pArtifacts);
+      const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
+      const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifact->GetHaulingAnalysisArtifact();
+
+      pHaulArtifact->BuildHaulingCheckReport(span, girder, pChapter, pBroker, pDisplayUnits);
+   }
 }
 
 

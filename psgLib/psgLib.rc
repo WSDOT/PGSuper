@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,0,4
- PRODUCTVERSION 2,9,0,4
+ FILEVERSION 2,9,0,5
+ PRODUCTVERSION 2,9,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.9.0.4"
+            VALUE "FileVersion", "2.9.0.5"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.0.4"
+            VALUE "ProductVersion", "2.9.0.5"
         END
     END
     BLOCK "VarFileInfo"
@@ -671,11 +671,11 @@ BEGIN
     LTEXT           "After all losses",IDC_STATIC,30,187,46,8
 END
 
-IDD_SPEC_CREEP DIALOG  0, 0, 275, 242
+IDD_SPEC_CREEP DIALOGEX 0, 0, 275, 208
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "General Creep and Camber Parameters",IDC_STATIC,8,6,260,172
+    GROUPBOX        "General Creep and Camber Parameters",IDC_STATIC,8,1,260,200
     LTEXT           "Time from stressing to prestress transfer",IDC_STATIC,17,27,158,17
     EDITTEXT        IDC_XFER_TIME,209,27,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "hrs",IDC_XFER_TIME_TAG,240,27,18,8
@@ -691,12 +691,15 @@ BEGIN
     EDITTEXT        IDC_CREEP_DURATION2_MIN,179,84,24,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_CREEP_DURATION2_MAX,209,84,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_CREEP_DURATION2_TAG,240,84,18,8
-    LTEXT           "Total Creep Duration",IDC_STATIC,19,122,170,9
-    EDITTEXT        IDC_NC_CREEP,198,119,35,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NC_CREEP_TAG,240,119,19,8
-    LTEXT           "1 day of steam or radiant heat curing is equal to ",IDC_STATIC,15,153,152,8
-    EDITTEXT        IDC_CURING_TIME_FACTOR,168,151,18,14,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "days of normal curing",IDC_STATIC,190,154,68,8
+    LTEXT           "Variability between upper and lower bound camber",IDC_STATIC,19,117,166,9
+    EDITTEXT        IDC_CAMBER_VARIABILITY,185,115,35,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_NC_CREEP_TAG2,227,117,8,8
+    LTEXT           "Total Creep Duration",IDC_STATIC,19,143,170,9
+    EDITTEXT        IDC_NC_CREEP,98,140,35,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NC_CREEP_TAG,140,140,19,8
+    LTEXT           "1 day of steam or radiant heat curing is equal to ",IDC_STATIC,15,171,152,8
+    EDITTEXT        IDC_CURING_TIME_FACTOR,168,169,18,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "days of normal curing",IDC_STATIC,190,172,68,8
 END
 
 IDD_SPEC_LOSSES DIALOGEX 0, 0, 494, 326
@@ -1123,40 +1126,43 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,228,209,50,14
 END
 
-IDD_SPEC_LIMITS DIALOGEX 0, 0, 296, 178
+IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 198
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
-CAPTION "Limits"
+CAPTION "Limits and Warnings"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Warnings will be posted to the Status Center if the following limits are exceeded.",IDC_STATIC,7,7,251,8
-    GROUPBOX        "Concrete Limits",IDC_STATIC,7,22,282,120
-    LTEXT           "Normal Weight",IDC_STATIC,85,30,48,8
-    LTEXT           "Lightweight",IDC_STATIC,163,30,37,8
-    LTEXT           "Slab f'c",IDC_STATIC,51,47,24,8
-    LTEXT           "Girder f'ci",IDC_STATIC,51,64,30,8
-    LTEXT           "Girder f'c",IDC_STATIC,51,81,29,8
-    LTEXT           "Concrete Unit Weight",IDC_STATIC,14,105,69,8
-    LTEXT           "Max Aggregate Size",IDC_STATIC,14,123,64,8
-    EDITTEXT        IDC_NWC_FC_SLAB,89,45,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_FC_SLAB_UNIT,131,47,19,8
-    EDITTEXT        IDC_NWC_GIRDER_FCI,89,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_GIRDER_FCI_UNIT,131,64,19,8
-    EDITTEXT        IDC_NWC_GIRDER_FC,89,79,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_GIRDER_FC_UNIT,131,81,19,8
-    EDITTEXT        IDC_NWC_UNIT_WEIGHT,89,103,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_UNIT_WEIGHT_UNIT,132,105,29,8
-    EDITTEXT        IDC_NWC_AGG_SIZE,89,121,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_AGG_SIZE_UNIT,132,123,19,8
-    EDITTEXT        IDC_LWC_FC_SLAB,160,45,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_FC_SLAB_UNIT,202,47,19,8
-    EDITTEXT        IDC_LWC_GIRDER_FCI,160,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_GIRDER_FCI_UNIT,202,64,19,8
-    EDITTEXT        IDC_LWC_GIRDER_FC,160,79,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_GIRDER_FC_UNIT,202,81,19,8
-    EDITTEXT        IDC_LWC_UNIT_WEIGHT,160,103,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_UNIT_WEIGHT_UNIT,203,105,29,8
-    EDITTEXT        IDC_LWC_AGG_SIZE,160,121,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,123,19,8
+    LTEXT           "Warnings will be posted to the Status Center if the following limits are exceeded.",IDC_STATIC,15,13,251,8
+    GROUPBOX        "Concrete Limits",IDC_STATIC,7,3,310,139
+    LTEXT           "Normal Weight",IDC_STATIC,85,27,48,8
+    LTEXT           "Lightweight",IDC_STATIC,163,27,37,8
+    LTEXT           "Slab f'c",IDC_STATIC,51,44,24,8
+    LTEXT           "Girder f'ci",IDC_STATIC,51,61,30,8
+    LTEXT           "Girder f'c",IDC_STATIC,51,78,29,8
+    LTEXT           "Concrete Unit Weight",IDC_STATIC,14,102,69,8
+    LTEXT           "Max Aggregate Size",IDC_STATIC,14,120,64,8
+    EDITTEXT        IDC_NWC_FC_SLAB,89,42,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_FC_SLAB_UNIT,131,44,19,8
+    EDITTEXT        IDC_NWC_GIRDER_FCI,89,59,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_GIRDER_FCI_UNIT,131,61,19,8
+    EDITTEXT        IDC_NWC_GIRDER_FC,89,76,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_GIRDER_FC_UNIT,131,78,19,8
+    EDITTEXT        IDC_NWC_UNIT_WEIGHT,89,100,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_UNIT_WEIGHT_UNIT,132,102,29,8
+    EDITTEXT        IDC_NWC_AGG_SIZE,89,118,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_AGG_SIZE_UNIT,132,120,19,8
+    EDITTEXT        IDC_LWC_FC_SLAB,160,42,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_FC_SLAB_UNIT,202,44,19,8
+    EDITTEXT        IDC_LWC_GIRDER_FCI,160,59,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_GIRDER_FCI_UNIT,202,61,19,8
+    EDITTEXT        IDC_LWC_GIRDER_FC,160,76,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_GIRDER_FC_UNIT,202,78,19,8
+    EDITTEXT        IDC_LWC_UNIT_WEIGHT,160,100,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_UNIT_WEIGHT_UNIT,203,102,29,8
+    EDITTEXT        IDC_LWC_AGG_SIZE,160,118,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,120,19,8
+    GROUPBOX        "General Warnings",IDC_STATIC,7,149,310,42
+    CONTROL         "Issue a Spec Check warning if stirrup zone lengths are incompatible with stirrup spacings",IDC_CHECK_STIRRUP_COMPATIBILITY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,167,291,10
 END
 
 IDD_SPEC_DESIGN DIALOGEX 0, 0, 292, 274
@@ -1240,7 +1246,7 @@ BEGIN
     EDITTEXT        IDC_LWC_PHI,307,78,29,14,ES_RIGHT | ES_AUTOHSCROLL
 END
 
-IDD_SPEC_MOMENT DIALOGEX 0, 0, 350, 266
+IDD_SPEC_MOMENT DIALOGEX 0, 0, 350, 223
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Moment Capacity"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1720,7 +1726,7 @@ BEGIN
         RIGHTMARGIN, 268
         VERTGUIDE, 15
         TOPMARGIN, 6
-        BOTTOMMARGIN, 235
+        BOTTOMMARGIN, 201
     END
 
     IDD_SPEC_LOSSES, DIALOG
@@ -1816,9 +1822,9 @@ BEGIN
     IDD_SPEC_LIMITS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 289
+        RIGHTMARGIN, 317
         TOPMARGIN, 7
-        BOTTOMMARGIN, 171
+        BOTTOMMARGIN, 191
     END
 
     IDD_SPEC_DESIGN, DIALOG
@@ -1850,7 +1856,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 343
         TOPMARGIN, 7
-        BOTTOMMARGIN, 259
+        BOTTOMMARGIN, 216
     END
 
     IDD_SPEC_DEBONDING, DIALOG
@@ -2292,7 +2298,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
-    IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
+    IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the %1 file found in the program directory."
     IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"
     IDS_E_READ              "An error has occured while reading %1"

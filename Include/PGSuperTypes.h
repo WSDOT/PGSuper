@@ -163,6 +163,8 @@ struct pgsTypes
       lltPermitRating_Special = 7   // for special permit load ratings
    };
 
+   enum LiveLoadApplicabilityType { llaEntireStructure, llaContraflexure, llaNegMomentAndInteriorPierReaction };
+
    enum DebondLengthControl   // which criteria controlled for max debond length
    {mdbDefault, mbdFractional, mdbHardLength};
 

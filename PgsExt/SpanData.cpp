@@ -273,11 +273,16 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                      break;
                   }
                }
+
+               // fix last girder index
+               iter->second = m_nGirders-1; 
+
+               // remove any extra groups
+               iter++;
                m_GirderSpacing[endType].m_SpacingGroups.erase(iter,end);
-               m_GirderSpacing[endType].m_SpacingGroups.back().second = m_nGirders-1;
 
                // remove extra girder spacing data
-               std::vector<Float64>::iterator spacing_begin = m_GirderSpacing[endType].m_GirderSpacing.begin() + (m_nGirders-1);
+               std::vector<Float64>::iterator spacing_begin = m_GirderSpacing[endType].m_GirderSpacing.begin() + m_nGirders;
                std::vector<Float64>::iterator spacing_end   = m_GirderSpacing[endType].m_GirderSpacing.end();
                m_GirderSpacing[endType].m_GirderSpacing.erase( spacing_begin, spacing_end );
             }

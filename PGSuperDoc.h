@@ -81,7 +81,7 @@ public:
    virtual CATID GetExtensionAgentCategoryID();
    virtual BOOL Init();
    virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit); 
-   virtual void OnChangedFavoriteReports(bool isFavorites);
+   virtual void OnChangedFavoriteReports(bool isFavorites, bool fromMenu);
    virtual void OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName);
    virtual void OnCustomReportHelp(custRepportHelpType helpType);
 

@@ -792,7 +792,8 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
 //            return artifact;
 
          LOG(_T("Strength I Limit State"));
-         RefineDesignForUltimateMoment(pgsTypes::BridgeSite3, pgsTypes::StrengthI,pProgress);
+            
+         LOG_EXECUTION_TIME(RefineDesignForUltimateMoment(pgsTypes::BridgeSite3, pgsTypes::StrengthI,pProgress));
 
          CHECK_PROGRESS;
 

@@ -986,6 +986,11 @@
     <param name="Local" value="Theoretical Manual\Camber Calculations.htm">
   </object>
   <li><object type="text/sitemap">
+    <param name="Name" value="Camber Variability">
+    <param name="Name" value="Camber Calculations">
+    <param name="Local" value="Theoretical Manual\Camber Calculations.htm">
+  </object>
+  <li><object type="text/sitemap">
     <param name="Name" value="Casting">
     <param name="Name" value="Casting Yard Tab">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibCasting_Yard_Tab.htm">

@@ -206,7 +206,8 @@ void CDeckEdgeBuilder::NextDeckPoint()
       if ( m_LeftEdgeState == pgsTypes::dptLinear )
       {
          // moving into a linear transtions. 
-         // do nothing
+         // capture the point at the end of the parallel section
+         m_LeftEdgeState = LinearTransition(m_LeftPath,left_point,deckPoint.LeftTransitionType);
       }
       else if ( m_LeftEdgeState == pgsTypes::dptSpline )
       {
@@ -297,11 +298,12 @@ void CDeckEdgeBuilder::NextDeckPoint()
       if ( m_RightEdgeState == pgsTypes::dptLinear )
       {
          // moving into a linear transtions. 
-         // do nothing
+         // capture the point at the end of the parallel section
+         m_RightEdgeState = LinearTransition(m_RightPath,right_point,deckPoint.RightTransitionType);
       }
       else if ( m_RightEdgeState == pgsTypes::dptSpline )
       {
-         // begining a splien state
+         // begining a spline state
          m_RightEdgeState = BeginSpline(m_RightPath,right_point,&m_RightSpline,deckPoint.RightTransitionType,false/*right*/);
       }
       else if ( m_RightEdgeState == pgsTypes::dptParallel )

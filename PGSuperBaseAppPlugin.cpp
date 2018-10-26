@@ -171,10 +171,10 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
    // Favorite reports
    m_DisplayFavoriteReports = pApp->GetProfileInt(_T("Options"),_T("DoDisplayFavoriteReports"),FALSE);
 
-   // favorite report names are stored as CSV's
+   // Favorite report names are stored as Tab separated values
    CString ReportList = pApp->GetProfileString(_T("Options"),_T("FavoriteReportsList"),_T(""));
    m_FavoriteReports.clear();
-   sysTokenizer tokenizer(_T(","));
+   sysTokenizer tokenizer(_T("\t"));
    tokenizer.push_back(ReportList);
    sysTokenizer::iterator it = tokenizer.begin();
    while( it != tokenizer.end() )
@@ -216,14 +216,14 @@ void CPGSuperBaseAppPlugin::SaveRegistryValues()
    // Favorite reports
    pApp->WriteProfileInt(_T("Options"),_T("DoDisplayFavoriteReports"),m_DisplayFavoriteReports);
 
-   // report names are stored as CSV's
+   // report names are stored as Tab separated values
    CString Favorites;
    std::vector<std::_tstring>::const_iterator it = m_FavoriteReports.begin();
    while (it != m_FavoriteReports.end())
    {
       if (it!= m_FavoriteReports.begin())
       {
-         Favorites += _T(",");
+         Favorites += _T("\t");
       }
 
       Favorites += it->c_str();

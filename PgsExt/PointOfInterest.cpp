@@ -156,6 +156,11 @@ bool pgsPointOfInterest::operator==(const pgsPointOfInterest& rOther) const
       return false;
 }
 
+bool pgsPointOfInterest::operator!=(const pgsPointOfInterest& rOther) const
+{
+   return !(*this == rOther);
+}
+
 //======================== OPERATIONS =======================================
 void pgsPointOfInterest::SetLocation(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart)
 {
@@ -190,16 +195,38 @@ PoiAttributeType pgsPointOfInterest::GetAttributes(pgsTypes::Stage stage) const
       return 0;
 }
 
-void pgsPointOfInterest::MergeStageAttributes(const pgsPointOfInterest& rOther)
+bool pgsPointOfInterest::MergeStageAttributes(const pgsPointOfInterest& rOther)
 {
+   // work on a copy of the attribute information in case merging fails
+   StageData stages[pgsTypes::MaxStages];
    for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
    {
-      StageData& rmydata = m_Stages[i];
+      stages[i] = m_Stages[i];
+   }
+
+   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
+   {
+      pgsTypes::Stage stage = (pgsTypes::Stage)i;
+      StageData& rmydata = stages[i];
       const StageData& rotdata = rOther.m_Stages[i];
+
+      if ( (rOther.HasAttribute(stage,POI_SECTCHANGE_LEFTFACE) || rOther.HasAttribute(stage,POI_SECTCHANGE_RIGHTFACE)) && m_DistFromStart != rOther.m_DistFromStart )
+      {
+         // can only merge a poi with section change attribute into this poi if they are at the exact same location
+         return false;
+      }
 
       rmydata.isSet = rmydata.isSet || rotdata.isSet;
       rmydata.Attribute = rmydata.Attribute | rotdata.Attribute;
    }
+
+   // merging was successful, update the real data
+   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
+   {
+      m_Stages[i] = stages[i];
+   }
+
+   return true;
 }
 
 
