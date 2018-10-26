@@ -523,7 +523,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
                               bool areAnyHarpedStrandsInTable, bool areAnyDebondingInTable)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2_NOCHECK(pBroker,ISectionProperties,pSectProp);
 
 #if defined _DEBUG
    GET_IFACE2(pBroker,IGirder,pGirder);

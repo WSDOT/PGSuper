@@ -390,24 +390,22 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
       bool bContinuousOnLeft, bContinuousOnRight;
       pBridge->IsContinuousAtPier(location.PierIdx,&bContinuousOnLeft,&bContinuousOnRight);
 
-      bool isSimple(true);
+      bool bIsSimple(true);
       if(location.Face == rftBack)
       {
-         isSimple = !(bIntegralOnLeft || bContinuousOnLeft);
+         bIsSimple = !(bIntegralOnLeft || bContinuousOnLeft);
       }
       else if(location.Face == rftAhead)
       {
-         isSimple = !(bIntegralOnRight || bContinuousOnRight);
+         bIsSimple = !(bIntegralOnRight || bContinuousOnRight);
       }
       else
       {
-         ATLASSERT(false); // should not happen for bearing location
-         // pier segment is continuous over the pier... this could be a segment on a bearing or
-         // a concrete hinge... we don't have a way of knowing.
-         isSimple = true;
+         // always report for mid-locations... set bIsSimple to true so that m_bAlwaysReport will be set to true below
+         bIsSimple = true;
       }
 
-      if (isSimple || pBridge->HasCantilever(location.PierIdx) )
+      if (bIsSimple || pBridge->HasCantilever(location.PierIdx) )
       {
          m_bAlwaysReport = true;
       }

@@ -94,14 +94,20 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   rptRcTable* pStraightLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
-   *pPara << pStraightLayoutTable << rptNewLine;
 
-   pPara = &(*pStraightLayoutTable)(0,0);
+   StrandIndexType Ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+   StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
+
+   rptRcTable* pStraightLayoutTable = NULL;
+   if ( 0 < Ns && 0 < Nt )
+   {
+      pStraightLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+      *pPara << pStraightLayoutTable << rptNewLine;
+      pPara = &(*pStraightLayoutTable)(0,0);
+   }
 
    // Straight strands
    pgsPointOfInterest end_poi(segmentKey,0.0);
-   StrandIndexType Ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
    StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
    StrandIndexType nExtendedLeft  = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
    StrandIndexType nExtendedRight = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
@@ -202,61 +208,62 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
 
    // Temporary strands
-   pPara = &(*pStraightLayoutTable)(0,1);
-   if ( 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
+   if ( 0 < Nt )
    {
-      StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
-      nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
-      if (0 < Nt)
+      if ( 0 < Ns )
       {
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),_T("Temporary Strand"));
-         *pPara << p_table;
+         pPara = &(*pStraightLayoutTable)(0,1);
+      }
 
-         (*p_table)(0,0) << _T("Strand");
-         (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*p_table)(0,2) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
 
-         if ( 0 < nDebonded )
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),_T("Temporary Strand"));
+      *pPara << p_table;
+
+      (*p_table)(0,0) << _T("Strand");
+      (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,2) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+
+      if ( 0 < nDebonded )
+      {
+         (*p_table)(0,3) << COLHDR(_T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,4) << COLHDR(_T("Right End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      }
+
+      CComPtr<IPoint2dCollection> spts;
+      pStrandGeometry->GetStrandPositions(end_poi, pgsTypes::Temporary, &spts);
+
+      RowIndexType row = p_table->GetNumberOfHeaderRows();
+      for (StrandIndexType is = 0; is < Nt; is++, row++)
+      {
+         (*p_table)(row,0) << row;
+         CComPtr<IPoint2d> spt;
+         spts->get_Item(is, &spt);
+         Float64 x,y;
+         spt->get_X(&x);
+         spt->get_Y(&y);
+         (*p_table)(row,1) << dim.SetValue(x);
+         (*p_table)(row,2) << dim.SetValue(y);
+
+         if ( 0 < nDebonded ) 
          {
-            (*p_table)(0,3) << COLHDR(_T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,4) << COLHDR(_T("Right End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         }
-
-         CComPtr<IPoint2dCollection> spts;
-         pStrandGeometry->GetStrandPositions(end_poi, pgsTypes::Temporary, &spts);
-
-         RowIndexType row = p_table->GetNumberOfHeaderRows();
-         for (StrandIndexType is = 0; is < Nt; is++, row++)
-         {
-            (*p_table)(row,0) << row;
-            CComPtr<IPoint2d> spt;
-            spts->get_Item(is, &spt);
-            Float64 x,y;
-            spt->get_X(&x);
-            spt->get_Y(&y);
-            (*p_table)(row,1) << dim.SetValue(x);
-            (*p_table)(row,2) << dim.SetValue(y);
-
-            if ( 0 < nDebonded ) 
+            Float64 start,end;
+            if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Temporary,&start,&end) )
             {
-               Float64 start,end;
-               if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Temporary,&start,&end) )
-               {
-                  (*p_table)(row,3) << len.SetValue(start);
-                  (*p_table)(row,4) << len.SetValue(end);
-               }
-               else
-               {
-                  (*p_table)(row,3) << _T("-");
-                  (*p_table)(row,4) << _T("-");
-               }
+               (*p_table)(row,3) << len.SetValue(start);
+               (*p_table)(row,4) << len.SetValue(end);
+            }
+            else
+            {
+               (*p_table)(row,3) << _T("-");
+               (*p_table)(row,4) << _T("-");
             }
          }
       }
-      else
-      {
-         *pPara <<_T("No Temporary Strands in Girder")<<rptNewLine;
-      }
+   }
+   else
+   {
+      *pPara <<_T("No Temporary Strands in Girder")<<rptNewLine;
    }
 
    // Harped strands
@@ -267,18 +274,23 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    std::vector<pgsPointOfInterest> vPoi;
 
    bool areHarpedStraight = pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey);
+   StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
+   nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Harped);
+
    int nStrandGrids;
-   if ( areHarpedStraight )
+   if ( areHarpedStraight || Nh==0 )
    {
       if ( bSymmetric )
       {
          nStrandGrids = 1;
-         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_RELEASED_SEGMENT);
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE);
+         ATLASSERT(vPoi.size() == 1);
       }
       else
       {
          nStrandGrids = 2;
-         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_10L | POI_RELEASED_SEGMENT);
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE);
+         ATLASSERT(vPoi.size() == 2);
       }
    }
    else
@@ -286,22 +298,26 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
       if ( bSymmetric )
       {
          nStrandGrids = 2;
-         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_RELEASED_SEGMENT);
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE);
+         ATLASSERT(vPoi.size() == 1);
          vPoi.push_back(pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT).front());
       }
       else
       {
          nStrandGrids = 4;
-         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_10L | POI_RELEASED_SEGMENT);
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE);
+         ATLASSERT(vPoi.size() == 2);
          std::vector<pgsPointOfInterest> vHpPoi(pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT));
          vPoi.insert(vPoi.end(),vHpPoi.begin(),vHpPoi.end());
          std::sort(vPoi.begin(),vPoi.end());
       }
    }
 
-   pPara = new rptParagraph;
-   *pChapter << pPara;
-   rptRcTable* pHarpedLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nStrandGrids);
+   if (0 < Nh)
+   {
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+      rptRcTable* pHarpedLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nStrandGrids);
 #pragma Reminder("UPDATE: need to use bottom justification for layout table")
    // need to have layout tables support vertical justification so that everything can
    // be bottom justified
@@ -312,10 +328,6 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
    *pPara << pHarpedLayoutTable << rptNewLine;
 
-   StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
-   nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Harped);
-   if (0 < Nh)
-   {
       for ( int i = 0; i < nStrandGrids; i++ )
       {
          pPara = &(*pHarpedLayoutTable)(0,i);

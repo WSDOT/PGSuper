@@ -394,6 +394,9 @@ void CClosureJointData::MakeCopy(const CClosureJointData& rOther,bool bCopyDataO
          m_pPier         = NULL; // NULL because this will be resolved later
          m_PierID        = rOther.m_PierID; // capture index for later resolution of m_pPier
       }
+
+      m_pLeftSegment  = rOther.m_pLeftSegment;
+      m_pRightSegment = rOther.m_pRightSegment;
    }
 
    CopyMaterialFrom(rOther);
@@ -554,5 +557,8 @@ void CClosureJointData::AssertValid()
          _ASSERT(m_pPier != NULL || m_pTempSupport != NULL);
       }
    }
+
+   _ASSERT(m_pLeftSegment  != NULL);
+   _ASSERT(m_pRightSegment != NULL);
 }
 #endif

@@ -580,8 +580,10 @@ void CPGSDocBase::OnUpdateEditHaunch(CCmdUI* pCmdUI)
 
 bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
 {
-#pragma Reminder("UPDATE: move this to the CPGSuperDoc class... it doesn't belong in the common base class")
-   // it doesn't apply to PGSplice
+   // this method doesn't apply to PGSplice, however it must be accessable to the PGSuperDocProxyAgent
+   // that is why it is in this class and not in CPGSuperDoc
+   ATLASSERT(IsKindOf(RUNTIME_CLASS(CPGSuperDoc)));
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IBridge,pBridge);
@@ -635,7 +637,7 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
    Float64 hpOffsetAtEnd   = pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metEnd);
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L | POI_10L);
+   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE);
    ATLASSERT(vPoi.size() == 2);
    pgsPointOfInterest startPoi(vPoi.front());
    pgsPointOfInterest endPoi(vPoi.back());
@@ -945,6 +947,7 @@ void CPGSDocBase::EditGirderViewSettings(int nPage)
       SetGirderEditorSettings(settings);
 
       // tell the world we've changed settings
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
       UpdateAllViews( 0, HINT_GIRDERVIEWSETTINGSCHANGED, 0 );
    }
 }
@@ -974,8 +977,10 @@ void CPGSDocBase::EditBridgeViewSettings(int nPage)
    }
 
    // tell the world we've changed settings
-   UpdateAllViews( 0, HINT_BRIDGEVIEWSETTINGSCHANGED, 0 );
-	
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      UpdateAllViews( 0, HINT_BRIDGEVIEWSETTINGSCHANGED, 0 );
+   }
 }
 
 BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
@@ -3115,6 +3120,7 @@ void CPGSDocBase::OnImportProjectLibrary()
 
 
       SetModifiedFlag();
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
       UpdateAllViews(NULL, HINT_LIBRARYCHANGED);
 
       AfxMessageBox(_T("Done getting library entries"));
@@ -3731,6 +3737,8 @@ void CPGSDocBase::OnOptionsLabels()
       bool bUseAlpha = dlg.m_Format == 0 ? true : false;
       if ( bUseAlpha != pgsGirderLabel::UseAlphaLabel() )
       {
+         AFX_MANAGE_STATE(AfxGetAppModuleState());
+
          pgsGirderLabel::UseAlphaLabel(bUseAlpha);
          UpdateAllViews(NULL,HINT_GIRDERLABELFORMATCHANGED);
       }

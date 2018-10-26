@@ -159,6 +159,14 @@ void CSplicedNUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTy
          beam->put_D3(d3);
       }
    }
+   else
+   {
+      overallHeight = d1+d2+d3+d4+d5;
+   }
+
+   CComPtr<IPoint2d> hookPt;
+   beam->get_HookPoint(&hookPt);
+   hookPt->Move(0,-overallHeight);
 
    gdrsection.QueryInterface(ppSection);
 }

@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperDistFactorEngineer.IBeamDistFactorEngineer.1 = s 'IBeam Distribution Factor Engineer'
 	{
-		CLSID = s '{3AC40380-8764-4087-BD7C-47A50A369AE6}'
+		CLSID = s '{DFC0191F-F606-46AA-AC82-13B44878AA3B}'
 	}
 	PGSuperDistFactorEngineer.IBeamDistFactorEngineer = s 'IBeam Distribution Factor Engineer'
 	{
-		CLSID = s '{3AC40380-8764-4087-BD7C-47A50A369AE6}'
+		CLSID = s '{DFC0191F-F606-46AA-AC82-13B44878AA3B}'
 		CurVer = s 'PGSuperDistFactorEngineer.IBeamDistFactorEngineer.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {3AC40380-8764-4087-BD7C-47A50A369AE6} = s 'IBeam Distribution Factor Engineer'
+		ForceRemove {DFC0191F-F606-46AA-AC82-13B44878AA3B} = s 'IBeam Distribution Factor Engineer'
 		{
 			ProgID = s 'PGSuperDistFactorEngineer.IBeamDistFactorEngineer.1'
 			VersionIndependentProgID = s 'PGSuperDistFactorEngineer.IBeamDistFactorEngineer'

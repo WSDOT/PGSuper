@@ -166,9 +166,24 @@ void CSpecHaulingErectionPage::OnCbnSelchangeHaulingMethod()
 
 BOOL CSpecHaulingErectionPage::OnSetActive()
 {
-   // TODO: Add your specialized code here and/or call the base class
+   // Disable controls if hauling not enabled
+   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+   BOOL enableChild = pDad->m_Entry.IsHaulingAnalysisEnabled() ? TRUE : FALSE;
+   EnableControls(enableChild);
+
    m_WsdotHaulingDlg.OnSetActive();
    m_KdotHaulingDlg.OnSetActive();
 
    return CPropertyPage::OnSetActive();
+}
+
+inline BOOL CALLBACK EnableChildWindow(HWND hwnd,LPARAM lParam)
+{
+   ::EnableWindow(hwnd,(int)lParam);
+   return TRUE;
+}
+
+void CSpecHaulingErectionPage::EnableControls(BOOL bEnable)
+{
+   EnumChildWindows(GetSafeHwnd(),EnableChildWindow,bEnable);
 }

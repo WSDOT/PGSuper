@@ -451,6 +451,14 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segme
       return pgsPointOfInterest();
    }
 
+   // is the location before the start?
+   // this happens if a poi is referenced to this segment, but
+   // located in the previous closure joint
+   if ( ::IsLE(Xpoi,vPOI.front().GetDistFromStart()) )
+   {
+      return vPOI.front();
+   }
+
    std::vector<pgsPointOfInterest>::const_iterator iter1(vPOI.begin());
    std::vector<pgsPointOfInterest>::const_iterator iter2(iter1+1);
    std::vector<pgsPointOfInterest>::const_iterator end2(vPOI.end());
@@ -478,6 +486,7 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segme
       }
    }
 
+   ATLASSERT(false); // nearest poi not found
    return pgsPointOfInterest();
 }
 
@@ -874,7 +883,9 @@ bool pgsPoiMgr::AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribut
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_ABUTMENT)                 ? poi.HasAttribute(POI_ABUTMENT)                 : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)             ? poi.HasAttribute(POI_STIRRUP_ZONE)             : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT) ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : true) &&
-          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : true)
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_START_FACE)               ? poi.HasAttribute(POI_START_FACE)               : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_END_FACE)                 ? poi.HasAttribute(POI_END_FACE)                 : true)
          )
       {
          // This poi matches the selection criteria.
@@ -1003,7 +1014,9 @@ bool pgsPoiMgr::OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribute
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_ABUTMENT)                 ? poi.HasAttribute(POI_ABUTMENT)                 : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)             ? poi.HasAttribute(POI_STIRRUP_ZONE)             : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT) ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : false)
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_START_FACE)               ? poi.HasAttribute(POI_START_FACE)               : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_END_FACE)                 ? poi.HasAttribute(POI_END_FACE)                 : false)
        )
       {
          // This poi matches the selection criteria.

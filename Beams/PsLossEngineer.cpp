@@ -3162,7 +3162,7 @@ std::vector<pgsPointOfInterest> CPsLossEngineer::GetPointsOfInterest(const CGird
    std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
    std::vector<pgsPointOfInterest> vPoi2( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
    std::vector<pgsPointOfInterest> vPoi3( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
-   std::vector<pgsPointOfInterest> vMiscPoi( pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_STIRRUP_ZONE | POI_H | POI_15H | POI_DEBOND | POI_FACEOFSUPPORT,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vMiscPoi( pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_STIRRUP_ZONE | POI_H | POI_15H | POI_DEBOND | POI_FACEOFSUPPORT | POI_START_FACE | POI_END_FACE,POIFIND_OR) );
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    vPoi.insert(vPoi.end(),vMiscPoi.begin(),vMiscPoi.end());

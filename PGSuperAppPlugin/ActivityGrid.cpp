@@ -352,113 +352,48 @@ void CActivityGrid::RemoveActivity()
 
       if ( activityType == CONSTRUCT_SEGMENTS )
       {
-         if ( pParent->m_pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
-         {
-            AfxMessageBox(_T("This activity cannot be directly removed. Add a Construct Segments activity to a different timeline event to remove it from this event."));
-            return;
-         }
-         else
-         {
-            pParent->m_pTimelineEvent->GetConstructSegmentsActivity().Enable(false);
-         }
+         pParent->m_pTimelineEvent->GetConstructSegmentsActivity().Enable(false);
       }
 
       if ( activityType == ERECT_PIERS )
       {
-         if ( pParent->m_pTimelineEvent->GetErectPiersActivity().GetPierCount() == 0 &&
-              pParent->m_pTimelineEvent->GetErectPiersActivity().GetTemporarySupportCount() == 0 )
-         {
-            pParent->m_pTimelineEvent->GetErectPiersActivity().Enable(false);
-            pParent->m_pTimelineEvent->GetErectPiersActivity().Clear();
-         }
-         else
-         {
-            AfxMessageBox(_T("This activity cannot be removed. Piers/Temporary Supports are erected during this activity. Erect them in a different event in the timeline."));
-            return;
-         }
+         pParent->m_pTimelineEvent->GetErectPiersActivity().Enable(false);
+         pParent->m_pTimelineEvent->GetErectPiersActivity().Clear();
       }
 
       if ( activityType == CAST_CLOSURE_JOINTS )
       {
-         if ( pParent->m_pTimelineEvent->GetCastClosureJointActivity().GetTemporarySupportCount() == 0 )
-         {
-            pParent->m_pTimelineEvent->GetCastClosureJointActivity().Enable(false);
-            pParent->m_pTimelineEvent->GetCastClosureJointActivity().Clear();
-         }
-         else
-         {
-            AfxMessageBox(_T("This activity cannot be removed. Closure joints are cast during this activity. Cast these closure joints in a different event in the timeline."));
-            return;
-         }
+         pParent->m_pTimelineEvent->GetCastClosureJointActivity().Enable(false);
+         pParent->m_pTimelineEvent->GetCastClosureJointActivity().Clear();
       }
 
       if ( activityType == ERECT_SEGMENTS )
       {
-         if ( pParent->m_pTimelineEvent->GetErectSegmentsActivity().GetSegmentCount() == 0 )
-         {
-            pParent->m_pTimelineEvent->GetErectSegmentsActivity().Enable(false);
-            pParent->m_pTimelineEvent->GetErectSegmentsActivity().Clear();
-         }
-         else
-         {
-            AfxMessageBox(_T("This activity cannot be removed. Segments are erected during this activity. Move these segments to a different event in the timeline."));
-            return;
-         }
+         pParent->m_pTimelineEvent->GetErectSegmentsActivity().Enable(false);
+         pParent->m_pTimelineEvent->GetErectSegmentsActivity().Clear();
       }
 
       if ( activityType == STRESS_TENDONS )
       {
-         if ( pParent->m_pTimelineEvent->GetStressTendonActivity().GetTendonCount() == 0 )
-         {
-            pParent->m_pTimelineEvent->GetStressTendonActivity().Enable(false);
-            pParent->m_pTimelineEvent->GetStressTendonActivity().Clear();
-         }
-         else
-         {
-            AfxMessageBox(_T("This activity cannot be removed. Tendons are stressed during this activity. Stress these tendons in a different event in the timeline."));
-            return;
-         }
+         pParent->m_pTimelineEvent->GetStressTendonActivity().Enable(false);
+         pParent->m_pTimelineEvent->GetStressTendonActivity().Clear();
       }
 
       if ( activityType == REMOVE_TS )
       {
-         if ( pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().GetTempSupportCount() == 0 )
-         {
-            pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().Enable(false);
-            pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().Clear();
-         }
-         else
-         {
-            AfxMessageBox(_T("This activity cannot be removed. Temporary supports are removed during this activity. Remove this temporary supports in a different event in the timeline."));
-            return;
-         }
+         pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().Enable(false);
+         pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().Clear();
       }
 
       if ( activityType == CAST_DECK )
       {
-         if ( pParent->m_pTimelineEvent->GetCastDeckActivity().IsEnabled() )
-         {
-            AfxMessageBox(_T("This activity cannot be removed. The deck is cast during this activity. Cast the deck in a different event in the timeline."));
-            return;
-         }
-         else
-         {
-            pParent->m_pTimelineEvent->GetCastDeckActivity().Enable(false);
-         }
+         pParent->m_pTimelineEvent->GetCastDeckActivity().Enable(false);
       }
 
       if ( activityType == APPLY_LOADS )
       {
-         if ( pParent->m_pTimelineEvent->GetApplyLoadActivity().IsEnabled() )
-         {
-            AfxMessageBox(_T("This activity cannot be removed. Loads are applied during this activity. Apply these loads in a different event in the timeline."));
-            return;
-         }
-         else
-         {
-            pParent->m_pTimelineEvent->GetApplyLoadActivity().Enable(false);
-            pParent->m_pTimelineEvent->GetApplyLoadActivity().Clear();
-         }
+         pParent->m_pTimelineEvent->GetApplyLoadActivity().Enable(false);
+         pParent->m_pTimelineEvent->GetApplyLoadActivity().Clear();
       }
    }
 

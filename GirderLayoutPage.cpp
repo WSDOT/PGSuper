@@ -739,7 +739,9 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderType(WPARAM wParam,LPARAM lPara
                std::_tstring strGirderName = *iter;
 
                if ( iter != begin )
+               {
                   strItems += _T("\n");
+               }
 
                strItems += CString(strGirderName.c_str());
             }
@@ -749,7 +751,9 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderType(WPARAM wParam,LPARAM lPara
             {
                iter = begin;
                for ( IndexType i = 0; i < dlg.m_ItemIdx; i++ )
+               {
                   iter++;
+               }
 
                strBridgeGirderName = *iter;
             }
@@ -813,7 +817,7 @@ void CSpanGirderLayoutPage::UpdateGirderCountHyperLinkText()
       GetDlgItem(IDC_NUMGDR_LABEL)->EnableWindow(FALSE);
       GetDlgItem(IDC_NUMGDR_SPIN)->EnableWindow(FALSE);
       GetDlgItem(IDC_NUMGDR)->EnableWindow(FALSE);
-      m_NumGirdersHyperLink.SetWindowText(_T("The same number of girder are used in all spans"));
+      m_NumGirdersHyperLink.SetWindowText(_T("The same number of girders are used in all spans"));
       m_NumGirdersHyperLink.SetURL(_T("Click to define number of girder span by span"));
    }
    else

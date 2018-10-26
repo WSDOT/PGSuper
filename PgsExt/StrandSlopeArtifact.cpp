@@ -40,6 +40,8 @@ CLASS
 //======================== LIFECYCLE  =======================================
 pgsStrandSlopeArtifact::pgsStrandSlopeArtifact()
 {
+   m_Capacity = 0;
+   m_Demand    = 0;
 }
 
 pgsStrandSlopeArtifact::pgsStrandSlopeArtifact(const pgsStrandSlopeArtifact& rOther)

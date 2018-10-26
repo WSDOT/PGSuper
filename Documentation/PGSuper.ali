@@ -1,6 +1,6 @@
 IDH_PGSUPER=index.html
 
-IDH_CONFIGURE_PGSUPER=ug_dialogs_configure_pgsuper.html
+IDH_CONFIGURE_PGSUPER=ug_dialogs_configure.html
 IDH_CONFIGURATION_SERVERS=ug_dialogs_configuration_servers.html
 IDH_CONFIGURATION_SERVER_DEFINITION=ug_dialogs_configuration_server_definition.html
 IDH_PLUGINS=ug_dialogs_plugins.html
@@ -69,7 +69,7 @@ IDH_EDIT_MOMENT_LOADS=ug_dialogs_moment_load.html
 
 IDH_EFFECTIVE_FLANGE_WIDTH=ug_dialogs_effective_flange_width.html
 IDH_STRUCTURAL_ANALYSIS=ug_dialogs_structural_analysis_method.html
-IDH_SELECT_LIVELOAD=ug_dialogs_live_loads.html
+IDH_SELECT_LIVELOAD=ug_dialogs_design_live_loads.html
 IDH_DIALOG_LOADMODIFIERS=ug_dialogs_load_modifiers.html
 
 IDH_GIRDERDETAILS_GENERAL=ug_dialogs_girder_details_general.html

@@ -10,7 +10,6 @@
 #include "afxres.h"
 #include "EAF\EAFResources.h"
 #include "grid\gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -69,8 +68,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,51
- PRODUCTVERSION 3,0,0,51
+ FILEVERSION 3,0,0,52
+ PRODUCTVERSION 3,0,0,52
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +87,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.51"
+            VALUE "FileVersion", "3.0.0.52"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.51"
+            VALUE "ProductVersion", "3.0.0.52"
         END
     END
     BLOCK "VarFileInfo"
@@ -409,7 +408,7 @@ BEGIN
     COMBOBOX        IDC_EFF_FLANGE_WIDTH,197,231,142,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_WSDOT_HAULINGD DIALOGEX 0, 0, 480, 364
+IDD_WSDOT_HAULINGD DIALOGEX 0, 0, 480, 353
 STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -437,25 +436,25 @@ BEGIN
     EDITTEXT        IDC_CAMBER_CG_ADJUSTMENT,378,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_MAXWGT,378,233,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_HAULING_COMPRESSION,81,275,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_HAULING_TENSION,175,309,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HAULING_TENSION,168,309,40,14,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "But not greater than ",IDC_CHECK_HAULING_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,272,308,77,10
-    EDITTEXT        IDC_HAULING_TENSION_MAX,354,306,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_HAULING_TENSION_WITH_REBAR,174,331,40,14,ES_RIGHT | ES_AUTOHSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,311,308,77,10
+    EDITTEXT        IDC_HAULING_TENSION_MAX,393,306,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HAULING_TENSION_WITH_REBAR,167,326,40,14,ES_RIGHT | ES_AUTOHSCROLL
     GROUPBOX        "Factors of Safety",IDC_STATIC_GH2,9,7,160,69
     LTEXT           "Cracking",IDC_STATIC_GH3,15,25,30,8,NOT WS_GROUP
     LTEXT           "Roll Over",IDC_STATIC_GH4,97,25,32,8,NOT WS_GROUP
-    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,290,25,44,8
+    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,290,25,142,8
     LTEXT           "Up",IDC_STATIC_GH6,50,98,10,8,NOT WS_GROUP
     LTEXT           "Down",IDC_STATIC_GH7,117,98,22,8,NOT WS_GROUP
-    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_GH8,7,262,466,95
+    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_GH8,7,262,466,84
     LTEXT           "Compressive Stress",IDC_STATIC_GH9,13,278,67,8,NOT WS_GROUP
     LTEXT           "f'c",IDC_STATIC_GH25,123,278,14,8,NOT WS_GROUP
     LTEXT           "Tensile Stress",IDC_STATIC_GH10,13,295,47,8,NOT WS_GROUP
-    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_UNIT,216,310,51,8,NOT WS_GROUP
-    LTEXT           "MPa",IDC_HAULING_TENSION_MAX_UNIT,396,308,29,8,NOT WS_GROUP
-    LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_GH11,13,335,152,9,NOT WS_GROUP
-    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_WITH_REBAR_UNIT,216,331,45,8,NOT WS_GROUP
+    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_UNIT,212,310,90,8,NOT WS_GROUP
+    LTEXT           "MPa",IDC_HAULING_TENSION_MAX_UNIT,435,308,29,8,NOT WS_GROUP
+    LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_GH11,13,330,152,9,NOT WS_GROUP
+    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_WITH_REBAR_UNIT,212,326,90,8,NOT WS_GROUP
     GROUPBOX        "Hauling Analysis Parameters",IDC_STATIC_GH12,7,82,467,175
     LTEXT           "Roll Stiffness of Truck Trailer",IDC_STATIC_GH13,15,118,92,8,NOT WS_GROUP
     LTEXT           "kip-in/rad",IDC_ROLL_STIFFNESS_UNITS,109,132,33,8,NOT WS_GROUP
@@ -486,11 +485,11 @@ BEGIN
     LTEXT           "%",IDC_STATIC,94,98,8,8
     LTEXT           "%",IDC_STATIC,171,98,8,8
     LTEXT           "Normal Weight",IDC_NWC_FR_TXT,188,23,48,8
-    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,290,41,44,8
+    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,290,41,142,8
     LTEXT           "All Lightweight",IDC_ALWC_FR_TXT,188,39,46,8
-    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,290,57,44,8
+    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,290,57,142,8
     LTEXT           "Sand Lightweight",IDC_SLWC_FR_TXT,188,55,56,8
-    GROUPBOX        "Modulus of Rupture for Cracking Moment",IDC_STATIC,175,7,162,69
+    GROUPBOX        "Modulus of Rupture for Cracking Moment",IDC_STATIC,175,7,298,69
     LTEXT           "Impact",IDC_STATIC,15,97,22,8
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC,14,310,154,18
 END
@@ -677,7 +676,7 @@ BEGIN
     COMBOBOX        IDC_TIME_DEPENDENT_MODEL,31,51,218,42,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_SPEC_LIFTING DIALOGEX 0, 0, 420, 290
+IDD_SPEC_LIFTING DIALOGEX 0, 0, 492, 285
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Lifting"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -688,35 +687,35 @@ BEGIN
     LTEXT           "Failure",IDC_STATIC_MFSF,15,47,27,8
     EDITTEXT        IDC_FS_CY_FAIL,55,44,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_FR,223,17,30,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,257,20,41,8
+    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,257,20,111,8
     LTEXT           "Normal Weight",IDC_NWC_FR_TXT,165,20,48,8
     EDITTEXT        IDC_ALWC_FR,223,33,30,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,257,36,41,8
+    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,257,36,111,8
     LTEXT           "All Lightweight",IDC_ALWC_FR_TXT,165,36,46,8
     EDITTEXT        IDC_SLWC_FR,223,49,30,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,257,52,41,8
+    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,257,52,111,8
     LTEXT           "Sand Lightweight",IDC_SLWC_FR_TXT,165,52,56,8
-    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_ACS,7,204,406,79
+    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_ACS,7,198,478,80
     LTEXT           "Compression",IDC_STATIC_ACSCS,13,219,41,8
     EDITTEXT        IDC_LIFTING_COMPRESSION,77,216,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'ci",IDC_LIFTING_TENSION_UNITS2,119,218,10,8
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC_ACSTS,15,247,152,8
     EDITTEXT        IDC_LIFTING_TENSION,167,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_LIFTING_TENSION_UNIT,211,247,48,8
+    LTEXT           "sqrt(f'ci (MPa))",IDC_LIFTING_TENSION_UNIT,211,247,90,8
     CONTROL         "But not greater than ",IDC_CHECK_LIFTING_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,247,77,10
-    EDITTEXT        IDC_LIFTING_TENSION_MAX,343,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_LIFTING_TENSION_MAX_UNIT,387,248,24,8
-    LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_ACSSB,15,267,143,8
-    EDITTEXT        IDC_LIFTING_TENSION_WITH_REBAR,167,265,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_LIFTING_TENSION_WITH_REBAR_UNIT,211,267,48,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,315,247,77,10
+    EDITTEXT        IDC_LIFTING_TENSION_MAX,395,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_LIFTING_TENSION_MAX_UNIT,439,249,24,8
+    LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_ACSSB,15,264,143,8
+    EDITTEXT        IDC_LIFTING_TENSION_WITH_REBAR,167,262,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'ci (MPa))",IDC_LIFTING_TENSION_WITH_REBAR_UNIT,211,264,90,8
     LTEXT           "Up",IDC_STATIC_LCYUP,52,102,16,8
     EDITTEXT        IDC_IMPACT_UPWARD_LIFTING,70,100,27,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,100,102,8,8
     LTEXT           "Down",IDC_STATIC_LCYDOWN,116,102,22,8
     EDITTEXT        IDC_IMPACT_DOWNWARD_LIFTING,140,100,27,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,172,102,8,8
-    GROUPBOX        "Lifting Analysis Parameters",IDC_STATIC_LCP,7,80,406,119
+    GROUPBOX        "Lifting Analysis Parameters",IDC_STATIC_LCP,7,77,478,119
     LTEXT           "Height of Pick Point Above Top of Girder",IDC_STATIC_LCPHPP,15,129,143,8
     EDITTEXT        IDC_PICK_POINT_HEIGHT,165,124,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Inches",IDC_PICK_POINT_HEIGHT_UNITS,209,129,25,8
@@ -729,7 +728,7 @@ BEGIN
     LTEXT           "Min Angle of Inclination of Lifting Cable (Measured from Horizontal)",IDC_STATIC_LCP_INC,15,173,138,20
     EDITTEXT        IDC_MIN_CABLE_ANGLE,165,173,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "degrees",IDC_MIN_CABLE_ANGLE_UNITS,209,175,43,8
-    GROUPBOX        "Modulus of Rupture for Cracking Moment",IDC_STATIC,156,7,155,65
+    GROUPBOX        "Modulus of Rupture for Cracking Moment",IDC_STATIC,158,7,327,65
     LTEXT           "Impact",IDC_STATIC,15,101,22,8
     LTEXT           "Tension",IDC_STATIC,13,232,26,8
 END
@@ -1021,7 +1020,7 @@ BEGIN
     LTEXT           "Harped Strand Hold Down Force",IDC_STATIC,23,23,104,8
     CONTROL         "Check",IDC_CHECK_HD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,21,37,8
     CONTROL         "Design",IDC_DESIGN_HD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,183,21,37,8
-    LTEXT           "Max. Hold Down Force",IDC_STATIC,229,22,79,8
+    LTEXT           "Max. Hold Down Force",IDC_STATIC_HD,229,22,79,8
     EDITTEXT        IDC_HOLD_DOWN_FORCE,307,19,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Kips",IDC_HOLD_DOWN_FORCE_UNITS,351,22,23,8
     LTEXT           "Harped Strand Slope Limits",IDC_STATIC,23,35,86,8
@@ -1036,8 +1035,8 @@ BEGIN
     LTEXT           "Splitting Resitance (5.10.10.1)",IDC_STATIC,25,84,96,8
     CONTROL         "Check",IDC_CHECK_SPLITTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,83,37,8
     CONTROL         "Design",IDC_DESIGN_SPLITTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,199,83,37,8
-    LTEXT           "Splitting zone length",IDC_STATIC,246,84,64,8
-    LTEXT           "h/",IDC_STATIC,315,84,8,8
+    LTEXT           "Splitting zone length",IDC_STATIC_SPL,246,84,64,8
+    LTEXT           "h/",IDC_STATIC_SH,315,84,8,8
     EDITTEXT        IDC_N,324,81,18,14,ES_AUTOHSCROLL
     LTEXT           "Confinement Reinforcement (5.10.10.2)",IDC_STATIC,25,97,124,8
     CONTROL         "Check",IDC_CHECK_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,97,37,8
@@ -1047,8 +1046,8 @@ BEGIN
     CONTROL         "Design",IDC_DESIGN_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,135,37,8
     LTEXT           "Min Lifting Point Location from ends of girder",IDC_MIN_LIFTING_POINT_LABEL,23,150,140,8
     EDITTEXT        IDC_MIN_LIFTING_POINT,177,147,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MIN_LIFTING_POINT_UNIT,220,150,19,8
-    LTEXT           "(Enter value or H)",IDC_STATIC,233,150,56,8
+    LTEXT           "un",IDC_MIN_LIFTING_POINT_UNIT,220,150,9,8
+    LTEXT           "(Enter value or H)",IDC_STATIC_L,234,150,56,8
     LTEXT           "Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,316,150,31,8
     EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,351,147,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,395,150,19,8
@@ -1058,21 +1057,21 @@ BEGIN
     LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,23,205,149,8
     EDITTEXT        IDC_MIN_TRUCK_SUPPORT,177,201,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_MIN_TRUCK_SUPPORT_UNIT,220,205,19,8
-    LTEXT           "(Enter value of H)",IDC_STATIC,233,205,56,8
+    LTEXT           "(Enter value of H)",IDC_STATIC_H,233,205,56,8
     LTEXT           "Accuracy",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,316,205,31,8
     EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,351,201,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,395,205,19,8
     CONTROL         "Not to be less than",IDC_IS_SUPPORT_LESS_THAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,219,73,10
     EDITTEXT        IDC_SUPPORT_LESS_THAN,101,217,25,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,129,219,44,8
-    LTEXT           "(For Kansas method only)",IDC_STATIC,184,219,80,8
+    LTEXT           "(For Kansas method only)",IDC_STATIC_K,184,219,80,8
     GROUPBOX        "Final Check/Design Options",IDC_STATIC,12,244,462,70
     LTEXT           "Slab Offset (""A"" Dimension)",IDC_STATIC,23,261,94,8
     CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,261,37,8
     CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,201,261,37,8
     LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,23,279,100,8
     CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,278,45,10
-    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,201,279,84,8
+    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,195,279,82,8
     EDITTEXT        IDC_DEFLECTION_LIMIT,281,276,40,14,ES_AUTOHSCROLL
     LTEXT           "Bottom Flange Clearance",IDC_STATIC,25,296,80,8
     CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,296,37,10
@@ -1101,15 +1100,15 @@ BEGIN
     LTEXT           "Modulus of rupture for cracking moment due to externally applied loads (LRFD 5.4.2.6, 5.8.3.4.3, Eq 5.8.3.4.3-2)",IDC_FR_HEADING,17,38,151,27
     LTEXT           "Normal weight concrete",IDC_NWC_FR_LABEL,17,69,76,8
     EDITTEXT        IDC_FR,107,66,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,143,69,57,8
+    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,143,69,154,8
     LTEXT           "MPa",IDC_FR_LABEL,172,69,31,8,NOT WS_VISIBLE
     LTEXT           "Sand Lightweight concrete",IDC_SLWC_FR_LABEL,17,85,86,8
     EDITTEXT        IDC_SLWC_FR,107,83,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,143,85,57,8
+    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,143,85,154,8
     LTEXT           "MPa",IDC_FR_LABEL_SLWC,172,85,31,8,NOT WS_VISIBLE
     LTEXT           "All Lightweight concrete",IDC_ALWC_FR_LABEL,17,102,76,8
     EDITTEXT        IDC_ALWC_FR,107,100,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,143,101,57,8
+    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,143,101,154,8
     LTEXT           "MPa",IDC_FR_LABEL_ALWC,172,101,31,8,NOT WS_VISIBLE
     GROUPBOX        "Resistance Factor (LRFD 5.5.4.2)",IDC_PHI_GROUP,7,122,427,71
     GROUPBOX        "Conventional Construction (LRFD 5.5.4.2.1)",IDC_STATIC,12,137,172,50
@@ -1161,16 +1160,16 @@ BEGIN
     LTEXT           "Modulus of rupture for cracking moment (LRFD 5.4.2.6, 5.7.3.3.2)",IDC_FR_HEADING,17,54,206,8
     LTEXT           "Normal weight concrete",IDC_NWC_FR_TXT,36,72,76,8
     EDITTEXT        IDC_FR,122,68,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,158,71,57,8
-    LTEXT           "MPa",IDC_FR_LABEL,222,73,31,8,NOT WS_VISIBLE
+    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,158,71,130,8
+    LTEXT           "MPa",IDC_FR_LABEL,304,73,31,8,NOT WS_VISIBLE
     LTEXT           "All lightweight concrete",IDC_ALWC_FR_TXT,36,89,74,8
     EDITTEXT        IDC_ALWC_FR,122,86,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,158,89,57,8
-    LTEXT           "MPa",IDC_ALWC_FR_LABEL,222,90,31,8,NOT WS_VISIBLE
+    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,158,89,130,8
+    LTEXT           "MPa",IDC_ALWC_FR_LABEL,304,90,31,8,NOT WS_VISIBLE
     LTEXT           "Sand lightweight concrete",IDC_SLWC_FR_TXT,36,106,83,8
     EDITTEXT        IDC_SLWC_FR,122,103,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,158,106,57,8
-    LTEXT           "MPa",IDC_SLWC_FR_LABEL,222,108,31,8,NOT WS_VISIBLE
+    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,158,106,130,8
+    LTEXT           "MPa",IDC_SLWC_FR_LABEL,304,108,31,8,NOT WS_VISIBLE
     GROUPBOX        "Resistance Factor (LRFD 5.5.4.2)",IDC_PHI_GROUP,7,128,341,161
     GROUPBOX        "Conventional Construction (LRFD 5.5.4.2.1)",IDC_STATIC,12,141,327,93
     LTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER,19,155,76,8
@@ -1516,7 +1515,7 @@ BEGIN
     LTEXT           "Perform Hauling Analysis Using the",IDC_STATIC,7,10,112,8
 END
 
-IDD_KDOT_HAULINGD DIALOGEX 0, 0, 432, 186
+IDD_KDOT_HAULINGD DIALOGEX 0, 0, 489, 186
 STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
 FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
@@ -1526,44 +1525,44 @@ BEGIN
     LTEXT           "Along girder overhangs",IDC_STATIC_GH13,32,42,86,8,NOT WS_GROUP
     LTEXT           "Between support locations",IDC_STATIC_GH14,32,61,86,8,NOT WS_GROUP
     GROUPBOX        "Dynamic Load Factors",IDC_STATIC_GH15,7,7,189,72
-    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_GH8,7,84,416,95
+    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_GH8,7,84,475,95
     LTEXT           "Compressive Stress",IDC_STATIC_GH9,13,100,67,8,NOT WS_GROUP
     EDITTEXT        IDC_HAULING_COMPRESSION,81,97,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC_GH25,123,100,14,8,NOT WS_GROUP
     LTEXT           "Tensile Stress",IDC_STATIC_GH10,13,117,47,8,NOT WS_GROUP
     EDITTEXT        IDC_HAULING_TENSION,175,131,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_UNIT,216,132,51,8,NOT WS_GROUP
+    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_UNIT,216,132,92,8,NOT WS_GROUP
     CONTROL         "But not greater than ",IDC_CHECK_HAULING_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,272,130,77,10
-    EDITTEXT        IDC_HAULING_TENSION_MAX,354,128,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_HAULING_TENSION_MAX_UNIT,396,130,20,8,NOT WS_GROUP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,321,130,77,10
+    EDITTEXT        IDC_HAULING_TENSION_MAX,403,128,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_HAULING_TENSION_MAX_UNIT,445,130,20,8,NOT WS_GROUP
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_GH11,15,156,152,9,NOT WS_GROUP
     EDITTEXT        IDC_HAULING_TENSION_WITH_REBAR,174,153,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_WITH_REBAR_UNIT,216,154,45,8,NOT WS_GROUP
+    LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_WITH_REBAR_UNIT,216,154,92,8,NOT WS_GROUP
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC,14,132,154,18
 END
 
-IDD_SPEC_GIRDER DIALOGEX 0, 0, 428, 435
+IDD_SPEC_GIRDER DIALOGEX 0, 0, 468, 435
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Prestressed Elements"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1)",IDC_STATIC,7,7,414,77
+    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1)",IDC_STATIC,7,7,454,77
     LTEXT           "Compressive Stress",IDC_STATIC,15,22,68,8
     EDITTEXT        IDC_RELEASE_COMPRESSION,86,20,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'ci",IDC_STATIC,129,22,19,8
     LTEXT           "Tensile Stress",IDC_STATIC,15,36,57,8
     LTEXT           "In areas other than the precompressed tensile zone and without bonded reinforcement",IDC_STATIC,22,47,149,15
     EDITTEXT        IDC_RELEASE_TENSION,176,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_UNIT,221,48,52,8
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_UNIT,221,48,79,8
     CONTROL         "But not greater than ",IDC_CHECK_RELEASE_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,274,48,78,10
-    EDITTEXT        IDC_RELEASE_TENSION_MAX,354,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_RELEASE_TENSION_MAX_UNIT,396,48,18,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,308,48,78,10
+    EDITTEXT        IDC_RELEASE_TENSION_MAX,388,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_RELEASE_TENSION_MAX_UNIT,430,48,18,8
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC,22,68,147,8
     EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,176,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,221,68,52,8
-    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2)",IDC_STATIC,7,87,414,124
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,221,68,79,8
+    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2)",IDC_STATIC,7,87,454,124
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,104,204,8
     EDITTEXT        IDC_SERVICE_COMPRESSION,274,100,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'c",IDC_STATIC,318,103,8,8
@@ -1573,31 +1572,31 @@ BEGIN
     CONTROL         "Tensile Stress (Service I) (Effective Prestress + Permanent Loads = Final Stress without Live Load)",IDC_CHECK_SERVICE_I_TENSION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,135,332,10
     EDITTEXT        IDC_SERVICE_I_TENSION,28,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_I_TENSION_UNIT,72,149,52,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_I_TENSION_UNIT,72,149,79,8
     CONTROL         "But not greater than ",IDC_CHECK_SERVICE_I_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,149,78,10
-    EDITTEXT        IDC_SERVICE_I_TENSION_MAX,208,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_SERVICE_I_TENSION_MAX_UNIT,252,149,20,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,149,78,10
+    EDITTEXT        IDC_SERVICE_I_TENSION_MAX,239,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_SERVICE_I_TENSION_MAX_UNIT,283,149,20,8
     LTEXT           "Tensile Stress (Service III) (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,164,278,8
     LTEXT           "Not worse than moderate corrosion conditions",IDC_STATIC,22,177,148,8
     EDITTEXT        IDC_SERVICE_III_TENSION,176,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,221,177,52,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,221,177,79,8
     CONTROL         "But not greater than ",IDC_CHECK_SERVICE_III_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,274,177,78,10
-    EDITTEXT        IDC_SERVICE_III_TENSION_MAX,354,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_SERVICE_III_TENSION_MAX_UNIT,396,177,18,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,308,177,78,10
+    EDITTEXT        IDC_SERVICE_III_TENSION_MAX,388,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_SERVICE_III_TENSION_MAX_UNIT,430,177,18,8
     LTEXT           "Severe corrosive conditions",IDC_STATIC,22,191,89,8
     EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION,176,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SEVERE_SERVICE_III_TENSION_UNIT,221,191,52,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_SEVERE_SERVICE_III_TENSION_UNIT,221,191,79,8
     CONTROL         "But not greater than ",IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,274,191,79,10
-    EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION_MAX,354,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT,396,191,18,8
-    GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,218,414,35
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,308,191,79,10
+    EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION_MAX,388,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT,430,191,18,8
+    GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,218,454,35
     LTEXT           "Service IA (Live Load Plus One-Half of Permanent Loads)",IDC_FATIGUE_LABEL,16,234,216,8
     EDITTEXT        IDC_FATIGUE_COMPRESSION,233,231,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC,277,234,13,8
-    GROUPBOX        "Stress Limits for Temporary Loading Conditions (PGSuper Only)",IDC_STATIC,7,257,414,171
+    GROUPBOX        "Stress Limits for Temporary Loading Conditions (PGSuper Only)",IDC_STATIC,7,257,454,171
     CONTROL         "Evaluate stress limits for temporary loading conditions",IDC_CHECK_TEMPORARY_STRESSES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,270,188,10
     GROUPBOX        "Stress Limits immediately after Temporary Strand Removal",IDC_TEMP_STRAND_REMOVAL_GROUP,20,282,386,79
@@ -1606,25 +1605,25 @@ BEGIN
     LTEXT           "f'c",IDC_TS_REMOVAL_COMPRESS_FC,142,295,8,8
     LTEXT           "Tensile Stress in areas other than the precompressed tensile zone",IDC_TS_REMOVAL_TENSION_LABEL,28,311,261,8
     EDITTEXT        IDC_TS_REMOVAL_TENSION,36,324,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_TS_REMOVAL_TENSION_UNIT,80,325,52,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_TS_REMOVAL_TENSION_UNIT,80,325,79,8
     CONTROL         "But not greater than ",IDC_CHECK_TS_REMOVAL_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,133,325,78,10
-    EDITTEXT        IDC_TS_REMOVAL_TENSION_MAX,214,323,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_TS_REMOVAL_TENSION_MAX_UNIT,259,325,25,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,325,78,10
+    EDITTEXT        IDC_TS_REMOVAL_TENSION_MAX,250,323,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_TS_REMOVAL_TENSION_MAX_UNIT,295,325,25,8
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_TS_TENSION_WITH_REBAR_LABEL,36,342,147,8
     EDITTEXT        IDC_TS_TENSION_WITH_REBAR,190,339,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_TS_TENSION_WITH_REBAR_UNIT,234,342,52,8
+    LTEXT           "sqrt(f'ci (MPa))",IDC_TS_TENSION_WITH_REBAR_UNIT,234,342,79,8
     GROUPBOX        "Stress Limits immediately after Deck Placement",IDC_AFTER_DECK_GROUP,20,367,386,53
     LTEXT           "Compressive Stress",IDC_AFTER_DECK_COMPRESSION_LABEL,28,385,68,8
     EDITTEXT        IDC_AFTER_DECK_COMPRESSION,99,382,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'c",IDC_AFTER_DECK_COMPRESSION_FC,142,385,8,8
     LTEXT           "Tensile Stress",IDC_AFTER_DECK_TENSION_LABEL,28,400,57,8
     EDITTEXT        IDC_AFTER_DECK_TENSION,99,398,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_AFTER_DECK_TENSION_UNIT,142,400,52,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_AFTER_DECK_TENSION_UNIT,142,400,79,8
     CONTROL         "But not greater than ",IDC_CHECK_AFTER_DECK_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,195,400,78,10
-    EDITTEXT        IDC_AFTER_DECK_TENSION_MAX,276,398,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,321,400,25,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,229,400,78,10
+    EDITTEXT        IDC_AFTER_DECK_TENSION_MAX,310,398,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,355,400,25,8
 END
 
 IDD_SPEC_LOADS DIALOGEX 0, 0, 351, 422
@@ -1643,12 +1642,12 @@ BEGIN
     GROUPBOX        "Live Load Distribution Factors",IDC_STATIC,7,166,336,138
     COMBOBOX        IDC_LLDF,16,179,210,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Maximum angular deviation between girders",IDC_STATIC,16,216,138,8
-    EDITTEXT        IDC_MAXGIRDERANGLE,161,214,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MAXGIRDERANGLE_UNIT,204,216,19,8
-    LTEXT           "Minimum Girder Stiffness Ratio (Ix min/Ix max)",IDC_STATIC,15,235,144,8
-    EDITTEXT        IDC_GIRDERSTIFFNESSRATIO,161,231,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXGIRDERANGLE,171,214,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MAXGIRDERANGLE_UNIT,214,216,19,8
+    LTEXT           "Minimum Girder Stiffness Ratio (Ix min/Ix max)",IDC_STATIC,15,235,153,8
+    EDITTEXT        IDC_GIRDERSTIFFNESSRATIO,171,231,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Location to measure Girder Spacing\n(Fraction of girder's span length)",IDC_STATIC,16,248,144,18
-    EDITTEXT        IDC_GIRDER_SPACING_LOCATION,161,249,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_GIRDER_SPACING_LOCATION,171,249,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Girder spacing normal to the alignment will be measured at this fractional distance from both ends of the span. The location with maximum deck width (measured normal to the alignment) will be used for computing distribution factors.",IDC_STATIC,16,268,320,30
     CONTROL         "Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All Distribution Factors",IDC_LANESBEAMS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,199,318,10
@@ -1660,12 +1659,12 @@ BEGIN
     LTEXT           "Static",IDC_MIN_SIDEWALK_WIDTH_UNIT,249,96,32,8
     GROUPBOX        "Pedestrian Live Load (LRFD 3.6.1.6)",IDC_STATIC,7,59,336,54
     COMBOBOX        IDC_HAUNCH_COMP_CB,29,370,301,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Allowable tolerance between user-input camber and actual camber taken at mid-span",IDC_HAUNCH_TOLER_STATIC,48,387,167,20
-    EDITTEXT        IDC_HAUNCH_TOLER,221,389,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_HAUNCH_TOLER_UNIT,264,392,19,8
-    LTEXT           "Computation of distributed load due to deck haunch:",IDC_STATIC,14,355,167,8
-    GROUPBOX        "Haunch Load",IDC_STATIC,6,310,338,105
-    CTEXT           "NOTE: These parameters do not apply to Time-Step analysis, where excess camber is always assumed to be zero when computing haunch load.",IDC_STATIC,23,324,302,20,WS_BORDER
+    LTEXT           "Allowable tolerance between assumed and computed excess camber",IDC_HAUNCH_TOLER_STATIC,15,392,224,8
+    EDITTEXT        IDC_HAUNCH_TOLER,242,389,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HAUNCH_TOLER_UNIT,286,392,19,8
+    LTEXT           "Compute haunch dead load assuming:",IDC_STATIC,14,355,167,8
+    GROUPBOX        "Haunch Dead Load",IDC_STATIC,6,310,338,105
+    LTEXT           "NOTE: These parameters do not apply to Time-Step analysis, where excess camber is always assumed to be zero when computing haunch load.",IDC_STATIC,23,324,302,20,WS_BORDER
 END
 
 IDD_SPEC_CLOSURE DIALOGEX 0, 0, 428, 361
@@ -1680,17 +1679,17 @@ BEGIN
     LTEXT           "Tensile Stress in the Precompressed Tensile Zone",IDC_STATIC,15,36,168,8
     LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,48,187,8
     EDITTEXT        IDC_RELEASE_PTZ_TENSION,213,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_PTZ_TENSION_UNIT,258,48,49,8
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_PTZ_TENSION_UNIT,258,48,107,8
     LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,68,187,8
     EDITTEXT        IDC_RELEASE_PTZ_TENSION_WITH_REBAR,213,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,258,68,52,8
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,258,68,107,8
     LTEXT           "Tensile Stress in Other Areas",IDC_STATIC,15,92,168,8
     LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,104,187,8
     EDITTEXT        IDC_RELEASE_TENSION,213,102,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_UNIT,257,104,49,8
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_UNIT,257,104,107,8
     LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,124,187,8
     EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,213,121,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,257,124,52,8
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,257,124,107,8
     GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2, 5.14.1.3.2d)",IDC_STATIC,7,156,414,157
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,175,204,8
     EDITTEXT        IDC_SERVICE_COMPRESSION,274,171,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
@@ -1701,17 +1700,17 @@ BEGIN
     LTEXT           "Tensile Stress in the Precompressed Tensile Zone",IDC_STATIC,15,207,158,8
     LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,220,187,8
     EDITTEXT        IDC_SERVICE_PTZ_TENSION,213,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_PTZ_TENSION_UNIT,257,220,52,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_PTZ_TENSION_UNIT,257,220,107,8
     LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,238,187,8
     EDITTEXT        IDC_SERVICE_PTZ_TENSION_WITH_REBAR,213,236,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,257,238,52,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,257,238,107,8
     LTEXT           "Tensile Stress in Other Areas",IDC_STATIC,15,258,94,8
     LTEXT           "In areas without minimum bonded auxiliary reinforcement",IDC_STATIC,23,272,187,8
     EDITTEXT        IDC_SERVICE_III_TENSION,213,269,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,257,272,52,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,257,272,107,8
     LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,290,187,8
     EDITTEXT        IDC_SERVICE_III_TENSION_WITH_REBAR,213,288,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,257,290,52,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,257,290,107,8
     GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,319,414,35
     LTEXT           "Service IA (Live Load Plus One-Half of Permanent Loads)",IDC_FATIGUE_LABEL,16,335,216,8
     EDITTEXT        IDC_FATIGUE_COMPRESSION,233,332,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1881,7 +1880,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 473
         TOPMARGIN, 7
-        BOTTOMMARGIN, 357
+        BOTTOMMARGIN, 346
     END
 
     IDD_SPEC_STRANDS, DIALOG
@@ -1914,9 +1913,9 @@ BEGIN
     IDD_SPEC_LIFTING, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 413
+        RIGHTMARGIN, 485
         TOPMARGIN, 7
-        BOTTOMMARGIN, 283
+        BOTTOMMARGIN, 278
     END
 
     IDD_GIRDER_PERMANENT_STRANDS, DIALOG
@@ -2097,7 +2096,7 @@ BEGIN
     IDD_KDOT_HAULINGD, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 425
+        RIGHTMARGIN, 482
         TOPMARGIN, 7
         BOTTOMMARGIN, 179
     END
@@ -2105,7 +2104,7 @@ BEGIN
     IDD_SPEC_GIRDER, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 421
+        RIGHTMARGIN, 461
         TOPMARGIN, 7
         BOTTOMMARGIN, 428
     END
@@ -2279,16 +2278,15 @@ END
 
 IDD_SPEC_LOADS DLGINIT
 BEGIN
-    IDC_HAUNCH_COMP_CB, 0x403, 44, 0
-0x7341, 0x7573, 0x656d, 0x7a20, 0x7265, 0x206f, 0x7865, 0x6563, 0x7373, 
-0x6320, 0x6d61, 0x6562, 0x2072, 0x6628, 0x616c, 0x2074, 0x6967, 0x6472, 
-0x7265, 0x7420, 0x706f, 0x0029, 
-    IDC_HAUNCH_COMP_CB, 0x403, 86, 0
-0x7341, 0x7573, 0x656d, 0x6520, 0x6378, 0x7365, 0x2073, 0x6163, 0x626d, 
-0x7265, 0x6420, 0x6665, 0x6e69, 0x6465, 0x6220, 0x2079, 0x6170, 0x6172, 
-0x6f62, 0x616c, 0x6620, 0x7469, 0x6974, 0x676e, 0x7520, 0x6573, 0x2d72, 
-0x6e69, 0x7570, 0x2074, 0x4193, 0x2094, 0x6e61, 0x2064, 0x6946, 0x6c6c, 
-0x7465, 0x6420, 0x6d69, 0x6e65, 0x6973, 0x6e6f, 0x0073, 
+    IDC_HAUNCH_COMP_CB, 0x403, 19, 0
+0x655a, 0x6f72, 0x6520, 0x6378, 0x7365, 0x2073, 0x6163, 0x626d, 0x7265, 
+"\000" 
+    IDC_HAUNCH_COMP_CB, 0x403, 85, 0
+0x7845, 0x6563, 0x7373, 0x6320, 0x6d61, 0x6562, 0x2072, 0x7369, 0x6420, 
+0x6665, 0x6e69, 0x6465, 0x6220, 0x2079, 0x2061, 0x6170, 0x6172, 0x6f62, 
+0x616c, 0x6620, 0x7469, 0x6974, 0x676e, 0x7420, 0x6568, 0x5320, 0x616c, 
+0x2062, 0x664f, 0x7366, 0x7465, 0x6120, 0x646e, 0x4620, 0x6c69, 0x656c, 
+0x2074, 0x6964, 0x656d, 0x736e, 0x6f69, 0x736e, "\000" 
     0
 END
 
@@ -2554,7 +2552,6 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid\gxres.rc"               // Objective Grid resources
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

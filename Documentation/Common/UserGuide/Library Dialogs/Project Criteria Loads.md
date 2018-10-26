@@ -53,15 +53,22 @@ Location to Measure Girder Spacing For Distribution Factors | Enter the fraction
 
 > TIP: You can forego the computation of live load distribution factors and enter your own values.
 
-Haunch Load
+Haunch Dead Load
 -----------
-Select the method for computing the distributed load from the haunch. 
+
+> NOTE: These parameters do not apply to Time-Step analysis, where excess camber is always assumed to be zero when computing haunch dead load.
+
+Select the method for computing the haunch dead load. 
 Method | Description
 -----|----------------
-Assume zero excess camber | The top of the girder is assumed to be straight (zero camber) for purposes of computing the haunch dead load. This is the method used by WSDOT and the only method available for spliced girders.
-Excess camber defined by parabola (PGSuper only) | The top of the girder is assumed to follow a parabolic curve defined by the slab offsets at the ends of the girder, and the user-input Fillet dimension. A specification check is performed to insure that the excess camber predicted by the parabola is within tolerance of the computed excess camber.
+Zero excess camber | The top of the girder is assumed to be straight (zero camber) for purposes of computing the haunch dead load.
+Excess camber is defined by a parabola fitting the Slab Offset and Fillet dimensions | The top of the girder is assumed to follow a parabolic curve defined by the slab offsets at the ends of the girder, and the Fillet dimension. A specification check is performed to insure that the assumed excess camber is within tolerance of the computed excess camber.
 
-#### Allowable Tolerance Between User-input and Computed Excess Camber ####
-Enter a tolerance for the parabolic case. The tolerance will be used to compare the haunch depth predicted by the user-input fillet to the haunch depth predicted using the computed excess camber at mid-span. A spec check fail results if user-input haunch depth used to apply haunch load is not within tolerance. Make sure to enter a reasonable value for the tolerance (i.e., a value near zero will make it practically impossible to pass the spec check).
+#### Allowable tolerance between assumed and computed excess camber ####
+Enter a tolerance that will be used to compare the assumed excess camber, defined by the Fillet dimension, to the predicted excess camber. The specification check will fail if difference in the assumed and prediced excess camber is not within tolerance.
 
-> TIP: Refer to the Slab Haunch loading section of @ref tg_structural_analysis_models for detailed information about how the slab offset and fillet dimensions are used for computing the haunch loading.
+A failed specification check indicates that the slab haunch dead load used in design and analysis is not consistent with the predicted shape of the actual slab haunch. The slab haunch dead load could be over or under estimated.
+
+Use a reasonable value for the tolerance (i.e., a value near zero will make it practically impossible to pass the specification check).
+
+> TIP: Refer to the Slab Haunch loading section of @ref tg_structural_analysis_models for detailed information about how the slab offset and fillet dimensions are used for computing the haunch dead load.

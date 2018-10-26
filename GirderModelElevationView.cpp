@@ -767,7 +767,6 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
    {
       ATLASSERT(pTS != NULL);
 
-#pragma Reminder("UPDATE: should be able to get temp support intervals from IInterval")
       EventIndexType erectionEventIdx, removalEventIdx;
       pTimelineMgr->GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removalEventIdx);
       if ( eventIdx < erectionEventIdx || removalEventIdx <= eventIdx )
@@ -1797,18 +1796,19 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
          CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
 
 #pragma Reminder("UPDATE: need to include closure joint rebar")
-
-         // if segment isn't constructed, don't display it
-         if ( m_pFrame->GetEvent() < pIBridgeDesc->GetSegmentConstructionEventIndex(segmentKey) )
-         {
-            continue;
-         }
-
          Float64 start_brg_offset      = pBridge->GetSegmentStartBearingOffset(segmentKey);
          Float64 start_end_distance    = pBridge->GetSegmentStartEndDistance(segmentKey);
          Float64 start_offset          = start_brg_offset - start_end_distance;
          Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(segmentKey);
          Float64 segment_length        = pBridge->GetSegmentLength(segmentKey);
+
+
+         // if segment isn't erected, don't display rebar
+         if ( m_pFrame->GetEvent() < pIBridgeDesc->GetSegmentErectionEventIndex(segmentKey) )
+         {
+            running_segment_length += segment_layout_length - start_offset;
+            continue;
+         }
 
          if ( !(grpIdx == 0 && segIdx == 0) )
          {
@@ -1839,9 +1839,10 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
             {
                // rebar is beyond the end of the segment which means it is in the closure joint
                // only draw rebar in the closure joint if it has been cast
-               if ( m_pFrame->GetEvent() < pIBridgeDesc->GetCastClosureJointEventIndex(segmentKey.groupIndex,segmentKey.segmentIndex) )
+               if ( eventIdx < pIBridgeDesc->GetCastClosureJointEventIndex(segmentKey.groupIndex,segmentKey.segmentIndex) )
                {
                   rebarLayoutItem.Release();
+                  running_segment_length += segment_layout_length - start_offset;
                   continue;
                }
             }
@@ -1852,29 +1853,19 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
             CComPtr<IRebarPattern> rebarPattern;
             while ( enumPatterns->Next(1,&rebarPattern,NULL) != S_FALSE )
             {
-               // Currently, we only enter rebars in rows in PGSuper. If this is not the case,
-               // all bars must be drawn. But since we are drawing an elevation, we only need one bar
-               CComQIPtr<IRebarRowPattern> rowPat(rebarPattern);
-               ATLASSERT(rowPat); // Rethink single-bar logic below
-
+               // Currently, we only enter rebars in horizontal rows. If this is not the case,
+               // bars at each elevation must be drawn. Since the rebar rows are horizontal
+               // we only need to draw one.
                CollectionIndexType nbars;
                rebarPattern->get_Count(&nbars);
                if (0 < nbars)
                {
                   CollectionIndexType ibar = 0; // only need to draw one bar
-                  CComPtr<IPoint2d> startBarLocation, endBarLocation;
-                  rebarPattern->get_Location(0.0, ibar, &startBarLocation);
-                  rebarPattern->get_Location(layoutLength, ibar, &endBarLocation);
-
-                  // Rebar locations are in Girder Section Coordinates (0,0 is at the top center of the shape)
-                  // Since this is an elevation view, we don't use the X-value
-
-                  // Move points along girder
-                  startBarLocation->put_X(startLoc);
-                  endBarLocation->put_X(endLoc);
-                  
-                  BuildLine(pDL, startBarLocation, endBarLocation, REBAR_COLOR);
-               } // if 0 < nbars
+                  CComPtr<IPoint2dCollection> profile;
+                  rebarPattern->get_Profile(0,&profile);
+                  profile->Offset(running_segment_length,0);
+                  BuildLine(pDL,profile,REBAR_COLOR);
+               }
 
                rebarPattern.Release();
             } // next rebar pattern
@@ -2639,11 +2630,11 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
          pBridge->ModelCantilevers(segmentKey,&bStartCantilever,&bEndCantilever);
          if ( bStartCantilever )
          {
-            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L,POIFIND_AND);
+            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE);
             ATLASSERT(vPoi.size() == 1);
             poiStart = vPoi.front();
 
-            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND);
+            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_END_FACE);
             ATLASSERT(vPoi.size() == 1);
             poiEnd = vPoi.front();
 
@@ -2871,11 +2862,6 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
          SegmentIDType segID = pSegment->GetID();
 
-         if ( eventIdx < pTimelineMgr->GetSegmentConstructionEventIndex(segID) )
-         {
-            continue; // segment not constructed in this event, go to next segment
-         }
-
          CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
 
          Float64 segment_length        = pBridge->GetSegmentLength(segmentKey);
@@ -2887,6 +2873,14 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
          // running_segment_length goes to the CL of the closure... adjust the distance
          // so that it goes to the left face of the current segment
          running_segment_length += start_offset;
+
+
+         if ( eventIdx < pTimelineMgr->GetSegmentErectionEventIndex(segID) )
+         {
+            // update running segment length
+            running_segment_length += segment_layout_length - start_offset;
+            continue; // segment not constructed in this event, go to next segment
+         }
 
          PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
          Float64 slab_offset = pBridge->GetSlabOffset(segmentKey.groupIndex,startPierIdx,segmentKey.girderIndex); // use for dummy top of stirrup if they are extended into deck
@@ -3024,6 +3018,43 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
       } // segment loop
 
       group_offset += running_segment_length;
+   }
+}
+
+void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2dCollection* points, COLORREF color,UINT nWidth,iDisplayObject** ppDO)
+{
+   CComPtr<iCompositeDisplayObject> compDO;
+   if ( ppDO )
+   {
+      compDO.CoCreateInstance(CLSID_CompositeDisplayObject);
+      compDO.QueryInterface(ppDO);
+   }
+
+   IndexType nPoints;
+   points->get_Count(&nPoints);
+   if ( nPoints < 2 )
+   {
+      return;
+   }
+
+   for ( IndexType idx = 1; idx < nPoints; idx++ )
+   {
+      CComPtr<IPoint2d> fromPoint, toPoint;
+      points->get_Item(idx-1,&fromPoint);
+      points->get_Item(idx,&toPoint);
+
+      CComPtr<iDisplayObject> dispObj;
+      BuildLine(pDL,fromPoint,toPoint,color,nWidth,&dispObj);
+
+      if ( ppDO )
+      {
+         compDO->AddDisplayObject(dispObj);
+      }
+   }
+
+   if ( ppDO )
+   {
+      pDL->AddDisplayObject(compDO);
    }
 }
 

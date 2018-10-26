@@ -238,12 +238,22 @@ void CGirderModelSectionView::UpdateDisplayObjects()
       return;
    }
 
-   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   UINT settings = pDoc->GetGirderEditorSettings();
-
    // Grab hold of the broker so we can pass it as a parameter
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EventIndexType eventIdx = m_pFrame->GetEvent();
+   EventIndexType erectionEventIdx = pIBridgeDesc->GetSegmentErectionEventIndex(poi.GetSegmentKey());
+   if ( eventIdx < erectionEventIdx )
+   {
+      return;
+   }
+
+
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+
 
 
    BuildSectionDisplayObjects(pDoc, pBroker, poi, dispMgr);
@@ -646,12 +656,18 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBr
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+
+   if ( eventIdx < pIBridgeDesc->GetSegmentErectionEventIndex(segmentKey) )
+   {
+      return;
+   }
+      
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    // need to layout dimension line witness lines in twips
    const long twip_offset = 1440/2;

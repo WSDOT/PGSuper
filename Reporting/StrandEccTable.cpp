@@ -155,7 +155,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT));
    std::vector<pgsPointOfInterest> vPoi2(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT));
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   std::vector<pgsPointOfInterest> vPoi3(pPoi->GetPointsOfInterest(segmentKey,POI_SPECIAL));
+   std::vector<pgsPointOfInterest> vPoi3(pPoi->GetPointsOfInterest(segmentKey,POI_SPECIAL | POI_START_FACE | POI_END_FACE));
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    std::sort(vPoi.begin(),vPoi.end());
    pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);

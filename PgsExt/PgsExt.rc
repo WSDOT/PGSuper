@@ -64,8 +64,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,51
- PRODUCTVERSION 3,0,0,51
+ FILEVERSION 3,0,0,52
+ PRODUCTVERSION 3,0,0,52
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -83,12 +83,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "3.0.0.51"
+            VALUE "FileVersion", "3.0.0.52"
             VALUE "InternalName", "PgsExt"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.51"
+            VALUE "ProductVersion", "3.0.0.52"
         END
     END
     BLOCK "VarFileInfo"
@@ -114,23 +114,23 @@ BEGIN
     COMBOBOX        IDC_BOUNDARY_CONDITION,49,66,229,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_REFINEDANALYSIS DIALOG  0, 0, 282, 194
+IDD_REFINEDANALYSIS DIALOGEX 0, 0, 282, 194
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Refined Analysis Options"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,169,173,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,225,173,50,14
-    LTEXT           "You can avoid a refined analysis and have PGSuper continue the analysis by selecting one of the following options:",IDC_STATIC,7,43,259,21
+    LTEXT           "A refined analysis is required; however if, based on your experience and engineering judgment, believe a simplified analysis is appropreate for this structure one of the following options may be used:",IDC_STATIC,7,43,259,30
     EDITTEXT        IDC_DESCRIPTION,7,7,268,25,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER
     CONTROL         "Directly input the live load distribution factors",IDC_RADIO_INPUT,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,68,155,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,79,155,10
     CONTROL         "Use the LRFD equations regardless of the LRFD range of applicability limits",IDC_RADIO_IGNORE,
-                    "Button",BS_AUTORADIOBUTTON,12,84,251,10
+                    "Button",BS_AUTORADIOBUTTON,12,95,251,10
     CONTROL         "Use the Lever Rule only where outside of the LRFD range of applicability limits",IDC_RADIO_IGNORE_LEVER,
-                    "Button",BS_AUTORADIOBUTTON,12,100,261,10
+                    "Button",BS_AUTORADIOBUTTON,12,111,261,10
     CONTROL         "Use the lever rule for all LLDF calculations",IDC_RADIO_LEVER,
-                    "Button",BS_AUTORADIOBUTTON,12,116,149,10
+                    "Button",BS_AUTORADIOBUTTON,12,127,149,10
 END
 
 IDD_CONCRETE_DETAILS DIALOGEX 0, 0, 230, 137

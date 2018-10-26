@@ -110,7 +110,11 @@ void CSpecLiftingPage::OnHelp()
 
 BOOL CSpecLiftingPage::OnSetActive()
 {
+   // Disable controls if hauling not enabled
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+   BOOL enableChild = pDad->m_Entry.IsLiftingAnalysisEnabled() ? TRUE : FALSE;
+   EnableControls(enableChild);
+
    if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
    {
       GetDlgItem(IDC_SLWC_FR_TXT)->SetWindowText(_T("Lightweight concrete"));
@@ -127,4 +131,15 @@ BOOL CSpecLiftingPage::OnSetActive()
    }
 
    return CPropertyPage::OnSetActive();
+}
+
+inline BOOL CALLBACK EnableChildWindow(HWND hwnd,LPARAM lParam)
+{
+   ::EnableWindow(hwnd,(int)lParam);
+   return TRUE;
+}
+
+void CSpecLiftingPage::EnableControls(BOOL bEnable)
+{
+   EnumChildWindows(GetSafeHwnd(),EnableChildWindow,bEnable);
 }

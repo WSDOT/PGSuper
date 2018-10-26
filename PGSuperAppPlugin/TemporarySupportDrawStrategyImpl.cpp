@@ -64,17 +64,25 @@ STDMETHODIMP_(void) CTemporarySupportDrawStrategyImpl::XDrawPointStrategy::Draw(
    COLORREF color;
 
    if ( pDO->IsSelected() )
+   {
       color = pDispMgr->GetSelectionLineColor();
+   }
    else
+   {
       color = pThis->m_SupportType == pgsTypes::StrongBack ? SB_FILL_COLOR : TS_FILL_COLOR;
+   }
 
    CComPtr<IPoint2d> pos;
    pDO->GetPosition(&pos);
 
    if ( pThis->m_SupportType == pgsTypes::StrongBack )
+   {
       pThis->DrawStrongBack(pDO,pDC,color,pos);
+   }
    else
+   {
       pThis->Draw(pDO,pDC,color,pos);
+   }
 }
 
 STDMETHODIMP_(void) CTemporarySupportDrawStrategyImpl::XDrawPointStrategy::DrawHighlite(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite)

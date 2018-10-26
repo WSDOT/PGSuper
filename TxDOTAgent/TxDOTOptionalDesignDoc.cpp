@@ -1173,10 +1173,10 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       else
       {
          is_spread = false;
-      bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniformAdjacent);
-      bridgeDesc.SetGirderSpacing(spacing-minSpc); // input value is joint width
-      pDeck->DeckType = sdt;
-   }
+         bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniformAdjacent);
+         bridgeDesc.SetGirderSpacing(spacing-minSpc); // input value is joint width
+         pDeck->DeckType = sdt;
+      }
    }
 
    // Use uniform spread spacing if it is available
@@ -1186,11 +1186,11 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       Float64 sd = m_ProjectData.GetSlabThickness();
       sd = ::ConvertFromSysUnits(sd, unitMeasure::Inch);
       if (sd < 4.0)
-   {
-      TxDOTBrokerRetrieverException exc;
+      {
+         TxDOTBrokerRetrieverException exc;
          exc.Message = _T("Slab thickness for spread beams must be 4 inches or greater.");
-      throw exc;
-   }
+         throw exc;
+      }
 
       bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniform);
       bridgeDesc.SetGirderSpacing(spacing);
@@ -1354,7 +1354,8 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wncdc.m_Description = _T("w non-comp, dc");
    wncdc.m_Type = UserLoads::Uniform;
    wncdc.m_WStart = w;
-   wncdc.m_EventIndex = pBridgeDesc->GetCastDeckEventIndex();/* pgsTypes::BridgeSite1;*/
+   wncdc.m_EventIndex = pBridgeDesc->GetCastDeckEventIndex(); /* pgsTypes::BridgeSite1;*/
+   wncdc.m_EventID   = pBridgeDesc->GetEventByIndex(wncdc.m_EventIndex)->GetID();
    wncdc.m_LoadCase = UserLoads::DC;
    wncdc.m_Fractional = true;
    wncdc.m_StartLocation = 0.0;
@@ -1374,6 +1375,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wcdc.m_Type = UserLoads::Uniform;
    wcdc.m_WStart = w;
    wcdc.m_EventIndex = pBridgeDesc->GetRailingSystemLoadEventIndex();/* pgsTypes::BridgeSite2;*/
+   wcdc.m_EventID   = pBridgeDesc->GetEventByIndex(wcdc.m_EventIndex)->GetID();
    wcdc.m_LoadCase = UserLoads::DC;
    wcdc.m_Fractional = true;
    wcdc.m_StartLocation = 0.0;

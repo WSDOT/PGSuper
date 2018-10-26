@@ -106,14 +106,19 @@ public:
 
    //------------------------------------------------------------------------
    // Slab offset check along girder
-   void SetRequiredSlabOffset(Float64 reqd);
-   Float64 GetRequiredSlabOffset() const;
-   void SetProvidedSlabOffset(Float64 provided);
-   Float64 GetProvidedSlabOffset() const;
    void SetSlabOffsetApplicability(bool bSet);
    bool IsSlabOffsetApplicable() const;
-   void SetSlabOffsetWarningTolerance(Float64 tol);
-   Float64 GetSlabOffsetWarningTolerance() const;
+   void SetProvidedSlabOffset(Float64 startA, Float64 endA);
+   void GetProvidedSlabOffset(Float64* pStartA, Float64* pEndA) const;
+   bool AreSlabOffsetsSameAtEnds() const;
+   // Required slab offset valid only for case when start and end values are equal
+   void SetRequiredSlabOffset(Float64 reqd);
+   Float64 GetRequiredSlabOffset() const;
+   // least haunch depth and its location measured from left end of girder
+   void SetLeastHaunchDepth(Float64 location, Float64 leastA);
+   void GetLeastHaunchDepth(Float64* pLocation, Float64* pLeastA) const;
+   void SetExcessSlabOffsetWarningTolerance(Float64 tol);
+   Float64 GetExcessSlabOffsetWarningTolerance() const;
    SlabOffsetStatusType SlabOffsetStatus() const;
    bool SlabOffsetPassed() const;
 
@@ -149,8 +154,6 @@ public:
    // Fillet dimension (haunch) geometry check
    void SetHaunchGeometryCheckApplicability(bool bSet);
    bool IsHaunchGeometryCheckApplicable() const;
-   void SetUserInputFillet(Float64 value);
-   Float64 GetUserInputFillet() const;
    void SetComputedFillet(Float64 value);
    Float64 GetComputedFillet() const;
    void SetHaunchGeometryTolerance(Float64 value);
@@ -180,11 +183,14 @@ private:
    // GROUP: DATA MEMBERS
    SpanIndexType m_Span; // accessible only to our friend pgsConstructabilityArtifact
 
-   Float64 m_Provided; // The actual slab offset
+   Float64 m_ProvidedStart; // The actual slab offsets
+   Float64 m_ProvidedEnd;
    Float64 m_Required; // The required required slab offset
    Float64 m_SlabOffsetWarningTolerance; // if offset is greater than tolerance + required, issue a warning
    bool m_bCheckStirrupLength;
    Float64 m_ProvidedFillet;
+   Float64 m_LeastHaunch;
+   Float64 m_LeastHaunchLocation;
    Float64 m_MinimumRequiredFillet;
    bool m_bIsSlabOffsetApplicable;
 
@@ -196,7 +202,6 @@ private:
    Float64 m_C;
    Float64 m_Cmin;
 
-   Float64 m_UserInputFillet;
    Float64 m_ComputedFillet;
    Float64 m_HaunchGeometryTolerance;
    bool m_bIsHaunchGeometryCheckApplicable;

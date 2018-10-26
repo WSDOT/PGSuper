@@ -86,6 +86,8 @@ public:
    // GROUP: INQUIRY
 
 protected:
+   void BuildMonoSlabOffsetTable(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildMultiSlabOffsetTable(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: DATA MEMBERS
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

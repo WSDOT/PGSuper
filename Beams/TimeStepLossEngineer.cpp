@@ -3879,7 +3879,7 @@ std::vector<pgsPointOfInterest> CTimeStepLossEngineer::GetAnalysisLocations(cons
    std::vector<pgsPointOfInterest> vPoi = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN);
    std::vector<pgsPointOfInterest> vPoi2 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_0L | POI_RELEASED_SEGMENT);
    std::vector<pgsPointOfInterest> vPoi3 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_10L | POI_RELEASED_SEGMENT);
-   std::vector<pgsPointOfInterest> vPoi4 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE);
+   std::vector<pgsPointOfInterest> vPoi4 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE | POI_START_FACE | POI_END_FACE);
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    vPoi.insert(vPoi.end(),vPoi4.begin(),vPoi4.end());

@@ -1332,6 +1332,16 @@ void pgsPointOfInterest::UpdateAttributeString()
       os << _T("POI_STIRRUP_ZONE | ");
    }
 
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_START_FACE) )
+   {
+      os << _T("POI_START_FACE | ");
+   }
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_END_FACE) )
+   {
+      os << _T("POI_END_FACE | ");
+   }
+
    os << std::endl;
 
    m_strAttributes = os.str();

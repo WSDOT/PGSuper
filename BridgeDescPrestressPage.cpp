@@ -630,11 +630,11 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
 
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_RELEASED_SEGMENT | POI_0L);
+   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_START_FACE);
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiStart(vPoi.front());
 
-   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_RELEASED_SEGMENT | POI_10L);
+   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_END_FACE);
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiEnd(vPoi.front());
 
@@ -2406,7 +2406,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       else if (newStrandDefinitionType == CStrandData::sdtDirectInput)
       {
          GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-         std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_RELEASED_SEGMENT | POI_0L | POI_10L);
+         std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_START_FACE | POI_END_FACE);
          ATLASSERT(vPoi.size() == 2);
          pgsPointOfInterest startPoi = vPoi.front();
          pgsPointOfInterest endPoi   = vPoi.back();

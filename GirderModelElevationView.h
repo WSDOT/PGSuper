@@ -124,6 +124,7 @@ private:
    void BuildStirrupDisplayObjects(         CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    
    void BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension,iDimensionLine** ppDimLine = NULL);
+   void BuildLine(iDisplayList* pDL, IPoint2dCollection* points, COLORREF color,UINT nWidth=1,iDisplayObject** ppDO = NULL);
    void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color,UINT nWidth=1,iDisplayObject** ppDO = NULL);
    void BuildDashLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color1, COLORREF color2,iDisplayObject** ppDO = NULL);
    void BuildDebondTick(iDisplayList* pDL, IPoint2d* tickPoint,COLORREF color);

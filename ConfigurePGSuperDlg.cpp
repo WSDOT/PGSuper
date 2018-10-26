@@ -485,7 +485,7 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
                CString msg = exp.GetErrorMessage();
             }
 
-            m_PublisherHyperLink.SetWindowText(_T("More about this configuration package..."));
+            m_PublisherHyperLink.SetWindowText(_T("More about this configuration..."));
             m_PublisherHyperLink.SetURL(url);
             pWeb->EnableWindow(TRUE);
             if (url.IsEmpty())

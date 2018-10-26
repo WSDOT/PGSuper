@@ -23,7 +23,6 @@
 #include "StdAfx.h"
 #include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
-#include <Reporting\ConstructabilityCheckTable.h>
 
 #include "TexasCamberAndDeflectionChapterBuilder.h"
 #include "TexasIBNSParagraphBuilder.h"
@@ -127,18 +126,6 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(CReportSpecification*
 
       deflection_and_camber( pChapter, pBroker, girder_list, start_idx, end_idx, isSingleGirder, pDisplayUnits );
    }
-
-   // Constructability check
-   CConstructabilityCheckTable().BuildSlabOffsetTable(pChapter,pBroker,girder_list,pDisplayUnits);
-
-   // Min Haunch at bearing centerlines check
-   CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter,pBroker,girder_list,pDisplayUnits);
-
-   // Fillet Check
-   CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girder_list,pDisplayUnits);
-
-   // Haunch Geometry Check
-   CConstructabilityCheckTable().BuildHaunchGeometryComplianceCheck(pChapter,pBroker,girder_list,pDisplayUnits);
 
    return pChapter;
 }

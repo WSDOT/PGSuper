@@ -107,7 +107,7 @@ void CTimelineGrid::CustomInit(BOOL bReadOnly)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("Occurance\n(Day)"))
+			.SetValue(_T("Occurrence\n(Day)"))
 		);
 
 	SetStyleRange(CGXRange(0,col++), CGXStyle()
@@ -161,6 +161,11 @@ void CTimelineGrid::Refresh()
    if ( 0 < GetRowCount() )
    {
       RemoveRows(1,GetRowCount());
+   }
+
+   if ( nEvents == 0 )
+   {
+      return;
    }
 
    for ( EventIndexType eventIdx = 0; eventIdx < nEvents-1; eventIdx++ )
@@ -283,69 +288,7 @@ void CTimelineGrid::RemoveEvents()
       ROWCOL row = selection.GetAt(i);
       EventIndexType eventIdx = IndexType(row-1);
 
-      int result = pParent->m_TimelineManager.RemoveEventByIndex(eventIdx);
-      if ( result != TLM_SUCCESS )
-      {
-         CString strMsg;
-         switch(result)
-         {
-         case TLM_CAST_DECK_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because the bridge has a composite deck and this event includes the deck casting activity."),LABEL_EVENT(eventIdx));
-            break;
-         
-         case TLM_OVERLAY_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because the bridge has an overlay and this event includes the overlay loading activity."),LABEL_EVENT(eventIdx));
-            break;
-         
-         case TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains the traffic barrier/railing system loading activity."),LABEL_EVENT(eventIdx));
-            break;
-
-         case TLM_LIVELOAD_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains the live load loading activity."),LABEL_EVENT(eventIdx));
-            break;
-
-         case TLM_USER_LOAD_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains a loading activity for user defined loads."),LABEL_EVENT(eventIdx));
-            break;
-
-         case TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains the segment construction activity."),LABEL_EVENT(eventIdx));
-            break;
-
-         case TLM_ERECT_PIERS_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains the Pier/Temporary Support erection activity."),LABEL_EVENT(eventIdx));
-            break;
-
-         case TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains the segment erection activity."),LABEL_EVENT(eventIdx));
-            break;
-
-         case TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains an activity for removing temporary supports."),LABEL_EVENT(eventIdx));
-            break;
-
-         case TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains an activity for casting closure joints."),LABEL_EVENT(eventIdx));
-            break;
-
-         case TLM_STRESS_TENDONS_ACTIVITY_REQUIRED:
-            strMsg.Format(_T("Cannot remove Event %d because it contains the activity for stressing tendons."),LABEL_EVENT(eventIdx));
-            break;
-
-         default:
-            ATLASSERT(false); // should never get here
-            strMsg = _T("An unknown error has occured");
-            break;
-         }
-         AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-
-         // roll back
-         pParent->m_TimelineManager = timelineManager;
-
-         // leave before the grid is actually changed
-         return;
-      }
+      pParent->m_TimelineManager.RemoveEventByIndex(eventIdx);
    }
 
    RemoveRows(selection.GetAt(0),selection.GetAt(nSelRows-1));
@@ -423,7 +366,7 @@ BOOL CTimelineGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    bHasThisMethodBeenCalled = true;
    if ( nCol == 1 )
    {
-      // the event occurance day changed
+      // the event Occurrence day changed
       Refresh();
    }
    else if ( nCol == 2 )

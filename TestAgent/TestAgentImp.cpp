@@ -1577,8 +1577,20 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    if ( pConstruct->IsSlabOffsetApplicable() )
    {
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122005, ")<<loc<<_T(", ")<<(int)(pConstruct->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pConstruct->GetRequiredSlabOffset(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122015, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pConstruct->GetProvidedSlabOffset(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdrIdx<<std::endl;
+      Float64 startA, endA;
+      pConstruct->GetProvidedSlabOffset(&startA, &endA);
+      if (pConstruct->AreSlabOffsetsSameAtEnds())
+      {
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pConstruct->GetRequiredSlabOffset(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122015, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(startA, unitMeasure::Millimeter)) <<_T(", 2, ")<<gdrIdx<<std::endl;
+      }
+      else
+      {
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pConstruct->GetProvidedFillet(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdrIdx<<std::endl;
+         Float64 location, leastH;
+         pConstruct->GetLeastHaunchDepth(&location, &leastH);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122015, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leastH, unitMeasure::Millimeter)) <<_T(", 2, ")<<gdrIdx<<std::endl;
+      }
    }
 
 #pragma Reminder("UPDATE: assuming precast girder bridge") // there could be more than one deflection check artifact per girder (one for each span)

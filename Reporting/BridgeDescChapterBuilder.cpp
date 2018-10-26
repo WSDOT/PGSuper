@@ -2207,12 +2207,14 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                if ( bSymmetric )
                {
                   nHarpedAdjustments = 1;
-                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_0L | POI_RELEASED_SEGMENT);
+                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_START_FACE);
+                  ATLASSERT(vPoi.size() == 1);
                }
                else
                {
                   nHarpedAdjustments = 2;
-                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_0L | POI_10L | POI_RELEASED_SEGMENT);
+                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_START_FACE | POI_END_FACE);
+                  ATLASSERT(vPoi.size() == 2);
                }
             }
             else
@@ -2220,7 +2222,8 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                if ( bSymmetric )
                {
                   nHarpedAdjustments = 2;
-                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_0L | POI_RELEASED_SEGMENT);
+                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_END_FACE);
+                  ATLASSERT(vPoi.size() == 1);
                   std::vector<pgsPointOfInterest> vHPPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_HARPINGPOINT);
                   if ( vHPPoi.size() != 0 )
                   {
@@ -2230,7 +2233,8 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                else
                {
                   nHarpedAdjustments = 4;
-                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_0L | POI_10L | POI_RELEASED_SEGMENT);
+                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_START_FACE | POI_END_FACE);
+                  ATLASSERT(vPoi.size() == 2);
                   std::vector<pgsPointOfInterest> vHpPoi(pPoi->GetPointsOfInterest(thisSegmentKey,POI_HARPINGPOINT));
                   vPoi.insert(vPoi.end(),vHpPoi.begin(),vHpPoi.end());
                   std::sort(vPoi.begin(),vPoi.end());

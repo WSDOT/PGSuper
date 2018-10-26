@@ -28,6 +28,8 @@
 #include "TexasIBNSParagraphBuilder.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFAutoProgress.h>
+
 #include <IFace\MomentCapacity.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -85,6 +87,19 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       const std::vector<CGirderKey>& girderKeys( pMultiGirderRptSpec->GetGirderKeys() );
 
+      // Give progress window a progress meter if needed
+      bool bMultiGirderReport = (1 < girderKeys.size() ? true : false);
+
+      GET_IFACE2(pBroker,IProgress,pProgress);
+      DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
+
+      CEAFAutoProgress ap(pProgress,0,mask); 
+
+      if (bMultiGirderReport)
+      {
+         pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
+      }
+
       // paragraph builder eventually wants segments, so build list
       bool bPassed=true;
       std::vector<CSegmentKey> segmentKeys;
@@ -102,6 +117,11 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
          if( bPassed && !pSegmentArtifact->Passed() )
          {
             bPassed = false;
+         }
+
+         if (bMultiGirderReport)
+         {
+            pProgress->Increment();
          }
       }
 

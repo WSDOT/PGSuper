@@ -72,6 +72,11 @@ void CEditHaunchDlg::DoDataExchange(CDataExchange* pDX)
    {
       // Get min A value and build error message for too small of A
       Float64 minA = m_pBridgeDesc->GetDeckDescription()->GrossDepth;
+      if (pgsTypes::sdtCompositeSIP == m_pBridgeDesc->GetDeckDescription()->DeckType)
+      {
+         minA += m_pBridgeDesc->GetDeckDescription()->PanelDepth;
+      }
+
       cmpdim.SetValue(minA);
       CString strMinValError;
       strMinValError.Format(_T("Slab Offset value must be greater or equal to slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str() );

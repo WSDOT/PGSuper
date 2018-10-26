@@ -41,11 +41,15 @@ CLASS
 pgsSpanConstructabilityArtifact::pgsSpanConstructabilityArtifact():
 m_bIsSlabOffsetApplicable(false)
 {
-   m_Provided = 0;
+   m_ProvidedStart = 0;
+   m_ProvidedEnd = 0;
    m_Required = 0;
    m_SlabOffsetWarningTolerance = ::ConvertToSysUnits(0.25,unitMeasure::Inch); // WSDOT standard
    m_MinimumRequiredFillet = 0;
    m_ProvidedFillet = 0;
+
+   m_LeastHaunch = 0;
+   m_LeastHaunchLocation = 0;
 
    m_ProvidedAtBearingCLs  = 0;
    m_RequiredAtBearingCLs  = 0;
@@ -55,7 +59,6 @@ m_bIsSlabOffsetApplicable(false)
    m_C = 0;
    m_Cmin = 0;
 
-   m_UserInputFillet = 0;
    m_ComputedFillet = 0;
    m_HaunchGeometryTolerance = 0;
    m_bIsHaunchGeometryCheckApplicable = false;
@@ -82,15 +85,23 @@ pgsSpanConstructabilityArtifact& pgsSpanConstructabilityArtifact::operator=(cons
 }
 
 //======================== OPERATIONS =======================================
-void pgsSpanConstructabilityArtifact::SetProvidedSlabOffset(Float64 provided)
+void pgsSpanConstructabilityArtifact::SetProvidedSlabOffset(Float64 startA, Float64 endA)
 {
-   m_Provided = provided;
+   m_ProvidedStart = startA;
+   m_ProvidedEnd   = endA;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetProvidedSlabOffset() const
+void pgsSpanConstructabilityArtifact::GetProvidedSlabOffset(Float64* pStartA, Float64* pEndA) const
 {
    ATLASSERT(m_bIsSlabOffsetApplicable);
-   return m_Provided;
+   *pStartA = m_ProvidedStart;
+   *pEndA   = m_ProvidedEnd;
+}
+
+bool pgsSpanConstructabilityArtifact::AreSlabOffsetsSameAtEnds() const
+{
+   ATLASSERT(m_bIsSlabOffsetApplicable);
+   return IsEqual(m_ProvidedStart,m_ProvidedEnd);
 }
 
 void pgsSpanConstructabilityArtifact::SetRequiredSlabOffset(Float64 reqd)
@@ -104,12 +115,12 @@ Float64 pgsSpanConstructabilityArtifact::GetRequiredSlabOffset() const
    return m_Required;
 }
 
-void pgsSpanConstructabilityArtifact::SetSlabOffsetWarningTolerance(Float64 val)
+void pgsSpanConstructabilityArtifact::SetExcessSlabOffsetWarningTolerance(Float64 val)
 {
    m_SlabOffsetWarningTolerance = val;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetSlabOffsetWarningTolerance() const
+Float64 pgsSpanConstructabilityArtifact::GetExcessSlabOffsetWarningTolerance() const
 {
    return m_SlabOffsetWarningTolerance;
 }
@@ -149,6 +160,18 @@ bool pgsSpanConstructabilityArtifact::IsSlabOffsetApplicable() const
    return m_bIsSlabOffsetApplicable;
 }
 
+void pgsSpanConstructabilityArtifact::SetLeastHaunchDepth(Float64 location, Float64 leastA)
+{
+   m_LeastHaunchLocation = location;
+   m_LeastHaunch = leastA;
+}
+
+void pgsSpanConstructabilityArtifact::GetLeastHaunchDepth(Float64* pLocation, Float64* pLeastA) const
+{
+   *pLocation = m_LeastHaunchLocation;
+   *pLeastA = m_LeastHaunch;
+}
+
 pgsSpanConstructabilityArtifact::SlabOffsetStatusType pgsSpanConstructabilityArtifact::SlabOffsetStatus() const
 {
    if (!m_bIsSlabOffsetApplicable)
@@ -156,22 +179,41 @@ pgsSpanConstructabilityArtifact::SlabOffsetStatusType pgsSpanConstructabilityArt
       return NA;
    }
 
-   if ( IsEqual(m_Provided,m_Required) )
+   if (AreSlabOffsetsSameAtEnds())
    {
+      if ( IsEqual(m_ProvidedStart,m_Required) )
+      {
+         return Pass;
+      }
+
+      if ( m_ProvidedStart < m_Required )
+      {
+         return Fail;
+      }
+
+      if ( (m_Required + m_SlabOffsetWarningTolerance) < m_ProvidedStart )
+      {
+         return Excessive;
+      }
+
       return Pass;
    }
-
-   if ( m_Provided < m_Required )
+   else
    {
-      return Fail;
+      // slab offsets different at ends. Use Least haunch vs fillet dimension as test
+      if (m_LeastHaunch > m_ProvidedFillet + m_SlabOffsetWarningTolerance)
+      {
+         return Excessive;
+      }
+      else if (m_LeastHaunch > m_ProvidedFillet)
+      {
+         return Pass;
+      }
+      else
+      {
+         return Fail;
+      }
    }
-
-   if ( (m_Required + m_SlabOffsetWarningTolerance) < m_Provided )
-   {
-      return Excessive;
-   }
-
-   return Pass;
 }
 
 bool pgsSpanConstructabilityArtifact::SlabOffsetPassed() const
@@ -258,16 +300,6 @@ bool pgsSpanConstructabilityArtifact::BottomFlangeClearancePassed() const
    return ::IsGE(m_Cmin,m_C) ? true : false;
 }
 
-void pgsSpanConstructabilityArtifact::SetUserInputFillet(Float64 value)
-{
-   m_UserInputFillet = value;
-}
-
-Float64 pgsSpanConstructabilityArtifact::GetUserInputFillet() const
-{
-   return m_UserInputFillet;
-}
-
 void pgsSpanConstructabilityArtifact::SetComputedFillet(Float64 value)
 {
    m_ComputedFillet = value;
@@ -302,11 +334,11 @@ pgsSpanConstructabilityArtifact::HaunchGeometryStatusType pgsSpanConstructabilit
 {
    if (IsHaunchGeometryCheckApplicable())
    {
-      if (m_UserInputFillet > m_ComputedFillet + m_HaunchGeometryTolerance)
+      if (m_ProvidedFillet > m_ComputedFillet + m_HaunchGeometryTolerance)
       {
          return hgExcessive;
       }
-      if (m_UserInputFillet < m_ComputedFillet - m_HaunchGeometryTolerance)
+      if (m_ProvidedFillet < m_ComputedFillet - m_HaunchGeometryTolerance)
       {
          return hgInsufficient;
       }
@@ -374,11 +406,14 @@ void pgsSpanConstructabilityArtifact::MakeCopy(const pgsSpanConstructabilityArti
 {
    m_Span     = rOther.m_Span;
 
-   m_Provided = rOther.m_Provided;
+   m_ProvidedStart = rOther.m_ProvidedStart;
+   m_ProvidedEnd = rOther.m_ProvidedEnd;
    m_Required = rOther.m_Required;
    m_SlabOffsetWarningTolerance = rOther.m_SlabOffsetWarningTolerance;
    m_bCheckStirrupLength = rOther.m_bCheckStirrupLength;
    m_bIsSlabOffsetApplicable = rOther.m_bIsSlabOffsetApplicable;
+   m_LeastHaunchLocation = rOther.m_LeastHaunchLocation;
+   m_LeastHaunch = rOther.m_LeastHaunch;
 
    m_MinimumRequiredFillet = rOther.m_MinimumRequiredFillet;
    m_ProvidedFillet = rOther.m_ProvidedFillet;
@@ -391,7 +426,6 @@ void pgsSpanConstructabilityArtifact::MakeCopy(const pgsSpanConstructabilityArti
    m_C = rOther.m_C;
    m_Cmin = rOther.m_Cmin;
 
-   m_UserInputFillet = rOther.m_UserInputFillet;
    m_ComputedFillet = rOther.m_ComputedFillet;
    m_HaunchGeometryTolerance = rOther.m_HaunchGeometryTolerance;
    m_bIsHaunchGeometryCheckApplicable = rOther.m_bIsHaunchGeometryCheckApplicable;

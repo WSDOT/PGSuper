@@ -140,6 +140,8 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
             AfxMessageBox(strMsg);
             pDX->Fail();
          }
+
+         rowIdx++;
       }
 
       DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,rebarData.BarType,rebarData.BarGrade);

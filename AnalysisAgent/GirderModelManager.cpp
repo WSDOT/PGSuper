@@ -1670,6 +1670,10 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
       if ( pfType == pgsTypes::pftGirder )
       {
+         // we want the incremental girder deflection... we will later add the deflection at end of storage
+         // to get the total deflection
+         // The load group for "Girder" assumes all the girder weight is applied at erection, which is true, but modeling it as such
+         // does not capture incremental effects from changing support locations between storage and erection.
          bstrLoadGroup += _T("_Incremental");
       }
 
@@ -1709,23 +1713,36 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
          if ( pfType == pgsTypes::pftGirder && resultsType == rtCumulative )
          {
+            // cumulative girder deflection is requested
+            // we have the incremental deflection from erection to the current interval
+            // we need to add in the cumulative deflection at the end of storage, accounting for
+            // a change in support locations.
             const pgsPointOfInterest& poi(*iter);
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
             IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+            
+            // this is the deflection at the end of storage relative to the support locations during storage
+            Float64 DyStorage = pProductForces->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
 
             Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
+            Float64 leftSupport   = pBridge->GetSegmentStartEndDistance(segmentKey);
+            Float64 rightSupport  = pBridge->GetSegmentEndEndDistance(segmentKey);
 
-            Float64 leftSupport = pBridge->GetSegmentStartEndDistance(segmentKey);
-            Float64 rightSupport = pBridge->GetSegmentEndEndDistance(segmentKey);
             pgsPointOfInterest poiLeft  = pPoi->GetPointOfInterest(segmentKey,leftSupport);
             pgsPointOfInterest poiRight = pPoi->GetPointOfInterest(segmentKey,segmentLength - rightSupport);
-            Float64 DyStorageLeftBrg = pProductForces->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poiLeft,bat,rtCumulative,false);
+
+            // Get deflections during storage at the locations where the girder is supported after erection
+            Float64 DyStorageLeftBrg  = pProductForces->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poiLeft,bat,rtCumulative,false);
             Float64 DyStorageRightBrg = pProductForces->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poiRight,bat,rtCumulative,false);
+
+            // Interpolate to get the deflection adjustment at the POI under consideration
+            // Need to adjust due to change in support location (which is a change in the datum from which deflections are measured)
             Float64 d = ::LinInterp( poi.GetDistFromStart(), DyStorageLeftBrg, DyStorageRightBrg, poiRight.GetDistFromStart() - poiLeft.GetDistFromStart());
             
-            Float64 DyStorage = pProductForces->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
+            // Adjust the storage deflection to be based on the support location after erection
             DyStorage -= d;
 
+            // Total deflection is the incremental plus the cumulative at end of storage
             Dy += DyStorage;
          }
 
@@ -4564,8 +4581,9 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
    // we have to make an adjustment for deflections)
    // this is not the correct deflection... the correct deflection is the deflection at storage plus the incremental
    // deflection due to a change in support locations for the erected girder segment.
-   IntervalIndexType storageIntervalIdx  = pIntervals->GetFirstStorageInterval(vPoi.front().GetSegmentKey());
-   IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(vPoi.front().GetSegmentKey());
+   CGirderKey girderKey(vPoi.front().GetSegmentKey());
+   IntervalIndexType storageIntervalIdx  = pIntervals->GetFirstStorageInterval(girderKey);
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
 
    // Get the "bad" deflection we want to remove from the limit state combination
@@ -4598,21 +4616,21 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
 
       Float64 DyMaxLeft, DyMaxRight;
       maxResults->GetResult(idx,&DyMaxLeft,NULL,&DyMaxRight,NULL);
+      ATLASSERT(IsEqual(DyMaxLeft,DyMaxRight));
 
       Float64 DyMinLeft, DyMinRight;
       minResults->GetResult(idx,&DyMinLeft,NULL,&DyMinRight,NULL);
+      ATLASSERT(IsEqual(DyMinLeft,DyMinRight));
 
       Float64 badDy = badGirderDeflection[idx];
       Float64 incDy = incGirderDeflection[idx];
       Float64 stgDy = stgGirderDeflection[idx];
       
-      DyMinLeft -= DCmin*badDy; // remove the "bad" deflection
-      DyMinLeft += DCmin*stgDy; // add the deflection at storage
-      DyMinLeft += DCmin*incDy; // add the deflection increments
-      
-      DyMaxLeft -= DCmax*badDy;
-      DyMaxLeft += DCmax*stgDy;
-      DyMaxLeft += DCmax*incDy;
+      //DyMinLeft -= DCmin*badDy; // remove the "bad" deflection
+      //DyMinLeft += DCmin*stgDy; // add the deflection at storage
+      //DyMinLeft += DCmin*incDy; // add the deflection increments
+      DyMinLeft += DCmin*(stgDy + incDy - badDy);
+      DyMaxLeft += DCmax*(stgDy + incDy - badDy);
 
       pMin->push_back( DyMinLeft );
       pMax->push_back( DyMaxLeft );
@@ -14083,7 +14101,7 @@ void CGirderModelManager::GetClosureJointLoads(const CClosureKey& closureKey,std
 
    GET_IFACE(IPointOfInterest,pPoi);
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pPoi->GetPointsOfInterest(leftSegmentKey,POI_RELEASED_SEGMENT | POI_10L);
+   vPoi = pPoi->GetPointsOfInterest(leftSegmentKey,POI_END_FACE);
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiLeftFace(vPoi.front());
 
@@ -14091,7 +14109,7 @@ void CGirderModelManager::GetClosureJointLoads(const CClosureKey& closureKey,std
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiCenter(vPoi.front());
 
-   vPoi = pPoi->GetPointsOfInterest(rightSegmentKey,POI_RELEASED_SEGMENT | POI_0L);
+   vPoi = pPoi->GetPointsOfInterest(rightSegmentKey,POI_START_FACE);
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiRightFace(vPoi.front());
 
@@ -14512,7 +14530,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       GET_IFACE(IGirderHaunch, pHaunch );
       Float64 girder_orientation_effect = pHaunch->GetSectionGirderOrientationEffect(poi_mid);
 
-      Float64 assummed_excess_camber = Havg + girder_orientation_effect - fillet;
+      Float64 assummed_excess_camber = Havg - girder_orientation_effect - fillet;
 
       // Create function with parabolic shape
       camberShape = std::auto_ptr<mathFunction2d>( new mathPolynomial2d (GenerateParabola(poi_left.GetDistFromStart(),poi_right.GetDistFromStart(),assummed_excess_camber)));

@@ -66,7 +66,9 @@ BOOL CLocationGraphController::OnInitDialog()
    EAFGetBroker(&m_pBroker);
 
    CheckRadioButton(IDC_TIME_LINEAR,IDC_INTERVALS,IDC_TIME_LOG);
-
+   FillGroupCtrl();
+   FillGirderCtrl();
+   FillLocationCtrl();
    return TRUE;
 }
 

@@ -72,7 +72,15 @@ void CDesignRatingPage::DoDataExchange(CDataExchange* pDX)
    GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
 
-   CString tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )");
+   CString tag;
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {
+      tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+   }
+   else
+   {
+      tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+   }
    DDX_Text(pDX,IDC_ALLOWABLE_TENSION_UNIT,tag);
 }
 

@@ -362,7 +362,6 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
       // fillet
       m_FilletHyperLink.EnableWindow(FALSE);
 
-      GetDlgItem(IDC_FILLET_LABEL)->EnableWindow(FALSE);
       GetDlgItem(IDC_FILLET)->EnableWindow(FALSE);
       GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(FALSE);
       GetDlgItem(IDC_FILLET)->SetWindowText(_T(""));

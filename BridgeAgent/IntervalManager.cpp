@@ -1346,10 +1346,7 @@ void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent
       timeStepInterval.Duration = timeStepInterval.End - timeStepInterval.Start;
       timeStepInterval.Middle = 0.5*(timeStepInterval.Start + timeStepInterval.End);
       timeStepInterval.Description = _T("Time Step");
-      if ( 0.0 < timeStepInterval.Duration )
-      {
-         StoreInterval(timeStepInterval);
-      }
+      StoreInterval(timeStepInterval);
    }
    else
    {

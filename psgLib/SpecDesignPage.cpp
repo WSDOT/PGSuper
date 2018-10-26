@@ -78,6 +78,7 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(ID_HELP,OnHelp)
    ON_BN_CLICKED(IDC_CHECK_BOTTOM_FLANGE_CLEARANCE, &CSpecDesignPage::OnBnClickedCheckBottomFlangeClearance)
+   ON_BN_CLICKED(IDC_LL_DEFLECTION, &CSpecDesignPage::OnBnClickedLlDeflection)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -121,11 +122,12 @@ BOOL CSpecDesignPage::OnInitDialog()
 }
 
 // Don't allow design if check is disabled.
-inline void CheckDesignCtrl(int idc, int idd, CWnd* pme)
+inline void CheckDesignCtrl(int idc, int idd, int list[], CWnd* pme)
 {
 	CButton* pbut = (CButton*)pme->GetDlgItem(idc);
+   BOOL ischk = pbut->GetCheck()!=0 ? TRUE : FALSE;
  	CButton* pbut2 = (CButton*)pme->GetDlgItem(idd);
-   if (pbut->GetCheck()==0)
+   if (ischk==FALSE)
    {
       pbut2->SetCheck(0);
       pbut2->EnableWindow(FALSE);
@@ -135,42 +137,64 @@ inline void CheckDesignCtrl(int idc, int idd, CWnd* pme)
       pbut2->EnableWindow(TRUE);
    }
 
+   // enable/disable controls in aux list
+   for(int* p=list; *p!=-1; p++)
+   {
+      int id = *p;
+      CWnd* pwnd = pme->GetDlgItem(id);
+      pwnd->EnableWindow(ischk);
+   }
 }
 
 void CSpecDesignPage::OnCheckA() 
 {
-   CheckDesignCtrl(IDC_CHECK_A, IDC_DESIGN_A, this);
+   int list[]={-1};
+
+   CheckDesignCtrl(IDC_CHECK_A, IDC_DESIGN_A, list, this);
 }
 
 void CSpecDesignPage::OnCheckHauling() 
 {
-   CheckDesignCtrl(IDC_CHECK_HAULING, IDC_DESIGN_HAULING, this);
+   int list[]={IDC_MIN_TRUCK_SUPPORT_LABEL,IDC_MIN_TRUCK_SUPPORT,IDC_MIN_TRUCK_SUPPORT_UNIT,IDC_STATIC_H,
+               IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,
+               IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,IDC_IS_SUPPORT_LESS_THAN,IDC_SUPPORT_LESS_THAN,
+               IDC_SUPPORT_LESS_THAN_UNIT,IDC_STATIC_K,-1};
+
+   CheckDesignCtrl(IDC_CHECK_HAULING, IDC_DESIGN_HAULING, list, this);
 }
 
 void CSpecDesignPage::OnCheckHd() 
 {
-   CheckDesignCtrl(IDC_CHECK_HD, IDC_DESIGN_HD, this);
+   int list[]={IDC_STATIC_HD,IDC_HOLD_DOWN_FORCE,IDC_HOLD_DOWN_FORCE_UNITS,-1};
 
+   CheckDesignCtrl(IDC_CHECK_HD, IDC_DESIGN_HD, list, this);
 }
 
 void CSpecDesignPage::OnCheckLifting() 
 {
-   CheckDesignCtrl(IDC_CHECK_LIFTING, IDC_DESIGN_LIFTING, this);
+   int list[]={IDC_MIN_LIFTING_POINT_LABEL,IDC_MIN_LIFTING_POINT,IDC_MIN_LIFTING_POINT_UNIT,IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,IDC_STATIC_L,IDC_LIFTING_POINT_LOCATION_ACCURACY,IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,-1};
+
+   CheckDesignCtrl(IDC_CHECK_LIFTING, IDC_DESIGN_LIFTING, list, this);
 }
 
 void CSpecDesignPage::OnCheckSlope() 
 {
-   CheckDesignCtrl(IDC_CHECK_SLOPE, IDC_DESIGN_SLOPE, this);
+   int list[]={IDC_STATIC_SLOPE_05,IDC_STRAND_SLOPE_05,IDC_STATIC_SLOPE_06,IDC_STRAND_SLOPE_06,IDC_STATIC_SLOPE_07,
+               IDC_STRAND_SLOPE_07,-1};
+   CheckDesignCtrl(IDC_CHECK_SLOPE, IDC_DESIGN_SLOPE, list, this);
 }
 
 void CSpecDesignPage::OnCheckSplitting() 
 {
-   CheckDesignCtrl(IDC_CHECK_SPLITTING, IDC_DESIGN_SPLITTING, this);
+   int list[]={IDC_STATIC_SPL,IDC_STATIC_SH,IDC_N,-1};
+   CheckDesignCtrl(IDC_CHECK_SPLITTING, IDC_DESIGN_SPLITTING, list, this);
 }
 
 void CSpecDesignPage::OnCheckConfinement() 
 {
-   CheckDesignCtrl(IDC_CHECK_CONFINEMENT, IDC_DESIGN_CONFINEMENT, this);
+   int list[]={-1};
+
+   CheckDesignCtrl(IDC_CHECK_CONFINEMENT, IDC_DESIGN_CONFINEMENT, list, this);
 }
 
 
@@ -196,7 +220,6 @@ void CSpecDesignPage::OnBnClickedIsSupportLessThan()
 
 void CSpecDesignPage::OnBnClickedCheckBottomFlangeClearance()
 {
-   // TODO: Add your control notification handler code here
    BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_BOTTOM_FLANGE_CLEARANCE);
    GetDlgItem(IDC_CLEARANCE_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_CLEARANCE)->EnableWindow(bEnable);
@@ -205,7 +228,6 @@ void CSpecDesignPage::OnBnClickedCheckBottomFlangeClearance()
 
 BOOL CSpecDesignPage::OnSetActive()
 {
-   // TODO: Add your specialized code here and/or call the base class
    CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
    int show = ( pParent->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_FC_GROUP)->ShowWindow(show);
@@ -213,4 +235,11 @@ BOOL CSpecDesignPage::OnSetActive()
    GetDlgItem(IDC_FC2)->ShowWindow(show);
 
    return CPropertyPage::OnSetActive();
+}
+
+void CSpecDesignPage::OnBnClickedLlDeflection()
+{
+   BOOL bEnable = IsDlgButtonChecked(IDC_LL_DEFLECTION);
+   GetDlgItem(IDC_LL_DEF_STATIC)->EnableWindow(bEnable);
+   GetDlgItem(IDC_DEFLECTION_LIMIT)->EnableWindow(bEnable);
 }

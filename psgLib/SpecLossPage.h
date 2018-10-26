@@ -68,6 +68,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    lrfdVersionMgr::Version m_SpecVersion;
+   bool m_IsShippingEnabled;
    void EnableShippingLosses(BOOL bEnable);
    void EnableRefinedShippingTime(BOOL bEnable);
    void EnableApproximateShippingTime(BOOL bEnable);

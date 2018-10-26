@@ -228,7 +228,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       else
       {
          // there is not an overlay... remove the overlay activity from the timeline
-         VERIFY(pParent->m_BridgeDesc.GetTimelineManager()->RemoveOverlayLoadEvent() == TLM_SUCCESS);
+         pParent->m_BridgeDesc.GetTimelineManager()->RemoveOverlayLoadEvent();
       }
    }
 

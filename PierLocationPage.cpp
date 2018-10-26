@@ -83,6 +83,7 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
 
    DDX_Station(pDX,IDC_STATION,m_Station,pDisplayUnits->GetStationFormat());
 
@@ -95,8 +96,8 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      pDX->PrepareEditCtrl(IDC_ORIENTATION);
       GET_IFACE2(pBroker,IBridge,pBridge);
+      pDX->PrepareEditCtrl(IDC_ORIENTATION);
       Float64 skewAngle;
       bool bSuccess = pBridge->GetSkewAngle(m_Station,m_strOrientation.c_str(),&skewAngle);
       if ( !bSuccess )
@@ -110,8 +111,32 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
 
+      Float64 tslab  = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
+      if (pgsTypes::sdtCompositeSIP == pParent->m_BridgeDesc.GetDeckDescription()->DeckType)
+      {
+         tslab += pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
+      }
+         
+
+      cmpdim.SetValue(tslab);
+      CString strMinValError;
+      strMinValError.Format(_T("Slab Offset value must be greater or equal to gross slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str() );
+
+      if (m_SlabOffset[pgsTypes::Back] < tslab)
+      {
+         pDX->PrepareCtrl(IDC_BACK_SLAB_OFFSET);
+         AfxMessageBox(strMinValError);
+         pDX->Fail();
+      }
+
+      if (m_SlabOffset[pgsTypes::Ahead] < tslab)
+      {
+         pDX->PrepareCtrl(IDC_AHEAD_SLAB_OFFSET);
+         AfxMessageBox(strMinValError);
+         pDX->Fail();
+      }
+
       // Copy the temporary data from this dialog in to actual bridge model
-      CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
       pParent->m_BridgeDesc.MovePier(pParent->m_pPier->GetIndex(),m_Station,m_MovePierOption);
       pParent->m_pPier->SetOrientation(m_strOrientation.c_str());
 
@@ -338,11 +363,21 @@ void CPierLocationPage::Init(const CPierData2* pPier)
    if ( pBackGroup )
    {
       m_SlabOffset[pgsTypes::Back ] = pBackGroup->GetSlabOffset(m_PierIdx,0, m_InitialSlabOffsetType == pgsTypes::sotGirder ? true : false);
+
+      if ( !pAheadGroup )
+      {
+         m_SlabOffset[pgsTypes::Ahead] = m_SlabOffset[pgsTypes::Back ]; // fill with decent values so we don't have garbage
+      }
    }
 
    if ( pAheadGroup )
    {
       m_SlabOffset[pgsTypes::Ahead] = pAheadGroup->GetSlabOffset(m_PierIdx,0, m_InitialSlabOffsetType == pgsTypes::sotGirder ? true : false);
+
+      if ( !pBackGroup )
+      {
+         m_SlabOffset[pgsTypes::Back] = m_SlabOffset[pgsTypes::Ahead ]; // fill with decent values so we don't have garbage
+      }
    }
 }
 

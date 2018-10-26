@@ -3648,6 +3648,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\HaunchFilleted.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\res\HaunchSquare.bmp"
 				>
 			</File>

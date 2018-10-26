@@ -118,6 +118,24 @@ const CBridgeDescription2* CTimelineManager::GetBridgeDescription() const
    return m_pBridgeDesc;
 }
 
+void CTimelineManager::AppendTimelineEvent(CTimelineEvent* pTimelineEvent,EventIndexType* pEventIdx)
+{
+   if ( 0 < m_TimelineEvents.size() )
+   {
+      pTimelineEvent->SetDay(m_TimelineEvents.back()->GetDay());
+   }
+
+   if ( pTimelineEvent->GetID() == INVALID_ID )
+   {
+      pTimelineEvent->SetID(ms_ID++);
+   }
+
+   pTimelineEvent->SetTimelineManager(this);
+
+   *pEventIdx = m_TimelineEvents.size();
+   m_TimelineEvents.push_back(pTimelineEvent);
+}
+
 int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdjustTimeline,EventIndexType* pEventIdx)
 {
    int result = TLM_SUCCESS;
@@ -373,24 +391,18 @@ int CTimelineManager::AddTimelineEvent(const CTimelineEvent& timelineEvent,bool 
    return AddTimelineEvent(pTimelineEvent,bAdjustTimeline,pEventIdx);
 }
 
-int CTimelineManager::RemoveEventByIndex(EventIndexType eventIdx)
+void CTimelineManager::RemoveEventByIndex(EventIndexType eventIdx)
 {
    ATLASSERT(0 <= eventIdx && eventIdx < (EventIndexType)m_TimelineEvents.size() );
 
    CTimelineEvent* pTimelineEvent = m_TimelineEvents[eventIdx];
-   int result = CanRemoveEvent(pTimelineEvent);
-   if ( result == TLM_SUCCESS )
-   {
-      delete pTimelineEvent;
-      m_TimelineEvents.erase(m_TimelineEvents.begin() + eventIdx);
-   }
+   delete pTimelineEvent;
+   m_TimelineEvents.erase(m_TimelineEvents.begin() + eventIdx);
 
    ASSERT_VALID;
-
-   return result;
 }
 
-int CTimelineManager::RemoveEventByID(EventIDType id)
+void CTimelineManager::RemoveEventByID(EventIDType id)
 {
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
@@ -402,8 +414,6 @@ int CTimelineManager::RemoveEventByID(EventIDType id)
          return RemoveEventByIndex(iter - m_TimelineEvents.begin());
       }
    }
-
-   return TLM_EVENT_NOT_FOUND;
 }
 
 int CTimelineManager::SetEventByIndex(EventIndexType eventIdx,CTimelineEvent* pTimelineEvent,bool bAdjustTimeline)
@@ -859,6 +869,11 @@ CTimelineEvent* CTimelineManager::GetEventByID(IDType id)
 bool CTimelineManager::IsDeckCast() const
 {
    return GetCastDeckEventIndex() != INVALID_INDEX;
+}
+
+bool CTimelineManager::IsOverlayInstalled() const
+{
+   return GetOverlayLoadEventIndex() != INVALID_INDEX;
 }
 
 bool CTimelineManager::IsRailingSystemInstalled() const
@@ -1463,8 +1478,17 @@ EventIDType CTimelineManager::GetFirstSegmentErectionEventID() const
 
 EventIndexType CTimelineManager::GetCastClosureJointEventIndex(ClosureIDType closureID) const
 {
+   // when the BridgeDescription object is being copied, during an intermediate state, we might
+   // not be able to find the closure joint. this is ok... we check pClosure here just in case it was not found
    const CClosureJointData* pClosure = m_pBridgeDesc->FindClosureJoint(closureID);
-   return GetCastClosureJointEventIndex(pClosure);
+   if ( pClosure )
+   {
+      return GetCastClosureJointEventIndex(pClosure);
+   }
+   else
+   {
+      return INVALID_INDEX;
+   }
 }
 
 EventIndexType CTimelineManager::GetCastClosureJointEventIndex(const CClosureJointData* pClosure) const
@@ -1929,24 +1953,11 @@ void CTimelineManager::SetOverlayLoadEventByID(EventIDType ID)
    ASSERT_VALID;
 }
 
-int CTimelineManager::RemoveOverlayLoadEvent()
+void CTimelineManager::RemoveOverlayLoadEvent()
 {
-   EventIndexType eventIdx = GetOverlayLoadEventIndex();
-   if ( eventIdx == INVALID_INDEX )
-   {
-      return TLM_SUCCESS; // there isn't an overlay load event
-   }
-
-   CTimelineEvent* pOverlayEvent = GetEventByIndex(eventIdx);
-   int result = CanRemoveEvent(pOverlayEvent);
-   if ( result == TLM_SUCCESS )
-   {
-      SetOverlayLoadEventByIndex(INVALID_INDEX);
-   }
+   SetOverlayLoadEventByIndex(INVALID_INDEX);
 
    ASSERT_VALID;
-
-   return result;
 }
 
 EventIndexType CTimelineManager::GetLiveLoadEventIndex() const
@@ -2099,6 +2110,11 @@ int CTimelineManager::Validate() const
    if ( m_pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone && !IsDeckCast() )
    {
       return TLM_CAST_DECK_ACTIVITY_REQUIRED;
+   }
+
+   if ( m_pBridgeDesc->GetDeckDescription()->WearingSurface == pgsTypes::wstOverlay && !IsOverlayInstalled() )
+   {
+      return TLM_OVERLAY_ACTIVITY_REQUIRED;
    }
 
    // Make sure the railing system is installed
@@ -2390,7 +2406,7 @@ void CTimelineManager::Sort()
    std::sort(m_TimelineEvents.begin(),m_TimelineEvents.end(),CompareEvents);
 
    // make sure events don't overlap and that there is only one
-   // of each type of single occurance activities (such as cast deck or open to traffic)
+   // of each type of single Occurrence activities (such as cast deck or open to traffic)
    EventIndexType nLiveLoadEvents = 0;
    EventIndexType nRailingSystemEvents = 0;
    EventIndexType nOverlayEvents = 0;
@@ -2463,6 +2479,14 @@ bool SearchMe(CTimelineEvent* pEvent)
 
 int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
 {
+   if ( m_TimelineEvents.size() == 0 ||
+        pTimelineEvent == m_TimelineEvents.back()
+      )
+   {
+      // if the event is at the end of the timeline, we can just add it
+      return TLM_SUCCESS;
+   }
+
    const CTimelineEvent* pNextEvent = NULL;
    const CTimelineEvent* pPrevEvent = NULL;
 
@@ -2503,80 +2527,6 @@ int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
    {
       // the new event overruns the next event
       return TLM_OVERRUNS_NEXT_EVENT;
-   }
-
-   return TLM_SUCCESS;
-}
-
-int CTimelineManager::CanRemoveEvent(CTimelineEvent* pTimelineEvent)
-{
-   // we can do anything if there isn't an associated bridge
-   if ( m_pBridgeDesc == NULL )
-   {
-      return TLM_SUCCESS;
-   }
-
-   if ( pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
-   {
-      // can't remove this event because it defines when the segments are constructed
-      return TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED;
-   }
-
-   if ( pTimelineEvent->GetErectPiersActivity().IsEnabled() )
-   {
-      return TLM_ERECT_PIERS_ACTIVITY_REQUIRED;
-   }
-
-   if ( pTimelineEvent->GetErectSegmentsActivity().IsEnabled() )
-   {
-      return TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED;
-   }
-
-   if ( pTimelineEvent->GetRemoveTempSupportsActivity().IsEnabled() )
-   {
-      return TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED;
-   }
-
-   if ( pTimelineEvent->GetCastClosureJointActivity().IsEnabled() )
-   {
-      return TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED;
-   }
-
-   if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() )
-   {
-      return TLM_STRESS_TENDONS_ACTIVITY_REQUIRED;
-   }
-
-   if ( m_pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone  &&
-       pTimelineEvent->GetCastDeckActivity().IsEnabled() )
-   {
-      // there is a deck so you can't remove the deck casting event
-      return TLM_CAST_DECK_ACTIVITY_REQUIRED;
-   }
-
-   if ( m_pBridgeDesc->GetDeckDescription()->WearingSurface != pgsTypes::wstSacrificialDepth &&
-        pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsOverlayLoadApplied() )
-   {
-      // there is an overlay in the bridge, can't remove the overlay loading event
-      return TLM_OVERLAY_ACTIVITY_REQUIRED;
-   }
-
-   if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsRailingSystemLoadApplied() )
-   {
-      // railing system loading must be applied
-      return TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED;
-   }
-
-   if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsLiveLoadApplied() )
-   {
-      // live load loading must be applied
-      return TLM_LIVELOAD_ACTIVITY_REQUIRED;
-   }
-
-   if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsUserLoadApplied() )
-   {
-      // there are use loads in this activity so it can't be removed
-      return TLM_USER_LOAD_ACTIVITY_REQUIRED;
    }
 
    return TLM_SUCCESS;

@@ -323,6 +323,9 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
    m_GirderType          = rOther.m_GirderType;
    m_pGirderLibraryEntry = rOther.m_pGirderLibraryEntry;
 
+   CTimelineManager* pMyTimelineMgr = GetTimelineManager();
+   const CTimelineManager* pOtherTimelineMgr = GetTimelineManager();
+
    // create new segments
    SegmentIndexType nSegments = rOther.m_Segments.size();
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -337,9 +340,19 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
          *m_Segments[segIdx] = *pOtherSegment;
       }
 
+      if ( pMyTimelineMgr && pOtherTimelineMgr )
+      {
+         SegmentIDType segID = pOtherSegment->GetID();
+         ATLASSERT(segID == m_Segments[segIdx]->GetID());
+         EventIndexType constructionEventIdx, erectionEventIdx;
+         pOtherTimelineMgr->GetSegmentEvents(segID,&constructionEventIdx,&erectionEventIdx);
+         pMyTimelineMgr->SetSegmentEvents(segID,constructionEventIdx,erectionEventIdx);
+      }
+
       if ( segIdx < nSegments-1 )
       {
          const CClosureJointData* pOtherClosure = rOther.m_Closures[segIdx];
+         ClosureIDType closureID = pOtherClosure->GetID();
 
          if ( m_bCreatingNewGirder )
          {
@@ -358,6 +371,16 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
             else
             {
                *m_Closures[segIdx] = *pOtherClosure;
+            }
+         }
+
+         if ( pMyTimelineMgr && pOtherTimelineMgr )
+         {
+            ATLASSERT(closureID == m_Closures[segIdx]->GetID());
+            EventIndexType castClosureEventIdx = pOtherTimelineMgr->GetCastClosureJointEventIndex(closureID);
+            if ( castClosureEventIdx != INVALID_INDEX )
+            {
+               pMyTimelineMgr->SetCastClosureJointEventByIndex(closureID,castClosureEventIdx);
             }
          }
       }
@@ -1094,6 +1117,16 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          pNewClosure->SetRightSegment(pNewSegment);
 
          pNewClosure->SetTemporarySupport(pTS);
+
+         if ( pStartClosure )
+         {
+            pNewClosure->SetConcrete(pStartClosure->GetConcrete());
+         }
+         else
+         {
+            pNewClosure->SetConcrete(pEndClosure->GetConcrete());
+         }
+         pNewSegment->Material = pSegment->Material;
 
          m_Segments.insert(segIter+1,pNewSegment);
          m_Closures.insert(closureIter,pNewClosure);

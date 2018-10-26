@@ -422,7 +422,7 @@ const std::_tstring& pgsReportStyleHolder::GetImagePath()
       make_upper( filename.begin(), filename.end() );
 
       CEAFApp* pApp = EAFGetApp();
-      // find first occurance of the application name
+      // find first Occurrence of the application name
       std::_tstring strAppName(pApp->m_pszAppName);
       make_upper( strAppName.begin(), strAppName.end() );
       std::_tstring::size_type loc = filename.find(strAppName);

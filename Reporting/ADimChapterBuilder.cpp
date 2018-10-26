@@ -53,7 +53,7 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CADimChapterBuilder::GetName() const
 {
-   return TEXT("Deck Haunch Details");
+   return TEXT("Haunch Details");
 }
 
 rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -145,7 +145,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       (*pTable1)(0,9) << COLHDR(_T("Excess") << rptNewLine << _T("Camber"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       (*pTable2)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-      (*pTable2)(0,1) << _T("Crown") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << Sub2(_T("m"),_T("d")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      (*pTable2)(0,1) << _T("Deck") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << Sub2(_T("m"),_T("d")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
       (*pTable2)(0,2) << _T("Girder") << rptNewLine << _T("Orientation") << rptNewLine << _T("(") << Sub2(_T("m"),_T("g")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
       (*pTable2)(0,3)<< COLHDR(_T("Top") << rptNewLine << _T("Width"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable2)(0,4)<< COLHDR(_T("Profile") << rptNewLine << _T("Effect"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -154,7 +154,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       (*pTable2)(0,7)<< COLHDR(_T("Top") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation") << Super(_T("**")),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
       (*pTable2)(0,8)<< COLHDR(_T("Actual") << rptNewLine << _T("Depth") << Super(_T("***")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable2)(0,9)<< COLHDR(_T("CL") << rptNewLine << _T("Haunch") << rptNewLine << _T("Depth") << Super(_T("&")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable2)(0,10)<< COLHDR(_T("Edge") << rptNewLine << _T("Haunch") << rptNewLine << _T("Depth") << Super(_T("&&")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable2)(0,10)<< COLHDR(_T("Least") << rptNewLine << _T("Haunch") << rptNewLine << _T("Depth") << Super(_T("&&")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       RowIndexType row1 = pTable1->GetNumberOfHeaderRows();
       RowIndexType row2 = pTable2->GetNumberOfHeaderRows();
@@ -231,7 +231,9 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << Super(_T("*")) << _T(" required slab offset from top of girder to top of deck at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet + Camber Effect + Profile Effect + Girder Orientation Effect)") << rptNewLine;
+
+      *pPara << _T("Deck Slope (") << Sub2(_T("m"),_T("d")) << _T(") and Girder Orientation (") << Sub2(_T("m"),_T("g")) << _T(") are positive when the slope is upwards towards the right") << rptNewLine;
+      *pPara << Super(_T("*")) << _T(" required slab offset (equal at both ends) from top of girder to top of deck at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet + Camber Effect + Profile Effect + Girder Orientation Effect)") << rptNewLine;
 
       if ( slabOffsetType == pgsTypes::sotBridge )
       {
@@ -254,11 +256,11 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       }
 
       *pPara << Super(_T("&")) << _T(" CL Haunch Depth = Haunch Depth along the centerline of girder")  << rptNewLine;
-      *pPara << Super(_T("&&")) << _T(" Edge Haunch Depth = Haunch Depth at Edge of Top Flange = CL Haunch Depth - Girder Orientation Effect")  << rptNewLine;
+      *pPara << Super(_T("&&")) << _T(" Least Haunch Depth = Haunch Depth at Edge of Top Flange = CL Haunch Depth - Girder Orientation Effect")  << rptNewLine;
 
       comp.ShowUnitTag(true);
-      *pPara << _T("Required Slab Offset at intersection of centerline bearing and centerline girder (\"A\" Dimension): ") << comp.SetValue(haunch_details.RequiredSlabOffset) << rptNewLine;
-      *pPara << _T("Maximum Change in Haunch Depth between Bearings: ") << comp.SetValue(haunch_details.HaunchDiff) << rptNewLine;
+      *pPara << _T("Required Slab Offset at intersection of centerline bearing and centerline girder: ") << comp.SetValue(haunch_details.RequiredSlabOffset) << rptNewLine;
+      *pPara << _T("Maximum Change in CL Haunch Depth along girder: ") << comp.SetValue(haunch_details.HaunchDiff) << rptNewLine;
    }
 
    rptParagraph* pPara = new rptParagraph;

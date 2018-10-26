@@ -3053,7 +3053,6 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
       }
    }
 
-   ATLASSERT(false); // not found
    return NULL;
 }
 

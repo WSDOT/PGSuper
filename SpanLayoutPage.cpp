@@ -76,6 +76,7 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
 
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
    DDV_UnitValueGreaterThanZero(pDX,IDC_SPAN_LENGTH,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
@@ -119,6 +120,30 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       pParent->m_BridgeDesc.SetSpanLength(pParent->m_pSpanData->GetIndex(),m_SpanLength);
+
+      Float64 minA  = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
+      if (pgsTypes::sdtCompositeSIP == pParent->m_BridgeDesc.GetDeckDescription()->DeckType)
+      {
+         minA += pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
+      }
+
+      cmpdim.SetValue(minA);
+      CString strMinValError;
+      strMinValError.Format(_T("Slab Offset value must be greater or equal to gross slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str() );
+
+      if (slabOffset[pgsTypes::metStart] < minA)
+      {
+         pDX->PrepareCtrl(IDC_START_SLAB_OFFSET);
+         AfxMessageBox(strMinValError);
+         pDX->Fail();
+      }
+
+      if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier && slabOffset[pgsTypes::metEnd] < minA)
+      {
+         pDX->PrepareCtrl(IDC_END_SLAB_OFFSET);
+         AfxMessageBox(strMinValError);
+         pDX->Fail();
+      }
 
       // Slab offset
       if ( pParent->m_BridgeDesc.GetSlabOffsetType()== pgsTypes::sotBridge )

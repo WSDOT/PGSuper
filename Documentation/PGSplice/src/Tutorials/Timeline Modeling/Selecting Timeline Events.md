@@ -50,7 +50,7 @@ The timeline for these tutorials have all the segments being constructed at the 
 1. Create a new 2 Span I-Beam project
 2. Select *Edit > Timeline...*
 3. Press [Add] to create a new timeline event.
-4. Set the day of occurance to 4 and enter an event description ("Construct Span 2 Segments" is a good choice).
+4. Set the day of occurrence to 4 and enter an event description ("Construct Span 2 Segments" is a good choice).
 5. Select *[Add] > Construct Segments*.
 6. In the Construct Segments window, hold the CTRL key and use the mouse to select all Segment 2's from the "Segments to be Constructed" list ![](Tutorial_Timeline_Construct_Segments_1.png)
 7. Press [>] to move them to the "Segments constructed during this activity" list. ![](Tutorial_Timeline_Construct_Segments_2.png)

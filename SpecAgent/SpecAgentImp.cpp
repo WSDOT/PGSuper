@@ -492,13 +492,15 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInte
 
 Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
 {
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+   GET_IFACE(IPointOfInterest,pPoi);
+   CClosureKey closureKey;
+   VERIFY(pPoi->IsInClosureJoint(poi,&closureKey));
 
-   ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Compression));
+   ATLASSERT(IsStressCheckApplicable(closureKey,intervalIdx,ls,pgsTypes::Compression));
 
    // This is a design/check case, so use the regular specifications
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetClosureJointDesignFc(segmentKey,intervalIdx);
+   Float64 fc = pMaterials->GetClosureJointDesignFc(closureKey,intervalIdx);
 
    Float64 fAllow = GetClosureJointAllowableCompressionStress(poi,intervalIdx,ls,fc);
    return fAllow;

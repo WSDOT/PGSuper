@@ -268,22 +268,22 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 segmentLength, F
    *pBarStart = 0.0;
    *pBarEnd   = 0.0;
 
-   if ( matRebar::bsNone != this->BarSize && 0 < this->NumberOfBars )
+   if ( matRebar::bsNone != BarSize && 0 < NumberOfBars )
    {
       // Determine longitudinal start and end of rebar layout
-      if(this->BarLayout == pgsTypes::blFullLength)
+      if(BarLayout == pgsTypes::blFullLength)
       {
          *pBarStart = 0.0;
          *pBarEnd = segmentLength;
       }
-      else if(this->BarLayout == pgsTypes::blFromLeft)
+      else if(BarLayout == pgsTypes::blFromLeft)
       {
-         if (this->DistFromEnd < segmentLength)
+         if (DistFromEnd < segmentLength)
          {
-            *pBarStart = this->DistFromEnd;
-            if (*pBarStart + this->BarLength < segmentLength)
+            *pBarStart = DistFromEnd;
+            if (*pBarStart + BarLength < segmentLength)
             {
-               *pBarEnd = *pBarStart + this->BarLength;
+               *pBarEnd = *pBarStart + BarLength;
             }
             else
             {
@@ -295,14 +295,14 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 segmentLength, F
             return false; // no bar within girder
          }
       }
-      else if(this->BarLayout == pgsTypes::blFromRight)
+      else if(BarLayout == pgsTypes::blFromRight)
       {
-         if (this->DistFromEnd < segmentLength)
+         if (DistFromEnd < segmentLength)
          {
-            *pBarEnd = segmentLength - this->DistFromEnd;
-            if (*pBarEnd - this->BarLength > 0.0)
+            *pBarEnd = segmentLength - DistFromEnd;
+            if (*pBarEnd - BarLength > 0.0)
             {
-               *pBarStart = *pBarEnd - this->BarLength;
+               *pBarStart = *pBarEnd - BarLength;
             }
             else
             {
@@ -314,33 +314,33 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 segmentLength, F
             return false; // no bar within girder
          }
       }
-      else if(this->BarLayout == pgsTypes::blMidGirderEnds)
+      else if(BarLayout == pgsTypes::blMidGirderEnds)
       {
          Float64 gl2 = segmentLength/2.0;
 
-         if (this->DistFromEnd < gl2)
+         if (DistFromEnd < gl2)
          {
-            *pBarStart = this->DistFromEnd;
-            *pBarEnd   = segmentLength - this->DistFromEnd;
+            *pBarStart = DistFromEnd;
+            *pBarEnd   = segmentLength - DistFromEnd;
          }
          else
          {
             return false; // no bar within girder
          }
       }
-      else if(this->BarLayout == pgsTypes::blMidGirderLength)
+      else if(BarLayout == pgsTypes::blMidGirderLength)
       {
          Float64 gl2 = segmentLength/2.0;
 
-         if (this->BarLength > segmentLength)
+         if (segmentLength < BarLength)
          {
             *pBarStart = 0.0;
             *pBarEnd   = segmentLength;
          }
          else
          {
-            *pBarStart = gl2 - this->BarLength/2.0;
-            *pBarEnd   = gl2 + this->BarLength/2.0;
+            *pBarStart = gl2 - BarLength/2.0;
+            *pBarEnd   = gl2 + BarLength/2.0;
          }
       }
       else
@@ -348,7 +348,7 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 segmentLength, F
          ATLASSERT(false); // new bar layout type?
       }
 
-      ATLASSERT(*pBarStart<*pBarEnd);
+      ATLASSERT(*pBarStart < *pBarEnd);
 
       return true;
    }

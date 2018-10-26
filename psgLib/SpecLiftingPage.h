@@ -71,6 +71,8 @@ protected:
 	void DoCheckMax();
 public:
    virtual BOOL OnSetActive();
+
+   void EnableControls(BOOL bEnable);
 };
 
 //{{AFX_INSERT_LOCATION}}

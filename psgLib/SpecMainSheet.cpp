@@ -226,8 +226,14 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CString fciTag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
-   CString fcTag  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )")  : _T("sqrt( f'c (KSI) )"));
+   CString fciTag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
+   CString fcTag  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))")  : _T("sqrt(f'c (KSI))"));
+
+   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+   {
+      fciTag = _T("(lambda)") + fciTag;
+      fcTag  = _T("(lambda)") + fcTag;
+   }
 
    // Allowable concrete stress at prestress release
 	DDX_Text(pDX, IDC_RELEASE_COMPRESSION, m_Entry.m_CyCompStressServ);
@@ -341,7 +347,16 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_FS_CY_FAIL, m_Entry.m_CyLiftingFailFs);
    DDV_NonNegativeDouble(pDX, IDC_FS_CY_FAIL, m_Entry.m_CyLiftingFailFs);
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
+   CString tag;
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))");
+   }
+   else
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'ci (MPa))") : _T("(lambda)sqrt(f'ci (KSI))");
+   }
+
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_UNIT,tag);
 
@@ -413,7 +428,15 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);
    DDV_GreaterThanZero(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))"));
+   CString tag;
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+   }
+   else
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+   }
 
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_UNIT,tag);
@@ -496,7 +519,15 @@ void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);
    DDV_GreaterThanZero(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))"));
+   CString tag;
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+   }
+   else
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+   }
 
    DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION, IDC_HAULING_TENSION_UNIT, m_Entry.m_TensStressHauling, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAULING_TENSION_UNIT,tag);
@@ -535,7 +566,15 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
 
    DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_MOMENT, m_Entry.m_bIncludeRebar_Moment );
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
+   CString tag;
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+   }
+   else
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+   }
 
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
@@ -579,9 +618,13 @@ void CSpecMainSheet::CheckShearCapacityMethod()
    {
       // force to the general method
       if ( GetSpecVersion() <= lrfdVersionMgr::FourthEdition2007 )
+      {
          m_Entry.m_ShearCapacityMethod = scmBTTables;
+      }
       else
+      {
          m_Entry.m_ShearCapacityMethod = scmBTEquations;
+      }
    }
 
    // The general method from the 2007 spec becomes the tables method in the 2008 spec
@@ -596,9 +639,13 @@ void CSpecMainSheet::CheckShearCapacityMethod()
    {
       // force to the general method
       if ( GetSpecVersion() <= lrfdVersionMgr::FourthEdition2007 )
+      {
          m_Entry.m_ShearCapacityMethod = scmBTTables;
+      }
       else
+      {
          m_Entry.m_ShearCapacityMethod = scmBTEquations;
+      }
    }
 
    if ( GetSpecVersion() < lrfdVersionMgr::FourthEdition2007 &&  // if we are before 4th Edition
@@ -625,9 +672,20 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    // then changed the spec. We have keep the data valid
 
    if ( pDX->m_bSaveAndValidate )
+   {
       CheckShearCapacityMethod();
+   }
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
+   CString tag;
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+   }
+   else
+   {
+      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+   }
+
    DDX_UnitValueAndTag(pDX, IDC_FR,     IDC_FR_LABEL,     m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_FR_LABEL_ALWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_FR_LABEL_SLWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
@@ -959,8 +1017,14 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CString tagBeforeLosses = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
-   CString tagAfterLosses  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
+   CString tagBeforeLosses = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
+   CString tagAfterLosses  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))"));
+
+   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+   {
+      tagBeforeLosses = _T("(lambda)") + tagBeforeLosses;
+      tagAfterLosses  = _T("(lambda)") + tagAfterLosses;
+   }
 
    DDX_Text(pDX,IDC_RELEASE_COMPRESSION,m_Entry.m_ClosureCompStressAtStressing);
    DDV_GreaterThanZero(pDX, IDC_RELEASE_COMPRESSION,m_Entry.m_ClosureCompStressAtStressing);

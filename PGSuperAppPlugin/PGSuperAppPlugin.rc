@@ -13,7 +13,6 @@
 #include "afxres.h"
 #include <EAF\EAFResources.h>
 #include "grid\gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -2277,8 +2276,8 @@ BEGIN
     LTEXT           "PS",IDC_SERVICE_III_PS_LABEL,183,96,9,8
     LTEXT           "Allowable Tension",IDC_STATIC,18,153,58,8
     EDITTEXT        IDC_ALLOWABLE_TENSION,82,150,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,126,153,57,8
-    CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,189,153,63,10
+    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,126,153,85,8
+    CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,215,153,63,10
     GROUPBOX        "Limit States",IDC_STATIC,7,7,282,117
     GROUPBOX        "Analysis Controls",IDC_STATIC,7,136,282,39
 END
@@ -2348,7 +2347,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,301,107,10
     LTEXT           "Allowable Tension",IDC_STATIC,133,302,58,8
     EDITTEXT        IDC_ALLOWABLE_TENSION,197,299,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,241,302,57,8
+    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,241,302,85,8
     CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,317,63,10
 END
 
@@ -2430,15 +2429,15 @@ BEGIN
     GROUPBOX        "Analysis Controls",IDC_STATIC,7,340,326,60
     CONTROL         "Rate for Service III Stresses",IDC_RATE_FOR_STRESS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,355,107,10
-    LTEXT           "Allowable Tension",IDC_ALLOWABLE_TENSION_LABEL,171,356,58,8
-    EDITTEXT        IDC_ALLOWABLE_TENSION,231,353,30,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,264,356,57,8
+    LTEXT           "Allowable Tension",IDC_ALLOWABLE_TENSION_LABEL,141,356,58,8
+    EDITTEXT        IDC_ALLOWABLE_TENSION,202,353,30,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,234,355,88,8
     CONTROL         "Check reinforcement yielding (6A.5.4.2.2b)",IDC_CHECK_YIELDING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,370,153,10
-    LTEXT           "Allowable Stress",IDC_FY_LABEL,176,371,53,8
-    EDITTEXT        IDC_FY_COEFFICIENT,231,368,30,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "fy",IDC_FY,264,370,8,8
-    CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,386,63,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,371,153,10
+    LTEXT           "Allowable Stress",IDC_FY_LABEL,176,372,53,8
+    EDITTEXT        IDC_FY_COEFFICIENT,231,369,30,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fy",IDC_FY,264,371,8,8
+    CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,387,63,10
 END
 
 IDD_MANAGE_PLUGINS DIALOGEX 0, 0, 316, 161
@@ -3453,8 +3452,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,51
- PRODUCTVERSION 3,0,0,51
+ FILEVERSION 3,0,0,52
+ PRODUCTVERSION 3,0,0,52
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3471,12 +3470,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.51"
+            VALUE "FileVersion", "3.0.0.52"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.51"
+            VALUE "ProductVersion", "3.0.0.52"
         END
     END
     BLOCK "VarFileInfo"

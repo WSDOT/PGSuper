@@ -1508,11 +1508,13 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
    {
       SetGirderCount(rOther.m_Girders.size());
    }
+
    ATLASSERT(m_Girders.size() == rOther.m_Girders.size());
    std::vector<CSplicedGirderData*>::iterator myGirderIter(m_Girders.begin());
    std::vector<CSplicedGirderData*>::iterator myGirderIterEnd(m_Girders.end());
    std::vector<CSplicedGirderData*>::const_iterator otherGirderIter(rOther.m_Girders.begin());
    std::vector<CSplicedGirderData*>::const_iterator otherGirderIterEnd(rOther.m_Girders.end());
+   std::vector<CSplicedGirderData*> vOldGirders;
    for ( ; myGirderIter != myGirderIterEnd; myGirderIter++, otherGirderIter++ )
    {
       CSplicedGirderData* pMyGirder = *myGirderIter; // this is my girder... we are replacing it with a copy of the other girder
@@ -1522,9 +1524,7 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
       {
          myGirderIdx = pMyGirder->GetIndex();
          myGirderID = pMyGirder->GetID();
-         pMyGirder->Clear();
-         pMyGirder->SetGirderGroup(NULL); // this removes the girder from its group which removes it from the bridge. it does not alter the timeline events
-         delete pMyGirder; // done with this girder
+         vOldGirders.push_back(pMyGirder);
       }
       pMyGirder = NULL;
       *myGirderIter = NULL;
@@ -1553,6 +1553,15 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
    {
       const GirderTypeGroup& grp = *grpIter;
       m_GirderTypeGroups.push_back(grp);
+   }
+
+   // delete the old girders
+   std::vector<CSplicedGirderData*>::iterator oldGirderIter(vOldGirders.begin());
+   std::vector<CSplicedGirderData*>::iterator oldGirderIterEnd(vOldGirders.end());
+   for ( ; oldGirderIter != oldGirderIterEnd; oldGirderIter++ )
+   {
+      CSplicedGirderData* pOldGirder = *oldGirderIter;
+      delete pOldGirder; // done with this girder
    }
 }
 

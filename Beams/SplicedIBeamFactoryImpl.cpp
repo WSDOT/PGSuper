@@ -159,8 +159,18 @@ void CSplicedIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTyp
    {
       d7 += overallHeight - (d1+d2+d3+d4+d5+d6+d7);
       if ( 0 < d7 )
+      {
          beam->put_D7(d7);
+      }
    }
+   else
+   {
+      overallHeight = d1+d2+d3+d4+d5+d6+d7;
+   }
+
+   CComPtr<IPoint2d> hookPt;
+   beam->get_HookPoint(&hookPt);
+   hookPt->Move(0,-overallHeight);
 
    gdrsection.QueryInterface(ppSection);
 }

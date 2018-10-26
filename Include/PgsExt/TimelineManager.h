@@ -86,6 +86,11 @@ public:
    void SetBridgeDescription(const CBridgeDescription2* pBridge);
    const CBridgeDescription2* GetBridgeDescription() const;
 
+   // Appends an event to the end of the timeline. The day of occurrence will be changed to
+   // match the last event in the timeline. A unique ID will be assigned to the event if
+   // its ID is INVALID_ID. The index of the event will be return through the pEventIdx parameter. 
+   void AppendTimelineEvent(CTimelineEvent* pTimelineEvent,EventIndexType* pEventIdx);
+
    // Adds a new event to the timeline. If bAdjustTimeline is true, the timeline from the insertion point to the end
    // is automatically adjusted so that time events do not overlap. A unique ID will be assigned to the event if
    // its ID is INVALID_ID. The index of the event will be return through the pEventIdx parameter. This method
@@ -110,8 +115,8 @@ public:
    // The day of the specified event does not changed.
    void SetElapsedTime(EventIndexType eventIdx,Float64 elapsedTime);
 
-   int RemoveEventByIndex(EventIndexType eventIdx);
-   int RemoveEventByID(EventIDType id);
+   void RemoveEventByIndex(EventIndexType eventIdx);
+   void RemoveEventByID(EventIDType id);
 
    const CTimelineEvent* GetEventByIndex(EventIndexType eventIdx) const;
    CTimelineEvent* GetEventByIndex(EventIndexType eventIdx);
@@ -137,6 +142,7 @@ public:
    bool AreAllTendonsStressed() const;
 
    bool IsDeckCast() const;
+   bool IsOverlayInstalled() const;
    bool IsRailingSystemInstalled() const;
    bool IsSegmentConstructed(SegmentIDType segmentID) const;
    bool IsClosureJointCast(ClosureIDType closureID) const;
@@ -216,7 +222,7 @@ public:
    EventIDType GetOverlayLoadEventID() const;
    void SetOverlayLoadEventByIndex(EventIndexType eventIdx);
    void SetOverlayLoadEventByID(EventIDType ID);
-   int RemoveOverlayLoadEvent();
+   void RemoveOverlayLoadEvent();
 
    EventIndexType GetLiveLoadEventIndex() const;
    EventIDType GetLiveLoadEventID() const;
@@ -239,7 +245,6 @@ protected:
    void MakeCopy(const CTimelineManager& rOther);
    virtual void MakeAssignment(const CTimelineManager& rOther);
    void Sort();
-   int CanRemoveEvent(CTimelineEvent* pTimelineEvent);
 
    std::vector<CTimelineEvent*> m_TimelineEvents; // owns the timeline events... will be deleted in the destructor
    const CBridgeDescription2* m_pBridgeDesc;

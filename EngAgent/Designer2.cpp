@@ -389,13 +389,13 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
 
    Float64 max_tslab_and_fillet = 0;
 
-   Float64 max_actual_haunch_depth_diff = 0; // maximum difference between "A" and the actual haunch depth at any section
-
    // determine the minumum and maximum difference in elevation between the
    // roadway surface and the top of the girder.... measured directly above 
    // the top of the girder
    Float64 diff_min =  DBL_MAX;
    Float64 diff_max = -DBL_MAX;
+   Float64 min_haunch =  DBL_MAX;
+   Float64 max_haunch = -DBL_MAX;
    Float64 max_reqd_haunch_depth = -DBL_MAX;
    Float64 min_reqd_haunch_depth =  DBL_MAX;
    std::vector<pgsPointOfInterest>::iterator iter( vPoi.begin() );
@@ -494,13 +494,10 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
 
       max_tslab_and_fillet = Max(max_tslab_and_fillet,tSlab + fillet);
 
-      // if haunch depth diff is > 0, the haunch is deeper towards the middle of the girder
-      // if haunch depth diff is < 0, the haunch is deeper at the CL Bearing
-      Float64 haunch_depth_diff = haunch.TopSlabToTopGirder - slab_offset;
-      if ( fabs(max_actual_haunch_depth_diff) < fabs(haunch_depth_diff) )
-      {
-         max_actual_haunch_depth_diff = haunch_depth_diff;
-      }
+      // store min and max haunch depths
+      min_haunch = min(min_haunch, haunch.TopSlabToTopGirder-tSlab);
+      max_haunch = max(max_haunch, haunch.TopSlabToTopGirder-tSlab);
+
    } // next POI
 
    // profile effect
@@ -524,9 +521,9 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
    // record controlling values
    pHaunchDetails->RequiredSlabOffset = max_reqd_haunch_depth;
 
-   // this is the maximum difference in the haunch depth between the end of the girder and
-   // any other point along the girder... if this too big, stirrups may need to be adjusted
-   pHaunchDetails->HaunchDiff = max_actual_haunch_depth_diff;
+   // this is the maximum difference in the haunch depth along the girder...
+   // if this too big, stirrups may need to be adjusted
+   pHaunchDetails->HaunchDiff = max_haunch - min_haunch;
 }
 
 Float64 pgsDesigner2::GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi)
@@ -709,13 +706,19 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
       CSegmentKey segmentKey(girderKey,segIdx);
 
       // get the POI that will be used for spec checking
+      std::vector<pgsPointOfInterest> endFacePois( pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE));
+      ATLASSERT(endFacePois.size() == 2);
+      
       std::vector<pgsPointOfInterest> releasePois( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
-//      std::vector<pgsPointOfInterest> erectedPois( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+      ATLASSERT(releasePois.size() == 11);
+
       std::vector<pgsPointOfInterest> erectedPois( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
 
       // get all special POI, except for the closure joints... we'll get them later if applicable
       std::vector<pgsPointOfInterest> vOtherPoi(pPoi->GetPointsOfInterest(segmentKey,POI_SPECIAL & ~POI_CLOSURE,POIFIND_OR));
       releasePois.insert(releasePois.end(),vOtherPoi.begin(),vOtherPoi.end());
+      releasePois.insert(releasePois.begin(),endFacePois.front());
+      releasePois.insert(releasePois.end(),endFacePois.back());
       erectedPois.insert(erectedPois.end(),vOtherPoi.begin(),vOtherPoi.end());
 
       std::sort(releasePois.begin(),releasePois.end());
@@ -4727,7 +4730,10 @@ void pgsDesigner2::CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirder
             CSpanKey thisSpanKey;
             Float64 Xspan;
             pPoi->ConvertPoiToSpanPoint(poi,&thisSpanKey,&Xspan);
-            ATLASSERT(thisSpanKey.spanIndex == spanIdx);
+            if ( !poi.HasAttribute(POI_INTERMEDIATE_PIER) )
+            {
+               ATLASSERT(thisSpanKey.spanIndex == spanIdx);
+            }
 #endif // _DEBUG
 
             // Determine if this POI is in the span that is currently being evaluated
@@ -4854,17 +4860,33 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          PierIndexType startPierIdx, endPierIdx;
          pBridge->GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
 
-         // find the smallest provided slab offset along the girder
-         Float64 providedSlabOffset = DBL_MAX;
-         for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
-         {
-            providedSlabOffset = Min(providedSlabOffset,pBridge->GetSlabOffset(girderKey.groupIndex,pierIdx,girderKey.girderIndex));
-         }
-         artifact.SetProvidedSlabOffset( providedSlabOffset );
+         //  provided slab offsets
+         Float64 startSlabOffset = pBridge->GetSlabOffset(girderKey.groupIndex, startPierIdx, girderKey.girderIndex);
+         Float64 endSlabOffset   = pBridge->GetSlabOffset(girderKey.groupIndex, endPierIdx,   girderKey.girderIndex);
+
+         artifact.SetProvidedSlabOffset( startSlabOffset, endSlabOffset );
 
          // get required slab offset
          Float64 requiredSlabOffset = pGdrHaunch->GetRequiredSlabOffset(spanKey);
          artifact.SetRequiredSlabOffset( requiredSlabOffset );
+
+         HAUNCHDETAILS haunch_details;
+         pGdrHaunch->GetHaunchDetails(spanKey,&haunch_details);
+
+         // Get least haunch depth and its location along girder
+         Float64 minval(Float64_Max);
+         Float64 minloc;
+         BOOST_FOREACH(const SECTIONHAUNCH& haunch, haunch_details.Haunch)
+         {
+            Float64 val = haunch.TopSlabToTopGirder - haunch.tSlab - haunch.GirderOrientationEffect;
+            if (val < minval)
+            {
+               minval = val;
+               minloc = haunch.PointOfInterest.GetDistFromStart();
+            }
+         }
+
+         artifact.SetLeastHaunchDepth(minloc, minval);
 
          // minimum fillet requirements
          Float64 min_fillet = pGirderEntry->GetMinFilletValue();
@@ -4874,7 +4896,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 
          // warning tolerance for excessive haunch
          Float64 warn_tol = pGirderEntry->GetExcessiveSlabOffsetWarningTolerance();
-         artifact.SetSlabOffsetWarningTolerance(warn_tol);
+         artifact.SetExcessSlabOffsetWarningTolerance(warn_tol);
 
          // determine if stirrup lengths could be a problem
          GET_IFACE(IStirrupGeometry, pStirrupGeometry);
@@ -4889,9 +4911,6 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
                break; // all we have to do is find one
             }
          }
-
-         HAUNCHDETAILS haunch_details;
-         pGdrHaunch->GetHaunchDetails(spanKey,&haunch_details);
 
    #pragma Reminder("Assumes constant slab thickness throughout bridge")
          // warn of possible stirrup length issue if the difference in haunch depth along the girder is more than half the deck thickness"
@@ -4910,8 +4929,9 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 
             artifact.SetRequiredHaunchAtBearingCLs(min_haunch);
 
-            Float64 haunchcl = providedSlabOffset - tSlab;
-            artifact.SetProvidedHaunchAtBearingCLs(haunchcl);
+            Float64 haunchstrt = startSlabOffset - tSlab;
+            Float64 haunchend  = endSlabOffset   - tSlab;
+            artifact.SetProvidedHaunchAtBearingCLs( min(haunchstrt,haunchend) );
          }
       }
 
@@ -4920,7 +4940,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       // Camber Tolerance for Haunch Load
       //
       ///////////////////////////////////////////////////////////////
-     if (!pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcAccountForCamber || pBridge->GetDeckType() == pgsTypes::sdtNone)
+      if (pSpecEntry->GetHaunchLoadComputationType() != pgsTypes::hlcAccountForCamber || pBridge->GetDeckType() == pgsTypes::sdtNone)
       {
          artifact.SetHaunchGeometryCheckApplicability(false);
       }
@@ -4930,9 +4950,6 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 
          Float64 tolerance = pSpecEntry->GetHaunchLoadCamberTolerance();
          artifact.SetHaunchGeometryTolerance(tolerance);
-
-         Float64 fillet = pBridge->GetFillet(spanIdx, girderKey.girderIndex);
-         artifact.SetUserInputFillet(fillet);
 
          GET_IFACE(IGirderHaunch,pGdrHaunch);
          HAUNCHDETAILS haunch_details;

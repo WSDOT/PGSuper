@@ -153,6 +153,7 @@ BOOL CTimelineEventDlg::OnInitDialog()
    if ( m_EventIndex == INVALID_INDEX )
    {
       m_pTimelineEvent = new CTimelineEvent();
+      m_TimelineManager.AppendTimelineEvent(m_pTimelineEvent,&m_EventIndex);
    }
    else
    {
@@ -220,12 +221,6 @@ BOOL CTimelineEventDlg::OnInitDialog()
       m_TimelineEventList.SetColumnWidth(2,LVSCW_AUTOSIZE);
    }
 
-   if ( m_EventIndex == INVALID_INDEX )
-   {
-      int result = m_TimelineManager.AddTimelineEvent(m_pTimelineEvent,false,&m_EventIndex);
-      ATLASSERT(result == TLM_SUCCESS);
-   }
-
    if ( m_bReadOnly )
    {
       GetDlgItem(IDC_DAY)->EnableWindow(FALSE);
@@ -269,8 +264,8 @@ void CTimelineEventDlg::UpdateAddButton()
    }
 
    // Keep the activities in a somewhat logical sequence
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CONSTRUCTSEGMENT,strConstructSegments,MF_ENABLED);
    m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_PIERS,strErectPiers,MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CONSTRUCTSEGMENT,strConstructSegments,MF_ENABLED);
    m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_SEGMENTS,strErectSegments,MF_ENABLED);
 
    if ( pDocType->IsPGSpliceDocument() )
@@ -314,6 +309,7 @@ bool EditEvent(CTimelineEventDlg* pTimelineEventDlg,T* pActivityDlg)
 
 void CTimelineEventDlg::OnConstructSegments()
 {
+   UpdateData();
    CConstructSegmentsDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
@@ -323,6 +319,7 @@ void CTimelineEventDlg::OnConstructSegments()
 
 void CTimelineEventDlg::OnErectPiers()
 {
+   UpdateData();
    CErectPiersDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
@@ -332,6 +329,7 @@ void CTimelineEventDlg::OnErectPiers()
 
 void CTimelineEventDlg::OnErectSegments()
 {
+   UpdateData();
    CErectSegmentsDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
@@ -341,6 +339,7 @@ void CTimelineEventDlg::OnErectSegments()
 
 void CTimelineEventDlg::OnRemoveTempSupports()
 {
+   UpdateData();
    CRemoveTempSupportsDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
@@ -350,6 +349,7 @@ void CTimelineEventDlg::OnRemoveTempSupports()
 
 void CTimelineEventDlg::OnCastClosureJoints()
 {
+   UpdateData();
    CCastClosureJointDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
@@ -359,6 +359,7 @@ void CTimelineEventDlg::OnCastClosureJoints()
 
 void CTimelineEventDlg::OnCastDeck()
 {
+   UpdateData();
    CCastDeckDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
@@ -368,6 +369,7 @@ void CTimelineEventDlg::OnCastDeck()
 
 void CTimelineEventDlg::OnApplyLoads()
 {
+   UpdateData();
    CApplyLoadsDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {
@@ -377,6 +379,7 @@ void CTimelineEventDlg::OnApplyLoads()
 
 void CTimelineEventDlg::OnStressTendons()
 {
+   UpdateData();
    CStressTendonDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
    {

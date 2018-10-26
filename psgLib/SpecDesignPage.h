@@ -71,6 +71,7 @@ protected:
 public:
    afx_msg void OnBnClickedCheckBottomFlangeClearance();
    virtual BOOL OnSetActive();
+   afx_msg void OnBnClickedLlDeflection();
 };
 
 //{{AFX_INSERT_LOCATION}}

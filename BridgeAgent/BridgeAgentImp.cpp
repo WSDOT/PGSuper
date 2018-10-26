@@ -4491,6 +4491,11 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
    Float64 left_brg_offset = GetSegmentStartBearingOffset(segmentKey);
    Float64 left_end_size   = GetSegmentStartEndDistance(segmentKey);
 
+   pgsPointOfInterest poiStartFace(segmentKey,0.0,POI_START_FACE);
+   pgsPointOfInterest poiEndFace(segmentKey,segment_length,POI_END_FACE);
+   m_pPoiMgr->AddPointOfInterest(poiStartFace);
+   m_pPoiMgr->AddPointOfInterest(poiEndFace);
+
    Float64 left_release_point, right_release_point;
    GetSegmentReleaseSupportLocations(segmentKey,&left_release_point,&right_release_point);
 
@@ -4540,7 +4545,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
       }
 
       // create casting yard POI
-      Float64 Xs  = casting_yard_dist; // distance from left face of segment
+      Float64 Xs  = left_release_point + casting_yard_dist; // distance from left face of segment
       Float64 Xsp = start_offset + Xs; // distance from CLSupport - CLSegment intersection point
       Float64 Xgp = segmentOffset + Xsp; // distance from CLSupport - CLGirder intersection point
       Float64 Xg  = Xgp - first_segment_start_offset;  // distance from left face of first segment
@@ -5701,6 +5706,7 @@ void CBridgeAgentImp::LayoutPoiForTendon(const CGirderKey& girderKey,const CLine
       }
 
       pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(girderKey,Xg);
+      poi.SetID(INVALID_ID);
       poi.SetReferencedAttributes(0);
       poi.SetNonReferencedAttributes(0);
       m_pPoiMgr->AddPointOfInterest(poi);
@@ -7899,7 +7905,7 @@ Float64 CBridgeAgentImp::GetCantileverLength(SpanIndexType spanIdx,GirderIndexTy
    Float64 LcTest;
    if ( endType == pgsTypes::metStart )
    {
-      std::vector<pgsPointOfInterest> vPoi = GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L,POIFIND_AND);
+      std::vector<pgsPointOfInterest> vPoi = GetPointsOfInterest(segmentKey,POI_START_FACE);
       ATLASSERT(vPoi.size() == 1);
       pgsPointOfInterest poiStart = vPoi.front();
 
@@ -7915,7 +7921,7 @@ Float64 CBridgeAgentImp::GetCantileverLength(SpanIndexType spanIdx,GirderIndexTy
       ATLASSERT(vPoi.size() == 1);
       pgsPointOfInterest poiStart = vPoi.front();
 
-      vPoi = GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_10L,POIFIND_AND);
+      vPoi = GetPointsOfInterest(segmentKey,POI_END_FACE);
       ATLASSERT(vPoi.size() == 1);
       pgsPointOfInterest poiEnd = vPoi.front();
 
@@ -15329,11 +15335,11 @@ void CBridgeAgentImp::GetHarpedStrandControlHeights(const CSegmentKey& segmentKe
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
 
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L);
+   vPoi = GetPointsOfInterest(segmentKey,POI_START_FACE);
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiStart(vPoi.front());
 
-   vPoi = GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_10L);
+   vPoi = GetPointsOfInterest(segmentKey,POI_END_FACE);
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiEnd(vPoi.front());
 
@@ -25389,63 +25395,66 @@ void CBridgeAgentImp::LayoutDeckRebar(const CDeckDescription2* pDeck,IBridgeDeck
    }
 
    // Bottom Mat - Rebar
-   if ( rebar_data.BottomRebarSize != matRebar::bsNone )
+   if ( pDeck->DeckType != pgsTypes::sdtCompositeSIP )
    {
-      // create the rebar object
-      BarSize       matSize  = GetBarSize(rebar_data.BottomRebarSize);
-      MaterialSpec  matSpec  = GetRebarSpecification(rebar_data.BottomRebarType);
-      RebarGrade    matGrade = GetRebarGrade(rebar_data.BottomRebarGrade);
+      if ( rebar_data.BottomRebarSize != matRebar::bsNone )
+      {
+         // create the rebar object
+         BarSize       matSize  = GetBarSize(rebar_data.BottomRebarSize);
+         MaterialSpec  matSpec  = GetRebarSpecification(rebar_data.BottomRebarType);
+         RebarGrade    matGrade = GetRebarGrade(rebar_data.BottomRebarGrade);
 
-      CComPtr<IRebar> rebar;
-      rebar_factory->CreateRebar(matSpec,matGrade,matSize,unit_convert,compositeDeckIntervalIdx,&rebar);
+         CComPtr<IRebar> rebar;
+         rebar_factory->CreateRebar(matSpec,matGrade,matSize,unit_convert,compositeDeckIntervalIdx,&rebar);
 
-      Float64 db;
-      rebar->get_NominalDiameter(&db);
+         Float64 db;
+         rebar->get_NominalDiameter(&db);
 
-      // create the rebar pattern (definition of rebar in the cross section)
-      CComPtr<IBridgeDeckRebarPattern> rebar_pattern;
-      rebar_pattern.CoCreateInstance(CLSID_BridgeDeckRebarPattern);
+         // create the rebar pattern (definition of rebar in the cross section)
+         CComPtr<IBridgeDeckRebarPattern> rebar_pattern;
+         rebar_pattern.CoCreateInstance(CLSID_BridgeDeckRebarPattern);
 
-      // Locate rebar from the bottom of the deck
-      Float64 Y = rebar_data.BottomCover + db/2;
+         // Locate rebar from the bottom of the deck
+         Float64 Y = rebar_data.BottomCover + db/2;
 
-      // create the rebar pattern
-      rebar_pattern->putref_Rebar(rebar);
-      rebar_pattern->putref_RebarLayoutItem(deck_rebar_layout_item);
-      rebar_pattern->put_Spacing( rebar_data.BottomSpacing );
-      rebar_pattern->put_Location( Y );
-      rebar_pattern->put_IsLumped(VARIANT_FALSE);
+         // create the rebar pattern
+         rebar_pattern->putref_Rebar(rebar);
+         rebar_pattern->putref_RebarLayoutItem(deck_rebar_layout_item);
+         rebar_pattern->put_Spacing( rebar_data.BottomSpacing );
+         rebar_pattern->put_Location( Y );
+         rebar_pattern->put_IsLumped(VARIANT_FALSE);
 
-      // add this pattern to the layout
-      deck_rebar_layout_item->AddRebarPattern(rebar_pattern);
-   }
+         // add this pattern to the layout
+         deck_rebar_layout_item->AddRebarPattern(rebar_pattern);
+      }
 
-   // Bottom Mat - Lump Sum
-   if ( !IsZero(rebar_data.BottomLumpSum) )
-   {
-      MaterialSpec  matSpec  = GetRebarSpecification(rebar_data.BottomRebarType);
-      RebarGrade    matGrade = GetRebarGrade(rebar_data.BottomRebarGrade);
+      // Bottom Mat - Lump Sum
+      if ( !IsZero(rebar_data.BottomLumpSum) )
+      {
+         MaterialSpec  matSpec  = GetRebarSpecification(rebar_data.BottomRebarType);
+         RebarGrade    matGrade = GetRebarGrade(rebar_data.BottomRebarGrade);
 
-      CComPtr<IRebar> rebar;
-      rebar_factory->CreateRebar(matSpec,matGrade,bs3,unit_convert,compositeDeckIntervalIdx,&rebar);
-      rebar->put_NominalDiameter(0.0);
-      rebar->put_NominalArea(rebar_data.BottomLumpSum);
+         CComPtr<IRebar> rebar;
+         rebar_factory->CreateRebar(matSpec,matGrade,bs3,unit_convert,compositeDeckIntervalIdx,&rebar);
+         rebar->put_NominalDiameter(0.0);
+         rebar->put_NominalArea(rebar_data.BottomLumpSum);
 
-      Float64 Y = rebar_data.BottomCover;
+         Float64 Y = rebar_data.BottomCover;
 
-      // create the rebar pattern (definition of rebar in the cross section)
-      CComPtr<IBridgeDeckRebarPattern> rebar_pattern;
-      rebar_pattern.CoCreateInstance(CLSID_BridgeDeckRebarPattern);
+         // create the rebar pattern (definition of rebar in the cross section)
+         CComPtr<IBridgeDeckRebarPattern> rebar_pattern;
+         rebar_pattern.CoCreateInstance(CLSID_BridgeDeckRebarPattern);
 
-      // create the rebar pattern
-      rebar_pattern->putref_Rebar(rebar);
-      rebar_pattern->putref_RebarLayoutItem(deck_rebar_layout_item);
-      rebar_pattern->put_Spacing( 0.0 );
-      rebar_pattern->put_Location( Y );
-      rebar_pattern->put_IsLumped(VARIANT_TRUE);
+         // create the rebar pattern
+         rebar_pattern->putref_Rebar(rebar);
+         rebar_pattern->putref_RebarLayoutItem(deck_rebar_layout_item);
+         rebar_pattern->put_Spacing( 0.0 );
+         rebar_pattern->put_Location( Y );
+         rebar_pattern->put_IsLumped(VARIANT_TRUE);
 
-      // add this pattern to the layout
-      deck_rebar_layout_item->AddRebarPattern(rebar_pattern);
+         // add this pattern to the layout
+         deck_rebar_layout_item->AddRebarPattern(rebar_pattern);
+      }
    }
 
    // Negative moment rebar over piers
@@ -25570,6 +25579,9 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
       CComPtr<IPrecastGirder> girder;
       GetGirder(segmentKey,&girder);
 
+      CComPtr<ISuperstructureMemberSegment> segment;
+      girder->get_SuperstructureMemberSegment(&segment);
+
       Float64 segment_length = GetSegmentLength(segmentKey);
       Float64 startEndDist = GetSegmentStartEndDistance(segmentKey);
       Float64 endEndDist   = GetSegmentEndEndDistance(segmentKey);
@@ -25666,8 +25678,7 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
          // break the bar into segments. Bar is modeled as straight except for bars that are
          // referenced from the bottom of the segment and the segment has a linear or parabolic profile
          std::vector<std::pair<Float64,Float64>> vBarSegments;
-         if ( (segmentVariation == pgsTypes::svtLinear || segmentVariation == pgsTypes::svtParabolic) && 
-               info.Face == pgsTypes::BottomFace )
+         if ( segmentVariation == pgsTypes::svtLinear && info.Face == pgsTypes::BottomFace )
          {
             // if the segment has a linear variation and the bar is referenced from the bottom
             // of the girder, make it follow the bottom of the girder.
@@ -25701,8 +25712,7 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                vBarSegments.push_back(std::make_pair(s3,e3));
             }
          }
-         else if ( (segmentVariation == pgsTypes::svtDoubleLinear || segmentVariation == pgsTypes::svtDoubleParabolic) && 
-                   info.Face == pgsTypes::BottomFace )
+         else if ( segmentVariation == pgsTypes::svtDoubleLinear && info.Face == pgsTypes::BottomFace )
          {
             // if the segment has a double linear variation and the bar is referenced from the bottom
             // of the girder, make it follow the bottom of the girder.
@@ -25716,10 +25726,12 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
             {
                L2 = Max(0.0,L2-startEndDist);
             }
+
             if ( IsZero(L5) )
             {
                L4 = Max(0.0,L4-endEndDist);
             }
+
             Float64 L3 = segment_length - L1 - L2 - L4 - L5;
 
             Float64 s1 = (start < L1 ? start : -1);
@@ -25728,8 +25740,8 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
             Float64 s2 = (start < L1 ? L1 : (start < (L1+L2) ? start : -1));
             Float64 e2 = (end   < L1 ? -1 : (end   < (L1+L2) ? end   : L1+L2));
 
-            Float64 s3 = (start < (L1+L2) ? L1+L2 : start);
-            Float64 e3 = (end   < (L1+L2) ? -1    : (L1+L2+L3));
+            Float64 s3 = (start < (L1+L2) ? L1+L2 : (start < (L1+L2+L3) ? start : -1));
+            Float64 e3 = (end   < (L1+L2) ? -1    : (end   < (L1+L2+L3) ? end   : (L1+L2+L3)));
 
             Float64 s4 = (start < (L1+L2+L3) ? (L1+L2+L3) : (start < (L1+L2+L3+L4) ? start : -1));
             Float64 e4 = (end   < (L1+L2+L3) ? -1         : (end   < (L1+L2+L3+L4) ? end   : (L1+L2+L3+L4)));
@@ -25764,13 +25776,6 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
          }
          else
          {
-#pragma Reminder("UPDATE: bars are straight for parabolic and double parabolic segments")
-            // if the segment is parabolic or double parabolic and the bar is measured
-            // from the bottom, we get into this else block and the resultant bar is straight.
-            // Need to have a way to model the bars as parabolic and following the bottom of the
-            // segment. Bars should be flexible enough to take on a curved shape
-
-            // the bar is straight from start to end
             vBarSegments.push_back(std::make_pair(start,end));
          }
 
@@ -25788,68 +25793,87 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
             fixedlength_layout_item->put_End(endLayout);
 
             // Set pattern for layout
-            pgsPointOfInterest startPoi(segmentKey,startLayout);
-            pgsPointOfInterest endPoi(segmentKey,endLayout);
-
-            // Get the start and end segment height
-            // Since we are in the process of validating the bridge model
-            // we can't use the normal section properties interface (recursion would result).
-            // The technique that will be used here will be to get the bounding box of
-            // the segment shape and compute the height based on its top and bottom elevation
-
-            // (1) get shape
-            CComPtr<IShape> startShape, endShape;
-            GetSegmentShapeDirect(startPoi,&startShape);
-            GetSegmentShapeDirect(endPoi,  &endShape);
-
-            // (2) get bounding box
-            CComPtr<IRect2d> bbStart, bbEnd;
-            startShape->get_BoundingBox(&bbStart);
-            endShape->get_BoundingBox(&bbEnd);
-
-            // (3) compute height of segment
-            Float64 HgStart, HgEnd;
-            bbStart->get_Height(&HgStart);
-            bbEnd->get_Height(&HgEnd);
-
-
-            /////////////////////////////////////////////////////
-
-
-            CComPtr<IRebarRowPattern> row_pattern;
-            row_pattern.CoCreateInstance(CLSID_RebarRowPattern);
-
-            // Locate the rebar in Girder Section Coordinates
-            // (0,0) is at the top of the girder so Y is measured
-            // down from the top
-            Float64 yStart, yEnd;
-            if ( info.Face == pgsTypes::TopFace )
+            if ( (segmentVariation == pgsTypes::svtParabolic || segmentVariation == pgsTypes::svtDoubleParabolic) && info.Face == pgsTypes::BottomFace )
             {
-               yStart = -(info.Cover + db/2);
-               yEnd   = yStart;
+               // rebars follow the bottom of the girder and the girder is parabolic... use the face pattern
+               CComPtr<IRebarRowFacePattern> row_pattern;
+               row_pattern.CoCreateInstance(CLSID_RebarRowFacePattern);
+               row_pattern->putref_Segment(segment);
+               row_pattern->putref_Rebar(rebar);
+               row_pattern->put_Face( (FaceType)info.Face );
+               row_pattern->put_Offset( info.Cover + db/2 );
+               row_pattern->put_Count( info.NumberOfBars );
+               row_pattern->put_Spacing( info.BarSpacing );
+               row_pattern->put_Orientation( rroHCenter );
+
+               fixedlength_layout_item->AddRebarPattern(row_pattern);
             }
             else
             {
-               yStart = -(HgStart - info.Cover - db/2);
-               yEnd   = -(HgEnd   - info.Cover - db/2);
+               // rebars follow a linear face... use the linear row pattern because it is more efficient
+               pgsPointOfInterest startPoi(segmentKey,startLayout);
+               pgsPointOfInterest endPoi(segmentKey,endLayout);
+
+               // Get the start and end segment height
+               // Since we are in the process of validating the bridge model
+               // we can't use the normal section properties interface (recursion would result).
+               // The technique that will be used here will be to get the bounding box of
+               // the segment shape and compute the height based on its top and bottom elevation
+
+               // (1) get shape
+               CComPtr<IShape> startShape, endShape;
+               GetSegmentShapeDirect(startPoi,&startShape);
+               GetSegmentShapeDirect(endPoi,  &endShape);
+
+               // (2) get bounding box
+               CComPtr<IRect2d> bbStart, bbEnd;
+               startShape->get_BoundingBox(&bbStart);
+               endShape->get_BoundingBox(&bbEnd);
+
+               // (3) compute height of segment
+               Float64 HgStart, HgEnd;
+               bbStart->get_Height(&HgStart);
+               bbEnd->get_Height(&HgEnd);
+
+
+               /////////////////////////////////////////////////////
+
+
+               CComPtr<IRebarRowPattern> row_pattern;
+               row_pattern.CoCreateInstance(CLSID_RebarRowPattern);
+
+               // Locate the rebar in Girder Section Coordinates
+               // (0,0) is at the top of the girder so Y is measured
+               // down from the top
+               Float64 yStart, yEnd;
+               if ( info.Face == pgsTypes::TopFace )
+               {
+                  yStart = -(info.Cover + db/2);
+                  yEnd   = yStart;
+               }
+               else
+               {
+                  yStart = -(HgStart - info.Cover - db/2);
+                  yEnd   = -(HgEnd   - info.Cover - db/2);
+               }
+
+               CComPtr<IPoint2d> startAnchor;
+               startAnchor.CoCreateInstance(CLSID_Point2d);
+               startAnchor->Move(0,yStart);
+
+               CComPtr<IPoint2d> endAnchor;
+               endAnchor.CoCreateInstance(CLSID_Point2d);
+               endAnchor->Move(0,yEnd);
+
+               row_pattern->putref_Rebar(rebar);
+               row_pattern->put_AnchorPoint(etStart,startAnchor);
+               row_pattern->put_AnchorPoint(etEnd,  endAnchor);
+               row_pattern->put_Count( info.NumberOfBars );
+               row_pattern->put_Spacing( info.BarSpacing );
+               row_pattern->put_Orientation( rroHCenter );
+
+               fixedlength_layout_item->AddRebarPattern(row_pattern);
             }
-
-            CComPtr<IPoint2d> startAnchor;
-            startAnchor.CoCreateInstance(CLSID_Point2d);
-            startAnchor->Move(0,yStart);
-
-            CComPtr<IPoint2d> endAnchor;
-            endAnchor.CoCreateInstance(CLSID_Point2d);
-            endAnchor->Move(0,yEnd);
-
-            row_pattern->putref_Rebar(rebar);
-            row_pattern->put_AnchorPoint(etStart,startAnchor);
-            row_pattern->put_AnchorPoint(etEnd,  endAnchor);
-            row_pattern->put_Count( info.NumberOfBars );
-            row_pattern->put_Spacing( info.BarSpacing );
-            row_pattern->put_Orientation( rroHCenter );
-
-            fixedlength_layout_item->AddRebarPattern(row_pattern);
 
             rebar_layout->Add(fixedlength_layout_item);
          }

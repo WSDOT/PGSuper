@@ -96,27 +96,38 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
-   PierIndexType startPier = pBridge->GetGirderGroupStartPier(startGroup);
-   PierIndexType endPier   = pBridge->GetGirderGroupEndPier(endGroup);
-
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Rotations"));
    RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bSegments,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
-
-   // get poi at start and end of each segment in the girder
+   // get poi where pier rotations occur
    std::vector<pgsPointOfInterest> vPoi;
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,girderKey.girderIndex));
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(grpIdx);
+      PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(grpIdx);
+      for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
-         std::vector<pgsPointOfInterest> segPoi1(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L, POIFIND_AND));
-         std::vector<pgsPointOfInterest> segPoi2(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND));
-         ATLASSERT(segPoi1.size() == 1);
-         ATLASSERT(segPoi2.size() == 1);
-         vPoi.push_back(segPoi1.front());
-         vPoi.push_back(segPoi2.front());
+         if ( pierIdx == startPierIdx )
+         {
+            CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,0);
+            std::vector<pgsPointOfInterest> segPoi(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L, POIFIND_AND));
+            vPoi.push_back(segPoi.front());
+         }
+         else if ( pierIdx == endPierIdx )
+         {
+            SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,girderKey.girderIndex));
+            CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,nSegments-1);
+            std::vector<pgsPointOfInterest> segPoi(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L, POIFIND_AND));
+            vPoi.push_back(segPoi.front());
+         }
+         else
+         {
+            Float64 Xgp;
+            CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+            VERIFY(pBridge->GetPierLocation(thisGirderKey,pierIdx,&Xgp));
+            pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey,Xgp);
+            vPoi.push_back(poi);
+         }
       }
    }
 
@@ -138,8 +149,6 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
       ColumnIndexType col = 0;
 
       const ReactionLocation& reactionLocation( iter.CurrentItem() );
-      ATLASSERT(reactionLocation.Face!=rftMid); // this table not built for pier reactions
-
       const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
       IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();

@@ -128,6 +128,19 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
       haunch_summary( pChapter, pBroker, girder_list, start_idx, end_idx, pDisplayUnits );
    }
 
+   // Constructability check
+   CConstructabilityCheckTable().BuildSlabOffsetTable(pChapter,pBroker,girder_list,pDisplayUnits);
+
+   // Min Haunch at bearing centerlines check
+   CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter,pBroker,girder_list,pDisplayUnits);
+
+   // Fillet Check
+   CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girder_list,pDisplayUnits);
+
+   // Haunch Geometry Check
+   CConstructabilityCheckTable().BuildHaunchGeometryComplianceCheck(pChapter,pBroker,girder_list,pDisplayUnits);
+
+
    return pChapter;
 }
 
@@ -178,16 +191,18 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLength3UnitValue, volume,  large_volume_unit, false);
 
+   // X, Y, Z rounded up to nearest 1/8"
+   Float64 xyzToler = ::ConvertToSysUnits(0.125, unitMeasure::Inch); 
+
    // Get the interfaces we need
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
    GET_IFACE2(pBroker,IProductForces, pProductForces);
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   GET_IFACE2( pBroker, ISpecification, pSpec );
+   GET_IFACE2(pBroker, ILibrary, pLib );
+   GET_IFACE2(pBroker, ISpecification, pSpec );
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker, IProductLoads,pProductLoads);
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -201,6 +216,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    // PINTA here, but we need to predetermine if A's and deflections are non symmetrical so we can add extra rows to our table
    bool areAsSymm = true;
    bool areDeflsSymm = true;
+   bool reportShearKey(false);
    for (ColumnIndexType gdr_idx=startIdx; gdr_idx<=endIdx; gdr_idx++)
    {
       CGirderKey girderKey(girderList[gdr_idx]);
@@ -229,7 +245,15 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       {
          areDeflsSymm = false;
       }
+
+
+      if (pProductLoads->HasShearKeyLoad(girderKey))
+      {
+         reportShearKey = true;
+      }
    }
+
+   Float64 val;
 
    // Now Build table column by column
    bool bFirst(true);
@@ -272,43 +296,28 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
 
       // find Z value at mid-span
       Float64 Z(Float64_Max);
+      Float64 Wtop(Float64_Max);
+      Float64 tslab(Float64_Max);
       Float64 midloc = poi_5.GetDistFromStart();
       for (std::vector<SECTIONHAUNCH>::const_iterator ith=haunch_details.Haunch.begin(); ith!=haunch_details.Haunch.end(); ith++)
       {
          const SECTIONHAUNCH& haunch = *ith;
          if (ith->PointOfInterest.GetDistFromStart()==midloc)
          {
-            if (0.0 > haunch.GirderOrientationEffect)
-            {
-               Z = haunch.TopSlabToTopGirder; // cl girder in a valley
-            }
-            else
-            {
-               Z = haunch.TopSlabToTopGirder - haunch.tSlab - haunch.GirderOrientationEffect;
-            }
+            Z = haunch.TopSlabToTopGirder;
+            Wtop = haunch.Wtop;
+            tslab = haunch.tSlab;
             break;
          }
       }
 
       ATLASSERT(Z!=Float64_Max); // not found?
 
-      // Haunch concrete volume - use bearing reactions to determine
-      ReactionLocation reacloc;
-      reacloc.Face = rftAhead;
-      reacloc.GirderKey = girderKey;
-      reacloc.PierIdx = startPierIdx;
+      // haunch volume. use simplified txdot method
+      Float64 L = pBridge->GetGirderLayoutLength(girderKey); // CL Pier to CL Pier
+      Float64 Xavg = (Xstart+Xend)/2.0;
 
-      Float64 startR = pBearingDesign->GetBearingProductReaction(castDeckIntervalIdx, reacloc, pgsTypes::pftSlabPad, bat, rtCumulative);
-
-      reacloc.Face = rftBack;
-      reacloc.GirderKey = girderKey;
-      reacloc.PierIdx = endPierIdx;
-
-      Float64 endR   = pBearingDesign->GetBearingProductReaction(castDeckIntervalIdx, reacloc, pgsTypes::pftSlabPad, bat, rtCumulative);
-
-      Float64 haunchWDensity = pMaterials->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
-
-      Float64 haunchVolume = (startR + endR)/haunchWDensity;
+      Float64 haunchVolume = L * Wtop * ((Z-tslab) + (Xavg-Z)/3.0);
 
       // Populate the table
       RowIndexType row = 0;
@@ -332,13 +341,17 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          if (bFirst)
             (*pTable)(row,0) << _T("X (") << disp.GetUnitTag() << _T(") ");
 
-         (*pTable)(row,col) << disp.SetValue( Xstart );
+         val = ::CeilOff(Xstart, xyzToler);
+
+         (*pTable)(row,col) << disp.SetValue( val );
          row++;
 
          if (bFirst)
             (*pTable)(row,0) << _T("Y (") << disp.GetUnitTag() << _T(") ");
 
-         (*pTable)(row,col) << disp.SetValue( Xstart+height );
+         val = ::CeilOff(Xstart+height, xyzToler);
+
+         (*pTable)(row,col) << disp.SetValue( val );
          row++;
 
       }
@@ -347,25 +360,33 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          if (bFirst)
             (*pTable)(row,0) << _T("X Start (") << disp.GetUnitTag() << _T(") ");
 
-         (*pTable)(row,col) << disp.SetValue( Xstart );
+         val = ::CeilOff(Xstart, xyzToler);
+
+         (*pTable)(row,col) << disp.SetValue( val );
          row++;
 
          if (bFirst)
             (*pTable)(row,0) << _T("X End (") << disp.GetUnitTag() << _T(") ");
 
-         (*pTable)(row,col) << disp.SetValue( Xend );
+         val = ::CeilOff(Xend, xyzToler);
+
+         (*pTable)(row,col) << disp.SetValue( val );
          row++;
 
          if (bFirst)
             (*pTable)(row,0) << _T("Y Start (") << disp.GetUnitTag() << _T(") ");
 
-         (*pTable)(row,col) << disp.SetValue( Xstart+height );
+         val = ::CeilOff(Xstart+height, xyzToler);
+
+         (*pTable)(row,col) << disp.SetValue( val );
          row++;
 
          if (bFirst)
             (*pTable)(row,0) << _T("Y End (") << disp.GetUnitTag() << _T(") ");
 
-         (*pTable)(row,col) << disp.SetValue( Xend+height );
+         val = ::CeilOff(Xend+height, xyzToler);
+
+         (*pTable)(row,col) << disp.SetValue( val );
          row++;
       }
 
@@ -373,7 +394,9 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       if (bFirst)
          (*pTable)(row,0) << _T("Z (") << disp.GetUnitTag() << _T(") ");
 
-      (*pTable)(row,col) << disp.SetValue( Z );
+      val = ::CeilOff(Z, xyzToler);
+
+      (*pTable)(row,col) << disp.SetValue( val );
       row++;
 
       // slab deflections
@@ -396,6 +419,37 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
 
          (*pTable)(row,col) << dispft.SetValue( (delta_slab7+delta_slab8)/2.0 );
          row++;
+      }
+
+      if (reportShearKey)
+      {
+         // deflections from shear key loading, if it exists
+         Float64 delta_shearkey2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_2, bat, rtCumulative, false );
+         Float64 delta_shearkey3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_3, bat, rtCumulative, false );
+         Float64 delta_shearkey5 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_5, bat, rtCumulative, false );
+         Float64 delta_shearkey7 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_7, bat, rtCumulative, false );
+         Float64 delta_shearkey8 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_8, bat, rtCumulative, false );
+
+         if (bFirst)
+            (*pTable)(row,0) << _T("DL Defl Shear Key @ Pt A {1/4 pt} (") << dispft.GetUnitTag() << _T(") ");
+
+         (*pTable)(row,col) << dispft.SetValue( (delta_shearkey2+delta_shearkey3)/2.0 );
+         row++;
+
+         if (bFirst)
+            (*pTable)(row,0) << _T("DL Defl Shear Key @ Pt B {1/2 pt} (") << dispft.GetUnitTag() << _T(") ");
+
+         (*pTable)(row,col) << dispft.SetValue( delta_shearkey5 );
+         row++;
+
+         if (!areDeflsSymm)
+         {
+            if (bFirst)
+               (*pTable)(row,0) << _T("DL Defl Shear Key @ Pt A2 {3/4 pt} (") << dispft.GetUnitTag() << _T(") ");
+
+            (*pTable)(row,col) << dispft.SetValue( (delta_shearkey7+delta_shearkey8)/2.0 );
+            row++;
+         }
       }
 
       // haunch concrete

@@ -101,7 +101,7 @@ void CSpecLossPage::OnLossMethodChanged()
          EnableElasticGains(FALSE,FALSE);
       }
 
-      BOOL bEnable = (0 <= method && method < 4) ? TRUE : FALSE;
+      BOOL bEnable = (0 <= method && method < 3) ? TRUE : FALSE;
       EnableRelaxation(bEnable);
    }
    else
@@ -123,6 +123,8 @@ void CSpecLossPage::EnableShippingLosses(BOOL bEnable)
 {
    CWnd* pWnd;
 
+   bEnable = bEnable && m_IsShippingEnabled ? TRUE : FALSE;
+
    ENABLE_WINDOW(IDC_SHIPPING_LABEL);
    ENABLE_WINDOW(IDC_SHIPPING);
    ENABLE_WINDOW(IDC_SHIPPING_TAG);
@@ -140,6 +142,9 @@ void CSpecLossPage::EnableTimeDependentModel(BOOL bEnable)
 void CSpecLossPage::EnableRefinedShippingTime(BOOL bEnable)
 {
    CWnd* pWnd;
+
+   bEnable = bEnable && m_IsShippingEnabled ? TRUE : FALSE;
+
    ENABLE_WINDOW(IDC_SHIPPING_TIME_LABEL);
    ENABLE_WINDOW(IDC_SHIPPING_TIME);
    ENABLE_WINDOW(IDC_SHIPPING_TIME_TAG);
@@ -148,6 +153,9 @@ void CSpecLossPage::EnableRefinedShippingTime(BOOL bEnable)
 void CSpecLossPage::EnableApproximateShippingTime(BOOL bEnable)
 {
    CWnd* pWnd;
+
+   bEnable = bEnable && m_IsShippingEnabled ? TRUE : FALSE;
+
    ENABLE_WINDOW(IDC_APPROXIMATE_SHIPPING_TIME_NOTE);
 }
 
@@ -291,6 +299,8 @@ BOOL CSpecLossPage::OnSetActive()
    // if this is third edition or earlier, enable the shipping loss controls
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
    m_SpecVersion = pDad->m_Entry.GetSpecificationType();
+
+   m_IsShippingEnabled = pDad->m_Entry.IsHaulingAnalysisEnabled();
 
    OnLossMethodChanged();
 
