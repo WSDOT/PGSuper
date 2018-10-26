@@ -1,0 +1,11 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		'%APPID%' = s 'WSDOTAgent'
+		'WSDOTAgent.DLL'
+		{
+			val AppID = s '%APPID%'
+		}
+	}
+}

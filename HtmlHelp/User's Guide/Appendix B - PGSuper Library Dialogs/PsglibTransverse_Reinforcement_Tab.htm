@@ -1,0 +1,140 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Transverse Reinforcement Tab</title>
+
+<!--(Meta)==========================================================-->
+
+<meta name="template" content="PageTemplate.htt">
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=topic-status content="In Progress">
+<meta name=topic-priority content=0>
+<meta name=topic-time-estimate content=0>
+<meta name=topic-comment content>
+<meta name=topic-id content>
+<meta name=topic-check-list content="Ran Smart Index">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=1498>
+<meta name=layout-width content=757>
+
+
+<!--(Links)=========================================================-->
+
+<link REL="StyleSheet" HREF="..\..\default.css">
+
+
+
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<h1>Transverse Reinforcement Tab</h1>
+
+<p>This tab allows you to edit the description of transverse (shear) reinforcement 
+ seed data for a girder. Note that transverse rebar data from the library 
+ is copied to all girders when a girder type is first selected while editing 
+ the bridge model. The data can be subsequently overridden in the girder 
+ editor. Users can also re-copy the data from the library.</p>
+
+<h2><span style="font-weight: bold;">M</span>ild Steel Material</h2>
+
+<p>Select the appropriate mild steel for the transverse rebar</p>
+
+<h2>Transverse Reinforcement Zones</h2>
+
+<p>PGSuper allows you to describe transverse reinforcement in fixed-length 
+ zones along the girder. The first zone in the list starts at the end of 
+ the girder, and the last zone in the list extends to the girder mid-span. 
+ Each zone of transverse reinforcement is described by the following:</p>
+
+<h3><span style="font-weight: bold;">Zone Length</span></h3>
+
+<p>Enter the length of the zone. This value must be greater than zero.</p>
+
+<h3><span style="font-weight: bold;">Stirrup Spacing</span></h3>
+
+<p>Enter the center-to-center spacing between the stirrups in the given 
+ zone.</p>
+
+<h3><span style="font-weight: bold;">Vertical Bar Size</span></h3>
+
+<p>Lists all available standard bar sizes that may be used for transverse 
+ bars with a vertical orientation.</p>
+
+<h3><span style="font-weight: bold;">Vertical Bars # </span></h3>
+
+<p>Number of bars (stirrup legs) crossing a shear crack in this zone.</p>
+
+<h3><span style="font-weight: bold;">Horizontal Bar Size</span></h3>
+
+<p>Lists all available standard bar sizes that may be used for transverse 
+ bars with a horizontal orientation.</p>
+
+<h3><span style="font-weight: bold;">Horizontal Bars # </span></h3>
+
+<p>Number of bars crossing a horizontal splitting plane in this zone.</p>
+
+<h3>Transverse Reinforcement engages deck</h3>
+
+<p>When checked, it is assumed the transverse reinforcement extends into 
+ the deck and is adequately developed to be considered effective in the 
+ horizontal interface shear capacity.</p>
+
+<h2>Top Flange Horizontal Interface Shear Steel</h2>
+
+<p>The top flange horizontal interface shear steel are stirrups located 
+ in the top flange of the section. These bars protrude up into the slab 
+ with adequate development length to contribute to the horizontal interface 
+ shear capacity. They are used to add strength to the slab-girder interface 
+ to resist horizontal shear forces. These stirrups are spaced evenly along 
+ the entire length of the girder. Each stirrup provides two legs of reinforcement.</p>
+
+<h3><span style="font-weight: bold;">Bar Size</span></h3>
+
+<p>Lists all available standard bar sizes that may be used for top flange 
+ stirrups.</p>
+
+<h3><span style="font-weight: bold;">Stirrup Spacing</span></h3>
+
+<p>Stirrups are spaced evenly along the entire length of the girder. Enter 
+ the center-to-center spacing.</p>
+
+<h2><span style="font-weight: bold;">Bottom Flange Confinement Steel</span></h2>
+
+<p>PGSuper assumes that the hoops of confinement steel placed in the bottom 
+ flange of the girder to prevent splitting are attached to stirrups. Hence, 
+ the spacing of the confinement steel is the same as the stirrup spacing. 
+ The following two values are used to specify the bottom flange confinement 
+ steel:</p>
+
+<h3><span style="font-weight: bold;">Bar Size</span></h3>
+
+<p>Lists all available standard bar sizes that may be used for confinement 
+ rebar.</p>
+
+<h3><span style="font-weight: bold;">Last Zone Containing Confinement Steel</span></h3>
+
+<p>Confinement steel will be placed from the end of the girder to the end 
+ of the specified zone. A value of <span style="font-style: italic;">none</span> 
+ for this field indicates that no confinement steel is present.<span style="margin-bottom: 0;">&nbsp; 
+ </span></p>
+
+<!--kadov_tag{{<placeholder id="footer">}}-->
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+; Beams.def : Declares the module parameters.
+
+LIBRARY      "PGSuperBeams.DLL"
+
+EXPORTS
+	DllCanUnloadNow     PRIVATE
+	DllGetClassObject   PRIVATE
+	DllRegisterServer   PRIVATE
+	DllUnregisterServer	PRIVATE

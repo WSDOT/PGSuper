@@ -1,0 +1,15 @@
+// psgLib.odl : type library source for psgLib.dll
+
+// This file will be processed by the MIDL compiler to produce the
+// type library (psgLib.tlb).
+
+[ uuid(B76E1306-26EE-11D2-9D39-00609710E6CE), version(1.0) ]
+library PsgLib
+{
+	importlib("stdole32.tlb");
+	
+
+
+	//{{AFX_APPEND_ODL}}
+	//}}AFX_APPEND_ODL}}
+};

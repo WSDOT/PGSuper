@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.TestAgent.1 = s 'TestAgent Class'
+	{
+		CLSID = s '{433B5860-71BF-11D3-ADC5-00105A9AF985}'
+	}
+	PGSuper.TestAgent = s 'TestAgent Class'
+	{
+		CLSID = s '{433B5860-71BF-11D3-ADC5-00105A9AF985}'
+		CurVer = s 'PGSuper.TestAgent.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {433B5860-71BF-11D3-ADC5-00105A9AF985} = s 'TestAgent Class'
+		{
+			ProgID = s 'PGSuper.TestAgent.1'
+			VersionIndependentProgID = s 'PGSuper.TestAgent'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{433B5861-71BF-11D3-ADC5-00105A9AF985}'
+		}
+	}
+}

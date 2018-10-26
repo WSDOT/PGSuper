@@ -1,0 +1,112 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// 4500 3rd AVE SE - P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+#if !defined(AFX_GIRDERHARPEDSTRANDPAGE_H__CE0B8E33_312C_11D2_9D3E_00609710E6CE__INCLUDED_)
+#define AFX_GIRDERHARPEDSTRANDPAGE_H__CE0B8E33_312C_11D2_9D3E_00609710E6CE__INCLUDED_
+
+#if _MSC_VER >= 1000
+#pragma once
+#endif // _MSC_VER >= 1000
+// GirderStrandPage.h : header file
+//
+#if !defined NOGRID
+// for the grid
+#ifndef _GXALL_H_
+#include "gxwnd.h"
+#include "gxctrl.h"
+#endif
+#endif // NOGRID
+
+#include "GirderGlobalStrandGrid.h"
+#include <Units\Measure.h>
+
+class CGirderMainSheet;
+
+/////////////////////////////////////////////////////////////////////////////
+// CGirderHarpedStrandPage dialog
+
+class CGirderHarpedStrandPage : public CPropertyPage, public CGirderGlobalStrandGridClient
+{
+   friend CGirderMainSheet;
+
+	DECLARE_DYNCREATE(CGirderHarpedStrandPage)
+
+// Construction
+public:
+	CGirderHarpedStrandPage();
+	~CGirderHarpedStrandPage();
+
+// Dialog Data
+	//{{AFX_DATA(CGirderHarpedStrandPage)
+	enum { IDD = IDD_HARP_STRAND };
+	//}}AFX_DATA
+
+private:
+   CString    m_UnitString;
+   CGirderGlobalStrandGrid m_MainGrid;
+
+// Overrides
+	// ClassWizard generate virtual function overrides
+	//{{AFX_VIRTUAL(CGirderHarpedStrandPage)
+	protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	//}}AFX_VIRTUAL
+
+// Implementation
+protected:
+	// Generated message map functions
+	//{{AFX_MSG(CGirderHarpedStrandPage)
+	virtual BOOL OnInitDialog();
+	afx_msg void OnDelGlobalStrand();
+	afx_msg void OnAddGlobalStrand();
+	afx_msg void OnAppendGlobalStrand();
+   afx_msg void OnEditGlobalStrand();
+	afx_msg void OnClickHarpedBox();
+	afx_msg void OnClickHpAdjust();
+	afx_msg void OnClickEndAdjust();
+   afx_msg void OnMoveUpGlobalStrand();
+   afx_msg void OnMoveDownGlobalStrand();
+   afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
+	afx_msg void OnEndview();
+	afx_msg void OnMidview();
+   afx_msg void OnReverseHarpedStrandOrder();
+	//}}AFX_MSG
+	afx_msg BOOL OnNcActivate(BOOL bActive);
+	DECLARE_MESSAGE_MAP()
+
+public:
+   // capture event fired from grid that allows deletion of rows
+   void OnEnableDelete(bool canDelete);
+   CString GetLengthUnitString();
+   unitLength GetLengthUnit();
+   bool DoUseHarpedGrid();
+   void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh); 
+
+	void UpdateHpAdjust();
+	void UpdateEndAdjust();
+
+};
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
+
+#endif // !defined(AFX_GIRDERHARPEDSTRANDPAGE_H__CE0B8E33_312C_11D2_9D3E_00609710E6CE__INCLUDED_)

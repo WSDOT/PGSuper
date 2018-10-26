@@ -1,0 +1,27 @@
+HKCR
+{
+	PGSuperBeamFactory.TxDotDoubleTFactory.1 = s 'Double Tee (TxDOT)'
+	{
+		CLSID = s '{AC828108-B982-4C95-867B-B4BF4E37B7EB}'
+	}
+	PGSuperBeamFactory.TxDotDoubleTFactory = s 'Double Tee (TxDOT)'
+	{
+		CLSID = s '{AC828108-B982-4C95-867B-B4BF4E37B7EB}'
+		CurVer = s 'PGSuperBeamFactory.TxDotDoubleTFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {AC828108-B982-4C95-867B-B4BF4E37B7EB} = s 'Double Tee (TxDOT)'
+		{
+			ProgID = s 'PGSuperBeamFactory.TxDotDoubleTFactory.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.TxDotDoubleTFactory'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{DC4B56B3-455B-41be-9509-289950E62190}'
+		}
+	}
+}
+

@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFamily.MultiWeb.1 = s 'Ribbed Girder'
+	{
+		CLSID = s '{FACA64B5-C2E6-4335-89E2-F488D1B271BD}'
+	}
+	PGSuperBeamFamily.MultiWeb = s 'Ribbed Girder'
+	{
+		CLSID = s '{FACA64B5-C2E6-4335-89E2-F488D1B271BD}'
+		CurVer = s 'PGSuperBeamFamily.MultiWeb.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {FACA64B5-C2E6-4335-89E2-F488D1B271BD} = s 'Ribbed Girder'
+		{
+			ProgID = s 'PGSuperBeamFamily.MultiWeb.1'
+			VersionIndependentProgID = s 'PGSuperBeamFamily.MultiWeb'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

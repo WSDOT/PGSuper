@@ -1,0 +1,198 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper Beam Factory
+// Copyright (C) 2008  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This library is a part of the Washington Bridge Foundation Libraries
+// and was developed as part of the Alternate Route Project
+//
+// This library is free software; you can redistribute it and/or modify it under
+// the terms of the Alternate Route Library Open Source License as published by 
+// the Washington State Department of Transportation, Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but is distributed 
+// AS IS, WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+// or FITNESS FOR A PARTICULAR PURPOSE. See the Alternate Route Library Open Source 
+// License for more details.
+//
+// You should have received a copy of the Alternate Route Library Open Source License 
+// along with this program; if not, write to the Washington State Department of 
+// Transportation, Bridge and Structures Office, P.O. Box  47340, 
+// Olympia, WA 98503, USA or e-mail Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////
+// The intent of licensing this interface with the ARLOSL is to provide
+// third party developers a method of developing proprietary plug-ins
+// to the software.
+// 
+// Any changes made to the interfaces defined in this file are
+// are subject to the terms of the Alternate Route Library Open Source License.
+//
+// Components that implement the interfaces defined in this file are
+// governed by the terms and conditions deemed appropriate by legal 
+// copyright holder of said software.
+///////////////////////////////////////////////////////////////////////
+
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+import "WBFLGeometry.idl";
+import "WBFLGenericBridgeTools.idl";
+
+[
+   uuid(D3810B3E-91D6-4aed-A748-8ABEB87FCF44)
+]
+interface DummyBeamFactory : IUnknown
+{
+   [helpstring("method Dummy")] HRESULT Dummy();
+};
+
+
+
+// IStrandMover is defined in the GenericBridgeTools project. A default implementation
+// is defined in Beams
+[
+   uuid(49D89070-3BC9-4b30-97E1-496E0715F636)
+]
+interface IConfigureStrandMover : IUnknown
+{
+   // offset limits and default increments for harped strands
+   [helpstring("method SetHarpedStrandOffsetBounds")] HRESULT SetHarpedStrandOffsetBounds([in]double topGirderElevation, 
+																						  [in]double topHpElevationBoundary,[in]double botHpElevationBoundary,
+																						  [in]double topEndElevationBoundary,[in]double botEndElevationBoundary,
+																						  [in]double endIncrement,[in]double hpIncrement);
+   // remove all regions
+   [helpstring("method ClearAll")] HRESULT ClearAll();
+   // Add a shape that is to be tested for PointInShape, and arcSlope (x/y) that a strand
+   // point is to be moved along
+   [helpstring("method AddRegion")] HRESULT AddRegion([in]IShape* shape,[in]double arcSlope);
+
+   // methods to help debugging
+   [propget, helpstring("NumRegions")] HRESULT NumRegions([out,retval]long* pNum);
+   [helpstring("method GetRegion")] HRESULT GetRegion([in]long index, [out]IShape** shape,[out]double* arcSlope);
+};
+
+
+[
+	uuid(DC4B56B3-455B-41be-9509-289950E62190),
+	version(1.00)
+]
+library PGSuperBeamFactory
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(30962206-2412-4001-AA20-CF359BC60142)
+	]
+	coclass WFBeamFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(64E8DD89-EC9E-48dd-B4E9-A457F6BFB9B1)
+	]
+	coclass TaperedIBeamFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(F1504E79-8810-4b5c-9797-BCE6C1022C4C)
+	]
+	coclass NUBeamFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(F008218C-B19B-49A0-9084-253A09D4EA5A)
+	]
+	coclass UBeamFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(C28FA58A-3D4D-4df1-8021-2A0BBA90F304)
+	]
+	coclass UBeam2Factory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(9AA6D6FF-2D05-46db-B3F0-479B182B3193)
+	]
+	coclass BulbTeeFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(0CE7D624-7CC5-4300-8257-0C41A585852F)
+	]
+	coclass MultiWebFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(71AF6935-2501-4fb7-8FA3-7DDB505D5C63)
+	]
+	coclass MultiWeb2Factory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(FD766540-C635-43e1-B809-06B837EFA752)
+	]
+	coclass DoubleTeeFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(63C3AE0C-ADD3-44f7-AC22-16303D00E303)
+	]
+	coclass VoidedSlabFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(A9FC0D19-F6A4-4a9d-835B-FEE2E42F574C)
+	]
+	coclass VoidedSlab2Factory
+	{
+		[default] interface DummyBeamFactory;
+	};
+
+	[
+		uuid(73D5A32E-F747-4fff-8B48-D561A93494AC)
+	]
+	coclass BoxBeamFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+	[
+		uuid(59BAD0A2-91F0-4E8A-8A90-4241787E9B50),
+		helpstring("StrandMoverImpl Class")
+	]
+	coclass StrandMoverImpl
+	{
+		[default] interface IStrandMover;
+      interface IConfigureStrandMover;
+	};
+	[
+		uuid(AC828108-B982-4C95-867B-B4BF4E37B7EB),
+	]
+	coclass TxDotDoubleTFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
+};

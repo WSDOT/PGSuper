@@ -1,0 +1,96 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Deck Reinforcement</title>
+
+<!--(Meta)==========================================================-->
+
+<meta name="template" content="PageTemplate.htt">
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=topic-check-list content="Ran Smart Index">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=732>
+<meta name=layout-width content=963>
+
+
+<!--(Links)=========================================================-->
+
+<link rel="StyleSheet" href="..\default.css">
+
+
+
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<h1>Bridge Description - <!--kadov_tag{{<variable name=title
+													x-format=default
+													x-value="Deck Reinforcement">}}-->Deck 
+ Reinforcement<!--kadov_tag{{</variable>}}--></h1>
+
+<p>The reinforcement in the bridge deck must be defined to properly perform 
+ engineering evaluations of the bridge. The deck reinforcement provides 
+ the longitudinal reinforcement in negative moment region of the structure.</p>
+
+<p>PGSuper models longitudinal deck reinforcement as Primary Reinforcement 
+ and Supplemental Reinforcement. The primary reinforcement runs the full 
+ length of the bridge. The supplemental reinforcement is placed over the 
+ piers to supplement the primary reinforcement in resisting negative moments.</p>
+
+<h2>Reinforcement</h2>
+
+<p>Use the drop down list to select the reinforcing steel used in the deck.</p>
+
+<h2>Cover</h2>
+
+<p>Enter the cover for the top and bottom mat of reinforcing. The top mat 
+ cover is measured from the top of the deck to the center of the reinforcing 
+ mat. The bottom mat cover is measured from the bottom (underside) of the 
+ deck to the center of the reinforcing mat.</p>
+
+<h2>Primary Reinforcement</h2>
+
+<p>The primary longitudinal reinforce runs the full length of the bridge. 
+ Describe the reinforcement in the top and bottom mats of the deck.</p>
+
+<p>The reinforcement can be described with a bar size and spacing AND a 
+ lump sum area per unit length (in the transverse direction).</p>
+
+<p>If both bar spacing and lump sum input is provided, they are added together 
+ for the total amount of reinforcement. For example, if the top mat is 
+ defined with #6 bars at 18&quot; and 0.18 in2/ft, the total reinforcement 
+ will be 0.44in<span style="vertical-align: Super; font-size: 8pt;">2</span>/1.5ft 
+ + 0.18in<span style="vertical-align: Super; font-size: 8pt;">2</span>/ft 
+ = 0.473in<span style="vertical-align: Super; font-size: 8pt;">2</span>/ft.</p>
+
+<h2>Supplemental Reinforcement</h2>
+
+<p>The supplemental reinforcement is described similarly to the primary 
+ reinforcement. The total supplemental reinforcement is the sum of the 
+ lump sum reinforcement and bar size and spacing reinforcement. Supplement 
+ reinforcement runs left and right from the centerline of a pier. The left 
+ and right cutoff values define how far the reinforcement is extended from 
+ the pier.</p>
+
+<p>The total reinforcement at a section is equal to the sum of the primary 
+ and supplement reinforcement within the tributary width of a girder.</p>
+
+<!--kadov_tag{{<placeholder id="footer">}}-->
+</body>
+
+</html>

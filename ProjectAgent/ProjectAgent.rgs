@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.ProjectAgent.1 = s 'ProjectAgent Class'
+	{
+		CLSID = s '{59D50426-265C-11D2-8EB0-006097DF3C68}'
+	}
+	PGSuper.ProjectAgent = s 'ProjectAgent Class'
+	{
+		CLSID = s '{59D50426-265C-11D2-8EB0-006097DF3C68}'
+		CurVer = s 'PGSuper.ProjectAgent.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {59D50426-265C-11D2-8EB0-006097DF3C68} = s 'ProjectAgent Class'
+		{
+			ProgID = s 'PGSuper.ProjectAgent.1'
+			VersionIndependentProgID = s 'PGSuper.ProjectAgent'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '189E862A-B8FE-44d0-AC7E-A572BECBB7C0'
+		}
+	}
+}

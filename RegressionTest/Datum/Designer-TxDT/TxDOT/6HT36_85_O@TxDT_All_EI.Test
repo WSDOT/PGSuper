@@ -1,0 +1,24 @@
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 21.98   4  0.02     1     1 6HT36       54   1/2  270 14.43  7.17  28 28.0  5.400  5.900    3.049   -4.456   3653  0.518  0.32 -0.00 -0.02 -0.03 -0.04 146.94 442.22   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone checks failed.
+Confinement zone checks failed.
+Live Load Deflection check failed
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 21.98   4  0.02     1     2 6HT36       54   1/2  270 14.43  7.17  28 28.0  5.400  5.900    3.049   -4.456   3653  0.518  0.32 -0.00 -0.02 -0.03 -0.04 146.94 442.22   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone checks failed.
+Confinement zone checks failed.
+Live Load Deflection check failed
+
+

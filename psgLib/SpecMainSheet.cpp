@@ -1,0 +1,926 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// SpecMainSheet.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include <psgLib\psglib.h>
+#include "SpecMainSheet.h"
+#include <MfcTools\CustomDDX.h>
+
+#include <Units\sysUnits.h>
+#include "..\htmlhelp\HelpTopics.hh"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+//#undef THIS_FILE
+//static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CSpecMainSheet
+
+IMPLEMENT_DYNAMIC(CSpecMainSheet, CPropertySheet)
+
+CSpecMainSheet::CSpecMainSheet( SpecLibraryEntry& rentry, UINT nIDCaption, 
+                                   libUnitsMode::Mode mode, bool allowEditing,
+                                   CWnd* pParentWnd, UINT iSelectPage)
+	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage),
+   m_Entry(rentry),
+   m_Mode(mode),
+   m_AllowEditing(allowEditing),
+   m_LongLengthUnit(unitMeasure::Meter),
+   m_ShortLengthUnit(unitMeasure::Meter)
+{
+   Init();
+}
+
+CSpecMainSheet::CSpecMainSheet( SpecLibraryEntry& rentry, LPCTSTR pszCaption,
+                                   libUnitsMode::Mode mode, bool allowEditing,
+                                   CWnd* pParentWnd, UINT iSelectPage)
+	:CPropertySheet(pszCaption, pParentWnd, iSelectPage),
+   m_Entry(rentry),
+   m_Mode(mode),
+   m_AllowEditing(allowEditing),
+   m_LongLengthUnit(unitMeasure::Meter),
+   m_ShortLengthUnit(unitMeasure::Meter)
+{
+   Init();
+}
+
+CSpecMainSheet::~CSpecMainSheet()
+{
+}
+
+
+BEGIN_MESSAGE_MAP(CSpecMainSheet, CPropertySheet)
+	//{{AFX_MSG_MAP(CSpecMainSheet)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CSpecMainSheet message handlers
+void CSpecMainSheet::Init()
+{
+   if (m_Mode==libUnitsMode::UNITS_SI)
+   {
+      m_ShortLengthUnit = unitMeasure::Millimeter;
+      m_ShortLengthUnitString = "(mm)";
+      m_LongLengthUnit = unitMeasure::Meter;
+      m_LongLengthUnitString = "(m)";
+   }
+   else
+   {
+      m_ShortLengthUnit = unitMeasure::Inch;
+      m_ShortLengthUnitString = "(in)";
+      m_LongLengthUnit = unitMeasure::Feet;
+      m_LongLengthUnitString = "(ft)";
+   }
+
+   // Turn on help for the property sheet
+   m_psh.dwFlags |= PSH_HASHELP | PSH_NOAPPLYNOW;
+
+   m_SpecDescrPage.m_psp.dwFlags           |= PSP_HASHELP;
+   m_SpecCastingYardPage.m_psp.dwFlags     |= PSP_HASHELP;
+   m_SpecLiftingPage.m_psp.dwFlags         |= PSP_HASHELP;
+   m_SpecHaulingErectionPage.m_psp.dwFlags |= PSP_HASHELP;
+   m_SpecBridgeSite1Page.m_psp.dwFlags     |= PSP_HASHELP;
+   m_SpecBridgeSite2Page.m_psp.dwFlags     |= PSP_HASHELP;
+   m_SpecBridgeSite3Page.m_psp.dwFlags     |= PSP_HASHELP;
+   m_SpecMomentPage.m_psp.dwFlags          |= PSP_HASHELP;
+   m_SpecShearPage.m_psp.dwFlags           |= PSP_HASHELP;
+   m_SpecCreepPage.m_psp.dwFlags           |= PSP_HASHELP;
+   m_SpecLossPage.m_psp.dwFlags            |= PSP_HASHELP;
+   m_SpecPSLimitPage.m_psp.dwFlags         |= PSP_HASHELP;
+   m_SpecLimitsPage.m_psp.dwFlags          |= PSP_HASHELP;
+   m_SpecLoadFactorsPage.m_psp.dwFlags     |= PSP_HASHELP;
+   m_SpecDesignPage.m_psp.dwFlags          |= PSP_HASHELP;
+   m_SpecDeflectionsPage.m_psp.dwFlags     |= PSP_HASHELP;
+
+   AddPage(&m_SpecDescrPage);
+   AddPage(&m_SpecCastingYardPage);
+   AddPage(&m_SpecLiftingPage);
+   AddPage(&m_SpecHaulingErectionPage);
+   AddPage(&m_SpecBridgeSite1Page);
+   AddPage(&m_SpecBridgeSite2Page);
+   AddPage(&m_SpecBridgeSite3Page);
+   AddPage(&m_SpecMomentPage);
+   AddPage(&m_SpecShearPage);
+   AddPage(&m_SpecCreepPage);
+   AddPage(&m_SpecLossPage);
+   AddPage(&m_SpecPSLimitPage);
+   AddPage(&m_SpecLimitsPage);
+   AddPage(&m_SpecLoadFactorsPage);
+   AddPage(&m_SpecDesignPage);
+   AddPage(&m_SpecDeflectionsPage);
+}
+
+void CSpecMainSheet::ExchangeDescrData(CDataExchange* pDX)
+{
+   // specification type
+   DDX_CBItemData(pDX,IDC_SPECIFICATION,m_Entry.m_SpecificationType);
+
+   if (pDX->m_bSaveAndValidate)
+   {
+	   DDX_Text(pDX, IDC_NAME, m_Name);
+      if (m_Name.IsEmpty())
+      {
+         AfxMessageBox("Name cannot be blank");
+         pDX->Fail();
+      }
+      m_Entry.SetName(m_Name);
+
+	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
+      m_Entry.SetDescription(m_Description);
+
+
+      // specification units
+      int chk = m_SpecDescrPage.GetCheckedRadioButton( IDC_SPEC_UNITS_SI,IDC_SPEC_UNITS_US);
+      if (chk==IDC_SPEC_UNITS_SI)
+         m_Entry.SetSpecificationUnits(lrfdVersionMgr::SI);
+      else if (chk==IDC_SPEC_UNITS_US)
+         m_Entry.SetSpecificationUnits(lrfdVersionMgr::US);
+      else
+         ASSERT(0);
+   }
+   else
+   {
+      // name
+      m_Name = m_Entry.GetName().c_str();
+	   DDX_Text(pDX, IDC_NAME, m_Name);
+
+      m_Description = m_Entry.GetDescription().c_str();
+	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
+
+      // spec units
+      lrfdVersionMgr::Units Units = m_Entry.GetSpecificationUnits();
+      int unit;
+      if (Units == lrfdVersionMgr::SI)
+         unit = IDC_SPEC_UNITS_SI;
+      else if (Units == lrfdVersionMgr::US)
+         unit = IDC_SPEC_UNITS_US;
+      else
+         ASSERT(0);
+
+      m_SpecDescrPage.CheckRadioButton( IDC_SPEC_UNITS_SI, IDC_SPEC_UNITS_US, unit);
+   }
+
+   if ( pDX->m_bSaveAndValidate )
+      CheckShearCapacityMethod();
+}
+
+void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
+{
+
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+   if (!pDX->m_bSaveAndValidate)
+   {
+      m_SpecCastingYardPage.m_DoCheckHoldDown    = m_Entry.m_DoCheckHoldDown;
+      m_SpecCastingYardPage.m_DoCheckStrandSlope = m_Entry.m_DoCheckStrandSlope;
+      m_SpecCastingYardPage.m_DoCheckAnchorage = m_Entry.m_DoCheckAnchorage;
+
+      // set statics for strand slope
+      CString sl05, sl06, sl07;
+      if (bUnitsSI)
+      {
+         VERIFY(sl05.LoadString(IDS_SLOPE_O5_SI));
+         VERIFY(sl06.LoadString(IDS_SLOPE_O6_SI));
+         VERIFY(sl07.LoadString(IDS_SLOPE_O7_SI));
+      }
+      else
+      {
+         VERIFY(sl05.LoadString(IDS_SLOPE_O5_US));
+         VERIFY(sl06.LoadString(IDS_SLOPE_O6_US));
+         VERIFY(sl07.LoadString(IDS_SLOPE_O7_US));
+      }
+
+      m_SpecCastingYardPage.m_StaticSlope05.SetWindowText(sl05);
+      m_SpecCastingYardPage.m_StaticSlope06.SetWindowText(sl06);
+      m_SpecCastingYardPage.m_StaticSlope07.SetWindowText(sl07);
+   }
+
+   DDX_Radio(pDX,IDC_CURING_METHOD,m_Entry.m_CuringMethod);
+
+	DDX_Text(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_MaxSlope05);
+   if (m_Entry.m_DoCheckStrandSlope) 
+      DDV_NonNegativeDouble(pDX, m_Entry.m_MaxSlope05);
+
+	DDX_Text(pDX, IDC_STRAND_SLOPE_06, m_Entry.m_MaxSlope06);
+   if (m_Entry.m_DoCheckStrandSlope) 
+      DDV_NonNegativeDouble(pDX, m_Entry.m_MaxSlope06);
+
+	DDX_Text(pDX, IDC_STRAND_SLOPE_07, m_Entry.m_MaxSlope07);
+   if (m_Entry.m_DoCheckStrandSlope) 
+      DDV_NonNegativeDouble(pDX, m_Entry.m_MaxSlope07);
+
+   DDX_UnitValueAndTag(pDX, IDC_HOLD_DOWN_FORCE, IDC_HOLD_DOWN_FORCE_UNITS, m_Entry.m_HoldDownForce, bUnitsSI, unitMeasure::Kip, unitMeasure::Kilonewton );
+   if (m_Entry.m_DoCheckHoldDown)
+      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_HoldDownForce, bUnitsSI,  unitMeasure::Kip, unitMeasure::Kilonewton );
+
+   DDX_UnitValueAndTag(pDX, IDC_MAX_STIRRUP_SPACING, IDC_MAX_STIRRUP_SPACING_UNITS, m_Entry.m_MaxStirrupSpacing, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MaxStirrupSpacing, bUnitsSI,  unitMeasure::Inch, unitMeasure::Millimeter );
+
+	DDX_Text(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_CyCompStressServ);
+   DDV_GreaterThanZero(pDX, m_Entry.m_CyCompStressServ);
+
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT2, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_CyTensStressServ, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   CString tag = bUnitsSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )";
+   DDX_Text(pDX,IDC_CYS_TENS_BYLINE,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_CyTensStressServ, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX2, m_Entry.m_CyDoTensStressServMax);
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX2, IDC_NORMAL_MAX_MAX_UNITS2, m_Entry.m_CyTensStressServMax, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa );
+   if (m_Entry.m_CyDoTensStressServMax)
+      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_CyTensStressServMax, bUnitsSI,  unitMeasure::KSI, unitMeasure::MPa );
+
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT3, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_CyTensStressServWithRebar, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Text(pDX,IDC_CYS_TENS_BYLINE2,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_CyTensStressServWithRebar, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+
+	DDX_Text(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
+   DDV_GreaterThanZero(pDX, m_Entry.m_SplittingZoneLengthFactor);
+}
+
+void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+   m_SpecLiftingPage.m_IsLiftingEnabled = m_Entry.m_EnableLiftingCheck;
+
+	DDX_Text(pDX, IDC_FS_CY_CRACK, m_Entry.m_CyLiftingCrackFs);
+   DDV_NonNegativeDouble(pDX, m_Entry.m_CyLiftingCrackFs);
+	DDX_Text(pDX, IDC_FS_CY_FAIL, m_Entry.m_CyLiftingFailFs);
+   DDV_NonNegativeDouble(pDX, m_Entry.m_CyLiftingFailFs);
+
+   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   CString tag = bUnitsSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )";
+   DDX_Text(pDX,IDC_FR_SQRT,tag);
+
+   DDX_UnitValueAndTag(pDX, IDC_PICK_POINT_HEIGHT, IDC_PICK_POINT_HEIGHT_UNITS, m_Entry.m_PickPointHeight, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter );
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_PickPointHeight, bUnitsSI,  unitMeasure::Inch, unitMeasure::Millimeter );
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_LOOP_TOLERANCE, IDC_LIFTING_LOOP_TOLERANCE_UNITS, m_Entry.m_LiftingLoopTolerance, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter );
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_LiftingLoopTolerance, bUnitsSI,  unitMeasure::Inch, unitMeasure::Millimeter );
+	DDX_Text(pDX, IDC_GIRDER_SWEEP_TOL, m_Entry.m_MaxGirderSweepLifting);
+   DDV_NonNegativeDouble(pDX, m_Entry.m_MaxGirderSweepLifting);
+   DDX_UnitValueAndTag(pDX, IDC_MIN_CABLE_ANGLE, IDC_MIN_CABLE_ANGLE_UNITS, m_Entry.m_MinCableInclination, bUnitsSI, unitMeasure::Degree, unitMeasure::Degree );
+   DDV_UnitValueRange(pDX, m_Entry.m_MinCableInclination, 0.0, 90., bUnitsSI, unitMeasure::Degree,unitMeasure::Degree );
+
+	DDX_Text(pDX, IDC_CY_ALLOW_LIFTING_COMP, m_Entry.m_CyCompStressLifting);
+   DDV_GreaterThanZero(pDX, m_Entry.m_CyCompStressLifting);
+
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_NORMAL_MAX_SQRT, IDC_LIFTING_NORMAL_MAX_SQRT_UNITS, m_Entry.m_CyTensStressLifting, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Text(pDX,IDC_LIFT_TENS,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_CyTensStressLifting, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Check_Bool(pDX, IDC_CHECK_LIFTING_NORMAL_MAX_MAX, m_Entry.m_CyDoTensStressLiftingMax);
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_NORMAL_MAX_MAX, IDC_LIFTING_NORMAL_MAX_MAX_UNITS, m_Entry.m_CyTensStressLiftingMax, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa );
+   if (m_Entry.m_CyDoTensStressLiftingMax)
+      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_CyTensStressLiftingMax, bUnitsSI,  unitMeasure::KSI, unitMeasure::MPa );
+
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_NORMAL_MAX_SQRT2, IDC_LIFTING_NORMAL_MAX_SQRT_UNITS, m_Entry.m_TensStressLiftingWithRebar, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Text(pDX,IDC_LIFT_TENS2,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_TensStressLiftingWithRebar, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+
+   DDX_Text(pDX, IDC_IMPACT_UPWARD_LIFTING, m_Entry.m_LiftingUpwardImpact);
+   DDV_MinMaxDouble(pDX, m_Entry.m_LiftingUpwardImpact, 0.0, 1.0);
+	DDX_Text(pDX, IDC_IMPACT_DOWNWARD_LIFTING, m_Entry.m_LiftingDownwardImpact);
+   DDV_MinMaxDouble(pDX, m_Entry.m_LiftingDownwardImpact, 0.0, 1.0);
+ 
+   DDX_UnitValueAndTag(pDX, IDC_MIN_LIFTING_POINT,IDC_MIN_LIFTING_POINT_UNIT,m_Entry.m_MinLiftPoint, bUnitsSI, unitMeasure::Feet, unitMeasure::Meter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MinLiftPoint, bUnitsSI,  unitMeasure::Feet, unitMeasure::Meter );
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_POINT_LOCATION_ACCURACY,IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,m_Entry.m_LiftPointAccuracy, bUnitsSI, unitMeasure::Feet, unitMeasure::Meter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_LiftPointAccuracy, bUnitsSI,  unitMeasure::Feet, unitMeasure::Meter );
+
+   if (!pDX->m_bSaveAndValidate)
+   {
+      m_SpecLiftingPage.HideLiftingControls(!m_Entry.m_EnableLiftingCheck);
+   }
+}
+
+void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+   m_SpecHaulingErectionPage.m_IsHaulingEnabled = m_Entry.m_EnableHaulingCheck;
+
+	DDX_Text(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_HeHaulingCrackFs);
+   DDV_NonNegativeDouble(pDX, m_Entry.m_HeHaulingCrackFs);
+	DDX_Text(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_HeHaulingRollFs);
+   DDV_NonNegativeDouble(pDX, m_Entry.m_HeHaulingRollFs);
+
+	DDX_Text(pDX, IDC_HAULING_ALLOW_COMP, m_Entry.m_CompStressHauling);
+   DDV_GreaterThanZero(pDX, m_Entry.m_CompStressHauling);
+
+
+   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   CString tag = bUnitsSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )";
+   DDX_Text(pDX,IDC_FR_SQRT,tag);
+
+
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_MAX_TENSSQRT, IDC_HAULING_MAX_TENSSQRT_UNITS, m_Entry.m_TensStressHauling, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Text(pDX,IDC_HAUL_TENS,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_TensStressHauling, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENS_MAX, m_Entry.m_DoTensStressHaulingMax);
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENS_MAX, IDC_HAULING_TENS_MAX_UNITS, m_Entry.m_TensStressHaulingMax, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa );
+   if (m_Entry.m_DoTensStressHaulingMax)
+      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TensStressHaulingMax, bUnitsSI,  unitMeasure::KSI, unitMeasure::MPa );
+
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_MAX_TENSSQRT2, IDC_HAULING_MAX_TENSSQRT_UNITS, m_Entry.m_TensStressHaulingWithRebar, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Text(pDX,IDC_HAUL_TENS2,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_TensStressHaulingWithRebar, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+
+   // Validate truck roll stiffness input
+   DDX_Radio(pDX, IDC_LUMPSUM_METHOD, m_Entry.m_TruckRollStiffnessMethod );
+   DDX_UnitValueAndTag(pDX, IDC_ROLL_STIFFNESS, IDC_ROLL_STIFFNESS_UNITS, m_Entry.m_TruckRollStiffness, bUnitsSI, unitMeasure::KipInchPerRadian, unitMeasure::KiloNewtonMeterPerRadian );
+   DDX_UnitValueAndTag(pDX, IDC_AXLE_WEIGHT, IDC_AXLE_WEIGHT_UNITS, m_Entry.m_AxleWeightLimit, bUnitsSI, unitMeasure::Kip, unitMeasure::Kilonewton );
+   DDX_UnitValueAndTag(pDX, IDC_AXLE_STIFFNESS, IDC_AXLE_STIFFNESS_UNITS, m_Entry.m_AxleStiffness, bUnitsSI, unitMeasure::KipInchPerRadian, unitMeasure::KiloNewtonMeterPerRadian );
+   DDX_UnitValueAndTag(pDX, IDC_MIN_ROLL_STIFFNESS, IDC_MIN_ROLL_STIFFNESS_UNITS, m_Entry.m_MinRollStiffness, bUnitsSI, unitMeasure::KipInchPerRadian, unitMeasure::KiloNewtonMeterPerRadian );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TruckRollStiffness, bUnitsSI,  unitMeasure::KipInchPerRadian, unitMeasure::KiloNewtonMeterPerRadian );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_AxleWeightLimit, bUnitsSI,  unitMeasure::Kip, unitMeasure::Kilonewton );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_AxleStiffness, bUnitsSI,  unitMeasure::KipInchPerRadian, unitMeasure::KiloNewtonMeterPerRadian );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MinRollStiffness, bUnitsSI,  unitMeasure::KipInchPerRadian, unitMeasure::KiloNewtonMeterPerRadian );
+
+   
+   DDX_UnitValueAndTag(pDX, IDC_HEIGHT_GIRDER_BOTTOM, IDC_HEIGHT_GIRDER_BOTTOM_UNITS, m_Entry.m_TruckGirderHeight, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TruckGirderHeight, bUnitsSI,  unitMeasure::Inch, unitMeasure::Millimeter );
+   DDX_UnitValueAndTag(pDX, IDC_HEIGHT_ROLL_CENTER, IDC_HEIGHT_ROLL_CENTER_UNITS, m_Entry.m_TruckRollCenterHeight, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TruckRollCenterHeight, bUnitsSI,  unitMeasure::Inch, unitMeasure::Millimeter );
+   DDX_UnitValueAndTag(pDX, IDC_AXLE_SPACING, IDC_AXLE_SPACING_UNITS, m_Entry.m_TruckAxleWidth, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TruckAxleWidth, bUnitsSI,  unitMeasure::Inch, unitMeasure::Millimeter );
+   DDX_UnitValueAndTag(pDX, IDC_MAX_HAULING_SUPPORT_LENGTH, IDC_MAX_HAULING_SUPPORT_LENGTH_UNITS, m_Entry.m_HaulingSupportDistance, bUnitsSI, unitMeasure::Feet, unitMeasure::Meter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_HaulingSupportDistance, bUnitsSI,  unitMeasure::Feet, unitMeasure::Meter );
+   DDX_UnitValueAndTag(pDX, IDC_MAXOVERHANG, IDC_MAXOVERHANG_UNITS, m_Entry.m_MaxHaulingOverhang, bUnitsSI, unitMeasure::Feet, unitMeasure::Meter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MaxHaulingOverhang, bUnitsSI,  unitMeasure::Feet, unitMeasure::Meter );
+   DDX_Text(pDX, IDC_HE_ROADWAY_SUPERELEVATION, m_Entry.m_RoadwaySuperelevation);
+   DDV_MinMaxDouble(pDX, m_Entry.m_RoadwaySuperelevation, 0.0, 0.5);
+	DDX_Text(pDX, IDC_GIRDER_SWEEP_TOL, m_Entry.m_MaxGirderSweepHauling);
+   DDV_MinMaxDouble(pDX, m_Entry.m_MaxGirderSweepHauling, 0.0, 1.0);
+   DDX_UnitValueAndTag(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE, IDC_SUPPORT_PLACEMENT_TOLERANCE_UNITS, m_Entry.m_HaulingSupportPlacementTolerance, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_HaulingSupportPlacementTolerance, bUnitsSI,  unitMeasure::Inch, unitMeasure::Millimeter );
+	DDX_Text(pDX, IDC_CAMBER_CG_ADJUSTMENT, m_Entry.m_HaulingCamberPercentEstimate);
+   DDV_MinMaxDouble(pDX, m_Entry.m_HaulingCamberPercentEstimate, 0.0, 100.0);
+	DDX_Text(pDX, IDC_IMPACT_UPWARD_HAULING, m_Entry.m_HaulingUpwardImpact);
+   DDV_MinMaxDouble(pDX, m_Entry.m_HaulingUpwardImpact, 0.0, 1.0);
+	DDX_Text(pDX, IDC_IMPACT_DOWNWARD_HAULING, m_Entry.m_HaulingDownwardImpact);
+   DDV_MinMaxDouble(pDX, m_Entry.m_HaulingDownwardImpact, 0.0, 1.0);
+   DDX_UnitValueAndTag(pDX, IDC_MAXWGT, IDC_MAXWGT_UNITS, m_Entry.m_MaxGirderWgt, bUnitsSI, unitMeasure::Kip, unitMeasure::Kilonewton );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MaxGirderWgt, bUnitsSI,  unitMeasure::Kip, unitMeasure::Kilonewton );
+ 
+   DDX_UnitValueAndTag(pDX, IDC_MIN_TRUCK_SUPPORT,IDC_MIN_TRUCK_SUPPORT_UNIT,m_Entry.m_MinHaulPoint, bUnitsSI, unitMeasure::Feet, unitMeasure::Meter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_MinHaulPoint, bUnitsSI,  unitMeasure::Feet, unitMeasure::Meter );
+   DDX_UnitValueAndTag(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,m_Entry.m_HaulPointAccuracy, bUnitsSI, unitMeasure::Feet, unitMeasure::Meter );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_HaulPointAccuracy, bUnitsSI,  unitMeasure::Feet, unitMeasure::Meter );
+}
+
+void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+	DDX_Text(pDX, IDC_TEMP_REMOVE_ALLOW_SERVICE_COMP, m_Entry.m_TempStrandRemovalCompStress);
+   DDV_GreaterThanZero(pDX, m_Entry.m_TempStrandRemovalCompStress);
+
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT3, IDC_NORMAL_MAX_SQRT_UNITS3, m_Entry.m_TempStrandRemovalTensStress, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   CString tag = bUnitsSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )";
+   DDX_Text(pDX,IDC_CYS_TENS_BYLINE2,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_TempStrandRemovalTensStress, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX3, m_Entry.m_TempStrandRemovalDoTensStressMax);
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX3, IDC_NORMAL_MAX_MAX_UNITS3, m_Entry.m_TempStrandRemovalTensStressMax, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa );
+   if (m_Entry.m_TempStrandRemovalDoTensStressMax)
+      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_TempStrandRemovalTensStressMax, bUnitsSI,  unitMeasure::KSI, unitMeasure::MPa );
+
+
+
+	DDX_Text(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_Bs1CompStress);
+   DDV_GreaterThanZero(pDX, m_Entry.m_Bs1CompStress);
+
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT2, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_Bs1TensStress, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Text(pDX,IDC_CYS_TENS_BYLINE,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_Bs1TensStress, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX2, m_Entry.m_Bs1DoTensStressMax);
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX2, IDC_NORMAL_MAX_MAX_UNITS2, m_Entry.m_Bs1TensStressMax, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa );
+   if (m_Entry.m_Bs1DoTensStressMax)
+      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_Bs1TensStressMax, bUnitsSI,  unitMeasure::KSI, unitMeasure::MPa );
+}
+
+void CSpecMainSheet::ExchangeBs2Data(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+	DDX_Text(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_Bs2CompStress);
+   DDV_GreaterThanZero(pDX, m_Entry.m_Bs2CompStress);
+   DDX_CBItemData(pDX,IDC_DIST_TRAFFIC_BARRIER_BASIS,m_Entry.m_TrafficBarrierDistributionType);
+
+	DDX_Text(pDX, IDC_DIST_TRAFFIC_BARRIER, m_Entry.m_Bs2MaxGirdersTrafficBarrier);
+	DDX_CBEnum(pDX, IDC_OVERLAY_DISTR,m_Entry.m_OverlayLoadDistribution);
+   DDX_CBEnum(pDX,IDC_EFF_FLANGE_WIDTH,m_Entry.m_EffFlangeWidthMethod);
+}
+
+void CSpecMainSheet::ExchangeBsData(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+	DDX_Text(pDX, IDC_BS_COMP_STRESS_SERV, m_Entry.m_Bs3CompStressServ);
+   DDV_GreaterThanZero(pDX, m_Entry.m_Bs3CompStressServ);
+ 	DDX_Text(pDX, IDC_BS_COMP_STRESS_SERVICE1A, m_Entry.m_Bs3CompStressService1A);
+   DDV_GreaterThanZero(pDX, m_Entry.m_Bs3CompStressService1A);
+
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_Bs3TensStressServNc, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   CString tag = bUnitsSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )";
+   DDX_Text(pDX,IDC_BS_NORMAL_TENS,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_Bs3TensStressServNc, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX, m_Entry.m_Bs3DoTensStressServNcMax);
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX, IDC_NORMAL_MAX_MAX_UNITS, m_Entry.m_Bs3TensStressServNcMax, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa );
+   if (m_Entry.m_Bs3DoTensStressServNcMax)
+      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_Bs3TensStressServNcMax, bUnitsSI,  unitMeasure::KSI, unitMeasure::MPa );
+
+   DDX_UnitValueAndTag(pDX, IDC_EXTREME_MAX_SQRT, IDC_EXTREME_MAX_SQRT_UNITS, m_Entry.m_Bs3TensStressServSc, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Text(pDX,IDC_BS_EXTREME_TENS,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_Bs3TensStressServSc, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Check_Bool(pDX, IDC_CHECK_EXTREME_MAX_MAX, m_Entry.m_Bs3DoTensStressServScMax);
+   DDX_UnitValueAndTag(pDX, IDC_EXTREME_MAX_MAX, IDC_EXTREME_MAX_MAX_UNITS, m_Entry.m_Bs3TensStressServScMax, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa );
+   if (m_Entry.m_Bs3DoTensStressServScMax)
+      DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_Bs3TensStressServScMax, bUnitsSI,  unitMeasure::KSI, unitMeasure::MPa );
+
+   DDX_CBIndex(pDX, IDC_LLDF, m_Entry.m_LldfMethod);
+
+   DDX_UnitValueAndTag(pDX, IDC_MAXGIRDERANGLE, IDC_MAXGIRDERANGLE_UNIT, m_Entry.m_MaxAngularDeviationBetweenGirders, bUnitsSI, unitMeasure::Degree, unitMeasure::Degree );
+   DDX_Text(pDX,IDC_GIRDERSTIFFNESSRATIO,m_Entry.m_MinGirderStiffnessRatio);
+   DDV_MinMaxDouble(pDX,m_Entry.m_MinGirderStiffnessRatio,0.0,1.0);
+
+   DDX_Text(pDX,IDC_GIRDER_SPACING_LOCATION,m_Entry.m_LLDFGirderSpacingLocation);
+   DDV_MinMaxDouble(pDX,m_Entry.m_LLDFGirderSpacingLocation,0.0,1.0);
+
+   DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
+}
+
+void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+
+   DDX_CBIndex(pDX, IDC_MOMENT, m_Entry.m_Bs3LRFDOverReinforcedMomentCapacity );
+
+   DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_MOMENT, m_Entry.m_bIncludeRebar_Moment );
+
+
+   CString tag = bUnitsSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )";
+   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Text(pDX,IDC_FR_UNIT,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_FlexureModulusOfRuptureCoefficient, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+}
+
+void CSpecMainSheet::CheckShearCapacityMethod()
+{
+   // makes sure the shear capacity method is consistent with the specification version that is selected
+   if ( GetSpecVersion() < lrfdVersionMgr::FourthEdition2007 &&  // if we are before 4th Edition
+        m_Entry.m_ShearCapacityMethod == scmVciVcw ) // Vci/Vcw is not a valid option
+   {
+      // force to the general method
+      if ( GetSpecVersion() <= lrfdVersionMgr::FourthEdition2007 )
+         m_Entry.m_ShearCapacityMethod = scmBTTables;
+      else
+         m_Entry.m_ShearCapacityMethod = scmBTEquations;
+   }
+
+   if ( GetSpecVersion() < lrfdVersionMgr::SecondEditionWith2000Interims &&  // if we are before 2nd Edition + 2000
+        m_Entry.m_ShearCapacityMethod == scmWSDOT2001 ) // WSDOT 2001 is not a valid option
+   {
+      // force to the general method
+      if ( GetSpecVersion() <= lrfdVersionMgr::FourthEdition2007 )
+         m_Entry.m_ShearCapacityMethod = scmBTTables;
+      else
+         m_Entry.m_ShearCapacityMethod = scmBTEquations;
+   }
+
+   if ( GetSpecVersion() < lrfdVersionMgr::FourthEdition2007 &&  // if we are before 4th Edition
+        m_Entry.m_ShearCapacityMethod == scmWSDOT2007 ) // WSDOT 2007 is not a valid option
+   {
+      m_Entry.m_ShearCapacityMethod = scmWSDOT2001; // force to WSDOT 2001
+   }
+}
+
+void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+   DDX_CBIndex(pDX, IDC_LRSH, m_Entry.m_LongReinfShearMethod); 
+   DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_SHEAR, m_Entry.m_bIncludeRebar_Shear );
+
+   DDX_CBEnum(pDX,IDC_SHEAR_FLOW_METHOD,m_Entry.m_ShearFlowMethod);
+
+   // we have to use item data here because the enum constants are out of order
+   DDX_CBItemData(pDX, IDC_SHEAR_CAPACITY, m_Entry.m_ShearCapacityMethod );
+
+   // Not every shear method is available with every spec. The user could have set the method
+   // then changed the spec. We have keep the data valid
+
+   if ( pDX->m_bSaveAndValidate )
+      CheckShearCapacityMethod();
+
+   CString tag = bUnitsSI ? "sqrt( f'ci (MPa) )" : "sqrt( f'ci (KSI) )";
+   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_LABEL, m_Entry.m_ShearModulusOfRuptureCoefficient, bUnitsSI, unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+   DDX_Text(pDX,IDC_FR_UNIT,tag);
+   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_ShearModulusOfRuptureCoefficient, bUnitsSI,  unitMeasure::SqrtKSI, unitMeasure::SqrtMPa );
+}
+
+void CSpecMainSheet::ExchangeDeflectionsData(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+
+   DDX_Check_Bool(pDX, IDC_LL_DEFLECTION, m_Entry.m_bDoEvaluateDeflection );
+
+ 	DDX_Text(pDX, IDC_DEFLECTION_LIMIT, m_Entry.m_DeflectionLimit);
+   DDV_GreaterThanZero(pDX, m_Entry.m_DeflectionLimit);
+}
+
+void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+   DDX_UnitValueAndTag(pDX, IDC_XFER_TIME, IDC_XFER_TIME_TAG, m_Entry.m_XferTime, bUnitsSI, unitMeasure::Hour, unitMeasure::Hour );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_XferTime, bUnitsSI,  unitMeasure::Hour, unitMeasure::Hour );
+
+   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION1_MIN, IDC_CREEP_DURATION1_TAG, m_Entry.m_CreepDuration1Min, bUnitsSI, unitMeasure::Day, unitMeasure::Day );
+   DDV_UnitValueGreaterThanZero(pDX, m_Entry.m_CreepDuration1Min, bUnitsSI,  unitMeasure::Day, unitMeasure::Day );
+
+   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION1_MAX, IDC_CREEP_DURATION1_TAG, m_Entry.m_CreepDuration1Max, bUnitsSI, unitMeasure::Day, unitMeasure::Day );
+   DDV_UnitValueLimitOrMore(pDX, m_Entry.m_CreepDuration1Max, m_Entry.m_CreepDuration1Min, bUnitsSI,  unitMeasure::Day, unitMeasure::Day );
+
+   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION2_MIN, IDC_CREEP_DURATION2_TAG, m_Entry.m_CreepDuration2Min, bUnitsSI, unitMeasure::Day, unitMeasure::Day );
+   DDV_UnitValueGreaterThanLimit(pDX, m_Entry.m_CreepDuration2Min, m_Entry.m_XferTime, bUnitsSI,  unitMeasure::Day, unitMeasure::Day );
+
+   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION2_MAX, IDC_CREEP_DURATION2_TAG, m_Entry.m_CreepDuration2Max, bUnitsSI, unitMeasure::Day, unitMeasure::Day );
+   DDV_UnitValueLimitOrMore(pDX, m_Entry.m_CreepDuration2Max, m_Entry.m_CreepDuration2Min, bUnitsSI,  unitMeasure::Day, unitMeasure::Day );
+
+   DDX_UnitValueAndTag(pDX, IDC_NC_CREEP, IDC_NC_CREEP_TAG, m_Entry.m_TotalCreepDuration, bUnitsSI, unitMeasure::Day, unitMeasure::Day );
+   DDV_UnitValueGreaterThanLimit(pDX, m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, bUnitsSI,  unitMeasure::Day, unitMeasure::Day );
+
+   DDX_Text(pDX,IDC_CURING_TIME_FACTOR,m_Entry.m_CuringMethodTimeAdjustmentFactor);
+   DDV_MinMaxDouble(pDX,m_Entry.m_CuringMethodTimeAdjustmentFactor,1,999);
+
+}
+
+void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+   DDX_UnitValueAndTag(pDX, IDC_FINAL, IDC_FINAL_TAG, m_Entry.m_FinalLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+	DDX_UnitValueAndTag(pDX, IDC_BEFORE_XFER, IDC_BEFORE_XFER_TAG, m_Entry.m_BeforeXferLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+	DDX_UnitValueAndTag(pDX, IDC_AFTER_XFER, IDC_AFTER_XFER_TAG, m_Entry.m_AfterXferLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING, IDC_LIFTING_TAG, m_Entry.m_LiftingLosses, bUnitsSI,unitMeasure::KSI, unitMeasure::MPa);
+   DDX_UnitValueAndTag(pDX, IDC_BEFORE_TEMP_STRAND_REMOVAL, IDC_BEFORE_TEMP_STRAND_REMOVAL_TAG, m_Entry.m_BeforeTempStrandRemovalLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+   DDX_UnitValueAndTag(pDX, IDC_AFTER_TEMP_STRAND_REMOVAL,  IDC_AFTER_TEMP_STRAND_REMOVAL_TAG,  m_Entry.m_AfterTempStrandRemovalLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+   DDX_UnitValueAndTag(pDX, IDC_AFTER_DECK_PLACEMENT,  IDC_AFTER_DECK_PLACEMENT_TAG,  m_Entry.m_AfterDeckPlacementLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+
+   DDX_UnitValueAndTag(pDX, IDC_SHIPPING_TIME, IDC_SHIPPING_TIME_TAG, m_Entry.m_ShippingTime, bUnitsSI, unitMeasure::Day, unitMeasure::Day);
+
+   DDX_UnitValueAndTag(pDX, IDC_ANCHORSET,  IDC_ANCHORSET_TAG,  m_Entry.m_Dset, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter);
+   DDX_UnitValueAndTag(pDX, IDC_WOBBLE, IDC_WOBBLE_TAG,m_Entry.m_WobbleFriction,bUnitsSI, unitMeasure::PerFeet, unitMeasure::PerMillimeter);
+   DDX_Text(pDX,IDC_FRICTION,m_Entry.m_FrictionCoefficient);
+   
+   // have to map loss method to comb box ordering in dialog
+   int map[6]={LOSSES_AASHTO_REFINED,
+               LOSSES_WSDOT_REFINED,
+               LOSSES_TXDOT_REFINED_2004,
+               LOSSES_AASHTO_LUMPSUM,
+               LOSSES_WSDOT_LUMPSUM,
+               LOSSES_GENERAL_LUMPSUM};
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      // data is coming out of the dialog
+      int rad_ord;
+      DDX_CBIndex(pDX,IDC_LOSS_METHOD,rad_ord);
+      CHECK(0 <= rad_ord && rad_ord < 5);
+      m_Entry.m_LossMethod = map[rad_ord];
+
+      if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
+           m_Entry.m_LossMethod == LOSSES_AASHTO_LUMPSUM || m_Entry.m_LossMethod == LOSSES_WSDOT_LUMPSUM ||
+           m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2004)
+      {
+         DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,rad_ord);
+         if( rad_ord == 0 )
+         {
+            // Lump sum shipping loss
+      	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING, IDC_SHIPPING_TAG, m_Entry.m_ShippingLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+         }
+         else
+         {
+            // Fractional
+            Float64 value;
+            DDX_Text(pDX,IDC_SHIPPING,value);
+            value /= -100.0;
+            m_Entry.m_ShippingLosses = value;
+         }
+      }
+      else if (m_Entry.m_LossMethod == LOSSES_GENERAL_LUMPSUM )
+      {
+         DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, m_Entry.m_ShippingLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+      }
+      else
+         m_Entry.m_ShippingLosses = 0;
+
+      // transfer length data
+      DDX_CBIndex(pDX,IDC_COMBO_TRANSFER,rad_ord);
+      CHECK(0 <= rad_ord && rad_ord < 2);
+      m_Entry.m_PrestressTransferComputationType = (rad_ord==1) ? pgsTypes::ptMinuteValue : pgsTypes::ptUsingSpecification;
+   }
+   else
+   {
+      // Data is going into the dialog
+      // check buttons - map to loss method
+      int idx=0;
+      while(m_Entry.m_LossMethod != map[idx])
+      {
+         CHECK(idx<4);
+         if (4 < idx)
+         {
+            idx = 0;
+            break;
+         }
+         idx++;
+      }
+
+      DDX_CBIndex(pDX,IDC_LOSS_METHOD,idx);
+
+      double dummy = 0;
+      if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
+           m_Entry.m_LossMethod == LOSSES_AASHTO_LUMPSUM || m_Entry.m_LossMethod == LOSSES_WSDOT_LUMPSUM ||
+           m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2004)
+      {
+         if ( m_Entry.m_ShippingLosses < 0 )
+         {
+            /// Shipping losses are fractional
+            Float64 value = m_Entry.m_ShippingLosses * -100.0;
+            DDX_Text(pDX,IDC_SHIPPING,value);
+
+            CString strTag("%");
+            DDX_Text(pDX,IDC_SHIPPING_TAG,strTag);
+
+            idx = 1;
+            DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,idx);
+         }
+         else
+         {
+      	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING,  IDC_SHIPPING_TAG,  m_Entry.m_ShippingLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+
+            idx = 0;
+            DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,idx);
+         }
+
+   	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, dummy, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+      }
+      else if ( m_Entry.m_LossMethod == LOSSES_GENERAL_LUMPSUM )
+      {
+   	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING, IDC_SHIPPING_TAG, dummy, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+   	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, m_Entry.m_ShippingLosses, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+      }
+      else
+      {
+         ATLASSERT(FALSE); // should never get here
+      }
+
+      // transfer length comp
+      idx = m_Entry.m_PrestressTransferComputationType==pgsTypes::ptMinuteValue ? 1 : 0;
+      DDX_CBIndex(pDX,IDC_COMBO_TRANSFER,idx);
+
+   }
+}
+
+void CSpecMainSheet::ExchangePSLimitData(CDataExchange* pDX)
+{
+   DDX_Check_Bool(pDX, IDC_CHECK_PS_AT_JACKING, m_Entry.m_bCheckStrandStress[AT_JACKING]);
+ 	DDX_Text(pDX, IDC_PS_AT_JACKING_SR, m_Entry.m_StrandStressCoeff[AT_JACKING][STRESS_REL]);
+   DDV_GreaterThanZero(pDX, m_Entry.m_StrandStressCoeff[AT_JACKING][STRESS_REL]);
+ 	DDX_Text(pDX, IDC_PS_AT_JACKING_LR, m_Entry.m_StrandStressCoeff[AT_JACKING][LOW_RELAX]);
+   DDV_GreaterThanZero(pDX, m_Entry.m_StrandStressCoeff[AT_JACKING][LOW_RELAX]);
+
+   DDX_Check_Bool(pDX, IDC_CHECK_PS_BEFORE_TRANSFER, m_Entry.m_bCheckStrandStress[BEFORE_TRANSFER]);
+ 	DDX_Text(pDX, IDC_PS_BEFORE_TRANSFER_SR, m_Entry.m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]);
+   DDV_GreaterThanZero(pDX, m_Entry.m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]);
+ 	DDX_Text(pDX, IDC_PS_BEFORE_TRANSFER_LR, m_Entry.m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]);
+   DDV_GreaterThanZero(pDX, m_Entry.m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]);
+
+   DDX_Check_Bool(pDX, IDC_CHECK_PS_AFTER_TRANSFER, m_Entry.m_bCheckStrandStress[AFTER_TRANSFER]);
+ 	DDX_Text(pDX, IDC_PS_AFTER_TRANSFER_SR, m_Entry.m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]);
+   DDV_GreaterThanZero(pDX, m_Entry.m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]);
+ 	DDX_Text(pDX, IDC_PS_AFTER_TRANSFER_LR, m_Entry.m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]);
+   DDV_GreaterThanZero(pDX, m_Entry.m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]);
+
+//   DDX_Check_Bool(pDX, IDC_CHECK_PS_AFTER_ALL_LOSSES, m_Entry.m_bCheckStrandStress[AFTER_ALL_LOSSES]);
+   m_Entry.m_bCheckStrandStress[AFTER_ALL_LOSSES] = true;
+ 	DDX_Text(pDX, IDC_PS_AFTER_ALL_LOSSES_SR, m_Entry.m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
+   DDV_GreaterThanZero(pDX, m_Entry.m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
+ 	DDX_Text(pDX, IDC_PS_AFTER_ALL_LOSSES_LR, m_Entry.m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+   DDV_GreaterThanZero(pDX, m_Entry.m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+}
+
+void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
+{
+   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+
+   DDX_UnitValueAndTag(pDX, IDC_FC_SLAB, IDC_FC_SLAB_UNIT, m_Entry.m_MaxSlabFc, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+   DDX_UnitValueAndTag(pDX, IDC_GIRDER_FCI, IDC_GIRDER_FCI_UNIT, m_Entry.m_MaxGirderFci, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+   DDX_UnitValueAndTag(pDX, IDC_GIRDER_FC, IDC_GIRDER_FC_UNIT, m_Entry.m_MaxGirderFc, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa);
+   DDX_UnitValueAndTag(pDX, IDC_UNIT_WEIGHT, IDC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight, bUnitsSI, unitMeasure::LbfPerFeet3, unitMeasure::KgPerMeter3);
+   DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_UNIT, m_Entry.m_MaxConcreteAggSize, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter);
+}
+
+void CSpecMainSheet::ExchangeLoadFactorData(CDataExchange* pDX)
+{
+   const int nLimitStates = 6;
+   double DCmin[nLimitStates], DCmax[nLimitStates];
+   double DWmin[nLimitStates], DWmax[nLimitStates];
+   double LLIMmin[nLimitStates], LLIMmax[nLimitStates];
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      DDX_Text(pDX,IDC_SERVICE_I_DC,DCmin[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_DC,DCmax[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_DW,DWmin[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_DW,DWmax[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmin[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmax[pgsTypes::ServiceI]);
+
+      DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmin[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmax[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmin[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmax[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmin[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmax[pgsTypes::ServiceIA]);
+
+      DDX_Text(pDX,IDC_SERVICE_III_DC,DCmin[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_DC,DCmax[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_DW,DWmin[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_DW,DWmax[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmin[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmax[pgsTypes::ServiceIII]);
+
+      DDX_Text(pDX,IDC_STRENGTH_I_DC_MIN,DCmin[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_DC_MAX,DCmax[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_DW_MIN,DWmin[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_DW_MAX,DWmax[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmin[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmax[pgsTypes::StrengthI]);
+
+      DDX_Text(pDX,IDC_STRENGTH_II_DC_MIN,DCmin[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_DC_MAX,DCmax[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_DW_MIN,DWmin[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_DW_MAX,DWmax[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmin[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmax[pgsTypes::StrengthII]);
+
+      DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmin[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmax[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmin[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmax[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmin[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmax[pgsTypes::FatigueI]);
+
+      for ( int i = 0; i < nLimitStates; i++ )
+      {
+         m_Entry.SetDCLoadFactors(  (pgsTypes::LimitState)i, DCmin[i],   DCmax[i]);
+         m_Entry.SetDWLoadFactors(  (pgsTypes::LimitState)i, DWmin[i],   DWmax[i]);
+         m_Entry.SetLLIMLoadFactors((pgsTypes::LimitState)i, LLIMmin[i], LLIMmax[i]);
+      }
+   }
+   else
+   {
+      for ( int i = 0; i < nLimitStates; i++ )
+      {
+         m_Entry.GetDCLoadFactors(  (pgsTypes::LimitState)i, &DCmin[i],   &DCmax[i]);
+         m_Entry.GetDWLoadFactors(  (pgsTypes::LimitState)i, &DWmin[i],   &DWmax[i]);
+         m_Entry.GetLLIMLoadFactors((pgsTypes::LimitState)i, &LLIMmin[i], &LLIMmax[i]);
+      }
+
+      DDX_Text(pDX,IDC_SERVICE_I_DC,DCmin[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_DC,DCmax[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_DW,DWmin[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_DW,DWmax[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmin[pgsTypes::ServiceI]);
+      DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmax[pgsTypes::ServiceI]);
+
+      DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmin[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmax[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmin[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmax[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmin[pgsTypes::ServiceIA]);
+      DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmax[pgsTypes::ServiceIA]);
+
+      DDX_Text(pDX,IDC_SERVICE_III_DC,DCmin[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_DC,DCmax[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_DW,DWmin[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_DW,DWmax[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmin[pgsTypes::ServiceIII]);
+      DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmax[pgsTypes::ServiceIII]);
+
+      DDX_Text(pDX,IDC_STRENGTH_I_DC_MIN,DCmin[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_DC_MAX,DCmax[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_DW_MIN,DWmin[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_DW_MAX,DWmax[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmin[pgsTypes::StrengthI]);
+      DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmax[pgsTypes::StrengthI]);
+
+      DDX_Text(pDX,IDC_STRENGTH_II_DC_MIN,DCmin[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_DC_MAX,DCmax[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_DW_MIN,DWmin[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_DW_MAX,DWmax[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmin[pgsTypes::StrengthII]);
+      DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmax[pgsTypes::StrengthII]);
+
+      DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmin[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmax[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmin[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmax[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmin[pgsTypes::FatigueI]);
+      DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmax[pgsTypes::FatigueI]);
+   }
+}
+ 
+void CSpecMainSheet::UploadDesignData(CDataExchange* pDX)
+{
+   m_SpecDesignPage.m_CheckA = m_Entry.m_EnableSlabOffsetCheck;
+   m_SpecDesignPage.m_CheckHauling = m_Entry.m_EnableHaulingCheck;
+   m_SpecDesignPage.m_CheckHoldDown = m_Entry.m_DoCheckHoldDown;
+   m_SpecDesignPage.m_CheckLifting = m_Entry.m_EnableLiftingCheck;
+   m_SpecDesignPage.m_CheckSlope = m_Entry.m_DoCheckStrandSlope;
+   m_SpecDesignPage.m_CheckAnchorage = m_Entry.m_DoCheckAnchorage;
+
+   m_SpecDesignPage.m_DesignA = m_Entry.m_EnableSlabOffsetDesign;
+   m_SpecDesignPage.m_DesignHauling = m_Entry.m_EnableHaulingDesign;
+   m_SpecDesignPage.m_DesignHoldDown = m_Entry.m_DoDesignHoldDown;
+   m_SpecDesignPage.m_DesignLifting = m_Entry.m_EnableLiftingDesign;
+   m_SpecDesignPage.m_DesignSlope = m_Entry.m_DoDesignStrandSlope;
+
+   m_SpecDesignPage.m_FillMethod = (int)m_Entry.m_DesignStrandFillType;
+
+}
+
+// mini function to convert BOOL to bool
+inline bool B2b(BOOL val) { return val!=0; }
+
+
+void CSpecMainSheet::DownloadDesignData(CDataExchange* pDX)
+{
+   m_Entry.m_EnableSlabOffsetCheck = B2b( m_SpecDesignPage.m_CheckA);
+   m_Entry.m_EnableHaulingCheck = B2b( m_SpecDesignPage.m_CheckHauling);
+   m_Entry.m_DoCheckHoldDown    = B2b( m_SpecDesignPage.m_CheckHoldDown);
+   m_Entry.m_EnableLiftingCheck = B2b( m_SpecDesignPage.m_CheckLifting);
+   m_Entry.m_DoCheckStrandSlope = B2b( m_SpecDesignPage.m_CheckSlope);
+   m_Entry.m_DoCheckAnchorage = B2b( m_SpecDesignPage.m_CheckAnchorage);
+
+   m_Entry.m_EnableSlabOffsetDesign = B2b( m_SpecDesignPage.m_DesignA);
+   m_Entry.m_EnableHaulingDesign = B2b( m_SpecDesignPage.m_DesignHauling);
+   m_Entry.m_DoDesignHoldDown    = B2b( m_SpecDesignPage.m_DesignHoldDown);
+   m_Entry.m_EnableLiftingDesign = B2b( m_SpecDesignPage.m_DesignLifting);
+   m_Entry.m_DoDesignStrandSlope = B2b( m_SpecDesignPage.m_DesignSlope);
+
+   m_Entry.m_DesignStrandFillType = m_SpecDesignPage.m_FillMethod==(int)ftGridOrder ?ftGridOrder : ftMinimizeHarping;
+}
+
+
+BOOL CSpecMainSheet::OnInitDialog() 
+{
+	BOOL bResult = CPropertySheet::OnInitDialog();
+	
+   // disable OK button if editing not allowed
+   CString head;
+   GetWindowText(head);
+   head += " - ";
+   head += m_Entry.GetName().c_str();
+	if (!m_AllowEditing)
+   {
+      CWnd* pbut = GetDlgItem(IDOK);
+      ASSERT(pbut);
+      pbut->EnableWindow(m_AllowEditing);
+      head += " (Read Only)";
+   }
+   SetWindowText(head);
+	
+	return bResult;
+}
+
+lrfdVersionMgr::Version CSpecMainSheet::GetSpecVersion()
+{
+   return m_SpecDescrPage.GetSpecVersion();
+}

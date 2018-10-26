@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.WSDOTAgent.1 = s 'WSDOTAgent Class'
+	{
+		CLSID = s '{338AD645-BAF2-41DC-964E-A9DFC8123253}'
+	}
+	PGSuper.WSDOTAgent = s 'WSDOTAgent Class'
+	{
+		CLSID = s '{338AD645-BAF2-41DC-964E-A9DFC8123253}'
+		CurVer = s 'PGSuper.WSDOTAgent.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {338AD645-BAF2-41DC-964E-A9DFC8123253} = s 'WSDOTAgent Class'
+		{
+			ProgID = s 'PGSuper.WSDOTAgent.1'
+			VersionIndependentProgID = s 'PGSuper.WSDOTAgent'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{3B6BF48B-C530-486E-918F-7705E13D6330}'
+		}
+	}
+}

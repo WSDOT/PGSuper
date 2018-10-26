@@ -1,0 +1,152 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 2006  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// ProfilePage.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "pgsuper.h"
+#include "ProfilePage.h"
+#include "AlignmentDescriptionDlg.h"
+#include <MfcTools\CogoDDX.h>
+#include <MfcTools\CustomDDX.h>
+#include <IFace\DisplayUnits.h>
+#include "htmlhelp\HelpTopics.hh"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CProfilePage property page
+
+IMPLEMENT_DYNCREATE(CProfilePage, CPropertyPage)
+
+CProfilePage::CProfilePage() : CPropertyPage(CProfilePage::IDD)
+{
+	//{{AFX_DATA_INIT(CProfilePage)
+		// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
+}
+
+CProfilePage::~CProfilePage()
+{
+}
+
+IBroker* CProfilePage::GetBroker()
+{
+   CAlignmentDescriptionDlg* pParent = (CAlignmentDescriptionDlg*)GetParent();
+   return pParent->m_pBroker;
+}
+
+void CProfilePage::DoDataExchange(CDataExchange* pDX)
+{
+	CPropertyPage::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CProfilePage)
+		// NOTE: the ClassWizard will add DDX and DDV calls here
+	//}}AFX_DATA_MAP
+
+   GET_IFACE2(GetBroker(),IDisplayUnits,pDispUnits);
+
+   DDX_Station(pDX, IDC_STATION,  m_ProfileData.Station, pDispUnits->GetStationFormat() );
+   DDX_UnitValueAndTag( pDX, IDC_ELEVATION, IDC_ELEVATION_UNIT, m_ProfileData.Elevation, pDispUnits->GetAlignmentLengthUnit() );
+   if ( pDX->m_bSaveAndValidate )
+   {
+      DDX_Text(pDX, IDC_GRADE, m_ProfileData.Grade );
+      m_ProfileData.Grade /= 100;
+
+      m_Grid.SortCurves();
+      if ( !m_Grid.GetCurveData(m_ProfileData.VertCurves) )
+      {
+         AfxMessageBox("Invalid vertical curve data");
+         pDX->Fail();
+      }
+
+      int curveID = 1;
+      std::vector<VertCurveData>::iterator iter;
+      for ( iter = m_ProfileData.VertCurves.begin(); iter != m_ProfileData.VertCurves.end(); iter++, curveID++ )
+      {
+         VertCurveData& vc = *iter;
+         if ( vc.L1 <= 0 )
+         {
+            CString strMsg;
+            strMsg.Format("Curve Lengths must be greater than zero for curve # %d",curveID);
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+      }
+   }
+   else
+   {
+      double grade = m_ProfileData.Grade * 100;
+      DDX_Text(pDX, IDC_GRADE, grade );
+
+      m_Grid.SetCurveData(m_ProfileData.VertCurves);
+   }
+}
+
+BEGIN_MESSAGE_MAP(CProfilePage, CPropertyPage)
+	//{{AFX_MSG_MAP(CProfilePage)
+	ON_BN_CLICKED(IDC_ADD, OnAdd)
+	ON_BN_CLICKED(IDC_REMOVE, OnRemove)
+	ON_BN_CLICKED(IDC_SORT, OnSort)
+	//}}AFX_MSG_MAP
+	ON_COMMAND(ID_HELP, OnHelp)
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CProfilePage message handlers
+
+void CProfilePage::OnAdd() 
+{
+   m_Grid.AppendRow();	
+}
+
+void CProfilePage::OnRemove() 
+{
+   m_Grid.RemoveRows();
+}
+
+void CProfilePage::OnSort() 
+{
+   m_Grid.SortCurves();
+}
+
+BOOL CProfilePage::OnInitDialog() 
+{
+	m_Grid.SubclassDlgItem(IDC_VCURVE_GRID, this);
+   m_Grid.CustomInit();
+
+   CPropertyPage::OnInitDialog();
+	
+	// TODO: Add extra initialization here
+	
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CProfilePage::OnHelp()
+{
+   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_ALIGNMENT_PROFILE );
+}

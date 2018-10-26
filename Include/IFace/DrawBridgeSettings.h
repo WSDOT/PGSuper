@@ -1,0 +1,47 @@
+#ifndef INCLUDED_BRIDGEEDITORSETTINGS_H_
+#define INCLUDED_BRIDGEEDITORSETTINGS_H_
+
+// Bridge Model Editor
+//================================================
+// all possible settings for bridge model editor;
+//       plan view
+#define IDB_PV_LABEL_PIERS      ((DWORD)0x00000001)
+#define IDB_PV_LABEL_ALIGNMENT  ((DWORD)0x00000002)
+#define IDB_PV_LABEL_GIRDERS    ((DWORD)0x00000004)
+#define IDB_PV_LABEL_TICKMARKS  ((DWORD)0x00000008)
+#define IDB_PV_SHOW_TICKMARKS   ((DWORD)0x00000010)
+#define IDB_PV_DRAW_ISOTROPIC   ((DWORD)0x00000020)
+#define IDB_PV_DRAW_TO_SCALE    ((DWORD)0x00000040)
+#define IDB_PV_NORTH_UP         ((DWORD)0x00000080)
+#define IDB_CS_LABEL_GIRDERS    ((DWORD)0x00000100)
+#define IDB_CS_SHOW_DIMENSIONS  ((DWORD)0x00000200)
+#define IDB_CS_DRAW_ISOTROPIC   ((DWORD)0x00000400)
+#define IDB_CS_DRAW_TO_SCALE    ((DWORD)0x00000800)
+#define IDB_PV_LABEL_BEARINGS   ((DWORD)0x00001000)
+
+// #define                   ((DWORD)0x00001000)
+
+// Girder Model Editor
+// ======================================
+// all possible settings for girder model editor;
+//       section view
+#define IDG_SV_SHOW_STRANDS     ((DWORD)0x00000001)
+#define IDG_SV_SHOW_PS_CG       ((DWORD)0x00000002)
+#define IDG_SV_SHOW_DIMENSIONS  ((DWORD)0x00000004)
+#define IDG_SV_DRAW_ISOTROPIC   ((DWORD)0x00000010)
+#define IDG_SV_DRAW_TO_SCALE    ((DWORD)0x00000020)
+#define IDG_SV_SHOW_LONG_REINF  ((DWORD)0x00000040)
+#define IDG_SV_SYNC_GIRDER      ((DWORD)0x00000080)
+
+// elevation view
+#define IDG_EV_SHOW_STRANDS     ((DWORD)0x00000100)
+#define IDG_EV_SHOW_PS_CG       ((DWORD)0x00000200)
+#define IDG_EV_SHOW_DIMENSIONS  ((DWORD)0x00000400)
+#define IDG_EV_DRAW_ISOTROPIC   ((DWORD)0x00000800)
+#define IDG_EV_DRAW_TO_SCALE    ((DWORD)0x00001000)
+#define IDG_EV_SHOW_STIRRUPS    ((DWORD)0x00002000)
+#define IDG_EV_SHOW_LONG_REINF  ((DWORD)0x00004000)
+#define IDG_EV_SHOW_LOADS       ((DWORD)0x00008000)
+#define IDG_EV_SHOW_LEGEND      ((DWORD)0x00010000)
+
+#endif

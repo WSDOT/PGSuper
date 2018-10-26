@@ -1,0 +1,838 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// VoidedSlabFactory.cpp : Implementation of CVoidedSlabFactory
+#include "stdafx.h"
+#include <Plugins\Beams.h>
+#include "BeamFamilyCLSID.h"
+#include "VoidedSlabFactory.h"
+#include "IBeamDistFactorEngineer.h"
+#include "VoidedSlabDistFactorEngineer.h"
+#include "PsBeamLossEngineer.h"
+#include "StrandMoverImpl.h"
+#include <BridgeModeling\PrismaticGirderProfile.h>
+#include <GeomModel\PrecastBeam.h>
+#include <MathEx.h>
+#include <sstream>
+#include <algorithm>
+
+#include <IFace\Project.h>
+#include <IFace\Bridge.h>
+#include <IFace\StatusCenter.h>
+
+#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\StatusItem.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CVoidedSlabFactory
+HRESULT CVoidedSlabFactory::FinalConstruct()
+{
+   // Initialize with default values... This are not necessarily valid dimensions
+   m_DimNames.push_back("H");
+   m_DimNames.push_back("W");
+   m_DimNames.push_back("Void_Diameter");
+   m_DimNames.push_back("Void_Spacing");
+   m_DimNames.push_back("Number_of_Voids");
+   m_DimNames.push_back("Jmax");
+
+   m_DefaultDims.push_back(::ConvertToSysUnits(18.0,unitMeasure::Inch)); // H
+   m_DefaultDims.push_back(::ConvertToSysUnits(48.0,unitMeasure::Inch)); // W
+   m_DefaultDims.push_back(::ConvertToSysUnits(10.0,unitMeasure::Inch)); // Void Diameter
+   m_DefaultDims.push_back(::ConvertToSysUnits(12.5,unitMeasure::Inch)); // Void Spacing
+   m_DefaultDims.push_back(3);                                           // Number of Voids
+   m_DefaultDims.push_back(::ConvertToSysUnits(1.0,unitMeasure::Inch));  // Max Joint Spacing
+
+   // SI Units
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H 
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Void Diameter
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Void Spacing
+   m_DimUnits[0].push_back(NULL);                     // Number of Voids
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Max joint size
+
+   // US Units
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // H 
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // W
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // Void Diameter
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // Void Spacing
+   m_DimUnits[1].push_back(NULL);               // Number of Voids
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // Max joint size
+
+   return S_OK;
+}
+
+void CVoidedSlabFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+{
+   CComPtr<IVoidedSlabSection> gdrsection;
+   gdrsection.CoCreateInstance(CLSID_VoidedSlabSection);
+   CComPtr<IVoidedSlab> beam;
+   gdrsection->get_Beam(&beam);
+
+   double H,W,D,S,J;
+   long N;
+   GetDimensions(dimensions,H,W,D,S,N,J);
+
+   beam->put_Height(H);
+   beam->put_Width(W);
+   beam->put_VoidDiameter(D);
+   beam->put_VoidSpacing(S);
+   beam->put_VoidCount(N);
+
+   gdrsection.QueryInterface(ppSection);
+}
+
+void CVoidedSlabFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+{
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
+
+   double H,W,D,S,J;
+   long N;
+   GetDimensions(dimensions,H,W,D,S,N,J);
+
+   Float64 height = H;
+
+   CComPtr<IRectangle> rect;
+   rect.CoCreateInstance(CLSID_Rect);
+   rect->put_Height(height);
+   rect->put_Width(length);
+
+   CComQIPtr<IXYPosition> position(rect);
+   CComPtr<IPoint2d> topLeft;
+   position->get_LocatorPoint(lpTopLeft,&topLeft);
+   topLeft->Move(0,0);
+   position->put_LocatorPoint(lpTopLeft,topLeft);
+
+   rect->QueryInterface(ppShape);
+}
+
+void CVoidedSlabFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+{
+   CComPtr<IPrismaticSegment> segment;
+   segment.CoCreateInstance(CLSID_PrismaticSegment);
+
+   // Length of the segments will be measured fractionally
+   ssmbr->put_AreSegmentLengthsFractional(VARIANT_TRUE);
+   segment->put_Length(-1.0);
+
+   // Build up the beam shape
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,IGirderData, pGirderData);
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
+   CComPtr<IGirderSection> gdrsection;
+   CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrsection);
+   CComQIPtr<IShape> shape(gdrsection);
+   segment->putref_Shape(shape);
+
+   // Beam materials
+   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
+   CComPtr<IMaterial> material;
+   material.CoCreateInstance(CLSID_Material);
+   material->put_E(pMaterial->GetEcGdr(spanIdx,gdrIdx));
+   material->put_Density(pMaterial->GetStrDensityGdr(spanIdx,gdrIdx));
+   segment->putref_Material(material);
+
+   ssmbr->AddSegment(segment);
+}
+
+void CVoidedSlabFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsPoiMgr* pPoiMgr)
+{
+   // This is a prismatic beam so only add section change POI at the start and end of the beam
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
+
+   pgsPointOfInterest poiStart(pgsTypes::CastingYard,span,gdr,0.00,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   pgsPointOfInterest poiEnd(pgsTypes::CastingYard,span,gdr,gdrLength,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   pPoiMgr->AddPointOfInterest(poiStart);
+   pPoiMgr->AddPointOfInterest(poiEnd);
+
+   // move bridge site poi to the start/end bearing
+   std::set<pgsTypes::Stage> stages;
+   stages.insert(pgsTypes::GirderPlacement);
+   stages.insert(pgsTypes::TemporaryStrandRemoval);
+   stages.insert(pgsTypes::BridgeSite1);
+   stages.insert(pgsTypes::BridgeSite2);
+   stages.insert(pgsTypes::BridgeSite3);
+   
+   Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
+   Float64 end_length   = pBridge->GetGirderEndConnectionLength(span,gdr);
+   poiStart.SetDistFromStart(start_length);
+   poiEnd.SetDistFromStart(gdrLength-end_length);
+
+   poiStart.RemoveStage(pgsTypes::CastingYard);
+   poiStart.AddStages(stages);
+
+   poiEnd.RemoveStage(pgsTypes::CastingYard);
+   poiEnd.AddStages(stages);
+
+   pPoiMgr->AddPointOfInterest(poiStart);
+   pPoiMgr->AddPointOfInterest(poiEnd);
+}
+
+void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+{
+   
+   CComObject<CVoidedSlabDistFactorEngineer>* pEngineer;
+   CComObject<CVoidedSlabDistFactorEngineer>::CreateInstance(&pEngineer);
+   pEngineer->SetBroker(pBroker,agentID);
+   (*ppEng) = pEngineer;
+   (*ppEng)->AddRef();
+}
+
+void CVoidedSlabFactory::CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+{
+   CComObject<CPsBeamLossEngineer>* pEngineer;
+   CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
+    
+   // depends on # of voids
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const GirderLibraryEntry* pGirderLib = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+
+   double nVoids = pGirderLib->GetDimension("Number_of_Voids");
+
+   if ( nVoids == 0 )
+      pEngineer->Init(CPsLossEngineer::SolidSlab);
+   else
+      pEngineer->Init(CPsLossEngineer::SingleT);
+
+   pEngineer->SetBroker(pBroker,agentID);
+   (*ppEng) = pEngineer;
+   (*ppEng)->AddRef();
+}
+
+static void MakeRectangle(double width, double depth, double xOffset, IShape** shape)
+{
+   CComPtr<IRectangle> harp_rect;
+   HRESULT hr = harp_rect.CoCreateInstance(CLSID_Rect);
+   ATLASSERT (SUCCEEDED(hr));
+
+   harp_rect->put_Width(width);
+   harp_rect->put_Height(depth);
+
+   double hook_offset = 0.0;
+
+   CComPtr<IPoint2d> hook;
+   hook.CoCreateInstance(CLSID_Point2d);
+   hook->Move(xOffset, depth/2.0);
+
+   harp_rect->putref_HookPoint(hook);
+
+   harp_rect->get_Shape(shape);
+}
+
+void CVoidedSlabFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
+                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
+{
+   HRESULT hr = S_OK;
+
+   CComObject<CStrandMoverImpl>* pStrandMover;
+   CComObject<CStrandMoverImpl>::CreateInstance(&pStrandMover);
+
+   CComPtr<IStrandMover> sm = pStrandMover;
+
+   CComQIPtr<IConfigureStrandMover> configurer(sm);
+
+   // Set the shapes for harped strand bounds 
+   // Voided slabs don't normally support harped strands, so the question
+   double H,W,D,S,J;
+   long N;
+   GetDimensions(dimensions,H,W,D,S,N,J);
+
+   double width = W;
+   double depth = H;
+
+   if (N==0)
+   {
+      // easy part, no voids
+      double hook_offset = 0.0;
+
+      CComPtr<IShape> shape;
+      MakeRectangle(width, depth, hook_offset, &shape);
+
+      hr = configurer->AddRegion(shape, 0.0);
+      ATLASSERT (SUCCEEDED(hr));
+   }
+   else
+   {
+      // multiple voids, put rectangles between them
+      double voids_w = (N-1)*S + D;
+      double end_width = (width-voids_w)/2.0;
+      double end_loc = (width-end_width)/2.0; 
+
+      // rectangles at ends
+      CComPtr<IShape> shapel, shaper;
+      MakeRectangle(end_width, depth, -end_loc, &shapel);
+      MakeRectangle(end_width, depth,  end_loc, &shaper);
+
+      hr = configurer->AddRegion(shapel, 0.0);
+      ATLASSERT (SUCCEEDED(hr));
+      hr = configurer->AddRegion(shaper, 0.0);
+      ATLASSERT (SUCCEEDED(hr));
+
+      // retangles between voids
+      voids_w = S - D;
+      double loc = -(end_loc - end_width/2.0 - D - voids_w/2.0);
+      for(long iv=0; iv<N-1; iv++)
+      {
+
+         CComPtr<IShape> shape;
+         MakeRectangle(voids_w, depth, loc, &shape);
+
+         hr = configurer->AddRegion(shape, 0.0);
+         ATLASSERT (SUCCEEDED(hr));
+
+         loc += S;
+      }
+   }
+
+   // set vertical offset bounds and increments
+   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+
+   hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   ATLASSERT (SUCCEEDED(hr));
+
+   hr = sm.CopyTo(strandMover);
+   ATLASSERT (SUCCEEDED(hr));
+}
+
+std::vector<std::string> CVoidedSlabFactory::GetDimensionNames()
+{
+   return m_DimNames;
+}
+
+std::vector<double> CVoidedSlabFactory::GetDefaultDimensions()
+{
+   return m_DefaultDims;
+}
+
+std::vector<const unitLength*> CVoidedSlabFactory::GetDimensionUnits(bool bSIUnits)
+{
+   return m_DimUnits[ bSIUnits ? 0 : 1 ];
+}
+
+bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::string* strErrMsg)
+{
+   double H,W,D,S,J;
+   long N;
+   GetDimensions(dimensions,H,W,D,S,N,J);
+
+   if ( H <= 0.0 )
+   {
+      std::ostringstream os;
+      os << "Height must be a positive value" << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( W <= 0.0 )
+   {
+      std::ostringstream os;
+      os << "Width must be a positive value" << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( N < 0.0 )
+   {
+      std::ostringstream os;
+      os << "Invalid Number of Voids" << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+   else if (N == 0)
+   {
+      if ( D != 0.0 )
+      {
+         std::ostringstream os;
+         os << "Void Diameter Must Be Zero If No Voids" << std::ends;
+         *strErrMsg = os.str();
+         return false;
+      }
+
+      if ( S != 0.0 )
+      {
+         std::ostringstream os;
+         os << "Invalid - Void Spacing Must Be Zero If No Voids" << std::ends;
+         *strErrMsg = os.str();
+         return false;
+      }
+   }
+   else // (N > 0)
+   {
+      if ( D <= 0.0 )
+      {
+         std::ostringstream os;
+         os << "Void Diameter Must Be Greater Than Zero" << std::ends;
+         *strErrMsg = os.str();
+         return false;
+      }
+
+      if ( D >= H )
+      {
+         std::ostringstream os;
+         os << "Void Diameter must be less than slab height" << std::ends;
+         *strErrMsg = os.str();
+         return false;
+      }
+
+      if (N == 1)
+      {
+         if ( S != 0.0 )
+         {
+            std::ostringstream os;
+            os << "Invalid - Void Spacing Must Be Zero If Only One Void" << std::ends;
+            *strErrMsg = os.str();
+            return false;
+         }
+
+         if ( D >= W )
+         {
+            std::ostringstream os;
+            os << "Void Diameter must be less than slab width" << std::ends;
+            *strErrMsg = os.str();
+            return false;
+         }
+
+      }
+      else // (N > 1)
+      {
+         if ( S < D )
+         {
+            std::ostringstream os;
+            os << "Void Spacing must be greater than Void Diameter" << std::ends;
+            *strErrMsg = os.str();
+            return false;
+         }
+
+         if ( W <= (N-1)*S + D)
+         {
+            std::ostringstream os;
+            os << "Slab must be wider than width occupied by voids" << std::ends;
+            *strErrMsg = os.str();
+            return false;
+         }
+      }
+   }
+
+   if ( J < 0.0 )
+   {
+      std::ostringstream os;
+      os << "Maximum joint size must be zero or greater" << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   return true;
+}
+
+void CVoidedSlabFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
+{
+   std::vector<std::string>::iterator iter;
+   pSave->BeginUnit("VoidedSlabDimensions",2.0);
+   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   {
+      std::string name = *iter;
+      Float64 value = GetDimension(dimensions,name);
+      pSave->Property(name.c_str(),value);
+   }
+   pSave->EndUnit();
+}
+
+IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
+{
+   Float64 parent_version = pLoad->GetVersion();
+
+   IBeamFactory::Dimensions dimensions;
+   std::vector<std::string>::iterator iter;
+
+   Float64 dimVersion = 1.0;
+   if ( 14 <= parent_version )
+   {
+      if ( pLoad->BeginUnit("VoidedSlabDimensions") )
+         dimVersion = pLoad->GetVersion();
+      else
+         THROW_LOAD(InvalidFileFormat,pLoad);
+   }
+
+   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   {
+      std::string name = *iter;
+      Float64 value;
+      if ( !pLoad->Property(name.c_str(),&value) )
+      {
+         // failed to read dimension value...
+         
+         // if this is before dimension data block versio 2 and the
+         // dimension is Jmax, the fail to read is expected
+         if ( dimVersion < 2 && parent_version < 8.0 && name == "Jmax" )
+         {
+            value = 0.0; // set the default value
+         }
+         else
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+      dimensions.push_back( std::make_pair(name,value) );
+   }
+
+   if ( 14 <= parent_version && !pLoad->EndUnit() )
+      THROW_LOAD(InvalidFileFormat,pLoad);
+
+   return dimensions;
+}
+
+bool CVoidedSlabFactory::IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
+{
+   return true;
+}
+
+Float64 CVoidedSlabFactory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
+{
+   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
+   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE);
+   ATLASSERT( 2 <= vPOI.size() );
+   Float64 V = 0;
+   std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
+   pgsPointOfInterest prev_poi = *iter;
+   Float64 prev_area = pSectProp2->GetAg(pgsTypes::CastingYard,prev_poi);
+   iter++;
+
+   for ( ; iter != vPOI.end(); iter++ )
+   {
+      pgsPointOfInterest poi = *iter;
+      Float64 area = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
+
+      Float64 avg_area = (prev_area + area)/2;
+      V += avg_area*(poi.GetDistFromStart() - prev_poi.GetDistFromStart());
+
+      prev_poi = poi;
+      prev_area = area;
+   }
+
+   return V;
+}
+
+Float64 CVoidedSlabFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bReduceForPoorlyVentilatedVoids)
+{
+   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
+   Float64 perimeter = pSectProp2->GetPerimeter(pgsPointOfInterest(spanIdx,gdrIdx,0.00));
+   
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
+
+   Float64 solid_slab_surface_area = perimeter*Lg;
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+   Float64 D = GetDimension(dimensions,"Void_Diameter");
+   long    N = (long)GetDimension(dimensions,"Number_of_Voids");
+   Float64 void_surface_area = Lg*N*M_PI*D;
+
+   if ( bReduceForPoorlyVentilatedVoids )
+      void_surface_area *= 0.50;
+
+   Float64 surface_area = solid_slab_surface_area + void_surface_area;
+
+   return surface_area;
+}
+
+std::string CVoidedSlabFactory::GetImage()
+{
+   return std::string("VoidedSlab.jpg");
+}
+
+std::string CVoidedSlabFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+{
+   std::string strImage;
+   switch(deckType)
+   {
+   case pgsTypes::sdtCompositeOverlay:
+      strImage = "VoidedSlab_Composite.gif";
+      break;
+
+   case pgsTypes::sdtNone:
+      strImage = "VoidedSlab_Noncomposite.gif";
+      break;
+
+   default:
+      ATLASSERT(false); // shouldn't get here
+      break;
+   };
+
+   return strImage;
+}
+
+std::string CVoidedSlabFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+{
+   std::string strImage;
+   switch(deckType)
+   {
+   case pgsTypes::sdtCompositeOverlay:
+      strImage =  "+Mn_VoidedSlab_Composite.gif";
+      break;
+
+   case pgsTypes::sdtNone:
+      strImage =  "+Mn_VoidedSlab_Noncomposite.gif";
+      break;
+
+   default:
+      ATLASSERT(false); // shouldn't get here
+      break;
+   };
+
+   return strImage;
+}
+
+std::string CVoidedSlabFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+{
+   std::string strImage;
+   switch(deckType)
+   {
+   case pgsTypes::sdtCompositeOverlay:
+      strImage =  "-Mn_VoidedSlab_Composite.gif";
+      break;
+
+   case pgsTypes::sdtNone:
+      strImage =  "-Mn_VoidedSlab_Noncomposite.gif";
+      break;
+
+   default:
+      ATLASSERT(false); // shouldn't get here
+      break;
+   };
+
+   return strImage;
+}
+
+std::string CVoidedSlabFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+{
+   std::string strImage;
+   switch(deckType)
+   {
+   case pgsTypes::sdtCompositeOverlay:
+      strImage =  "Vn_VoidedSlab_Composite.gif";
+      break;
+
+   case pgsTypes::sdtNone:
+      strImage =  "Vn_VoidedSlab_Noncomposite.gif";
+      break;
+
+   default:
+      ATLASSERT(false); // shouldn't get here
+      break;
+   };
+
+   return strImage;
+}
+
+std::string CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+{
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   {
+      return "VoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif";
+   }
+   else
+   {
+      return "VoidedSlab_Effective_Flange_Width_Interior_Girder.gif";
+   }
+}
+
+std::string CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+{
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   {
+      return "VoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif";
+   }
+   else
+   {
+      return "VoidedSlab_Effective_Flange_Width_Exterior_Girder.gif";
+   }
+}
+
+CLSID CVoidedSlabFactory::GetCLSID()
+{
+   return CLSID_VoidedSlabFactory;
+}
+
+CLSID CVoidedSlabFactory::GetFamilyCLSID()
+{
+   return CLSID_SlabBeamFamily;
+}
+
+std::string CVoidedSlabFactory::GetGirderFamilyName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::string( OLE2A(pszUserType) );
+}
+
+std::string CVoidedSlabFactory::GetPublisher()
+{
+   return std::string("WSDOT");
+}
+
+HINSTANCE CVoidedSlabFactory::GetResourceInstance()
+{
+   return _Module.GetResourceInstance();
+}
+
+LPCTSTR CVoidedSlabFactory::GetImageResourceName()
+{
+   return _T("VOIDEDSLAB");
+}
+
+HICON  CVoidedSlabFactory::GetIcon() 
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_VOIDEDSLAB) );
+}
+
+void CVoidedSlabFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
+                                       double& H,
+                                       double& W,
+                                       double& D,
+                                       double& S,
+                                       long& N,
+                                       double& J)
+{
+   H = GetDimension(dimensions,"H");
+   W = GetDimension(dimensions,"W");
+   D = GetDimension(dimensions,"Void_Diameter");
+   S = GetDimension(dimensions,"Void_Spacing");
+   N = (long)GetDimension(dimensions,"Number_of_Voids");
+   J = GetDimension(dimensions,"Jmax");
+}
+
+double CVoidedSlabFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,
+                                        const std::string& name)
+{
+   Dimensions::const_iterator iter;
+   for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
+   {
+      const Dimension& dim = *iter;
+      if ( name == dim.first )
+         return dim.second;
+   }
+
+   ATLASSERT(false); // should never get here
+   return -99999;
+}
+
+pgsTypes::SupportedDeckTypes CVoidedSlabFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs)
+{
+   pgsTypes::SupportedDeckTypes sdt;
+   switch(sbs)
+   {
+   case pgsTypes::sbsUniformAdjacent:
+   case pgsTypes::sbsGeneralAdjacent:
+      sdt.push_back(pgsTypes::sdtCompositeOverlay);
+      sdt.push_back(pgsTypes::sdtNone);
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+   return sdt;
+}
+
+pgsTypes::SupportedBeamSpacings CVoidedSlabFactory::GetSupportedBeamSpacings()
+{
+   pgsTypes::SupportedBeamSpacings sbs;
+   sbs.push_back(pgsTypes::sbsUniformAdjacent);
+   sbs.push_back(pgsTypes::sbsGeneralAdjacent);
+
+   return sbs;
+}
+
+void CVoidedSlabFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
+                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
+{
+   *minSpacing = 0.0;
+   *maxSpacing = 0.0;
+
+   double gw = GetDimension(dimensions,"W");
+   double J  = GetDimension(dimensions,"Jmax");
+
+   if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
+   {
+      if(sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
+      {
+         *minSpacing = gw;
+         *maxSpacing = gw+J;
+      }
+      else
+      {
+         ATLASSERT(false); // shouldn't get here
+      }
+   }
+   else
+   {
+      ATLASSERT(false); // shouldn't get here
+   }
+}
+
+long CVoidedSlabFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
+{
+   long nv = (long)GetDimension(dimensions,"Number_of_Voids");
+   return nv+1;
+}
+
+Float64 CVoidedSlabFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+{
+   return GetDimension(dimensions,"H");
+}
+
+Float64 CVoidedSlabFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+{
+   return GetDimension(dimensions,"W");
+}

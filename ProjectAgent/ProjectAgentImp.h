@@ -1,0 +1,657 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// ProjectAgentImp.h : Declaration of the CProjectAgentImp
+
+#ifndef __PROJECTAGENT_H_
+#define __PROJECTAGENT_H_
+
+#include "resource.h"       // main symbols
+
+#include <StrData.h>
+#include <vector>
+#include "CPProjectAgent.h"
+#include <MathEx.h>
+#include <PsgLib\LibraryManager.h>
+
+#include <Units\SysUnits.h>
+
+#include <PgsExt\InterfaceCache.h>
+
+#include <PgsExt\PierData.h>
+#include <PgsExt\GirderData.h>
+#include <PgsExt\PointLoadData.h>
+#include <PgsExt\DistributedLoadData.h>
+#include <PgsExt\MomentLoadData.h>
+#include <PgsExt\LoadFactors.h>
+#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\ShearData.h>
+#include <PgsExt\LongitudinalRebarData.h>
+
+#include "LibraryEntryObserver.h"
+
+#include <IFace\GirderHandling.h>
+
+
+class CStructuredLoad;
+class ConflictList;
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CProjectAgentImp
+class ATL_NO_VTABLE CProjectAgentImp : 
+	public CComObjectRootEx<CComSingleThreadModel>,
+	public CComCoClass<CProjectAgentImp, &CLSID_ProjectAgent>,
+	public IConnectionPointContainerImpl<CProjectAgentImp>,
+   public CProxyIProjectPropertiesEventSink<CProjectAgentImp>,
+   public CProxyIProjectSettingsEventSink<CProjectAgentImp>,
+   public CProxyIEnvironmentEventSink<CProjectAgentImp>,
+   public CProxyIBridgeDescriptionEventSink<CProjectAgentImp>,
+   public CProxyISpecificationEventSink<CProjectAgentImp>,
+   public CProxyILibraryConflictEventSink<CProjectAgentImp>,
+   public CProxyILoadModifiersEventSink<CProjectAgentImp>,
+   public IAgentEx,
+   public IAgentPersist,
+   public IVersionInfo,
+   public IProjectProperties,
+   public IProjectSettings,
+   public IProjectLog,
+   public IDisplayUnits,
+   public IEnvironment,
+   public IRoadwayData,
+   public IBridgeDescription,
+   public IGirderData,
+   public IShear,
+   public ILongitudinalRebar,
+   public ISpecification,
+   public ILibraryNames,
+   public ILibrary,
+   public ILoadModifiers,
+   public IGirderHauling,
+   public IGirderLifting,
+   public IImportProjectLibrary,
+   public IUserDefinedLoadData,
+   public IEvents,
+   public ILimits,
+   public ILoadFactors,
+   public ILiveLoads
+{  
+public:
+	CProjectAgentImp(); 
+   virtual ~CProjectAgentImp();
+
+DECLARE_REGISTRY_RESOURCEID(IDR_PROJECTAGENT)
+
+BEGIN_COM_MAP(CProjectAgentImp)
+	COM_INTERFACE_ENTRY(IAgent)
+   COM_INTERFACE_ENTRY(IAgentEx)
+	COM_INTERFACE_ENTRY(IAgentPersist)
+   COM_INTERFACE_ENTRY(IVersionInfo)
+	COM_INTERFACE_ENTRY(IProjectProperties)
+	COM_INTERFACE_ENTRY(IProjectSettings)
+	COM_INTERFACE_ENTRY(IProjectLog)
+   COM_INTERFACE_ENTRY(IDisplayUnits)
+   COM_INTERFACE_ENTRY(IEnvironment)
+   COM_INTERFACE_ENTRY(IRoadwayData)
+   COM_INTERFACE_ENTRY(IBridgeDescription)
+   COM_INTERFACE_ENTRY(IGirderData)
+   COM_INTERFACE_ENTRY(IShear)
+   COM_INTERFACE_ENTRY(ILongitudinalRebar)
+   COM_INTERFACE_ENTRY(ISpecification)
+   COM_INTERFACE_ENTRY(ILibraryNames)
+   COM_INTERFACE_ENTRY(ILibrary)
+   COM_INTERFACE_ENTRY(ILoadModifiers)
+	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
+   COM_INTERFACE_ENTRY(IGirderHauling)
+   COM_INTERFACE_ENTRY(IGirderLifting)
+   COM_INTERFACE_ENTRY(IImportProjectLibrary)
+   COM_INTERFACE_ENTRY(IUserDefinedLoadData)
+   COM_INTERFACE_ENTRY(IEvents)
+   COM_INTERFACE_ENTRY(ILimits)
+   COM_INTERFACE_ENTRY(ILoadFactors)
+   COM_INTERFACE_ENTRY(ILiveLoads)
+END_COM_MAP()
+
+BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
+   CONNECTION_POINT_ENTRY( IID_IProjectPropertiesEventSink )
+   CONNECTION_POINT_ENTRY( IID_IProjectSettingsEventSink )
+   CONNECTION_POINT_ENTRY( IID_IEnvironmentEventSink )
+   CONNECTION_POINT_ENTRY( IID_IBridgeDescriptionEventSink )
+   CONNECTION_POINT_ENTRY( IID_ISpecificationEventSink )
+   CONNECTION_POINT_ENTRY( IID_ILibraryConflictEventSink )
+   CONNECTION_POINT_ENTRY( IID_ILoadModifiersEventSink )
+END_CONNECTION_POINT_MAP()
+
+
+// IAgent
+public:
+	STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker);
+   STDMETHOD(RegInterfaces)();
+	STDMETHOD(Init)();
+	STDMETHOD(Reset)();
+	STDMETHOD(ShutDown)();
+   STDMETHOD(Init2)();
+   STDMETHOD(GetClassID)(CLSID* pCLSID);
+
+// IAgentPersist
+public:
+	STDMETHOD(Load)(/*[in]*/ IStructuredLoad* pStrLoad);
+	STDMETHOD(Save)(/*[in]*/ IStructuredSave* pStrSave);
+
+// IVersionInfo
+public:
+   virtual void SetVersionString(const std::string& strVer);
+   virtual std::string GetVersionString();
+   virtual void SetVersion(const std::string& strVer);
+   virtual std::string GetVersion();
+
+// IProjectProperties
+public:
+   virtual std::string GetBridgeName() const;
+   virtual void SetBridgeName(const std::string& name);
+   virtual std::string GetBridgeId() const;
+   virtual void SetBridgeId(const std::string& bid);
+   virtual std::string GetJobNumber() const;
+   virtual void SetJobNumber(const std::string& jid);
+   virtual std::string GetEngineer() const;
+   virtual void SetEngineer(const std::string& eng);
+   virtual std::string GetCompany() const;
+   virtual void SetCompany(const std::string& company);
+   virtual std::string GetComments() const;
+   virtual void SetComments(const std::string& comments);
+   virtual void EnableUpdate(bool bEnable);
+   virtual bool IsUpdatedEnabled();
+   virtual bool AreUpdatesPending();
+
+// IProjectSettings
+public:
+	virtual pgsTypes::UnitMode GetUnitsMode() const;
+	virtual void SetUnitsMode(pgsTypes::UnitMode newVal);
+
+// IProjectLog
+public:
+   virtual std::string GetName();
+   virtual void LogMessage( const char* lpszMsg );
+   virtual void Destroy();
+
+// IDisplayUnits
+public:
+	virtual pgsTypes::UnitMode              GetUnitDisplayMode();
+ 	virtual const unitStationFormat&        GetStationFormat();
+   virtual const unitmgtScalar&            GetScalarFormat();
+   virtual const unitmgtLengthData&        GetComponentDimUnit();
+   virtual const unitmgtLengthData&        GetXSectionDimUnit();
+   virtual const unitmgtLengthData&        GetSpanLengthUnit();
+   virtual const unitmgtLengthData&        GetDisplacementUnit() ;
+   virtual const unitmgtLengthData&        GetAlignmentLengthUnit();
+   virtual const unitmgtLength2Data&       GetAreaUnit();
+   virtual const unitmgtLength4Data&       GetMomentOfInertiaUnit();
+   virtual const unitmgtLength3Data&       GetSectModulusUnit();
+   virtual const unitmgtPressureData&      GetStressUnit();
+   virtual const unitmgtPressureData&      GetModEUnit();
+   virtual const unitmgtForceData&         GetGeneralForceUnit();
+   virtual const unitmgtForceData&         GetShearUnit();
+   virtual const unitmgtMomentData&        GetMomentUnit();
+   virtual const unitmgtAngleData&         GetAngleUnit();
+   virtual const unitmgtAngleData&         GetRadAngleUnit();  // Radians always
+   virtual const unitmgtDensityData&       GetDensityUnit();
+   virtual const unitmgtMassPerLengthData& GetMassPerLengthUnit();
+   virtual const unitmgtForcePerLengthData& GetForcePerLengthUnit();
+   virtual const unitmgtMomentPerAngleData& GetMomentPerAngleUnit();
+   virtual const unitmgtTimeData&          GetShortTimeUnit();
+   virtual const unitmgtTimeData&          GetLongTimeUnit();
+   virtual const unitmgtAreaPerLengthData& GetAvOverSUnit();
+   virtual const unitmgtForceLength2Data&  GetStiffnessUnit();
+   virtual const unitmgtSqrtPressureData&   GetTensionCoefficientUnit();
+   virtual const unitmgtPerLengthData&      GetPerLengthUnit();
+   virtual const unitmgtPressureData&       GetSidewalkPressureUnit();
+   virtual const unitmgtPressureData&       GetOverlayWeightUnit();
+
+// IEnvironment
+public:
+   virtual enumExposureCondition GetExposureCondition() const;
+	virtual void SetExposureCondition(enumExposureCondition newVal);
+	virtual Float64 GetRelHumidity() const;
+	virtual void SetRelHumidity(Float64 newVal);
+
+// IRoadwayData
+public:
+   virtual void SetAlignmentData2(const AlignmentData2& data);
+   virtual AlignmentData2 GetAlignmentData2() const;
+   virtual void SetProfileData2(const ProfileData2& data);
+   virtual ProfileData2 GetProfileData2() const;
+   virtual void SetRoadwaySectionData(const RoadwaySectionData& data);
+   virtual RoadwaySectionData GetRoadwaySectionData() const;
+
+// IBridgeDescription
+public:
+   virtual const CBridgeDescription* GetBridgeDescription();
+   virtual void SetBridgeDescription(const CBridgeDescription& desc);
+   virtual const CDeckDescription* GetDeckDescription();
+   virtual void SetDeckDescription(const CDeckDescription& deck);
+   virtual const CSpanData* GetSpan(SpanIndexType spanIdx);
+   virtual void SetSpan(SpanIndexType spanIdx,const CSpanData& spanData);
+   virtual const CPierData* GetPier(PierIndexType pierIdx);
+   virtual void SetPier(PierIndexType pierIdx,const CPierData& PierData);
+   virtual void SetSpanLength(SpanIndexType spanIdx,double newLength);
+   virtual void MovePier(PierIndexType pierIdx,double newStation,pgsTypes::MovePierOption moveOption);
+   virtual void SetMeasurementType(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementType mt);
+   virtual void SetMeasurementLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation ml);
+   virtual void SetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType face,const CGirderSpacing& spacing);
+   virtual void SetGirderSpacingAtStartOfSpan(SpanIndexType spanIdx,const CGirderSpacing& spacing);
+   virtual void SetGirderSpacingAtEndOfSpan(SpanIndexType spanIdx,const CGirderSpacing& spacing);
+   virtual void UseSameGirderSpacingAtBothEndsOfSpan(SpanIndexType spanIdx,bool bUseSame);
+   virtual void SetGirderTypes(SpanIndexType spanIdx,const CGirderTypes& girderTypes);
+   virtual void SetGirderName( SpanIndexType spanIdx, GirderIndexType gdrIdx, const char* strGirderName);
+   virtual void SetGirderCount(SpanIndexType spanIdx,GirderIndexType nGirders);
+   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType);
+   virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan);
+   virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace, Float64 spanLength, const CSpanData* pSpanData=NULL,const CPierData* pPierData=NULL);
+   virtual void SetLiveLoadDistributionFactorMethod(pgsTypes::DistributionFactorMethod method);
+   virtual pgsTypes::DistributionFactorMethod GetLiveLoadDistributionFactorMethod();
+   virtual void UseSameNumberOfGirdersInAllSpans(bool bUseSame);
+   virtual bool UseSameNumberOfGirdersInAllSpans();
+   virtual void SetGirderCount(GirderIndexType nGirders);
+   virtual void UseSameGirderForEntireBridge(bool bSame);
+   virtual bool UseSameGirderForEntireBridge();
+   virtual void SetGirderName(const char* strGirderName);
+   virtual void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs);
+   virtual pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
+   virtual void SetGirderSpacing(double spacing);
+   virtual void SetMeasurementType(pgsTypes::MeasurementType mt);
+   virtual pgsTypes::MeasurementType GetMeasurementType();
+   virtual void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
+   virtual pgsTypes::MeasurementLocation GetMeasurementLocation();
+   virtual void SetSlabOffset( Float64 slabOffset);
+   virtual void SetSlabOffset( SpanIndexType spanIdx, Float64 start, Float64 end);
+   virtual void SetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 start, Float64 end);
+   virtual pgsTypes::SlabOffsetType GetSlabOffsetType();
+   virtual void GetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64* pStart, Float64* pEnd);
+
+// IGirderData
+public:
+   virtual const matPsStrand* GetStrandMaterial(SpanIndexType span,GirderIndexType gdr) const;
+   virtual void SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,const matPsStrand* pmat);
+   virtual CGirderData GetGirderData(SpanIndexType span,GirderIndexType gdr) const;
+   virtual bool SetGirderData(const CGirderData& data,SpanIndexType span,GirderIndexType gdr);
+   virtual const CGirderMaterial* GetGirderMaterial(SpanIndexType span,GirderIndexType gdr) const;
+   virtual void SetGirderMaterial(SpanIndexType span,GirderIndexType gdr,const CGirderMaterial& material);
+private:
+   // set girder data and return an int containing the && of what was changed
+   // as per CGirderData::ChangeType
+   int DoSetGirderData(const CGirderData& data,SpanIndexType span,GirderIndexType gdr);
+
+// IShear
+public:
+   virtual std::string GetStirrupMaterial(SpanIndexType span,GirderIndexType gdr) const;
+   virtual void SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr,const char* matName);
+   virtual CShearData GetShearData(SpanIndexType span,GirderIndexType gdr) const;
+   virtual bool SetShearData(const CShearData& data,SpanIndexType span,GirderIndexType gdr);
+private:
+   bool DoSetShearData(const CShearData& data,SpanIndexType span,GirderIndexType gdr);
+
+// ILongitudinalRebar
+public:
+   virtual std::string GetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr) const;
+   virtual void SetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr,const char* matName);
+   virtual CLongitudinalRebarData GetLongitudinalRebarData(SpanIndexType span,GirderIndexType gdr) const;
+   virtual bool SetLongitudinalRebarData(const CLongitudinalRebarData& data,SpanIndexType span,GirderIndexType gdr);
+private:
+   bool DoSetLongitudinalRebarData(const CLongitudinalRebarData& data,SpanIndexType span,GirderIndexType gdr);
+
+// ISpecification
+public:
+   virtual std::string GetSpecification() const;
+   virtual void SetSpecification(const std::string& spec);
+   virtual void GetTrafficBarrierDistribution(GirderIndexType* pNGirders,pgsTypes::TrafficBarrierDistribution* pDistType);
+   virtual Uint16 GetMomentCapacityMethod();
+   virtual void SetAnalysisType(pgsTypes::AnalysisType analysisType);
+   virtual pgsTypes::AnalysisType GetAnalysisType();
+   virtual arDesignOptions GetDesignOptions(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual bool IsSlabOffsetDesignEnabled();
+   virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType();
+
+// ILibraryNames
+public:
+   virtual void EnumGdrConnectionNames( std::vector<std::string>* pNames ) const;
+   virtual void EnumGirderNames( std::vector<std::string>* pNames ) const;
+   virtual void EnumGirderNames( const char* strGirderFamily, std::vector<std::string>* pNames ) const;
+   virtual void EnumConcreteNames( std::vector<std::string>* pNames ) const;
+   virtual void EnumDiaphragmNames( std::vector<std::string>* pNames ) const;
+   virtual void EnumTrafficBarrierNames( std::vector<std::string>* pNames ) const;
+   virtual void EnumSpecNames( std::vector<std::string>* pNames) const;
+   virtual void EnumLiveLoadNames( std::vector<std::string>* pNames) const;
+   virtual void EnumGirderFamilyNames( std::vector<std::string>* pNames );
+   virtual void GetBeamFactory(const std::string& strBeamFamily,const std::string& strBeamName,IBeamFactory** ppFactory);
+
+// ILibrary
+public:
+   virtual void SetLibraryManager(psgLibraryManager* pNewLibMgr);
+   virtual const ConnectionLibraryEntry* GetConnectionEntry(const char* lpszName ) const;
+   virtual const GirderLibraryEntry* GetGirderEntry( const char* lpszName ) const;
+   virtual const ConcreteLibraryEntry* GetConcreteEntry( const char* lpszName ) const;
+   virtual const DiaphragmLayoutEntry* GetDiaphragmEntry( const char* lpszName ) const;
+   virtual const TrafficBarrierEntry* GetTrafficBarrierEntry( const char* lpszName ) const;
+   virtual const SpecLibraryEntry* GetSpecEntry( const char* lpszName ) const;
+   virtual const LiveLoadLibraryEntry* GetLiveLoadEntry( const char* lpszName ) const;
+   virtual ConcreteLibrary&        GetConcreteLibrary();
+   virtual ConnectionLibrary&      GetConnectionLibrary();
+   virtual GirderLibrary&          GetGirderLibrary();
+   virtual DiaphragmLayoutLibrary& GetDiaphragmLayoutLibrary();
+   virtual TrafficBarrierLibrary&  GetTrafficBarrierLibrary();
+   virtual SpecLibrary*            GetSpecLibrary();
+   virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const;
+   virtual void GetMasterLibraryInfo(std::string& strPublisher,std::string& strMasterLib,sysTime& time) const;
+
+// ILoadModifiers
+public:
+   virtual void SetDuctilityFactor(Level level,Float64 value);
+   virtual void SetImportanceFactor(Level level,Float64 value);
+   virtual void SetRedundancyFactor(Level level,Float64 value);
+   virtual Float64 GetDuctilityFactor();
+   virtual Float64 GetImportanceFactor();
+   virtual Float64 GetRedundancyFactor();
+   virtual Level GetDuctilityLevel();
+   virtual Level GetImportanceLevel();
+   virtual Level GetRedundancyLevel();
+
+// IGirderLifting
+public:
+   virtual Float64 GetLeftLiftingLoopLocation(SpanIndexType span,GirderIndexType girder);
+   virtual Float64 GetRightLiftingLoopLocation(SpanIndexType span,GirderIndexType girder);
+   virtual bool SetLiftingLoopLocations(SpanIndexType span,GirderIndexType girder, Float64 left,Float64 right);
+private:
+   bool DoSetLiftingLoopLocations(SpanIndexType span,GirderIndexType girder, Float64 left, Float64 right);
+
+// IGirderHauling
+public:
+   virtual Float64 GetLeadingOverhang(SpanIndexType span,GirderIndexType girder);
+   virtual Float64 GetTrailingOverhang(SpanIndexType span,GirderIndexType girder);
+   virtual bool SetTruckSupportLocations(SpanIndexType span,GirderIndexType girder, Float64 leftLoc,Float64 rightLoc);
+private:
+   bool DoSetTruckSupportLocations(SpanIndexType span,GirderIndexType girder, Float64 leftLoc,Float64 rightLoc);
+
+// IImportProjectLibrary
+public:
+   virtual bool ImportProjectLibraries(IStructuredLoad* pLoad);
+
+// IUserDefinedLoadData
+public:
+   virtual Uint32 GetPointLoadCount() const;
+   virtual Uint32 AddPointLoad(const CPointLoadData& pld);
+   virtual const CPointLoadData& GetPointLoad(Uint32 idx) const;
+   virtual void UpdatePointLoad(Uint32 idx, const CPointLoadData& pld);
+   virtual void DeletePointLoad(Uint32 idx);
+
+   virtual Uint32 GetDistributedLoadCount() const;
+   virtual Uint32 AddDistributedLoad(const CDistributedLoadData& pld);
+   virtual const CDistributedLoadData& GetDistributedLoad(Uint32 idx) const;
+   virtual void UpdateDistributedLoad(Uint32 idx, const CDistributedLoadData& pld);
+   virtual void DeleteDistributedLoad(Uint32 idx);
+
+   virtual Uint32 GetMomentLoadCount() const;
+   virtual Uint32 AddMomentLoad(const CMomentLoadData& pld);
+   virtual const CMomentLoadData& GetMomentLoad(Uint32 idx) const;
+   virtual void UpdateMomentLoad(Uint32 idx, const CMomentLoadData& pld);
+   virtual void DeleteMomentLoad(Uint32 idx);
+
+// ILiveLoads
+public:
+   virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType);
+   virtual bool IsPedestianLoadEnabled(pgsTypes::LiveLoadType llType);
+   virtual void EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bEnable);
+   virtual std::vector<std::string> GetLiveLoadNames(pgsTypes::LiveLoadType llType);
+   virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::string>& names);
+   virtual double GetTruckImpact(pgsTypes::LiveLoadType llType);
+   virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,double impact);
+   virtual double GetLaneImpact(pgsTypes::LiveLoadType llType);
+   virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,double impact);
+   virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action);
+   virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction();
+   virtual std::string GetLLDFSpecialActionText(); // get common string for ignore roa case
+   virtual bool IgnoreLLDFRangeOfApplicability(); // true if action is to ignore ROA
+
+// IEvents
+public:
+   virtual void HoldEvents();
+   virtual void FirePendingEvents();
+
+// Limits
+public:
+   virtual double GetMaxSlabFc();
+   virtual double GetMaxGirderFci();
+   virtual double GetMaxGirderFc();
+   virtual double GetMaxConcreteUnitWeight();
+   virtual double GetMaxConcreteAggSize();
+
+// ILoadFactors
+public:
+   const CLoadFactors* GetLoadFactors() const;
+   void SetLoadFactors(const CLoadFactors& loadFactors) ;
+
+#ifdef _DEBUG
+   bool AssertValid() const;
+#endif//
+
+private:
+   DECLARE_AGENT_DATA;
+
+   // status items must be managed by span girder
+   void AddGirderStatusItem(SpanIndexType span, GirderIndexType girder, std::string& message);
+   void RemoveGirderStatusItems(SpanIndexType span, GirderIndexType girder);
+
+   // save hash value and vector of status ids
+   typedef std::map<SpanGirderHashType, std::vector<long> > StatusContainer;
+   typedef StatusContainer::iterator StatusIterator;
+
+   std::map<SpanGirderHashType, std::vector<long> > m_CurrentGirderStatusItems;
+
+   std::string m_BridgeName;
+   std::string m_BridgeId;
+   std::string m_JobNumber;
+   std::string m_Engineer;
+   std::string m_Company;
+   std::string m_Comments;
+   bool m_bPropertyUpdatesEnabled;
+   bool m_bPropertyUpdatesPending;
+
+   pgsTypes::UnitMode m_Units;
+   pgsTypes::AnalysisType m_AnalysisType;
+   bool m_bGetAnalysisTypeFromLibrary; // if true, we are reading old input... get the analysis type from the library entry
+
+#if defined UNICODE
+   std::wstring m_LogFileName;
+#else
+   std::string m_LogFileName;
+#endif
+   DWORD m_dwLogFileCookie;
+
+   std::string m_VersionString; // version string
+   std::string m_Version; // version string
+
+   std::vector<std::string> m_GirderFamilyNames;
+
+   // Environment Data
+   enumExposureCondition m_ExposureCondition;
+   Float64 m_RelHumidity;
+
+   // Alignment Data
+   double m_AlignmentOffset_Temp;
+   bool m_bUseTempAlignmentOffset;
+
+   AlignmentData2 m_AlignmentData2;
+   ProfileData2   m_ProfileData2;
+   RoadwaySectionData m_RoadwaySectionData;
+
+   // Bridge Description Data
+   mutable CBridgeDescription m_BridgeDescription;
+
+   // Prestressing Data
+   void UpdateJackingForce() const;
+   void UpdateJackingForce(SpanIndexType span,GirderIndexType gdr);
+   mutable bool m_bUpdateJackingForce;
+
+   // Specification Data
+   std::string m_Spec;
+   const SpecLibraryEntry* m_pSpecEntry;
+
+   // Live load selection
+   struct LiveLoadSelection
+   {
+      std::string                 EntryName;
+      const LiveLoadLibraryEntry* pEntry; // NULL if this is a system defined live load (HL-93)
+
+      LiveLoadSelection() { pEntry = NULL; }
+
+      bool operator==(const LiveLoadSelection& other) const
+      { return pEntry == other.pEntry; }
+   };
+
+   typedef std::vector<LiveLoadSelection> LiveLoadSelectionContainer;
+   typedef LiveLoadSelectionContainer::iterator LiveLoadSelectionIterator;
+
+   // index is pgsTypes::LiveLoadTypes constant
+   LiveLoadSelectionContainer m_SelectedLiveLoads[3];
+   double m_TruckImpact[3];
+   double m_LaneImpact[3];
+
+   void OnLiveLoadEntryRenamed(LiveLoadLibraryEntry* pEntry);
+
+   LldfRangeOfApplicabilityAction m_LldfRangeOfApplicabilityAction;
+   bool m_bGetIgnoreROAFromLibrary; // if true, we are reading old input... get the Ignore ROA setting from the spec library entry
+
+   // Display Units Stuff
+   unitmgtLibrary m_UnitLibrary;
+   const unitmgtIndirectMeasure* m_pDisplayUnits; // current setting
+
+   // Load Modifiers
+   ILoadModifiers::Level m_DuctilityLevel;
+   ILoadModifiers::Level m_ImportanceLevel;
+   ILoadModifiers::Level m_RedundancyLevel;
+   Float64 m_DuctilityFactor;
+   Float64 m_ImportanceFactor;
+   Float64 m_RedundancyFactor;
+
+   CLoadFactors m_LoadFactors;
+
+   // user defined loads
+   typedef std::vector<CPointLoadData> PointLoadList;
+   typedef PointLoadList::iterator PointLoadListIterator;
+   PointLoadList m_PointLoads;
+
+   typedef std::vector<CDistributedLoadData> DistributedLoadList;
+   typedef DistributedLoadList::iterator DistributedLoadListIterator;
+   DistributedLoadList m_DistributedLoads;
+
+   typedef std::vector<CMomentLoadData> MomentLoadList;
+   typedef MomentLoadList::iterator MomentLoadListIterator;
+   MomentLoadList m_MomentLoads;
+
+   HRESULT SavePointLoads(IStructuredSave* pSave);
+   HRESULT LoadPointLoads(IStructuredLoad* pLoad);
+   HRESULT SaveDistributedLoads(IStructuredSave* pSave);
+   HRESULT LoadDistributedLoads(IStructuredLoad* pLoad);
+   HRESULT SaveMomentLoads(IStructuredSave* pSave);
+   HRESULT LoadMomentLoads(IStructuredLoad* pLoad);
+
+   Uint32 m_PendingEvents;
+   bool m_bHoldingEvents;
+   std::map<SpanGirderHashType,Uint32> m_PendingEventsHash; // hash values for span/girders that have pending events
+
+   // Callback methods for structured storage map
+   static HRESULT SpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT AlignmentProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
+   static HRESULT ProfileProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
+   static HRESULT SuperelevationProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
+   static HRESULT PierDataProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
+   static HRESULT PierDataProc2(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
+   static HRESULT XSectionDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT XSectionDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT BridgeDescriptionProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT PrestressingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT PrestressingDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT ShearDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT ShearDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT LongitudinalRebarDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT LongitudinalRebarDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT LiftingAndHaulingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT DistFactorMethodDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT DistFactorMethodDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT UserLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+
+   bool IsLogFileOpen();
+   void OpenLogFile();
+
+   HRESULT BuildDummyBridge();
+   void ValidateStrands(SpanIndexType span,GirderIndexType girder,CGirderData& girder_data,bool fromLibrary);
+
+   Float64 GetMaxPjack(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands) const;
+   Float64 GetMaxPjack(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands,const matPsStrand* pStrand) const;
+
+   void UpdateDisplayUnits();
+
+   bool ResolveLibraryConflicts(const ConflictList& rList);
+   void DealWithGirderLibraryChanges(bool fromLibrary);  // behavior is different if problem is caused by a library change
+   void DealWithConnectionLibraryChanges(bool fromLibrary);
+   
+   bool CanHavePedestrianLoad() const;
+
+   void MoveBridge(PierIndexType pierIdx,double newStation);
+   void MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,double newStation);
+   void MoveBridgeAdjustNextSpan(PierIndexType pierIdx,double newStation);
+   void MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,double newStation);
+
+   void SpecificationChanged(bool bFireEvent);
+   void InitSpecification(const std::string& spec);
+
+   void UseBridgeLibraryEntries();
+   void UseGirderLibraryEntries();
+   void ReleaseBridgeLibraryEntries();
+   void ReleaseGirderLibraryEntries();
+
+   DECLARE_STRSTORAGEMAP(CProjectAgentImp)
+
+   psgLibraryManager* m_pLibMgr;
+   pgsLibraryEntryObserver m_LibObserver;
+   friend pgsLibraryEntryObserver;
+
+   friend CProxyIProjectPropertiesEventSink<CProjectAgentImp>;
+   friend CProxyIProjectSettingsEventSink<CProjectAgentImp>;
+   friend CProxyIEnvironmentEventSink<CProjectAgentImp>;
+   friend CProxyIBridgeDescriptionEventSink<CProjectAgentImp>;
+   friend CProxyISpecificationEventSink<CProjectAgentImp>;
+   friend CProxyILibraryConflictEventSink<CProjectAgentImp>;
+   friend CProxyILoadModifiersEventSink<CProjectAgentImp>;
+
+   // In early versions of PGSuper, the girder concrete was stored by named reference
+   // to a concrete girder library entry. Then, concrete parameters where assigned to
+   // each girder individually. In order to read old files and populate the data fields
+   // of the GirderData, this concrete library name needed to be stored somewhere.
+   // That is the purpose of this data member. It is only used for temporary storage
+   // while loading old files
+   std::string m_strOldGirderConcreteName;
+};
+
+#endif //__PROJECTAGENT_H_
+

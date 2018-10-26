@@ -1,0 +1,283 @@
+<?xml version="1.0"?>
+<!--Printed Documentation Layout-->
+<printdoclayout version="2">
+  <temphistory/>
+ <stylemapping>
+   <templatefile type="msword" filename=""/>
+   <maps/>
+ </stylemapping>
+ <tocstructure>
+   <page name="Welcome" topic="Welcome.htm" flags="0" topicid="-1"/>
+   <page name="License Agreement" topic="License_Agreement.htm" flags="0" topicid="-1"/>
+   <page name="Support" topic="Support.htm" flags="0" topicid="-1"/>
+  <chapter name="Tutorial">
+    <page name="Tutorial" topic="Tutorial\Tutorial.htm" flags="0" topicid="-1"/>
+    <page name="Introduction" topic="Tutorial\GeneralFeatures\Introduction_Tutorial.htm" flags="0" topicid="-1"/>
+    <page name="Creating a New Project" topic="Tutorial\GeneralFeatures\Creating_a_New_Project.htm" flags="0" topicid="-1"/>
+    <page name="Project Settings" topic="" flags="0" topicid="-1"/>
+    <page name="Working with the Library" topic="" flags="0" topicid="-1"/>
+    <page name="Editing the Bridge Model" topic="Tutorial\GeneralFeatures\Editing_the_Bridge_Model.htm" flags="0" topicid="-1"/>
+    <page name="Application of Special Dead Load" topic="Tutorial\GeneralFeatures\Application_of_Special_Dead_Load.htm" flags="0" topicid="-1"/>
+    <page name="Designing Girders" topic="Tutorial\GeneralFeatures\Designing_Girders.htm" flags="0" topicid="-1"/>
+    <page name="Editing Girders" topic="" flags="0" topicid="-1"/>
+    <page name="Reviewing Results" topic="Tutorial\GeneralFeatures\Reviewing_Results.htm" flags="0" topicid="-1"/>
+    <page name="AutoCalc Mode" topic="Tutorial\GeneralFeatures\AutoCalc_Mode.htm" flags="0" topicid="-1"/>
+    <page name="Girder Stability" topic="Tutorial\GeneralFeatures\Girder_Stability.htm" flags="0" topicid="-1"/>
+    <page name="Getting Help" topic="Tutorial\GeneralFeatures\Getting_Help.htm" flags="0" topicid="-1"/>
+    <page name="Wrapping Up" topic="Tutorial\GeneralFeatures\Wrapping_Up.htm" flags="0" topicid="-1"/>
+  </chapter>
+  <chapter name="PGSuper User's Guide">
+    <page name="User's Guide" topic="User's Guide\User's_Guide.htm" flags="0" topicid="-1"/>
+   <chapter name="Chapter 1 - Introduction">
+     <page name="Chapter 1" topic="User's Guide\Introduction\Chapter_1.htm" flags="0" topicid="-1"/>
+     <page name="User Guide Introduction" topic="User's Guide\Introduction\Introduction_User_Guide.htm" flags="0" topicid="-1"/>
+     <page name="Choosing Commands" topic="User's Guide\Introduction\Choosing_Commands.htm" flags="0" topicid="-1"/>
+     <page name="The Toolbars" topic="User's Guide\Introduction\The_Toolbar.htm" flags="0" topicid="-1"/>
+     <page name="Menus" topic="User's Guide\Introduction\Menus.htm" flags="0" topicid="-1"/>
+     <page name="Context Menus" topic="User's Guide\Introduction\Context_Menus.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 2 - Projects">
+     <page name="Chapter 2" topic="User's Guide\Projects\Chapter_2.htm" flags="0" topicid="-1"/>
+     <page name="Introduction to Projects" topic="User's Guide\Projects\Introduction_Projects.htm" flags="0" topicid="-1"/>
+     <page name="Creating a New Project" topic="User's Guide\Projects\Creating_a_New_Project.htm" flags="0" topicid="-1"/>
+     <page name="Opening an Existing Project" topic="User's Guide\Projects\Opening_an_Existing_Project.htm" flags="0" topicid="-1"/>
+     <page name="Saving Projects" topic="User's Guide\Projects\Saving_Projects.htm" flags="0" topicid="-1"/>
+     <page name="Project Properties" topic="User's Guide\Projects\Project_Properties.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 3 - Bridge Model Editing">
+     <page name="Chapter 3" topic="User's Guide\Bridge_Model_Editing\Chapter_3.htm" flags="0" topicid="-1"/>
+     <page name="Introduction to Bridge Model Editing" topic="User's Guide\Bridge_Model_Editing\Introduction_to_Bridge_Model_Editing.htm" flags="0" topicid="-1"/>
+     <page name="Understanding the Bridge View" topic="User's Guide\Bridge_Model_Editing\Understanding_the_Bridge_View.htm" flags="0" topicid="-1"/>
+     <page name="Defining the Roadway" topic="User's Guide\Bridge_Model_Editing\Defining_the_Roadway.htm" flags="0" topicid="-1"/>
+     <page name="Defining the Piers" topic="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm" flags="0" topicid="-1"/>
+     <page name="Defining the Superstructure" topic="User's Guide\Bridge_Model_Editing\Defining_the_Superstructure.htm" flags="0" topicid="-1"/>
+     <page name="Miscellenous Bridge Description Information" topic="" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 4 - Girder Editing">
+     <page name="Chapter 4" topic="User's Guide\Girder_Editing\Chapter_4.htm" flags="0" topicid="-1"/>
+     <page name="Introduction to Girder Editing" topic="User's Guide\Girder_Editing\Introduction_to_Girder_Editing.htm" flags="0" topicid="-1"/>
+     <page name="Understanding the Girder View" topic="User's Guide\Girder_Editing\Understanding_the_Girder_View.htm" flags="0" topicid="-1"/>
+     <page name="Getting Started with Girder Editing" topic="User's Guide\Girder_Editing\Getting_Started_with_Girder_Editing.htm" flags="0" topicid="-1"/>
+     <page name="Casting Yard Parameters" topic="" flags="0" topicid="-1"/>
+     <page name="Transverse Reinforcement" topic="User's Guide\Girder_Editing\Transverse_Reinforcement.htm" flags="0" topicid="-1"/>
+     <page name="Lifting and Shipping" topic="User's Guide\Girder_Editing\Lifting_and_Shipping.htm" flags="0" topicid="-1"/>
+     <page name="Copying Girder Properties" topic="User's Guide\Girder_Editing\Copying_Girder_Properties.htm" flags="0" topicid="-1"/>
+   </chapter>
+    <page name="Introduction" topic="User's Guide\UserDefinedLoads\Introduction.htm" flags="0" topicid="-1"/>
+    <page name="Status Center" topic="User's Guide\StatusCenter\Status_Center.htm" flags="0" topicid="-1"/>
+   <chapter name="Chapter 7 - Design">
+     <page name="Chapter 5" topic="User's Guide\Design\Chapter_5.htm" flags="0" topicid="-1"/>
+     <page name="Introduction to Design" topic="User's Guide\Design\Introduction_to_Design.htm" flags="0" topicid="-1"/>
+     <page name="Design Capabilities" topic="User's Guide\Design\Design_Capabilities.htm" flags="0" topicid="-1"/>
+     <page name="Designing a Girder" topic="User's Guide\Design\Designing_a_Girder.htm" flags="0" topicid="-1"/>
+     <page name="Designing Long Girders for Stability" topic="User's Guide\Design\Designing_Long_Girders_for_Stability.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 8 - Analysis Results">
+     <page name="Chapter 6" topic="User's Guide\Analysis_Results\Chapter_6.htm" flags="0" topicid="-1"/>
+     <page name="Introduction to Analysis Results" topic="User's Guide\Analysis_Results\Introduction_to_Analysis_Results.htm" flags="0" topicid="-1"/>
+     <page name="Doing the Analysis" topic="User's Guide\Analysis_Results\Doing_the_Analysis.htm" flags="0" topicid="-1"/>
+     <page name="Understanding Analysis Results" topic="User's Guide\Analysis_Results\Understanding_Analysis_Results.htm" flags="0" topicid="-1"/>
+     <page name="Analysis Results View" topic="User's Guide\Analysis_Results\Analysis_Results_View.htm" flags="0" topicid="-1"/>
+     <page name="Report View" topic="User's Guide\Analysis_Results\Report_View.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 9 - AutoCalc Mode">
+     <page name="Chapter 7" topic="User's Guide\AutoCalc_Mode\Chapter_7.htm" flags="0" topicid="-1"/>
+     <page name="Introduction to AutoCalc Mode" topic="User's Guide\AutoCalc_Mode\Introduction_to_AutoCalc_Mode.htm" flags="0" topicid="-1"/>
+     <page name="Using AutoCalc Mode" topic="User's Guide\AutoCalc_Mode\Using_AutoCalc_Mode.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 10 - Working with Libraries">
+     <page name="Chapter 8" topic="User's Guide\Working_With_Libraries\Chapter_8.htm" flags="0" topicid="-1"/>
+     <page name="Introduction to Working with Libraries" topic="User's Guide\Working_With_Libraries\Introduction_to_Working_with_Libraries.htm" flags="0" topicid="-1"/>
+     <page name="Master Library" topic="User's Guide\Working_With_Libraries\Master_Library.htm" flags="0" topicid="-1"/>
+     <page name="Project Library" topic="User's Guide\Working_With_Libraries\Project_Library.htm" flags="0" topicid="-1"/>
+     <page name="Library View" topic="User's Guide\Working_With_Libraries\Library_View.htm" flags="0" topicid="-1"/>
+     <page name="Editing Library Entries" topic="User's Guide\Working_With_Libraries\Editing_Library_Entries.htm" flags="0" topicid="-1"/>
+     <page name="PGSuper Libraries" topic="" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 11 - Project Templates">
+     <page name="Chapter 9" topic="User's Guide\Project_Templates\Chapter_9.htm" flags="0" topicid="-1"/>
+     <page name="Introduction to Project Templates" topic="User's Guide\Project_Templates\Introduction_to_Project_Templates.htm" flags="0" topicid="-1"/>
+     <page name="Creating Project Templates" topic="User's Guide\Project_Templates\Creating_Project_Templates.htm" flags="0" topicid="-1"/>
+     <page name="Managing Project Templates" topic="User's Guide\Project_Templates\Managing_Project_Templates.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 12 - Customizing PGSuper">
+     <page name="Chapter 10" topic="User's Guide\Customizing_PGSuper\Chapter_10.htm" flags="0" topicid="-1"/>
+     <page name="Introduction to Customizing PGSuper" topic="User's Guide\Customizing_PGSuper\Introduction_to_Customizing_PGSuper.htm" flags="0" topicid="-1"/>
+     <page name="Program Settings" topic="User's Guide\Customizing_PGSuper\Program_Settings.htm" flags="0" topicid="-1"/>
+     <page name="Tool Bars" topic="User's Guide\Customizing_PGSuper\Tool_Bars.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Appendix A - PGSuper Dialogs">
+     <page name="Appendix A - PGSuper Dialogs" topic="User's Guide\Appendix A - PGSuper Dialogs\Appendix_A_-_PGSuper_Dialogs.htm" flags="0" topicid="-1"/>
+    <chapter name="Bridge Editing Dialog">
+      <page name="Bridge Editing Dialog" topic="Dialogs\Bridge_Editing_Dialog.htm" flags="0" topicid="-1"/>
+      <page name="Alignment" topic="Bridge Description\Alignment.htm" flags="0" topicid="-1"/>
+      <page name="Piers" topic="Bridge Description\Piers.htm" flags="0" topicid="-1"/>
+      <page name="Cross Section" topic="Bridge Description\Cross_Section.htm" flags="0" topicid="-1"/>
+      <chapter name="Environment"/>
+      <page name="Miscellaneous" topic="" flags="0" topicid="-1"/>
+    </chapter>
+    <chapter name="Bridge Model View Settings">
+      <page name="Bridge View Plan" topic="Bridge View\Bridge_View_Plan.htm" flags="0" topicid="-1"/>
+      <page name="Bridge View Section" topic="Bridge View\Bridge_View_Section.htm" flags="0" topicid="-1"/>
+    </chapter>
+     <page name="CopyConcrete" topic="Dialogs\CopyConcrete.htm" flags="0" topicid="-1"/>
+     <page name="Copy Girder Properties" topic="Dialogs\Copy_Girder_Properties.htm" flags="0" topicid="-1"/>
+     <page name="Design Complete" topic="Dialogs\Design_Complete.htm" flags="0" topicid="-1"/>
+     <page name="Design Criteria" topic="Dialogs\Design_Criteria.htm" flags="0" topicid="-1"/>
+     <page name="Design Girder" topic="Dialogs\Design_Girder.htm" flags="0" topicid="-1"/>
+     <page name="Environment" topic="Bridge Description\Environment.htm" flags="0" topicid="-1"/>
+    <chapter name="Girder Editing Dialog">
+      <page name="Girder Editing Dialog" topic="Dialogs\Girder_Editing_Dialog.htm" flags="0" topicid="-1"/>
+      <page name="Select Girder for Editing" topic="Girder Editing Wizard\Select_Girder_for_Editing.htm" flags="0" topicid="-1"/>
+      <page name="Casting Yard" topic="Girder Editing Wizard\Prestressing.htm" flags="0" topicid="-1"/>
+      <page name="Transverse Reinforcement" topic="Girder Editing Wizard\Transverse_Reinforcement.htm" flags="0" topicid="-1"/>
+      <page name="Lifting and Shipping" topic="Girder Editing Wizard\Lifting_and_Shipping.htm" flags="0" topicid="-1"/>
+    </chapter>
+    <chapter name="Girder View Settings">
+      <page name="Girder View Elevation" topic="Girder View\Girder_View_Elevation.htm" flags="0" topicid="-1"/>
+      <page name="Girder View Section" topic="Girder View\Girder_View_Section.htm" flags="0" topicid="-1"/>
+    </chapter>
+     <page name="Library Entry Conflict" topic="Dialogs\Library_Entry_Conflict.htm" flags="0" topicid="-1"/>
+     <page name="Load Modifiers" topic="Dialogs\Load_Modifiers.htm" flags="0" topicid="-1"/>
+    <chapter name="Program Settings">
+      <page name="User Info" topic="Program Settings\User_Info.htm" flags="0" topicid="-1"/>
+      <page name="File Locations" topic="Program Settings\File_Locations.htm" flags="0" topicid="-1"/>
+    </chapter>
+     <page name="Project Properties" topic="Dialogs\Project_Properties.htm" flags="0" topicid="-1"/>
+     <page name="Reports" topic="Dialogs\Reports.htm" flags="0" topicid="-1"/>
+     <page name="Section Cut" topic="Dialogs\Section_Cut.htm" flags="0" topicid="-1"/>
+     <page name="Toolbars" topic="Dialogs\Toolbars.htm" flags="0" topicid="-1"/>
+     <page name="Units" topic="Dialogs\Units.htm" flags="0" topicid="-1"/>
+    <chapter name="User Defined Loads">
+      <page name="Edit User Defined Loads" topic="Dialogs\Edit_User_Defined_Loads.htm" flags="0" topicid="-1"/>
+      <page name="Edit Distributed Load" topic="Dialogs\Edit_Distributed_Load.htm" flags="0" topicid="-1"/>
+      <page name="Edit Point Load" topic="Dialogs\Edit_Point_Load.htm" flags="0" topicid="-1"/>
+    </chapter>
+   </chapter>
+   <chapter name="Appendix B - PGSuper Library Dialogs">
+     <page name="PGSuper Library Dialogs" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibPGSuper_Library_Dialogs.htm" flags="0" topicid="-1"/>
+     <page name="Concrete Entry Dialog" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibConcrete_Entry_Dialog.htm" flags="0" topicid="-1"/>
+     <page name="Girder Connection Dialog" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Connection_Dialog.htm" flags="0" topicid="-1"/>
+    <chapter name="Girder Template Editing Dialog">
+      <page name="Girder Template Editing Dialog" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Template_Editing_Dialog.htm" flags="0" topicid="-1"/>
+      <page name="Girder Dimensions Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Dimensions_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Straight Strands Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibStrands_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Harped Strands Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\Harped Strands Tab.htm" flags="0" topicid="-1"/>
+      <page name="Transverse Reinforcement Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibTransverse_Reinforcement_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Longitudinal Reinforcement Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibLongitudinal_Reinforcement_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Miscellaneous Tab" topic="" flags="0" topicid="-1"/>
+      <page name="Using the Strand Location Grid Controls" topic="" flags="0" topicid="-1"/>
+    </chapter>
+     <page name="Diaphragm Layout Dialog" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm" flags="0" topicid="-1"/>
+     <page name="Traffic Barrier Dialog" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibTraffic_Barrier_Dialog.htm" flags="0" topicid="-1"/>
+    <chapter name="Project Criteria Entry Dialog">
+      <page name="Specification Entry Dialog" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibSpecification_Entry_Dialog.htm" flags="0" topicid="-1"/>
+      <page name="Specification Description Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibSpecification_Description_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Casting Yard Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibCasting_Yard_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Bridge Site 1 Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\Bridge_Site_1_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Bridge Site 2 Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\Bridge_Site_2_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Bridge Site 3 Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibBridge_Site_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Hauling Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibHauling_and_Erection_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Lifting Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\Lifting_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Losses Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\Losses_Tab.htm" flags="0" topicid="-1"/>
+      <page name="Creep Tab" topic="User's Guide\Appendix B - PGSuper Library Dialogs\Creep_Tab.htm" flags="0" topicid="-1"/>
+    </chapter>
+   </chapter>
+  </chapter>
+  <chapter name="Theoretical Manual">
+    <page name="Theoretical Manual" topic="Theoretical Manual\Theoretical_Manual.htm" flags="0" topicid="-1"/>
+    <page name="Introduction" topic="Theoretical Manual\Introduction_Theoretical_Manual.htm" flags="0" topicid="-1"/>
+    <page name="A Dimension Calculation" topic="Theoretical Manual\ADimension.htm" flags="0" topicid="-1"/>
+    <page name="Camber Calculations" topic="Theoretical Manual\Camber Calculations.htm" flags="0" topicid="-1"/>
+    <page name="Composite Section Properties" topic="Theoretical Manual\Composite_Section_Properties.htm" flags="0" topicid="-1"/>
+    <page name="Critical Section For Shear" topic="Theoretical Manual\CriticalSection.htm" flags="0" topicid="-1"/>
+    <page name="Deflections Due To Creep" topic="Theoretical Manual\CreepDeflection.htm" flags="0" topicid="-1"/>
+    <page name="Interface Shear Transfer" topic="Theoretical Manual\Interface_Shear_Transfer.htm" flags="0" topicid="-1"/>
+    <page name="Live Load Distribution Factors" topic="Theoretical Manual\Live_Load_Distribution_Factors.htm" flags="0" topicid="-1"/>
+   <chapter name="Long Girder Stability Analysis for Lifting and Hauling">
+     <page name="Long Girder Stability Analysis for Lifting and Hauling" topic="Theoretical Manual\Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm" flags="0" topicid="-1"/>
+     <page name="Lifting of Long Prestressed Girders" topic="Theoretical Manual\Lifting_of_Long_Prestressed_Girders.htm" flags="0" topicid="-1"/>
+     <page name="Hauling of Long Prestressed Girders" topic="Theoretical Manual\Hauling_of_Long_Prestressed_Girders.htm" flags="0" topicid="-1"/>
+   </chapter>
+    <page name="Longitudinal Reinforcement For Shear" topic="Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm" flags="0" topicid="-1"/>
+    <page name="Shear Design (Determination of Beta and Theta)" topic="Theoretical Manual\Shear_Design_(Determination_of_Beta_and_Theta).htm" flags="0" topicid="-1"/>
+    <page name="Bursting Zone Checks" topic="Theoretical Manual\Bursting_Zone_Checks.htm" flags="0" topicid="-1"/>
+    <page name="Losses per WSDOT Method" topic="" flags="0" topicid="-1"/>
+    <page name="Maximum Allowable Jacking Force" topic="Theoretical Manual\MaximumAllowableJackingForce.htm" flags="0" topicid="-1"/>
+    <page name="Analytical Models" topic="Theoretical Manual\AnalyticalModels.htm" flags="0" topicid="-1"/>
+    <page name="Ultimate Moment Capacity Analysis" topic="Theoretical Manual\Ultimate_Moment_Capacity_Analysis.htm" flags="0" topicid="-1"/>
+  </chapter>
+  <chapter name="Administrator's Guide">
+    <page name="Introduction - Administrator's Guide" topic="Adminstrator's Guide\Introduction_Admin_Guide.htm" flags="0" topicid="-1"/>
+   <chapter name="Chapter 1 - Installation">
+     <page name="Chapter 1" topic="Adminstrator's Guide\Chapter 1\Chapter_2.htm" flags="0" topicid="-1"/>
+     <page name="Introduction" topic="Adminstrator's Guide\Chapter 1\Introduction_to_Installation.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 2 - Managing The Master Library">
+     <page name="Chapter 2 - Managing The Master Library" topic="Adminstrator's Guide\Chapter 2\Chapter_2.htm" flags="0" topicid="-1"/>
+     <page name="Introduction" topic="Adminstrator's Guide\Chapter 2\Introduction_to_Customizing_PGSuper.htm" flags="0" topicid="-1"/>
+     <page name="Creating Library Entries" topic="Adminstrator's Guide\Chapter 2\Creating_Library_Entries.htm" flags="0" topicid="-1"/>
+     <page name="Deploying the Master Library" topic="Adminstrator's Guide\Chapter 2\Deploying_the_Master_Library.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 3 - Project Templates">
+     <page name="Chapter 3" topic="Adminstrator's Guide\Chapter 3\Chapter_3.htm" flags="0" topicid="-1"/>
+     <page name="Introduction To Project Templates" topic="Adminstrator's Guide\Chapter 3\Introduction_to_Project_Templates.htm" flags="0" topicid="-1"/>
+     <page name="Creating Project Templates" topic="Adminstrator's Guide\Chapter 3\Creating_Project_Templates.htm" flags="0" topicid="-1"/>
+     <page name="Deploying Project Templates" topic="Adminstrator's Guide\Chapter 3\Deploying_Project_Templates.htm" flags="0" topicid="-1"/>
+   </chapter>
+   <chapter name="Chapter 4 - Library Editor User's Manual">
+     <page name="Chapter 4" topic="Adminstrator's Guide\Chapter 4\Chapter_4.htm" flags="0" topicid="-1"/>
+     <page name="Getting Started with the LibraryEditor" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORGetting_Started.htm" flags="0" topicid="-1"/>
+    <chapter name="Main Menu">
+      <page name="LibraryEditor Main Menu" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORLibraryEditor_Main_Menu.htm" flags="0" topicid="-1"/>
+     <chapter name="File Menu">
+       <page name="File menu commands" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_menu_commands.htm" flags="0" topicid="-1"/>
+       <page name="File New command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_New_command.htm" flags="0" topicid="-1"/>
+       <page name="File Open command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Open_command.htm" flags="0" topicid="-1"/>
+       <page name="File Close command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Close_command.htm" flags="0" topicid="-1"/>
+       <page name="File Save command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Save_command.htm" flags="0" topicid="-1"/>
+       <page name="File Save As command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Save_As_command.htm" flags="0" topicid="-1"/>
+       <page name="File Exit command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORFile_Exit_command.htm" flags="0" topicid="-1"/>
+     </chapter>
+     <chapter name="Edit Menu">
+       <page name="Edit Menu Commands" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000002.htm" flags="0" topicid="-1"/>
+       <page name="Add a New Entry to Library" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORAdd_a_New_Entry_to_Library.htm" flags="0" topicid="-1"/>
+       <page name="Edit the Selected Library Entry" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITOREdit_the_Selected_Library_Entry.htm" flags="0" topicid="-1"/>
+       <page name="Delete the Selected Entry from the Library" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORDelete_the_Selected_Entry_from_t.htm" flags="0" topicid="-1"/>
+       <page name="Duplicate the Selected Entry" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORDuplicate_the_Selected_Entry.htm" flags="0" topicid="-1"/>
+       <page name="Rename The Selected Entry" topic="Adminstrator's Guide\Chapter 4\Rename_The_Selected_Entry.htm" flags="0" topicid="-1"/>
+     </chapter>
+      <page name="Units menu" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORUnits_menu.htm" flags="0" topicid="-1"/>
+     <chapter name="Window Menu">
+       <page name="Window Menu Commands" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000004.htm" flags="0" topicid="-1"/>
+       <page name="Cascade Command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000020.htm" flags="0" topicid="-1"/>
+       <page name="Tile Command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000021.htm" flags="0" topicid="-1"/>
+     </chapter>
+     <chapter name="View Menu">
+       <page name="View Menu Commands" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000003.htm" flags="0" topicid="-1"/>
+       <page name="View Status Bar Command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORView_Status_Bar_Command.htm" flags="0" topicid="-1"/>
+       <page name="View Toolbar command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORView_Toolbar_command.htm" flags="0" topicid="-1"/>
+       <page name="Arrange Icons" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000024.htm" flags="0" topicid="-1"/>
+     </chapter>
+     <chapter name="Help Menu">
+       <page name="Help Menu Commands" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000005.htm" flags="0" topicid="-1"/>
+       <page name="About Command" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000027.htm" flags="0" topicid="-1"/>
+     </chapter>
+    </chapter>
+     <page name="Toolbar" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORtoolbar.htm" flags="0" topicid="-1"/>
+     <page name="status bar" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORstatus_bar.htm" flags="0" topicid="-1"/>
+     <page name="Scroll Bars" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000030.htm" flags="0" topicid="-1"/>
+     <page name="Title Bar" topic="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000029.htm" flags="0" topicid="-1"/>
+   </chapter>
+  </chapter>
+ </tocstructure>
+  <sectionhistory/>
+ <sectionlist>
+   <section type="defaulttitlepage" name="&lt;Default Title Page&gt;" url="" flags="0" topicid="-1"/>
+   <section type="toc" name="TOC" url="" flags="0" topicid="-1"/>
+   <section type="topics" name="Chapter Layout" url="" flags="0" topicid="-1"/>
+   <section type="glossary" name="Glossary" url="" flags="0" topicid="-1"/>
+   <section type="index" name="Index" url="" flags="0" topicid="-1"/>
+ </sectionlist>
+  <robopdfgeneratorsettings data="DefaultSaveDir=C:\Documents and Settings\bricer\Application Data\1-Step RoboPDF&amp;ExecCmdLine=C:\WINDOWS\System32\spool\DRIVERS\W32X86\2\RoboPDF.exe -nav=&quot;%s&quot; -docname=&quot;%s&quot; -hwnd=%d&amp;DefaultSaveFilename=tmp.pdf&amp;resIndex=3&amp;jpegImageQuality=90&amp;imageDPI=300&amp;quiet=0&amp;installTime=04/10/03 15:20:37&amp;LicensedToUser=WSDOT&amp;LicensedToCompany=WSDOT&amp;LicenseServerPortNumber=34357&amp;Quality=2&amp;customResolution=300&amp;customImageDPI=96&amp;customJpegImageQuality=75&amp;pdfTemplateEnable=0&amp;pdfTemplateOnTop=0&amp;watermarkFontSize=48&amp;watermarkStyle=0&amp;watermarkColor=90&amp;pdfTemplate=&amp;watermarkText=&amp;watermarkFontName=Arial&amp;sd_permissionFlags=-64&amp;sd_enabled=0&amp;sd_keyLen=16&amp;sd_op=&amp;sd_up=&amp;resolution=600&amp;watermark=&amp;launcherProgressMessage=Creating outline - 0.0% complete&amp;ConfigFile=C:\WINDOWS\system32\RoboPDF\RoboPDF.lks&amp;WordConversionStyles=Heading 1=1,Heading 2=2,Heading 3=3,Subtitle=2,Title=1&amp;PrinterData4=0&amp;lastfile=C:\Documents and Settings\bricer\Application Data\1-Step RoboPDF\tmp1.pdf&amp;DocName=Microsoft Word - PGSuper_Documentation.doc&amp;xpos=25&amp;ypos=25&amp;cx=660&amp;cy=495&amp;windowState=1&amp;LastDir=C:\Documents and Settings\bricer\Desktop&amp;AppendFile=C:\Documents and Settings\bricer\Desktop\Resume_Brice.pdf&amp;NextAction=2&amp;InstallationDirectory=C:\WINDOWS\System32\spool\DRIVERS\W32X86\2\&amp;NoProgressDlg=0&amp;launcherAction=4&amp;"/>
+</printdoclayout>

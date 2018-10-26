@@ -1,0 +1,147 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+#ifndef INCLUDED_BRGPOINTIDMGR_H_
+#define INCLUDED_BRGPOINTIDMGR_H_
+
+// SYSTEM INCLUDES
+//
+#if !defined INCLUDED_VECTOR_
+#include <vector>
+#define INCLUDED_VECTOR_
+#endif
+
+// PROJECT INCLUDES
+//
+
+// LOCAL INCLUDES
+//
+
+// FORWARD DECLARATIONS
+//
+
+// MISCELLANEOUS
+//
+
+/*****************************************************************************
+CLASS 
+   CBrgPointIdMgr
+
+   Manages cogo point id's for the centerline bearing - alignment
+   intersection points.
+
+
+DESCRIPTION
+   Manages cogo point id's for the centerline bearing - alignment
+   intersection points.
+
+
+COPYRIGHT
+   Copyright © 1997-1998
+   Washington State Department Of Transportation
+   All Rights Reserved
+
+LOG
+   rab : 08.21.1998 : Created file
+*****************************************************************************/
+
+class CBrgPointIdMgr
+{
+public:
+   enum Location { Start, End };
+
+   // GROUP: LIFECYCLE
+
+   //------------------------------------------------------------------------
+   // Default constructor
+   CBrgPointIdMgr();
+
+   //------------------------------------------------------------------------
+   // Destructor
+   ~CBrgPointIdMgr();
+
+   // GROUP: OPERATORS
+   // GROUP: OPERATIONS
+
+   //------------------------------------------------------------------------
+   void Reset();
+
+   // GROUP: ACCESS
+
+   //------------------------------------------------------------------------
+   Int32 GetId( SpanIndexType span, Location loc );
+
+   //------------------------------------------------------------------------
+   void SetId( SpanIndexType span, Location loc, Int32 id);
+
+   // GROUP: INQUIRY
+
+protected:
+   // GROUP: DATA MEMBERS
+   // GROUP: LIFECYCLE
+   // GROUP: OPERATORS
+   // GROUP: OPERATIONS
+   // GROUP: ACCESS
+   // GROUP: INQUIRY
+
+private:
+   // GROUP: DATA MEMBERS
+   std::vector<Int32> m_Ids;
+
+   // GROUP: LIFECYCLE
+
+   // Prevent accidental copying and assignment
+   CBrgPointIdMgr(const CBrgPointIdMgr&);
+   CBrgPointIdMgr& operator=(const CBrgPointIdMgr&);
+
+   // GROUP: OPERATORS
+   // GROUP: OPERATIONS
+   // GROUP: ACCESS
+   // GROUP: INQUIRY
+
+public:
+   // GROUP: DEBUG
+   #if defined _DEBUG
+   //------------------------------------------------------------------------
+   // Returns true if the object is in a valid state, otherwise returns false.
+   virtual bool AssertValid() const;
+
+   //------------------------------------------------------------------------
+   // Dumps the contents of the object to the given dump context.
+   virtual void Dump(dbgDumpContext& os) const;
+   #endif // _DEBUG
+
+   #if defined _UNITTEST
+   //------------------------------------------------------------------------
+   // Runs a self-diagnostic test.  Returns true if the test passed,
+   // otherwise false.
+   static bool TestMe(dbgLog& rlog);
+   #endif // _UNITTEST
+};
+
+// INLINE METHODS
+//
+
+// EXTERNAL REFERENCES
+//
+
+#endif // INCLUDED_BRGPOINTIDMGR_H_

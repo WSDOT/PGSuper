@@ -1,0 +1,33 @@
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   5  8.50     1     1  Tx46       52   1/2  270 14.83  9.60   8 42.5  5.600  5.800    3.719   -3.807   6140  0.662  0.35 -0.15  0.00 -0.01 -0.16 150.78 421.33   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone checks failed.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   5  8.50     1     2  Tx46       56   1/2  270 14.53  8.82  10 42.5  5.800  6.100    3.897   -3.986   6347  0.662  0.37 -0.18  0.00 -0.01 -0.19 171.04 473.70   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone checks failed.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   5  8.50     1     3  Tx46       56   1/2  270 14.53  8.82  10 42.5  5.800  6.100    3.897   -3.986   6347  0.662  0.37 -0.18  0.00 -0.01 -0.19 171.04 473.70   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone checks failed.
+Confinement zone checks failed.
+
+

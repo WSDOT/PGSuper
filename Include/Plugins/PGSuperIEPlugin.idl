@@ -1,0 +1,73 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuperIE - PGSuper Import/Export Plug-in
+// Copyright (C) 2008  Washington State Department of Transportation
+//                     Bridge and Structures Office
+//
+// This library is a part of the Washington Bridge Foundation Libraries
+// and was developed as part of the Alternate Route Project
+//
+// This library is free software; you can redistribute it and/or modify it under
+// the terms of the Alternate Route Library Open Source License as published by 
+// the Washington State Department of Transportation, Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but is distributed 
+// AS IS, WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+// or FITNESS FOR A PARTICULAR PURPOSE. See the Alternate Route Library Open Source 
+// License for more details.
+//
+// You should have received a copy of the Alternate Route Library Open Source License 
+// along with this program; if not, write to the Washington State Department of 
+// Transportation, Bridge and Structures Office, P.O. Box  47340, 
+// Olympia, WA 98503, USA or e-mail Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////
+// The intent of licensing this interface with the ARLOSL is to provide
+// third party developers a method of developing proprietary plug-ins
+// to the software.
+// 
+// Any changes made to the interfaces defined in this file are
+// are subject to the terms of the Alternate Route Library Open Source License.
+//
+// Components that implement the interfaces defined in this file are
+// governed by the terms and conditions deemed appropriate by legal 
+// copyright holder of said software.
+///////////////////////////////////////////////////////////////////////
+import "oaidl.idl";
+import "ocidl.idl";
+
+import "WBFLCore.idl";
+
+cpp_quote("// {76F11481-22CF-4626-AFAA-EDA19112BC8A}")
+cpp_quote("DEFINE_GUID(CATID_PGSuperIEPlugin, ")
+cpp_quote("0x76f11481, 0x22cf, 0x4626, 0xaf, 0xaa, 0xed, 0xa1, 0x91, 0x12, 0xbc, 0x8a);")
+
+typedef [public,helpstring("enum ImporterType"),uuid(AFA5A772-B920-4e7f-AE24-80B69D339464)] 
+enum 
+{
+	impProject = 1,
+	impData = 2
+} ImporterType;
+
+[
+   uuid(07F63944-A0F9-4e75-8344-99283FAC220C),
+   pointer_default(unique)
+]
+interface IPGSuperImporter : IUnknown
+{
+   HRESULT GetType([out]ImporterType* type);
+   HRESULT GetMenuText([out]BSTR*  bstrText);
+   HRESULT GetBitmapHandle([out]HBITMAP* phBmp);
+   HRESULT Import([in]IBroker* pBroker);
+};
+
+[
+   uuid(BF6EC18A-43D2-4ea1-BC7F-54365DD645DA),
+   pointer_default(unique)
+]
+interface IPGSuperExporter : IUnknown
+{
+   HRESULT GetMenuText([out]BSTR*  bstrText);
+   HRESULT GetBitmapHandle([out]HBITMAP* phBmp);
+   HRESULT Export([in]IBroker* pBroker);
+};
