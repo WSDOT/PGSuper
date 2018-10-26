@@ -90,7 +90,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   rptRcTable* pMasterTable = pgsReportStyleHolder::CreateLayoutTable(2,_T("Live Load Distribution Factors"));
+   rptRcTable* pMasterTable = rptStyleManager::CreateLayoutTable(2,_T("Live Load Distribution Factors"));
    *pBody << pMasterTable;
 
    ColumnIndexType nCols = 4;
@@ -99,13 +99,13 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       nCols += 3; // for fatigue limit state LLDF
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Moment and Shear"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T("Moment and Shear"));
    (*pMasterTable)(0,0) << pTable;
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
 
@@ -200,7 +200,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       nCols++;
    }
 
-   rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Reaction"));
+   rptRcTable* pTable2 = rptStyleManager::CreateDefaultTable(nCols,_T("Reaction"));
    (*pMasterTable)(0,1) << pTable2;
    (*pTable2)(0,0) << _T("Pier");
    (*pTable2)(0,1) << _T("Strength/Service");

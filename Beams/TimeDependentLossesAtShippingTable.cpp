@@ -63,7 +63,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    bool bIgnoreInitialRelaxation = ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::WSDOT_LUMPSUM ) ? false : true;
 
@@ -90,12 +90,12 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    }
 
    CTimeDependentLossesAtShippingTable* table = new CTimeDependentLossesAtShippingTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
    table->m_bTemporaryStrands = bTemporaryStrands;
    table->m_pStrands = pStrands;
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Losses at Shipping") << rptNewLine;
 

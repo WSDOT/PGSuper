@@ -85,7 +85,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Strand Stresses");
    pPara->SetName(_T("Strand Stresses"));
    *pChapter << pPara;
@@ -131,12 +131,12 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          strTitle.Format(_T("Segment %d"),LABEL_SEGMENT(segIdx));
       }
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,strTitle);
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nColumns,strTitle);
       *pPara << p_table;
 
       p_table->SetNumberOfHeaderRows(2);
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       // Label columns
       ColumnIndexType col1 = 0;

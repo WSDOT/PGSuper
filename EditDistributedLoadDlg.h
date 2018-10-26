@@ -54,6 +54,7 @@ public:
 	//}}AFX_DATA
 
    CDistributedLoadData m_Load;
+   EventIDType m_EventID;
    CComPtr<IBroker>  m_pBroker;
 
    bool                 m_WasLiveLoad;

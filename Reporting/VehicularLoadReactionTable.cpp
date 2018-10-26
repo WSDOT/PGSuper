@@ -123,7 +123,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       strTitle = _T("Live Load Reactions for ") + strLLName;
    }
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,strTitle);
 
 
    // Set up table headings

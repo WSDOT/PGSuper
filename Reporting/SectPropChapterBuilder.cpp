@@ -287,7 +287,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
             if (!m_SimplifiedVersion)
             {
-               pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+               pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pPara;
                *pPara << SEGMENT_LABEL(thisSegmentKey) << rptNewLine;
             }
@@ -366,7 +366,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
                if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
                {
-                  pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+                  pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
                   *pChapter << pPara;
                   (*pPara) << _T("Net Section Properties") << rptNewLine;
 

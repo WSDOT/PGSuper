@@ -325,7 +325,7 @@ void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const
    }
 }
 
-void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    GET_IFACE2(pBroker, ISpecification,    pSpec);
    GET_IFACE2(pBroker, ILibrary,          pLib);

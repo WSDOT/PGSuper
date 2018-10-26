@@ -126,7 +126,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    {
       CSegmentKey thisSegmentKey(girderKey.groupIndex,girderKey.girderIndex,segIdx);
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       (*pPara) << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
 
@@ -134,7 +134,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       *pChapter << pPara;
 
       ColumnIndexType col = 0;
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Concrete Parameters"));
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9,_T("Concrete Parameters"));
       (*pPara) << pTable << rptNewLine;
 
       (*pTable)(0,col++) << _T("Interval");
@@ -163,7 +163,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable)(row,col++) << 1E6*pMaterials->GetSegmentFreeShrinkageStrain(thisSegmentKey,intervalIdx,pgsTypes::End);
       }
 
-      rptRcTable* pCreepTable = pgsReportStyleHolder::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
+      rptRcTable* pCreepTable = rptStyleManager::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
       *pPara << pCreepTable << rptNewLine;
       pCreepTable->SetNumberOfHeaderRows(2);
 
@@ -203,7 +203,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       {
          CSegmentKey closureKey(thisSegmentKey);
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          (*pPara) << _T("Closure Joint at TS ") << LABEL_SEGMENT(segIdx) << rptNewLine;
 
@@ -211,7 +211,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          *pChapter << pPara;
 
          ColumnIndexType col = 0;
-         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Concrete Parameters"));
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9,_T("Concrete Parameters"));
          (*pPara) << pTable << rptNewLine;
 
          (*pTable)(0,col++) << _T("Interval");
@@ -240,7 +240,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          }
 
 
-         rptRcTable* pCreepTable = pgsReportStyleHolder::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
+         rptRcTable* pCreepTable = rptStyleManager::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
          *pPara << pCreepTable << rptNewLine;
          pCreepTable->SetNumberOfHeaderRows(2);
 
@@ -278,7 +278,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       } // if segIdx != 0
    } // next segment
 
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    (*pPara) << _T("Deck") << rptNewLine;
 
@@ -286,7 +286,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    *pChapter << pPara;
 
    ColumnIndexType col = 0;
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Concrete Parameters"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9,_T("Concrete Parameters"));
    (*pPara) << pTable << rptNewLine;
 
    (*pTable)(0,col++) << _T("Interval");
@@ -315,7 +315,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable)(row,col++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
    }
 
-   rptRcTable* pCreepTable = pgsReportStyleHolder::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
+   rptRcTable* pCreepTable = rptStyleManager::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
    *pPara << pCreepTable << rptNewLine;
    pCreepTable->SetNumberOfHeaderRows(2);
 
@@ -374,7 +374,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       rebar_section->get_Count(&nRebar);
 
       ColumnIndexType nColumns = 109 + 4*nRebar;
-      rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Time Step Parameters"));
+      rptRcTable* pTable2 = rptStyleManager::CreateDefaultTable(nColumns,_T("Time Step Parameters"));
       *pPara << pTable2 << rptNewLine << rptNewLine;
 
       ColumnIndexType col2 = 0;
@@ -1178,7 +1178,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    } // next poi
 
 
-   rptRcTable* pTable3 = pgsReportStyleHolder::CreateDefaultTable(1+6*nIntervals,_T("Initial Strain Analysis"));
+   rptRcTable* pTable3 = rptStyleManager::CreateDefaultTable(1+6*nIntervals,_T("Initial Strain Analysis"));
    *pPara << pTable3 << rptNewLine;
    pTable3->SetNumberOfHeaderRows(2);
    ColumnIndexType col3 = 0;
@@ -1244,7 +1244,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    //   int N = sizeof(pDetails->TimeStepDetails[0].D)/sizeof(pDetails->TimeStepDetails[0].D[0]);
 
    //   ColumnIndexType nColumns = 1 + N*2;
-   //   rptRcTable* pStressTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Girder Stress"));
+   //   rptRcTable* pStressTable = rptStyleManager::CreateDefaultTable(nColumns,_T("Girder Stress"));
    //   *pPara << pStressTable << rptNewLine << rptNewLine;
 
    //   pStressTable->SetNumberOfHeaderRows(2);
@@ -1304,7 +1304,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    //   int N = sizeof(pDetails->TimeStepDetails[0].D)/sizeof(pDetails->TimeStepDetails[0].D[0]);
 
    //   ColumnIndexType nColumns = 1 + N*2 + 2;
-   //   rptRcTable* pDeflectionTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Deflections"));
+   //   rptRcTable* pDeflectionTable = rptStyleManager::CreateDefaultTable(nColumns,_T("Deflections"));
    //   *pPara << pDeflectionTable << rptNewLine << rptNewLine;
 
    //   pDeflectionTable->SetNumberOfHeaderRows(2);

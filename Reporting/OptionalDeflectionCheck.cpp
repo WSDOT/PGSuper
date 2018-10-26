@@ -78,7 +78,7 @@ void COptionalDeflectionCheck::Build(rptChapter* pChapter, IBroker* pBroker,cons
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, defu,    pDisplayUnits->GetComponentDimUnit(), true );
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    pPara->SetName(_T("Live Load Deflection Check"));
    *pChapter << pPara;
    (*pPara) << _T("Live Load Deflection Check [2.5.2.6.2]") << rptNewLine;

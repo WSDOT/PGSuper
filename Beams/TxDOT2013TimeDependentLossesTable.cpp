@@ -64,11 +64,11 @@ CTxDOT2013TimeDependentLossesTable* CTxDOT2013TimeDependentLossesTable::PrepareT
    // Create and configure the table
    ColumnIndexType numColumns = 6;
    CTxDOT2013TimeDependentLossesTable* table = new CTxDOT2013TimeDependentLossesTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    *pParagraph << _T("Time Dependent Losses") << rptNewLine;

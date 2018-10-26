@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include <Reporting\PGSuperTitlePageBuilder.h>
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\LibraryUsageParagraph.h>
 #include <Reporting\GirderSeedDataComparisonParagraph.h>
@@ -120,7 +120,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    rptChapter* pTitlePage = new rptChapter;
 
    rptParagraph* pPara = new rptParagraph;
-   pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
+   pPara->SetStyleName(rptStyleManager::GetReportTitleStyle());
    *pTitlePage << pPara;
 
    std::_tstring title = GetReportTitle();
@@ -128,7 +128,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    *pPara << title.c_str();
 
    pPara = new rptParagraph;
-   pPara->SetStyleName(pgsReportStyleHolder::GetReportSubtitleStyle());
+   pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
 
    // Determine if the report spec has span/girder information
@@ -185,7 +185,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
 
    pPara = new rptParagraph;
-   pPara->SetStyleName(pgsReportStyleHolder::GetReportSubtitleStyle());
+   pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
    *pPara << rptRcDateTime() << rptNewLine;
 
@@ -195,7 +195,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
 
    pPara = new rptParagraph;
-   pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
+   pPara->SetStyleName(rptStyleManager::GetReportTitleStyle());
    *pTitlePage << pPara;
 #if defined _WIN64
    *pPara << _T("PGSuper") << Super(symbol(TRADEMARK)) << _T(" (x64)") << rptNewLine;
@@ -203,17 +203,17 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    *pPara << _T("PGSuper") << Super(symbol(TRADEMARK)) << _T(" (x86)") << rptNewLine;
 #endif
 
-   pPara = new rptParagraph(pgsReportStyleHolder::GetCopyrightStyle());
+   pPara = new rptParagraph(rptStyleManager::GetCopyrightStyle());
    *pTitlePage << pPara;
    *pPara << _T("Copyright ") << symbol(COPYRIGHT) << _T(" ") << sysDate().Year() << _T(", WSDOT, All Rights Reserved") << rptNewLine;
 
    pPara = new rptParagraph;
-   pPara->SetStyleName(pgsReportStyleHolder::GetReportSubtitleStyle());
+   pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
    GET_IFACE(IVersionInfo,pVerInfo);
    *pPara << pVerInfo->GetVersionString() << rptNewLine;
 
-   const std::_tstring& strImage = pgsReportStyleHolder::GetReportCoverImage();
+   const std::_tstring& strImage = rptStyleManager::GetReportCoverImage();
    WIN32_FIND_DATA file_find_data;
    HANDLE hFind;
    hFind = FindFirstFile(strImage.c_str(),&file_find_data);
@@ -230,15 +230,15 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    GET_IFACE(IProjectProperties,pProps);
    GET_IFACE(IEAFDocument,pDocument);
 
-   rptParagraph* pPara3 = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pPara3 = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pTitlePage << pPara3;
 
-   rptRcTable* pTbl = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Project Properties"));
+   rptRcTable* pTbl = rptStyleManager::CreateTableNoHeading(2,_T("Project Properties"));
 
-   pTbl->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT ) );
-   pTbl->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT ) );
-   pTbl->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT ) );
-   pTbl->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT ) );
+   pTbl->SetColumnStyle(0,rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT ) );
+   pTbl->SetColumnStyle(1,rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT ) );
+   pTbl->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT ) );
+   pTbl->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT ) );
 
    if (m_bFullVersion)
    {
@@ -272,7 +272,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
 
    // report library usage information
-   p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pTitlePage << p;
 
    if (m_bFullVersion)
@@ -305,16 +305,16 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    if (m_bFullVersion)
    {
       rptParagraph* pPara = new rptParagraph;
-      pPara->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
+      pPara->SetStyleName(rptStyleManager::GetHeadingStyle());
       *pTitlePage << pPara;
 
       *pPara << _T("Notes") << rptNewLine;
 
-      pTable = pgsReportStyleHolder::CreateDefaultTable(2);
-      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable = rptStyleManager::CreateDefaultTable(2);
+      pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       *pPara << pTable << rptNewLine;
 
@@ -405,16 +405,16 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
          if ( DoPrintStatusCenter(pStatusCenter, nItems, thisGirderKey, nSegments) )
          {
             pPara = new rptParagraph;
-            pPara->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
+            pPara->SetStyleName(rptStyleManager::GetHeadingStyle());
             *pTitlePage << pPara;
 
             *pPara << _T("Status Items") << rptNewLine;
 
-            pTable = pgsReportStyleHolder::CreateDefaultTable(2);
-            pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-            pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-            pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-            pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+            pTable = rptStyleManager::CreateDefaultTable(2);
+            pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
             *pPara << pTable << rptNewLine;
 

@@ -106,11 +106,11 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    }
 
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCol,_T("Effective Prestress at Mid-Span"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCol,_T("Effective Prestress at Mid-Span"));
    p_table->SetNumberOfHeaderRows(2);
 
-   p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    //////////////////////////////////////////
    // Label columns

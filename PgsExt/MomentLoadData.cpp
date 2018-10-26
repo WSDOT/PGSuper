@@ -38,8 +38,7 @@ static char THIS_FILE[] = __FILE__;
 
 CMomentLoadData::CMomentLoadData():
 m_LoadCase(UserLoads::DC),
-m_EventIndex(INVALID_INDEX),
-m_EventID(INVALID_ID),
+m_StageIndex(INVALID_INDEX),
 m_Magnitude(0.0),
 m_Location(0.5),
 m_Fractional(true),
@@ -66,12 +65,7 @@ CMomentLoadData& CMomentLoadData::operator=(const CMomentLoadData& other)
 
 bool CMomentLoadData::operator == (const CMomentLoadData& rOther) const
 {
-   if (m_EventIndex != rOther.m_EventIndex)
-   {
-      return false;
-   }
-
-   if ( m_EventID != rOther.m_EventID )
+   if (m_StageIndex != rOther.m_StageIndex)
    {
       return false;
    }
@@ -119,7 +113,7 @@ HRESULT CMomentLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit(_T("MomentLoad"),7.0); // changed for version 4 with PGSplice
+   pSave->BeginUnit(_T("MomentLoad"),8.0); // changed for version 4 with PGSplice
 
    hr = pSave->put_Property(_T("ID"),CComVariant(m_ID));
    if ( FAILED(hr) )
@@ -133,11 +127,12 @@ HRESULT CMomentLoadData::Save(IStructuredSave* pSave)
       return hr;
    }
 
-   hr = pSave->put_Property(_T("EventID"),CComVariant((long)m_EventID)); // changed to event id in version 7
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
+   // stopped storing this in vesrion 8... we don't need it
+   //hr = pSave->put_Property(_T("EventID"),CComVariant((long)m_EventID)); // changed to event id in version 7
+   //if ( FAILED(hr) )
+   //{
+   //   return hr;
+   //}
 
    SpanIndexType spanIdx = m_SpanKey.spanIndex;
    GirderIndexType gdrIdx = m_SpanKey.girderIndex;
@@ -246,19 +241,22 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
    {
       var.vt = VT_INDEX;
       hr = pLoad->get_Property(_T("Stage"),&var);
-      m_EventIndex = VARIANT2INDEX(var);
+      m_StageIndex = VARIANT2INDEX(var);
    }
    else if ( version < 7 )
    {
+      // we don't need this parameters, forget it
       var.vt = VT_INDEX;
       hr = pLoad->get_Property(_T("EventIndex"),&var);
-      m_EventIndex = VARIANT2INDEX(var);
+      m_StageIndex = VARIANT2INDEX(var);
    }
-   else
+   else if ( version < 8 )
    {
+      // stopped storing this in version 8
+      // we don't need this parameter, forget it
       var.vt = VT_ID;
       hr = pLoad->get_Property(_T("EventID"),&var);
-      m_EventID = VARIANT2ID(var);
+      //m_EventID = VARIANT2ID(var);
    }
 
    if ( FAILED(hr) )
@@ -271,13 +269,13 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
    // adjust the stage value here
    if ( version < 3 )
    {
-      switch(m_EventIndex)
+      switch(m_StageIndex)
       {
          // when the generalized stage model was created (PGSplice) the BridgeSiteX constants where removed
          // use the equivalent value
-      case 0: m_EventIndex = 2;/*pgsTypes::BridgeSite1;*/ break;
-      case 1: m_EventIndex = 3;/*pgsTypes::BridgeSite2;*/ break;
-      case 2: m_EventIndex = 4;/*pgsTypes::BridgeSite3;*/ break;
+      case 0: m_StageIndex = 2;/*pgsTypes::BridgeSite1;*/ break;
+      case 1: m_StageIndex = 3;/*pgsTypes::BridgeSite2;*/ break;
+      case 2: m_StageIndex = 4;/*pgsTypes::BridgeSite3;*/ break;
       default:
          ATLASSERT(false);
       }
@@ -357,8 +355,7 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
 void CMomentLoadData::MakeCopy(const CMomentLoadData& rOther)
 {
    m_ID          = rOther.m_ID;
-   m_EventIndex  = rOther.m_EventIndex;
-   m_EventID     = rOther.m_EventID;
+   m_StageIndex  = rOther.m_StageIndex;
    m_LoadCase    = rOther.m_LoadCase;
    m_SpanKey     = rOther.m_SpanKey;
    m_Location    = rOther.m_Location;

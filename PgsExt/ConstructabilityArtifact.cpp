@@ -100,7 +100,6 @@ void pgsSpanConstructabilityArtifact::GetProvidedSlabOffset(Float64* pStartA, Fl
 
 bool pgsSpanConstructabilityArtifact::AreSlabOffsetsSameAtEnds() const
 {
-   ATLASSERT(m_bIsSlabOffsetApplicable);
    return IsEqual(m_ProvidedStart,m_ProvidedEnd);
 }
 

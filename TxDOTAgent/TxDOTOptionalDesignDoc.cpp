@@ -865,19 +865,12 @@ SpecLibrary* CTxDOTOptionalDesignDoc::GetSpecLibrary()
 void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
 {
    // Use same master library as PGSuper
-#if defined _BETA_VERSION
    CAutoRegistry autoReg(_T("PGSuper"));
-#else
-   CAutoRegistry autoReg(_T("PGSuperV3"));
-#endif
 
    CEAFApp* pApp = EAFGetApp();
 
-#if defined _BETA_VERSION
    CString strMasterLibaryFile    = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache2"));
-#else
-   CString strMasterLibaryFile    = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache"));
-#endif
+
    if (strMasterLibaryFile.IsEmpty())
    {
       // PGSuper's installer should take care of this, but just in case:
@@ -887,20 +880,12 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
       throw exc;
    }
 
-#if defined _BETA_VERSION
    CString strURL   = pApp->GetProfileString(_T("Options"),_T("MasterLibraryURL2"));
-#else
-   CString strURL   = pApp->GetProfileString(_T("Options"),_T("MasterLibraryURL"));
-#endif
 
    if (strURL.IsEmpty())
       strURL = strMasterLibaryFile;
 
-#if defined _BETA_VERSION
    CString strServer   = pApp->GetProfileString(_T("Options"),_T("CatalogServer2"));
-#else
-   CString strServer   = pApp->GetProfileString(_T("Options"),_T("CatalogServer"));
-#endif
 
     // Hard-coded file location
 //   CString strMasterLibaryFile = GetTOGAFolder() + CString(_T("\\")) + _T("MasterLibrary.lbr");
@@ -1354,18 +1339,18 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wncdc.m_Description = _T("w non-comp, dc");
    wncdc.m_Type = UserLoads::Uniform;
    wncdc.m_WStart = w;
-   wncdc.m_EventIndex = pBridgeDesc->GetCastDeckEventIndex(); /* pgsTypes::BridgeSite1;*/
-   wncdc.m_EventID   = pBridgeDesc->GetEventByIndex(wncdc.m_EventIndex)->GetID();
    wncdc.m_LoadCase = UserLoads::DC;
    wncdc.m_Fractional = true;
    wncdc.m_StartLocation = 0.0;
    wncdc.m_EndLocation = -1.0;
    wncdc.m_SpanKey.spanIndex = 0;
    wncdc.m_SpanKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
-   pUserDefinedLoadData->AddDistributedLoad(wncdc);
+
+   EventIDType eventID = pBridgeDesc->GetEventByIndex(pBridgeDesc->GetCastDeckEventIndex())->GetID(); // pgsTypes::BridgeSite1
+   pUserDefinedLoadData->AddDistributedLoad(eventID,wncdc);
 
    wncdc.m_SpanKey.girderIndex = TOGA_FABR_GDR;
-   pUserDefinedLoadData->AddDistributedLoad(wncdc);
+   pUserDefinedLoadData->AddDistributedLoad(eventID,wncdc);
 
    // w comp, dc
    w = m_ProjectData.GetWCompDc();
@@ -1374,18 +1359,18 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wcdc.m_Description = _T("w comp, dc");
    wcdc.m_Type = UserLoads::Uniform;
    wcdc.m_WStart = w;
-   wcdc.m_EventIndex = pBridgeDesc->GetRailingSystemLoadEventIndex();/* pgsTypes::BridgeSite2;*/
-   wcdc.m_EventID   = pBridgeDesc->GetEventByIndex(wcdc.m_EventIndex)->GetID();
    wcdc.m_LoadCase = UserLoads::DC;
    wcdc.m_Fractional = true;
    wcdc.m_StartLocation = 0.0;
    wcdc.m_EndLocation = -1.0;
    wcdc.m_SpanKey.spanIndex = 0;
    wcdc.m_SpanKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
-   pUserDefinedLoadData->AddDistributedLoad(wcdc);
+
+   eventID   = pBridgeDesc->GetEventByIndex(pBridgeDesc->GetRailingSystemLoadEventIndex())->GetID(); // pgsTypes::BridgeSite2
+   pUserDefinedLoadData->AddDistributedLoad(eventID,wcdc);
 
    wcdc.m_SpanKey.girderIndex = TOGA_FABR_GDR;
-   pUserDefinedLoadData->AddDistributedLoad(wcdc);
+   pUserDefinedLoadData->AddDistributedLoad(eventID,wcdc);
 
    // Now we can deal with girder data for original and precaster optional designs
    // First check concrete - it's possible to not input this and go straight to anlysis

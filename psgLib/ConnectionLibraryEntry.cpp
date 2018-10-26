@@ -181,8 +181,8 @@ m_GirderBearingOffset(0),
 m_EndDistanceMeasure(FromBearingNormalToPier),
 m_BearingOffsetMeasure(NormalToPier),
 m_SupportWidth(0),
-m_DiaphragmHeight(::ConvertToSysUnits(24.0,unitMeasure::Inch)),
-m_DiaphragmWidth(::ConvertToSysUnits(12.0,unitMeasure::Inch)),
+m_DiaphragmHeight(-1), // compute
+m_DiaphragmWidth(-1), // compute
 m_DiaphragmLoadType(ApplyAtBearingCenterline),
 m_DiaphragmLoadLocation(0.0)
 {

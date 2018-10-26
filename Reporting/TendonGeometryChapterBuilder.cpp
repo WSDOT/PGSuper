@@ -96,7 +96,7 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       CString strTitle;
       strTitle.Format(_T("Tendon Geometry - Tendon %d"),LABEL_DUCT(ductIdx));
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,strTitle);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10,strTitle);
       *pPara << pTable << rptNewLine;
 
       IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);

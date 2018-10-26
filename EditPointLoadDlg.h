@@ -49,6 +49,7 @@ public:
 	//}}AFX_DATA
 
    CPointLoadData m_Load;
+   EventIDType m_EventID; // ID of the event when the load is applied
    CComPtr<IBroker> m_pBroker;
 
    bool                 m_WasLiveLoad;

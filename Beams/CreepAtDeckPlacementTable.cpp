@@ -58,17 +58,17 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    // Create and configure the table
    ColumnIndexType numColumns = 8;
    CCreepAtDeckPlacementTable* table = new CCreepAtDeckPlacementTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
 
    table->m_pStrands = pStrands;
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("[5.9.5.4.2b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << rptNewLine;
 

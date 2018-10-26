@@ -731,28 +731,28 @@ interface IUserDefinedLoadData : IUnknown
    // point loads
    virtual CollectionIndexType GetPointLoadCount() const = 0;
    // add point load and return current count
-   virtual CollectionIndexType AddPointLoad(const CPointLoadData& pld)= 0;
+   virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld)= 0;
    virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const = 0;
    virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const = 0;
-   virtual void UpdatePointLoad(CollectionIndexType idx, const CPointLoadData& pld) = 0;
+   virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld) = 0;
    virtual void DeletePointLoad(CollectionIndexType idx) = 0;
 
    // distributed loads
    virtual CollectionIndexType GetDistributedLoadCount() const = 0;
    // add distributed load and return current count
-   virtual CollectionIndexType AddDistributedLoad(const CDistributedLoadData& pld)= 0;
+   virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld)= 0;
    virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const = 0;
    virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const = 0;
-   virtual void UpdateDistributedLoad(CollectionIndexType idx, const CDistributedLoadData& pld) = 0;
+   virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld) = 0;
    virtual void DeleteDistributedLoad(CollectionIndexType idx) = 0;
 
    // moment loads
    virtual CollectionIndexType GetMomentLoadCount() const = 0;
    // add moment load and return current count
-   virtual CollectionIndexType AddMomentLoad(const CMomentLoadData& pld)= 0;
+   virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld)= 0;
    virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const = 0;
    virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const = 0;
-   virtual void UpdateMomentLoad(CollectionIndexType idx, const CMomentLoadData& pld) = 0;
+   virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld) = 0;
    virtual void DeleteMomentLoad(CollectionIndexType idx) = 0;
 
    // construction loads

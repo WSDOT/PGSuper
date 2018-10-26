@@ -170,7 +170,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescLongitudinalRebar message handlers
 
-void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults()
+void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults(CLongitudinalRebarData* pLongData)
 {
    // get shear information from library
    CComPtr<IBroker> pBroker;
@@ -179,9 +179,8 @@ void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults()
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( m_CurGrdName.c_str());
    ASSERT(pGirderEntry != 0);
 
-   // update data member
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_pSegment->LongitudinalRebarData.CopyGirderEntryData(*pGirderEntry);
+   // update data 
+   pLongData->CopyGirderEntryData(*pGirderEntry);
 }
 
 void CGirderDescLongitudinalRebar::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
@@ -191,7 +190,9 @@ void CGirderDescLongitudinalRebar::GetRebarMaterial(matRebar::Type* pType,matReb
 
 void CGirderDescLongitudinalRebar::OnRestoreDefaults() 
 {
-	RestoreToLibraryDefaults();
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+	RestoreToLibraryDefaults(&(pParent->m_pSegment->LongitudinalRebarData));
    // update data in page and redraw
    VERIFY(UpdateData(FALSE));
 }

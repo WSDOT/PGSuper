@@ -227,7 +227,7 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    if (1 < girderKeys.size())
    {
-      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
       (*pPara) << rptNewLine <<_T("Design Outcomes for Individual Girders");
    }
@@ -300,7 +300,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    rptParagraph* pNotesParagraph = doNotes ? new rptParagraph() : NULL;
    if ( doNotes )
    {
-      rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pParagraph;
       *pParagraph << _T("Design Notes:");
       *pChapter << pNotesParagraph;
@@ -314,7 +314,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
 
-      rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pParagraph;
       *pParagraph << _T("Flexure Design:");
 
@@ -352,11 +352,11 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3);
       *pParagraph << pTable;
 
-      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       RowIndexType row = 0;
 
@@ -672,7 +672,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    }
    else
    {
-      rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pParagraph;
       *pParagraph << _T("Flexure Design Not Requested")<<rptNewLine;
    }
@@ -683,7 +683,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    if (pArtifact->GetDoDesignShear())
    {
 
-      rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pParagraph;
       *pParagraph << _T("Shear Design:");
 
@@ -840,7 +840,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
    const CSegmentKey& segmentKey = pArtifact->GetSegmentKey();
    ATLASSERT(segmentKey.segmentIndex == 0); // design is only for precast girders which only have one segment
 
-   rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pParagraph;
 
    pgsSegmentDesignArtifact::Outcome outcome = pArtifact->GetOutcome();
@@ -898,7 +898,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
    const CSegmentKey& segmentKey = pArtifact->GetSegmentKey();
 
    rptParagraph* pParagraph;
-   pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pParagraph;
 
    *pParagraph << rptNewLine << color(Red)
@@ -908,7 +908,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
                << color(Black)
                << rptNewLine;
 
-   pParagraph = new rptParagraph( pgsReportStyleHolder::GetSubheadingStyle() );
+   pParagraph = new rptParagraph( rptStyleManager::GetSubheadingStyle() );
    *pChapter << pParagraph;
    switch( pArtifact->GetOutcome() )
    {
@@ -1081,7 +1081,10 @@ void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtif
    std::vector<arFlexuralDesignType> failures = pArtifact->GetPreviouslyFailedFlexuralDesigns();
    for(std::vector<arFlexuralDesignType>::iterator itf=failures.begin(); itf!=failures.end(); itf++)
    {
-      *pParagraph <<color(Blue)<<_T("Design attempt for a: ")<< GetDesignTypeName( *itf )<<_T(" design strategy - Failed") <<color(Black)<<rptNewLine;
+      if ( *itf != dtNoDesign )
+      {
+         *pParagraph <<color(Blue)<<_T("Design attempt for a: ")<< GetDesignTypeName( *itf )<<_T(" design strategy - Failed") <<color(Black)<<rptNewLine;
+      }
    }
 }
 
@@ -1123,10 +1126,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    *pChapter << pParagraph;
 
    // Our table has a column for each girder
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(endIdx-startIdx+2,_T("Multiple Girder Design Summary"));
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(endIdx-startIdx+2,_T("Multiple Girder Design Summary"));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
    *pParagraph << pTable << rptNewLine;
 
    // Start by writing first column
@@ -1450,7 +1453,7 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
    ColumnIndexType col = 0;
    if (is_stirrups)
    {
-      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(8);
+      rptRcTable* pTables = rptStyleManager::CreateTableNoHeading(8);
       *pParagraph << pTables << rptNewLine;
 
       (*pTables)(0,col++) << _T("Zone #");
@@ -1555,7 +1558,7 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
 
    if(is_hstirrups)
    {
-      rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(6);
+      rptRcTable* pTables = rptStyleManager::CreateTableNoHeading(6);
       *pParagraph << pTables << rptNewLine;
 
       ColumnIndexType col = 0;

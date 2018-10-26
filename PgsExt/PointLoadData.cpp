@@ -43,8 +43,7 @@ IDType UserLoads::ms_NextMomentLoadID = 20000;
 CPointLoadData::CPointLoadData():
 m_ID(INVALID_ID),
 m_LoadCase(UserLoads::DC),
-m_EventIndex(INVALID_INDEX),
-m_EventID(INVALID_ID),
+m_StageIndex(INVALID_INDEX),
 m_SpanKey(0,0),
 m_Magnitude(0.0),
 m_Location(0.5),
@@ -73,12 +72,7 @@ CPointLoadData& CPointLoadData::operator=(const CPointLoadData& other)
 
 bool CPointLoadData::operator == (const CPointLoadData& rOther) const
 {
-   if (m_EventIndex != rOther.m_EventIndex)
-   {
-      return false;
-   }
-
-   if ( m_EventID != rOther.m_EventID )
+   if (m_StageIndex != rOther.m_StageIndex)
    {
       return false;
    }
@@ -136,7 +130,7 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit(_T("PointLoad"),7.0);
+   pSave->BeginUnit(_T("PointLoad"),8.0);
 
    hr = pSave->put_Property(_T("ID"),CComVariant(m_ID));
    if ( FAILED(hr) )
@@ -150,11 +144,13 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
       return hr;
    }
 
-   hr = pSave->put_Property(_T("EventID"),CComVariant((long)m_EventID)); // storing ID starting with version 7
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
+   // stopped storing this with version 8
+   // we don't need to store the event ID... the timeline manager stores our load ID with an event
+   //hr = pSave->put_Property(_T("EventID"),CComVariant((long)m_EventID)); // storing ID starting with version 7
+   //if ( FAILED(hr) )
+   //{
+   //   return hr;
+   //}
 
    // In pre Jan, 2011 versions, "all spans" and "all girders" were hardcoded to 10000, then we changed to the ALL_SPANS/ALL_GIRDERS value
    // Keep backward compatibility by saving the 10k value
@@ -278,19 +274,23 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
    {
       var.vt = VT_INDEX;
       hr = pLoad->get_Property(_T("Stage"),&var);
-      m_EventIndex = VARIANT2INDEX(var);
+      m_StageIndex = VARIANT2INDEX(var);
    }
    else if ( version < 7 )
    {
+      // we didn't need to store the event index... just load it and forget it
       var.vt = VT_INDEX;
       hr = pLoad->get_Property(_T("EventIndex"),&var);
-      m_EventIndex = VARIANT2INDEX(var);
+      m_StageIndex = VARIANT2INDEX(var);
    }
-   else
+   else if ( version < 8 )
    {
+      // starting with version 8, we don't store the event ID
+      // prior to version 8, we stored it, but don't need it
+      // just load the event id and forget about it
       var.vt = VT_ID;
       hr = pLoad->get_Property(_T("EventID"),&var);
-      m_EventID = VARIANT2ID(var);
+      //m_EventID = VARIANT2ID(var);
    }
 
    if ( FAILED(hr) )
@@ -303,13 +303,13 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
    // adjust the stage value here
    if ( version < 3 )
    {
-      switch(m_EventIndex)
+      switch(m_StageIndex)
       {
          // when the generalized stage model was created (PGSplice) the BridgeSiteX constants where removed
          // use the equivalent value
-      case 0: m_EventIndex = 2;/*pgsTypes::BridgeSite1;*/ break;
-      case 1: m_EventIndex = 3;/*pgsTypes::BridgeSite2;*/ break;
-      case 2: m_EventIndex = 4;/*pgsTypes::BridgeSite3;*/ break;
+      case 0: m_StageIndex = 2;/*pgsTypes::BridgeSite1;*/ break;
+      case 1: m_StageIndex = 3;/*pgsTypes::BridgeSite2;*/ break;
+      case 2: m_StageIndex = 4;/*pgsTypes::BridgeSite3;*/ break;
       default:
          ATLASSERT(false);
       }
@@ -408,8 +408,6 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
 void CPointLoadData::MakeCopy(const CPointLoadData& rOther)
 {
    m_ID                                    = rOther.m_ID;
-   m_EventIndex                            = rOther.m_EventIndex;
-   m_EventID                               = rOther.m_EventID;
    m_LoadCase                              = rOther.m_LoadCase;
    m_SpanKey                               = rOther.m_SpanKey;
    m_bLoadOnCantilever[pgsTypes::metStart] = rOther.m_bLoadOnCantilever[pgsTypes::metStart];
@@ -418,6 +416,7 @@ void CPointLoadData::MakeCopy(const CPointLoadData& rOther)
    m_Fractional                            = rOther.m_Fractional;
    m_Magnitude                             = rOther.m_Magnitude;
    m_Description                           = rOther.m_Description;
+   m_StageIndex                            = rOther.m_StageIndex;
 }
 
 void CPointLoadData::MakeAssignment(const CPointLoadData& rOther)

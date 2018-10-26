@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\BurstingZoneDetailsChapterBuilder.h>
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #include <PgsExt\GirderArtifact.h>
@@ -121,7 +121,7 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
 
       if ( 1 < nSegments )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }

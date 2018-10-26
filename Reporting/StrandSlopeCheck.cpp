@@ -96,7 +96,7 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
       return;
    }
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Strand Slope");
 
@@ -104,7 +104,7 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
-   *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Strand Slope.jpg") ) << rptNewLine;
+   *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Strand Slope.jpg") ) << rptNewLine;
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -115,7 +115,7 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
       {
          if ( 1 < nSegments )
          {
-            pBody = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            pBody = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             *pChapter << pBody;
             *pBody << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
          }
@@ -123,11 +123,11 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
          pBody = new rptParagraph;
          *pChapter << pBody;
       
-         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2);
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(2);
          *pBody << pTable;
 
-         pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-         pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+         pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+         pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
          (*pTable)(0,0) << _T("");
          (*pTable)(0,1) << _T("1 : n");

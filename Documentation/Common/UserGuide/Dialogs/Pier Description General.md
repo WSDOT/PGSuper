@@ -18,10 +18,10 @@ Define the slab offset at the pier.
 
 Item | Description
 -----|------------
-Hyperlink | Click on the hyperlink text to toggle between defining the slab offset for the entire bridge or for this pier.
+Type | Click on the combo box to select if defining the slab offset for the entire bridge or only for this pier.
 Back | Slab offset on the back side of this pier
 Ahead | Slab offset on the ahead side of this pier
 
-If the slab offset is defined by pier and you click the hyperlink to change the slab offset to be a single value for the entire bridge, the slab offset defined for this pier will be applied to the entire bridge. If the back and ahead slab offsets are different, you will be prompted to select one value.
+If the slab offset is defined by pier and you click the combobox to change the slab offset to be a single value for the entire bridge, the slab offset defined for this pier will be applied to the entire bridge. If the back and ahead slab offsets are different, you will be prompted to select one value.
 
 > NOTE: Defining slab offsets by pier is the same as defining them by span.

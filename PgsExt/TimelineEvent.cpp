@@ -69,7 +69,7 @@ bool CTimelineEvent::operator<(const CTimelineEvent& rOther) const
    if ( m_Day == rOther.m_Day )
    {
       // occur on the same day... check the activities. some activities logically
-      // occur before others.
+      // occur before others. 
       if ( GetActivityScore() < rOther.GetActivityScore() )
       {
          return true;
@@ -413,6 +413,8 @@ Float64 CTimelineEvent::GetMinElapsedTime() const
    //   // zero duration activity
    //   elapsedTime += 0;
    //}
+
+   ATLASSERT(0 <= elapsedTime);
 
    return elapsedTime;
 }

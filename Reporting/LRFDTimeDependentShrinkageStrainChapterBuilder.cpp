@@ -63,7 +63,7 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
    INIT_UV_PROTOTYPE( rptLengthUnitValue, vsRatio, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -80,7 +80,7 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
    }
    else
    {
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(2);
 
       *pPara << pTable << rptNewLine;
       (*pTable)(0,0) << _T("Moist Curing");
@@ -94,11 +94,11 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
    {
       nColumns += 5; // K1, K2, ks, f'ci, kf
    }
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
    *pPara << pTable << rptNewLine;
 
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
 
    RowIndexType rowIdx = 0;
@@ -261,12 +261,12 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
       nColumns += 2*nSegments + 1;
    }
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+   pTable = rptStyleManager::CreateDefaultTable(nColumns);
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    rowIdx = 0;
    colIdx = 0;

@@ -29,6 +29,9 @@
 #include <PgsExt\SpanData2.h>
 #include <PgsExt\GirderGroupData.h>
 #include <PgsExt\TimelineManager.h>
+#include <PgsExt\PointLoadData.h>
+#include <PgsExt\DistributedLoadData.h>
+#include <PgsExt\MomentLoadData.h>
 
 
 #define LOADED_OLD_BRIDGE_TYPE MAKE_HRESULT(SEVERITY_SUCCESS,FACILITY_ITF,512)

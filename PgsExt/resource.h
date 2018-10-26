@@ -2,9 +2,12 @@
 // Microsoft Visual C++ generated include file.
 // Used by PgsExt.rc
 //
+#define IDCANCEL2                       4
 #define IDD_SPANGIRDERREPORT            150
 #define IDD_BOUNDARY_CONDITIONS         191
 #define IDD_REFINEDANALYSIS             216
+#define IDC_SLIDER                      221
+#define IDC_LOCATION                    222
 #define IDB_HINGES                      289
 #define IDB_ROLLERS                     290
 #define IDB_CONTINUOUS                  291
@@ -14,6 +17,9 @@
 #define IDB_HAUNCH_SQUARE               295
 #define IDB_BITMAP2                     296
 #define IDB_HAUNCH_FILLETED             296
+#define IDD_SELECT_GIRDER               297
+#define IDD_SELECT_SEGMENT              298
+#define IDD_SELECT_POI                  299
 #define IDD_CONCRETE_DETAILS            300
 #define IDC_CONCRETE_TYPE               301
 #define IDC_FC_LABEL                    302
@@ -87,12 +93,15 @@
 #define IDC_RADIO_INPUT                 1442
 #define IDC_RADIO_IGNORE                1443
 #define IDS_E_NOCHAPTERS                1492
+#define IDC_SEGMENT                     1624
+#define IDC_GROUP                       1655
+#define IDC_INTERVAL                    3016
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        297
+#define _APS_NEXT_RESOURCE_VALUE        300
 #define _APS_NEXT_COMMAND_VALUE         32776
 #define _APS_NEXT_CONTROL_VALUE         1361
 #define _APS_NEXT_SYMED_VALUE           101

@@ -105,6 +105,14 @@ void CTimelineEventDlg::DoDataExchange(CDataExchange* pDX)
 
       Float64 day;
       DDX_Text(pDX,IDC_DAY,day);
+      
+      if ( day < 0 )
+      {
+         pDX->PrepareEditCtrl(IDC_DAY);
+         AfxMessageBox(_T("The day when this event occurs must be zero or more"),MB_OK);
+         pDX->Fail();
+      }
+
       m_pTimelineEvent->SetDay(day);
 
 #pragma Reminder("UPDATE: event elapsed time validation")

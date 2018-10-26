@@ -7,21 +7,9 @@
 #define IDR_WSDOTAGENTIMP               103
 #define IDR_PGSUPERCOMPONENTINFO        104
 #define IDR_PGSPLICECOMPONENTINFO       105
-#define IDR_CURVELEXPORTER              106
-#define IDR_CURVELIMPORTER              107
-#define IDR_GENCOMPEXPORTER             108
 #define IDI_ICON1                       201
 #define IDI_WSDOT                       201
-#define IDD_SELECT_POI                  202
 #define IDC_SPAN                        203
-#define IDC_GROUP                       203
-#define IDC_GIRDER                      204
-#define IDC_SLIDER                      221
-#define IDC_LOCATION                    222
-#define IDC_HELPBTN                     250
-#define IDC_INTERVAL                    3016
-#define IDB_CURVEL                      300
-#define IDB_GENCOMP                     301
 
 // Next default values for new objects
 // 

@@ -177,9 +177,9 @@ void CApplyLoadActivity::RemoveUserLoad(LoadIDType loadID)
    Update();
 }
 
-bool CApplyLoadActivity::HasUserLoad(LoadIDType loadID)
+bool CApplyLoadActivity::HasUserLoad(LoadIDType loadID) const
 {
-   std::set<LoadIDType>::iterator found = m_UserLoads.find(loadID);
+   std::set<LoadIDType>::const_iterator found = m_UserLoads.find(loadID);
    return found == m_UserLoads.end() ? false : true;
 }
 

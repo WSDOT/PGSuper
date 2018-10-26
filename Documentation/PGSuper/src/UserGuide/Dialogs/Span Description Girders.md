@@ -2,7 +2,7 @@ Girders {#ug_dialogs_span_description_girders}
 ==============================================
 Define the girder type and spacing.
 
-Click on the hyperlink text to toggle between defining parameters for the entire bridge and for just this span.
+Click on the combo box to select between defining parameters for the entire bridge or for just this span.
 
 Item | Description
 -----|--------------

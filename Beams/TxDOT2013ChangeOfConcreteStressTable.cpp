@@ -49,9 +49,9 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
    // If the 0.7fpu method is used for elastic shortening, we only need to compute mid-span values so no table is needed.
    lrfdElasticShortening::FcgpComputationMethod fcgpMethod = pDetails->pLosses->ElasticShortening().GetFcgpComputationMethod();
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Change in concrete stress at centroid of prestressing strands due to deck weight and superimposed loads [TxDOT Research Report 0-6374-2]") << rptNewLine;
 
@@ -90,7 +90,7 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
       ColumnIndexType numColumns = 5;
 
       CTxDOT2013ChangeOfConcreteStressTable* table = new CTxDOT2013ChangeOfConcreteStressTable( numColumns, pDisplayUnits );
-      pgsReportStyleHolder::ConfigureTable(table);
+      rptStyleManager::ConfigureTable(table);
 
       *pParagraph << table << rptNewLine;
 
@@ -100,7 +100,7 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
       (*table)(0,3) << COLHDR(Sub2(_T("I"),_T("g")),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
       (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cdp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pParagraph;
       *pParagraph << Sub2(_T("M"),_T("sd")) << _T(" = Moments due to deck weight and other superimposed dead loads") << rptNewLine;
 

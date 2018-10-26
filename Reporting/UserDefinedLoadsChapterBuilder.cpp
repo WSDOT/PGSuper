@@ -110,7 +110,7 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
             // Only print span and girder if we are in a multi span or multi girder loop
             if (lastSpanIdx != firstSpanIdx || lastGirderIdx != firstGirderIdx)
             {
-               pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+               pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pParagraph;
                *pParagraph << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
             }
@@ -189,7 +189,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    std::_tostringstream os;
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T("Point Loads"));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(5,_T("Point Loads"));
 
    (*table)(0,0)  << _T("Event");
    (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
@@ -290,7 +290,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
    GET_IFACE2(pBroker,IEventMap,pEventMap);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,_T("Distributed Loads"));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(7,_T("Distributed Loads"));
 
    (*table)(0,0)  << _T("Event");
    (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
@@ -394,7 +394,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    GET_IFACE2(pBroker,IEventMap,pEventMap);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T("End Moments"));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(5,_T("End Moments"));
 
    (*table)(0,0)  << _T("Event");
    (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");

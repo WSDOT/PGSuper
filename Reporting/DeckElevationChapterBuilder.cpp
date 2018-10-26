@@ -78,7 +78,7 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
       girderKey = pSGRptSpec->GetGirderKey();
    }
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Deck Elevations over Girder Webs") << rptNewLine;
    (*pChapter) << pPara;
 
@@ -113,7 +113,7 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    {
       std::_tostringstream os;
       os << _T("Span ") << LABEL_SPAN(spanIdx) << std::endl;
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(14,os.str().c_str());
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(14,os.str().c_str());
       (*pPara) << pTable << rptNewLine;
 
       pTable->SetNumberOfHeaderRows(1);
@@ -122,8 +122,8 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
       ColumnIndexType col = 0;
       for ( col = 0; col < pTable->GetNumberOfColumns(); col++ )
       {
-         pTable->SetColumnStyle(col,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         pTable->SetStripeRowColumnStyle(col,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+         pTable->SetColumnStyle(col,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         pTable->SetStripeRowColumnStyle(col,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       }
 
       col = 0;

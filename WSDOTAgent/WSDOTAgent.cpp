@@ -99,42 +99,6 @@ HRESULT RegisterAgent(bool bRegister)
       return hr;
    }
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_CurvelImporter,  CATID_PGSuperDataImporter,    bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = sysComCatMgr::RegWithCategory(CLSID_CurvelImporter,  CATID_PGSpliceDataImporter,    bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = sysComCatMgr::RegWithCategory(CLSID_CurvelExporter,  CATID_PGSuperDataExporter,    bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = sysComCatMgr::RegWithCategory(CLSID_CurvelExporter,  CATID_PGSpliceDataExporter,    bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = sysComCatMgr::RegWithCategory(CLSID_GenCompExporter,  CATID_PGSuperDataExporter,    bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = sysComCatMgr::RegWithCategory(CLSID_GenCompExporter,  CATID_PGSpliceDataExporter,    bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
    return S_OK;
 }
 

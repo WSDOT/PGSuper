@@ -54,11 +54,11 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    // Create and configure the table
    ColumnIndexType numColumns = 5;
    CFrictionLossTable* table = new CFrictionLossTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Friction and Anchor Set loss in post-tensioned temporary strands [5.9.5.2.1, 5.9.5.2.2b]") << rptNewLine;
 

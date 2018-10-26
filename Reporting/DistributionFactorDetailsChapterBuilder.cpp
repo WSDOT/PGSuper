@@ -98,7 +98,7 @@ rptChapter* CDistributionFactorDetailsChapterBuilder::Build(CReportSpecification
          rptParagraph* pPara;
          if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
             std::_tostringstream os;
             os << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);

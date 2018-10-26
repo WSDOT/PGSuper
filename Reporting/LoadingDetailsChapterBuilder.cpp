@@ -164,24 +164,24 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             if ( 1 < nSegments /* && !m_bSimplifiedVersion*/ )
             {
-               pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
                *pChapter << pPara;
                *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
             }
 
             // uniform loads
-            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
             *pPara << _T("Uniform Loads Applied Along the Entire Girder") << rptNewLine;
 
             pPara = new rptParagraph;
             *pChapter << pPara;
 
-            p_table = pgsReportStyleHolder::CreateDefaultTable(2);
+            p_table = rptStyleManager::CreateDefaultTable(2);
             *pPara << p_table << rptNewLine;
 
-            p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-            p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+            p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+            p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
             (*p_table)(0,0) << _T("Load Type");
             (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
@@ -235,7 +235,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             if ( !bUniformGirderDeadLoad )
             {
-               p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Girder Self-Weight"));
+               p_table = rptStyleManager::CreateDefaultTable(4,_T("Girder Self-Weight"));
                *pPara << rptNewLine << p_table << rptNewLine;
 
                (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left End of Girder"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -260,7 +260,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             if ( bCJLoad && !bUniformCJDeadLoad )
             {
-               p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Closure Joint Self-Weight"));
+               p_table = rptStyleManager::CreateDefaultTable(4,_T("Closure Joint Self-Weight"));
                *pPara << rptNewLine << p_table << rptNewLine;
 
                (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left End of CJ"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -311,7 +311,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          CSpanKey spanKey(spanIdx,gdrIdx);
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
 
@@ -320,7 +320,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          // User Defined Loads
          if ( bHasUserLoads )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
             *pPara<< _T("User Defined Loads")<<rptNewLine;
             pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
@@ -362,18 +362,18 @@ void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,IB
    scalar.SetTolerance(1.0e-6);
 
    // Details for sidewalks and barriers
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Distribution of Uniform Barrier, Sidewalk, and Pedestrian Loads to Girder") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,_T(""));
    *pPara << p_table << rptNewLine;
 
-   p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    (*p_table)(0,0) << _T("Load Type");
    (*p_table)(0,1) << COLHDR(_T("Total Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
@@ -474,7 +474,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
 
   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara<< _T("Deck Load Applied Along Girder")<<rptNewLine;
       
@@ -506,10 +506,10 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
       {
          if (is_uniform)
          {
-            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2,_T(""));
             *pPara << p_table << rptNewLine;
-            p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-            p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+            p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+            p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
             (*p_table)(0,0) << _T("Load Type");
             (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -527,7 +527,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          }
          else
          {
-            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
+            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(6,_T(""));
             *pPara << p_table;
 
             (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -561,10 +561,10 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
       {
          if (is_uniform)
          {
-            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2,_T(""));
             *pPara << p_table << rptNewLine;
-            p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-            p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+            p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+            p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
             (*p_table)(0,0) << _T("Load Type");
             (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -586,7 +586,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          }
          else
          {
-            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
             *pPara << p_table;
 
             (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -631,14 +631,14 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
       if (!m_bSimplifiedVersion)
       {
          // slab cantilever loads
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          *pPara<< _T("Deck Slab Cantilever Loads")<<rptNewLine;
       
          pPara = new rptParagraph;
          *pChapter << pPara;
 
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
          *pPara << p_table;
 
          p_table->SetNumberOfHeaderRows(2);
@@ -676,8 +676,8 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          (*p_table)(3,3) << force.SetValue(-P2);
          (*p_table)(3,4) << moment.SetValue(M2);
 
-         p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+         p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       }
    } // end if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
 }
@@ -705,7 +705,7 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
 
    if ( bReportOverlay )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara << _T("Overlay") << rptNewLine;
       pPara = new rptParagraph;
@@ -723,10 +723,10 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
       {
          *pPara<<_T("Overlay load is uniform along entire girder length.")<<rptNewLine;
 
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3,_T(""));
          *pPara << p_table << rptNewLine;
-         p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-         p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+         p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+         p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
          (*p_table)(0,0) << _T("Load Type");
          (*p_table)(0,1) << COLHDR(Sub2(_T("W"),_T("trib")),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          (*p_table)(0,2) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
@@ -740,7 +740,7 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
       }
       else
       {
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(6,_T(""));
          *pPara << p_table;
 
          (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -812,7 +812,7 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
    if ( !IsZero(pUserLoads->GetConstructionLoad()) )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara << _T("Construction") << rptNewLine;
       pPara = new rptParagraph;
@@ -827,10 +827,10 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
       {
          *pPara<<_T("Construction load is uniform along entire girder length.")<<rptNewLine;
 
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2,_T(""));
          *pPara << p_table << rptNewLine;
-         p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-         p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+         p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+         p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
          (*p_table)(0,0) << _T("Load Type");
          (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
          RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -842,7 +842,7 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
       }
       else
       {
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(6,_T(""));
          *pPara << p_table;
 
          (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -901,7 +901,7 @@ void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBri
    if ( has_shear_key )
    {
       one_girder_has_shear_key = true;
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara<< _T("Shear Key Load")<<rptNewLine;
       
@@ -916,10 +916,10 @@ void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBri
       {
          *pPara << _T("Shear Key Load is uniform along entire girder length") << rptNewLine;
 
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2,_T(""));
          *pPara << p_table << rptNewLine;
-         p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-         p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+         p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+         p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
          (*p_table)(0,0) << _T("Load Type");
          (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
@@ -940,7 +940,7 @@ void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBri
       {
          *pPara << _T("Shear Key Load is approximated with Linear Load Segments applied along the length of the girder") << rptNewLine;
 
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,_T(""));
          *pPara << p_table;
 
          (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -1000,14 +1000,14 @@ void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChap
 
    if ( 0 < diaphragm_loads.size() )
    {
-      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara<< _T("Precast Diaphragms Constructed as part of the Girder")<<rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
       *pPara << p_table;
 
 #pragma Reminder("UPDATE: girder/segment label") // should be segment for spliced girders
@@ -1061,14 +1061,14 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
 
    if (0 < diap_loads.size() )
    {
-      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara<< _T("Intermediate Diaphragms Constructed at Bridge Site")<<rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
       *pPara << p_table;
 
       (*p_table)(0,0) << COLHDR(_T("Load Location,")<<rptNewLine<<_T("from Start of Span"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -1111,18 +1111,18 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
    }
 
    // pier diaphragm loads
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<< _T("Pier Diaphragm Loads")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,_T(""));
    *pPara << p_table;
 
-   p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    (*p_table)(0,0) << _T("Pier");
    (*p_table)(0,1) << _T("Location");
@@ -1174,7 +1174,7 @@ void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDe
 
    bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<< _T("Live Loads")<<rptNewLine;
 
@@ -1379,21 +1379,21 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
    RowIndexType row = 0;
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<< _T("Limit States")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(2);
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2);
    *pPara << p_table;
 
-   p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   p_table->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   p_table->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   p_table->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   p_table->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    (*p_table)(row,0) << _T("Stage");
    (*p_table)(row,1) << _T("Load Case");
@@ -1435,7 +1435,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
 
    // LRFD Limit States Load Factors
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<< _T("Limit State Load Factors")<<rptNewLine;
 
@@ -1448,9 +1448,9 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       nColumns = 7;
    }
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
-   p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   p_table = rptStyleManager::CreateDefaultTable(nColumns);
+   p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    *pPara << p_table;
 
 
@@ -1905,7 +1905,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
       if ( bFootNote )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+         pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
          *pChapter << pPara;
          *pPara << Super(_T("*")) << _T("Live Load Factor depends on the weight of the axles on the bridge") << rptNewLine;
       }
@@ -1929,7 +1929,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,  pDisplayUnits->GetGeneralForceUnit(),   true );
 
    // Equivalent prestress loading for camber
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<< _T("Equivalent Pretension Loading")<<rptNewLine<<rptNewLine;
 
@@ -1955,7 +1955,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
 
             if ( 1 < nSegments )
             {
-               pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
                *pChapter << pPara;
                *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
             }
@@ -1969,7 +1969,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
             if ( 0 < vEquivLoad.size() )
             {
                *pPara << Bold(_T("Straight Strands")) << rptNewLine;
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StraightStrandCamberLoading.gif")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("StraightStrandCamberLoading.gif")) << rptNewLine;
                loadIter    = vEquivLoad.begin();
                loadIterEnd = vEquivLoad.end();
                for ( ; loadIter != loadIterEnd; loadIter++ )
@@ -1999,7 +1999,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                {
                   *pPara << Bold(_T("Adjustable Straight Strands")) << rptNewLine;
                }
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
                loadIter    = vEquivLoad.begin();
                loadIterEnd = vEquivLoad.end();
                for ( ; loadIter != loadIterEnd; loadIter++ )
@@ -2022,7 +2022,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
             if ( 0 < vEquivLoad.size() )
             {
                *pPara << Bold(_T("Temporary Strands")) << rptNewLine;
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("TempStrandCamberLoading.gif")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("TempStrandCamberLoading.gif")) << rptNewLine;
                loadIter    = vEquivLoad.begin();
                loadIterEnd = vEquivLoad.end();
                for ( ; loadIter != loadIterEnd; loadIter++ )

@@ -51,6 +51,7 @@ public:
    int m_LocationIdx;
 
    CMomentLoadData m_Load;
+   EventIDType m_EventID;
    CComPtr<IBroker> m_pBroker;
 
    bool                 m_WasLiveLoad;

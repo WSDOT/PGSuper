@@ -39,8 +39,7 @@ static char THIS_FILE[] = __FILE__;
 CDistributedLoadData::CDistributedLoadData():
 m_ID(INVALID_ID),
 m_LoadCase(UserLoads::DC),
-m_EventIndex(INVALID_INDEX),
-m_EventID(INVALID_ID),
+m_StageIndex(INVALID_INDEX),
 m_Type(UserLoads::Trapezoidal),
 m_WStart(0.0),
 m_WEnd(0.0),
@@ -69,10 +68,7 @@ CDistributedLoadData& CDistributedLoadData::operator=(const CDistributedLoadData
 
 bool CDistributedLoadData::operator == (const CDistributedLoadData& rOther) const
 {
-   if (m_EventIndex != rOther.m_EventIndex)
-      return false;
-
-   if (m_EventID != rOther.m_EventID)
+   if (m_StageIndex != rOther.m_StageIndex)
       return false;
 
    if (m_LoadCase != rOther.m_LoadCase)
@@ -115,7 +111,7 @@ HRESULT CDistributedLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit(_T("DistributedLoad"),6.0); // changed for version 4 with PGSplice
+   pSave->BeginUnit(_T("DistributedLoad"),7.0); // changed for version 4 with PGSplice
 
    hr = pSave->put_Property(_T("ID"),CComVariant(m_ID));
    if ( FAILED(hr) )
@@ -125,9 +121,10 @@ HRESULT CDistributedLoadData::Save(IStructuredSave* pSave)
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property(_T("EventID"),CComVariant((long)m_EventID)); // changed to event ID in version 6
-   if ( FAILED(hr) )
-      return hr;
+   // stopped storing this in version 7... we don't need it
+   //hr = pSave->put_Property(_T("EventID"),CComVariant((long)m_EventID)); // changed to event ID in version 6
+   //if ( FAILED(hr) )
+   //   return hr;
 
    hr = pSave->put_Property(_T("Type"),CComVariant((long)m_Type));
    if ( FAILED(hr) )
@@ -234,19 +231,22 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
    {
       var.vt = VT_INDEX;
       hr = pLoad->get_Property(_T("Stage"),&var);
-      m_EventIndex = VARIANT2INDEX(var);
+      m_StageIndex = VARIANT2INDEX(var);
    }
    else if ( version < 6 )
    {
+      // we don't need this parameter, just forget about it
       var.vt = VT_INDEX;
       hr = pLoad->get_Property(_T("EventIndex"),&var);
-      m_EventIndex = VARIANT2INDEX(var);
+      m_StageIndex = VARIANT2INDEX(var);
    }
-   else
+   else if ( version < 7 )
    {
+      // stopped storing this in version 7
+      // we don't need this parameter, just forget about it
       var.vt = VT_ID;
       hr = pLoad->get_Property(_T("EventID"),&var);
-      m_EventID = VARIANT2INDEX(var);
+      //m_EventID = VARIANT2INDEX(var);
    }
 
    if ( FAILED(hr) )
@@ -257,13 +257,13 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
    // adjust the stage value here
    if ( version < 3 )
    {
-      switch(m_EventIndex)
+      switch(m_StageIndex)
       {
          // when the generalized stage model was created (PGSplice) the BridgeSiteX constants where removed
          // use the equivalent value
-      case 0: m_EventIndex = 2;/*pgsTypes::BridgeSite1;*/ break;
-      case 1: m_EventIndex = 3;/*pgsTypes::BridgeSite2;*/ break;
-      case 2: m_EventIndex = 4;/*pgsTypes::BridgeSite3;*/ break;
+      case 0: m_StageIndex = 2;/*pgsTypes::BridgeSite1;*/ break;
+      case 1: m_StageIndex = 3;/*pgsTypes::BridgeSite2;*/ break;
+      case 2: m_StageIndex = 4;/*pgsTypes::BridgeSite3;*/ break;
       default:
          ATLASSERT(false);
       }
@@ -360,8 +360,7 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
 void CDistributedLoadData::MakeCopy(const CDistributedLoadData& rOther)
 {
    m_ID            = rOther.m_ID;
-   m_EventIndex    = rOther.m_EventIndex;
-   m_EventID       = rOther.m_EventID;
+   m_StageIndex    = rOther.m_StageIndex;
    m_LoadCase      = rOther.m_LoadCase;
    m_Type          = rOther.m_Type;
    m_SpanKey       = rOther.m_SpanKey;

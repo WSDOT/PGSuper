@@ -30,7 +30,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderLabel.h>
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -59,7 +59,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
    GET_IFACE(IPointOfInterest,pPoi);
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    offsetFormatter, pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -121,7 +121,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       (*pPara) << _T("Method of Computation:")<<rptNewLine;
       (*pChapter) << pPara;
       pPara = new rptParagraph;
@@ -135,7 +135,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
       if (pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::LeverRule)
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Longitudinal Stiffness Parameters");
          (*pChapter) << pPara;
          pPara = new rptParagraph;
@@ -151,7 +151,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
                   << _T("K") << Sub(_T("g")) << _T(" = ") << inertia.SetValue(span_lldf.Kg) << rptNewLine;
       }
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       (*pChapter) << pPara;
       (*pPara) << _T("Distribution Factor Parameters") << rptNewLine;
       pPara = new rptParagraph;
@@ -182,7 +182,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Strength and Service Limit States");
          (*pChapter) << pPara;
          pPara = new rptParagraph;
@@ -196,7 +196,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       // Distribution factor for exterior girder
       if ( bContinuousAtStart || bIntegralAtStart )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier1) << rptNewLine;
          pPara = new rptParagraph;
@@ -215,7 +215,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       }
 
       // Positive moment DF
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       (*pChapter) << pPara;
       if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
          (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
@@ -236,7 +236,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
       if ( bContinuousAtEnd || bIntegralAtEnd )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier2) << rptNewLine;
          pPara = new rptParagraph;
@@ -258,7 +258,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       //////////////////////////////////////////////////////////////
       // Shears
       //////////////////////////////////////////////////////////////
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       (*pChapter) << pPara;
       (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
       pPara = new rptParagraph;
@@ -277,7 +277,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       //////////////////////////////////////////////////////////////
       // Reactions
       //////////////////////////////////////////////////////////////
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       (*pChapter) << pPara;
       (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier1) << rptNewLine;
       pPara = new rptParagraph;
@@ -295,7 +295,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
         ///////
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       (*pChapter) << pPara;
       (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier2) << rptNewLine;
       pPara = new rptParagraph;
@@ -316,7 +316,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       ////////////////////////////////////////////////////////////////////////////
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Fatigue Limit States");
          (*pChapter) << pPara;
          pPara = new rptParagraph;
@@ -331,7 +331,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
          //////////////////////////////////////////////////////////////
          if ( bContinuousAtEnd || bIntegralAtEnd )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             (*pChapter) << pPara;
             (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier1) << rptNewLine;
             pPara = new rptParagraph;
@@ -342,7 +342,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
          }
 
          // Positive moment DF
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
             (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
@@ -356,7 +356,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
          if ( bContinuousAtEnd || bIntegralAtEnd )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             (*pChapter) << pPara;
             (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier2) << rptNewLine;
             pPara = new rptParagraph;
@@ -369,7 +369,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
          //////////////////////////////////////////////////////////////
          // Shears
          //////////////////////////////////////////////////////////////
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
          pPara = new rptParagraph;
@@ -381,7 +381,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
          //////////////////////////////////////////////////////////////
          // Reactions
          //////////////////////////////////////////////////////////////
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier1) << rptNewLine;
          pPara = new rptParagraph;
@@ -392,7 +392,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
            ///////
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier2) << rptNewLine;
          pPara = new rptParagraph;
@@ -614,7 +614,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
 
 void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
@@ -830,7 +830,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
 
 void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 

@@ -160,9 +160,10 @@ void CSectionViewDialog::OnPaint()
    GetClientRect(&cr);
    CSize csize = cr.Size();
    csize.cy -= bottom_dlg_to_top_of_button;
-   csize.cy -= rProps.Height();
+   //csize.cy -= rProps.Height();
    csize.cy -= 3*BORDER;
-   csize.cx -= 2*BORDER;
+   csize.cx -= 3*BORDER;
+   csize.cx -= rProps.Width();
 
 
    CComPtr<IRect2d> bbox;
@@ -182,7 +183,7 @@ void CSectionViewDialog::OnPaint()
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(csize.cx,csize.cy);
-   mapper.SetDeviceOrg(csize.cx/2 + BORDER,rProps.Height() + csize.cy + 2*BORDER);
+   mapper.SetDeviceOrg(csize.cx/2 + 2*BORDER + rProps.Width(),/*rProps.Height() +*/ csize.cy + 2*BORDER);
 
    DrawShape(&dc,mapper);
    DrawStrands(&dc,mapper,m_IsEnd);
@@ -203,7 +204,6 @@ void CSectionViewDialog::OnPaint()
 
    dc.SelectObject(pOldBrush);
 #endif
-
 }
 
 void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const gpPoint2d& loc, StrandIndexType strandIdx)
@@ -438,9 +438,9 @@ void CSectionViewDialog::OnSize(UINT nType, int cx, int cy)
    if (pBtn)
    {
       // section properties area
-      CRect rProps;
-      pBtn->GetWindowRect(&rProps);
-      pBtn->MoveWindow(BORDER,BORDER,rClient.Width()-2*BORDER,rProps.Height());
+      //CRect rProps;
+      //pBtn->GetWindowRect(&rProps);
+      //pBtn->MoveWindow(BORDER,BORDER,rClient.Width()-2*BORDER,rProps.Height());
 
 	   // ok button
       pBtn = GetDlgItem(IDOK);
@@ -454,50 +454,50 @@ void CSectionViewDialog::OnSize(UINT nType, int cx, int cy)
                        top_close,
                        rBtn.Size().cx, rBtn.Size().cy);
 
-      // check box
-      pBtn = GetDlgItem(IDC_SHOWS);
-      pBtn->GetWindowRect(&rBtn);
+    //  // check box
+    //  pBtn = GetDlgItem(IDC_SHOWS);
+    //  pBtn->GetWindowRect(&rBtn);
 
-      int chk_wid = rBtn.Size().cx;
+    //  int chk_wid = rBtn.Size().cx;
 
-      pBtn->MoveWindow(rClient.Size().cx - rBtn.Size().cx - BORDER,
-                       top_close - rBtn.Size().cy - BORDER,
-                       rBtn.Size().cx, rBtn.Size().cy);
+    //  pBtn->MoveWindow(rClient.Size().cx - rBtn.Size().cx - BORDER,
+    //                   top_close - rBtn.Size().cy - BORDER,
+    //                   rBtn.Size().cx, rBtn.Size().cy);
 
-	   // legend text
-      pBtn = GetDlgItem(IDC_DB);
-      pBtn->GetWindowRect(&rBtn);
+	   //// legend text
+    //  pBtn = GetDlgItem(IDC_DB);
+    //  pBtn->GetWindowRect(&rBtn);
 
-      int leg_wid = (rClient.Size().cx - chk_wid);
-      int wid = rBtn.Size().cx;
-      int spacing = (leg_wid - 2*BORDER - wid)/3;
+    //  int leg_wid = (rClient.Size().cx - chk_wid);
+    //  int wid = rBtn.Size().cx;
+    //  int spacing = (leg_wid - 2*BORDER - wid)/3;
 
-      int xloc = BORDER;
-      int yloc = rClient.Size().cy - rBtn.Size().cy - BORDER;
+    //  int xloc = BORDER;
+    //  int yloc = rClient.Size().cy - rBtn.Size().cy - BORDER;
 
-      pBtn->MoveWindow(xloc, yloc,
-                       rBtn.Size().cx, rBtn.Size().cy);
+    //  pBtn->MoveWindow(xloc, yloc,
+    //                   rBtn.Size().cx, rBtn.Size().cy);
 
-      pBtn = GetDlgItem(IDC_SS);
-      pBtn->GetWindowRect(&rBtn);
+    //  pBtn = GetDlgItem(IDC_SS);
+    //  pBtn->GetWindowRect(&rBtn);
 
-      xloc += spacing;
-      pBtn->MoveWindow(xloc, yloc,
-                       rBtn.Size().cx, rBtn.Size().cy);
+    //  xloc += spacing;
+    //  pBtn->MoveWindow(xloc, yloc,
+    //                   rBtn.Size().cx, rBtn.Size().cy);
 
-      pBtn = GetDlgItem(IDC_HS);
-      pBtn->GetWindowRect(&rBtn);
+    //  pBtn = GetDlgItem(IDC_HS);
+    //  pBtn->GetWindowRect(&rBtn);
 
-      xloc += spacing;
-      pBtn->MoveWindow(xloc, yloc,
-                       rBtn.Size().cx, rBtn.Size().cy);
+    //  xloc += spacing;
+    //  pBtn->MoveWindow(xloc, yloc,
+    //                   rBtn.Size().cx, rBtn.Size().cy);
 
-      pBtn = GetDlgItem(IDC_TS);
-      pBtn->GetWindowRect(&rBtn);
+    //  pBtn = GetDlgItem(IDC_TS);
+    //  pBtn->GetWindowRect(&rBtn);
 
-      xloc += spacing;
-      pBtn->MoveWindow(xloc, yloc,
-                       rBtn.Size().cx, rBtn.Size().cy);
+    //  xloc += spacing;
+    //  pBtn->MoveWindow(xloc, yloc,
+    //                   rBtn.Size().cx, rBtn.Size().cy);
 
       Invalidate();
    }
@@ -544,39 +544,38 @@ BOOL CSectionViewDialog::OnInitDialog()
    pWnd->SetWindowText(hlbl);
 
    CStatic* pShapeProps = (CStatic*)GetDlgItem(IDC_SECTION_PROPERTIES);
-   CString strProps;
 
-   Float64 Area, Ix, Ytop, Ybot, Stop, Sbot;
+   Float64 Area, Ix, Iy, Ytop, Ybot, Xleft, Xright, Stop, Sbot;
    m_ShapeProps->get_Area(&Area);
    m_ShapeProps->get_Ixx(&Ix);
+   m_ShapeProps->get_Iyy(&Iy);
    m_ShapeProps->get_Ytop(&Ytop);
    m_ShapeProps->get_Ybottom(&Ybot);
+   m_ShapeProps->get_Xleft(&Xleft);
+   m_ShapeProps->get_Xright(&Xright);
    Stop = Ix/Ytop;
    Sbot = Ix/Ybot;
 
    Float64 Kt = Sbot/Area;
    Float64 Kb = Stop/Area;
 
-   CString strAreaUnit, strIxUnit, strYUnit, strSUnit;
-   Area = ::ConvertFromSysUnits(Area,pDisplayUnits->Area.UnitOfMeasure);
-   strAreaUnit = pDisplayUnits->Area.UnitOfMeasure.UnitTag().c_str();
+   Float64 H = Ytop + Ybot;
+   Float64 W = Xleft + Xright;
 
-   Ix = ::ConvertFromSysUnits(Ix,pDisplayUnits->MomentOfInertia.UnitOfMeasure);
-   strIxUnit = pDisplayUnits->MomentOfInertia.UnitOfMeasure.UnitTag().c_str();
+   CString strProps;
+   strProps.Format(_T("Area = %s\r\nYt = %s\r\nYb = %s\r\nIx = %s\r\nIy = %s\r\nSt = %s\r\nSb = %s\r\nH = %s\r\nW = %s\r\nKt = %s\r\nKb = %s"),
+      ::FormatDimension(Area,pDisplayUnits->Area),
+      ::FormatDimension(Ytop,pDisplayUnits->ComponentDim),
+      ::FormatDimension(Ybot,pDisplayUnits->ComponentDim),
+      ::FormatDimension(Ix,pDisplayUnits->MomentOfInertia),
+      ::FormatDimension(Iy,pDisplayUnits->MomentOfInertia),
+      ::FormatDimension(Stop,pDisplayUnits->SectModulus),
+      ::FormatDimension(Sbot,pDisplayUnits->SectModulus),
+      ::FormatDimension(H,pDisplayUnits->ComponentDim),
+      ::FormatDimension(W,pDisplayUnits->ComponentDim),
+      ::FormatDimension(Kt,pDisplayUnits->ComponentDim),
+      ::FormatDimension(Kb,pDisplayUnits->ComponentDim));
 
-   Ytop = ::ConvertFromSysUnits(Ytop,pDisplayUnits->ComponentDim.UnitOfMeasure);
-   Ybot = ::ConvertFromSysUnits(Ybot,pDisplayUnits->ComponentDim.UnitOfMeasure);
-   strYUnit = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
-
-   Stop = ::ConvertFromSysUnits(Stop,pDisplayUnits->SectModulus.UnitOfMeasure);
-   Sbot = ::ConvertFromSysUnits(Sbot,pDisplayUnits->SectModulus.UnitOfMeasure);
-   strSUnit = pDisplayUnits->SectModulus.UnitOfMeasure.UnitTag().c_str();
-
-   Kt = ::ConvertFromSysUnits(Kt,pDisplayUnits->ComponentDim.UnitOfMeasure);
-   Kb = ::ConvertFromSysUnits(Kb,pDisplayUnits->ComponentDim.UnitOfMeasure);
-   strYUnit = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
-
-   strProps.Format(_T("Area = %.3f %s\t\t\tYt = %.3f %s\t\t\tYb = %.3f %s\nIx = %.1f %s\t\t\tSt = %.3f %s\t\t\tSb = %.3f %s\nH = %.3f %s\t\t\tKt = %.3f %s\t\t\tKb = %.3f %s"),Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
    pShapeProps->SetWindowText(strProps);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

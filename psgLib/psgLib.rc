@@ -68,8 +68,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,52
- PRODUCTVERSION 3,0,0,52
+ FILEVERSION 3,0,0,53
+ PRODUCTVERSION 3,0,0,53
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -87,12 +87,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.52"
+            VALUE "FileVersion", "3.0.0.53"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.52"
+            VALUE "ProductVersion", "3.0.0.53"
         END
     END
     BLOCK "VarFileInfo"
@@ -839,12 +839,12 @@ CAPTION "Section View"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,383,372,50,14
-    LTEXT           "Straight Strands",IDC_SS,117,373,51,8
-    LTEXT           "Harped Strands",IDC_HS,191,373,70,8
-    LTEXT           "Temporary Strands",IDC_TS,272,373,60,8
-    CONTROL         "Show Numbering",IDC_SHOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,363,354,70,10
-    LTEXT           "Section Properties",IDC_SECTION_PROPERTIES,0,2,433,31
-    LTEXT           "Debondable Strands",IDC_DB,32,372,66,8
+    LTEXT           "Straight Strands",IDC_SS,7,157,51,8
+    LTEXT           "Harped Strands",IDC_HS,7,171,70,8
+    LTEXT           "Temporary Strands",IDC_TS,7,184,60,8
+    CONTROL         "Show Numbering",IDC_SHOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,130,70,10
+    LTEXT           "Section Properties",IDC_SECTION_PROPERTIES,7,7,72,118
+    LTEXT           "Debondable Strands",IDC_DB,7,143,66,8
 END
 
 IDD_STRAND_DEFINITION DIALOGEX 0, 0, 310, 183
@@ -1242,19 +1242,19 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Flexural Design"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Debonding Strand Limits (LRFD 5.11.4.3)",IDC_STATIC,7,7,452,75
+    GROUPBOX        "Debonding Strand Limits (LRFD 5.11.4.3)",IDC_STATIC,7,7,452,79
     LTEXT           "Maximum total debonded strands ",IDC_STATIC,15,20,106,8
     EDITTEXT        IDC_MAX_TOTAL_STRANDS,145,20,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(% of total permanent strands)",IDC_STATIC,191,20,94,8
     LTEXT           "Maximum debonded strands per row",IDC_STATIC,15,36,114,8
     EDITTEXT        IDC_MAX_STRANDS_PER_ROW,145,36,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(% of total permanent strands in a row) ",IDC_STATIC,191,36,122,8
-    LTEXT           "Maximum debonded strands per section.",IDC_STATIC,15,50,176,8
-    LTEXT           "The greater of:",IDC_STATIC,16,63,48,8
-    EDITTEXT        IDC_MAX_NUM_PER_SECTION,67,63,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "strands , or",IDC_STATIC,109,63,36,8
-    EDITTEXT        IDC_MAX_FRACTION_PER_SECTION,145,63,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(% of all debonded strands)",IDC_STATIC,191,63,86,8
+    LTEXT           "Maximum debonded strands per section.",IDC_STATIC,15,53,176,8
+    LTEXT           "The greater of:",IDC_STATIC,16,68,48,8
+    EDITTEXT        IDC_MAX_NUM_PER_SECTION,67,65,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "strands , or",IDC_STATIC,109,68,36,8
+    EDITTEXT        IDC_MAX_FRACTION_PER_SECTION,145,65,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(% of all debonded strands)",IDC_STATIC,191,68,86,8
     GROUPBOX        "Critiera for Debond Distances",IDC_DEBOND_CRITERIA_GROUP,7,93,452,102
     LTEXT           "Maximum debonded length is the lesser of the half-girder length minus maximum development length (LRFD 5.11.4.3), and the  following:",IDC_DEBOND_CRITERIA_NOTE,17,108,235,19
     CONTROL         "",IDC_CHECK_MAX_LENGTH_FRACTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,130,10,8
@@ -1281,7 +1281,7 @@ BEGIN
     CONTROL         "If necessary, add raised adjustable straight strands",IDC_STRAIGHT_RAISE_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,278,269,174,10
     CONTROL         "Straight strands with debonding",IDC_DEBOND_DESIGN_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,289,115,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,288,115,10
     EDITTEXT        IDC_DEBOND_FCI,150,285,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
     EDITTEXT        IDC_DEBOND_FC,210,285,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "units",IDC_DEBOND_UNITS,254,290,16,8

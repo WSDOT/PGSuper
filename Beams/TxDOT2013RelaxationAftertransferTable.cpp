@@ -43,11 +43,11 @@ rptRcTable(NumColumns,0)
 
 CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress, pDisplayUnits->GetStressUnit(), true );
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Losses due to Relaxation") << rptNewLine;
    pParagraph = new rptParagraph;
@@ -86,7 +86,7 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
       ColumnIndexType numColumns = 4;
 
       CTxDOT2013RelaxationAfterTransferTable* table = new CTxDOT2013RelaxationAfterTransferTable( numColumns, pDisplayUnits );
-      pgsReportStyleHolder::ConfigureTable(table);
+      rptStyleManager::ConfigureTable(table);
 
 
       if ( pLosses->GetPermanentStrandCoating() != matPsStrand::None )

@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "OutputSummaryChapter.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\SectPropTable.h>
 #include <Reporting\SectPropTable2.h>
@@ -99,7 +99,7 @@ rptChapter* COutputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 l
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
    
-   rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << p;
    *p << _T("Status") << rptNewLine;
 
@@ -121,7 +121,7 @@ rptChapter* COutputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 l
    {
       if ( 1 < nSegments )
       {
-         rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -199,14 +199,14 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Creep Coefficients"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(2,_T("Creep Coefficients"));
    *p << pTable << rptNewLine;
 
    // Setup the table
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
@@ -300,7 +300,7 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
 
    GET_IFACE2(pBroker,IPretensionForce,pPretensionForce);
 
-   pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Effective Prestress at Mid Span"));
+   pTable = rptStyleManager::CreateTableNoHeading(2,_T("Effective Prestress at Mid Span"));
    *p << pTable << rptNewLine;
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -334,7 +334,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Camber and Deflection"));
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Camber and Deflection"));
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
@@ -538,17 +538,17 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Casting Yard Stresses (At Release)"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Casting Yard Stresses (At Release)"));
    *p << pTable << rptNewLine;
 
    // Setup the table
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(4, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
 
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(4, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
    (*pTable)(0,0) << _T("Location");
    (*pTable)(0,1) << _T("Limit State");
@@ -853,17 +853,17 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Deck and Diaphragm Placement Stage Stresses (Bridge Site 1)"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Deck and Diaphragm Placement Stage Stresses (Bridge Site 1)"));
    *p << pTable << rptNewLine;
 
    // Setup the table
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(4, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
 
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(4, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
    (*pTable)(0,0) << _T("Location");
    (*pTable)(0,1) << _T("Limit State");
@@ -1043,17 +1043,17 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Final without Live Load Stage Stresses (Bridge Site 2)"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Final without Live Load Stage Stresses (Bridge Site 2)"));
    *p << pTable << rptNewLine;
 
    // Setup the table
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(4, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
 
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(4, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
    (*pTable)(0,0) << _T("Location");
    (*pTable)(0,1) << _T("Limit State");
@@ -1200,17 +1200,17 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Final with Live Load Stage Stresses (Bridge Site 3)"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Final with Live Load Stage Stresses (Bridge Site 3)"));
    *p << pTable << rptNewLine;
 
    // Setup the table
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(4, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
 
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(4, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
    (*pTable)(0,0) << _T("Location");
    (*pTable)(0,1) << _T("Limit State");
@@ -1490,12 +1490,12 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Shear Capacity"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Shear Capacity"));
    *p << pTable << rptNewLine;
 
    // Setup the table
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
    (*pTable)(0,0) << _T("Location");
    (*pTable)(0,1) << COLHDR(Sub2(_T("V"),_T("u")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
    (*pTable)(0,2) << COLHDR(symbol(phi) << Sub2(_T("V"),_T("n")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
@@ -1700,25 +1700,25 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
    // unstable girders are a problem
    if (!pLiftArtifact->IsGirderStable())
    {
-      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
       *pTitle<<color(Red)<<_T("Lifting Check Failed - Girder is unstable - CG is higher than pick points")<< color(Black)<<rptNewLine;
    }
    else
    {
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Lifting in the Casting Yard"));
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Lifting in the Casting Yard"));
       *p << pTable << rptNewLine;
 
       // Setup the table
-      pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-      pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-      pTable->SetColumnStyle(2, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-      pTable->SetColumnStyle(3, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+      pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+      pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+      pTable->SetColumnStyle(2, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+      pTable->SetColumnStyle(3, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
 
-      pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-      pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
-      pTable->SetStripeRowColumnStyle(2, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
-      pTable->SetStripeRowColumnStyle(3, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+      pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+      pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+      pTable->SetStripeRowColumnStyle(2, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+      pTable->SetStripeRowColumnStyle(3, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
       // Setup up some unit value prototypes
       INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
@@ -1833,19 +1833,19 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       return;
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Hauling to the Bridge Site"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Hauling to the Bridge Site"));
    *p << pTable << rptNewLine;
 
    // Setup the table
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetColumnStyle(2, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetColumnStyle(3, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+   pTable->SetColumnStyle(2, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+   pTable->SetColumnStyle(3, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
 
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetStripeRowColumnStyle(2, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetStripeRowColumnStyle(3, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+   pTable->SetStripeRowColumnStyle(2, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+   pTable->SetStripeRowColumnStyle(3, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
    // Setup up some unit value prototypes
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());

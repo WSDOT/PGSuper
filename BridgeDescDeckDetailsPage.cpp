@@ -372,7 +372,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-   if ( pDX->m_bSaveAndValidate && pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   if ( pDX->m_bSaveAndValidate && (deckType== pgsTypes::sdtCompositeCIP ||  deckType== pgsTypes::sdtCompositeSIP) )
    {
       DDV_DeckPointGrid(pDX,IDC_GRID,&m_Grid);
       pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints = m_Grid.GetEdgePoints();

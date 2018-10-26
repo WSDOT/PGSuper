@@ -143,8 +143,8 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    RowIndexType row2 = 1;
@@ -390,11 +390,11 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   rptParagraph* pNote = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   rptParagraph* pNote = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pNote;
    *pNote << LIVELOAD_PER_GIRDER << rptNewLine;
 
@@ -682,8 +682,8 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table2->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table2->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    // Get the interface pointers we need

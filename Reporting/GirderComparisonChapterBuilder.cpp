@@ -120,14 +120,14 @@ CChapterBuilder* CGirderComparisonChapterBuilder::Clone() const
 
 void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
 {
-   rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
    *pHead<<_T("Girder Types for Span ")<< LABEL_GROUP(grpIdx) << rptNewLine;
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2,_T(""));
    *pPara << p_table<<rptNewLine;
 
    int col = 0;
@@ -169,7 +169,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    bool bTempStrands = (0 < pStrandGeometry->GetMaxStrands(CSegmentKey(grpIdx,0,0),pgsTypes::Temporary) ? true : false);
 
 
-   rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
    *pHead<<_T("Prestressing Strands for Span ")<< LABEL_GROUP(grpIdx) <<rptNewLine;
 
@@ -181,7 +181,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 12 : 9,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(bTempStrands ? 12 : 9,_T(""));
    *pPara << p_table << rptNewLine;
 
    p_table->SetNumberOfHeaderRows(3);
@@ -483,7 +483,7 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
       return; // nothing to do
    }
 
-   rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
    *pHead<<_T("Debonding of Prestressing Strands for Span ")<< LABEL_GROUP(grpIdx) <<rptNewLine;
 
@@ -505,7 +505,7 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
    ColumnIndexType num_section_locations = debond_comparison.m_SectionLocations.size();
    ColumnIndexType num_cols = 3 + num_section_locations;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(num_cols,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(num_cols,_T(""));
    *pPara << p_table<<rptNewLine;
 
    p_table->SetNumberOfHeaderRows(2);
@@ -596,7 +596,7 @@ void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    SpanIndexType nspans = pBridge->GetSpanCount();
    ATLASSERT(grpIdx<nspans);
 
-   rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
    *pHead<<_T("Girder Concrete for Span ") << LABEL_GROUP(grpIdx) << rptNewLine;
 
@@ -604,7 +604,7 @@ void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDisplayUnits->GetStressUnit(),        false );
    INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(6,_T(""));
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
    *pPara << p_table<<rptNewLine;
@@ -639,7 +639,7 @@ void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
    *pHead<<_T("Transverse Reinforcement Stirrup Zones")<<rptNewLine;
 
@@ -667,7 +667,7 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    SpanIndexType nspans = pBridge->GetSpanCount();
    ATLASSERT(grpIdx<nspans);
 
-   rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
    *pHead<<_T("Lifting and Shipping Locations for Span ")<< LABEL_GROUP(grpIdx)<<rptNewLine;
 
@@ -675,7 +675,7 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
    *pPara << p_table<<rptNewLine;
 
    (*p_table)(0,0) << _T("Girder");

@@ -80,7 +80,7 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
    INIT_UV_PROTOTYPE( rptLengthUnitValue, size, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_SCALAR_PROTOTYPE( rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Size of Ducts [5.4.6.2]");
    pPara->SetName(_T("Size of Ducts"));
    *pChapter << pPara;
@@ -98,7 +98,7 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
    (*pPara) << rptNewLine;
 
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9);
    *pPara << pTable << rptNewLine;
 
    ColumnIndexType col = 0;

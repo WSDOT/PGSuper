@@ -31,9 +31,6 @@
 
 #include "PGSuperAppPlugin\resource.h"
 #include "GirderSpacingGrid.h"
-#include "SameNumberOfGirdersHyperLink.h"
-#include "SameGirderSpacingHyperLink.h"
-#include "SameSlabOffsetHyperLink.h"
 
 #include <PgsExt\PierData2.h>
 #include <PgsExt\SpanData2.h>
@@ -65,9 +62,9 @@ public:
    //             1 = ahead side of pier = start of next span
    // use pgsTypes::PierFaceType as key
 	CSpinButtonCtrl	            m_NumGdrSpinner[2];
-   CSameNumberOfGirdersHyperLink m_NumGirdersHyperLink[2];
-   CSameGirderSpacingHyperLink   m_GirderSpacingHyperLink[2];
+   CComboBox                     m_cbGirderSpacingType;
    CComboBox                     m_cbGirderSpacingMeasurement[2];
+   CComboBox                     m_cbNumGdrType;
 
    GirderIndexType m_nGirders[2];
 
@@ -96,15 +93,14 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnNumGirdersPrevSpanChanged(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnNumGirdersNextSpanChanged(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnCopyToAheadSide();
 	afx_msg void OnCopyToBackSide();
    afx_msg void OnAheadPierSpacingDatumChanged();
    afx_msg void OnBackPierSpacingDatumChanged();
    afx_msg void OnHelp();
 	//}}AFX_MSG
-   afx_msg LRESULT OnChangeSameNumberOfGirders(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam);
+   afx_msg void OnChangeSameNumberOfGirders();
+   afx_msg void OnChangeSameGirderSpacing();
 	DECLARE_MESSAGE_MAP()
 
    CStatic m_NoSpacingNote;
@@ -127,8 +123,7 @@ protected:
    void FillRefGirderOffsetTypeComboBox(pgsTypes::PierFaceType pierFace);
    void FillRefGirderComboBox(pgsTypes::PierFaceType pierFace);
 
-   void UpdateGirderSpacingHyperLinkText();
-   void UpdateNumGirdersHyperLinkText();
+   void UpdateGirderSpacingText();
    
    void DisableAll();
    void UpdateLinkedNote();

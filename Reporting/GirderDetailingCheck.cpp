@@ -169,7 +169,7 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
                               IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Girder Dimensions Detailing Check [5.14.1.2.2]") << rptNewLine;
 
@@ -182,7 +182,7 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
 
       if ( 1 < nSegments )
       {
-         rptParagraph* pSubHeading = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         rptParagraph* pSubHeading = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pSubHeading;
          *pSubHeading << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -190,11 +190,11 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4);
       *pBody << pTable;
 
-      pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-      pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+      pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+      pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
       (*pTable)(0,0)  << _T("Dimension");
       (*pTable)(0,1)  << COLHDR(_T("Minimum"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -281,7 +281,7 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
 
 #pragma Reminder("UPDATE: need to report stirrup layout check for closure joints")
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Stirrup Layout Geometry Check") << rptNewLine;
 
@@ -296,7 +296,7 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
 
       if ( 1 < nSegments )
       {
-         rptParagraph* pSubHeading = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         rptParagraph* pSubHeading = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pSubHeading;
          *pSubHeading << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -304,7 +304,7 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3);
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3);
       *pPara << p_table;
 
       (*p_table)(0,0) << _T("Zone");

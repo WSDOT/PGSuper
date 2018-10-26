@@ -117,7 +117,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
 
          const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
-         rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+         rptParagraph* pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
          *pChapter << pParagraph;
          *pParagraph << _T("Results for ") << GIRDER_LABEL(girderKey);
 

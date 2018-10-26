@@ -169,7 +169,7 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    CComPtr<IAngleDisplayUnitFormatter> angle_formatter;
    angle_formatter.CoCreateInstance(CLSID_AngleDisplayUnitFormatter);
 
-   pPara = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pPara = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pPara;
    *pPara << _T("Alignment Details") << rptNewLine;
 
@@ -198,11 +198,11 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(alignment.HorzCurves.size()+1,_T("Horizontal Curve Data"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(alignment.HorzCurves.size()+1,_T("Horizontal Curve Data"));
    *pPara << pTable << rptNewLine;
 
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    RowIndexType row = 0;
 
@@ -442,7 +442,7 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), true );
 
-   pPara = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pPara = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pPara;
    *pPara << _T("Profile Details") << rptNewLine;
 
@@ -462,10 +462,10 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    GET_IFACE2(pBroker, IRoadway, pRoadway);
 
    // Setup the table
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(profile.VertCurves.size()+1,_T("Vertical Curve Data"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(profile.VertCurves.size()+1,_T("Vertical Curve Data"));
 
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pPara << pTable << rptNewLine;
 
@@ -634,7 +634,7 @@ void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapte
    *pChapter << pPara;
 
    // Setup the table
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Superelevation Details"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Superelevation Details"));
    *pPara << pTable << rptNewLine;
 
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
@@ -673,7 +673,7 @@ void write_bridge_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapt
 
 
    // Setup the table
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("General Bridge Information"));
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("General Bridge Information"));
    *pPara << pTable << rptNewLine;
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -770,11 +770,11 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       nColumns++;
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Concrete Properties"));
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns,_T("Concrete Properties"));
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    *pPara << pTable << rptNewLine;
 
@@ -989,15 +989,15 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(11 + (bAASHTOParameters ? 6 : 0),_T("Concrete Properties"));
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(11 + (bAASHTOParameters ? 6 : 0),_T("Concrete Properties"));
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    *pPara << pTable << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ACI209_TimeDependentProperties.png")) << rptNewLine;
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ACI209_TimeDependentProperties.png")) << rptNewLine;
 
    ColumnIndexType col = 0;
    RowIndexType row = 0;
@@ -1172,15 +1172,15 @@ void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,_T("Concrete Properties"));
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10,_T("Concrete Properties"));
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    *pPara << pTable << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("CEBFIP_TimeDependentProperties.png")) << rptNewLine;
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("CEBFIP_TimeDependentProperties.png")) << rptNewLine;
 
    ColumnIndexType col = 0;
    RowIndexType row = 0;
@@ -1332,13 +1332,13 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    *pChapter << pPara;
 
    // Table for pier layout
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Pier Layout"));
+   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(5,_T("Pier Layout"));
    *pPara << pLayoutTable << rptNewLine;
 
    pLayoutTable->SetNumberOfHeaderRows(2);
 
-   pLayoutTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pLayoutTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pLayoutTable->SetRowSpan(0,0,2);
    pLayoutTable->SetRowSpan(1,0,SKIP_CELL);
@@ -1361,13 +1361,13 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pLayoutTable)(0,4) << _T("Boundary") << rptNewLine << _T("Condition");
 
    // Table for pier diaphragms
-   rptRcTable* pDiaphragmTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Pier Diaphragms"));
+   rptRcTable* pDiaphragmTable = rptStyleManager::CreateDefaultTable(9,_T("Pier Diaphragms"));
    *pPara << pDiaphragmTable << rptNewLine;
 
    pDiaphragmTable->SetNumberOfHeaderRows(2);
 
-   pDiaphragmTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pDiaphragmTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pDiaphragmTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pDiaphragmTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pDiaphragmTable->SetRowSpan(0,0,2);
    pDiaphragmTable->SetRowSpan(1,0,SKIP_CELL);
@@ -1393,7 +1393,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pDiaphragmTable)(1,7) << _T("Loading");
    (*pDiaphragmTable)(1,8) << COLHDR(_T("Location(*)"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
 
-   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
    (*pPara) << _T("(*) Distance from Abutment/Pier Line to Centroid of Diaphragm") << rptNewLine;
 
@@ -1401,13 +1401,13 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pConnectionTable = pgsReportStyleHolder::CreateDefaultTable(11,_T("Pier Connections"));
+   rptRcTable* pConnectionTable = rptStyleManager::CreateDefaultTable(11,_T("Pier Connections"));
    *pPara << pConnectionTable << rptNewLine;
 
    pConnectionTable->SetNumberOfHeaderRows(2);
 
-   pConnectionTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pConnectionTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pConnectionTable->SetRowSpan(0,0,2);
    pConnectionTable->SetRowSpan(1,0,SKIP_CELL);
@@ -1437,7 +1437,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pConnectionTable)(1,9) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
    (*pConnectionTable)(1,10)<< COLHDR(_T("Support") << rptNewLine << _T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
 
-   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
    *pPara << _T("Bearing Offset Measure") << rptNewLine;
    *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  true,  true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  true,  false) << rptNewLine;
@@ -1670,11 +1670,11 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateDefaultTable(7,_T("Temporary Supports"));
+   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(7,_T("Temporary Supports"));
    *pPara << pLayoutTable << rptNewLine;
 
-   pLayoutTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pLayoutTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    (*pLayoutTable)(0,0) << _T("");
    (*pLayoutTable)(0,1) << _T("Station");
@@ -1688,13 +1688,13 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pConnectionsTable = pgsReportStyleHolder::CreateDefaultTable(8,_T("Temporary Support Connections"));
+   rptRcTable* pConnectionsTable = rptStyleManager::CreateDefaultTable(8,_T("Temporary Support Connections"));
    *pPara << pConnectionsTable << rptNewLine;
 
    pConnectionsTable->SetNumberOfHeaderRows(1);
 
-   pConnectionsTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pConnectionsTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    (*pConnectionsTable)(0,0) << _T("");
    (*pConnectionsTable)(0,1) << _T("Boundary") << rptNewLine << _T("Condition");
@@ -1797,7 +1797,7 @@ void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // Setup the table
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T("Framing"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,_T("Framing"));
    *pPara << pTable << rptNewLine;
 
    (*pTable)(0,0) << _T("");
@@ -1879,7 +1879,7 @@ void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
          row++;
       }
-      pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
       
       if (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
@@ -1908,7 +1908,7 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // Setup the table
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(6,_T("Spans"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(6,_T("Spans"));
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
@@ -1982,7 +1982,7 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       row++;
    }
 
-   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
    
    if (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
@@ -2087,11 +2087,11 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             // Setup the table
             CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
 
-            rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,SEGMENT_LABEL(thisSegmentKey));
-            pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-            pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-            pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-            pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+            rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,SEGMENT_LABEL(thisSegmentKey));
+            pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+            pTable->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
             *pPara << pTable << rptNewLine;
 
             RowIndexType row = 0;
@@ -2518,7 +2518,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    GET_IFACE2(pBroker, IBridge,           pBridge);
 
    rptParagraph* pPara;
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    (*pPara) << _T("Spliced Girder") << rptNewLine;
 
@@ -2552,11 +2552,11 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          // Setup the table
          std::_tostringstream os;
          os << _T("Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) <<std::endl;
-         rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,os.str().c_str());
-         pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-         pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-         pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+         rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,os.str().c_str());
+         pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+         pTable->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+         pTable->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
          *pPara << pTable << rptNewLine;
 
 
@@ -2715,11 +2715,11 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
             std::_tostringstream os;
             os << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Closure Joint ") << LABEL_SEGMENT(closureIdx) <<std::endl;
-            rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,os.str().c_str());
-            pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-            pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-            pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-            pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+            rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,os.str().c_str());
+            pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+            pTable->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
             *pPara << pTable << rptNewLine;
 
             RowIndexType row = 0;
@@ -2744,7 +2744,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    rptParagraph* pPara1 = new rptParagraph;
-   pPara1->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
+   pPara1->SetStyleName(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara1;
 
    *pPara1 << _T("Deck Geometry");
@@ -2758,7 +2758,7 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    INIT_UV_PROTOTYPE( rptStressUnitValue, olay,     pDisplayUnits->GetOverlayWeightUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),        true );
 
-   rptRcTable* table = pgsReportStyleHolder::CreateTableNoHeading(1);
+   rptRcTable* table = rptStyleManager::CreateTableNoHeading(1);
    table->EnableRowStriping(false);
    *pPara2 << table;
 
@@ -2857,7 +2857,7 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    {
       (*table)(0,0) << Bold(_T("Plan (Edge of Deck)")) << rptNewLine;
 
-      rptRcTable* deckTable = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+      rptRcTable* deckTable = rptStyleManager::CreateDefaultTable(4,_T(""));
       (*deckTable)(0,0) << _T("Station");
       (*deckTable)(0,1) << _T("Measured") << rptNewLine << _T("From");
       (*deckTable)(0,2) << COLHDR(_T("Left Offset"), rptLengthUnitTag, pDisplayUnits->GetXSectionDimUnit() );
@@ -2961,7 +2961,7 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*table)(0,0) << rptNewLine;
 
    // Picture
-   (*table)(1,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + strPicture );
+   (*table)(1,0) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strPicture );
 }
 
 void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
@@ -2979,7 +2979,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
    rptParagraph* pPara;
    pPara = new rptParagraph;
-   pPara->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
+   pPara->SetStyleName(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
    *pPara << _T("Deck Reinforcement");
@@ -2995,7 +2995,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    *pChapter << pPara;
    *pPara << _T("Primary Reinforcement - Longitudinal reinforcement running the full length of the bridge") << rptNewLine;
    
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T(""));
    *pPara << pTable << rptNewLine;
 
    (*pTable)(0,0) << _T("Mat");
@@ -3027,7 +3027,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    }
    else
    {
-      pTable = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
+      pTable = rptStyleManager::CreateDefaultTable(7,_T(""));
       *pPara << pTable << rptNewLine;
       (*pTable)(0,0) << _T("Pier");
       (*pTable)(0,1) << _T("Mat");

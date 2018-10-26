@@ -128,7 +128,7 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
          rptParagraph* pPara;
          if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
             std::_tostringstream os;
             os << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
@@ -216,14 +216,14 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    ColumnIndexType nColumns;
    if ( bAfterThirdEdition )
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Critical Section Picture 2004.jpg")) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Critical Section Picture 2004.jpg")) << rptNewLine;
       *pPara << _T("LRFD 5.8.3.2")<<rptNewLine;
       *pPara << _T("Critical Section = d") << Sub(_T("v")) << _T(" measured at d") << Sub(_T("v")) << _T(" from the face of support") << rptNewLine;
       nColumns = 4;
    }
    else
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Critical Section Picture.jpg")) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Critical Section Picture.jpg")) << rptNewLine;
       *pPara << _T("LRFD 5.8.3.2")<<rptNewLine;
       *pPara << _T("Critical Section = max(CS1, CS2)") << rptNewLine;
       *pPara << _T("CS1 = d")<<Sub(_T("v")) << rptNewLine;
@@ -238,15 +238,15 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
       const CRITSECTDETAILS& csDetails(*csIter);
 
 
-      rptRcTable* ptable = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+      rptRcTable* ptable = rptStyleManager::CreateDefaultTable(nColumns);
       *pPara << ptable;
       ptable->TableLabel() << _T("Critical Section Calculation for ") << (csDetails.PierFace == pgsTypes::Back ? _T("Back") : _T("Ahead")) 
                            << _T(" side of Pier ") << LABEL_PIER(csDetails.PierIdx);
      
       if ( girderKey.groupIndex == ALL_GROUPS )
       {
-         ptable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         ptable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+         ptable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         ptable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       }
 
       (*ptable)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());

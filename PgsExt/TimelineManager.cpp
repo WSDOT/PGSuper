@@ -21,8 +21,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
-#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\TimelineManager.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\LoadManager.h>
 #include <PgsExt\ClosureJointData.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\TemporarySupportData.h>
@@ -54,6 +55,8 @@ EventIDType CTimelineManager::ms_ID = 0;
 
 CTimelineManager::CTimelineManager()
 {
+   m_pBridgeDesc = NULL;
+   m_pLoadManager = NULL;
 }
 
 CTimelineManager::CTimelineManager(const CTimelineManager& rOther)
@@ -116,6 +119,16 @@ void CTimelineManager::SetBridgeDescription(const CBridgeDescription2* pBridge)
 const CBridgeDescription2* CTimelineManager::GetBridgeDescription() const
 {
    return m_pBridgeDesc;
+}
+
+void CTimelineManager::SetLoadManager(const CLoadManager* pLoadMgr)
+{
+   m_pLoadManager = pLoadMgr;
+}
+
+const CLoadManager* CTimelineManager::GetLoadManager() const
+{
+   return m_pLoadManager;
 }
 
 void CTimelineManager::AppendTimelineEvent(CTimelineEvent* pTimelineEvent,EventIndexType* pEventIdx)
@@ -421,28 +434,41 @@ int CTimelineManager::SetEventByIndex(EventIndexType eventIdx,CTimelineEvent* pT
    ATLASSERT(0 <= eventIdx && eventIdx < (EventIndexType)m_TimelineEvents.size() );
    if ( !bAdjustTimeline )
    {
-      // not automatically adjusting the timeline so validate the new event data
+      // not automatically adjusting the timeline so validate the new event data before modifying it
 
-      // remove the event that is going to be replaced so the new event data wont conflict with it when it is evaluated
+      // remove the event that is going to be updated so the new event data wont conflict with it when it is evaluated
       CTimelineEvent* pOldEvent = m_TimelineEvents[eventIdx];
       m_TimelineEvents.erase(m_TimelineEvents.begin()+eventIdx);
+      
+      // validate the new event against the timeline
       int result = ValidateEvent(pTimelineEvent);
 
-      // return the old event data to the collection
+      // return the old event data to the collection (put things back they way they were)
       m_TimelineEvents.insert(m_TimelineEvents.begin()+eventIdx,pOldEvent);
 
       if ( result != TLM_SUCCESS )
       {
+         // the new event wont fit in the timeline without adjustment
+         // leave now and let the caller know
          return result;
       }
    }
 
+   // get the event we are replacing
    CTimelineEvent* pOldEvent = m_TimelineEvents[eventIdx];
+
+   // retain it's event ID in the new event
    pTimelineEvent->SetID(pOldEvent->GetID());
+
+   // replace the old event in the timeline with the new event
    m_TimelineEvents[eventIdx] = pTimelineEvent;
-   Sort();
+
+   // done with the old event... delete it
    delete pOldEvent;
    pOldEvent = NULL;
+
+   // sort the timeline... this will automatically adjust the timeline so all the events fit
+   Sort();
 
    ASSERT_VALID;
 
@@ -879,6 +905,11 @@ bool CTimelineManager::IsOverlayInstalled() const
 bool CTimelineManager::IsRailingSystemInstalled() const
 {
    return GetRailingSystemLoadEventIndex() != INVALID_INDEX;
+}
+
+bool CTimelineManager::IsUserDefinedLoadApplied(LoadIDType loadID) const
+{
+   return FindUserLoadEventIndex(loadID) != INVALID_INDEX;
 }
 
 bool CTimelineManager::IsSegmentConstructed(SegmentIDType segmentID) const
@@ -2091,12 +2122,74 @@ void CTimelineManager::SetLoadRatingEventByID(EventIDType ID)
       CTimelineEvent* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetID() == ID )
       {
-         SetLoadRatingEventByIndex(iter - m_TimelineEvents.begin());
+         SetLoadRatingEventByIndex(std::distance(m_TimelineEvents.begin(),iter));
          break;
       }
    }
 
    ASSERT_VALID;
+}
+
+void CTimelineManager::SetUserLoadEventByIndex(LoadIDType loadID,EventIndexType eventIdx)
+{
+   EventIndexType oldEventIdx = FindUserLoadEventIndex(loadID);
+   if ( oldEventIdx == eventIdx )
+      return;
+
+   CTimelineEvent* pTimelineEvent = m_TimelineEvents[eventIdx];
+   pTimelineEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
+
+   if ( eventIdx != INVALID_INDEX )
+   {
+      m_TimelineEvents[eventIdx]->GetApplyLoadActivity().AddUserLoad(loadID);
+   }
+
+   ASSERT_VALID;
+}
+
+void CTimelineManager::SetUserLoadEventByID(LoadIDType loadID,EventIDType eventID)
+{
+   std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
+   std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
+   for ( ; iter != end; iter++ )
+   {
+      CTimelineEvent* pTimelineEvent = *iter;
+      if ( pTimelineEvent->GetID() == eventID )
+      {
+         SetUserLoadEventByIndex(loadID,std::distance(m_TimelineEvents.begin(),iter));
+         break;
+      }
+   }
+
+   ASSERT_VALID;
+}
+
+EventIndexType CTimelineManager::FindUserLoadEventIndex(LoadIDType loadID) const
+{
+   std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
+   std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
+   for ( ; iter != end; iter++ )
+   {
+      const CTimelineEvent* pTimelineEvent = *iter;
+      const CApplyLoadActivity& activity = pTimelineEvent->GetApplyLoadActivity();
+      if ( activity.HasUserLoad(loadID) )
+      {
+         return std::distance(m_TimelineEvents.begin(),iter);
+      }
+   }
+   return INVALID_INDEX;
+}
+
+EventIDType CTimelineManager::FindUserLoadEventID(LoadIDType loadID) const
+{
+   EventIndexType eventIdx = FindUserLoadEventIndex(loadID);
+   if ( eventIdx == INVALID_INDEX )
+   {
+      return INVALID_ID;
+   }
+
+   CTimelineEvent* pEvent = m_TimelineEvents[eventIdx];
+   return pEvent->GetID();
 }
 
 int CTimelineManager::Validate() const
@@ -2121,6 +2214,31 @@ int CTimelineManager::Validate() const
    if ( !IsRailingSystemInstalled() )
    {
       return TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED;
+   }
+   
+   // Check user defined loads
+   BOOST_FOREACH( const CPointLoadData& load,m_pLoadManager->m_PointLoads)
+   {
+      if ( !IsUserDefinedLoadApplied(load.m_ID) )
+      {
+         return TLM_USER_LOAD_ACTIVITY_REQUIRED;
+      }
+   }
+
+   BOOST_FOREACH( const CDistributedLoadData& load,m_pLoadManager->m_DistributedLoads)
+   {
+      if ( !IsUserDefinedLoadApplied(load.m_ID) )
+      {
+         return TLM_USER_LOAD_ACTIVITY_REQUIRED;
+      }
+   }
+
+   BOOST_FOREACH( const CMomentLoadData& load,m_pLoadManager->m_MomentLoads)
+   {
+      if ( !IsUserDefinedLoadApplied(load.m_ID) )
+      {
+         return TLM_USER_LOAD_ACTIVITY_REQUIRED;
+      }
    }
 
    // Make sure railing system is installed after the deck
@@ -2380,6 +2498,7 @@ void CTimelineManager::MakeCopy(const CTimelineManager& rOther)
    }
 
    m_pBridgeDesc = rOther.GetBridgeDescription();
+   m_pLoadManager = rOther.GetLoadManager();
 
    ASSERT_VALID;
 }
@@ -2412,8 +2531,9 @@ void CTimelineManager::Sort()
    EventIndexType nOverlayEvents = 0;
 
    EventIndexType nEvents = m_TimelineEvents.size();
+   ATLASSERT(0 < nEvents);
    Float64 end = m_TimelineEvents[0]->GetDay() + m_TimelineEvents[0]->GetMinElapsedTime();
-   Float64 running_time_offset = 0; // sum of all previous time offets that must be applied to an event
+   Float64 running_time_offset = 0; // sum of all previous time offsets that must be applied to an event
    for ( EventIndexType eventIdx = 1; eventIdx < nEvents; eventIdx++ )
    {
       CTimelineEvent* pTimelineEvent = m_TimelineEvents[eventIdx];
@@ -2429,10 +2549,17 @@ void CTimelineManager::Sort()
 
       // adjust the day when the event occurs by the time offset for all previous events
       // do this using the friend attribute so we don't re-enter this method
+      ATLASSERT(0 <= running_time_offset);
+      running_time_offset = Max(0.0,running_time_offset); // make sure running_time_offset is never less than zero
+
       pTimelineEvent->m_Day += running_time_offset;
 
       // update end time for next interval
-      end = start + pTimelineEvent->GetMinElapsedTime();
+      Float64 min_elapsed_time = pTimelineEvent->GetMinElapsedTime();
+      ATLASSERT(0 <= min_elapsed_time);
+      min_elapsed_time = Max(0.0,min_elapsed_time); // make sure elapsed time is never less than zero
+      end = start + min_elapsed_time;
+      ATLASSERT(start <= end);
 
       // keep track of the number of live load events... keep the first one
       // and then remove any subsequent live load events

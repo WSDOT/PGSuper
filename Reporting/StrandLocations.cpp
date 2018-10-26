@@ -74,7 +74,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    INIT_UV_PROTOTYPE( rptLengthUnitValue, len, pDisplayUnits->GetSpanLengthUnit(),  false );
 
    rptParagraph* pHead;
-   pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pHead;
    *pHead <<_T("Prestressing Strand Locations")<<rptNewLine;
 
@@ -101,7 +101,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    rptRcTable* pStraightLayoutTable = NULL;
    if ( 0 < Ns && 0 < Nt )
    {
-      pStraightLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+      pStraightLayoutTable = rptStyleManager::CreateLayoutTable(2);
       *pPara << pStraightLayoutTable << rptNewLine;
       pPara = &(*pStraightLayoutTable)(0,0);
    }
@@ -124,7 +124,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
          nColumns += 2;
       }
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Straight Strands"));
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nColumns,_T("Straight Strands"));
       *pPara << p_table;
 
       ColumnIndexType col = 0;
@@ -140,12 +140,12 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
       if ( 0 < nExtendedLeft || 0 < nExtendedRight )
       {
-         p_table->SetColumnStyle(col,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_CENTER));
-         p_table->SetStripeRowColumnStyle(col,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_CENTER));
+         p_table->SetColumnStyle(col,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+         p_table->SetStripeRowColumnStyle(col,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_CENTER));
          (*p_table)(0,col++) << _T("Extended") << rptNewLine << _T("Left End");
 
-         p_table->SetColumnStyle(col,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_CENTER));
-         p_table->SetStripeRowColumnStyle(col,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_CENTER));
+         p_table->SetColumnStyle(col,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+         p_table->SetStripeRowColumnStyle(col,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_CENTER));
          (*p_table)(0,col++) << _T("Extended") << rptNewLine << _T("Right End");
       }
 
@@ -217,7 +217,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
       nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),_T("Temporary Strand"));
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),_T("Temporary Strand"));
       *pPara << p_table;
 
       (*p_table)(0,0) << _T("Strand");
@@ -317,13 +317,13 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    {
       pPara = new rptParagraph;
       *pChapter << pPara;
-      rptRcTable* pHarpedLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nStrandGrids);
+      rptRcTable* pHarpedLayoutTable = rptStyleManager::CreateLayoutTable(nStrandGrids);
 #pragma Reminder("UPDATE: need to use bottom justification for layout table")
    // need to have layout tables support vertical justification so that everything can
    // be bottom justified
    //for ( ColumnIndexType colIdx = 0; colIdx < pHarpedLayoutTable->GetNumberOfColumns(); colIdx++ )
    //{
-   //   pHarpedLayoutTable->SetColumnStyle(colIdx,pgsReportStyleHolder::GetTableCellStyle(CA_BOTTOM | CJ_LEFT));
+   //   pHarpedLayoutTable->SetColumnStyle(colIdx,rptStyleManager::GetTableCellStyle(CA_BOTTOM | CJ_LEFT));
    //}
 
    *pPara << pHarpedLayoutTable << rptNewLine;
@@ -385,7 +385,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
             }
          }
 
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),label.c_str());
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),label.c_str());
          *pPara << p_table;
 
          (*p_table)(0,0) << _T("Strand");
@@ -438,7 +438,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
          pPara = &(*pHarpedLayoutTable)(0,1);
 
-         p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Harped Strand Locations at Harping Points"));
+         p_table = rptStyleManager::CreateDefaultTable(3,_T("Harped Strand Locations at Harping Points"));
          *pPara << p_table;
 
          (*p_table)(0,0) << _T("Strand");

@@ -61,7 +61,7 @@ public:
 
    void AddUserLoad(LoadIDType loadID);
    void RemoveUserLoad(LoadIDType loadID);
-   bool HasUserLoad(LoadIDType loadID);
+   bool HasUserLoad(LoadIDType loadID) const;
    IndexType GetUserLoadCount() const;
    LoadIDType GetUserLoadID(IndexType idx) const;
    bool IsUserLoadApplied() const;

@@ -99,19 +99,19 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    ColumnIndexType nColumns = (bComposite ? 3 : 2);
 
-   rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Section Properties"));
+   rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(nColumns,_T("Section Properties"));
 
    (*xs_table)(0,0) << _T("");
 
-   xs_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   xs_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   xs_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   xs_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   (*xs_table)(0,1).SetStyleName(pgsReportStyleHolder::GetTableColumnHeadingStyle() );
+   (*xs_table)(0,1).SetStyleName(rptStyleManager::GetTableColumnHeadingStyle() );
    (*xs_table)(0,1) << _T("Girder");
 
    if ( bComposite )
    {
-      (*xs_table)(0,2).SetStyleName(pgsReportStyleHolder::GetTableColumnHeadingStyle() );
+      (*xs_table)(0,2).SetStyleName(rptStyleManager::GetTableColumnHeadingStyle() );
       (*xs_table)(0,2) << _T("Composite");
    }
 

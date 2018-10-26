@@ -32,10 +32,6 @@
 
 #include "GirderNameGrid.h"
 #include "GirderSpacingGrid.h"
-#include "SameNumberOfGirdersHyperLink.h"
-#include "SameGirderSpacingHyperLink.h"
-#include "SameGirderTypeHyperLink.h"
-#include "SameSlabOffsetHyperLink.h"
 
 class CSpanDetailsDlg;
 
@@ -60,11 +56,8 @@ public:
 		// NOTE - ClassWizard will add data members here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	CSpinButtonCtrl	m_NumGdrSpinner;
+   CComboBox         m_cbGirderSpacingType;
 	//}}AFX_DATA
-   CSameNumberOfGirdersHyperLink m_NumGirdersHyperLink;
-   CSameGirderSpacingHyperLink   m_GirderSpacingHyperLink;
-   CSameGirderTypeHyperLink      m_GirderTypeHyperLink;
-
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -101,11 +94,9 @@ protected:
    afx_msg void OnCopySpacingToEnd();
 	afx_msg void OnPrevPierGirderSpacingMeasureChanged();
 	afx_msg void OnNextPierGirderSpacingMeasureChanged();
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	//}}AFX_MSG
-   afx_msg LRESULT OnChangeSameNumberOfGirders(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeSameGirderType(WPARAM wParam,LPARAM lParam);
+   afx_msg void OnChangeSameGirderSpacing();
+   afx_msg void OnChangeSameGirderType();
 	DECLARE_MESSAGE_MAP()
 
    void GetPierSkewAngles(Float64& skew1,Float64& skew2);
@@ -119,6 +110,8 @@ protected:
 
    GirderIndexType GetMinGirderCount();
    void UpdateGirderSpacingState();
+   void UpdateGirderNumState();
+   void UpdateGirderTypeState();
 
    DWORD m_CacheGirderSpacingMeasure[2];
    CGirderSpacing2 m_GirderSpacingCache[2];
@@ -129,11 +122,9 @@ protected:
 
    CGirderGroupData m_GirderGroupCache;
 
-   void UpdateGirderCountHyperLinkText();
-   void UpdateGirderTypeHyperLinkText();
-   void UpdateGirderSpacingHyperLinkText();
-
    bool IsAbutment(pgsTypes::MemberEndType end);
+public:
+   afx_msg void OnCbnSelchangeNgdrsCombo();
 };
 
 //{{AFX_INSERT_LOCATION}}

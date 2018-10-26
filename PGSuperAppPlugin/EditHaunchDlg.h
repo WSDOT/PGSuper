@@ -41,11 +41,11 @@ inline CString SlabOffsetTypeAsString(pgsTypes::SlabOffsetType type)
    }
    else if (type == pgsTypes::sotPier)
    {
-      return _T("Define unique slab offsets per Pier");
+      return _T("Define unique slab offsets for each Pier");
    }
    else if (type == pgsTypes::sotGirder)
    {
-      return _T("Define unique slab offsets per Girder");
+      return _T("Define unique slab offsets for each Girder");
    }
    else
    {
@@ -62,11 +62,11 @@ inline CString FilletTypeAsString(pgsTypes::FilletType type)
    }
    else if (type == pgsTypes::fttSpan)
    {
-      return _T("Define unique Fillets per Span");
+      return _T("Define unique Fillets for each Span");
    }
    else if (type == pgsTypes::fttGirder)
    {
-      return _T("Define unique Fillets per Girder");
+      return _T("Define unique Fillets for each Girder");
    }
    else
    {

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
@@ -139,7 +139,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Girder Line Geometry"));
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Girder Line Geometry"));
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes

@@ -73,13 +73,13 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
    *pWriteNote = false; // 
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(" "));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(8,_T(" "));
    table->TableLabel() << _T("Stirrup Detailing Check: ") << pProductLoads->GetLimitStateName(ls) << _T(" [5.8.2.5, 5.8.2.7, 5.10.3.1.2]");
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());

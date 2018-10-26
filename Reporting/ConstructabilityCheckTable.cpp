@@ -175,13 +175,13 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
 
    // Create table - delete it later if we don't need it
    ColumnIndexType nCols = needSpanCols ? 6 : 4; // put span/girder in table if multi girder
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
 
-   pTable->SetColumnStyle(nCols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(nCols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(nCols-1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols-1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
    if (needSpanCols)
@@ -286,7 +286,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
    // Only return a table if it has content
    if (0 < row)
    {
-      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
       *pTitle << _T("Slab Offset (\"A\" Dimension)");
       rptParagraph* pBody = new rptParagraph;
@@ -311,14 +311,14 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
 
    // Create table - delete it later if we don't need it
    ColumnIndexType nCols = needSpanCols ? 9 : 7; // put span/girder in table if multi girder
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, spandim, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
 
-   pTable->SetColumnStyle(nCols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(nCols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(nCols-1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols-1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
    if (needSpanCols)
@@ -436,7 +436,7 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
    // Only return a table if it has content
    if (0 < row)
    {
-      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
       *pTitle << _T("Slab Offset (\"A\" Dimension)");
       rptParagraph* pBody = new rptParagraph;
@@ -459,13 +459,13 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter
    bool needSpanCols = ConstrNeedSpanCols(girderList, pBridge);
 
    ColumnIndexType nCols = needSpanCols ? 5 : 3; // put span/girder in table if multi girder
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
 
-   pTable->SetColumnStyle(nCols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(nCols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(nCols-1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols-1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
    if (needSpanCols)
@@ -521,7 +521,7 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter
    // Only add table if it has content
    if (0 < row)
    {
-      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
       *pTitle << _T("Minimum Haunch Depth at Bearing Centerlines");
       rptParagraph* pBody = new rptParagraph;
@@ -543,9 +543,9 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
    bool needSpanCols = ConstrNeedSpanCols(girderList, pBridge);
 
    ColumnIndexType nCols = needSpanCols ? 5 : 3; // put span/girder in table if multi girder
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Minimum Fillet Depth");
    rptParagraph* pBody = new rptParagraph;
@@ -556,8 +556,8 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
 
-   pTable->SetColumnStyle(nCols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(nCols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(nCols-1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols-1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
    if (needSpanCols)
@@ -617,12 +617,12 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
    bool needSpanCols = ConstrNeedSpanCols(girderList, pBridge);
 
    ColumnIndexType nCols = needSpanCols ? 8 : 6; // put span/girder in table if multi girder
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
 
-   pTable->SetColumnStyle(nCols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(nCols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(nCols-1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols-1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
    if (needSpanCols)
@@ -697,7 +697,7 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
    // Only add table if it has content
    if (0 < row)
    {
-      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
       *pTitle << _T("Haunch Geometry Compliance at Mid-Span");
       rptParagraph* pBody = new rptParagraph;
@@ -723,7 +723,7 @@ void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker*
    Float64 min_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
    Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Camber");
 
@@ -732,10 +732,10 @@ void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker*
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(2,_T(""));
 
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    *pBody << pTable << rptNewLine;
 
@@ -992,14 +992,14 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
       return;
    }
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Global Stability of Girder");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GlobalGirderStability.gif"));
+   *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GlobalGirderStability.gif"));
 
    rptRcScalar slope;
    slope.SetFormat(pDisplayUnits->GetScalarFormat().Format);
@@ -1023,7 +1023,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
          strTitle = _T("");
       }
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,strTitle);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,strTitle);
       std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
       (*pTable)(0,0) << COLHDR(Sub2(_T("W"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -1064,13 +1064,13 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
 
    // Create table - delete it later if we don't need it
    ColumnIndexType nCols = needSpanCols ? 5 : 3; // put span/girder in table if multi girder
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
-   pTable->SetColumnStyle(nCols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(nCols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(nCols-1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols-1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
    if (needSpanCols)
@@ -1129,7 +1129,7 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
    // Only add table if it has content
    if (0 < row)
    {
-      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
       *pTitle << _T("Bottom Flange Clearance");
 

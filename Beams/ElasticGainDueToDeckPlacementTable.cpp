@@ -70,7 +70,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
       numColumns++;
 
    CElasticGainDueToDeckPlacementTable* table = new CElasticGainDueToDeckPlacementTable( numColumns, pDisplayUnits);
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
    table->m_bHasDeckPanel = bHasDeckPanel;
    table->m_bHasUserLoads = bHasUserLoads;
@@ -78,7 +78,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    table->scalar.SetWidth(5);
    table->scalar.SetPrecision(2);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Ec = pMaterials->GetSegmentEc(segmentKey,castDeckIntervalIdx);
@@ -88,7 +88,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Elastic Gain Due to Deck Placement [5.9.5.2.3a]") << rptNewLine;
 

@@ -71,12 +71,12 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    // Create and configure the table
    ColumnIndexType numColumns = 7;
    CShrinkageAtFinalTable* table = new CShrinkageAtFinalTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("[5.9.5.4.3a] Shrinkage of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << rptNewLine;
 
@@ -161,7 +161,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    }
 
    // parameters for calculations (two tables to keep the width printable)
-   rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   rptRcTable* pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << _T("H") << rptNewLine << _T("(%)");
    (*pParamTable)(0,1) << COLHDR(_T("V/S"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -175,7 +175,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(1,3) << table->time.SetValue(ptl->GetAdjustedInitialAge());
    (*pParamTable)(1,4) << table->time.SetValue(ptl->GetFinalAge());
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(10,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    pParamTable->SetNumberOfHeaderRows(2);
    pParamTable->SetRowSpan(0,0,2);
@@ -215,7 +215,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(2,9) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
 
    // intermediate results
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
 
    if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )

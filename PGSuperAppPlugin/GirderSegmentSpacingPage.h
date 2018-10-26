@@ -27,7 +27,6 @@
 
 #include "resource.h"
 #include "SegmentSpacingGrid.h"
-#include "SameGirderSpacingHyperLink.h"
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PgsExt\BridgeDescription2.h>
 
@@ -51,7 +50,6 @@ public:
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
-   CSameGirderSpacingHyperLink   m_GirderSpacingHyperLink;
    CComboBox                     m_cbGirderSpacingMeasurement;
 
    void Init(CPierData2* pPierData);
@@ -73,11 +71,10 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CGirderSegmentSpacingPage)
 	virtual BOOL OnInitDialog();
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
    afx_msg void OnSpacingDatumChanged();
    afx_msg void OnHelp();
 	//}}AFX_MSG
-   afx_msg LRESULT OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam);
+   afx_msg void OnChangeSameGirderSpacing();
 	DECLARE_MESSAGE_MAP()
 
    bool m_bIsPier;
@@ -88,6 +85,7 @@ protected:
 
 
    CSegmentSpacingGrid m_SpacingGrid;
+   CComboBox           m_cbGirderSpacingType;
 
    GirderIndexType m_RefGirderIdx;
    Float64 m_RefGirderOffset;
@@ -107,8 +105,6 @@ protected:
    void FillRefGirderOffsetTypeComboBox();
    void FillRefGirderComboBox();
 
-   void UpdateGirderSpacingHyperLinkText();
-   
    void DisableAll();
    void UpdateLinkedNote();
    void UpdateChildWindowState();

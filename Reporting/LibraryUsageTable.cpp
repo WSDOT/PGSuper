@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include <Reporting\LibraryUsageTable.h>
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <IFace\Project.h>
 
 #ifdef _DEBUG
@@ -47,14 +47,14 @@ CLibraryUsageTable::~CLibraryUsageTable()
 
 rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
 {
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
-   table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   table->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   table->SetColumnStyle(2, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(3,_T(""));
+   table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   table->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+   table->SetColumnStyle(2, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
 
-   table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   table->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   table->SetStripeRowColumnStyle(2, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   table->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+   table->SetStripeRowColumnStyle(2, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
    (*table)(0,0) << _T("Library");
    (*table)(0,1) << _T("Entry");

@@ -78,7 +78,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker*
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    ColumnIndexType nCols = 3;
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Deflections during Storage"));
+   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(nCols,_T("Deflections during Storage"));
    (*pLayoutTable)(0,0) << _T("Prestress Release");
    (*pLayoutTable)(0,1) << _T("Begin Storage");
    (*pLayoutTable)(0,2) << _T("End Storage");
@@ -137,7 +137,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IB
    }
 
    ColumnIndexType nCols = vIntervals.size();
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Deflections after Erection"));
+   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(nCols,_T("Deflections after Erection"));
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
@@ -258,7 +258,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+1);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(vProductForces.size()+1);
 
    std::vector<Float64>* pResults = new std::vector<Float64>[vProductForces.size()];
 
@@ -373,7 +373,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    vProductForces.push_back(pgsTypes::pftShrinkage);
    vProductForces.push_back(pgsTypes::pftRelaxation);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Deflections immediately prior to deck casting"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(vProductForces.size()+2,_T("Deflections immediately prior to deck casting"));
 
    std::vector<Float64>* pResults = new std::vector<Float64>[vProductForces.size()];
 
@@ -528,7 +528,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    vProductForces.push_back(pgsTypes::pftShrinkage);
    vProductForces.push_back(pgsTypes::pftRelaxation);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Deflections from deck casting to service (Screed Camber)"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(vProductForces.size()+2,_T("Deflections from deck casting to service (Screed Camber)"));
 
    std::vector<Float64>* pResults1 = new std::vector<Float64>[vProductForces.size()];
    std::vector<Float64>* pResults2 = new std::vector<Float64>[vProductForces.size()];
@@ -619,7 +619,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
 
    location.IncludeSpanAndGirder(true);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Excess Camber"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Excess Camber"));
 
    ColumnIndexType col = 0;
    (*pTable)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -747,7 +747,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    vProductForces.push_back(pgsTypes::pftShrinkage);
    vProductForces.push_back(pgsTypes::pftRelaxation);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Final Deflections"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(vProductForces.size()+2,_T("Final Deflections"));
 
    std::vector<Float64>* pResults = new std::vector<Float64>[vProductForces.size()];
 

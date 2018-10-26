@@ -113,7 +113,7 @@ CChapterBuilder* CGirderGeometryChapterBuilder::Clone() const
 
 void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Girder Points");
    (*pChapter) << pPara;
 
@@ -146,7 +146,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          nColumns = 20;
       }
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str().c_str());
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns,os.str().c_str());
 
       (*pPara) << pTable << rptNewLine;
 
@@ -352,7 +352,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
 void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Girder Offsets");
    (*pChapter) << pPara;
 
@@ -385,7 +385,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
          nColumns = 20;
       }
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str().c_str());
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns,os.str().c_str());
 
       (*pPara) << pTable << rptNewLine;
 
@@ -594,7 +594,7 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    if ( nSpans == nGroups )
    {
       *pPara << _T("Girder Lengths");
@@ -613,14 +613,14 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
       *pPara << _T("C-C Pier = Abutment/Pier Line to Abutment/Pier Line length measured along the girder") << rptNewLine;
       *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the girder") << rptNewLine;
       *pPara << _T("Girder Length, Plan = End to end length of the girder projected into a horizontal plane") << rptNewLine;
-      *pPara << _T("Girder Length, Along Grade = End to end length of girder measured along grade of the girder (slope adjusted) = ") << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
+      *pPara << _T("Girder Length, Along Grade = End to end length of girder measured along grade of the girder (slope adjusted) = ") << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
    }
    else
    {
       *pPara << _T("C-C Pier = Abutment/Pier/Temp Support Line to Abutment/Pier/Temp Support Line length measured along the segment") << rptNewLine;
       *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the segment") << rptNewLine;
       *pPara << _T("Segment Length, Plan = End to end length of the segment projected into a horizontal plane") << rptNewLine;
-      *pPara << _T("Segment Length, Along Grade = End to end length of segment measured along grade of the segment (slope adjusted) = ") << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
+      *pPara << _T("Segment Length, Along Grade = End to end length of segment measured along grade of the segment (slope adjusted) = ") << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
    }
    *pPara << rptNewLine;
 
@@ -656,7 +656,7 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
          nColumns = 8;
       }
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str().c_str());
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns,os.str().c_str());
       pTable->SetNumberOfHeaderRows(2);
 
       (*pPara) << pTable << rptNewLine;
@@ -770,7 +770,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 {
    USES_CONVERSION;
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Girder Spacing");
    (*pChapter) << pPara;
 
@@ -804,7 +804,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          {
             os << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << std::endl;
          }
-         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(11,os.str().c_str());
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(11,os.str().c_str());
 
          (*pPara) << pTable << rptNewLine;
 
@@ -963,7 +963,7 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    if ( nSpans == nGroups )
    {
       *pPara << _T("Girder End Distances");
@@ -997,7 +997,7 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
          nColumns = 12;
       }
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str().c_str());
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns,os.str().c_str());
       (*pPara) << pTable << rptNewLine;
 
       pTable->SetNumberOfHeaderRows(3);

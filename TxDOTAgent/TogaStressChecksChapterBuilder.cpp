@@ -25,7 +25,7 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\FlexuralStressCheckTable.h>
 #include <Reporting\ReportNotes.h>
@@ -195,19 +195,19 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    rptRcTable* p_table;
    if (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII)
    {
-      p_table = pgsReportStyleHolder::CreateDefaultTable(5+1,_T(""));
+      p_table = rptStyleManager::CreateDefaultTable(5+1,_T(""));
    }
    else if ( (intervalIdx == compositeDeckIntervalIdx && !pAllowable->CheckFinalDeadLoadTensionStress()) || intervalIdx == liveLoadIntervalIdx)
    {
-      p_table = pgsReportStyleHolder::CreateDefaultTable(8+add_cols,_T(""));
+      p_table = rptStyleManager::CreateDefaultTable(8+add_cols,_T(""));
    }
    else if (intervalIdx == releaseIntervalIdx )
    {
-      p_table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
+      p_table = rptStyleManager::CreateDefaultTable(10,_T(""));
    }
    else
    {
-      p_table = pgsReportStyleHolder::CreateDefaultTable(9+add_cols,_T(""));
+      p_table = rptStyleManager::CreateDefaultTable(9+add_cols,_T(""));
    }
 
    *p << p_table;

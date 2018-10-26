@@ -420,12 +420,14 @@ void CMomentLoadDrawStrategyImpl::EditLoad()
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
+   EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoad->m_ID);
+
    CEditMomentLoadDlg dlg(*pLoad,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       if (*pLoad != dlg.m_Load)
       {
-         txnEditMomentLoad* pTxn = new txnEditMomentLoad(m_LoadIndex,*pLoad,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+         txnEditMomentLoad* pTxn = new txnEditMomentLoad(m_LoadIndex,*pLoad,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
    }

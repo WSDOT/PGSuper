@@ -208,30 +208,30 @@ void CCamberTable::Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey,
    rptRcTable* table2;
    rptRcTable* table3;
 
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(2);
    
-   table1a = pgsReportStyleHolder::CreateDefaultTable(4,_T("Deflections at Release"));
-   table1b = pgsReportStyleHolder::CreateDefaultTable(5,_T("Deflections during Storage"));
+   table1a = rptStyleManager::CreateDefaultTable(4,_T("Deflections at Release"));
+   table1b = rptStyleManager::CreateDefaultTable(5,_T("Deflections during Storage"));
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
    int ncols = 12 + (bTempStrands ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0) + (bDeckPanels ? 1 : 0);
-   table2 = pgsReportStyleHolder::CreateDefaultTable(ncols,_T("Deflections after Erection"));
-   table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Deflection Summary"));
+   table2 = rptStyleManager::CreateDefaultTable(ncols,_T("Deflections after Erection"));
+   table3 = rptStyleManager::CreateDefaultTable(8,_T("Deflection Summary"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
-      table1a->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table1a->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-      table1b->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table1b->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table1b->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1b->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-      table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-      table3->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table3->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    // Setup table headings
@@ -546,30 +546,30 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
    rptRcTable* table2;
    rptRcTable* table3;
 
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(2);
    
-   table1a = pgsReportStyleHolder::CreateDefaultTable(4,_T("Deflections at Release"));
-   table1b = pgsReportStyleHolder::CreateDefaultTable(5,_T("Deflections during Storage"));
+   table1a = rptStyleManager::CreateDefaultTable(4,_T("Deflections at Release"));
+   table1b = rptStyleManager::CreateDefaultTable(5,_T("Deflections during Storage"));
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
    int ncols = 11 + (bTempStrands ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0);
-   table2 = pgsReportStyleHolder::CreateDefaultTable(ncols,_T("Deflections after Erection"));
-   table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Deflection Summary"));
+   table2 = rptStyleManager::CreateDefaultTable(ncols,_T("Deflections after Erection"));
+   table3 = rptStyleManager::CreateDefaultTable(8,_T("Deflection Summary"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
-      table1a->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table1a->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1a->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-      table1b->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table1b->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table1b->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table1b->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-      table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table2->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-      table3->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table3->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table3->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    // Setup table headings

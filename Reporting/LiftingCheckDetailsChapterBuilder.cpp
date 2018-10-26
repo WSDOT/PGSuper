@@ -91,7 +91,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Details for Check for Lifting In Casting Yard [5.5.4.3][5.9.4.1]")<<rptNewLine;
 
@@ -126,7 +126,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
             if ( 1 < nSegments )
             {
-               p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle() );
+               p = new rptParagraph(rptStyleManager::GetSubheadingStyle() );
                *pChapter << p;
                *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
             }
@@ -170,18 +170,18 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
             *p << Sub2(symbol(DELTA),_T("ps"))   << _T(" = camber due to prestress mid-span = ")<<dim.SetValue(pLiftingArtifact->GetCamberDueToPrestress())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
             *p << Sub2(symbol(DELTA),_T("total"))<< _T(" = total camber at lifting = ")<<symbol(DELTA)<<Sub(_T("mid"))<<_T(" + ")<<symbol(DELTA)<<Sub(_T("ps"))<<_T(" =")<<dim.SetValue(pLiftingArtifact->GetTotalCamberAtLifting())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
             *p << _T("Adjusted y")<<Sub(_T("r"))<<_T(" = y")<<Sub(_T("t"))<<_T(" - ")<< Sub2(_T("F"),_T("o")) << _T("(") << symbol(DELTA)<<Sub(_T("total"))<<_T(") = ")<<dim.SetValue(pLiftingArtifact->GetAdjustedYr())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
-            *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("zo.png") )<<_T(" = ")<<dim.SetValue(pLiftingArtifact->GetZo())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+            *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("zo.png") )<<_T(" = ")<<dim.SetValue(pLiftingArtifact->GetZo())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
             *p << Sub2(_T("z"),_T("o")) << _T(" is based on average girder unit weight and mid-span section properties") << rptNewLine;
             *p << symbol(theta)<<Sub(_T("i"))<<_T(" = initial tilt angle = e")<<Sub(_T("i"))<<_T(" / y")<<Sub(_T("r"))<<_T(" = ")<<angle.SetValue(pLiftingArtifact->GetInitialTiltAngle())<<_T(" ")<<angle.GetUnitTag()<<rptNewLine;
 
-            pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+            pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
             *pChapter << pTitle;
 
             *pTitle << _T("Girder Forces and Stresses At Lifting");
             p = new rptParagraph;
             *pChapter << p;
 
-            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T("Lifting Forces"));
+            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(6,_T("Lifting Forces"));
 
             *p << p_table<<rptNewLine;
 
@@ -221,7 +221,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
                row++;
             }
 
-            p_table = pgsReportStyleHolder::CreateDefaultTable(9,_T("Lifting Stresses"));
+            p_table = rptStyleManager::CreateDefaultTable(9,_T("Lifting Stresses"));
             *p << p_table << rptNewLine;
 
             p_table->SetNumberOfHeaderRows(2);
@@ -300,12 +300,12 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
             // FS Cracking
 
-            p_table = pgsReportStyleHolder::CreateDefaultTable(7,_T("Factor of Safety Against Cracking"));
+            p_table = rptStyleManager::CreateDefaultTable(7,_T("Factor of Safety Against Cracking"));
             *p << p_table << rptNewLine;
             *p << RPT_STRESS(_T("t")) << _T(" = governing tension stress")<<rptNewLine;
-            *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mlat.png") )<<rptNewLine;
-            *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaMax.png") )<<rptNewLine;
-            *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("FScrLifting.png") )<<rptNewLine;
+            *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Mlat.png") )<<rptNewLine;
+            *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ThetaMax.png") )<<rptNewLine;
+            *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FScrLifting.png") )<<rptNewLine;
 
             (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Pick Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
             (*p_table)(0,1) << COLHDR(RPT_STRESS(_T("t")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -356,16 +356,16 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
                row++;
             }
 
-            pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+            pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
             *pChapter << pTitle;
             *pTitle << _T("Factor of Safety Against Failure")<<rptNewLine;
 
             p = new rptParagraph;
             *pChapter << p;
             // FS Failure
-            *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaPrimeMaxLifting.png") )<<_T(" = ")<< angle.SetValue(pLiftingArtifact->GetThetaFailureMax())<<_T(" ")<<angle.GetUnitTag()<<rptNewLine;
-            *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("zo_prime_lifting.png") )<<_T(" = ")<<dim.SetValue(pLiftingArtifact->GetZoPrime())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
-            *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("FSfLifting.png") )<<_T(" = ")<< scalar.SetValue(pLiftingArtifact->GetBasicFsFailure())<<rptNewLine;
+            *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ThetaPrimeMaxLifting.png") )<<_T(" = ")<< angle.SetValue(pLiftingArtifact->GetThetaFailureMax())<<_T(" ")<<angle.GetUnitTag()<<rptNewLine;
+            *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("zo_prime_lifting.png") )<<_T(" = ")<<dim.SetValue(pLiftingArtifact->GetZoPrime())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+            *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FSfLifting.png") )<<_T(" = ")<< scalar.SetValue(pLiftingArtifact->GetBasicFsFailure())<<rptNewLine;
             *p << rptNewLine;
             *p << _T("If ") << Sub2(_T("FS"),_T("f")) << _T(" < Minimum ") << Sub2(_T("FS"),_T("cr")) << _T(", ") << Sub2(_T("FS"),_T("f")) << _T(" = Minimum ") << Sub2(_T("FS"),_T("cr")) << rptNewLine;
             *p << Sub2(_T("FS"),_T("f")) << _T(" = ") << scalar.SetValue(pLiftingArtifact->GetFsFailure()) << rptNewLine;
@@ -415,7 +415,7 @@ void CLiftingCheckDetailsChapterBuilder::BuildRebarTable(IBroker* pBroker,rptCha
       tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Lifting, Upward Impact");
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,tablename.c_str());
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10,tablename.c_str());
    *p << pTable << rptNewLine;
 
    ColumnIndexType col = 0;

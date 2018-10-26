@@ -97,15 +97,15 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    }
 
    CEffectivePrestressTable* table = new CEffectivePrestressTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
    table->m_bPTTempStrand = bPTTempStrand;
    table->m_bTempStrands = bTempStrands;
    table->m_bIgnoreInitialRelaxation = bIgnoreInitialRelaxation;
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    *pParagraph << _T("Effective Prestress") << rptNewLine;

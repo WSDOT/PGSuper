@@ -112,7 +112,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,
                BuildSectionHeading(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, intervalIdx, limitState, bGirderStresses);
             }
 
-            rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             *pChapter << pPara;
             *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
             BuildAllowStressInformation(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, intervalIdx, limitState, bGirderStresses);
@@ -188,12 +188,12 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    bool bCompression = pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression);
    bool bTension     = pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension);
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << os.str() << rptNewLine;
    pTitle->SetName(os.str().c_str());
 
-   rptParagraph* pPara = new rptParagraph( pgsReportStyleHolder::GetSubheadingStyle() );
+   rptParagraph* pPara = new rptParagraph( rptStyleManager::GetSubheadingStyle() );
    *pChapter << pPara;
 
    *pPara << strLimitState << rptNewLine;
@@ -390,13 +390,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       nColumns++; // compression status
    }
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+   p_table = rptStyleManager::CreateDefaultTable(nColumns);
    *p << p_table << rptNewLine;
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    ColumnIndexType col1 = 0;
@@ -917,7 +917,7 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
    GET_IFACE2(pBroker,IMaterials,pMaterials);
 
 
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(2);
    *pPara << pLayoutTable;
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());

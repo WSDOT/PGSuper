@@ -79,7 +79,7 @@ void CDuctGeometryCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, size, pDisplayUnits->GetSpanLengthUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, radius, pDisplayUnits->GetSpanLengthUnit(), false );
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Duct Geoemtry [5.4.6.1]");
    pPara->SetName(_T("Duct Geometry"));
    *pChapter << pPara;
@@ -94,7 +94,7 @@ void CDuctGeometryCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    (*pPara) << rptNewLine;
 
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3);
    *pPara << pTable << rptNewLine;
 
    (*pTable)(0,0) << _T("Duct");

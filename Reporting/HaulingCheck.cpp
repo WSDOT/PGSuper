@@ -96,7 +96,7 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    }
    else
    {
-      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
       *pTitle << _T("Check for Hauling to Bridge Site")<<rptNewLine;
 

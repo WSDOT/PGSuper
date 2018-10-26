@@ -55,8 +55,6 @@ public:
 
    // properties
    IDType                         m_ID;
-   EventIndexType                 m_EventIndex;
-   EventIDType                    m_EventID;
    UserLoads::LoadCase            m_LoadCase;
    UserLoads::DistributedLoadType m_Type;
 
@@ -67,6 +65,8 @@ public:
    Float64  m_WEnd;
    bool     m_Fractional;
    std::_tstring m_Description;
+
+   EventIndexType m_StageIndex; // this is the event index corrosponding to the old stage model (BrideSite1,2,3)
 
 protected:
    void MakeCopy(const CDistributedLoadData& rOther);

@@ -50,7 +50,7 @@ rptRcTable(NumColumns,0)
 
 CTimeDependentLossesAtDeckPlacementTable* CTimeDependentLossesAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -59,9 +59,9 @@ CTimeDependentLossesAtDeckPlacementTable* CTimeDependentLossesAtDeckPlacementTab
    ColumnIndexType numColumns = 5;
 
    CTimeDependentLossesAtDeckPlacementTable* table = new CTimeDependentLossesAtDeckPlacementTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
        *pParagraph << _T("Time Dependent Losses Before Deck Placement") << rptNewLine;

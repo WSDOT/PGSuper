@@ -312,6 +312,13 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
       Float64 day;
       VERIFY(sysTokenizer::ParseDouble(strDay,&day));
 
+      if ( day < 0 )
+      {
+         AfxMessageBox(_T("The day this event occurs must be zero or more"),MB_OK);
+         TransferCurrentCell(FALSE); // reverts to the current value
+         return FALSE; // don't change the cell
+      }
+
       bool bDone = false;
       bool bAdjustTimeline = false; // first time adjusting the event day, don't adjust the timeline
       while ( !bDone )
@@ -367,6 +374,15 @@ BOOL CTimelineGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    if ( nCol == 1 )
    {
       // the event Occurrence day changed
+      CString strDay = GetValueRowCol(nRow,nCol);
+      Float64 day; 
+      VERIFY(sysTokenizer::ParseDouble(strDay,&day));
+
+      if ( day < 0 )
+      {
+         AfxMessageBox(_T("The day this event occurs must be zero or more"),MB_OK);
+         return FALSE;
+      }
       Refresh();
    }
    else if ( nCol == 2 )
@@ -374,6 +390,12 @@ BOOL CTimelineGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       CString strElapsedTime = GetValueRowCol(nRow,nCol);
       Float64 elapsed_time; 
       VERIFY(sysTokenizer::ParseDouble(strElapsedTime,&elapsed_time));
+
+      if ( elapsed_time < 0 )
+      {
+         AfxMessageBox(_T("Elapsed time must be zero or more"),MB_OK);
+         return FALSE;
+      }
 
       CEditTimelineDlg* pParent = (CEditTimelineDlg*)GetParent();
       EventIndexType thisEventIdx = IndexType(nRow-1);

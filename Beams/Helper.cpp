@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include <Beams\Helper.h>
-#include <PgsExt\ReportStyleHolder.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,7 +39,7 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
 
       std::vector<Float64>::iterator iter;
       std::_tstring strImageName(lrd.bWasExterior ? _T("LeverRuleExterior.gif") : _T("LeverRuleInterior.gif"));
-      (*pPara) << rptRcImage(std::_tstring(pgsReportStyleHolder::GetImagePath()) + strImageName) << rptNewLine;
+      (*pPara) << rptRcImage(std::_tstring(std::_tstring(rptStyleManager::GetImagePath())) + strImageName) << rptNewLine;
       (*pPara) << _T("Multiple Presence Factor: m = ") << lrd.m << rptNewLine;
       if (isMoment)
       {
@@ -167,7 +167,7 @@ void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::Rigi
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   (*pPara) << rptRcImage(std::_tstring(pgsReportStyleHolder::GetImagePath()) + _T("RigidMethod.gif")) << rptNewLine;
+   (*pPara) << rptRcImage(std::_tstring(std::_tstring(rptStyleManager::GetImagePath())) + _T("RigidMethod.gif")) << rptNewLine;
    (*pPara) << _T("Multiple Presence Factor: m = ") << rd.m << rptNewLine;
    (*pPara) << _T("g = ") << _T("(") << rd.Nl << _T("/") << rd.Nb << _T(") + (") << xdim.SetValue(rd.Xext) << _T(")[");
    std::vector<Float64>::iterator iter;

@@ -113,12 +113,12 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    }
 
    std::_tstring title(_T("Live Load Results for ") + strLLName);
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,title.c_str());
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,title.c_str());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    // Set up table headings

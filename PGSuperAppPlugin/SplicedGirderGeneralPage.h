@@ -32,10 +32,6 @@
 
 #include "DrawTendonsControl.h"
 
-#include "SlabOffsetHyperLink.h"
-#include "FilletHyperLink.h"
-#include "SameGirderTypeHyperLink.h"
-
 // CSplicedGirderGeneralPage dialog
 
 class CSplicedGirderGeneralPage : public CPropertyPage
@@ -68,16 +64,10 @@ protected:
    void FillDuctType();
    void FillInstallationType();
 
-   CSlabOffsetHyperLink m_ctrlSlabOffsetHyperLink;
-   void UpdateSlabOffsetHyperLink();
    void UpdateSlabOffsetControls();
 
-   CFilletHyperLink m_ctrlFilletHyperLink;
-   void UpdateFilletHyperLink();
    void UpdateFilletControls();
 
-   CSameGirderTypeHyperLink m_ctrlGirderTypeHyperLink;
-   void UpdateGirderTypeHyperLink();
    void UpdateGirderTypeControls();
 
    CGirderGrid m_GirderGrid;
@@ -85,6 +75,9 @@ protected:
    CSlabOffsetGrid m_SlabOffsetGrid;
    CFilletGrid m_FilletGrid;
    CDrawTendonsControl m_DrawTendons;
+
+   pgsTypes::FilletType m_FilletTypeOriginal;
+   pgsTypes::SlabOffsetType m_SlabOffsetTypeOriginal;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -94,9 +87,9 @@ public:
    afx_msg void OnStrandChanged();
    afx_msg void OnInstallationTypeChanged();
    afx_msg void OnConditionFactorTypeChanged();
-   afx_msg LRESULT OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeFilletType(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeGirderType(WPARAM wParam,LPARAM lParam);
+   afx_msg void OnChangeSlabOffsetType();
+   afx_msg void OnChangeFilletType();
+   afx_msg void OnChangeGirderType();
 
    void OnDuctChanged();
    afx_msg void OnHelp();

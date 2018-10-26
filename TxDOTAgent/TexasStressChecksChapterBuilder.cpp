@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "TexasStressChecksChapterBuilder.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\StrandStressCheckTable.h>
 #include <Reporting\FlexuralStressCheckTable.h>

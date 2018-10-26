@@ -119,7 +119,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
             // Write out what we have for prestressing in this girder
             if ( 1 < nSegments )
             {
-               rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+               rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
                *pChapter << pPara;
                (*pPara) << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
             }
@@ -181,7 +181,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
             *pChapter << pPara;
             *pPara << CPrestressLossTable().Build(pBroker,thisSegmentKey,pDisplayUnits) << rptNewLine;
 
-            pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
             *pChapter << pPara;
             *pPara << _T("Time-Dependent Effects = change in strand stress due to creep, shrinkage, and relaxation") << rptNewLine;
             *pPara << _T("Instantaneous Effects = change in strand stress due to elastic shortening and externally applied loads") << rptNewLine;

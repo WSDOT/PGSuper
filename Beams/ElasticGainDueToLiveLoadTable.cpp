@@ -55,13 +55,13 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    ColumnIndexType numColumns = 8;
 
    CElasticGainDueToLiveLoadTable* table = new CElasticGainDueToLiveLoadTable( numColumns, pDisplayUnits);
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
    table->scalar.SetFormat(sysNumericFormatTool::Fixed);
    table->scalar.SetWidth(5);
    table->scalar.SetPrecision(2);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -73,7 +73,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    Float64 Ec = pMaterials->GetSegmentEc(segmentKey,liveLoadIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Elastic Gain Due to Live Load [5.9.5.2.3a]") << rptNewLine;
 

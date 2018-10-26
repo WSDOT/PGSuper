@@ -26,7 +26,7 @@
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\Keys.h>
 
-#define CREATE_TIMELINE_EVENT INVALID_INDEX-1
+#define CREATE_TIMELINE_EVENT INVALID_ID-1
 
 #define TLM_OVERLAPS_PREVIOUS_EVENT                      0x00000001 // the new event occurs before the previous event ends
 #define TLM_OVERRUNS_NEXT_EVENT                          0x00000002 // the new event ends after the next event begins
@@ -55,6 +55,7 @@
 #define TLM_SUCCESS                                      0xffffffff // event was successfully added
 
 class CBridgeDescription2;
+class CLoadManager;
 class CClosureJointData;
 
 /*****************************************************************************
@@ -85,6 +86,9 @@ public:
 
    void SetBridgeDescription(const CBridgeDescription2* pBridge);
    const CBridgeDescription2* GetBridgeDescription() const;
+
+   void SetLoadManager(const CLoadManager* pLoadMgr);
+   const CLoadManager* GetLoadManager() const;
 
    // Appends an event to the end of the timeline. The day of occurrence will be changed to
    // match the last event in the timeline. A unique ID will be assigned to the event if
@@ -144,6 +148,7 @@ public:
    bool IsDeckCast() const;
    bool IsOverlayInstalled() const;
    bool IsRailingSystemInstalled() const;
+   bool IsUserDefinedLoadApplied(LoadIDType loadID) const;
    bool IsSegmentConstructed(SegmentIDType segmentID) const;
    bool IsClosureJointCast(ClosureIDType closureID) const;
    bool IsPierErected(PierIDType pierID) const;
@@ -234,6 +239,11 @@ public:
    void SetLoadRatingEventByIndex(EventIndexType eventIdx);
    void SetLoadRatingEventByID(EventIDType ID);
 
+   void SetUserLoadEventByIndex(LoadIDType loadID,EventIndexType eventIdx);
+   void SetUserLoadEventByID(LoadIDType loadID,EventIDType eventID);
+   EventIndexType FindUserLoadEventIndex(LoadIDType loadID) const;
+   EventIDType FindUserLoadEventID(LoadIDType loadID) const;
+
    int Validate() const;
    int ValidateEvent(const CTimelineEvent* pTimelineEvent) const;
    CString GetErrorMessage(int errorCode) const;
@@ -248,6 +258,7 @@ protected:
 
    std::vector<CTimelineEvent*> m_TimelineEvents; // owns the timeline events... will be deleted in the destructor
    const CBridgeDescription2* m_pBridgeDesc;
+   const CLoadManager* m_pLoadManager;
 
    static EventIDType ms_ID;
 

@@ -65,7 +65,7 @@
 #include <WBFLGenericBridge_i.c>
 #include <WBFLGenericBridgeTools_i.c>
 
-#include <PgsExt\ReportStyleHolder.h>
+
 
 //
 //TODO: If this DLL is dynamically linked against the MFC DLLs,
@@ -121,7 +121,7 @@ BOOL CReportingApp::InitInstance()
    CWinApp::InitInstance();
 
    // Initialize the report styles when the DLL loads
-   pgsReportStyleHolder::InitStyles();
+   rptStyleManager::InitStyles();
 
 	return TRUE;
 }

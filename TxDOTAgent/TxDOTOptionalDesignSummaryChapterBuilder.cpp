@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #include "TxDOTOptionalDesignSummaryChapterBuilder.h"
@@ -168,7 +168,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Design Information"));
+   rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2,_T("Design Information"));
    *p << p_table << rptNewLine;
 
 
@@ -256,7 +256,7 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Design Data"));
+   rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2,_T("Design Data"));
    *p << p_table << rptNewLine;
 
    RowIndexType row = 0;
@@ -310,7 +310,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
 
    std::_tstring title = (gdrIdx==TOGA_ORIG_GDR) ? _T("Original Girder Design") : _T("Fabricator Optional Girder Design");
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,title.c_str());
+   rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2,title.c_str());
    *p << p_table << rptNewLine;
 
    RowIndexType row = 0;
@@ -407,7 +407,7 @@ void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, c
 
    RowIndexType nrows = strandRows.size() + 1;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(nrows,tableName.c_str());
+   rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(nrows,tableName.c_str());
    *p << p_table << rptNewLine;
 
    std::_tstring tit = _T("Row (") + component.GetUnitTag() + _T(")");
@@ -434,7 +434,7 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T("Input Design Data Vs. Calculated Design Data"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T("Input Design Data Vs. Calculated Design Data"));
    *p << p_table;
 
    int row = 0;
@@ -497,7 +497,7 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T("Analysis of Fabricator Optional Design"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T("Analysis of Fabricator Optional Design"));
    *p << p_table;
 
    int row = 0;
@@ -560,7 +560,7 @@ static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOpt
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber Analysis"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T("Camber Analysis"));
    *p << p_table;
 
    int row = 0;
@@ -592,7 +592,7 @@ static void shear_summary(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits
 
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
 
-   rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << p;
 
    *p << _T("Shear Design Check");

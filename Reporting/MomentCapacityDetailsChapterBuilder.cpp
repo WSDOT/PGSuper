@@ -149,7 +149,7 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
 
          rptParagraph* pPara;
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Positive Moment Capacity Details") << rptNewLine;
 
@@ -179,7 +179,7 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
 
          if ( bProcessNegativeMoments )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             *pChapter << pPara;
             *pPara << _T("Negative Moment Capacity Details") << rptNewLine;
 
@@ -256,12 +256,12 @@ void write_moment_data_table(IBroker* pBroker,
       strPicture = pFactory->GetNegativeMomentCapacitySchematicImage(deckType);
    }
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + strPicture) << rptNewLine;
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strPicture) << rptNewLine;
 
    *pPara << rptNewLine;
 
    // Setup the table
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
    std::_tostringstream os;
@@ -306,14 +306,14 @@ void write_moment_data_table(IBroker* pBroker,
       nColumns += 1; // for fpt_avg
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str().c_str());
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns,os.str().c_str());
 
    *pPara << table << rptNewLine;
 
 
    if ( bPositiveMoment )
    {
-      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      rptParagraph* pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
       (*pPara) << _T("* Used to compute ") << Sub2(_T("d"),_T("v")) << _T(" for shear. Depth to resultant tension force for strands in tension. See PCI BDM 8.4.1.2") << rptNewLine;
    }
@@ -321,8 +321,8 @@ void write_moment_data_table(IBroker* pBroker,
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    ColumnIndexType col = 0;
@@ -513,7 +513,7 @@ void write_moment_data_table(IBroker* pBroker,
    {
       if ( pSpec->GetMomentCapacityMethod() == WSDOT_METHOD || bAfter2005 )
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GeneralizedFlexureResistanceFactor.png")) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GeneralizedFlexureResistanceFactor.png")) << rptNewLine;
       }
    }
    else
@@ -525,17 +525,17 @@ void write_moment_data_table(IBroker* pBroker,
 
       if ( 0 < nTendons )
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("PositiveMomentFlexureResistanceFactor_SplicedGirders.png")) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PositiveMomentFlexureResistanceFactor_SplicedGirders.png")) << rptNewLine;
       }
       else
       {
          if ( bPositiveMoment )
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("PositiveMomentFlexureResistanceFactor.png")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PositiveMomentFlexureResistanceFactor.png")) << rptNewLine;
          }
          else
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("NegativeMomentFlexureResistanceFactor.png")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("NegativeMomentFlexureResistanceFactor.png")) << rptNewLine;
          }
       }
    }
@@ -557,7 +557,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    // Setup the table
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    *pParagraph << (bPositiveMoment ? _T("Positive") : _T("Negative")) << _T(" Cracking Moment Details [5.7.3.3.2] - ") << strStageName << rptNewLine;
@@ -571,12 +571,12 @@ void write_crack_moment_data_table(IBroker* pBroker,
       nColumns--; // No Scfr column for LRFD 6th, 2012 and later
    }
    
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns,_T(""));
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    *pParagraph << table << rptNewLine;
@@ -659,7 +659,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
       row++;
    }
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
 
 
@@ -667,17 +667,17 @@ void write_crack_moment_data_table(IBroker* pBroker,
    {
       if ( bAfter2002 )
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mcr_2005.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Mcr_2005.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mcr.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Mcr.png")) << rptNewLine;
       }
    }
    else
    {
       // LRFD 6th Edition, 2012 and later
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mcr_2012.png")) << rptNewLine;
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Mcr_2012.png")) << rptNewLine;
    }
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
@@ -709,7 +709,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
 
    *pParagraph << RPT_STRESS(_T("cpe")) << _T(" = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads.") << rptNewLine;
 #pragma Reminder("UPDATE: remove image from images folder if it is no longer used")
-   //*pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("fcpe.png")) << rptNewLine;
+   //*pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("fcpe.png")) << rptNewLine;
    *pParagraph << Sub2(_T("S"),_T("nc")) << _T(" = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads") << rptNewLine;
    *pParagraph << Sub2(_T("S"),_T("c")) << _T(" = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads") << rptNewLine;
    *pParagraph << Sub2(_T("M"),_T("dnc")) << _T(" = total unfactored dead load moment acting on the monolithic or noncomposite section") << rptNewLine;
@@ -730,7 +730,7 @@ void write_min_moment_data_table(IBroker* pBroker,
    // Setup the table
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    *pParagraph << _T("Minimum Reinforcement [5.7.3.3.2] - ") << strStageName << rptNewLine;
@@ -738,12 +738,12 @@ void write_min_moment_data_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(bBefore2012 ? 7 : 6,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(bBefore2012 ? 7 : 6,_T(""));
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    *pParagraph << table << rptNewLine;
@@ -810,7 +810,7 @@ void write_min_moment_data_table(IBroker* pBroker,
       row++;
    }
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
    if ( bBefore2012 )
    {
@@ -858,7 +858,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    // Setup the table
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    if ( bPositiveMoment )
@@ -873,14 +873,14 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    *pParagraph << _T("Over reinforced sections may be considered adequate if the flexural demand does not exceed the flexural resistance suggested by LRFD C5.7.3.3.1.") << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LimitingCapacityOfOverReinforcedSections.jpg")) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LimitingCapacityOfOverReinforcedSections.jpg")) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,_T("Nominal Resistance of Over Reinforced Sections [C5.7.3.3.1]"));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(10,_T("Nominal Resistance of Over Reinforced Sections [C5.7.3.3.1]"));
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    *pParagraph << table << rptNewLine;

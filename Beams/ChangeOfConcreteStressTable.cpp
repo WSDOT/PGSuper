@@ -50,13 +50,13 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
    ColumnIndexType numColumns = 9;
 
    CChangeOfConcreteStressTable* table = new CChangeOfConcreteStressTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Change in Concrete Stress at Level of Prestressing [5.9.5.4.3]") << rptNewLine;
 
@@ -77,7 +77,7 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
    (*table)(0,7) << COLHDR(Sub2(_T("I"),_T("c")),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
    (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cdp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
    *pParagraph << Sub2(_T("M"),_T("adl")) << _T(" = Moment due to permanent loads applied to the noncomposite girder section after the prestressing force is applied") << rptNewLine;
    *pParagraph << Sub2(_T("M"),_T("sidl")) << _T(" = Moment due to permanent loads applied to the composite girder section after the prestressing force is applied") << rptNewLine;

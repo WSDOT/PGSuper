@@ -86,15 +86,15 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    }
 
    CCreepAtFinalTable* table = new CCreepAtFinalTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
    
    table->m_pStrands = pStrands;
    table->m_NtMax = NtMax;
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    *pParagraph << _T("[5.9.5.4.3b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << rptNewLine;
@@ -183,13 +183,13 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    }
 
    // DELTA Fcd Table
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   rptRcTable* pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << COLHDR(Sub2(_T("E"),_T("p")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pParamTable)(0,1) << COLHDR(Sub2(_T("E"),_T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -211,7 +211,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(1,3) << table->stress.SetValue(ptl->GetFc());
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKf());
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << COLHDR(Sub2(_T("t"),_T("i")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
    (*pParamTable)(0,1) << COLHDR(Sub2(_T("t"),_T("d")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
@@ -228,7 +228,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKtd());
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(3,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
    (*pParamTable)(0,1) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("d")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");

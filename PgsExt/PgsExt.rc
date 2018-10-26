@@ -64,8 +64,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,52
- PRODUCTVERSION 3,0,0,52
+ FILEVERSION 3,0,0,53
+ PRODUCTVERSION 3,0,0,53
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -83,12 +83,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "3.0.0.52"
+            VALUE "FileVersion", "3.0.0.53"
             VALUE "InternalName", "PgsExt"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.52"
+            VALUE "ProductVersion", "3.0.0.53"
         END
     END
     BLOCK "VarFileInfo"
@@ -272,6 +272,45 @@ BEGIN
     PUSHBUTTON      "Help",IDHELP,162,92,50,14
 END
 
+IDD_SELECT_GIRDER DIALOGEX 0, 0, 143, 53
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Girder"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,33,33,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,86,33,50,14
+    COMBOBOX        IDC_GROUP,7,7,61,156,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,73,7,63,154,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_SELECT_SEGMENT DIALOGEX 0, 0, 211, 53
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Segment"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,100,32,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,154,32,50,14
+    COMBOBOX        IDC_GROUP,7,7,63,154,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,75,7,63,154,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SEGMENT,143,7,61,156,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_SELECT_POI DIALOGEX 0, 0, 380, 118
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Girder Section"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Select Location",IDC_STATIC,7,7,49,8
+    COMBOBOX        IDC_GROUP,7,20,73,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,94,20,80,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_INTERVAL,188,20,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Use slider to select a girder section",IDC_STATIC,7,42,112,8
+    CONTROL         "",IDC_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,7,54,366,23
+    LTEXT           "Static",IDC_LOCATION,7,82,366,8
+    DEFPUSHBUTTON   "OK",IDOK,269,97,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,323,97,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -357,6 +396,30 @@ BEGIN
         RIGHTMARGIN, 239
         TOPMARGIN, 7
         BOTTOMMARGIN, 106
+    END
+
+    IDD_SELECT_GIRDER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 136
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 47
+    END
+
+    IDD_SELECT_SEGMENT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 204
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 46
+    END
+
+    IDD_SELECT_POI, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 373
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 111
     END
 END
 #endif    // APSTUDIO_INVOKED

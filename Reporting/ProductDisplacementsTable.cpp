@@ -99,12 +99,12 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
 
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Deflections"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T("Deflections"));
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
@@ -577,12 +577,12 @@ rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(IBroker* pBroker,const 
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Deflections For The LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,_T("Deflections For The LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)"));
 
    if (girderKey.groupIndex == ALL_GROUPS)
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    // Set up table headings

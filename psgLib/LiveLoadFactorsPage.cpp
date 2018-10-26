@@ -38,7 +38,8 @@ CLiveLoadFactorsPage::CLiveLoadFactorsPage(UINT idd,LPCTSTR strTitle,pgsTypes::L
    m_RatingType = ratingType;
    m_SpecialPermitType = (pgsTypes::SpecialPermitType)(-1); // bogus value so we know this is not for a special permit rating
 
-	m_psp.pszTitle = strTitle;
+   m_strTitle = strTitle;
+	m_psp.pszTitle = m_strTitle;
   	m_psp.dwFlags |= PSP_USETITLE;
 }
 
@@ -48,7 +49,8 @@ CLiveLoadFactorsPage::CLiveLoadFactorsPage(UINT idd,LPCTSTR strTitle,pgsTypes::L
    m_RatingType = ratingType;
    m_SpecialPermitType = permitType;
 
-	m_psp.pszTitle = strTitle;
+   m_strTitle = strTitle;
+	m_psp.pszTitle = m_strTitle;
   	m_psp.dwFlags |= PSP_USETITLE;
 }
 

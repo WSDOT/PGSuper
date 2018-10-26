@@ -58,16 +58,13 @@ UINT AheadControls[] =
    IDC_NEXT_SPAN_SPACING_LABEL,
    IDC_NEXT_SPAN_SPACING_MEASUREMENT,
    IDC_NEXT_SPAN_SPACING_GRID,
-   IDC_GIRDER_SPACING_NOTE_START_OF_NEXT_SPAN,
-   IDC_NUM_GIRDER_NEXT_SPAN_NOTE,
    IDC_AHEAD_COPY,
    IDC_NEXT_REF_GIRDER_LABEL,
    IDC_NEXT_REF_GIRDER,
    IDC_NEXT_REF_GIRDER_OFFSET,
    IDC_NEXT_REF_GIRDER_OFFSET_UNIT,
    IDC_NEXT_REF_GIRDER_FROM,
-   IDC_NEXT_REF_GIRDER_OFFSET_TYPE,
-   IDC_NEXT_SPAN_CONSTANT_SPACING_NOTE
+   IDC_NEXT_REF_GIRDER_OFFSET_TYPE
 };
 
 UINT BackControls[] =
@@ -79,20 +76,13 @@ UINT BackControls[] =
    IDC_PREV_SPAN_SPACING_LABEL,
    IDC_PREV_SPAN_SPACING_MEASUREMENT,
    IDC_PREV_SPAN_SPACING_GRID,
-   IDC_GIRDER_SPACING_NOTE_END_OF_PREV_SPAN,
-   IDC_NUM_GIRDER_PREV_SPAN_NOTE,
    IDC_BACK_COPY,
    IDC_PREV_REF_GIRDER_LABEL,
    IDC_PREV_REF_GIRDER,
    IDC_PREV_REF_GIRDER_OFFSET,
    IDC_PREV_REF_GIRDER_OFFSET_UNIT,
    IDC_PREV_REF_GIRDER_FROM,
-   IDC_PREV_REF_GIRDER_OFFSET_TYPE,
-   //IDC_BACK_SLAB_OFFSET_NOTE,
-   //IDC_BACK_SLAB_OFFSET_LABEL,
-   //IDC_BACK_SLAB_OFFSET,
-   //IDC_BACK_SLAB_OFFSET_UNIT,
-   IDC_PREV_SPAN_CONSTANT_SPACING_NOTE
+   IDC_PREV_REF_GIRDER_OFFSET_TYPE
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -107,12 +97,6 @@ CPierGirderSpacingPage::CPierGirderSpacingPage() : CPropertyPage(CPierGirderSpac
 	//}}AFX_DATA_INIT
    m_MinGirderCount[pgsTypes::Back]  = 2;
    m_MinGirderCount[pgsTypes::Ahead] = 2;
-
-   m_NumGirdersHyperLink[pgsTypes::Back].m_wParam  = (WPARAM)pgsTypes::Back;
-   m_NumGirdersHyperLink[pgsTypes::Ahead].m_wParam = (WPARAM)pgsTypes::Ahead;
-
-   m_GirderSpacingHyperLink[pgsTypes::Back].m_wParam  = (WPARAM)pgsTypes::Back;
-   m_GirderSpacingHyperLink[pgsTypes::Ahead].m_wParam = (WPARAM)pgsTypes::Ahead;
 }
 
 CPierGirderSpacingPage::~CPierGirderSpacingPage()
@@ -141,12 +125,10 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 	DDX_Control(pDX, IDC_NUMGDR_SPIN_PREV_SPAN,                  m_NumGdrSpinner[pgsTypes::Back]);
 	DDX_Control(pDX, IDC_NUMGDR_SPIN_NEXT_SPAN,                  m_NumGdrSpinner[pgsTypes::Ahead]);
-   DDX_Control(pDX, IDC_NUM_GIRDER_PREV_SPAN_NOTE,              m_NumGirdersHyperLink[pgsTypes::Back]);
-   DDX_Control(pDX, IDC_NUM_GIRDER_NEXT_SPAN_NOTE,              m_NumGirdersHyperLink[pgsTypes::Ahead]);
-   DDX_Control(pDX, IDC_GIRDER_SPACING_NOTE_END_OF_PREV_SPAN,   m_GirderSpacingHyperLink[pgsTypes::Back]);
-   DDX_Control(pDX, IDC_GIRDER_SPACING_NOTE_START_OF_NEXT_SPAN, m_GirderSpacingHyperLink[pgsTypes::Ahead]);
+   DDX_Control(pDX, IDC_CB_SPACG_TYPE,                          m_cbGirderSpacingType);
    DDX_Control(pDX, IDC_PREV_SPAN_SPACING_MEASUREMENT,          m_cbGirderSpacingMeasurement[pgsTypes::Back]);
    DDX_Control(pDX, IDC_NEXT_SPAN_SPACING_MEASUREMENT,          m_cbGirderSpacingMeasurement[pgsTypes::Ahead]);
+   DDX_Control(pDX, IDC_CB_NUMGDRS,                             m_cbNumGdrType);
 
    DDX_CBItemData(pDX, IDC_PREV_SPAN_SPACING_MEASUREMENT, m_GirderSpacingMeasure[pgsTypes::Back]);
    DDX_CBItemData(pDX, IDC_NEXT_SPAN_SPACING_MEASUREMENT, m_GirderSpacingMeasure[pgsTypes::Ahead]);
@@ -159,7 +141,6 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
 
    DDV_SpacingGrid(pDX,IDC_NEXT_SPAN_SPACING_GRID,&m_GirderSpacingGrid[pgsTypes::Ahead]);
    DDV_SpacingGrid(pDX,IDC_PREV_SPAN_SPACING_GRID,&m_GirderSpacingGrid[pgsTypes::Back]);
-
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -206,8 +187,8 @@ BEGIN_MESSAGE_MAP(CPierGirderSpacingPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_AHEAD_COPY, OnCopyToBackSide)
    ON_CBN_SELCHANGE(IDC_PREV_SPAN_SPACING_MEASUREMENT,OnBackPierSpacingDatumChanged)
    ON_CBN_SELCHANGE(IDC_NEXT_SPAN_SPACING_MEASUREMENT,OnAheadPierSpacingDatumChanged)
-   ON_REGISTERED_MESSAGE(MsgChangeSameNumberOfGirders,OnChangeSameNumberOfGirders)
-   ON_REGISTERED_MESSAGE(MsgChangeSameGirderSpacing,OnChangeSameGirderSpacing)
+   ON_CBN_SELCHANGE(IDC_CB_NUMGDRS,OnChangeSameNumberOfGirders)
+   ON_CBN_SELCHANGE(IDC_CB_SPACG_TYPE,OnChangeSameGirderSpacing)
 	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -426,6 +407,12 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    
    CPropertyPage::OnInitDialog();
 
+   bool bUseSameGirderType = pParent->m_BridgeDesc.UseSameNumberOfGirdersInAllGroups();
+
+   m_cbNumGdrType.AddString(_T("The same number of girders are used in all spans"));
+   m_cbNumGdrType.AddString(_T("The number of girders is defined span by span"));
+   m_cbNumGdrType.SetCurSel(bUseSameGirderType?0:1);
+
    // Initialize the spinner control for # of girder lines
    m_MinGirderCount[pgsTypes::Back]  = GetMinGirderCount(pgsTypes::Back);
    m_MinGirderCount[pgsTypes::Ahead] = GetMinGirderCount(pgsTypes::Ahead);
@@ -439,7 +426,46 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    m_NumGdrSpinner[pgsTypes::Back].SetAccel(0,&accel);
    m_NumGdrSpinner[pgsTypes::Ahead].SetAccel(0,&accel);
 	
-   if ( IsGirderSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()) )
+   pgsTypes::SupportedBeamSpacing spacingType = pParent->m_BridgeDesc.GetGirderSpacingType();
+
+   if ( spacingType == pgsTypes::sbsUniform )
+   {
+      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(0);
+   }
+   else if ( spacingType == pgsTypes::sbsUniformAdjacent )
+   {
+      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(0);
+   }
+   else if ( spacingType == pgsTypes::sbsConstantAdjacent )
+   {
+      CString note;
+      note.Format(_T("The same girder spacing must be used for the entire bridge for %s girders"), pParent->m_pPier->GetBridgeDescription()->GetGirderFamilyName());
+      m_cbGirderSpacingType.AddString(note);
+      m_cbGirderSpacingType.SetCurSel(0);
+      m_cbGirderSpacingType.EnableWindow(FALSE);
+   }
+   else if ( spacingType == pgsTypes::sbsGeneral )
+   {
+      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(1);
+   }
+   else if ( spacingType == pgsTypes::sbsGeneralAdjacent )
+   {
+      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(1);
+   }
+   else
+   {
+      ATLASSERT(false); // is there a new spacing type???
+   }
+
+   if ( IsGirderSpacing(spacingType) )
    {
       GetDlgItem(IDC_PREV_SPAN_SPACING_LABEL)->SetWindowText(_T("Girder Spacing"));
       GetDlgItem(IDC_NEXT_SPAN_SPACING_LABEL)->SetWindowText(_T("Girder Spacing"));
@@ -449,7 +475,6 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       GetDlgItem(IDC_PREV_SPAN_SPACING_LABEL)->SetWindowText(_T("Joint Spacing"));
       GetDlgItem(IDC_NEXT_SPAN_SPACING_LABEL)->SetWindowText(_T("Joint Spacing"));
    }
-
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -577,23 +602,6 @@ void CPierGirderSpacingPage::RemoveGirders(GirderIndexType nGirders,pgsTypes::Pi
    m_GirderSpacingGrid[pierFace].UpdateGrid();
 }
 
-HBRUSH CPierGirderSpacingPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
-{
-	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
-
-   switch( pWnd->GetDlgCtrlID() )
-   {
-   case IDC_NUM_GIRDER_PREV_SPAN_NOTE:
-   case IDC_NUM_GIRDER_NEXT_SPAN_NOTE:
-   case IDC_GIRDER_SPACING_NOTE_END_OF_PREV_SPAN:
-   case IDC_GIRDER_SPACING_NOTE_START_OF_NEXT_SPAN:
-      pDC->SetTextColor(HYPERLINK_COLOR);
-      break;
-   };
-
-   return hbr;
-}
-
 BOOL CPierGirderSpacingPage::OnSetActive() 
 {
    UpdateChildWindowState();
@@ -601,7 +609,6 @@ BOOL CPierGirderSpacingPage::OnSetActive()
 
    return bResult;
 }
-
 
 void CPierGirderSpacingPage::DisableAll()
 {
@@ -629,8 +636,7 @@ void CPierGirderSpacingPage::UpdateChildWindowState()
    GetDlgItem(IDC_NUMGDR_NEXT_SPAN)->EnableWindow(              bEnable );
    GetDlgItem(IDC_NUMGDR_SPIN_NEXT_SPAN)->EnableWindow(         bEnable );
 
-   UpdateGirderSpacingHyperLinkText();
-   UpdateNumGirdersHyperLinkText();
+   UpdateGirderSpacingText();
 
    UpdateGirderSpacingState(pgsTypes::Back);
    UpdateGirderSpacingState(pgsTypes::Ahead);
@@ -756,11 +762,12 @@ void CPierGirderSpacingPage::UpdateCopyButtonState(BOOL bEnable)
    GetDlgItem(IDC_AHEAD_COPY)->EnableWindow(bEnable);
 }
 
-LRESULT CPierGirderSpacingPage::OnChangeSameNumberOfGirders(WPARAM wParam,LPARAM lParam)
+void CPierGirderSpacingPage::OnChangeSameNumberOfGirders()
 {
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
    bool bUseSameNumGirders = pParent->m_BridgeDesc.UseSameNumberOfGirdersInAllGroups();
+   // Toggle
    bUseSameNumGirders = !bUseSameNumGirders;
 
    if ( bUseSameNumGirders )
@@ -789,7 +796,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameNumberOfGirders(WPARAM wParam,LPARAM
          else
          {
             // User pressed Cancel button... leave now without making any changes
-            return 0;
+            return;
          }
       }
       
@@ -807,10 +814,9 @@ LRESULT CPierGirderSpacingPage::OnChangeSameNumberOfGirders(WPARAM wParam,LPARAM
    m_GirderSpacingGrid[pgsTypes::Ahead].UpdateGrid();
 
    UpdateChildWindowState();
-   return 0;
 }
 
-LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam)
+void CPierGirderSpacingPage::OnChangeSameGirderSpacing()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -822,7 +828,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
 
    long backGirderSpacingDatum, aheadGirderSpacingDatum;
 
-   pgsTypes::PierFaceType pierFace = (pgsTypes::PierFaceType)(wParam);
+   pgsTypes::PierFaceType pierFace = pParent->m_pSpan[pgsTypes::Ahead] ? pgsTypes::Ahead : pgsTypes::Back;
    if ( spacingType == pgsTypes::sbsUniform || spacingType == pgsTypes::sbsUniformAdjacent )
    {
       // we are going from general to uniform spacing
@@ -907,7 +913,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
             }
             else
             {
-               return 0;
+               return;
             }
          }
          else
@@ -960,7 +966,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
    m_GirderSpacingGrid[pgsTypes::Back].UpdateGrid();
 
    UpdateChildWindowState();
-   return 0;
+   return;
 }
 
 void CPierGirderSpacingPage::OnAheadPierSpacingDatumChanged()
@@ -983,40 +989,12 @@ void CPierGirderSpacingPage::OnPierSpacingDatumChanged(UINT nIDC,pgsTypes::PierF
    pgsTypes::MeasurementType mt;
    UnhashGirderSpacing(pCB->GetItemData(cursel),&ml,&mt);
 
-//   m_GirderSpacingGrid[pierFace].SetMeasurementLocation(ml);
-//   m_GirderSpacingGrid[pierFace].SetMeasurementType(mt);
    m_GirderSpacingGrid[pierFace].UpdateGrid();
 }
 
-void CPierGirderSpacingPage::UpdateNumGirdersHyperLinkText()
+void CPierGirderSpacingPage::UpdateGirderSpacingText()
 {
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-   bool bUseSameGirderType = pParent->m_BridgeDesc.UseSameNumberOfGirdersInAllGroups();
-
-   if ( bUseSameGirderType )
-   {
-      m_NumGirdersHyperLink[pgsTypes::Back].SetWindowText(_T("The same number of girders are used in all spans"));
-      m_NumGirdersHyperLink[pgsTypes::Back].SetURL(_T("Click to define the number of girders span by span")); // tooltip text
-      m_NumGirdersHyperLink[pgsTypes::Ahead].SetWindowText(_T("The same number of girders are used in all spans"));
-      m_NumGirdersHyperLink[pgsTypes::Ahead].SetURL(_T("Click to define the number of girders span by span") ); // tooltip text
-   }
-   else
-   {
-      m_NumGirdersHyperLink[pgsTypes::Back].SetWindowText(_T("The number of girders is defined span by span"));
-      m_NumGirdersHyperLink[pgsTypes::Back].SetURL(_T("Click to use this number of girders in all spans")); // tooltip text
-      m_NumGirdersHyperLink[pgsTypes::Ahead].SetWindowText(_T("The number of girders is defined span by span"));
-      m_NumGirdersHyperLink[pgsTypes::Ahead].SetURL(_T("Click to use this number of girders in all spans") ); // tooltip text
-   }
-}
-
-void CPierGirderSpacingPage::UpdateGirderSpacingHyperLinkText()
-{
-   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-
-   CString strBackSpacingNote(_T(""));
-   CString strAheadSpacingNote(_T(""));
-   CString strBackSpanConstantSpacingNote(_T(""));
-   CString strAheadSpanConstantSpacingNote(_T(""));
 
    bool bInputSpacing[2];
    bInputSpacing[pgsTypes::Ahead] = m_GirderSpacingGrid[pgsTypes::Ahead].InputSpacing();
@@ -1028,74 +1006,11 @@ void CPierGirderSpacingPage::UpdateGirderSpacingHyperLinkText()
    if ( pParent->m_pSpan[pgsTypes::Ahead] == NULL )
       bInputSpacing[pgsTypes::Ahead] = true;
 
-
-   CString strGirderSpacingURL;
-
    BOOL bEnable = TRUE;
-
-   pgsTypes::SupportedBeamSpacing spacingType = pParent->m_BridgeDesc.GetGirderSpacingType();
-   if ( spacingType == pgsTypes::sbsUniform )
+   if ( ::IsBridgeSpacing( pParent->m_BridgeDesc.GetGirderSpacingType() ) )
    {
-      strBackSpacingNote = _T("The same girder spacing is used for the entire bridge");
-      strAheadSpacingNote = strBackSpacingNote;
-      bEnable = (bInputSpacing[pgsTypes::Back] && bInputSpacing[pgsTypes::Ahead] ? TRUE : FALSE);
-
-      strGirderSpacingURL = _T("Click to define girder spacing span by span");
-   }
-   else if ( spacingType == pgsTypes::sbsUniformAdjacent )
-   {
-      strBackSpacingNote = _T("The same joint spacing is used for the entire bridge");
-      strAheadSpacingNote = strBackSpacingNote;
-      bEnable = (bInputSpacing[pgsTypes::Back] && bInputSpacing[pgsTypes::Ahead] ? TRUE : FALSE);
-
-      strGirderSpacingURL = _T("Click to define joint spacing span by span");
-   }
-   else if ( spacingType == pgsTypes::sbsConstantAdjacent )
-   {
-      strBackSpacingNote.Format(_T("The same girder spacing must be used for the entire bridge for %s girders"),
-                            pParent->m_pPier->GetBridgeDescription()->GetGirderFamilyName());
-
-      strAheadSpacingNote = strBackSpacingNote;
       bEnable = FALSE;
-
-      strGirderSpacingURL = _T("Click to define girder spacing span by span");
    }
-   else if ( spacingType == pgsTypes::sbsGeneral )
-   {
-      strBackSpacingNote  = _T("Girder spacing is defined span by span");
-      strAheadSpacingNote = _T("Girder spacing is defined span by span");
-
-      bEnable = (bInputSpacing[pgsTypes::Back] && bInputSpacing[pgsTypes::Ahead] ? TRUE : FALSE);
-
-      strGirderSpacingURL = _T("Click to make girder spacing the same for all spans");
-   }
-   else if ( spacingType == pgsTypes::sbsGeneralAdjacent )
-   {
-      strBackSpacingNote  = _T("Joint spacing is defined span by span");
-      strAheadSpacingNote = _T("Joint spacing is defined span by span");
-
-      bEnable = (bInputSpacing[pgsTypes::Back] && bInputSpacing[pgsTypes::Ahead] ? TRUE : FALSE);
-
-      strGirderSpacingURL = _T("Click to make joint spacing the same for all spans");
-   }
-   else
-   {
-      ATLASSERT(false); // is there a new spacing type???
-   }
-
-   GetDlgItem(IDC_PREV_SPAN_CONSTANT_SPACING_NOTE)->SetWindowText(strBackSpanConstantSpacingNote);
-   GetDlgItem(IDC_NEXT_SPAN_CONSTANT_SPACING_NOTE)->SetWindowText(strAheadSpanConstantSpacingNote);
-
-   m_GirderSpacingHyperLink[pgsTypes::Back].SetWindowText(strBackSpacingNote);
-   m_GirderSpacingHyperLink[pgsTypes::Back].SetURL(strGirderSpacingURL);
-
-   m_GirderSpacingHyperLink[pgsTypes::Ahead].SetWindowText(strAheadSpacingNote);
-   m_GirderSpacingHyperLink[pgsTypes::Ahead].SetURL(strGirderSpacingURL);
-
-   if ( ::IsBridgeSpacing(spacingType) )
-      bEnable = FALSE;
-   else
-      bEnable = TRUE;
 
    GetDlgItem(IDC_PREV_REF_GIRDER_LABEL)->EnableWindow(         bEnable );
    GetDlgItem(IDC_PREV_REF_GIRDER)->EnableWindow(               bEnable );

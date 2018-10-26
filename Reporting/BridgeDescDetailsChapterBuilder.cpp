@@ -161,7 +161,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-            rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter<<pHead;
             if ( nSegments == 1 )
             {
@@ -191,7 +191,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
             write_camber_factors(pChapter, pBroker, pDisplayUnits, segmentKey);
 
-            pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pHead;
             *pHead << _T("Transverse Reinforcement Stirrup Zones") << rptNewLine;
 
@@ -201,7 +201,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
             CLongRebarLocations long_rebar_table;
             long_rebar_table.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
 
-            pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pHead;
             *pHead << _T("Materials") << rptNewLine;
 #pragma Reminder("WORKING HERE: write out concrete details")
@@ -292,7 +292,7 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
    std::_tstring title = std::_tstring(pGirder->GetGirderName()) + std::_tstring(_T(" Dimensions"));
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,title.c_str());
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,title.c_str());
    pTable->EnableRowStriping(false);
    *pPara << pTable;
 
@@ -301,7 +301,7 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    CComPtr<IBeamFactory> factory;
    pGdrEntry->GetBeamFactory(&factory);
 
-   (*pTable)(0,0) << rptRcImage( pgsReportStyleHolder::GetImagePath() + factory->GetImage());
+   (*pTable)(0,0) << rptRcImage( std::_tstring(rptStyleManager::GetImagePath()) + factory->GetImage());
 
    std::vector<const unitLength*> units = factory->GetDimensionUnits(bUnitsSI);
    GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
@@ -348,7 +348,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
       const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
       const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
-      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara<<_T("Debonding Criteria")<<rptNewLine;
 
@@ -400,7 +400,7 @@ void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
 
    CamberMultipliers cm = pGdrEntry->GetCamberMultipliers();
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Camber Deflection Multipliers")<<rptNewLine;
 
@@ -408,7 +408,7 @@ void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    *pChapter << pPara;
    *pPara << _T("The factors below are multiplied by the specified load case's deflections when computing excess camber") << rptNewLine;
 
-   rptRcTable* pTable1 = pgsReportStyleHolder::CreateDefaultTable(2);
+   rptRcTable* pTable1 = rptStyleManager::CreateDefaultTable(2);
    *pPara << pTable1;
 
    (*pTable1)(0,0) << _T("Load Cases");
@@ -457,7 +457,7 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
       ncols++;
    }
    
-   rptRcTable* pTable1 = pgsReportStyleHolder::CreateDefaultTable(ncols,_T("Deck and Roadway Widths"));
+   rptRcTable* pTable1 = rptStyleManager::CreateDefaultTable(ncols,_T("Deck and Roadway Widths"));
    *pPara << pTable1;
 
    ColumnIndexType col = 0;
@@ -520,7 +520,7 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  locdim,  pDisplayUnits->GetSpanLengthUnit(), true );
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Intermediate Diaphragms") << rptNewLine;
 
@@ -608,12 +608,12 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
 
    std::_tstring title(pBarrierEntry->GetName() + _T(" Dimensions"));
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,title.c_str());
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,title.c_str());
    pTable->EnableRowStriping(false);
    *pPara << pTable;
 
    // schematic
-   (*pTable)(0,0) << rptRcImage( pgsReportStyleHolder::GetImagePath() + _T("ExteriorBarrier.jpg"));
+   (*pTable)(0,0) << rptRcImage( std::_tstring(rptStyleManager::GetImagePath()) + _T("ExteriorBarrier.jpg"));
 
    // Dump barrier points
    (*pTable)(0,1) << _T("Barrier Points") << rptNewLine;
@@ -660,7 +660,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    GET_IFACE2(pBroker, ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IStrandGeometry,pStrand);
 
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(2);
    *pPara << pLayoutTable << rptNewLine;
 
    for ( int i = 0; i < 2; i++ )
@@ -684,7 +684,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
       const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
       ATLASSERT(pstrand!=0);
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,strTitle.c_str());
+      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,strTitle.c_str());
       (*pLayoutTable)(0,i) << pTable;
 
       RowIndexType row = 0;
@@ -742,13 +742,13 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    const matRebar* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,matRebar::bs3);
    const matRebar* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,matRebar::bs3);
 
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(pDeckRebar == NULL ? 2 : 3);
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(pDeckRebar == NULL ? 2 : 3);
    *pPara << pLayoutTable << rptNewLine;
    ColumnIndexType layoutColumn = 0;
 
    if ( pDeckRebar )
    {
-      rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Deck Reinforcing Material"));
+      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Deck Reinforcing Material"));
       (*pLayoutTable)(0,layoutColumn++) << pTable;
 
       RowIndexType row = 0;
@@ -767,7 +767,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
 
    if ( pShearRebar )
    {
-      rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Transverse Reinforcing Material (Stirrups, Confinement, and Horizontal Interface Shear Bars)"));
+      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Transverse Reinforcing Material (Stirrups, Confinement, and Horizontal Interface Shear Bars)"));
       (*pLayoutTable)(0,layoutColumn++) << pTable;
 
       RowIndexType row = 0;
@@ -786,7 +786,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
 
    if ( pLongRebar )
    {
-      rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Longitudinal Girder Reinforcing Material"));
+      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Longitudinal Girder Reinforcing Material"));
       (*pLayoutTable)(0,layoutColumn++) << pTable;
 
       RowIndexType row = 0;
@@ -814,7 +814,7 @@ void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDis
 
    if (dolift || dohaul)
    {
-      rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter<<pHead;
       *pHead<<_T("Lifting and Shipping Locations (From End of Girder)")<<rptNewLine;
 

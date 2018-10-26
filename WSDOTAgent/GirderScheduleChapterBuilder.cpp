@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include "GirderScheduleChapterBuilder.h"
 #include <PGSuperTypes.h>
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -207,7 +207,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2);
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2);
    *p << pTable;
 
    RowIndexType row = 0;
@@ -676,7 +676,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
-   p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << p;
    *p << _T("* End Types to be determined by the Designer.") << rptNewLine;
    *p << _T("** Intermediate Diaphragm Type to be determined by the Designer.") << rptNewLine;

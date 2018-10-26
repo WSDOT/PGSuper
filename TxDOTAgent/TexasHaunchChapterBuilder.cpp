@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ConstructabilityCheckTable.h>
 
@@ -170,14 +170,14 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
 
    ColumnIndexType numCols =  endIdx-startIdx+2;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(numCols);
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(numCols);
    *p << pTable;
 
    // Right justify columns
    for (ColumnIndexType ic=0; ic<numCols; ic++)
    {
-      pTable->SetColumnStyle( ic, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-      pTable->SetStripeRowColumnStyle( ic, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetColumnStyle( ic, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetStripeRowColumnStyle( ic, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
    }
 
    // Setup up some unit value prototypes

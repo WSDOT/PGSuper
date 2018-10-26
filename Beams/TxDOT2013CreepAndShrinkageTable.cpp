@@ -55,11 +55,11 @@ CTxDOT2013CreepAndShrinkageTable* CTxDOT2013CreepAndShrinkageTable::PrepareTable
    ColumnIndexType numColumns = 5;
 
    CTxDOT2013CreepAndShrinkageTable* table = new CTxDOT2013CreepAndShrinkageTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Losses Due to Creep and Shrinkage [TxDOT Research Report 0-6374-2]") << rptNewLine;
 

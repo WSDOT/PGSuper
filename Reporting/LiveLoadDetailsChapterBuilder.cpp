@@ -116,7 +116,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
    std::vector<std::_tstring> user_loads;
@@ -158,7 +158,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       // Fatigue live loads
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          *pPara<< _T("Live Loads Used for Fatigue Limit States")<<rptNewLine;
 
@@ -193,7 +193,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       }
 
       // Strength II live loads
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara<< _T("Live Loads Used for Design Permit Limit State")<<rptNewLine;
 
@@ -259,7 +259,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          *pPara<< _T("Live Loads used for Legal Load Rating for Routine Commercial Traffic")<<rptNewLine;
 
@@ -287,7 +287,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          *pPara<< _T("Live Loads used for Legal Load Rating for Special Hauling Vehicles")<<rptNewLine;
 
@@ -315,7 +315,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          *pPara<< _T("Live Loads used for Routine Permit Load Rating")<<rptNewLine;
 
@@ -342,7 +342,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          *pPara<< _T("Live Loads used for Special Permit Load Rating")<<rptNewLine;
 
@@ -478,7 +478,7 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
        ll_config == LiveLoadLibraryEntry::lcTruckPlusLane ||
        ll_config == LiveLoadLibraryEntry::lcTruckLaneEnvelope)
    {
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3,_T(""));
       *pPara << p_table;
 
       (*p_table)(0,0) << _T("Axle");

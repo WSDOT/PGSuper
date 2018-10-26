@@ -159,7 +159,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    // Casting Yard Results
    if ( bDesign )
    {
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *p << _T("Load Responses - Casting Yard")<<rptNewLine;
       p->SetName(_T("Casting Yard Results"));
       *pChapter << p;
@@ -175,15 +175,15 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
          if ( 1 < nSegments )
          {
-            pReleaseLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nSegments,_T("Girder Dead Load Moment/Shear at Prestress Release"));
+            pReleaseLayoutTable = rptStyleManager::CreateLayoutTable(nSegments,_T("Girder Dead Load Moment/Shear at Prestress Release"));
             *p << pReleaseLayoutTable << rptNewLine;
 
-            pStorageLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nSegments,_T("Girder Dead Load Moment/Shear during Storage"));
+            pStorageLayoutTable = rptStyleManager::CreateLayoutTable(nSegments,_T("Girder Dead Load Moment/Shear during Storage"));
             *p << pStorageLayoutTable << rptNewLine;
          }
          else
          {
-            pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+            pLayoutTable = rptStyleManager::CreateLayoutTable(2);
             *p << pLayoutTable << rptNewLine;
          }
 
@@ -227,7 +227,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
       std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
 
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *p << _T("Responses from Externally Applied Loads at the Bridge Site")<<rptNewLine;
       p->SetName(_T("Bridge Site Results"));
       *pChapter << p;
@@ -463,7 +463,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       }
       BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
       {
-         p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         p = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << p;
          CString strName;
          strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
@@ -478,7 +478,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             CCombinedAxialTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
             if ( bTimeDependentNote )
             {
-               p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+               p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
                *pChapter << p;
                *p << TIME_DEPENDENT_NOTE << rptNewLine;
                p = new rptParagraph;
@@ -488,7 +488,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          CCombinedMomentsTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
          if ( bTimeDependentNote )
          {
-            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
             *pChapter << p;
             *p << TIME_DEPENDENT_NOTE << rptNewLine;
             p = new rptParagraph;
@@ -497,7 +497,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          CCombinedShearTable().Build(  pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
          if ( bTimeDependentNote )
          {
-            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
             *pChapter << p;
             *p << TIME_DEPENDENT_NOTE << rptNewLine;
             p = new rptParagraph;
@@ -513,7 +513,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
             if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )
             {
-               p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+               p = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << p;
                *p << _T("Concurrent Shears") << rptNewLine;
                p->SetName(_T("Concurrent Shears"));
@@ -522,7 +522,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          }
       } // next interval
 
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       *p << _T("Live Load Reactions Without Impact") << rptNewLine;
       p->SetName(_T("Live Load Reactions Without Impact"));

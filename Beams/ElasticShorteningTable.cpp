@@ -50,7 +50,7 @@ rptRcTable(NumColumns,0)
 
 CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -62,7 +62,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    Float64 Epp = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
    Float64 Ept = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE();
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    if (fcgpMethod == lrfdElasticShortening::fcgpIterative)
    {
@@ -139,7 +139,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       }
     
       CElasticShorteningTable* table = new CElasticShorteningTable( numColumns, pDisplayUnits );
-      pgsReportStyleHolder::ConfigureTable(table);
+      rptStyleManager::ConfigureTable(table);
    
       table->m_bTemporaryStrands = bTemporaryStrands;
       table->m_bIsPrismatic      = bIsPrismatic;
@@ -320,7 +320,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    
       if ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::WSDOT_LUMPSUM )
       {
-         pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+         pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
          *pChapter << pParagraph;
    
    
@@ -357,7 +357,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       }
       else
       {
-         pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+         pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
          *pChapter << pParagraph;
    
          if ( spMode == pgsTypes::spmGross )

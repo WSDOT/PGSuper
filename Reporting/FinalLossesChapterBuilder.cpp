@@ -84,7 +84,7 @@ rptChapter* CFinalLossesChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
 
             if ( 1 < nSegments )
             {
-               rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+               rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
                *pChapter << pPara;
                *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
             }

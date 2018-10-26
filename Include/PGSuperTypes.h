@@ -1813,6 +1813,10 @@ inline std::_tstring GetDesignTypeName(arFlexuralDesignType type)
       return std::_tstring(_T("Debonded and Raised Straight Strand"));
       break;
 
+   case dtNoDesign:
+      return std::_tstring(_T("Flexure Design Not Attempted"));
+      break;
+
    default:
       ATLASSERT(0);
    }

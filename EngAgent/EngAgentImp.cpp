@@ -44,8 +44,6 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <PgsExt\ReportStyleHolder.h>
-
 #include <Units\SysUnits.h>
 
 #ifdef _DEBUG
@@ -206,7 +204,7 @@ void CEngAgentImp::ValidateLiveLoadDistributionFactors(const CGirderKey& girderK
 
          CComPtr<IBeamFactory> pFactory;
          pGdrEntry->GetBeamFactory(&pFactory);
-         pFactory->CreateDistFactorEngineer(m_pBroker,m_StatusGroupID,NULL,NULL,&m_pDistFactorEngineer);
+         pFactory->CreateDistFactorEngineer(m_pBroker,m_StatusGroupID,NULL,NULL,NULL,&m_pDistFactorEngineer);
       }
 
       // Issue warning status items if warranted
@@ -3114,7 +3112,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          nCols += 4;
       }
 
-      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Live Load Distribution Factors"));
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols,_T("Live Load Distribution Factors"));
 
       (*pPara) << table;
 

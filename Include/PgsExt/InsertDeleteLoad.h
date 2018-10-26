@@ -34,7 +34,7 @@
 class PGSEXTCLASS txnInsertPointLoad : public txnTransaction
 {
 public:
-   txnInsertPointLoad(const CPointLoadData& loadData,CTimelineManager* pTimelineMgr);
+   txnInsertPointLoad(const CPointLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnInsertPointLoad();
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
@@ -46,6 +46,7 @@ public:
 private:
    CollectionIndexType m_LoadIdx;
    CPointLoadData m_LoadData;
+   EventIDType m_LoadingEventID;
    CTimelineManager* m_pTimelineMgr;
    CTimelineManager m_OldTimelineMgr;
 };
@@ -64,12 +65,13 @@ public:
 private:
    CollectionIndexType m_LoadIdx;
    CPointLoadData m_LoadData;
+   EventIDType m_LoadingEventID;
 };
 
 class PGSEXTCLASS txnEditPointLoad : public txnTransaction
 {
 public:
-   txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData,CTimelineManager* pTimelineMgr);
+   txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,EventIDType oldLoadingEventID,const CPointLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnEditPointLoad();
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
@@ -82,6 +84,7 @@ private:
    void DoExecute(int i);
    CollectionIndexType m_LoadIdx;
    CPointLoadData m_LoadData[2];
+   EventIDType m_LoadingEventID[2];
    CTimelineManager* m_pTimelineMgr;
    CTimelineManager m_OldTimelineMgr;
 };
@@ -89,7 +92,7 @@ private:
 class PGSEXTCLASS txnInsertDistributedLoad : public txnTransaction
 {
 public:
-   txnInsertDistributedLoad(const CDistributedLoadData& loadData,CTimelineManager* pTimelineMgr);
+   txnInsertDistributedLoad(const CDistributedLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr);
    ~txnInsertDistributedLoad();
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
@@ -101,6 +104,7 @@ public:
 private:
    CollectionIndexType m_LoadIdx;
    CDistributedLoadData m_LoadData;
+   EventIDType m_LoadingEventID;
    CTimelineManager* m_pTimelineMgr;
    CTimelineManager m_OldTimelineMgr;
 };
@@ -119,12 +123,13 @@ public:
 private:
    CollectionIndexType m_LoadIdx;
    CDistributedLoadData m_LoadData;
+   EventIDType m_LoadingEventID;
 };
 
 class PGSEXTCLASS txnEditDistributedLoad : public txnTransaction
 {
 public:
-   txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData,CTimelineManager* pTimelineMgr);
+   txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,EventIDType oldLoadingEventID,const CDistributedLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnEditDistributedLoad();
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
@@ -137,6 +142,7 @@ private:
    void DoExecute(int i);
    CollectionIndexType m_LoadIdx;
    CDistributedLoadData m_LoadData[2];
+   EventIDType m_LoadingEventID[2];
    CTimelineManager* m_pTimelineMgr;
    CTimelineManager m_OldTimelineMgr;
 };
@@ -144,7 +150,7 @@ private:
 class PGSEXTCLASS txnInsertMomentLoad : public txnTransaction
 {
 public:
-   txnInsertMomentLoad(const CMomentLoadData& loadData,CTimelineManager* pTimelineMgr);
+   txnInsertMomentLoad(const CMomentLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnInsertMomentLoad();
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
@@ -156,6 +162,7 @@ public:
 private:
    CollectionIndexType m_LoadIdx;
    CMomentLoadData m_LoadData;
+   EventIDType m_LoadingEventID;
    CTimelineManager* m_pTimelineMgr;
    CTimelineManager m_OldTimelineMgr;
 };
@@ -174,12 +181,13 @@ public:
 private:
    CollectionIndexType m_LoadIdx;
    CMomentLoadData m_LoadData;
+   EventIDType m_LoadingEventID;
 };
 
 class PGSEXTCLASS txnEditMomentLoad : public txnTransaction
 {
 public:
-   txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData,CTimelineManager* pTimelineMgr);
+   txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,EventIDType oldLoadingEventID,const CMomentLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnEditMomentLoad();
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
@@ -192,6 +200,7 @@ private:
    void DoExecute(int i);
    CollectionIndexType m_LoadIdx;
    CMomentLoadData m_LoadData[2];
+   EventIDType m_LoadingEventID[2];
    CTimelineManager* m_pTimelineMgr;
    CTimelineManager m_OldTimelineMgr;
 };

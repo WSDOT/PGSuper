@@ -113,22 +113,22 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
       
-      rptRcTable* pTable1 = pgsReportStyleHolder::CreateDefaultTable(10,_T("Haunch Details - Part 1"));
+      rptRcTable* pTable1 = rptStyleManager::CreateDefaultTable(10,_T("Haunch Details - Part 1"));
       *pPara << pTable1;
 
       //if ( segmentKey.groupIndex == ALL_SPANS )
       //{
-      //   pTable1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      //   pTable1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      //   pTable1->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      //   pTable1->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       //}
 
-      rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(11,_T("Haunch Details - Part 2"));
+      rptRcTable* pTable2 = rptStyleManager::CreateDefaultTable(11,_T("Haunch Details - Part 2"));
       *pPara << pTable2;
 
       //if ( segmentKey.groupIndex == ALL_SPANS )
       //{
-      //   pTable2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      //   pTable2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      //   pTable2->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      //   pTable2->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       //}
 
       std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
@@ -229,7 +229,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
 
       *pPara << _T("Deck Slope (") << Sub2(_T("m"),_T("d")) << _T(") and Girder Orientation (") << Sub2(_T("m"),_T("g")) << _T(") are positive when the slope is upwards towards the right") << rptNewLine;
@@ -271,9 +271,9 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    *pPara << _T("Profile Chord Elevation = Elevation of an imaginary chord that intersects the roadway surface above the point of bearing at the both ends of the girder.") << rptNewLine;
 
    *pPara << _T("Profile Effect = Finished Grade Elevation - Profile Chord Elevation") << rptNewLine;
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ProfileEffect.gif"));
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GirderOrientationEffect.gif"))  << rptNewLine;
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GirderOrientationEffectEquation.png"))  << rptNewLine;
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ProfileEffect.gif"));
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GirderOrientationEffect.gif"))  << rptNewLine;
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GirderOrientationEffectEquation.png"))  << rptNewLine;
 
    return pChapter;
 }

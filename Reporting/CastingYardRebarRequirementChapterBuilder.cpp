@@ -86,7 +86,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    {
       if ( 1 < nSegments )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -127,7 +127,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
       ATLASSERT(poi.GetID() != INVALID_ID);
       ATLASSERT(poi.HasAttribute(POI_CLOSURE));
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       *pChapter << pPara;
       *pPara << _T("Closure Joint Between Segment ") << LABEL_SEGMENT(segIdx) << _T(" and Segment ") << LABEL_SEGMENT(segIdx+1) << rptNewLine;
 
@@ -145,7 +145,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
             bool bIsApplicable = pAllowStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension);
             if ( bIsApplicable )
             {
-               pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
                *pChapter << pPara;
                *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
 
@@ -176,7 +176,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    if ( 0 < vIntervals.size() )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       *pChapter << pPara;
       *pPara << _T("Deck") << rptNewLine;
 
@@ -186,7 +186,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
       {
          IntervalIndexType intervalIdx = *iter;
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
 
@@ -262,14 +262,14 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
 
 rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(12,_T("Reinforcement requirements for Tensile Stress Limit [C5.9.4.1.2]"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(12,_T("Reinforcement requirements for Tensile Stress Limit [C5.9.4.1.2]"));
 
    pTable->SetNumberOfHeaderRows(2);
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    ColumnIndexType col = 0;

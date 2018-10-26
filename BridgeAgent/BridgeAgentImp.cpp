@@ -1159,7 +1159,7 @@ void CBridgeAgentImp::ValidatePointLoads()
             }
             else
             {
-               intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pPointLoad->m_LoadCase,pPointLoad->m_EventIndex);
+               intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pPointLoad->m_LoadCase,pPointLoad->m_ID);
             }
             ATLASSERT(intervalIdx != INVALID_INDEX);
 
@@ -1377,7 +1377,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             }
             else
             {
-               intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pDistLoad->m_LoadCase,pDistLoad->m_EventIndex);
+               intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pDistLoad->m_LoadCase,pDistLoad->m_ID);
             }
             ATLASSERT(intervalIdx != INVALID_INDEX);
 
@@ -1546,7 +1546,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
             }
             else
             {
-               intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pMomentLoad->m_LoadCase,pMomentLoad->m_EventIndex);
+               intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pMomentLoad->m_LoadCase,pMomentLoad->m_ID);
             }
             ATLASSERT(intervalIdx != INVALID_INDEX);
 

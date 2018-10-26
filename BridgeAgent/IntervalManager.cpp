@@ -538,12 +538,12 @@ IntervalIndexType CIntervalManager::GetInstallRailingSystemInterval() const
    return m_RailingSystemIntervalIdx;
 }
 
-IntervalIndexType CIntervalManager::GetUserLoadInterval(const CSpanKey& spanKey,UserLoads::LoadCase loadCase,EventIndexType eventIdx) const
+IntervalIndexType CIntervalManager::GetUserLoadInterval(const CSpanKey& spanKey,UserLoads::LoadCase loadCase,LoadIDType userLoadID) const
 {
    ASSERT_SPAN_KEY(spanKey);
    ASSERT(loadCase == UserLoads::DC || loadCase == UserLoads::DW);
 
-   CUserLoadKey key(spanKey,eventIdx);
+   CUserLoadKey key(spanKey,userLoadID);
    std::map<CUserLoadKey,IntervalIndexType>::const_iterator found(m_UserLoadInterval[loadCase].find(key));
    if ( found == m_UserLoadInterval[loadCase].end() )
    {
@@ -1249,20 +1249,20 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
             {
                loadCase = pPointLoad->m_LoadCase;
                spanKey = pPointLoad->m_SpanKey;
-               ATLASSERT(pPointLoad->m_EventIndex == eventIdx);
+               ATLASSERT(pPointLoad->m_ID == userLoadID);
             }
             else if ( pDistributedLoad )
             {
                loadCase = pDistributedLoad->m_LoadCase;
                spanKey = pDistributedLoad->m_SpanKey;
-               ATLASSERT(pDistributedLoad->m_EventIndex == eventIdx);
+               ATLASSERT(pDistributedLoad->m_ID == userLoadID);
             }
             else
             {
                ATLASSERT(pMomentLoad);
                loadCase = pMomentLoad->m_LoadCase;
                spanKey = pMomentLoad->m_SpanKey;
-               ATLASSERT(pMomentLoad->m_EventIndex == eventIdx);
+               ATLASSERT(pMomentLoad->m_ID == userLoadID);
             }
 
             if ( loadCase != UserLoads::LL_IM )
@@ -1285,7 +1285,7 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
                   for ( GirderIndexType gdrIdx = startGirderIdx; gdrIdx <= endGirderIdx; gdrIdx++ )
                   {
                      CSpanKey thisSpanKey(spanIdx,gdrIdx);
-                     CUserLoadKey key(thisSpanKey,eventIdx);
+                     CUserLoadKey key(thisSpanKey,userLoadID);
                      m_UserLoadInterval[loadCase].insert(std::make_pair(key,loadingIntervalIdx));
                   }
                }
@@ -1375,13 +1375,13 @@ void CIntervalManager::AssertValid() const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // User Load Key
-CIntervalManager::CUserLoadKey::CUserLoadKey(const CSpanKey& spanKey,EventIndexType eventIdx) :
-m_SpanKey(spanKey),m_EventIdx(eventIdx)
+CIntervalManager::CUserLoadKey::CUserLoadKey(const CSpanKey& spanKey,LoadIDType loadID) :
+m_SpanKey(spanKey),m_LoadID(loadID)
 {
 }
 
 CIntervalManager::CUserLoadKey::CUserLoadKey(const CUserLoadKey& other) :
-m_SpanKey(other.m_SpanKey),m_EventIdx(other.m_EventIdx)
+m_SpanKey(other.m_SpanKey),m_LoadID(other.m_LoadID)
 {
 }
 
@@ -1392,7 +1392,7 @@ bool CIntervalManager::CUserLoadKey::operator<(const CUserLoadKey& other) const
       return true;
    }
 
-   if ( m_SpanKey.IsEqual(other.m_SpanKey) && m_EventIdx < other.m_EventIdx )
+   if ( m_SpanKey.IsEqual(other.m_SpanKey) && m_LoadID < other.m_LoadID )
    {
       return true;
    }

@@ -34,10 +34,6 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\DeckDescription2.h>
 
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
-
 // CApplyLoadsDlg dialog
 
 IMPLEMENT_DYNAMIC(CApplyLoadsDlg, CDialog)
@@ -77,7 +73,8 @@ void CApplyLoadsDlg::InitalizeCheckBox(CDataExchange* pDX,EventIndexType eventId
 void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
-   DDX_Control(pDX, IDC_USER_LOADS, m_ctrlUserLoads);
+   DDX_Control(pDX,IDC_SOURCE_LIST,m_lbSource);
+   DDX_Control(pDX,IDC_TARGET_LIST,m_lbTarget);
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -121,6 +118,29 @@ void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
       {
          m_TimelineMgr.SetLoadRatingEventByIndex(INVALID_INDEX);
       }
+
+      int nItems = m_lbTarget.GetCount();
+      for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
+      {
+         CTimelineItemIDDataPtr* pItemData = (CTimelineItemIDDataPtr*)m_lbTarget.GetItemDataPtr(itemIdx);
+         LoadIDType loadID = pItemData->m_ID;
+
+         m_TimelineMgr.SetUserLoadEventByIndex(loadID,m_EventIndex);
+      }
+
+      nItems = m_lbSource.GetCount();
+      for ( int itemIdx = 0; itemIdx < nItems; itemIdx++ )
+      {
+         CTimelineItemIDDataPtr* pItemData = (CTimelineItemIDDataPtr*)m_lbSource.GetItemDataPtr(itemIdx);
+         if ( pItemData->m_State == CTimelineItemDataPtr::Used )
+         {
+            continue;
+         }
+
+         LoadIDType loadID = pItemData->m_ID;
+
+         m_TimelineMgr.SetUserLoadEventByIndex(loadID,INVALID_INDEX);
+      }
    }
    else
    {
@@ -140,6 +160,8 @@ void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CApplyLoadsDlg, CDialog)
+   ON_BN_CLICKED(IDC_MOVE_RIGHT, &CApplyLoadsDlg::OnMoveToTargetList)
+   ON_BN_CLICKED(IDC_MOVE_LEFT, &CApplyLoadsDlg::OnMoveToSourceList)
    ON_BN_CLICKED(ID_HELP, &CApplyLoadsDlg::OnHelp)
 END_MESSAGE_MAP()
 
@@ -148,9 +170,12 @@ END_MESSAGE_MAP()
 
 BOOL CApplyLoadsDlg::OnInitDialog()
 {
+   m_lbSource.Initialize(CTimelineItemListBox::Source,CTimelineItemListBox::ID,&m_lbTarget);
+   m_lbTarget.Initialize(CTimelineItemListBox::Target,CTimelineItemListBox::ID,&m_lbSource);
+
    CDialog::OnInitDialog();
 
-   InitUserLoads();
+   FillLists();
 
    CString strNote(_T(""));
    const CDeckDescription2* pDeck = m_TimelineMgr.GetBridgeDescription()->GetDeckDescription();
@@ -171,7 +196,10 @@ BOOL CApplyLoadsDlg::OnInitDialog()
       GetDlgItem(IDC_OVERLAY_NOTE)->EnableWindow(FALSE);
       GetDlgItem(IDC_LIVELOAD)->EnableWindow(FALSE);
       GetDlgItem(IDC_LOAD_RATING)->EnableWindow(FALSE);
-      GetDlgItem(IDC_USER_LOADS)->EnableWindow(FALSE);
+      GetDlgItem(IDC_SOURCE_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_TARGET_LIST)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_LEFT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_MOVE_RIGHT)->EnableWindow(FALSE);
 
       GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
       GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
@@ -182,263 +210,121 @@ BOOL CApplyLoadsDlg::OnInitDialog()
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CApplyLoadsDlg::InitUserLoads()
+void CApplyLoadsDlg::OnMoveToTargetList()
 {
-   m_ctrlUserLoads.SetExtendedStyle ( LVS_EX_FULLROWSELECT );
-
-   int st;
-   st = m_ctrlUserLoads.InsertColumn(0,_T("Type"));
-   ATLASSERT(st!=-1);
-   st = m_ctrlUserLoads.InsertColumn(1,_T("Load Case"));
-   ATLASSERT(st!=-1);
-   st = m_ctrlUserLoads.InsertColumn(2,_T("Location"));
-   ATLASSERT(st!=-1);
-   st = m_ctrlUserLoads.InsertColumn(3,_T("Magnitude"));
-   ATLASSERT(st!=-1);
-   st = m_ctrlUserLoads.InsertColumn(4,_T("Description"));
-   ATLASSERT(st!=-1);
-
-   int rowIdx = 0;
-   CApplyLoadActivity& applyLoads = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetApplyLoadActivity();
-   IndexType nLoads = applyLoads.GetUserLoadCount();
-   for ( IndexType idx = 0; idx < nLoads; idx++, rowIdx++ )
-   {
-      LoadIDType loadID = applyLoads.GetUserLoadID(idx);
-
-      UserLoads::UserLoadType loadType = UserLoads::GetUserLoadTypeFromID(loadID);
-      switch(loadType)
-      {
-      case UserLoads::Distributed:
-         AddDistributedLoad(rowIdx,loadID);
-         break;
-
-      case UserLoads::Point:
-         AddPointLoad(rowIdx,loadID);
-         break;
-
-      case UserLoads::Moment:
-         AddMomentLoad(rowIdx,loadID);
-         break;
-
-      default:
-         ATLASSERT(false); // should never get here
-      }
-   }
-
-   int nItems = m_ctrlUserLoads.GetItemCount();
-   int nCol = m_ctrlUserLoads.GetHeaderCtrl()->GetItemCount();
-   if ( nItems == 0 )
-   {
-      for ( int i = 0; i < nCol; i++ )
-      {
-         m_ctrlUserLoads.SetColumnWidth(i,LVSCW_AUTOSIZE_USEHEADER);
-      }
-   }
-   else
-   {
-      for ( int i = 0; i < nCol; i++ )
-      {
-         m_ctrlUserLoads.SetColumnWidth(i,LVSCW_AUTOSIZE_USEHEADER);
-         int cx1 = m_ctrlUserLoads.GetColumnWidth(i);
-         m_ctrlUserLoads.SetColumnWidth(i,LVSCW_AUTOSIZE);
-         int cx2 = m_ctrlUserLoads.GetColumnWidth(i);
-         m_ctrlUserLoads.SetColumnWidth(i,Max(cx1,cx2));
-      }
-   }
+   m_lbSource.MoveSelectedItemsToBuddy();
 }
 
-void CApplyLoadsDlg::AddDistributedLoad(int rowIdx,LoadIDType loadID)
+void CApplyLoadsDlg::OnMoveToSourceList()
+{
+   m_lbTarget.MoveSelectedItemsToBuddy();
+}
+
+void CApplyLoadsDlg::FillLists()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
-   const CDistributedLoadData* pLoadData = pUserDefinedLoads->FindDistributedLoad(loadID);
-   ATLASSERT(pLoadData != NULL);
+   IndexType nLoads = pUserDefinedLoads->GetPointLoadCount();
+   for ( IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++ )
+   {
+      const CPointLoadData* pLoad = pUserDefinedLoads->GetPointLoad(loadIdx);
+      EventIndexType loadEventIdx = this->m_TimelineMgr.FindUserLoadEventIndex(pLoad->m_ID);
 
-   m_ctrlUserLoads.InsertItem(rowIdx, _T("Distributed"));
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   if (pLoadData->m_Type == UserLoads::Uniform)
-   {
-      m_ctrlUserLoads.SetItemText(rowIdx, 0, _T("Uniform"));
-   }
-   else
-   {
-      m_ctrlUserLoads.SetItemText(rowIdx, 0, _T("Trapezoidal"));
-   }
-
-   m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(pLoadData->m_LoadCase).c_str());
-
-   CString strSpan;
-   if ( pLoadData->m_SpanKey.spanIndex == ALL_SPANS )
-   {
-      strSpan.Format(_T("%s"),_T("All Spans"));
-   }
-   else
-   {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_SpanKey.spanIndex));
-   }
-
-   CString strGirder;
-   if ( pLoadData->m_SpanKey.girderIndex == ALL_GIRDERS )
-   {
-      strGirder.Format(_T("%s"),_T("All Girders"));
-   }
-   else
-   {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_SpanKey.girderIndex));
-   }
-
-   CString strLocation;
-   if ( pLoadData->m_Type == UserLoads::Uniform )
-   {
-      strLocation.Format(_T("%s"),_T("Entire Span"));
-   }
-   else
-   {
-      if (pLoadData->m_Fractional)
+      CString strLoad = GetLoadDescription(pLoad);
+      if ( loadEventIdx == m_EventIndex )
       {
-         strLocation.Format(_T("%s - %s"),FormatPercentage(pLoadData->m_StartLocation,false),FormatPercentage(pLoadData->m_EndLocation));
+         // load applied during this event
+         m_lbTarget.AddItem(strLoad,CTimelineItemDataPtr::Used,pLoad->m_ID);
       }
       else
       {
-         strLocation.Format(_T("%s - %s"),FormatDimension(pLoadData->m_StartLocation,pDisplayUnits->GetSpanLengthUnit(),false),FormatDimension(pLoadData->m_EndLocation,pDisplayUnits->GetSpanLengthUnit()));
+         // load not applied during this event
+         CTimelineItemDataPtr::State state = (loadEventIdx == INVALID_INDEX ? CTimelineItemDataPtr::Unused : CTimelineItemDataPtr::Used);
+         m_lbSource.AddItem(strLoad,state,pLoad->m_ID);
       }
    }
 
-   CString strLabel;
-   strLabel.Format(_T("%s, %s, %s"),strSpan,strGirder,strLocation);
-
-   m_ctrlUserLoads.SetItemText(rowIdx,2,strLabel);
-
-   CString strMagnitude;
-   if (pLoadData->m_Type == UserLoads::Uniform)
+   nLoads = pUserDefinedLoads->GetDistributedLoadCount();
+   for ( IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++ )
    {
-      strMagnitude.Format(_T("%s"),FormatDimension(pLoadData->m_WStart,pDisplayUnits->GetForcePerLengthUnit()));
-   }
-   else
-   {
-      strMagnitude.Format(_T("%s - %s"),FormatDimension(pLoadData->m_WStart,pDisplayUnits->GetForcePerLengthUnit(),false),FormatDimension(pLoadData->m_WEnd,pDisplayUnits->GetForcePerLengthUnit()));
+      const CDistributedLoadData* pLoad = pUserDefinedLoads->GetDistributedLoad(loadIdx);
+      EventIndexType loadEventIdx = this->m_TimelineMgr.FindUserLoadEventIndex(pLoad->m_ID);
+
+      CString strLoad = GetLoadDescription(pLoad);
+      if ( loadEventIdx == m_EventIndex )
+      {
+         // load applied during this event
+         m_lbTarget.AddItem(strLoad,CTimelineItemDataPtr::Used,pLoad->m_ID);
+      }
+      else
+      {
+         // load not applied during this event
+         CTimelineItemDataPtr::State state = (loadEventIdx == INVALID_INDEX ? CTimelineItemDataPtr::Unused : CTimelineItemDataPtr::Used);
+         m_lbSource.AddItem(strLoad,state,pLoad->m_ID);
+      }
    }
 
-   m_ctrlUserLoads.SetItemText(rowIdx, 3, strMagnitude);
-   m_ctrlUserLoads.SetItemText(rowIdx, 4, pLoadData->m_Description.c_str());
+   nLoads = pUserDefinedLoads->GetMomentLoadCount();
+   for ( IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++ )
+   {
+      const CMomentLoadData* pLoad = pUserDefinedLoads->GetMomentLoad(loadIdx);
+      EventIndexType loadEventIdx = this->m_TimelineMgr.FindUserLoadEventIndex(pLoad->m_ID);
+
+      CString strLoad = GetLoadDescription(pLoad);
+      if ( loadEventIdx == m_EventIndex )
+      {
+         // load applied during this event
+         m_lbTarget.AddItem(strLoad,CTimelineItemDataPtr::Used,pLoad->m_ID);
+      }
+      else
+      {
+         // load not applied during this event
+         CTimelineItemDataPtr::State state = (loadEventIdx == INVALID_INDEX ? CTimelineItemDataPtr::Unused : CTimelineItemDataPtr::Used);
+         m_lbSource.AddItem(strLoad,state,pLoad->m_ID);
+      }
+   }
 }
 
-void CApplyLoadsDlg::AddPointLoad(int rowIdx,LoadIDType loadID)
+CString CApplyLoadsDlg::GetLoadDescription(const CPointLoadData* pLoad)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
-   const CPointLoadData* pLoadData = pUserDefinedLoads->FindPointLoad(loadID);
-   ATLASSERT(pLoadData != NULL);
-
-   m_ctrlUserLoads.InsertItem(rowIdx, _T("Point"));
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(pLoadData->m_LoadCase).c_str());
-
-   CString strSpan;
-   if ( pLoadData->m_SpanKey.spanIndex == ALL_SPANS )
-   {
-      strSpan.Format(_T("%s"),_T("All Spans"));
-   }
-   else
-   {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_SpanKey.spanIndex));
-   }
-
-   CString strGirder;
-   if ( pLoadData->m_SpanKey.girderIndex == ALL_GIRDERS )
-   {
-      strGirder.Format(_T("%s"),_T("All Girders"));
-   }
-   else
-   {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_SpanKey.girderIndex));
-   }
-
-   CString strLocation;
-   if (pLoadData->m_Fractional)
-   {
-      strLocation.Format(_T("%s"),FormatPercentage(pLoadData->m_Location));
-   }
-   else
-   {
-      strLocation.Format(_T("%s"),FormatDimension(pLoadData->m_Location,pDisplayUnits->GetSpanLengthUnit()));
-   }
-
-   CString strLabel;
-   strLabel.Format(_T("%s, %s, %s"),strSpan,strGirder,strLocation);
-
-   m_ctrlUserLoads.SetItemText(rowIdx,2,strLabel);
-
-   CString strMagnitude;
-   strMagnitude.Format(_T("%s"),FormatDimension(pLoadData->m_Magnitude,pDisplayUnits->GetGeneralForceUnit()));
-
-   m_ctrlUserLoads.SetItemText(rowIdx, 3, strMagnitude);
-   m_ctrlUserLoads.SetItemText(rowIdx, 4, pLoadData->m_Description.c_str());
+   CString str;
+   str.Format(_T("Pt. Load: %s, %s, %s"),UserLoads::GetLoadCaseName(pLoad->m_LoadCase).c_str(),GetLocation(pLoad->m_SpanKey),pLoad->m_Description.c_str());
+   return str;
 }
 
-void CApplyLoadsDlg::AddMomentLoad(int rowIdx,LoadIDType loadID)
+CString CApplyLoadsDlg::GetLoadDescription(const CDistributedLoadData* pLoad)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   CString str;
+   str.Format(_T("Dist. Load: %s, %s, %s"),UserLoads::GetLoadCaseName(pLoad->m_LoadCase).c_str(),GetLocation(pLoad->m_SpanKey),pLoad->m_Description.c_str());
+   return str;
+}
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
-   const CMomentLoadData* pLoadData = pUserDefinedLoads->FindMomentLoad(loadID);
-   ATLASSERT(pLoadData != NULL);
+CString CApplyLoadsDlg::GetLoadDescription(const CMomentLoadData* pLoad)
+{
+   CString str;
+   str.Format(_T("Mom. Load: %s, %s, %s"),UserLoads::GetLoadCaseName(pLoad->m_LoadCase).c_str(),GetLocation(pLoad->m_SpanKey),pLoad->m_Description.c_str());
+   return str;
+}
 
-   m_ctrlUserLoads.InsertItem(rowIdx, _T("Moment"));
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   m_ctrlUserLoads.SetItemText(rowIdx, 1, UserLoads::GetLoadCaseName(pLoadData->m_LoadCase).c_str());
-
+CString CApplyLoadsDlg::GetLocation(const CSpanKey& spanKey)
+{
    CString strSpan;
-   if ( pLoadData->m_SpanKey.spanIndex == ALL_SPANS )
-   {
-      strSpan.Format(_T("%s"),_T("All Spans"));
-   }
+   if ( spanKey.spanIndex == ALL_SPANS )
+      strSpan = _T("All Spans");
    else
-   {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(pLoadData->m_SpanKey.spanIndex));
-   }
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(spanKey.spanIndex));
 
    CString strGirder;
-   if ( pLoadData->m_SpanKey.girderIndex == ALL_GIRDERS )
-   {
-      strGirder.Format(_T("%s"),_T("All Girders"));
-   }
+   if ( spanKey.girderIndex == ALL_GIRDERS )
+      strGirder = _T("All Girders");
    else
-   {
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(pLoadData->m_SpanKey.girderIndex));
-   }
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(spanKey.girderIndex));
 
-   CString strLocation;
-   if (pLoadData->m_Fractional)
-   {
-      strLocation.Format(_T("%s"),FormatPercentage(pLoadData->m_Location));
-   }
-   else
-   {
-      strLocation.Format(_T("%s"),FormatDimension(pLoadData->m_Location,pDisplayUnits->GetSpanLengthUnit()));
-   }
-
-   CString strLabel;
-   strLabel.Format(_T("%s, %s, %s"),strSpan,strGirder,strLocation);
-
-   m_ctrlUserLoads.SetItemText(rowIdx,2,strLabel);
-
-   CString strMagnitude;
-   strMagnitude.Format(_T("%s"),FormatDimension(pLoadData->m_Magnitude,pDisplayUnits->GetMomentUnit()));
-
-   m_ctrlUserLoads.SetItemText(rowIdx, 3, strMagnitude);
-   m_ctrlUserLoads.SetItemText(rowIdx, 4, pLoadData->m_Description.c_str());
+   CString str;
+   str.Format(_T("%s, %s"),strSpan,strGirder);
+   return str;
 }
 
 void CApplyLoadsDlg::OnHelp()

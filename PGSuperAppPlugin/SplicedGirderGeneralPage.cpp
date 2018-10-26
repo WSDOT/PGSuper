@@ -133,10 +133,6 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
-   DDX_Control(pDX, IDC_SLABOFFSET_HYPERLINK, m_ctrlSlabOffsetHyperLink);
-   DDX_Control(pDX, IDC_FILLET_HYPERLINK, m_ctrlFilletHyperLink);
-   DDX_Control(pDX, IDC_GIRDERTYPE_HYPERLINK, m_ctrlGirderTypeHyperLink);
-
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
 
    std::_tstring strGirderName = pParent->m_pGirder->GetGirderName();
@@ -223,9 +219,9 @@ BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_INSTALLATION_TYPE, &CSplicedGirderGeneralPage::OnInstallationTypeChanged)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CSplicedGirderGeneralPage::OnConditionFactorTypeChanged)
    ON_COMMAND(ID_HELP, &CSplicedGirderGeneralPage::OnHelp)
-   ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
-   ON_REGISTERED_MESSAGE(MsgChangeFilletType,OnChangeFilletType)
-   ON_REGISTERED_MESSAGE(MsgChangeSameGirderType,OnChangeGirderType)
+   ON_CBN_SELCHANGE(IDC_CB_SLABOFFSET,OnChangeSlabOffsetType)
+   ON_CBN_SELCHANGE(IDC_CB_FILLETTYPE, OnChangeFilletType)
+   ON_CBN_SELCHANGE(IDC_CB_SAMEGIRDER,OnChangeGirderType)
 END_MESSAGE_MAP()
 
 
@@ -280,20 +276,49 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    pcbConditionFactor->AddString(_T("Other"));
    pcbConditionFactor->SetCurSel(0);
 
-   m_ctrlGirderTypeHyperLink.ModifyLinkStyle(CHyperLink::StyleAutoSize,0);
-
    CPropertyPage::OnInitDialog();
 
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
 
    OnConditionFactorTypeChanged();
 
-   UpdateSlabOffsetHyperLink();
+   m_SlabOffsetTypeOriginal = pBridge->GetSlabOffsetType();
+
+   CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_CB_SLABOFFSET);
+   if ( m_SlabOffsetTypeOriginal == pgsTypes::sotPier )
+   {
+      pcbSlabOffsetType->AddString(_T("A unique SlabOffset is used at each Pier"));
+   }
+   else
+   {
+      pcbSlabOffsetType->AddString(_T("A single SlabOffset is used for the entire bridge"));
+   }
+   pcbSlabOffsetType->AddString(_T("SlabOffsets are defined girder by girder"));
+   pcbSlabOffsetType->SetCurSel(m_SlabOffsetTypeOriginal==pgsTypes::sotGirder ? 1:0);
+
    UpdateSlabOffsetControls();
 
-   UpdateFilletHyperLink();
+   m_FilletTypeOriginal = pBridge->GetFilletType();
+
+   CComboBox* pcbFilletType = (CComboBox*)GetDlgItem(IDC_CB_FILLETTYPE);
+   if ( m_FilletTypeOriginal == pgsTypes::fttSpan )
+   {
+      pcbFilletType->AddString(_T("A unique Fillet is used at each Span"));
+   }
+   else
+   {
+      pcbFilletType->AddString(_T("A single Fillet is used for the entire bridge"));
+   }
+   pcbFilletType->AddString(_T("Fillets are defined girder by girder"));
+   pcbFilletType->SetCurSel(m_FilletTypeOriginal==pgsTypes::fttGirder ? 1:0);
+
    UpdateFilletControls();
 
-   UpdateGirderTypeHyperLink();
+   CComboBox* pcbSameGirder = (CComboBox*)GetDlgItem(IDC_CB_SAMEGIRDER);
+   pcbSameGirder->AddString(_T("Use same segment type for entire bridge"));
+   pcbSameGirder->AddString(_T("Use unique segment type for each girder"));
+   pcbSameGirder->SetCurSel(pBridge->UseSameGirderForEntireBridge() ? 0:1);
+
    UpdateGirderTypeControls();
 
    return TRUE;  // return TRUE unless you set the focus to a control
@@ -561,53 +586,52 @@ void CSplicedGirderGeneralPage::OnHelp()
    EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_SPLICED_GIRDER_GENERAL);
 }
 
-LRESULT CSplicedGirderGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam)
+void CSplicedGirderGeneralPage::OnChangeSlabOffsetType()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
    CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
 
-   if ( pBridge->GetSlabOffsetType() == pgsTypes::sotBridge || pBridge->GetSlabOffsetType() == pgsTypes::sotPier )
+   pgsTypes::SlabOffsetType newType;
+   if ( pBridge->GetSlabOffsetType() == m_SlabOffsetTypeOriginal )
    {
-      pBridge->SetSlabOffsetType(pgsTypes::sotGirder);
+      if (m_SlabOffsetTypeOriginal != pgsTypes::sotGirder)
+      {
+         newType = pgsTypes::sotGirder;
+      }
+      else
+      {
+         newType = pgsTypes::sotBridge;
+      }
    }
    else
    {
-#pragma Reminder("UPDATE: need to deal with multiple offset values")
-      // if switching from girder to bridge mode and the slab offsets are different, ask the user
-      // which one is to be used for the entire bridge
-
-      pBridge->SetSlabOffsetType(pgsTypes::sotBridge);
+      newType = m_SlabOffsetTypeOriginal;
    }
 
-   UpdateSlabOffsetHyperLink();
+   if (pgsTypes::sotBridge == newType)
+   {
+      // ask user to select value
+      Float64 slaboff;
+      if (m_SlabOffsetGrid.SelectSingleValue(&slaboff))
+      {
+         pBridge->SetSlabOffsetType(pgsTypes::sotBridge);
+         pBridge->SetSlabOffset(slaboff);
+      }
+      else
+      {
+         // selection was cancelled. reset combo back to original (bridge is always zero)
+         CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_CB_SLABOFFSET);
+         pcbSlabOffsetType->SetCurSel(1);
+      }
+   }
+   else
+   {
+      pBridge->SetSlabOffsetType(newType);
+   }
+
    UpdateSlabOffsetControls();
-
-   return 0;
-}
-
-void CSplicedGirderGeneralPage::UpdateSlabOffsetHyperLink()
-{
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
-   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
-
-   if ( pBridge->GetSlabOffsetType() == pgsTypes::sotGirder )
-   {
-      // slab offset is by girder
-      m_ctrlSlabOffsetHyperLink.SetWindowText(_T("Slab Offsets are defined girder by girder"));
-      m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for the entire bridge"));
-   }
-   else if ( pBridge->GetSlabOffsetType() == pgsTypes::sotBridge )
-   {
-      m_ctrlSlabOffsetHyperLink.SetWindowText(_T("A single Slab Offset is used for the entire bridge"));
-      m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to define Slab Offsets by girder"));
-   }
-   else
-   {
-      m_ctrlSlabOffsetHyperLink.SetWindowText(_T("A unique Slab Offset is used at each Pier"));
-      m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to define Slab Offsets by girder"));
-   }
 }
 
 void CSplicedGirderGeneralPage::UpdateSlabOffsetControls()
@@ -619,49 +643,53 @@ void CSplicedGirderGeneralPage::UpdateSlabOffsetControls()
    m_SlabOffsetGrid.EnableWindow(bEnable);
 }
 
-LRESULT CSplicedGirderGeneralPage::OnChangeFilletType(WPARAM wParam,LPARAM lParam)
+void CSplicedGirderGeneralPage::OnChangeFilletType()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
    CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
 
-   if ( pBridge->GetFilletType() == pgsTypes::fttBridge || pBridge->GetFilletType() == pgsTypes::fttSpan )
+
+   pgsTypes::FilletType newType;
+   if ( pBridge->GetFilletType() == m_FilletTypeOriginal )
    {
-      pBridge->SetFilletType(pgsTypes::fttGirder);
+      if (m_FilletTypeOriginal != pgsTypes::fttGirder)
+      {
+         newType = pgsTypes::fttGirder;
+      }
+      else
+      {
+         newType = pgsTypes::fttBridge;
+      }
    }
    else
    {
-      pBridge->SetFilletType(pgsTypes::fttBridge);
+      newType = m_FilletTypeOriginal;
    }
 
-   UpdateFilletHyperLink();
+   if (pgsTypes::fttBridge == newType)
+   {
+      // ask user to select value
+      Float64 slaboff;
+      if (m_FilletGrid.SelectSingleValue(&slaboff))
+      {
+         pBridge->SetFilletType(pgsTypes::fttBridge);
+         pBridge->SetFillet(slaboff);
+      }
+      else
+      {
+         // selection was cancelled. reset combo back to original (bridge is always zero)
+         CComboBox* pcbFilletType = (CComboBox*)GetDlgItem(IDC_CB_FILLET);
+         pcbFilletType->SetCurSel(1);
+      }
+   }
+   else
+   {
+      pBridge->SetFilletType(newType);
+   }
+
    UpdateFilletControls();
-
-   return 0;
-}
-
-void CSplicedGirderGeneralPage::UpdateFilletHyperLink()
-{
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
-   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
-
-   if ( pBridge->GetFilletType() == pgsTypes::fttGirder )
-   {
-      // slab offset is by girder
-      m_ctrlFilletHyperLink.SetWindowText(_T("Fillets are defined girder by girder"));
-      m_ctrlFilletHyperLink.SetURL(_T("Click to use this Fillet for the entire bridge"));
-   }
-   else if ( pBridge->GetFilletType() == pgsTypes::fttBridge )
-   {
-      m_ctrlFilletHyperLink.SetWindowText(_T("A single Fillet is used for the entire bridge"));
-      m_ctrlFilletHyperLink.SetURL(_T("Click to define Fillets by girder"));
-   }
-   else
-   {
-      m_ctrlFilletHyperLink.SetWindowText(_T("A unique Fillet is used at each Span"));
-      m_ctrlFilletHyperLink.SetURL(_T("Click to define Fillets by girder"));
-   }
 }
 
 void CSplicedGirderGeneralPage::UpdateFilletControls()
@@ -673,7 +701,7 @@ void CSplicedGirderGeneralPage::UpdateFilletControls()
    m_FilletGrid.EnableWindow(bEnable);
 }
 
-LRESULT CSplicedGirderGeneralPage::OnChangeGirderType(WPARAM wParam,LPARAM lParam)
+void CSplicedGirderGeneralPage::OnChangeGirderType()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -681,28 +709,7 @@ LRESULT CSplicedGirderGeneralPage::OnChangeGirderType(WPARAM wParam,LPARAM lPara
    CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
    pBridge->UseSameGirderForEntireBridge( !pBridge->UseSameGirderForEntireBridge() );
 
-   UpdateGirderTypeHyperLink();
    UpdateGirderTypeControls();
-
-   return 0;
-}
-
-void CSplicedGirderGeneralPage::UpdateGirderTypeHyperLink()
-{
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
-   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
-
-   if ( pBridge->UseSameGirderForEntireBridge() )
-   {
-      // same girder type used for bridge
-      m_ctrlGirderTypeHyperLink.SetWindowText(_T("The same segment type is used for the entire bridge"));
-      m_ctrlGirderTypeHyperLink.SetURL(_T("Click to use a unique segment type for each girder"));
-   }
-   else
-   {
-      m_ctrlGirderTypeHyperLink.SetWindowText(_T("A unique segment type is used for each girder"));
-      m_ctrlGirderTypeHyperLink.SetURL(_T("Click to use the same segment type for the entire bridge"));
-   }
 }
 
 void CSplicedGirderGeneralPage::UpdateGirderTypeControls()

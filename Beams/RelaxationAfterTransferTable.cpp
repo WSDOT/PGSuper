@@ -55,16 +55,16 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    ColumnIndexType numColumns = 5;
 
    CRelaxationAfterTransferTable* table = new CRelaxationAfterTransferTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
 
    GET_IFACE2(pBroker, ISegmentData, pSegmentData );
    const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
    ATLASSERT(pstrand);
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Losses due to Relaxation After Transfer") << rptNewLine;
    if ( pstrand->GetType() == matPsStrand::LowRelaxation )

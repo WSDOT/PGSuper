@@ -179,6 +179,11 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
 
    pIBridgeDesc->UseSameGirderForEntireBridge( gdrData.m_bUseSameGirder );
 
+   // Set Girder Data and then overwrite using our local information
+   pIBridgeDesc->SetGirder(girderKey,gdrData.m_Girder);
+
+   pIBridgeDesc->SetTimelineManager(gdrData.m_TimelineMgr);
+
    // set the slab offset
    pIBridgeDesc->SetSlabOffsetType( gdrData.m_SlabOffsetType );
    if ( gdrData.m_SlabOffsetType == pgsTypes::sotBridge )
@@ -254,8 +259,4 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
    {
       pIBridgeDesc->SetGirderName( gdrData.m_strGirderName.c_str() );
    }
-
-   // Girder Data
-   pIBridgeDesc->SetGirder(girderKey,gdrData.m_Girder);
-   pIBridgeDesc->SetTimelineManager(gdrData.m_TimelineMgr);
 }

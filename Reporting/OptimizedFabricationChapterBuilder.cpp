@@ -121,7 +121,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
 
       if ( 1 < nSegments )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -142,14 +142,14 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       pFabOp->GetFabricationOptimizationDetails(segmentKey,&details);
 
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara << _T("Release Requirements") << rptNewLine;
       pPara = new rptParagraph;
       *pChapter << pPara;
 
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       *pChapter << pPara;
       *pPara << _T("Form Stripping Strength") << rptNewLine;
       pPara = new rptParagraph;
@@ -189,7 +189,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       if ( 0 < pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
       {
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          *pPara << _T("Lifting Requirements") << rptNewLine;
          pPara = new rptParagraph;
@@ -215,7 +215,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
                                              : CeilOff(details.Fci[PT_TTS_OPTIONAL], ::ConvertToSysUnits(6,  unitMeasure::MPa)));
             
 
-            pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             *pChapter << pPara;
             *pPara << _T("Lifting without Temporary Strands") << rptNewLine;
             pPara = new rptParagraph;
@@ -234,7 +234,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
 
             if ( 0 < details.Nt )
             {
-               pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
                *pChapter << pPara;
                *pPara << _T("Lifting with Pretensioned Temporary Strands") << rptNewLine;
                pPara = new rptParagraph;
@@ -253,7 +253,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
 
 
                
-               pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
      
                *pChapter << pPara;
                *pPara << _T("Lifting with Post-Tensioned Temporary Strands") << rptNewLine;
@@ -293,7 +293,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
          }
       }
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara << _T("Shipping Requirements") << rptNewLine;
       pPara = new rptParagraph;
@@ -301,7 +301,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
 
       if ( details.bTempStrandsRequiredForShipping )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Shipping") << rptNewLine;
          pPara = new rptParagraph;
@@ -313,7 +313,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       }
       else
       {
-   //      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   //      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    //      *pChapter << pPara;
    //      *pPara << _T("Shipping Strength") << rptNewLine;
    //      pPara = new rptParagraph;
@@ -323,7 +323,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    //      *pPara << RPT_FC << _T(" = ") << stress.SetValue(details.Fc);
    //       *pPara << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress.SetValue(fc) << rptNewLine;
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Shipping with Equal Overhangs") << rptNewLine;
          pPara = new rptParagraph;
@@ -331,7 +331,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
          *pPara << Sub2(_T("L"),_T("min")) << _T(" = ") << length.SetValue(details.Lmin) << rptNewLine;
          *pPara << Sub2(_T("L"),_T("max")) << _T(" = ") << length.SetValue(details.Lmax) << rptNewLine;
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Shipping with Unequal Overhangs") << rptNewLine;
          pPara = new rptParagraph;

@@ -64,11 +64,11 @@ CRelaxationAtFinalTable* CRelaxationAtFinalTable::PrepareTable(rptChapter* pChap
    // Create and configure the table
    ColumnIndexType numColumns = 2;
    CRelaxationAtFinalTable* table = new CRelaxationAtFinalTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    *pParagraph << _T("[5.9.5.4.3c] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR2")) << rptNewLine;

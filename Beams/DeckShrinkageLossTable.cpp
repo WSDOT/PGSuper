@@ -76,11 +76,11 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    // Create and configure the table
    ColumnIndexType numColumns = 12;
    CElasticGainDueToDeckShrinkageTable* table = new CElasticGainDueToDeckShrinkageTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    *pParagraph << _T("[5.9.5.4.3d] Shrinkage of Deck Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSS")) << rptNewLine;
@@ -168,7 +168,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
       *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_Fbot_Transformed.png")) << rptNewLine;
    }
 
-   rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
+   rptRcTable* pParamTable = rptStyleManager::CreateDefaultTable(9,_T(""));
    *pParagraph << pParamTable << rptNewLine;
 
    (*pParamTable)(0,0) << COLHDR(_T("V/S") << rptNewLine << _T("deck"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -217,7 +217,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*pParamTable)(1,7) << ptl->GetDeckK2Shrinkage();
    (*pParamTable)(1,8) << table->strain.SetValue(ptl->Get_eddf() * 1000);
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(8,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << COLHDR( Sub2(_T("E"),_T("p")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(0,1) << COLHDR( Sub2(_T("E"),_T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );

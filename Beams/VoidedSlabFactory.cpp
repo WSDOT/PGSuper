@@ -184,7 +184,7 @@ void CVoidedSlabFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,co
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -192,8 +192,9 @@ void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupID
 
    // use passed value if not null
    pgsTypes::SupportedDeckType deckType = (pDeckType!=NULL) ? *pDeckType : pDeck->DeckType;
-   
-   if ( deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone )
+   pgsTypes::SupportedBeamSpacing spacingType = (pSpacingType!=NULL) ? *pSpacingType : pBridgeDesc->GetGirderSpacingType();
+
+   if (spacingType==pgsTypes::sbsUniformAdjacent || spacingType==pgsTypes::sbsGeneralAdjacent || spacingType==pgsTypes::sbsConstantAdjacent)
    {
       CComObject<CVoidedSlabDistFactorEngineer>* pEngineer;
       CComObject<CVoidedSlabDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -866,6 +867,7 @@ pgsTypes::SupportedDeckTypes CVoidedSlabFactory::GetSupportedDeckTypes(pgsTypes:
    case pgsTypes::sbsGeneralAdjacent:
       sdt.push_back(pgsTypes::sdtCompositeOverlay);
       sdt.push_back(pgsTypes::sdtNone);
+      sdt.push_back(pgsTypes::sdtCompositeCIP);
       break;
 
    default:
@@ -917,36 +919,19 @@ void CVoidedSlabFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions
    Float64 gw = GetDimension(dimensions,_T("W"));
    Float64 J  = GetDimension(dimensions,_T("Jmax"));
 
-   if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
+   if(sbs == pgsTypes::sbsUniform || sbs == pgsTypes::sbsGeneral)
    {
-      if(sbs == pgsTypes::sbsUniform || sbs == pgsTypes::sbsGeneral)
-      {
-         *minSpacing = gw;
-         *maxSpacing = MAX_GIRDER_SPACING;
-      }
-      else
-      {
-         ATLASSERT(false); // shouldn't get here
-      }
+      *minSpacing = gw;
+      *maxSpacing = MAX_GIRDER_SPACING;
+   }
+   else if(sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
+   {
+      *minSpacing = gw;
+      *maxSpacing = gw+J;
    }
    else
    {
-      if (sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
-      {
-         if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
-         {
-            *minSpacing = gw;
-            *maxSpacing = gw+J;
-         }
-         else
-         {
-            ATLASSERT(false); // shouldn't get here
-         }
-      }
-      else
-      {
-         ATLASSERT(false); // shouldn't get here
-      }
+      ATLASSERT(false); // shouldn't get here
    }
 }
 

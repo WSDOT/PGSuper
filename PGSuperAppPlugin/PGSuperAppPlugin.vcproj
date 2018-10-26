@@ -1027,10 +1027,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\FilletHyperLink.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\FilletSame4BridgeDlg.cpp"
 				>
 			</File>
@@ -1593,22 +1589,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\SameGirderSpacingHyperLink.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\SameGirderTypeHyperLink.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\SameNumberOfGirdersHyperLink.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\SameSlabOffsetHyperLink.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\SectionCutDisplayImpl.cpp"
 				>
 			</File>
@@ -1654,10 +1634,6 @@
 			</File>
 			<File
 				RelativePath=".\SlabOffsetGrid.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\SlabOffsetHyperLink.cpp"
 				>
 			</File>
 			<File
@@ -2144,10 +2120,6 @@
 			</File>
 			<File
 				RelativePath=".\FilletGrid.h"
-				>
-			</File>
-			<File
-				RelativePath="..\FilletHyperLink.h"
 				>
 			</File>
 			<File
@@ -2671,22 +2643,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\SameGirderSpacingHyperLink.h"
-				>
-			</File>
-			<File
-				RelativePath="..\SameGirderTypeHyperLink.h"
-				>
-			</File>
-			<File
-				RelativePath="..\SameNumberOfGirdersHyperLink.h"
-				>
-			</File>
-			<File
-				RelativePath="..\SameSlabOffsetHyperLink.h"
-				>
-			</File>
-			<File
 				RelativePath="..\SectionCutDisplayImpl.h"
 				>
 			</File>
@@ -2736,10 +2692,6 @@
 			</File>
 			<File
 				RelativePath=".\SlabOffsetGrid.h"
-				>
-			</File>
-			<File
-				RelativePath="..\SlabOffsetHyperLink.h"
 				>
 			</File>
 			<File
@@ -2865,11 +2817,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
@@ -3045,11 +2997,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -3257,11 +3209,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -3269,11 +3221,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>

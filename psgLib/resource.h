@@ -1243,6 +1243,7 @@
 #define IDC_STATIC_SPL                  1644
 #define IDC_STATIC_SH                   1645
 #define IDS_E_FORMAT                    1646
+#define IDC_SCROLLBAR1                  1646
 #define IDS_E_WRITE                     1650
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
@@ -1274,7 +1275,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        312
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1646
+#define _APS_NEXT_CONTROL_VALUE         1647
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

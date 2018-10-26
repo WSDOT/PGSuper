@@ -198,7 +198,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(3);
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(3);
    *pPara << pLayoutTable << rptNewLine;
 
    write_load_modifiers(          &(*pLayoutTable)(0,0), pBroker, pDisplayUnits);
@@ -218,7 +218,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
       {
          if ( 1 < nSegments )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             *pChapter << pPara;
             *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
          }
@@ -282,7 +282,7 @@ CChapterBuilder* CProjectCriteriaChapterBuilder::Clone() const
 
 void write_load_modifiers(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
 {
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Load Modifiers"));
+   rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2,_T("Load Modifiers"));
    *pPara << p_table;
 
    GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
@@ -299,7 +299,7 @@ void write_load_modifiers(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits
 
 void write_environmental_conditions(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
 {
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Environmental"));
+   rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2,_T("Environmental"));
    *pPara << p_table;
 
    GET_IFACE2(pBroker,IEnvironment,pEnvironment);
@@ -321,7 +321,7 @@ void write_environmental_conditions(rptParagraph* pPara,IBroker* pBroker, IEAFDi
 
 void write_structural_analysis(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
 {
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(1,_T("Structural Analysis"));
+   rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(1,_T("Structural Analysis"));
    *pPara << p_table;
 
    GET_IFACE2( pBroker, ISpecification, pSpec );
@@ -347,7 +347,7 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Casting Yard Criteria")<<rptNewLine;
 
@@ -452,7 +452,7 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
 void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Lifting Criteria")<<rptNewLine;
 
@@ -493,7 +493,7 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
 
 void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Hauling Criteria - WSDOT Method")<<rptNewLine;
 
@@ -551,7 +551,7 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
 
 void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry, const CSegmentKey& segmentKey)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Hauling Criteria - KDOT Method")<<rptNewLine;
 
@@ -624,7 +624,7 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    if ( tsRemovalIntervalIdx != INVALID_INDEX )
    {
-      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara<<_T("Temporary Strand Removal Criteria")<<rptNewLine;
 
@@ -659,7 +659,7 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Deck and Diaphragm Placement Stage (Bridge Site 1) Criteria")<<rptNewLine;
 
@@ -680,7 +680,7 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
 void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Final without Live Load (Bridge Site 2) Criteria")<<rptNewLine;
 
@@ -750,7 +750,7 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Final with Live Load Stage (Bridge Site 3) Criteria")<<rptNewLine;
 
@@ -817,7 +817,7 @@ void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUni
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Moment Capacity Criteria")<<rptNewLine;
 
@@ -847,7 +847,7 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Shear Capacity Criteria")<<rptNewLine;
 
@@ -935,7 +935,7 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
 
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Creep Criteria")<<rptNewLine;
 
@@ -973,7 +973,7 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
 
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Losses Criteria")<<rptNewLine;
 
@@ -1097,7 +1097,7 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
 
 void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Stress Limits for Prestressing Tendons")<<rptNewLine;
 
@@ -1139,7 +1139,7 @@ void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
 
 void write_deflections(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Deflection Criteria")<<rptNewLine;
 
@@ -1158,7 +1158,7 @@ void write_deflections(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* 
 
 void write_rating_criteria(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const RatingLibraryEntry* pRatingEntry)
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Live Load Factors for Load Rating")<<rptNewLine;
 
@@ -1208,7 +1208,7 @@ void write_load_factors(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,LPC
 
    }
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
    *pPara << lpszName << rptNewLine;
 

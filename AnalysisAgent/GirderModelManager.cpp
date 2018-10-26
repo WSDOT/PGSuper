@@ -13758,6 +13758,8 @@ void CGirderModelManager::GetEngine(CGirderModelData* pModelData,bool bContinuou
 
 void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderKey& girderKey)
 {
+   GET_IFACE(IDocumentType,pDocType);
+
    CSegmentKey segmentKey(girderKey,0);
    Float64 s_end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -13780,7 +13782,6 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
          os<<"right end";
       }
 
-      GET_IFACE(IDocumentType,pDocType);
       if ( pDocType->IsPGSuperDocument() )
       {
          os<<" of Girder "<<LABEL_GIRDER(girderKey.girderIndex)<<" in Span "<< LABEL_SPAN(girderKey.groupIndex) <<". \r\nThis problem can be resolved by increasing the girder End Distance in the Connection library, or by decreasing the skew angle of the girder with respect to the pier.";
@@ -13799,6 +13800,33 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
 
       THROW_UNWIND(os.str().c_str(),-1);
    }
+
+   // Check that the slab offset is >= gross slab depth + fillet
+   if ( pDocType->IsPGSuperDocument() ) // This check is not clear for spliced girders
+   {
+      if (pBridge->GetDeckType() != pgsTypes::sdtNone)
+      {
+         Float64 fillet = pBridge->GetFillet(girderKey.groupIndex, girderKey.girderIndex);
+         Float64 startA, endA;
+         pBridge->GetSlabOffset(segmentKey,&startA, &endA);
+         Float64 dSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(segmentKey,0.0));
+         if ( startA-dSlab-fillet < -TOLERANCE || endA-dSlab-fillet < -TOLERANCE )
+         {
+            std::_tostringstream os;
+            os<<"Error - The slab offset must be greater than or equal to the gross slab depth plus the fillet depth for "
+              <<" Girder "<<LABEL_GIRDER(girderKey.girderIndex)<<" in Span "<< LABEL_SPAN(girderKey.groupIndex) <<". \r\nThis problem can be resolved by increasing the girder's slab offset or decreasing the fillet depth.";
+
+            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,os.str().c_str());
+    
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            pStatusCenter->Add(pStatusItem);
+
+            os<<"\r\nSee the Status Center for Details";
+
+            THROW_UNWIND(os.str().c_str(),-1);
+         }
+      }
+   }
 }
 
 CComBSTR CGirderModelManager::GetLoadGroupName(pgsTypes::ProductForceType pfType)
@@ -13816,9 +13844,20 @@ void CGirderModelManager::GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
+
    // get all the cross section changes
-   GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> xsPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> xsPOI(pPoi->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR));
+   if ( variationType == pgsTypes::svtParabolic || variationType == pgsTypes::svtDoubleParabolic )
+   {
+      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT));
+      xsPOI.insert(xsPOI.end(),vPoi.begin(),vPoi.end());
+      std::sort(xsPOI.begin(),xsPOI.end());
+      xsPOI.erase(std::unique(xsPOI.begin(),xsPOI.end()),xsPOI.end());
+   }
    ATLASSERT(2 <= xsPOI.size());
 
    GET_IFACE(IMaterials,pMaterial);

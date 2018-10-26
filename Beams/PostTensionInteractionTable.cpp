@@ -56,9 +56,9 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
    // Create and configure table
    ColumnIndexType numColumns = 9;
    CPostTensionInteractionTable* table = new CPostTensionInteractionTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -80,7 +80,7 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
    Float64 Apt = pStrandGeom->GetStrandArea(segmentKey,tsInstallIntervalIdx,pgsTypes::Temporary);
    StrandIndexType Npt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Effect of strand jacking on previously stressed strands") << rptNewLine;
 

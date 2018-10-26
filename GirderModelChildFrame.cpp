@@ -762,21 +762,26 @@ void CGirderModelChildFrame::OnAddPointload()
    data.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   if ( m_EventIndex != liveLoadEventIdx)
-   {
-      data.m_EventIndex = m_EventIndex;
-   }
-   else
+   if ( m_EventIndex == liveLoadEventIdx )
    {
       data.m_LoadCase = UserLoads::LL_IM;
    }
+   //EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+   //if ( m_EventIndex != liveLoadEventIdx)
+   //{
+   //   data.m_EventIndex = m_EventIndex;
+   //}
+   //else
+   //{
+   //   data.m_LoadCase = UserLoads::LL_IM;
+   //}
 
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CEditPointLoadDlg dlg(data,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
@@ -798,21 +803,26 @@ void CGirderModelChildFrame::OnAddDistributedLoad()
    data.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   if ( m_EventIndex != liveLoadEventIdx)
-   {
-      data.m_EventIndex = m_EventIndex;
-   }
-   else
+   if ( m_EventIndex == liveLoadEventIdx )
    {
       data.m_LoadCase = UserLoads::LL_IM;
    }
+   //EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+   //if ( m_EventIndex != liveLoadEventIdx)
+   //{
+   //   data.m_EventIndex = m_EventIndex;
+   //}
+   //else
+   //{
+   //   data.m_LoadCase = UserLoads::LL_IM;
+   //}
 
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CEditDistributedLoadDlg dlg(data,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
@@ -832,21 +842,26 @@ void CGirderModelChildFrame::OnAddMoment()
    data.m_SpanKey.girderIndex = m_GirderKey.girderIndex;
 
    EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
-   if ( m_EventIndex != liveLoadEventIdx)
-   {
-      data.m_EventIndex = m_EventIndex;
-   }
-   else
+   if ( m_EventIndex == liveLoadEventIdx )
    {
       data.m_LoadCase = UserLoads::LL_IM;
    }
+   //EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+   //if ( m_EventIndex != liveLoadEventIdx)
+   //{
+   //   data.m_EventIndex = m_EventIndex;
+   //}
+   //else
+   //{
+   //   data.m_LoadCase = UserLoads::LL_IM;
+   //}
 
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CEditMomentLoadDlg dlg(data,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }

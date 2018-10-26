@@ -2,7 +2,7 @@ Girder Spacing {#ug_dialogs_pier_description_girder_spacing}
 ==============================================
 Define the girder spacing.
 
-Click on the hyperlink text to toggle between defining parameters for the entire bridge and for just this span.
+Click on the combobox to select between defining parameters for the entire bridge and for just this span.
 
 Item | Description
 -----|--------------

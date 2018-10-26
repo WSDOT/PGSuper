@@ -29,7 +29,6 @@
 #include "PGSuperUnits.h"
 
 #include <Reporting\ReportNotes.h>
-#include <PgsExt\ReportStyleHolder.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\GirderArtifact.h>
 
@@ -824,12 +823,12 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    SegmentIndexType nSegments = pBridgeDesc->GetGirder(segmentKey)->GetSegmentCount();
    if ( 1 < nSegments )
    {
-      rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle() );
+      rptParagraph* p = new rptParagraph(rptStyleManager::GetSubheadingStyle() );
       *pChapter << p;
       *p << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
    }
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Details for Check for Hauling to Bridge Site [5.5.4.3][5.9.4.1]")<<rptNewLine;
 
@@ -870,20 +869,20 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    *p << Sub2(_T("e"),_T("s"))<<_T(" = eccentricity due to sweep = ")<<dim.SetValue(this->GetEccentricityDueToSweep())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
    *p << Sub2(_T("F"),_T("o"))<<_T(" = offset factor = ") << _T("(") << Sub2(_T("l"),_T("l")) << _T("/") << Sub2(_T("l"),_T("g")) << _T(")") << Super(_T("2")) << _T(" - 1/3 = ") << this->GetOffsetFactor()<<rptNewLine;
    *p << Sub2(_T("e"),_T("i"))<<_T(" = total initial eccentricity = ") << Sub2(_T("e"),_T("s"))<<_T("*") << Sub2(_T("F"),_T("o"))<<_T(" + ") << Sub2(_T("e"),_T("truck"))<<_T(" = ")<<dim.SetValue(this->GetTotalInitialEccentricity())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("zo.png") )<<_T(" = ")<<dim.SetValue(this->GetZo())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(std::_tstring(std::_tstring(rptStyleManager::GetImagePath())) + _T("zo.png") )<<_T(" = ")<<dim.SetValue(this->GetZo())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
    *p << Sub2(_T("z"),_T("o")) << _T(" is based on average girder unit weight and mid-span section properties") << rptNewLine;
    *p << _T("r = Radius of stability = ") << Sub2(_T("K"),symbol(theta))<<_T("/W = ")<<dim.SetValue(this->GetRadiusOfStability())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
-   *p << _T("Equilibrium angle = ")<<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaHauling.png") )<<_T(" = ")<<angle.SetValue(this->GetEqualibriumAngle())<<_T(" ")<<angle.GetUnitTag()<<rptNewLine;
+   *p << _T("Equilibrium angle = ")<<rptRcImage(std::_tstring(std::_tstring(rptStyleManager::GetImagePath())) + _T("ThetaHauling.png") )<<_T(" = ")<<angle.SetValue(this->GetEqualibriumAngle())<<_T(" ")<<angle.GetUnitTag()<<rptNewLine;
    *p << _T("Lateral Moment = (Vertical Moment)(Equilibrium Angle)") << rptNewLine;
 
-   pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
 
    *pTitle << _T("Girder Forces and Stresses At Hauling");
    p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T("Hauling Forces"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(6,_T("Hauling Forces"));
    *p << p_table<<rptNewLine;
 
    (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -914,7 +913,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
       row++;
    }
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(9,_T("Hauling Stresses - Plumb Girder"));
+   p_table = rptStyleManager::CreateDefaultTable(9,_T("Hauling Stresses - Plumb Girder"));
    *p << p_table;
 
    p_table->SetNumberOfHeaderRows(2);
@@ -944,7 +943,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    (*p_table)(1,7) << COLHDR(_T("No") << rptNewLine << _T("Impact"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*p_table)(1,8) << COLHDR(_T("Impact") << rptNewLine << _T("Down"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   rptRcTable* p_table2 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Hauling Stresses - Tilted Girder"));
+   rptRcTable* p_table2 = rptStyleManager::CreateDefaultTable(7,_T("Hauling Stresses - Tilted Girder"));
    *p << p_table2;
    *p << RPT_STRESS(_T("tu")) << _T(" = top fiber stress, uphill side") << rptNewLine;
    *p << RPT_STRESS(_T("td")) << _T(" = top fiber stress, downhill side") << rptNewLine;
@@ -1012,7 +1011,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    *pChapter << p;
 
    // FS Cracking
-   p_table = pgsReportStyleHolder::CreateDefaultTable(7,_T("Factor of Safety Against Cracking"));
+   p_table = rptStyleManager::CreateDefaultTable(7,_T("Factor of Safety Against Cracking"));
    *p << p_table << rptNewLine;
    *p << RPT_STRESS(_T("t")) << _T(" = governing tension stress")<<rptNewLine;
 
@@ -1060,20 +1059,20 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
       row++;
    }
 
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mlat.png") )<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaMax.png") )<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("FScrHauling.png") )<<rptNewLine;
+   *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Mlat.png") )<<rptNewLine;
+   *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ThetaMax.png") )<<rptNewLine;
+   *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FScrHauling.png") )<<rptNewLine;
 
    // FS Rollover
-   pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Factor of Safety Against Rollover")<<rptNewLine;
    p = new rptParagraph;
    *pChapter << p;
 
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaPrimeMaxHauling.png") )<<_T(" = ")<<angle.SetValue(this->GetThetaRolloverMax())<<_T(" ")<<angle.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("zo_prime_hauling.png") )<<_T(" = ")<<dim.SetValue(this->GetZoPrime())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("FSrHauling.png") )<<_T(" = ")<<scalar.SetValue(this->GetFsRollover())<<rptNewLine;
+   *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ThetaPrimeMaxHauling.png") )<<_T(" = ")<<angle.SetValue(this->GetThetaRolloverMax())<<_T(" ")<<angle.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("zo_prime_hauling.png") )<<_T(" = ")<<dim.SetValue(this->GetZoPrime())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FSrHauling.png") )<<_T(" = ")<<scalar.SetValue(this->GetFsRollover())<<rptNewLine;
 }
 
 void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, IBroker* pBroker,
@@ -1669,7 +1668,7 @@ void pgsWsdotHaulingAnalysisArtifact::SetAlternativeTensileConcreteStressFactor(
 bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey& segmentKey,
                               rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Check for Hauling to Bridge Site [5.5.4.3][5.9.4.1]")<<rptNewLine;
 
@@ -1677,12 +1676,12 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
    SegmentIndexType nSegments = pBridgeDesc->GetGirder(segmentKey)->GetSegmentCount();
    if ( 1 < nSegments )
    {
-      rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle() );
+      rptParagraph* p = new rptParagraph(rptStyleManager::GetSubheadingStyle() );
       *pChapter << p;
       *p << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
    }
 
-   pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Hauling Stresses for Plumb Girder With Impact, and Factor of Safety Against Cracking")<<rptNewLine;
 
@@ -1794,7 +1793,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
    std::vector<pgsPointOfInterest> vPoi;
    vPoi = pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(11,_T(""));
    *p << p_table;
 
    int col1=0;
@@ -1964,7 +1963,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
    INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
    rptCapacityToDemand cap_demand;
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Hauling Stresses for Inclined Girder Without Impact")<<rptNewLine;
 
@@ -1996,7 +1995,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
    *p << symbol(ROOT) << RPT_FC;
    *p << _T(" = ") << stress.SetValue(mod_rupture)<< _T(" ") << stress.GetUnitTag()<< rptNewLine;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(7,_T(""));
    *p << p_table;
    *p << RPT_STRESS(_T("tu")) << _T(" = top fiber stress, uphill side; ") 
       << RPT_STRESS(_T("td")) << _T(" = top fiber stress, downhill side") << rptNewLine;
@@ -2070,7 +2069,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
                               IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits) const
 {
    // FS for failure
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Factor of Safety Against Rollover");
 
@@ -2082,11 +2081,11 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
-   p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-   p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+   rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2);
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
    *p << p_table;
 
    (*p_table)(0,0) << _T("Factor of Safety Against Rollover (FS") << Sub(_T("r")) << _T(")");
@@ -2107,18 +2106,18 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    }
 
    // Truck support spacing
-   pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Spacing Between Truck Supports for Hauling");
 
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
-   p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-   p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+   p_table = rptStyleManager::CreateTableNoHeading(2);
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
    *p << p_table;
    (*p_table)(0,0) << _T("Distance Between Supports");
    (*p_table)(1,0) << _T("Max. Allowable Distance Between Supports");
@@ -2142,18 +2141,18 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
 
 
    // Truck support spacing
-   pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Girder Support Configuration");
 
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
-   p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-   p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+   p_table = rptStyleManager::CreateTableNoHeading(2);
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
    *p << p_table;
 
    (*p_table)(0,0) << _T("Leading Overhang (closest to cab of truck)");
@@ -2172,24 +2171,24 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
       (*p_table)(2,1) << RPT_FAIL;
    }
 
-   p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-   p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
    // Max Girder Weight
-   pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Maximum Girder Weight");
 
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
-   p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-   p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+   p_table = rptStyleManager::CreateTableNoHeading(2);
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
    *p << p_table;
    (*p_table)(0,0) << _T("Girder Weight");
    (*p_table)(1,0) << _T("Maximum Allowable Weight");
@@ -2245,7 +2244,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
       tablename=_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Hauling, Upward Impact");
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,tablename);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10,tablename);
    *p << pTable << rptNewLine;
 
    ColumnIndexType col = 0;

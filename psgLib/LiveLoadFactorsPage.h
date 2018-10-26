@@ -44,6 +44,8 @@ protected:
    pgsTypes::SpecialPermitType m_SpecialPermitType; // only used if rating type is lrPermit
    afx_msg void OnHelp();
 
+   CString m_strTitle;
+
 	DECLARE_MESSAGE_MAP()
 public:
    virtual BOOL OnInitDialog();

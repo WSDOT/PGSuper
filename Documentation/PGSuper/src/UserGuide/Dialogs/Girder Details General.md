@@ -17,7 +17,7 @@ Define the girder type.
 
 Item | Description
 -----|-----------
-Girder Name | If unique girders are used throughout the bridge, select the name of this girder from the drop down list. Click on the hyperlink control to change how girders are defined in the bridge.
+Girder Name | If unique girders are used throughout the bridge, select the name of this girder from the drop down list. Click on the combo box control to change how girders are defined in the bridge.
 
 Girder Concrete Properties
 --------------------------
@@ -33,7 +33,7 @@ Ec  | When checked, enter the design modulus of elasticity. Otherwise, the modul
 
 Slab Offset ("A" Dimension)
 ----------------------------
-Use the hyperlink to control how slab offsets are defined for the bridge.
+Use the combo box to control how slab offsets are defined for the bridge.
 
 Item | Description
 -----|-----------

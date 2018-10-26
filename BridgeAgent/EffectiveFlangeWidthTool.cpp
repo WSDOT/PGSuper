@@ -26,7 +26,7 @@
 #include "EffectiveFlangeWidthTool.h"
 #include "BridgeHelpers.h"
 #include <MathEx.h>
-#include <PgsExt\ReportStyleHolder.h>
+
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
@@ -744,7 +744,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth(IBroker* pBroker,IGen
    {
       if ( 1 < nSegments )
       {
-         rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -783,7 +783,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder(IBroke
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftGdrID,GirderIDType gdrID,GirderIDType rightGdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
@@ -881,7 +881,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
    GET_IFACE2(pBroker,IGirder,pGirder);
    MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(segmentKey);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -903,7 +903,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
    if ( use_tributary_width )
    {
       *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder on each side of the component") << rptNewLine;
-      table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+      table = rptStyleManager::CreateDefaultTable(4,_T(""));
    }
    else
    {
@@ -931,7 +931,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
          *pPara << Sub2(_T("w"),_T("3")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("2")) << _T(" for each web") << rptNewLine << rptNewLine;
       }
       
-      table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+      table = rptStyleManager::CreateDefaultTable(2,_T(""));
    }
 
    *pPara << table;
@@ -1059,7 +1059,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -1196,7 +1196,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -1253,7 +1253,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
           nCol += 2;
       }
 
-      table = pgsReportStyleHolder::CreateDefaultTable(nCol,_T(""));
+      table = rptStyleManager::CreateDefaultTable(nCol,_T(""));
 
       ColumnIndexType col = 0;
       (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -1270,7 +1270,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    }
    else
    {
-      table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+      table = rptStyleManager::CreateDefaultTable(3,_T(""));
 
       (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*table)(0,1) << _T("Adjacent Interior Beam");
@@ -1419,7 +1419,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -1526,7 +1526,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -1551,7 +1551,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
 
    *pPara << rptRcImage(strImagePath + strImage) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(2,_T(""));
    *pPara << table;
 
 

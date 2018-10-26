@@ -1543,7 +1543,14 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    }
    else
    {
-      description += _T(", Girders at spread spacing.");
+      if (pgsTypes::sbsConstantAdjacent==m_GirderSpacingType || pgsTypes::sbsGeneralAdjacent==m_GirderSpacingType || pgsTypes::sbsUniformAdjacent==m_GirderSpacingType)
+      {
+         description += _T(", Girders at adjacent spacing.");
+      }
+      else
+      {
+         description += _T(", Girders at spread spacing.");
+      }
    }
 
 
@@ -1564,7 +1571,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
 
 
       CComPtr<IDistFactorEngineer> dfEngineer;
-      m_Factory->CreateDistFactorEngineer(pBroker, -1, &deckType, &connect, &dfEngineer);
+      m_Factory->CreateDistFactorEngineer(pBroker, -1, &m_GirderSpacingType, &deckType, &connect, &dfEngineer);
       std::_tstring dfmethod = dfEngineer->GetComputationDescription(CGirderKey(0,0), entry_name, deckType, connect );
 
       description += _T("\r\n\r\nDistribution factors computed using ");

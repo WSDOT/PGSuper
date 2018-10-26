@@ -100,7 +100,7 @@ rptChapter* CProductForcesChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
       std::_tostringstream os;
       os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << pIntervals->GetDescription(intervalIdx);
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,os.str().c_str());
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,os.str().c_str());
       (*pPara) << pTable << rptNewLine << rptNewLine;
 
       ColumnIndexType colIdx = 0;

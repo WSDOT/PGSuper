@@ -21,7 +21,11 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
+#include "resource.h"
 #include <PgsExt\Keys.h>
+#include "SelectGirderDlg.h"
+#include "SelectSegmentDlg.h"
+#include <PgsExt\GirderLabel.h>
 
 CGirderKey::CGirderKey(GroupIndexType grpIdx,GirderIndexType gdrIdx) : groupIndex(grpIdx), girderIndex(gdrIdx)
 {
@@ -381,4 +385,3 @@ bool CTendonKey::operator<(const CTendonKey& other) const
 
    return false;
 }
-

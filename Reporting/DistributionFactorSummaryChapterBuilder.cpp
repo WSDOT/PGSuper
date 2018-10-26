@@ -138,7 +138,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
    std::_tostringstream os;
    os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(", Distribution Factors");
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,os.str().c_str());
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,os.str().c_str());
    *pBody << pTable;
 
    (*pTable)(0,0) << _T("");
@@ -287,7 +287,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    std::_tostringstream os;
    os << _T("Pier ") << LABEL_PIER(pierIdx) << _T(", Distribution Factors");
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,os.str().c_str());
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,os.str().c_str());
    *pBody << pTable;
 
    (*pTable)(0,0) << _T("");

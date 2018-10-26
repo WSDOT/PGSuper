@@ -169,7 +169,7 @@ void write_cracked_section_table(IBroker* pBroker,
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(bIncludeNegMoment ? 7 : 4,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(bIncludeNegMoment ? 7 : 4,_T(""));
 
    *pPara << table << rptNewLine;
 
@@ -177,8 +177,8 @@ void write_cracked_section_table(IBroker* pBroker,
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    table->SetNumberOfHeaderRows(2);

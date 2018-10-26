@@ -45,6 +45,9 @@ public:
    void FillGrid();
    void UpdateSlabOffsetData();
 
+   // pop dialog and select a single slab offset value
+   bool SelectSingleValue(Float64* pValue);
+
    void EnableWindow(BOOL bEnable);
 
 // Overrides

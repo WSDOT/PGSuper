@@ -1259,6 +1259,15 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
 
    Float64 gl2 = m_SegmentLength/2.0;
 
+   GET_IFACE(IGirder,pGdr);
+
+   // get rebar material
+   GET_IFACE(IMaterials,pMaterials);
+   Float64 Eb,fy,fu; 
+   pMaterials->GetSegmentLongitudinalRebarProperties(m_SegmentKey,&Eb,&fy,&fu);
+
+   Float64 fc = m_pArtifact->GetConcreteStrength();
+
    // bar size, nlegs are established at first poi, and the same for entire design
    matRebar::Size bar_size;
    Float64 nlegs;
@@ -1278,7 +1287,8 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
       Float64 S_reqd;
       Float64 zone_len;
 
-      Float64 location = m_DesignPois[ipoi].GetDistFromStart();
+      pgsPointOfInterest& poi = m_DesignPois[ipoi];
+      Float64 location = poi.GetDistFromStart();
       if (gl2 <= location) 
       {
          // We are past left end of mid-girder - close and quit
@@ -1302,6 +1312,11 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
                horiz_controlled = true;
             }
          }
+
+         // get minimum stirrup spacing requirements (LRFD 5.8.2.5)
+         Float64 bv = pGdr->GetShearWidth( poi );
+         Float64 avs_min = lrfdRebar::GetAvOverSMin(fc,bv,fy); // LRFD 5.8.2.5
+         avs_demand = Max(avs_min,avs_demand); // make sure demand is at least the minimum
 
          if (ipoi == 0)
          {
@@ -2204,7 +2219,12 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
       const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(m_SegmentKey);
       const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,matRebar::bs5); // #5
       rbfy = pRebar->GetYieldStrength();
-      tensile_development_length = lrfdRebar::GetTensileDevelopmentLength( *pRebar, m_pArtifact->GetConcreteStrength() );
+
+      GET_IFACE(IMaterials,pMaterials);
+      Float64 density = pMaterials->GetSegmentStrengthDensity(m_SegmentKey);
+
+      REBARDEVLENGTHDETAILS details = lrfdRebar::GetRebarDevelopmentLengthDetails(pRebar->GetSize(),pRebar->GetNominalArea(),pRebar->GetNominalDimension(),pRebar->GetYieldStrength(),(matConcrete::Type)config.ConcType,m_pArtifact->GetConcreteStrength(),config.bHasFct,config.Fct,density);
+      tensile_development_length = details.ldb;
       ATLASSERT(tensile_development_length>0.0);
    }
 

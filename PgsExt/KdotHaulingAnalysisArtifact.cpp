@@ -31,7 +31,6 @@
 #include <IFace\PointOfInterest.h>
 
 #include <Reporting\ReportNotes.h>
-#include <PgsExt\ReportStyleHolder.h>
 #include <EAF\EAFDisplayUnits.h>
 
 
@@ -468,7 +467,7 @@ pgsHaulingAnalysisArtifact* pgsKdotHaulingAnalysisArtifact::Clone() const
 
 void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Check for Hauling to Bridge Site [5.9.4.1]")<<rptNewLine;
    *pTitle << _T("Hauling Stresses for Girder with KDOT Dynamic Effects")<<rptNewLine;
@@ -620,7 +619,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
       *p << symbol(INFINITY) << rptNewLine;
    }
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(7,_T(""));
    *p << p_table;
 
    int col1=0;
@@ -749,7 +748,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
 
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Details for Check for Hauling to Bridge Site [5.9.4.1]")<<rptNewLine;
 
@@ -782,13 +781,13 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
    *p << _T("Dynamic factor applied at overhangs = ") << scalar.SetValue(overhangG)<<rptNewLine;
    *p << _T("Dynamic factor applied in-span = ") << scalar.SetValue(interiorG);
 
-   pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
 
    p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Hauling Forces"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,_T("Hauling Forces"));
    *p << p_table<<rptNewLine;
 
    (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -815,7 +814,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
       row++;
    }
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(7,_T("Hauling Stresses"));
+   p_table = rptStyleManager::CreateDefaultTable(7,_T("Hauling Stresses"));
    *p << p_table;
 
    p_table->SetNumberOfHeaderRows(2);
@@ -890,7 +889,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
 
    std::_tstring tablename(_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Hauling"));
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,tablename);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10,tablename);
    *p << pTable << rptNewLine;
 
    ColumnIndexType col = 0;

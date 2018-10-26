@@ -81,7 +81,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T("Primary Bars"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(8,_T("Primary Bars"));
    *pPara << p_table;
 
    (*p_table)(0,0) << _T("Zone");
@@ -145,7 +145,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    *pPara <<_T("* Bars add to horizontal interface shear capacity")<<rptNewLine;
 
    //
-   p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T("Additional Bars for Horizontal Interface Shear Capacity"));
+   p_table = rptStyleManager::CreateDefaultTable(6,_T("Additional Bars for Horizontal Interface Shear Capacity"));
    *pPara << p_table;
 
    (*p_table)(0,0) << _T("Zone");
@@ -195,7 +195,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    if (size != matRebar::bsNone)
    {
-      p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Additional Splitting Stirrups"));
+      p_table = rptStyleManager::CreateDefaultTable(4,_T("Additional Splitting Stirrups"));
       *pPara << p_table;
 
       (*p_table)(0,0) << COLHDR(_T("Zone Length"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -212,7 +212,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
    else
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara <<_T("Additional Splitting Stirrups")<<rptNewLine;
 
@@ -226,7 +226,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    if (size != matRebar::bsNone)
    {
-      p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Additional Bottom Flange Confinement Stirrups"));
+      p_table = rptStyleManager::CreateDefaultTable(3,_T("Additional Bottom Flange Confinement Stirrups"));
       *pPara << p_table;
 
       (*p_table)(0,0) << COLHDR(_T("Zone Length"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -240,7 +240,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
    else
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       *pPara <<_T("Additional Bottom Flange Confinement Stirrups")<<rptNewLine;
 

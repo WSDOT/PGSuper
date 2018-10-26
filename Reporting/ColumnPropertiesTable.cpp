@@ -64,7 +64,7 @@ rptRcTable* CColumnPropertiesTable::Build(IBroker* pBroker,IEAFDisplayUnits* pDi
    INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDisplayUnits->GetAreaUnit(), false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue, l4, pDisplayUnits->GetMomentOfInertiaUnit(), false );
 
-   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(1);
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(1);
 
    RowIndexType layoutTableRow = 0;
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -79,7 +79,7 @@ rptRcTable* CColumnPropertiesTable::Build(IBroker* pBroker,IEAFDisplayUnits* pDi
       CString strLabel;
       strLabel.Format(_T("Pier %d"),LABEL_PIER(pierIdx));
 
-      rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(4,strLabel);
+      rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(4,strLabel);
       (*pLayoutTable)(layoutTableRow++,0) << xs_table;
 
       ColumnIndexType tableColIdx = 0;

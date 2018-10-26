@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #include "TexasCamberAndDeflectionChapterBuilder.h"
@@ -167,14 +167,14 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       osTN << _T(" for Span ")<<LABEL_SPAN(span)<<_T(" Girder ")<<LABEL_GIRDER(girder);
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(numCols,osTN.str().c_str());
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(numCols,osTN.str().c_str());
    *p << pTable << rptNewLine;
 
    // Right justify columns with numbers
    for (ColumnIndexType ic=1; ic<numCols; ic++)
    {
-      pTable->SetColumnStyle( ic, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-      pTable->SetStripeRowColumnStyle( ic, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetColumnStyle( ic, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetStripeRowColumnStyle( ic, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
    }
 
    // Setup up some unit value prototypes

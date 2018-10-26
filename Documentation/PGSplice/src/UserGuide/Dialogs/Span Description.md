@@ -17,7 +17,7 @@ Define the slab offset for the span.
 
 Item | Description
 -----|------------
-Hyperlink | Click on the hyperlink text to toggle between defining the slab offset for the entire bridge or for this span.
+Type | Click on the combo box to select if the slab offset is for the entire bridge or only for this span.
 Start | Slab offset at the start of the span
 End | Slab offset at the end of the span
 

@@ -107,12 +107,12 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       nCol = 10;
    }
 
-   rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(nCol,os.str().c_str());
+   rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(nCol,os.str().c_str());
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
-      xs_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      xs_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      xs_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      xs_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    // Setup column headers

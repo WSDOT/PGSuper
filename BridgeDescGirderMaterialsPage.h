@@ -30,9 +30,6 @@
 //
 
 #include "PGSuperAppPlugin\resource.h"
-#include "SameGirderTypeHyperLink.h"
-#include "SlabOffsetHyperLink.h"
-#include "FilletHyperLink.h"
 
 class CGirderDescDlg;
 
@@ -59,10 +56,6 @@ public:
 	CEdit  	m_ctrlFci;
 	//}}AFX_DATA
    
-   CSameGirderTypeHyperLink m_GirderTypeHyperLink;
-   CSlabOffsetHyperLink m_SlabOffsetHyperLink;
-   CFilletHyperLink m_FilletHyperLink;
-
    bool m_bUseSameGirderType;
 
    pgsTypes::SlabOffsetType m_SlabOffsetType;
@@ -99,7 +92,6 @@ protected:
    afx_msg void OnChangeEci();
 	afx_msg void OnMoreConcreteProperties();
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
-   afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
    afx_msg void OnChangeGirderName();
    afx_msg void OnBeforeChangeGirderName();
 	afx_msg void OnConcreteStrength();
@@ -109,9 +101,9 @@ protected:
    afx_msg void OnErectionEventChanged();
    afx_msg void OnErectionEventChanging();
    //}}AFX_MSG
-   afx_msg LRESULT OnChangeSameGirderType(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeFilletType(WPARAM wParam,LPARAM lParam);
+   afx_msg void OnChangeSameGirderType();
+   afx_msg void OnChangeSlabOffsetType();
+   afx_msg void OnChangeFilletType();
 	DECLARE_MESSAGE_MAP()
 
    void FillEventList();
@@ -122,11 +114,7 @@ protected:
 
    void ExchangeConcreteData(CDataExchange* pDX);
 
-   void UpdateGirderTypeHyperLink();
    void UpdateGirderTypeControls();
-
-   void UpdateSlabOffsetHyperLink();
-   void UpdateFilletHyperLink();
    void UpdateSlabOffsetControls();
 
    void UpdateConcreteControls(bool bSkipEcCheckBoxes=false);

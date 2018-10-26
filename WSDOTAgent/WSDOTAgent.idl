@@ -64,29 +64,4 @@ library PGSuper
    {
 		[default] interface IUnknown;
    };
-
-   [
-		uuid(E89CC143-53C9-43df-B1B4-E522769DE29B),
-		helpstring("CurvelExporter Class")
-	]
-	coclass CurvelExporter
-	{
-		[default] interface IPGSDataExporter;
-	};
-	[
-		uuid(E56801AC-B583-4e9e-A2D8-2AA64079BE15),
-		helpstring("CurvelImporter Class")
-	]
-	coclass CurvelImporter
-	{
-		[default] interface IPGSDataImporter;
-	};
-	[
-		uuid(16A21688-25B4-4118-ABF4-DD6D4983A2CD),
-		helpstring("GenCompeExporter Class")
-	]
-	coclass GenCompExporter
-	{
-		[default] interface IPGSDataExporter;
-	};
 };

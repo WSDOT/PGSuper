@@ -79,7 +79,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    }
 
    CElasticGainDueToSIDLTable* table = new CElasticGainDueToSIDLTable( numColumns, pDisplayUnits);
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
    table->m_bHasUserLoads = bHasUserLoads;
    table->m_bHasSidewalk  = bHasSidewalk;
@@ -89,7 +89,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    table->scalar.SetWidth(5);
    table->scalar.SetPrecision(2);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -101,7 +101,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    Float64 Ec = pMaterials->GetSegmentEc(segmentKey,railingSystemIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Elastic Gain Due to Superimposed Dead Load [5.9.5.2.3a]") << rptNewLine;
 

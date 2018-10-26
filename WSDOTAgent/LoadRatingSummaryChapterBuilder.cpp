@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "LoadRatingSummaryChapterBuilder.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ReportNotes.h>
 
@@ -191,15 +191,15 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       (*pPara) << _T("The selected load rating options do not conform to the requirements specified in Chapter 13 of the WSDOT Bridge Design Manual.") << rptNewLine;
       (*pPara) << _T("Select Project | Load Rating Options to change the load rating options to the required settings given below.") << rptNewLine;
 
-	   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T("Required Load Rating Options"));
+	   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,_T("Required Load Rating Options"));
 
       // left justify all columns
-      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetColumnStyle(2,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(2,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(2,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(2,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       RowIndexType row = 0;
       (*pPara) << pTable << rptNewLine;
@@ -374,14 +374,14 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    (*pRemarks) << _T("Remarks:") << rptNewLine;
    (*pRemarks) << _T("This load rating does not include rating factors for substructure elements.") << rptNewLine;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T(""));
    (*pPara) << pTable << rptNewLine;
 
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   pTable->SetColumnStyle(3, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(3, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(3, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(3, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    (*pTable)(0,0) << _T("Truck");
    (*pTable)(0,1) << _T("RF");
@@ -425,14 +425,14 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrPermit_Special,vehicleIdx),pDisplayUnits,pRemarks);
    }
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+   pTable = rptStyleManager::CreateDefaultTable(3,_T(""));
    (*pPara) << pTable << rptNewLine;
 
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   pTable->SetColumnStyle(2, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(2, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(2, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(2, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    (*pTable)(0,0) << _T("NBI Rating");
    (*pTable)(0,1) << _T("RF");

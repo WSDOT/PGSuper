@@ -126,7 +126,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
 
    CString strLiveLoadType = ::GetLiveLoadTypeName(ratingType);
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    pPara->SetName(strLiveLoadType);
    *pPara << pPara->GetName() << rptNewLine;
@@ -154,7 +154,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
       {
          std::_tstring strVehicleName = pProductLoads->GetLiveLoadName(llType,(ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating) ? INVALID_INDEX : vehicleIdx);
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          *pPara << strVehicleName << rptNewLine;
 
@@ -195,7 +195,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
 
 void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    if ( bPositiveMoment )
    {
@@ -208,27 +208,27 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
 
    if ( bSplicedGirder )
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("MomentRatingEquationPT.png") ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRatingEquationPT.png") ) << rptNewLine;
    }
    else
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("MomentRatingEquation.png") ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRatingEquation.png") ) << rptNewLine;
    }
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("MomentRatingParameters.png") ) << rptNewLine;
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRatingParameters.png") ) << rptNewLine;
 
    ColumnIndexType nColumns = 14;
    if ( bSplicedGirder )
    {
       nColumns += 8;
    }
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns);
 
-   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pPara << table << rptNewLine;
 
-   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
    *pPara << LIVELOAD_PER_GIRDER << rptNewLine;
 
@@ -338,17 +338,17 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
 
 void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Rating for Shear") << rptNewLine;
 
    if ( bSplicedGirder )
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ShearRatingEquationPT.png") ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ShearRatingEquationPT.png") ) << rptNewLine;
    }
    else
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ShearRatingEquation.png") ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ShearRatingEquation.png") ) << rptNewLine;
    }
 
    ColumnIndexType nColumns = 13;
@@ -356,13 +356,13 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    {
       nColumns += 8;
    }
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns);
    
-   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pPara << table << rptNewLine;
-   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
    *pPara << LIVELOAD_PER_GIRDER << rptNewLine;
 
@@ -471,17 +471,17 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
 
 void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact,bool bSplicedGirder) const
 {
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Rating for Stress") << rptNewLine;
 
    if ( bSplicedGirder )
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StressRatingEquationPT.png") ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("StressRatingEquationPT.png") ) << rptNewLine;
    }
    else
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StressRatingEquation.png") ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("StressRatingEquation.png") ) << rptNewLine;
    }
 
    ColumnIndexType nColumns = 13;
@@ -489,16 +489,16 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    {
       nColumns += 9;
    }
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns);
    
-   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    
-   table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pPara << table << rptNewLine;
-   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
    *pPara << LIVELOAD_PER_GIRDER << rptNewLine;
 
@@ -624,7 +624,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       return;
    }
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    if ( bPositiveMoment )
    {
@@ -637,24 +637,24 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
 
    if ( bSplicedGirder )
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ReinforcementYieldingEquationPT.png") ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ReinforcementYieldingEquationPT.png") ) << rptNewLine;
    }
    else
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ReinforcementYieldingEquation.png") ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ReinforcementYieldingEquation.png") ) << rptNewLine;
    }
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ReinforcementYieldingParameters.png") ) << rptNewLine;
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ReinforcementYieldingParameters.png") ) << rptNewLine;
 
    ColumnIndexType nColumns = 18;
    if ( bSplicedGirder )
    {
       nColumns += 4;
    }
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns);
    
-   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    //*pPara << table << rptNewLine; // don't add table here... see below
 
@@ -721,7 +721,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
 
    // Add table here
    *pPara << table << rptNewLine;
-   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
    *pPara << LIVELOAD_PER_GIRDER << rptNewLine;
 
@@ -832,19 +832,19 @@ void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,I
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Load Posting Analysis Details [MBE 6A.8]") << rptNewLine;
 
-   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SafePostingLoad.png") ) << rptNewLine;
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SafePostingLoad.png") ) << rptNewLine;
 
    INIT_UV_PROTOTYPE( rptForceUnitValue, tonnage, pDisplayUnits->GetTonnageUnit(), false );
    rptCapacityToDemand rating_factor;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(5,_T(""));
    
-   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pPara << table << rptNewLine;
 

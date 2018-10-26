@@ -134,7 +134,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Stress Limitations on Prestressing Tendons [5.9.3]");
    *pChapter << pPara;
 
@@ -145,7 +145,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CTendonStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // report the required concrete strengths for the current bridge configuration
-   rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << p;
    *p << _T("Required Concrete Strengths") << rptNewLine;
 
@@ -244,7 +244,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
         compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx // if they are stressed after the deck is composite
       )
    {
-      rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      rptParagraph* p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       p->SetName(_T("Deck Stresses"));
       *p << p->GetName() << rptNewLine;
       *pChapter << p;
@@ -294,7 +294,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // Flexural Capacity
-   p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    p->SetName(_T("Ultimate Moment Capacity"));
    *p << p->GetName() << rptNewLine;
    *pChapter << p;
@@ -373,7 +373,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // Vertical Shear check
-   p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    p->SetName(_T("Ultimate Shear Capacity"));
    *p << p->GetName() << rptNewLine;
    *pChapter << p;
@@ -505,7 +505,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
       pPara->SetName(_T("Design Load Rating"));
       (*pPara) << pPara->GetName() << rptNewLine;
@@ -516,7 +516,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
       pPara->SetName(_T("Legal Load Rating"));
       (*pPara) << pPara->GetName() << rptNewLine;
@@ -556,7 +556,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
       pPara->SetName(_T("Permit Load Rating"));
       (*pPara) << pPara->GetName() << rptNewLine;
@@ -632,7 +632,7 @@ void write_splitting_zone_check(IBroker* pBroker,
       strName = _T("Bursting");
    }
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    (*pPara) << strName << _T(" Zone Stirrup Check [5.10.10.1]") << rptNewLine;
 
@@ -644,7 +644,7 @@ void write_splitting_zone_check(IBroker* pBroker,
 
       if ( 1 < nSegments )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -695,7 +695,7 @@ void write_confinement_check(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,    pDisplayUnits->GetComponentDimUnit(), true );
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    (*pPara) << _T("Confinement Stirrup Check [5.10.10.2]") << rptNewLine;
 
@@ -704,7 +704,7 @@ void write_confinement_check(IBroker* pBroker,
    {
       if ( 1 < nSegments )
       {
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }

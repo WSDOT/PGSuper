@@ -108,7 +108,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    location.IncludeSpanAndGirder(true);
 
@@ -116,7 +116,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    // reporting for a specific poi... list poi at top of report
    if ( !pTSDRptSpec->ReportAtAllLocations() )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
       CString strLocation;
@@ -137,7 +137,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    // reporting for a specific interval... list interval name at top of report
    if ( rptIntervalIdx != INVALID_INDEX )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
       CString str;
@@ -156,7 +156,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       {
          if ( pTSDRptSpec->ReportAtAllLocations() )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
 
             CString strLocation;
@@ -176,7 +176,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          // Heading
          if ( rptIntervalIdx == INVALID_INDEX )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
 
             CString str;
@@ -196,7 +196,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
 
          // Interval Time Parameters
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Interval Details") << rptNewLine;
          pPara = new rptParagraph;
@@ -206,7 +206,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << rptNewLine;
 
          // Properties
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Component Net Section Properties") << rptNewLine;
          pPara = new rptParagraph;
@@ -216,7 +216,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << Sub2(_T("Y"),_T("k")) << _T(" is measured positive upwards from the top of girder.") << rptNewLine;
          *pPara << rptNewLine;
 
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Composite Transformed Section Properties") << rptNewLine;
          pPara = new rptParagraph;
@@ -228,7 +228,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << rptNewLine;
 
          // Unrestrained creep deformation in concrete parts due to loads applied in previous intervals
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Unrestrained creep deformation of concrete components due to loads applied in previous intervals") << rptNewLine;
          pPara = new rptParagraph;
@@ -240,7 +240,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << rptNewLine;
 
          // Unrestrained shrinkage during this interval
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Unrestrained shrinkage deformation of concrete components") << rptNewLine;
          pPara = new rptParagraph;
@@ -250,7 +250,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << rptNewLine;
 
          // Unrestrained strand relaxation
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Apparent unrestrained deformation of strands due to relaxation") << rptNewLine;
          pPara = new rptParagraph;
@@ -261,7 +261,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          (*pPara) << rptNewLine;
 
          // Unrestrained tendon relaxation
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Apparent unrestrained deformation of tendons due to relaxation") << rptNewLine;
          pPara = new rptParagraph;
@@ -272,7 +272,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          (*pPara) << rptNewLine;
 
          // Forces required to fully restrain each component
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Component Restraining Forces") << rptNewLine;
          pPara = new rptParagraph;
@@ -285,7 +285,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
 
          // Forces required to fully restrain each component
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Section Restraining Forces") << rptNewLine;
          pPara = new rptParagraph;
@@ -297,7 +297,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          (*pPara) << rptNewLine;
 
          // Deformations required to fully restrain each component
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Section Restraining Deformations") << rptNewLine;
          pPara = new rptParagraph;
@@ -310,7 +310,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          (*pPara) << rptNewLine;
 
          // Forces due to the external restraints of the strutural system
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Restrained Section Forces") << rptNewLine;
          pPara = new rptParagraph;
@@ -321,7 +321,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << rptNewLine;
 
          // Restrained component forces
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Restrained Component Forces") << rptNewLine;
          pPara = new rptParagraph;
@@ -333,7 +333,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << rptNewLine;
 
          // Incremental Forces due to loads applied during this interval
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Increment forces due to external loads and restrained component forces during this interval.") << rptNewLine;
 
@@ -347,7 +347,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << rptNewLine;
 
          // Incremental stresses due to loads applied during this interval
-         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
          (*pPara) << _T("Increment component stress") << rptNewLine;
          pPara = new rptParagraph;
@@ -375,7 +375,7 @@ CChapterBuilder* CTimeStepDetailsChapterBuilder::Clone() const
 
 rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,IIntervals* pIntervals,IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4);
    (*pTable)(0,0) << _T("Start") << rptNewLine << _T("(day)");
    (*pTable)(0,1) << _T("Middle") << rptNewLine << _T("(day)");
    (*pTable)(0,2) << _T("End") << rptNewLine << _T("(day)");
@@ -402,9 +402,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentPropertiesTable(const 
    INIT_UV_PROTOTYPE(rptLength4UnitValue,   momI,       pDisplayUnits->GetMomentOfInertiaUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue,    modE,       pDisplayUnits->GetModEUnit(),            false);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(6);
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CJ_LEFT));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(6);
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
 
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
@@ -538,9 +538,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionPropertiesTable(const TI
    INIT_UV_PROTOTYPE(rptLength4UnitValue,   momI,       pDisplayUnits->GetMomentOfInertiaUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue,    modE,       pDisplayUnits->GetModEUnit(),            false);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(6);
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CJ_LEFT));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(6);
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
 
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
@@ -573,7 +573,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildFreeCreepDeformationTable(const
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     true);
    INIT_UV_PROTOTYPE(rptPerLengthUnitValue, curvature,  pDisplayUnits->GetCurvatureUnit(),       false);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5);
    pTable->SetNumberOfHeaderRows(2);
 
    RowIndexType rowIdx = 0;
@@ -639,7 +639,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildStrandRelaxationTable(const TIM
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3);
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
 
@@ -676,7 +676,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildTendonRelaxationTable(const TIM
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3);
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
 
@@ -707,7 +707,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     true);
    INIT_UV_PROTOTYPE(rptPerLengthUnitValue, curvature,  pDisplayUnits->GetCurvatureUnit(),       true);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7);
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
 
@@ -805,7 +805,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingForceTable(co
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    true);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     true);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7);
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
 
@@ -852,7 +852,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingDeformationTa
 {
    INIT_UV_PROTOTYPE(rptPerLengthUnitValue, curvature,  pDisplayUnits->GetCurvatureUnit(),       true);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7);
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
 
@@ -900,7 +900,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedSectionForceTable(con
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     false);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7);
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
 
@@ -949,7 +949,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedComponentForceTable(c
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     false);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7);
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
 
@@ -1107,9 +1107,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     false);
 
    IndexType nLoads = vLoads.size();
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nLoads+3);
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CJ_LEFT));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads+3);
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
    pTable->SetNumberOfHeaderRows(2);
 
    // label loading types across the top row
@@ -1349,9 +1349,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    INIT_UV_PROTOTYPE(rptStressUnitValue,     stress,      pDisplayUnits->GetStressUnit(),    false);
 
    IndexType nLoads = vLoads.size();
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nLoads+2);
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CJ_LEFT));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads+2);
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
    pTable->SetNumberOfHeaderRows(2);
 
    // label loading types across the top row

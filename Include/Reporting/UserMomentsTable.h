@@ -137,7 +137,7 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
       nCols += 3;
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,strTitle);
 
    // Set up table headings
    if ( bPierTable )

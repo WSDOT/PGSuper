@@ -25,10 +25,12 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "FilletGrid.h"
+#include "SelectItemDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\GirderGroupData.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -205,6 +207,8 @@ void CFilletGrid::UpdateFilletData()
 
    GirderIndexType gdrIdx = m_pGirder->GetIndex();
 
+   pgsTypes::FilletType ft = m_pGroup->GetBridgeDescription()->GetFilletType();
+
    SpanIndexType nSpansThisGroup = m_pGroup->GetSpanCount();
    CPierData2* pPier = m_pGroup->GetPier(pgsTypes::metStart);
 
@@ -214,11 +218,99 @@ void CFilletGrid::UpdateFilletData()
 
       Float64 fillet = _tstof(GetCellValue(row,col));
       fillet = ::ConvertToSysUnits(fillet,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      pSpan->SetFillet(gdrIdx, fillet);
+
+      if (pgsTypes::fttGirder==ft)
+      {
+         pSpan->SetFillet(gdrIdx, fillet);
+      }
+      else
+      {
+         pSpan->SetFillet(fillet);
+      }
 
       if (col < nCol)
       {
          pPier = pSpan->GetPier(pgsTypes::metEnd);
+      }
+   }
+}
+
+bool CFilletGrid::SelectSingleValue(Float64* pValue)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   ROWCOL row = 1;
+   ROWCOL nCol = GetColCount();
+
+   std::set<CString> uniqvals;
+   for ( ROWCOL col = 1; col <= nCol; col++ )
+   {
+      uniqvals.insert(GetCellValue(row,col));
+   }
+
+   IndexType nvals = uniqvals.size();
+   if (nvals==0)
+   {
+      ATLASSERT(0); // shouldn't happen
+      return false;
+   }
+   else if (nvals==1)
+   {
+      // only one unique value. No need to ask
+      Float64 offset = _tstof(*uniqvals.begin());
+      offset = ::ConvertToSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      *pValue = offset;
+      return true;
+   }
+   else
+   {
+      // have mutiple values. must select one from dialog
+      CSelectItemDlg dlg;
+      dlg.m_ItemIdx = 0;
+      dlg.m_strTitle = _T("Select Fillet Value");
+      dlg.m_strLabel = _T("A single Fillet will be used for the entire bridge. Select a value.");
+      
+      IndexType ival=0;
+      CString strItems;
+      for (std::set<CString>::iterator it=uniqvals.begin(); it!=uniqvals.end(); it++)
+      {
+         strItems += *it;
+         if (++ival<nvals)
+         {
+            strItems += _T("\n");
+         }
+      }
+
+      dlg.m_strItems = strItems;
+      if ( dlg.DoModal() == IDOK )
+      {
+         // Get single value
+         std::set<CString>::iterator it=uniqvals.begin();
+         for(IndexType i=0; i<dlg.m_ItemIdx; i++)
+         {
+            it++;
+         }
+
+         CString strValue = *it;
+
+         // Set grid to show only single value for all cols
+         row = 1;
+         for ( ROWCOL col = 1; col <= nCol; col++ )
+         {
+	         SetStyleRange(CGXRange(row,col), CGXStyle().SetValue(strValue));
+         }
+
+         // return value
+         Float64 offset = _tstof(*it);
+         offset = ::ConvertToSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         *pValue = offset;
+         return true;
+      }
+      else
+      {
+         return false;
       }
    }
 }

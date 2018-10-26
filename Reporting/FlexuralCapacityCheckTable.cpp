@@ -91,12 +91,12 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2006Interims );
    Uint16 nCols = c_over_de ? 9 : 6;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);

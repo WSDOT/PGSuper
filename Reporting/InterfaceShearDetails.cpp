@@ -116,7 +116,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    rptParagraph* pPara;
    // Initial Capacity Table
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -127,13 +127,13 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    ColumnIndexType nCol = pSpecEntry->GetShearFlowMethod() == sfmLRFD ? 6 : 7;
 
-   rptRcTable* vui_table = pgsReportStyleHolder::CreateDefaultTable(nCol);
+   rptRcTable* vui_table = rptStyleManager::CreateDefaultTable(nCol);
    *pPara << vui_table << rptNewLine;
 
    //if ( span == ALL_SPANS )
    //{
-   //   vui_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   vui_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   vui_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   vui_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    ColumnIndexType col = 0;
@@ -166,7 +166,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    if ( pSpecEntry->GetShearFlowMethod() == sfmLRFD )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
       *pPara << Sub2(_T("d"),_T("vi")) << _T(" = ") << Sub2(_T("Y"),_T("t girder")) << _T(" + Strand Eccentricity + ") << Sub2(_T("t"),_T("slab")) << _T("/2") << rptNewLine;
 
@@ -175,13 +175,13 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    }
 
    // TRICKY: create av/s table to be filled in same loop as next table
-   rptRcTable* av_table = pgsReportStyleHolder::CreateDefaultTable(6);
+   rptRcTable* av_table = rptStyleManager::CreateDefaultTable(6);
    *pPara << av_table;
 
    //if ( span == ALL_SPANS )
    //{
-   //   av_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   av_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   av_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   av_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    (*av_table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -277,14 +277,14 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       }
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(8,_T(""));
    *pPara << table;
 
  
    //if ( span == ALL_SPANS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -419,7 +419,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    } // next segment
 
    // Next, fill table for min Avf
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Details for Minimum Horizontal Interface Shear Reinforcement [5.8.4.4]")<<rptNewLine;
 
@@ -447,7 +447,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       *pPara << _T(" is less than ") << stress_with_tag.SetValue(llss) << rptNewLine;
    }
 
-   table = pgsReportStyleHolder::CreateDefaultTable(spec2007OrOlder ? 7 : 5,_T(""));
+   table = rptStyleManager::CreateDefaultTable(spec2007OrOlder ? 7 : 5,_T(""));
    *pPara << table << rptNewLine;
 
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone && !do_all_stirrups_engage_deck )
@@ -457,8 +457,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    //if ( span == ALL_SPANS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    col = 0;
@@ -475,11 +475,11 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
       if ( IS_SI_UNITS(pDisplayUnits) )
       {
-         *pParaEqn << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("AvfMin_SI.png")) << rptNewLine;
+         *pParaEqn << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("AvfMin_SI.png")) << rptNewLine;
       }
       else
       {
-         *pParaEqn << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("AvfMin_US.png")) << rptNewLine;
+         *pParaEqn << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("AvfMin_US.png")) << rptNewLine;
       }
    }
    else

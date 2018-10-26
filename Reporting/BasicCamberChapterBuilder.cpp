@@ -143,22 +143,22 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       {
          if ( pBridge->IsFutureOverlay() )
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_SIP_TempStrands_FutureOverlay.gif")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_SIP_TempStrands_FutureOverlay.gif")) << rptNewLine;
          }
          else
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_SIP_TempStrands.gif")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_SIP_TempStrands.gif")) << rptNewLine;
          }
       }
       else
       {
          if (pBridge->IsFutureOverlay() )
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_SIP_FutureOverlay.gif")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_SIP_FutureOverlay.gif")) << rptNewLine;
          }
          else
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_SIP.gif")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_SIP.gif")) << rptNewLine;
          }
       }
    }
@@ -169,22 +169,22 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       {
          if ( pBridge->IsFutureOverlay() )
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_CIP_TempStrands_FutureOverlay.gif")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_CIP_TempStrands_FutureOverlay.gif")) << rptNewLine;
          }
          else
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_CIP_TempStrands.gif")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_CIP_TempStrands.gif")) << rptNewLine;
          }
       }
       else
       {
          if ( pBridge->IsFutureOverlay() )
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_CIP_FutureOverlay.gif")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_CIP_FutureOverlay.gif")) << rptNewLine;
          }
          else
          {
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_CIP.gif")) << rptNewLine;
+            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_CIP.gif")) << rptNewLine;
          }
       }
    }
@@ -194,7 +194,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
       *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
@@ -222,7 +222,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       *pChapter << pPara;
       *pPara << pTable2 << rptNewLine;
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
       *pPara << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("[(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(") - (") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(" at location of erected segment supports)] ") << rptNewLine;
       *pPara << DEFL(_T("creep2")) << _T(" = ") << _T("[") << YCR(details[2]) << _T(" - ") << YCR(details[0]) << _T("][(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(") - ") << _T("(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(" at location of erected segment supports)] + ")
@@ -250,7 +250,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       *pChapter << pPara;
       *pPara << pTable3 << rptNewLine;
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
 
       // build table 3 footnotes
@@ -330,22 +330,22 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
    {
       if ( pBridge->IsFutureOverlay() )
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_NoDeck_TempStrands_FutureOverlay.gif")) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_NoDeck_TempStrands_FutureOverlay.gif")) << rptNewLine;
       }
       else
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_NoDeck_TempStrands.gif")) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_NoDeck_TempStrands.gif")) << rptNewLine;
       }
    }
    else
    {
       if ( pBridge->IsFutureOverlay() )
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_NoDeck_FutureOverlay.gif")) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_NoDeck_FutureOverlay.gif")) << rptNewLine;
       }
       else
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_NoDeck.gif")) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Camber_NoDeck.gif")) << rptNewLine;
       }
    }
 
@@ -354,7 +354,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
       *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
@@ -382,7 +382,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       *pChapter << pPara;
       *pPara << pTable2 << rptNewLine;
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
       *pPara << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("[(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(") - (") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(" at location of erected segment supports)]") << rptNewLine;
 
@@ -431,7 +431,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       *pChapter << pPara;
       *pPara << pTable3 << rptNewLine;
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
 
       // build table 3 footnotes

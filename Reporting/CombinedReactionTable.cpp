@@ -644,7 +644,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
       row++;
    }
 
-   p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << p;
    *p << (includeImpact ? LIVELOAD_PER_GIRDER : LIVELOAD_PER_GIRDER_NO_IMPACT) << rptNewLine;
 

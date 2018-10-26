@@ -95,7 +95,7 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
 
    ColumnIndexType col = 0;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(14,strName);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(14,strName);
    (*pPara) << pTable << rptNewLine;
    (*pTable)(0,col++) << _T("POI ID");
    (*pTable)(0,col++) << _T("Group");

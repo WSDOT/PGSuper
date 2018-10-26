@@ -94,11 +94,11 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
          *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Moment Capacity at Midspan"));
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(2,_T("Moment Capacity at Midspan"));
       *p << pTable << rptNewLine;
 
-      pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-      pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
 
       // Setup the table
       (*pTable)(0,0) << _T("");

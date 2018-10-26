@@ -93,7 +93,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    rptCapacityToDemand cap_demand;
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -109,26 +109,26 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    {
       if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
-         *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005_with_PT.png"))<<rptNewLine;
+         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png"))<<rptNewLine;
       }
       else
       {
-         *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear_with_PT.png"))<<rptNewLine;
+         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear_with_PT.png"))<<rptNewLine;
       }
    }
    else
    {
       if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
-         *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
       }
       else
       {
-         *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
       }
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(5,_T(""));
    *pBody << table;
 
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -200,7 +200,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    if ( bAddFootnote )
    {
-      rptParagraph* pFootnote = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      rptParagraph* pFootnote = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pFootnote;
 
       *pFootnote << _T("* The area of longitudinal reinforcement on the flexural tension side of the member need not exceed the area required to resist the maximum moment acting alone") << rptNewLine;
@@ -221,7 +221,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -232,18 +232,18 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    {
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+      *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
    }
    else
    {
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+      *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(5,_T(""));
    *pBody << table;
 
-   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
@@ -311,7 +311,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    if ( bAddFootnote )
    {
-      rptParagraph* pFootnote = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      rptParagraph* pFootnote = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pFootnote;
 
       *pFootnote << _T("* The area of longitudinal reinforcement on the flexural tension side of the member need not exceed the area required to resist the maximum moment acting alone") << rptNewLine;

@@ -51,7 +51,7 @@ rptRcTable(NumColumns,0)
 
 CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    CPostTensionTimeDependentLossesAtShippingTable* table = NULL;
 
@@ -64,9 +64,9 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
    {
       ColumnIndexType numColumns = 7;
       table = new CPostTensionTimeDependentLossesAtShippingTable( numColumns, pDisplayUnits );
-      pgsReportStyleHolder::ConfigureTable(table);
+      rptStyleManager::ConfigureTable(table);
 
-      rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pParagraph;
 
       *pParagraph << _T("Post-Tensioned Temporary Strands") << rptNewLine;

@@ -1935,6 +1935,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\LoadManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath="LongitudinalRebarData.cpp"
 				>
 				<FileConfiguration
@@ -2593,6 +2597,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Prompts.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PTData.cpp"
 				>
 			</File>
@@ -2671,10 +2679,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReportStyleHolder.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\SegmentActivity.cpp"
 				>
 			</File>
@@ -2695,7 +2699,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SelectGirderDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Selection.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectPOIDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectSegmentDlg.cpp"
 				>
 			</File>
 			<File
@@ -3402,6 +3418,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\LoadManager.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\LongitudinalRebarData.h"
 				>
 			</File>
@@ -3474,6 +3494,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\Prompts.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\PTData.h"
 				>
 			</File>
@@ -3495,10 +3519,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\ReportPointOfInterest.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\PgsExt\ReportStyleHolder.h"
 				>
 			</File>
 			<File
@@ -3526,7 +3546,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SelectGirderDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\Selection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectPOIDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectSegmentDlg.h"
 				>
 			</File>
 			<File

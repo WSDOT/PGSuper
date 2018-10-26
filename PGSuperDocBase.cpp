@@ -149,7 +149,7 @@
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\DesignConfigUtil.h>
 
-#include <PgsExt\ReportStyleHolder.h>
+
 
 // Transactions
 #include <PgsExt\EditBridge.h>
@@ -781,7 +781,7 @@ void CPGSDocBase::AddPointLoad(const CPointLoadData& loadData)
    CEditPointLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -797,13 +797,15 @@ bool CPGSDocBase::EditPointLoad(CollectionIndexType loadIdx)
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
+   EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoadData->m_ID);
+
    CEditPointLoadDlg dlg(*pLoadData,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,*pLoadData,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -834,7 +836,7 @@ void CPGSDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
    CEditDistributedLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,&dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,&dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -850,13 +852,15 @@ bool CPGSDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
+   EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoadData->m_ID);
+
    CEditDistributedLoadDlg dlg(*pLoadData,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,*pLoadData,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -887,7 +891,7 @@ void CPGSDocBase::AddMomentLoad(const CMomentLoadData& loadData)
    CEditMomentLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -903,13 +907,15 @@ bool CPGSDocBase::EditMomentLoad(CollectionIndexType loadIdx)
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
+   EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoadData->m_ID);
+
    CEditMomentLoadDlg dlg(*pLoadData,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,*pLoadData,dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
@@ -3174,7 +3180,7 @@ void CPGSDocBase::OnAddPointload()
    CEditPointLoadDlg dlg( load, pTimelineMgr );
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -3192,7 +3198,7 @@ void CPGSDocBase::OnAddDistributedLoad()
 	CEditDistributedLoadDlg dlg(load,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -3210,7 +3216,7 @@ void CPGSDocBase::OnAddMomentLoad()
 	CEditMomentLoadDlg dlg(load,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
@@ -3980,7 +3986,7 @@ void CPGSDocBase::LoadDocumentSettings()
 
 
    CString strDefaultReportCoverImage = pApp->GetLocalMachineString(_T("Settings"),_T("ReportCoverImage"),_T(""));
-   pgsReportStyleHolder::SetReportCoverImage(pApp->GetProfileString(_T("Settings"),_T("ReportCoverImage"),strDefaultReportCoverImage));
+   rptStyleManager::SetReportCoverImage(pApp->GetProfileString(_T("Settings"),_T("ReportCoverImage"),strDefaultReportCoverImage));
 }
 
 void CPGSDocBase::SaveDocumentSettings()

@@ -1883,7 +1883,10 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
 
 template <class T> bool IsLoadApplicable(IBroker* pBroker,const T* pLoad,EventIndexType eventIdx,const CGirderKey& girderKey)
 {
-   if ( pLoad->m_EventIndex != eventIdx )
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+   EventIndexType loadingEventIdx = pTimelineMgr->FindUserLoadEventIndex(pLoad->m_ID);
+   if ( loadingEventIdx != eventIdx )
    {
       return false;
    }

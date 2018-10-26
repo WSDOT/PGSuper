@@ -28,7 +28,7 @@
 #include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\ReportStyleHolder.h>
+
 
 class lrfdLosses;
 class CGirderData;

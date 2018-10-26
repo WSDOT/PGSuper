@@ -210,7 +210,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
 
    ColumnIndexType nCols = nDesignCols + nRatingCols + 1;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,strLabel);
 
    pTable->SetNumberOfHeaderRows(3);
 
@@ -679,7 +679,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
       }
    }
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
+   pTable = rptStyleManager::CreateDefaultTable(nCols,strLabel);
 
    if ( analysisType == pgsTypes::Envelope )
    {
@@ -903,7 +903,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
    int col1 = 0;
    int col2 = 0;
    
-   pTable = pgsReportStyleHolder::CreateDefaultTable(nCols, strLabel);
+   pTable = rptStyleManager::CreateDefaultTable(nCols, strLabel);
 
    pTable->SetRowSpan(0,0,3);
    pTable->SetRowSpan(1,0,SKIP_CELL);

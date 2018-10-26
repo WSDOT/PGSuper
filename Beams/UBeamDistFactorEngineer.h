@@ -41,6 +41,7 @@ struct UBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 /////////////////////////////////////////////////////////////////////////////
 // CUBeamDistFactorEngineer
 class ATL_NO_VTABLE CUBeamDistFactorEngineer : 
+   public IUBeamDistFactorEngineer,
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CUBeamDistFactorEngineer, &CLSID_UBeamDistFactorEngineer>,
    public CDistFactorEngineerImpl<UBEAM_LLDFDETAILS>
@@ -58,10 +59,12 @@ DECLARE_REGISTRY_RESOURCEID(IDR_UBEAMDISTFACTORENGINEER)
 
 BEGIN_COM_MAP(CUBeamDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)
+   COM_INTERFACE_ENTRY(IUBeamDistFactorEngineer)
 END_COM_MAP()
 
 public:
-   void Init(bool bTypeB, bool bisSpreadSlab);
+   // IUBeamDistFactorEngineer
+   virtual void Init(bool bTypeB, bool bisSpreadSlab);
 
    // IDistFactorEngineer
 //   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);

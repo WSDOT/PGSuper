@@ -132,7 +132,7 @@ public:
    IntervalIndexType GetInstallRailingSystemInterval() const;
 
    // returns the index of the interval when a user defined load is applied
-   IntervalIndexType GetUserLoadInterval(const CSpanKey& spanKey,UserLoads::LoadCase loadCase,EventIndexType eventIdx) const;
+   IntervalIndexType GetUserLoadInterval(const CSpanKey& spanKey,UserLoads::LoadCase loadCase,LoadIDType userLoadID) const;
 
    // returns the interval index when a temporary support is erected
    IntervalIndexType GetTemporarySupportErectionInterval(SupportIndexType tsIdx) const;
@@ -208,12 +208,12 @@ protected:
    class CUserLoadKey
    {
    public:
-      CUserLoadKey(const CSpanKey& spanKey,EventIndexType eventIdx);
+      CUserLoadKey(const CSpanKey& spanKey,LoadIDType loadID);
       CUserLoadKey(const CUserLoadKey& other);
       bool operator<(const CUserLoadKey& other) const;
 
       CSpanKey m_SpanKey;
-      EventIndexType m_EventIdx;
+      LoadIDType m_LoadID;
    };
    std::map<CUserLoadKey,IntervalIndexType> m_UserLoadInterval[2]; // interval when user DC/DW loads are applied
                                                                    // user LLIM are applied in the live load interval

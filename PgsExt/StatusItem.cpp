@@ -254,6 +254,7 @@ eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity()
 
 void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    EAFShowStatusMessage(pStatusItem,m_Severity,FALSE,AfxGetAppName(),m_HelpID);
 }
 

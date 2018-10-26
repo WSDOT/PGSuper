@@ -29,8 +29,6 @@
 // SpanLayoutPage.h : header file
 //
 #include "PGSuperAppPlugin\resource.h"
-#include "SameSlabOffsetHyperLink.h"
-#include "FilletHyperLink.h"
 #include <MFCTools\CacheEdit.h>
 
 class CSpanDetailsDlg;
@@ -62,10 +60,8 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
    afx_msg void OnHelp();
-   afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	//}}AFX_VIRTUAL
-   afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
-   afx_msg LRESULT OnChangeFillet(WPARAM wParam,LPARAM lParam);
+   afx_msg void OnChangeSlabOffset();
 
 // Implementation
 protected:
@@ -84,17 +80,13 @@ protected:
    CCacheEdit m_ctrlStartSlabOffset;
    CCacheEdit m_ctrlEndSlabOffset;
 
-   CSameSlabOffsetHyperLink      m_SlabOffsetHyperLink;
    pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
-   void UpdateSlabOffsetHyperLinkText();
    void UpdateSlabOffsetWindowState();
 
 
    CCacheEdit m_ctrlFillet;
 
-   CFilletHyperLink   m_FilletHyperLink;
    pgsTypes::FilletType m_InitialFilletType;
-   void UpdateFilletHyperLinkText();
    void UpdateFilletWindowState();
 
    void ShowCantilevers(BOOL bShowStart,BOOL bShowEnd);
@@ -102,6 +94,7 @@ protected:
 public:
    afx_msg void OnBnClickedStartCantilever();
    afx_msg void OnBnClickedEndCantilever();
+   afx_msg void OnCbnSelchangeFilletCombo();
 };
 
 //{{AFX_INSERT_LOCATION}}

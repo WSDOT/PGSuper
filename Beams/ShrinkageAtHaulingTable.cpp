@@ -88,15 +88,15 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    }
 
    CShrinkageAtHaulingTable* table = new CShrinkageAtHaulingTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
    table->m_bTemporaryStrands = bTemporaryStrands;
    table->m_bIsPrismatic = bIsPrismatic;
 
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("[5.9.5.4.2a] Shrinkage of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << rptNewLine;
 
@@ -170,7 +170,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
 
 
    // parameters for calculations (two tables to keep the width printable)
-   rptRcTable* paraTable = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
+   rptRcTable* paraTable = rptStyleManager::CreateDefaultTable(6,_T(""));
    *pParagraph << paraTable << rptNewLine;
    (*paraTable)(0,0) << _T("H") << rptNewLine << _T("(%)");
    (*paraTable)(0,1) << COLHDR(_T("V/S"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -186,7 +186,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    (*paraTable)(1,4) << table->time.SetValue(ptl->GetAgeAtHauling());
    (*paraTable)(1,5) << table->time.SetValue(ptl->GetFinalAge());
 
-   paraTable = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
+   paraTable = rptStyleManager::CreateDefaultTable(8,_T(""));
    *pParagraph << paraTable << rptNewLine;
    paraTable->SetNumberOfHeaderRows(2);
    paraTable->SetRowSpan(0,0,2);
@@ -221,7 +221,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
 
 
    // intermediate results
-   paraTable = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
+   paraTable = rptStyleManager::CreateDefaultTable(6,_T(""));
    *pParagraph << paraTable << rptNewLine;
 
     if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )

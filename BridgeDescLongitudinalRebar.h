@@ -79,7 +79,7 @@ protected:
    CRebarMaterialComboBox m_cbRebar;
 
 public:
-   void RestoreToLibraryDefaults();
+   void RestoreToLibraryDefaults(CLongitudinalRebarData* pLongData);
 
    void GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade);
 

@@ -96,14 +96,14 @@ rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,U
          continue; // skip all zero duration intervals
       }
 
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       CString strName;
       strName.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       pPara->SetName(strName);
       *pPara << pPara->GetName() << rptNewLine;
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(13);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(13);
       *pPara << pTable << rptNewLine;
 
       pTable->SetNumberOfHeaderRows(3);

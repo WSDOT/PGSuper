@@ -125,5 +125,13 @@ interface IMultiWebDistFactorEngineer : IUnknown
    virtual BeamType GetBeamType()  = 0;
 };
 
+// {A2636B74-1593-4789-8A80-3C4FBC387F9C}
+DEFINE_GUID(IID_IUBeamDistFactorEngineer, 
+0xa2636b74, 0x1593, 0x4789, 0x8a, 0x80, 0x3c, 0x4f, 0xbc, 0x38, 0x7f, 0x9c);
+interface IUBeamDistFactorEngineer : IUnknown
+{
+   virtual void Init(bool bTypeB, bool bisSpreadSlab) = 0;
+};
+
 #endif // INCLUDED_IFACE_DISTFACTORENGINEER_H_
 

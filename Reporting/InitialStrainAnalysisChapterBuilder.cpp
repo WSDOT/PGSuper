@@ -75,7 +75,7 @@ rptChapter* CInitialStrainAnalysisChapterBuilder::Build(CReportSpecification* pR
    {
       CString strLabel;
       strLabel.Format(_T("%s - Initial Strian Analysis"),i == 0 ? _T("Creep") : i == 1 ? _T("Shrinkage") : _T("Relaxation"));
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(12,strLabel);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(12,strLabel);
       *pPara << pTable << rptNewLine;
 
       ColumnIndexType colIdx = 0;

@@ -4,7 +4,7 @@ Define the details of a spliced girder.
 
 Segments
 ----------
-Click on the hyperlink to toggle between using the same segment type for each girder individually or a single segment type for the entire bridge.
+Click on the combo box to select if using the same segment type for each girder individually or a single segment type for the entire bridge.
 
 When the segment type is defined for each girder individually, select the segment type from the drop down list. The segment types in the list are taken from the Girder library.
 
@@ -37,7 +37,7 @@ Event | Select the event when the tendon is stressed
 
 Slab Offsets
 ---------------
-Click on the hyperlink to toggle between defining the slab offset for each girder individually or a single slab offset for the entire bridge.
+Click on the combo box to toggle between defining the slab offset for each girder individually or a single slab offset for the entire bridge.
 
 When the slab offset is defined for each girder individually, enter the slab offset dimension for each pier supporting this girder.
 

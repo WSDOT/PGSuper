@@ -147,7 +147,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
 
    // Product Stresses
-   p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    p->SetName(_T("Product Load Stresses"));
    *p << p->GetName() << rptNewLine;
    *pChapter << p;
@@ -168,15 +168,15 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
          SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
          if ( 1 < nSegments )
          {
-            pReleaseLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nSegments,_T("Segment Stresses at Prestress Release"));
+            pReleaseLayoutTable = rptStyleManager::CreateLayoutTable(nSegments,_T("Segment Stresses at Prestress Release"));
             *p << pReleaseLayoutTable << rptNewLine;
 
-            pStorageLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nSegments,_T("Segment Stresses during Storage"));
+            pStorageLayoutTable = rptStyleManager::CreateLayoutTable(nSegments,_T("Segment Stresses during Storage"));
             *p << pStorageLayoutTable << rptNewLine;
          }
          else
          {
-            pLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
+            pLayoutTable = rptStyleManager::CreateLayoutTable(2);
             *p << pLayoutTable << rptNewLine;
          }
 
@@ -269,7 +269,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
          IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
          IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-         p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         p = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << p;
          CString strName;
          strName.Format(_T("Combined Stresses - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
@@ -279,7 +279,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
          CCombinedStressTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating, true/*girder stresses*/);
          if ( liveLoadIntervalIdx <= intervalIdx )
          {
-            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
             *pChapter << p;
             *p << LIVELOAD_PER_GIRDER << rptNewLine;
             p = new rptParagraph;
@@ -287,7 +287,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
          }
          if ( bTimeDependentNote )
          {
-            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
             *pChapter << p;
             *p << TIME_DEPENDENT_STRESS_NOTE << rptNewLine;
             p = new rptParagraph;
@@ -299,7 +299,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
             CCombinedStressTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating, false/*deck stresses*/);
             if ( liveLoadIntervalIdx <= intervalIdx )
             {
-               p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+               p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
                *pChapter << p;
                *p << LIVELOAD_PER_GIRDER << rptNewLine;
                p = new rptParagraph;
@@ -307,7 +307,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
             }
             if ( bTimeDependentNote )
             {
-               p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+               p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
                *pChapter << p;
                *p << TIME_DEPENDENT_STRESS_NOTE << rptNewLine;
                p = new rptParagraph;
@@ -318,7 +318,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    } // next group
 
 
-   p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << p;
    p->SetName(_T("Stress due to Prestress"));
    *p << p->GetName() << rptNewLine;
@@ -334,7 +334,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
          if ( 1 < nSegments )
          {
-            p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             *pChapter << p;
             *p << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
          }
@@ -350,7 +350,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    if ( pDocType->IsPGSpliceDocument() )
    {
       GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       p->SetName(_T("Stresses due to Post-tensioning"));
       *p << p->GetName() << rptNewLine;

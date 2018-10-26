@@ -3656,7 +3656,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
             const CPierData2* pPier = GetPier(pierIdx);
             if ( pPier->HasSpacing() )
             {
-               if ( pPier->GetClosureJoint(0) != NULL )
+               if ( !pPier->IsBoundaryPier() && pPier->GetClosureJoint(0) != NULL )
                {
                   // if there is a closure joint, only back spacing is valid
                   const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);

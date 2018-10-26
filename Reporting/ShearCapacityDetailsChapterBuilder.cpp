@@ -261,7 +261,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
          IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
          std::_tstring stage_name( pIntervals->GetDescription(intervalIdx) );
 
-         rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
 
          bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
@@ -379,7 +379,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
             GET_IFACE2(pBroker,IBridge,pBridge);
             if ( pBridge->IsCompositeDeck() )
             {
-               pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+               pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
                pPara->SetName(_T("Horizontal Interface Shear"));
                *pPara << pPara->GetName() << rptNewLine;
                *pChapter << pPara;
@@ -433,7 +433,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
    // Setup the table
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    pParagraph->SetName(pProductLoads->GetLimitStateName(ls));
@@ -455,20 +455,20 @@ void write_shear_dimensions_table(IBroker* pBroker,
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->DeckType;
 
    std::_tstring strPicture = pFactory->GetShearDimensionsSchematicImage(deckType);
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strPicture);
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strPicture);
 
    *pParagraph << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("dv.png")) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("dv.png")) << rptNewLine;
    *pParagraph << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(9);
    *pParagraph << table << rptNewLine;
 
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -530,7 +530,7 @@ void write_shear_stress_table(IBroker* pBroker,
 {
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    std::_tstring strEquation;
@@ -568,11 +568,11 @@ void write_shear_stress_table(IBroker* pBroker,
    *pParagraph << Italic(_T("v")) << strEquation << rptNewLine;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("vu.png")) << rptNewLine;
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("vu.png")) << rptNewLine;
    }
    else
    {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("vu_2005.png")) << rptNewLine;
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("vu_2005.png")) << rptNewLine;
    }
 
    *pParagraph << rptNewLine;
@@ -586,12 +586,12 @@ void write_shear_stress_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strTitle;
    strTitle.Format(_T("Factored Shear Stresses for %s"),pProductLoads->GetLimitStateName(ls));
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,strTitle);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns,strTitle);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -677,7 +677,7 @@ void write_fpc_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -690,8 +690,8 @@ void write_fpc_table(IBroker* pBroker,
       *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn C5.8.3.4.2-1] - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
    }
 
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Fpc Pic.jpg")) << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("fpc_2007.png")) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Fpc Pic.jpg")) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("fpc_2007.png")) << rptNewLine;
 
    *pParagraph << rptNewLine;
 
@@ -708,12 +708,12 @@ void write_fpc_table(IBroker* pBroker,
          *pParagraph << _T("Girder ") << LABEL_GIRDER(girderKey.girderIndex) << rptNewLine;
       }
 
-      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCols);
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols);
 
       //if ( segmentKey.groupIndex == ALL_GROUPS )
       //{
-      //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       //}
 
       *pParagraph << table << rptNewLine;
@@ -813,21 +813,21 @@ void write_fpce_table(IBroker* pBroker,
 {
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    *pParagraph << Sub2(_T("M"),_T("cre")) << pProductLoads->GetLimitStateName(ls) << _T(" [Eqn 5.8.3.4.3-2]") << rptNewLine;
 
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mcre.png")) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Mcre.png")) << rptNewLine;
    *pParagraph << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(7);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -885,7 +885,7 @@ void write_fpce_table(IBroker* pBroker,
       row++;
    }
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
@@ -917,7 +917,7 @@ void write_fpce_table(IBroker* pBroker,
    }
 
    *pParagraph << RPT_STRESS(_T("cpe")) << _T(" = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads.") << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("fcpe.png")) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("fcpe.png")) << rptNewLine;
    *pParagraph << Sub2(_T("S"),_T("nc")) << _T(" = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads") << rptNewLine;
    *pParagraph << Sub2(_T("S"),_T("c")) << _T(" = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads") << rptNewLine;
    *pParagraph << Sub2(_T("M"),_T("dnc")) << _T(" = total unfactored dead load moment acting on the monolithic or noncomposite section") << rptNewLine;
@@ -937,7 +937,7 @@ void write_fpo_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << RPT_STRESS(_T("po"));
 
@@ -1028,19 +1028,19 @@ void write_fpo_table(IBroker* pBroker,
 
    if ( !bAfter1999 )
    {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("fpo.png")) << rptNewLine;
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("fpo.png")) << rptNewLine;
 
       BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
       {
          DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
          ColumnIndexType nCols = (0 == nDucts ? 6 : 9);
 
-         rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCols);
+         rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols);
 
          //if ( segmentKey.groupIndex == ALL_GROUPS )
          //{
-         //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+         //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
          //}
 
          if ( 1 < vGirderKeys.size() )
@@ -1166,13 +1166,13 @@ void write_Fe_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    *pParagraph << Sub2(_T("F"),symbol(epsilon)) << _T(" [Eqn 5.8.3.4.2-3] - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
 
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Fe.png")) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Fe.png")) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -1192,12 +1192,12 @@ void write_Fe_table(IBroker* pBroker,
       DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
       ColumnIndexType nCols = (0 == nDucts ? 8 : 10);
 
-      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCols);
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols);
 
       //if ( segmentKey.groupIndex == ALL_GROUPS )
       //{
-      //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       //}
 
       *pParagraph << table << rptNewLine;
@@ -1312,7 +1312,7 @@ void write_ex_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Longitudinal Strain ") << Sub2(symbol(epsilon),_T("x"));
    if ( !bAfter1999 )
@@ -1327,32 +1327,32 @@ void write_ex_table(IBroker* pBroker,
    {
       if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2008.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2008.png")) << rptNewLine;
       }
       else if ( shear_capacity_method == scmWSDOT2001 )
       {
          // tables with WSDOT modifications
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2003_WSDOT.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2003_WSDOT.png")) << rptNewLine;
       }
       else
       {
          // tables
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2005.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2005.png")) << rptNewLine;
       }
    }
    else if ( bAfter2004 )
    {
       if ( shear_capacity_method == scmWSDOT2007 )
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2008.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2008.png")) << rptNewLine;
       }
       else if ( shear_capacity_method == scmWSDOT2001 )
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2003_WSDOT.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2003_WSDOT.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2005.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2005.png")) << rptNewLine;
       }
    }
    else if ( bAfter2003 )
@@ -1361,27 +1361,27 @@ void write_ex_table(IBroker* pBroker,
 
       if ( shear_capacity_method == scmWSDOT2001 )
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2003_WSDOT.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2003_WSDOT.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2003.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2003.png")) << rptNewLine;
       }
    }
    else if ( bAfter1999 )
    {
       if ( shear_capacity_method == scmWSDOT2001 )
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2000_WSDOT.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2000_WSDOT.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex_2000.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex_2000.png")) << rptNewLine;
       }
    }
    else
    {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ex.png")) << rptNewLine; // 1999 and earlier
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ex.png")) << rptNewLine; // 1999 and earlier
    }
 
    pParagraph = new rptParagraph;
@@ -1416,12 +1416,12 @@ void write_ex_table(IBroker* pBroker,
       nCol += 4;
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    ColumnIndexType col = 0;
@@ -1602,7 +1602,7 @@ void write_ex_table(IBroker* pBroker,
    // print footnote if any values could not be calculated
    if (print_footnote1 || print_footnote2)
    {
-      pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pParagraph;
 
       *pParagraph << Sub2(_T("N"),_T("u")) << _T(" = 0") << rptNewLine;
@@ -1649,7 +1649,7 @@ void write_btsummary_table(IBroker* pBroker,
    ATLASSERT( bAfter2007 ? shear_capacity_method != scmWSDOT2007 : true );
 
    rptParagraph* pParagraph;
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -1671,12 +1671,12 @@ void write_btsummary_table(IBroker* pBroker,
 
       if (shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007)
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("BetaEquation.png")) << rptNewLine;
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaEquation.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BetaEquation.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ThetaEquation.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SxeEqn.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SxeEqn.png")) << rptNewLine;
       }
 
       INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdimu,    pDisplayUnits->GetComponentDimUnit(),    true );
@@ -1707,12 +1707,12 @@ void write_btsummary_table(IBroker* pBroker,
       }
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -1860,7 +1860,7 @@ void write_btsummary_table(IBroker* pBroker,
       row++;
    }
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
 
    if (print_sxe)
@@ -1884,22 +1884,22 @@ void write_Vs_table(IBroker* pBroker,
 {
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    *pParagraph << _T("Shear Resistance Provided By Shear Reinforcement - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
 
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Vs.png")) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Vs.png")) << rptNewLine;
    *pParagraph << rptNewLine;
    
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(9);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -1983,7 +1983,7 @@ void write_Vs_table(IBroker* pBroker,
    // print footnote if any values could not be calculated
    if (print_footnote)
    {
-      pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pParagraph;
       *pParagraph << _T("* - Value could not be calculated. Shear crushing capacity of section exceeded")<< rptNewLine<<rptNewLine;
    }
@@ -1999,7 +1999,7 @@ void write_Vc_table(IBroker* pBroker,
 {
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -2070,18 +2070,18 @@ void write_Vc_table(IBroker* pBroker,
             }
          }
 
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
 
          *pParagraph << rptNewLine;
       }
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(7);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -2177,7 +2177,7 @@ void write_Vc_table(IBroker* pBroker,
    // print footnote if any values could not be calculated
    if (print_footnote)
    {
-      pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pParagraph;
       *pParagraph << _T("* - Value could not be calculated. Shear crushing capacity of section exceeded")<< rptNewLine<<rptNewLine;
    }
@@ -2193,7 +2193,7 @@ void write_Vci_table(IBroker* pBroker,
 {
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -2262,18 +2262,18 @@ void write_Vci_table(IBroker* pBroker,
             }
          }
 
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
 
          *pParagraph << rptNewLine;
       }
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(9);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -2337,7 +2337,7 @@ void write_Vcw_table(IBroker* pBroker,
 {
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -2407,19 +2407,19 @@ void write_Vcw_table(IBroker* pBroker,
             }
          }
 
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
 
          *pParagraph << rptNewLine;
       }
    }
 
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(6);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -2477,7 +2477,7 @@ void write_theta_table(IBroker* pBroker,
 {
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -2547,18 +2547,18 @@ void write_theta_table(IBroker* pBroker,
             }
          }
 
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
 
          *pParagraph << rptNewLine;
       }
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(6);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -2626,7 +2626,7 @@ void write_Vn_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strName;
@@ -2636,12 +2636,12 @@ void write_Vn_table(IBroker* pBroker,
 
    CollectionIndexType nCol = (shear_capacity_method == scmVciVcw ? 11 : 12);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,strName);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol,strName);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -2742,7 +2742,7 @@ void write_Vn_table(IBroker* pBroker,
       row++;
    }
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
 
    if ( shear_capacity_method == scmVciVcw )
@@ -2797,27 +2797,27 @@ void write_Avs_table(IBroker* pBroker,
    CString strLabel;
    strLabel.Format(_T("Required Shear Reinforcement - %s"),pProductLoads->GetLimitStateName(ls));
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pParagraph << strLabel << rptNewLine;
    *pChapter << pParagraph;
 
    if ( shear_capacity_method != scmVciVcw )
    {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("RequiredShearReinforcement1.png"));
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("RequiredShearReinforcement1.png"));
    }
    else
    {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("RequiredShearReinforcement2.png"));
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("RequiredShearReinforcement2.png"));
    }
 
    CollectionIndexType nCol = (shear_capacity_method == scmVciVcw ? 8 : 9);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -2890,7 +2890,7 @@ void write_Avs_table(IBroker* pBroker,
       row++;
    }
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
 
    if ( shear_capacity_method == scmVciVcw )
@@ -2923,16 +2923,16 @@ void write_bar_spacing_table(IBroker* pBroker,
    CString strLabel;
    strLabel.Format(_T("Required Stirrup Spacing - %s"),pProductLoads->GetLimitStateName(ls));
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pParagraph << strLabel << rptNewLine;
    *pChapter << pParagraph;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(6);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;

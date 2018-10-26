@@ -60,6 +60,8 @@ CEditDistributedLoadDlg::CEditDistributedLoadDlg(const CDistributedLoadData& loa
 	//}}AFX_DATA_INIT
    EAFGetBroker(&m_pBroker);
 
+   m_EventID = m_TimelineMgr.FindUserLoadEventID(m_Load.m_ID);
+
    m_bWasNewEventCreated = false;
 }
 
@@ -85,7 +87,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag( pDX, IDC_LEFT_MAGNITUDE, IDC_MAGNITUDE_UNITS,  m_Load.m_WStart, pDisplayUnits->GetForcePerLengthUnit() );
    DDX_UnitValueAndTag( pDX, IDC_RIGHT_MAGNITUDE,IDC_MAGNITUDE_UNITS2, m_Load.m_WEnd,   pDisplayUnits->GetForcePerLengthUnit() );
 
-   DDX_CBItemData(pDX,IDC_EVENT,m_Load.m_EventIndex);
+   DDX_CBItemData(pDX,IDC_EVENT,m_EventID);
 
    // other values need to be done manually
    if (pDX->m_bSaveAndValidate)
@@ -94,23 +96,16 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
      DDX_CBIndex(pDX,IDC_LOADCASE,ival);
       m_Load.m_LoadCase = UserLoads::GetLoadCase(ival);
 
-      GET_IFACE(IBridgeDescription, pIBridgeDesc);
-      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+      EventIDType liveLoadEventID = m_TimelineMgr.GetLiveLoadEventID();
 
-      const CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_Load.m_EventIndex);
-      m_Load.m_EventID = pEvent->GetID();
-
-      EventIndexType liveLoadEventIdx = pTimelineMgr->GetLiveLoadEventIndex();
-
-      if ( m_Load.m_LoadCase == UserLoads::LL_IM && m_Load.m_EventIndex != liveLoadEventIdx )
+      if ( m_Load.m_LoadCase == UserLoads::LL_IM && m_EventID != liveLoadEventID )
       {
          AfxMessageBox(_T("The LL+IM load case can only be used in the events when live load is defined.\n\nChange the Load Case or Event."));
          pDX->PrepareCtrl(IDC_LOADCASE);
          pDX->Fail();
       }
 
-      if ( m_Load.m_EventIndex < pTimelineMgr->GetFirstSegmentErectionEventIndex() )
+      if ( m_TimelineMgr.GetEventIndex(m_EventID) < m_TimelineMgr.GetFirstSegmentErectionEventIndex() )
       {
          AfxMessageBox(_T("User defined loads can only be applied at the bridge site"));
          pDX->PrepareCtrl(IDC_EVENT);
@@ -123,15 +118,23 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
       GirderIndexType gdrIdx;
 
       if (ival == m_SpanCB.GetCount()-1)
+      {
          spanIdx = ALL_SPANS;
+      }
       else
+      {
          spanIdx = ival;
+      }
 
       ival = m_GirderCB.GetCurSel();
       if (ival == m_GirderCB.GetCount()-1 )
+      {
          gdrIdx = ALL_GIRDERS;
+      }
       else
+      {
          gdrIdx = ival;
+      }
 
       m_Load.m_SpanKey.spanIndex   = spanIdx;
       m_Load.m_SpanKey.girderIndex = gdrIdx;
@@ -252,11 +255,11 @@ BOOL CEditDistributedLoadDlg::OnInitDialog()
    pCB->SetCurSel(m_Load.m_LoadCase);
 
    FillEventList();
-   if ( m_Load.m_EventIndex == INVALID_INDEX )
+   if ( m_EventID == INVALID_ID )
    {
       CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
       pcbEvent->SetCurSel(0);
-      m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(0);
+      m_EventID = (EventIDType)pcbEvent->GetItemData(0);
    }
 
    CDialog::OnInitDialog();
@@ -384,17 +387,16 @@ void CEditDistributedLoadDlg::UpdateEventLoadCase(bool isInitial)
    CComboBox* pcbLoadCase = (CComboBox*)GetDlgItem(IDC_LOADCASE);
    CComboBox* pcbEvent    = (CComboBox*)GetDlgItem(IDC_EVENT);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
-   EventIndexType railingSystemEventIdx = pIBridgeDesc->GetRailingSystemLoadEventIndex();
-   EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+   EventIndexType castDeckEventIdx      = m_TimelineMgr.GetCastDeckEventIndex();
+   EventIndexType railingSystemEventIdx = m_TimelineMgr.GetRailingSystemLoadEventIndex();
+   EventIndexType liveLoadEventIdx      = m_TimelineMgr.GetLiveLoadEventIndex();
 
    if(pcbLoadCase->GetCurSel() == UserLoads::LL_IM)
    {
       pcbEvent->ResetContent();
-      const CTimelineEvent* pTimelineEvent = pIBridgeDesc->GetEventByIndex(liveLoadEventIdx);
+      const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(liveLoadEventIdx);
       int idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
-      pcbEvent->SetItemData(idx,DWORD_PTR(liveLoadEventIdx));
+      pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
       pcbEvent->SetCurSel(0);
       pcbEvent->EnableWindow(FALSE);
 
@@ -405,30 +407,33 @@ void CEditDistributedLoadDlg::UpdateEventLoadCase(bool isInitial)
       if (isInitial || m_WasLiveLoad)
       {
          pcbEvent->ResetContent();
-         const CTimelineEvent* pTimelineEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
+         const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(castDeckEventIdx);
          int idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
-         pcbEvent->SetItemData(idx,DWORD_PTR(castDeckEventIdx));
+         pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
 
-         pTimelineEvent = pIBridgeDesc->GetEventByIndex(railingSystemEventIdx);
+         pTimelineEvent = m_TimelineMgr.GetEventByIndex(railingSystemEventIdx);
          idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
-         pcbEvent->SetItemData(idx,DWORD_PTR(railingSystemEventIdx));
+         pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
 
          pcbEvent->EnableWindow(TRUE);
 
          if (isInitial)
          {
-            if ( m_Load.m_EventIndex == castDeckEventIdx )
+            EventIDType castDeckEventID      = m_TimelineMgr.GetCastDeckEventID();
+            EventIDType railingSystemEventID = m_TimelineMgr.GetRailingSystemLoadEventID();
+            EventIDType liveLoadEventID      = m_TimelineMgr.GetLiveLoadEventID();
+            if ( m_EventID == castDeckEventID )
             {
                pcbEvent->SetCurSel(0);
             }
-            else if ( m_Load.m_EventIndex == railingSystemEventIdx )
+            else if ( m_EventID == railingSystemEventID )
             {
                pcbEvent->SetCurSel(1);
             }
             else
             {
                pcbEvent->SetCurSel(0);
-               m_Load.m_EventIndex = castDeckEventIdx;
+               m_EventID = castDeckEventID;
             }
          }
          else
@@ -586,14 +591,18 @@ void CEditDistributedLoadDlg::UpdateGirderList()
        else
        {
           if ( m_GirderCB.GetCount()-1 == curSel )
+          {
              curSel = 0;
+          }
 
          curSel = m_GirderCB.SetCurSel( curSel );
        }
     }
 
     if ( curSel == CB_ERR )
+    {
        m_GirderCB.SetCurSel(0);
+    }
 }
 
 void CEditDistributedLoadDlg::FillEventList()
@@ -611,14 +620,11 @@ void CEditDistributedLoadDlg::FillEventList()
 
       pcbEvent->ResetContent();
 
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-      EventIndexType nEvents = pTimelineMgr->GetEventCount();
+      EventIndexType nEvents = m_TimelineMgr.GetEventCount();
       bool bValidEvent = false;
       for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
       {
-         const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+         const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(eventIdx);
          if ( pTimelineEvent->GetErectSegmentsActivity().IsEnabled() )
          {
             bValidEvent = true;
@@ -629,7 +635,7 @@ void CEditDistributedLoadDlg::FillEventList()
             CString label;
             label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
 
-            pcbEvent->SetItemData(pcbEvent->AddString(label),eventIdx);
+            pcbEvent->SetItemData(pcbEvent->AddString(label),pTimelineEvent->GetID());
          }
       }
 
@@ -671,15 +677,16 @@ void CEditDistributedLoadDlg::OnEventChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
    int curSel = pCB->GetCurSel();
-   EventIndexType idx = (IndexType)pCB->GetItemData(curSel);
-   if ( idx == CREATE_TIMELINE_EVENT )
+   EventIDType id = (EventIDType)pCB->GetItemData(curSel);
+   if ( id == CREATE_TIMELINE_EVENT )
    {
-      idx = CreateEvent();
+      EventIndexType idx = CreateEvent();
       if ( idx != INVALID_INDEX )
       {
          FillEventList();
-
-         pCB->SetCurSel((int)idx);
+         EventIndexType firstEventIdx = m_TimelineMgr.GetFirstSegmentErectionEventIndex();
+         int curSel = (int)(idx - firstEventIdx);
+         pCB->SetCurSel(curSel);
       }
       else
       {

@@ -799,6 +799,9 @@
 #define IDC_PIER_MODEL_TYPE             1407
 #define IDC_HAUNCH_SHAPE                1407
 #define IDC_DESIGNA_FROM                1407
+#define IDC_CB_NUMGDRS                  1407
+#define IDC_FILLET_COMBO                1407
+#define IDC_NGDRS_COMBO                 1407
 #define IDC_GIRDER_ORIENTATION          1408
 #define IDC_GIRDER_GIRDER               1408
 #define IDC_AHEAD_DIAPHRAGM_LOAD        1408
@@ -806,9 +809,13 @@
 #define IDC_HAUNCH_SHAPE2               1408
 #define IDC_DESIGNA_FROM2               1408
 #define IDC_DESIGNA_TO                  1408
+#define IDC_CB_SPACG_TYPE               1408
+#define IDC_SLABOFFSET_COMBO            1408
+#define IDC_GDR_NAME_COMBO              1408
 #define IDC_PIER                        1409
 #define IDC_FATIGUE_PEDES_COMBO         1409
 #define IDC_FILLET_TYPE                 1409
+#define IDC_GDR_SPC_TYPE_COMBO          1409
 #define IDC_HP_COMBO_END                1410
 #define IDC_PIER_GIRDER                 1410
 #define IDC_DESIGN_PEDES_COMBO4         1410
@@ -820,8 +827,11 @@
 #define IDC_RESIZEOPTIONS               1415
 #define IDC_GIRDER_NAME                 1416
 #define IDC_PREV_PIER_SPACING_MEASUREMENT_LOCATION 1417
+#define IDC_GIRDER_NAMEUSE              1417
 #define IDC_MOVE_PIER                   1418
+#define IDC_CB_FILLET                   1418
 #define IDC_BACK_PIER_SPACING_MEASUREMENT 1419
+#define IDC_CB_SLABOFFSET               1419
 #define IDC_PREV_SPAN_SPACING_MEASUREMENT 1420
 #define IDC_ROA_CB                      1421
 #define IDC_FROM_SPAN                   1422
@@ -836,7 +846,9 @@
 #define IDC_ERECTION_EVENT              1424
 #define IDC_HP_COMBO_HP                 1424
 #define IDC_HARP_HP_CB                  1424
+#define IDC_CB_SAMEGIRDER               1424
 #define IDC_BOTTOM_MAT_BAR              1425
+#define IDC_CB_SLABOFFSETTYPE           1425
 #define IDC_LEFT_CONNECTION             1426
 #define IDC_GIRDER_SPACING_MEASURE      1427
 #define IDC_WEARINGSURFACETYPE          1428
@@ -1114,6 +1126,7 @@
 #define IDC_STRENGTH_II_CR_MAX          1580
 #define IDC_USER_TEMPLATE_LOCATION      1581
 #define IDC_STRENGTH_II_SH_MAX          1581
+#define IDC_BACKGROUP2                  1581
 #define IDC_BACK_CONNECTION_LABEL       1582
 #define IDC_STRENGTH_II_PS_MAX          1582
 #define IDC_BACK_BOUNDARY_CONDITIONS_LABEL 1583
@@ -1141,7 +1154,7 @@
 #define IDC_LEFT_INTERIORBARRIER        1599
 #define IDC_LIST1                       1599
 #define IDC_SOURCE_LIST                 1599
-#define IDC_USER_LOADS                  1599
+#define IDC_USER_LOADS                  1900
 #define IDC_RIGHT_EXTERIORBARRIER       1600
 #define IDC_LOAD_UNIT                   1600
 #define IDC_RIGHT_INTERIORBARRIER       1601
@@ -1329,6 +1342,7 @@
 #define IDC_KDOT                        1669
 #define IDS_DLG_STATIONFMT_US           1669
 #define IDC_SLAB_OFFSET                 1669
+#define IDC_SPACING_MEASUREMENT2        1669
 #define IDC_BRIDGESIGHT                 1670
 #define IDC_SLAB_OFFSET_LABEL           1670
 #define IDS_DLG_ORIENTATIONFMT          1671
@@ -1363,6 +1377,7 @@
 #define IDS_GRADE1860_SI                1685
 #define IDC_STRAND                      1685
 #define IDC_REF_GIRDER_OFFSET           1686
+#define IDC_CB_FILLETTYPE               1686
 #define IDS_GDRSEL_EXCEED_MAX_STRAND    1687
 #define IDC_REF_GIRDER_OFFSET_UNIT      1688
 #define IDC_UP                          1688
@@ -1663,6 +1678,8 @@
 #define IDC_DESIGNA_STATIC              1888
 #define IDC_EXTENDED_STRANDS_LABEL      1889
 #define IDC_DEBONDED_STRANDS_LABEL      1890
+#define IDC_START                       1891
+#define IDC_END                         1892
 #define IDC_SERVICE_III_PLUS            1899
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
@@ -1827,7 +1844,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        373
 #define _APS_NEXT_COMMAND_VALUE         36997
-#define _APS_NEXT_CONTROL_VALUE         1891
+#define _APS_NEXT_CONTROL_VALUE         1893
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

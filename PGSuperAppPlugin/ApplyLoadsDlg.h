@@ -24,7 +24,11 @@
 
 #include <PgsExt\ApplyLoadActivity.h>
 #include <PgsExt\TimelineManager.h>
-#include "afxcmn.h"
+#include <PgsExt\TimelineItemListBox.h>
+
+#include <PgsExt\PointLoadData.h>
+#include <PgsExt\DistributedLoadData.h>
+#include <PgsExt\MomentLoadData.h>
 
 // CApplyLoadsDlg dialog
 
@@ -45,17 +49,22 @@ public:
 protected:
    void InitalizeCheckBox(CDataExchange* pDX,EventIndexType eventIdx,UINT nIDC);
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-   CListCtrl m_ctrlUserLoads;
+
+   CTimelineItemListBox m_lbSource;
+   CTimelineItemListBox m_lbTarget;
 
    BOOL m_bReadOnly;
 
-   void InitUserLoads();
-   void AddDistributedLoad(int rowIdx,LoadIDType loadID);
-   void AddPointLoad(int rowIdx,LoadIDType loadID);
-   void AddMomentLoad(int rowIdx,LoadIDType loadID);
+   void FillLists();
+   CString GetLoadDescription(const CPointLoadData* pLoad);
+   CString GetLoadDescription(const CDistributedLoadData* pLoad);
+   CString GetLoadDescription(const CMomentLoadData* pLoad);
+   CString GetLocation(const CSpanKey& spanKey);
 
 	DECLARE_MESSAGE_MAP()
 public:
    virtual BOOL OnInitDialog();
+   afx_msg void OnMoveToTargetList();
+   afx_msg void OnMoveToSourceList();
    afx_msg void OnHelp();
 };

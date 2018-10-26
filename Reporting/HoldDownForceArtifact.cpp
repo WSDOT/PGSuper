@@ -94,7 +94,7 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
       return;
    }
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Hold Down Force");
 
@@ -112,7 +112,7 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
       {
          if ( 1 < nSegments )
          {
-            pBody = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            pBody = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             *pChapter << pBody;
             *pBody << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
          }
@@ -120,7 +120,7 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
          pBody = new rptParagraph;
          *pChapter << pBody;
       
-         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,NULL);
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,NULL);
          *pBody << pTable;
 
          (*pTable)(0,0) << COLHDR(_T("Hold Down Force"),    rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );

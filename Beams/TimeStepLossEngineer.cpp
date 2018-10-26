@@ -30,7 +30,7 @@
 #include <PgsExt\ClosureJointData.h>
 #include <PgsExt\LoadFactors.h>
 
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\ReportNotes.h>
 #include <PgsExt\GirderLabel.h>
 
@@ -3007,7 +3007,7 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
          os << _T("Losses in Pretensioned Strands");
       }
 
-      rptRcTable* pPSLossTable = pgsReportStyleHolder::CreateDefaultTable(2+nIntervals,os.str().c_str());
+      rptRcTable* pPSLossTable = rptStyleManager::CreateDefaultTable(2+nIntervals,os.str().c_str());
       *pPara << pPSLossTable << rptNewLine;
 
       RowIndexType row = pPSLossTable->GetNumberOfHeaderRows();
@@ -3081,7 +3081,7 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
          IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
 
          strTitle.Format(_T("Duct %d - Losses in Post-Tension Tendon"),LABEL_DUCT(ductIdx));
-         pPTLossTable[ductIdx] = pgsReportStyleHolder::CreateDefaultTable(4+(nIntervals-ptIntervalIdx),strTitle);
+         pPTLossTable[ductIdx] = rptStyleManager::CreateDefaultTable(4+(nIntervals-ptIntervalIdx),strTitle);
          *pPara << pPTLossTable[ductIdx] << rptNewLine;
 
 

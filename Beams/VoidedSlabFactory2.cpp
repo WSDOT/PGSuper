@@ -254,7 +254,7 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,c
    }
 }
 
-void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -262,8 +262,9 @@ void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupI
 
    // use passed value if not null
    pgsTypes::SupportedDeckType deckType = (pDeckType!=NULL) ? *pDeckType : pDeck->DeckType;
+   pgsTypes::SupportedBeamSpacing spacingType = (pSpacingType!=NULL) ? *pSpacingType : pBridgeDesc->GetGirderSpacingType();
    
-   if ( deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone )
+   if (spacingType==pgsTypes::sbsUniformAdjacent || spacingType==pgsTypes::sbsGeneralAdjacent || spacingType==pgsTypes::sbsConstantAdjacent)
    {
       CComObject<CVoidedSlab2DistFactorEngineer>* pEngineer;
       CComObject<CVoidedSlab2DistFactorEngineer>::CreateInstance(&pEngineer);
@@ -1046,6 +1047,7 @@ pgsTypes::SupportedDeckTypes CVoidedSlab2Factory::GetSupportedDeckTypes(pgsTypes
    case pgsTypes::sbsGeneralAdjacent:
       sdt.push_back(pgsTypes::sdtCompositeOverlay);
       sdt.push_back(pgsTypes::sdtNone);
+      sdt.push_back(pgsTypes::sdtCompositeCIP);
       break;
 
    default:
@@ -1097,37 +1099,21 @@ void CVoidedSlab2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimension
    Float64 gw = GetDimension(dimensions,_T("W"));
    Float64 J  = GetDimension(dimensions,_T("Jmax"));
 
-   if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
+   if(sbs == pgsTypes::sbsUniform || sbs == pgsTypes::sbsGeneral)
    {
-      if(sbs == pgsTypes::sbsUniform || sbs == pgsTypes::sbsGeneral)
-      {
-         *minSpacing = gw;
-         *maxSpacing = MAX_GIRDER_SPACING;
-      }
-      else
-      {
-         ATLASSERT(false); // shouldn't get here
-      }
+      *minSpacing = gw;
+      *maxSpacing = MAX_GIRDER_SPACING;
+   }
+   else if(sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
+   {
+      *minSpacing = gw;
+      *maxSpacing = gw+J;
    }
    else
    {
-      if (sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
-      {
-         if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
-         {
-            *minSpacing = gw;
-            *maxSpacing = gw+J;
-         }
-         else
-         {
-            ATLASSERT(false); // shouldn't get here
-         }
-      }
-      else
-      {
-         ATLASSERT(false); // shouldn't get here
-      }
+      ATLASSERT(false); // shouldn't get here
    }
+
 }
 
 WebIndexType CVoidedSlab2Factory::GetWebCount(const IBeamFactory::Dimensions& dimensions)

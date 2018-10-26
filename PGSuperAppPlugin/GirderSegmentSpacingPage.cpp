@@ -29,7 +29,6 @@
 #include "TemporarySupportDlg.h"
 #include "PierDetailsDlg.h"
 #include "SelectItemDlg.h"
-#include "PGSuperColors.h"
 #include "Utilities.h"
 
 #include <PGSuperUnits.h>
@@ -117,8 +116,8 @@ void CGirderSegmentSpacingPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CGirderSegmentSpacingPage)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
-   DDX_Control(pDX, IDC_SEGMENT_SPACING_NOTE,   m_GirderSpacingHyperLink);
    DDX_Control(pDX, IDC_SPACING_MEASUREMENT,    m_cbGirderSpacingMeasurement);
+   DDX_Control(pDX, IDC_CB_SPACG_TYPE,          m_cbGirderSpacingType);
 
    DDX_CBItemData(pDX, IDC_SPACING_MEASUREMENT, m_GirderSpacingMeasure);
 
@@ -162,10 +161,8 @@ void CGirderSegmentSpacingPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CGirderSegmentSpacingPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderSegmentSpacingPage)
-	ON_WM_CTLCOLOR()
    ON_CBN_SELCHANGE(IDC_SPACING_MEASUREMENT,OnSpacingDatumChanged)
-   ON_REGISTERED_MESSAGE(MsgChangeSameGirderSpacing,OnChangeSameGirderSpacing)
-   //ON_REGISTERED_MESSAGE(MsgChangeSlabOffset,OnChangeSlabOffset)
+   ON_CBN_SELCHANGE(IDC_CB_SPACG_TYPE,OnChangeSameGirderSpacing)
 	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -192,6 +189,43 @@ BOOL CGirderSegmentSpacingPage::OnInitDialog()
    SetGroupTitle();
    
    CPropertyPage::OnInitDialog();
+
+   if ( spacingType == pgsTypes::sbsUniform )
+   {
+      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(0);
+   }
+   else if ( spacingType == pgsTypes::sbsUniformAdjacent )
+   {
+      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(0);
+   }
+   else if ( spacingType == pgsTypes::sbsConstantAdjacent )
+   {
+      CString note;
+      note.Format(_T("The same girder spacing must be used for the entire bridge for %s girders"), GetBridgeDescription()->GetGirderFamilyName());
+      m_cbGirderSpacingType.AddString(note);
+      m_cbGirderSpacingType.SetCurSel(0);
+      m_cbGirderSpacingType.EnableWindow(FALSE);
+   }
+   else if ( spacingType == pgsTypes::sbsGeneral )
+   {
+      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(1);
+   }
+   else if ( spacingType == pgsTypes::sbsGeneralAdjacent )
+   {
+      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(1);
+   }
+   else
+   {
+      ATLASSERT(false); // is there a new spacing type???
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -246,20 +280,6 @@ void CGirderSegmentSpacingPage::FillRefGirderComboBox()
    pCB->SetCurSel(curSel == CB_ERR ? 0 : curSel);
 }
 
-HBRUSH CGirderSegmentSpacingPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
-{
-	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
-
-   switch( pWnd->GetDlgCtrlID() )
-   {
-   case IDC_SEGMENT_SPACING_NOTE:
-      pDC->SetTextColor(HYPERLINK_COLOR);
-      break;
-   };
-
-   return hbr;
-}
-
 BOOL CGirderSegmentSpacingPage::OnSetActive() 
 {
    UpdateChildWindowState();
@@ -272,7 +292,7 @@ BOOL CGirderSegmentSpacingPage::OnSetActive()
    // if the connection type is continuous segment, the spacing is not defined at this
    // support (spacing is only defined at the ends of segments)
    int show = (IsContinuousSegment() ? SW_HIDE : SW_SHOW);
-   m_GirderSpacingHyperLink.ShowWindow(show);
+   m_cbGirderSpacingType.ShowWindow(show);
    m_cbGirderSpacingMeasurement.ShowWindow(show);
    m_SpacingGrid.ShowWindow(show);
 
@@ -304,7 +324,6 @@ void CGirderSegmentSpacingPage::DisableAll()
 
 void CGirderSegmentSpacingPage::UpdateChildWindowState()
 {
-   UpdateGirderSpacingHyperLinkText();
    UpdateGirderSpacingState();
 }
 
@@ -333,7 +352,7 @@ void CGirderSegmentSpacingPage::UpdateGirderSpacingState()
    GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE)->EnableWindow(   bEnable );
 }
 
-LRESULT CGirderSegmentSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam)
+void CGirderSegmentSpacingPage::OnChangeSameGirderSpacing()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -413,7 +432,7 @@ LRESULT CGirderSegmentSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARA
             }
             else
             {
-               return 0;
+               return;
             }
          }
          else
@@ -443,7 +462,6 @@ LRESULT CGirderSegmentSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARA
    m_SpacingGrid.UpdateGrid();
 
    UpdateChildWindowState();
-   return 0;
 }
 
 void CGirderSegmentSpacingPage::OnSpacingDatumChanged()
@@ -451,68 +469,6 @@ void CGirderSegmentSpacingPage::OnSpacingDatumChanged()
    m_SpacingGrid.UpdateGrid();
 }
 
-void CGirderSegmentSpacingPage::UpdateGirderSpacingHyperLinkText()
-{
-   CString strSpacingNote(_T(""));
-   CString strConstantSpacingNote(_T(""));
-
-   bool bInputSpacing;
-   bInputSpacing = m_SpacingGrid.InputSpacing();
-
-   CString strGirderSpacingURL;
-
-   BOOL bEnable = TRUE;
-   pgsTypes::SupportedBeamSpacing spacingType = GetBridgeDescription()->GetGirderSpacingType();
-   if ( spacingType == pgsTypes::sbsUniform )
-   {
-      strSpacingNote = _T("The same girder spacing is used for the entire bridge");
-      bEnable = (bInputSpacing ? TRUE : FALSE);
-
-      strGirderSpacingURL = _T("Click to define girder spacing span by span");
-   }
-   else if ( spacingType == pgsTypes::sbsUniformAdjacent )
-   {
-      strSpacingNote = _T("The same joint spacing is used for the entire bridge");
-      bEnable = (bInputSpacing ? TRUE : FALSE);
-
-      strGirderSpacingURL = _T("Click to define joint spacing span by span");
-   }
-   else if ( spacingType == pgsTypes::sbsConstantAdjacent )
-   {
-      strSpacingNote.Format(_T("The same girder spacing must be used for the entire bridge for %s girders"),
-                            GetBridgeDescription()->GetGirderFamilyName());
-
-      bEnable = FALSE;
-
-      strGirderSpacingURL = _T("Click to define girder spacing span by span");
-   }
-   else if ( spacingType == pgsTypes::sbsGeneral )
-   {
-      strSpacingNote  = _T("Girder spacing is defined span by span");
-
-      bEnable = (bInputSpacing ? TRUE : FALSE);
-
-      strGirderSpacingURL = _T("Click to make girder spacing the same for all spans");
-   }
-   else if ( spacingType == pgsTypes::sbsGeneralAdjacent )
-   {
-      strSpacingNote  = _T("Joint spacing is defined span by span");
-
-      bEnable = (bInputSpacing ? TRUE : FALSE);
-
-      strGirderSpacingURL = _T("Click to make joint spacing the same for all spans");
-   }
-   else
-   {
-      ATLASSERT(false); // is there a new spacing type???
-   }
-
-   GetDlgItem(IDC_CONSTANT_SPACING_NOTE)->SetWindowText(strConstantSpacingNote);
-
-   m_GirderSpacingHyperLink.SetWindowText(strSpacingNote);
-   m_GirderSpacingHyperLink.SetURL(strGirderSpacingURL);
-   m_GirderSpacingHyperLink.EnableWindow(bEnable);
-}
 
 void CGirderSegmentSpacingPage::OnHelp() 
 {

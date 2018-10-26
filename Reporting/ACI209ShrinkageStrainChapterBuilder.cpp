@@ -62,7 +62,7 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, vsRatio, pDisplayUnits->GetComponentDimUnit(), false );
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -72,7 +72,7 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    *pPara << _T("ACI 209R-92, Reapproved 2008") << rptNewLine;
    *pPara << rptNewLine;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(2);
 
    *pPara << pTable << rptNewLine;
    (*pTable)(0,0) << _T("Moist Curing");
@@ -81,11 +81,11 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    (*pTable)(1,0) << rptRcImage(strImagePath + _T("ACI209_Shrinkage_MoistCured_CPFactor.png"));
    (*pTable)(1,1) << rptRcImage(strImagePath + _T("ACI209_Shrinkage_SteamCured.png"));
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(7);
+   pTable = rptStyleManager::CreateDefaultTable(7);
    *pPara << pTable << rptNewLine;
 
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
 
    RowIndexType rowIdx = 0;
@@ -181,12 +181,12 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    }
 
 #if defined _DEBUG || defined _BETA_VERSION
-   pTable = pgsReportStyleHolder::CreateDefaultTable(6*nSegments+1);
+   pTable = rptStyleManager::CreateDefaultTable(6*nSegments+1);
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    rowIdx = 0;
    colIdx = 0;

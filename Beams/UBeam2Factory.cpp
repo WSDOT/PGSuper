@@ -252,7 +252,7 @@ void CUBeam2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const 
    }
 }
 
-void CUBeam2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CUBeam2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    CComObject<CUBeamDistFactorEngineer>* pEngineer;
    CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);

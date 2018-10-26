@@ -177,10 +177,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             // firs time through loop, report the common information
             if ( details.Spec == CREEP_SPEC_PRE_2005 )
             {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn.png")) << rptNewLine;
                *pPara << Bold(_T("for which:")) << rptNewLine;
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn-SI.png") : _T("KfEqn-US.png")) ) << rptNewLine;
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn-SI.png") : _T("KfEqn-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
 
                *pPara << Bold(_T("where:")) << rptNewLine;
                *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
@@ -194,38 +194,38 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             {
                if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
                }
                else
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2005.png")) << rptNewLine;
                }
 
                *pPara << Bold(_T("for which:")) << rptNewLine;
                
                if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
                }
                else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
                }
                else
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
                }
 
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
                if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
                }
                else
                {
                   ATLASSERT(!bSI);
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KtdEqn-US2015.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KtdEqn-US2015.png")) << rptNewLine;
                }
 
                *pPara << Bold(_T("where:")) << rptNewLine;
@@ -366,10 +366,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
 
             if ( details.Spec == CREEP_SPEC_PRE_2005 )
             {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn.png")) << rptNewLine;
                *pPara << Bold(_T("for which:")) << rptNewLine;
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn-SI.png") : _T("KfEqn-US.png")) ) << rptNewLine;
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn-SI.png") : _T("KfEqn-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
 
                *pPara << Bold(_T("where:")) << rptNewLine;
                *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
@@ -383,37 +383,37 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             {
                if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
                }
                else
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2005.png")) << rptNewLine;
                }
                *pPara << Bold(_T("for which:")) << rptNewLine;
 
                if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
                }
                else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
                }
                else
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
                }
 
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
                if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
                {
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
                }
                else
                {
                   ATLASSERT(!bSI);
-                  *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KtdEqn-US2015.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KtdEqn-US2015.png")) << rptNewLine;
                }
 
                *pPara << Bold(_T("where:")) << rptNewLine;
@@ -553,10 +553,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
         if ( details.Spec == CREEP_SPEC_PRE_2005 )
         {
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn.png")) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn.png")) << rptNewLine;
            *pPara << Bold(_T("for which:")) << rptNewLine;
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn-SI.png") : _T("KfEqn-US.png")) ) << rptNewLine;
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn-SI.png") : _T("KfEqn-US.png")) ) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
 
            *pPara << Bold(_T("where:")) << rptNewLine;
            *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
@@ -570,37 +570,37 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
         {
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
             {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
             }
             else
             {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2005.png")) << rptNewLine;
             }
             *pPara << Bold(_T("for which:")) << rptNewLine;
             
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
             {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
             }
             else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
             {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
             }
             else
             {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
             }
 
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
-           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
             {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
             }
             else
             {
                ATLASSERT(!bSI);
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KtdEqn-US2015.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KtdEqn-US2015.png")) << rptNewLine;
             }
 
            *pPara << Bold(_T("where:")) << rptNewLine;

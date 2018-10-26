@@ -123,7 +123,7 @@ protected:
    bool m_bSortAscending;
    void Sort(int columnIdx,bool bReverse=true);
 
-   CString GetEventName(EventIndexType eventIdx);
+   CString GetEventName(EventIDType loadID);
 
 public:
    afx_msg void OnDestroy();

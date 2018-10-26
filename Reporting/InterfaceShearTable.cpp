@@ -78,7 +78,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    rptCapacityToDemand cap_demand;
 
    rptParagraph* pPara;
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -87,13 +87,13 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    pPara = new rptParagraph();
    *pChapter << pPara;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(10);
    *pPara << table;
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    table->SetNumberOfHeaderRows(2);
@@ -245,7 +245,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    {
       INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+       pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
        *pChapter << pPara;
        *pPara<<color(Blue)<< _T("*") << color(Black)<<_T(" Note: b")<<Sub(_T("v"))<<_T(" exceeds ")<<dimu.SetValue(bvmax)<<_T(" and number of legs < ")<< scalar.SetValue(minlegs)<<rptNewLine;
    }

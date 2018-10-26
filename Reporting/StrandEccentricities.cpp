@@ -68,7 +68,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
 
    // Strand Eccentricity Table
-   rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   rptParagraph* p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << p;
 
    //GET_IFACE2( pBroker, ILossParameters, pLossParams);
@@ -111,7 +111,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
                *p << ecc_table.Build(pBroker,thisSegmentKey,releaseIntervalIdx,pDisplayUnits) << rptNewLine;
             //}
 
-            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
             *pChapter << p;
             *p << _T("Eccentricities measured from neutral axis of non-composite section based on material properties at time of prestress release") << rptNewLine;
             *p << _T("Positive values indicate strands are below the neutral axis") << rptNewLine;

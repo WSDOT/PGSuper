@@ -49,7 +49,7 @@ rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
       nColumns += 2; // lamda rl and lamda lw
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable( nColumns, _T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable( nColumns, _T(""));
 
    ColumnIndexType col=0;
    (*pTable)(0,col++) << _T("Bar Size");
@@ -177,7 +177,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(dummy_poi,true);  // debonded
 
          // Transfer Length
-         rptParagraph* pParagraph_h = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         rptParagraph* pParagraph_h = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pParagraph_h;
          rptParagraph* pParagraph = new rptParagraph;
          *pChapter << pParagraph;
@@ -207,27 +207,27 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          pParagraph = new rptParagraph;
          *pChapter << pParagraph;
 
-         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(13,_T("Development Length [5.11.4.2]"));
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(13,_T("Development Length [5.11.4.2]"));
          (*pParagraph) << pTable << rptNewLine;
 
 
          if ( girderKey.groupIndex == ALL_GROUPS )
          {
-            pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-            pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
          }
 
          if ( IS_US_UNITS(pDisplayUnits) )
          {
-            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("DevLength_US.png")) << rptNewLine;
+            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_US.png")) << rptNewLine;
          }
          else
          {
-            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("DevLength_SI.png")) << rptNewLine;
+            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_SI.png")) << rptNewLine;
          }
 
 
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("DevLengthReduction.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLengthReduction.png")) << rptNewLine;
 
          pTable->SetNumberOfHeaderRows(2);
          pTable->SetRowSpan(0,0,2);
@@ -340,7 +340,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             row++;
          } // next poi
 
-         pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+         pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
          (*pChapter) << pParagraph;
          (*pParagraph) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps")) << _T(" = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)") << rptNewLine;
 
@@ -350,7 +350,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
-            pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pParagraph;
 
 #pragma Reminder("UPDATE: update heading so that it works for both PGSuper and PGSplice")
@@ -374,21 +374,21 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             {
 	            if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
 	            {
-	               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_2016.png")) << rptNewLine;
+	               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2016.png")) << rptNewLine;
 	            }
 	            else if ( lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion() )
 	            {
-	               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
+	               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
 	            }
 	            else
 	            {
 	               if ( IS_US_UNITS(pDisplayUnits) )
 	               {
-	                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
+	                  *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
 	               }
 	               else
 	               {
-	                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
+	                  *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
 	               }
 	            }
 
@@ -444,7 +444,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Development Length of Longitudinal Rebar [5.11.2.1] in Deck Slab") << rptNewLine;
 

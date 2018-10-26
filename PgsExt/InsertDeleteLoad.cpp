@@ -34,7 +34,7 @@ static char THIS_FILE[] = __FILE__;
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-txnInsertPointLoad::txnInsertPointLoad(const CPointLoadData& loadData,CTimelineManager* pTimelineMgr)
+txnInsertPointLoad::txnInsertPointLoad(const CPointLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr)
 {
    m_pTimelineMgr = NULL;
    if ( pTimelineMgr )
@@ -44,6 +44,7 @@ txnInsertPointLoad::txnInsertPointLoad(const CPointLoadData& loadData,CTimelineM
 
    m_LoadIdx = INVALID_INDEX;
    m_LoadData = loadData;
+   m_LoadingEventID = loadingEventID;
 }
 
 txnInsertPointLoad::~txnInsertPointLoad()
@@ -61,7 +62,7 @@ std::_tstring txnInsertPointLoad::Name() const
 
 txnTransaction* txnInsertPointLoad::CreateClone() const
 {
-   return new txnInsertPointLoad(m_LoadData,m_pTimelineMgr);
+   return new txnInsertPointLoad(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
 
 bool txnInsertPointLoad::IsUndoable()
@@ -93,7 +94,7 @@ bool txnInsertPointLoad::Execute()
    }
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   m_LoadIdx = pUdl->AddPointLoad(m_LoadData);
+   m_LoadIdx = pUdl->AddPointLoad(m_LoadingEventID,m_LoadData);
 
    pEvents->FirePendingEvents();
 
@@ -160,8 +161,15 @@ bool txnDeletePointLoad::Execute()
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
+   // keep copies of the loading and the event when it is applied
+   // for undo
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadData = *(pUdl->GetPointLoad(m_LoadIdx));
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   m_LoadingEventID = pTimelineMgr->FindUserLoadEventID(m_LoadData.m_ID);
+
    pUdl->DeletePointLoad(m_LoadIdx);
 
    pEvents->FirePendingEvents();
@@ -178,14 +186,14 @@ void txnDeletePointLoad::Undo()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   m_LoadIdx = pUdl->AddPointLoad(m_LoadData);
+   m_LoadIdx = pUdl->AddPointLoad(m_LoadingEventID,m_LoadData);
 
    pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
 
-txnEditPointLoad::txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,const CPointLoadData& newLoadData,CTimelineManager* pTimelineMgr)
+txnEditPointLoad::txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,EventIDType oldLoadingEventID,const CPointLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr)
 {
    m_pTimelineMgr = NULL;
    if ( pTimelineMgr )
@@ -196,6 +204,8 @@ txnEditPointLoad::txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadD
    m_LoadIdx = loadIdx;
    m_LoadData[0] = oldLoadData;
    m_LoadData[1] = newLoadData;
+   m_LoadingEventID[0] = oldLoadingEventID;
+   m_LoadingEventID[1] = newLoadingEventID;
 }
 
 txnEditPointLoad::~txnEditPointLoad()
@@ -213,7 +223,7 @@ std::_tstring txnEditPointLoad::Name() const
 
 txnTransaction* txnEditPointLoad::CreateClone() const
 {
-   return new txnEditPointLoad(m_LoadIdx,m_LoadData[0],m_LoadData[1],m_pTimelineMgr);
+   return new txnEditPointLoad(m_LoadIdx,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
 
 bool txnEditPointLoad::Execute()
@@ -263,7 +273,7 @@ void txnEditPointLoad::DoExecute(int i)
    }
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   pUdl->UpdatePointLoad(m_LoadIdx,m_LoadData[i]);
+   pUdl->UpdatePointLoad(m_LoadIdx,m_LoadingEventID[i],m_LoadData[i]);
 
    pEvents->FirePendingEvents();
 }
@@ -272,7 +282,7 @@ void txnEditPointLoad::DoExecute(int i)
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-txnInsertDistributedLoad::txnInsertDistributedLoad(const CDistributedLoadData& loadData,CTimelineManager* pTimelineMgr)
+txnInsertDistributedLoad::txnInsertDistributedLoad(const CDistributedLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr)
 {
    m_pTimelineMgr = NULL;
    if ( pTimelineMgr )
@@ -282,6 +292,7 @@ txnInsertDistributedLoad::txnInsertDistributedLoad(const CDistributedLoadData& l
 
    m_LoadIdx = INVALID_INDEX;
    m_LoadData = loadData;
+   m_LoadingEventID = loadingEventID;
 }
 
 txnInsertDistributedLoad::~txnInsertDistributedLoad()
@@ -299,7 +310,7 @@ std::_tstring txnInsertDistributedLoad::Name() const
 
 txnTransaction* txnInsertDistributedLoad::CreateClone() const
 {
-   return new txnInsertDistributedLoad(m_LoadData,m_pTimelineMgr);
+   return new txnInsertDistributedLoad(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
 
 bool txnInsertDistributedLoad::IsUndoable()
@@ -331,7 +342,7 @@ bool txnInsertDistributedLoad::Execute()
    }
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   m_LoadIdx = pUdl->AddDistributedLoad(m_LoadData);
+   m_LoadIdx = pUdl->AddDistributedLoad(m_LoadingEventID,m_LoadData);
 
    pEvents->FirePendingEvents();
 
@@ -400,6 +411,11 @@ bool txnDeleteDistributedLoad::Execute()
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadData = *(pUdl->GetDistributedLoad(m_LoadIdx));
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   m_LoadingEventID = pTimelineMgr->FindUserLoadEventID(m_LoadData.m_ID);
+
    pUdl->DeleteDistributedLoad(m_LoadIdx);
 
    pEvents->FirePendingEvents();
@@ -416,14 +432,14 @@ void txnDeleteDistributedLoad::Undo()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   m_LoadIdx = pUdl->AddDistributedLoad(m_LoadData);
+   m_LoadIdx = pUdl->AddDistributedLoad(m_LoadingEventID,m_LoadData);
 
    pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
 
-txnEditDistributedLoad::txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,const CDistributedLoadData& newLoadData,CTimelineManager* pTimelineMgr)
+txnEditDistributedLoad::txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,EventIDType oldLoadingEventID,const CDistributedLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr)
 {
    m_pTimelineMgr = NULL;
    if ( pTimelineMgr )
@@ -434,6 +450,8 @@ txnEditDistributedLoad::txnEditDistributedLoad(CollectionIndexType loadIdx,const
    m_LoadIdx = loadIdx;
    m_LoadData[0] = oldLoadData;
    m_LoadData[1] = newLoadData;
+   m_LoadingEventID[0] = oldLoadingEventID;
+   m_LoadingEventID[1] = newLoadingEventID;
 }
 
 txnEditDistributedLoad::~txnEditDistributedLoad()
@@ -451,7 +469,7 @@ std::_tstring txnEditDistributedLoad::Name() const
 
 txnTransaction* txnEditDistributedLoad::CreateClone() const
 {
-   return new txnEditDistributedLoad(m_LoadIdx,m_LoadData[0],m_LoadData[1],m_pTimelineMgr);
+   return new txnEditDistributedLoad(m_LoadIdx,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
 
 bool txnEditDistributedLoad::Execute()
@@ -501,7 +519,7 @@ void txnEditDistributedLoad::DoExecute(int i)
    }
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   pUdl->UpdateDistributedLoad(m_LoadIdx,m_LoadData[i]);
+   pUdl->UpdateDistributedLoad(m_LoadIdx,m_LoadingEventID[i],m_LoadData[i]);
 
    pEvents->FirePendingEvents();
 }
@@ -510,7 +528,7 @@ void txnEditDistributedLoad::DoExecute(int i)
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-txnInsertMomentLoad::txnInsertMomentLoad(const CMomentLoadData& loadData,CTimelineManager* pTimelineMgr)
+txnInsertMomentLoad::txnInsertMomentLoad(const CMomentLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr)
 {
    m_pTimelineMgr = NULL;
    if ( pTimelineMgr )
@@ -519,6 +537,7 @@ txnInsertMomentLoad::txnInsertMomentLoad(const CMomentLoadData& loadData,CTimeli
    }
    m_LoadIdx = INVALID_INDEX;
    m_LoadData = loadData;
+   m_LoadingEventID = loadingEventID;
 }
 
 txnInsertMomentLoad::~txnInsertMomentLoad()
@@ -536,7 +555,7 @@ std::_tstring txnInsertMomentLoad::Name() const
 
 txnTransaction* txnInsertMomentLoad::CreateClone() const
 {
-   return new txnInsertMomentLoad(m_LoadData,m_pTimelineMgr);
+   return new txnInsertMomentLoad(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
 
 bool txnInsertMomentLoad::IsUndoable()
@@ -568,7 +587,7 @@ bool txnInsertMomentLoad::Execute()
    }
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   m_LoadIdx = pUdl->AddMomentLoad(m_LoadData);
+   m_LoadIdx = pUdl->AddMomentLoad(m_LoadingEventID,m_LoadData);
 
    pEvents->FirePendingEvents();
 
@@ -636,6 +655,11 @@ bool txnDeleteMomentLoad::Execute()
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadData = *(pUdl->GetMomentLoad(m_LoadIdx));
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   m_LoadingEventID = pTimelineMgr->FindUserLoadEventID(m_LoadData.m_ID);
+
    pUdl->DeleteMomentLoad(m_LoadIdx);
 
    pEvents->FirePendingEvents();
@@ -652,14 +676,14 @@ void txnDeleteMomentLoad::Undo()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   m_LoadIdx = pUdl->AddMomentLoad(m_LoadData);
+   m_LoadIdx = pUdl->AddMomentLoad(m_LoadingEventID,m_LoadData);
 
    pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
 
-txnEditMomentLoad::txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,const CMomentLoadData& newLoadData,CTimelineManager* pTimelineMgr)
+txnEditMomentLoad::txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,EventIDType oldLoadingEventID,const CMomentLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr)
 {
    m_pTimelineMgr = NULL;
    if ( pTimelineMgr )
@@ -670,6 +694,8 @@ txnEditMomentLoad::txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLo
    m_LoadIdx = loadIdx;
    m_LoadData[0] = oldLoadData;
    m_LoadData[1] = newLoadData;
+   m_LoadingEventID[0] = oldLoadingEventID;
+   m_LoadingEventID[1] = newLoadingEventID;
 }
 
 txnEditMomentLoad::~txnEditMomentLoad()
@@ -687,7 +713,7 @@ std::_tstring txnEditMomentLoad::Name() const
 
 txnTransaction* txnEditMomentLoad::CreateClone() const
 {
-   return new txnEditMomentLoad(m_LoadIdx,m_LoadData[0],m_LoadData[1],m_pTimelineMgr);
+   return new txnEditMomentLoad(m_LoadIdx,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
 
 bool txnEditMomentLoad::Execute()
@@ -737,7 +763,7 @@ void txnEditMomentLoad::DoExecute(int i)
    }
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
-   pUdl->UpdateMomentLoad(m_LoadIdx,m_LoadData[i]);
+   pUdl->UpdateMomentLoad(m_LoadIdx,m_LoadingEventID[i],m_LoadData[i]);
 
    pEvents->FirePendingEvents();
 }

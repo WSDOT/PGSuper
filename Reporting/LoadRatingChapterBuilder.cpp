@@ -72,7 +72,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptParagraph* pPara;
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    (*pChapter) << pPara;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -83,7 +83,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
       pPara->SetName(_T("Design Load Rating"));
       (*pPara) << pPara->GetName() << rptNewLine;
@@ -94,7 +94,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
       pPara->SetName(_T("Legal Load Rating"));
       (*pPara) << pPara->GetName() << rptNewLine;
@@ -134,7 +134,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
       pPara->SetName(_T("Permit Load Rating"));
       (*pPara) << pPara->GetName() << rptNewLine;

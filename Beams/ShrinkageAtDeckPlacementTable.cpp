@@ -71,12 +71,12 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    // Create and configure the table
    ColumnIndexType numColumns = 8;
    CShrinkageAtDeckPlacementTable* table = new CShrinkageAtDeckPlacementTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    *pParagraph << _T("[5.9.5.4.2a] Shrinkage of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSR")) << rptNewLine;
@@ -159,7 +159,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    }
 
    // parameters for calculations (two tables to keep the width printable)
-   rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
+   rptRcTable* pParamTable = rptStyleManager::CreateDefaultTable(6,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << _T("H") << rptNewLine << _T("(%)");
    (*pParamTable)(0,1) << COLHDR(_T("V/S"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -176,7 +176,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(1,5) << table->time.SetValue(ptl->GetFinalAge());
 
    // intermediate results
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(6,_T(""));
    *pParagraph << pParamTable << rptNewLine;
 
    if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
@@ -204,7 +204,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepInitialToDeck().GetKtd());
    (*pParamTable)(1,5) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(8,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    pParamTable->SetNumberOfHeaderRows(2);
    pParamTable->SetRowSpan(0,0,2);

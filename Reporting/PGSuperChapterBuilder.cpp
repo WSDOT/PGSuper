@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\PGSuperChapterBuilder.h>
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #ifdef _DEBUG
@@ -51,7 +51,7 @@ rptChapter* CPGSuperChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 
 
    rptChapter* pChapter = new rptChapter(GetName());
    rptParagraph* p_para = new rptParagraph;
-   p_para->SetStyleName(pgsReportStyleHolder::GetChapterTitleStyle());
+   p_para->SetStyleName(rptStyleManager::GetChapterTitleStyle());
    *pChapter << p_para;
    *p_para << GetName() << rptNewLine;
    return pChapter;

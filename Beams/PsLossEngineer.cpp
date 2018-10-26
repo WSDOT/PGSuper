@@ -36,7 +36,7 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -1373,7 +1373,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 
    rptParagraph* pParagraph;
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -1381,7 +1381,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
 
@@ -1437,7 +1437,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
       pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    }
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Time dependent losses") << rptNewLine;
 
@@ -1515,7 +1515,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    rptParagraph* pParagraph;
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE(IBridge,pBridge);
 
@@ -1526,7 +1526,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
 
@@ -1568,7 +1568,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    // must report this even if not checking hauling because
    // temporary strand removal effects depend on losses at end of hauling stage
-	pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+	pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
 	*pChapter << pParagraph;
 	*pParagraph << _T("Time dependent losses between transfer and hauling [5.9.5.4.2]") << rptNewLine << rptNewLine;
 	
@@ -1583,7 +1583,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    // Time-dependent losses between transfer and deck placement
    ///////////////////////////////////////////////////////////////////////////////////////////
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
    {
@@ -1609,7 +1609,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    // Time-dependent losses between deck placement and final time
    ///////////////////////////////////////////////////////////////////////////////////////////
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
    {
@@ -1738,12 +1738,12 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
 
    rptParagraph* pParagraph;
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Refined Estimate of Time-Dependent Losses Per TxDOT Research Report 0-6374-2") << rptNewLine;
 
@@ -1803,7 +1803,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
       pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    }
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Time dependent losses") << rptNewLine;
 
@@ -1884,7 +1884,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 
    rptParagraph* pParagraph;
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
@@ -1897,7 +1897,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    GET_IFACE(ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    if (isWsdot)
    {
@@ -2018,7 +2018,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
    rptParagraph* pParagraph;
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -2031,7 +2031,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    GET_IFACE(ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Approximate Estimate of Time-Dependent Losses [5.9.5.3]") << rptNewLine;
 
@@ -2159,22 +2159,22 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 
    rptParagraph* pParagraph;
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("General Lump Sum Estimate Losses") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(2,_T(""));
    table->SetColumnWidth(0,3.0);
-   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pParagraph << table << rptNewLine;
 
@@ -2226,18 +2226,18 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
       return; // nothing to do
    }
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
 
    // Relaxation At Prestress Transfer
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Prestress loss due to relaxation before transfer") << rptNewLine;
 
    rptRcTable* table;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Permanent Strands") << rptNewLine;
    pParagraph = new rptParagraph;
@@ -2257,7 +2257,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
       *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
    }
 
-   table = pgsReportStyleHolder::CreateDefaultTable(4);
+   table = rptStyleManager::CreateDefaultTable(4);
    *pParagraph << table << rptNewLine;
 
    (*table)(0,0) << _T("t") << rptNewLine << _T("(Days)");
@@ -2272,7 +2272,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
 
    if ( bTemporaryStrands )
    {
-      pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pParagraph = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       *pChapter << pParagraph;
       *pParagraph << _T("Temporary Strands") << rptNewLine;
       pParagraph = new rptParagraph;
@@ -2292,7 +2292,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
          *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
       }
 
-      table = pgsReportStyleHolder::CreateDefaultTable(4);
+      table = rptStyleManager::CreateDefaultTable(4);
       *pParagraph << table << rptNewLine;
 
       (*table)(0,0) << _T("t") << rptNewLine << _T("(Days)");
@@ -2338,10 +2338,10 @@ void CPsLossEngineer::ReportLocation(rptRcTable* pTable,RowIndexType row,const p
 
 void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    // Lump Sum Loss at time of shipping
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Approximate Lump Sum Estimate of Time Dependent Losses at Shipping") << rptNewLine;
 
@@ -2379,7 +2379,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
          *pParagraph<< rptRcImage(strImagePath + _T("LumpSumLoss_Shipping_2005_US.png")) << rptNewLine;
       }
 
-      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(9,_T(""));
 
       INIT_UV_PROTOTYPE( rptAreaUnitValue,    area,        pDisplayUnits->GetAreaUnit(),            false );
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
@@ -2422,9 +2422,9 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
 
 void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Approximate Lump Sum Estimate of Time Dependent Losses") << rptNewLine;
 
@@ -2514,7 +2514,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
          *pParagraph<< rptRcImage(strImagePath + _T("LumpSumLoss_2005_US.png")) << rptNewLine;
       }
 
-      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(9,_T(""));
 
       INIT_UV_PROTOTYPE( rptAreaUnitValue,    area,        pDisplayUnits->GetAreaUnit(),            false );
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
@@ -3074,7 +3074,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 
    rptParagraph* pParagraph;
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE(IBridge,pBridge);
 
@@ -3082,7 +3082,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Final Prestress Losses") << rptNewLine;
 
@@ -3123,7 +3123,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
 
    rptParagraph* pParagraph;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
 

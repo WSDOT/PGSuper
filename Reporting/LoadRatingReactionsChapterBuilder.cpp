@@ -114,7 +114,7 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(CReportSpecification* pRpt
          continue;
       }
 
-      rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
 
       if ( llType == pgsTypes::lltDesign )

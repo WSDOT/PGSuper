@@ -206,7 +206,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    //p = new rptParagraph;
    //*pChapter << p;
 
-   //rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Rotation due to Excess Camber"));
+   //rptRcTable* pTable = rptStyleManager::CreateDefaultTable(2,_T("Rotation due to Excess Camber"));
    //*p << pTable << rptNewLine;
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
@@ -267,7 +267,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Corresponding Live Load Bearing Reactions and Rotations"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9,_T("Corresponding Live Load Bearing Reactions and Rotations"));
    *p << pTable << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
@@ -414,10 +414,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    p = new rptParagraph;
    *pChapter << p;
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(8,_T("Bearing Geometry (based on assumed values)"));
+   pTable = rptStyleManager::CreateDefaultTable(8,_T("Bearing Geometry (based on assumed values)"));
    *p << pTable << rptNewLine;
    *p << _T("W and D are assumed typical values") << rptNewLine;
-   *p << rptRcImage( pgsReportStyleHolder::GetImagePath() + _T("BearingRecessSlope.gif")) << rptNewLine;
+   *p << rptRcImage( std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.gif")) << rptNewLine;
 
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 

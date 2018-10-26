@@ -78,46 +78,46 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn.png")) << rptNewLine;
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn-SI.png") : _T("KfEqn-US.png")) ) << rptNewLine;
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn.png")) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn-SI.png") : _T("KfEqn-US.png")) ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
       *pPara << rptNewLine;
    }
    else
    {
       if ( lrfdVersionMgr::FourthEdition2007 <= lrfdVersionMgr::GetVersion() )
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
       }
       else
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2005.png")) << rptNewLine;
       }
       
       if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
       }
       else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == lrfdVersionMgr::GetVersion() )
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
       }
       else
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
       }
 
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2015Interims )
       {
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
       }
       else
       {
          ATLASSERT(!bSI);
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KtdEqn-US2015.png")) << rptNewLine;
+         *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KtdEqn-US2015.png")) << rptNewLine;
       }
 
       *pPara << rptNewLine;
@@ -128,11 +128,11 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
    {
       nColumns += 4; // K1, K2, ks, khc
    }
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
    *pPara << pTable << rptNewLine;
 
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
 
    RowIndexType rowIdx = 0;
@@ -299,12 +299,12 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
       nColumns += 2*nSegments + 1;
    }
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns);
+   pTable = rptStyleManager::CreateDefaultTable(nColumns);
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    rowIdx = 0;
    colIdx = 0;

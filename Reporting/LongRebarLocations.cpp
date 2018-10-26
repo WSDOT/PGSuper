@@ -84,7 +84,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSeg
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,    pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(),   false );
 
-   rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
    *pHead<<_T("Longitudinal Rebar Locations")<<rptNewLine;
 
@@ -105,7 +105,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSeg
 
    *pPara<<_T("Bar start and end locations measured from left end of girder")<<rptNewLine;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(8,_T(""));
    *pPara << p_table;
 
    (*p_table)(0,0) << _T("Row");

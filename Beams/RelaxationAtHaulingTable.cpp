@@ -91,15 +91,15 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
    table->stress.ShowUnitTag(true);
    table->time.ShowUnitTag(true);
 
-   pgsReportStyleHolder::ConfigureTable(table);
+   rptStyleManager::ConfigureTable(table);
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("[5.9.5.4.2c] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Permanent Strands") << rptNewLine;
    pParagraph = new rptParagraph;
@@ -135,7 +135,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
 
    if ( bTemporaryStrands )
    {
-      pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      pParagraph = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       *pChapter << pParagraph;
       *pParagraph << _T("Temporary Strands") << rptNewLine;
       pParagraph = new rptParagraph;

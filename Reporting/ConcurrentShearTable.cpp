@@ -95,12 +95,12 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
  
    ColumnIndexType col = 0;
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Concurrent Shears"));
+   p_table = rptStyleManager::CreateDefaultTable(3,_T("Concurrent Shears"));
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );

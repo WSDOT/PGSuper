@@ -78,10 +78,6 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FCI, m_ctrlFci);
 	//}}AFX_DATA_MAP
 
-   DDX_Control(pDX,IDC_GIRDERNAME_NOTE,m_GirderTypeHyperLink);
-   DDX_Control(pDX,IDC_SLABOFFSET_NOTE,m_SlabOffsetHyperLink);
-   DDX_Control(pDX,IDC_FILLET_NOTE,m_FilletHyperLink);
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -203,10 +199,9 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_EC, OnChangeEc)
 	ON_BN_CLICKED(IDC_MORE, OnMoreConcreteProperties)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
-	ON_WM_CTLCOLOR()
-   ON_REGISTERED_MESSAGE(MsgChangeSameGirderType,OnChangeSameGirderType)
-   ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
-   ON_REGISTERED_MESSAGE(MsgChangeFilletType,OnChangeFilletType)
+   ON_CBN_SELCHANGE(IDC_GIRDER_NAMEUSE,OnChangeSameGirderType)
+   ON_CBN_SELCHANGE(IDC_CB_SLABOFFSET,OnChangeSlabOffsetType)
+   ON_CBN_SELCHANGE(IDC_CB_FILLET,OnChangeFilletType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME,OnChangeGirderName)
    ON_CBN_DROPDOWN(IDC_GIRDER_NAME,OnBeforeChangeGirderName)
    ON_BN_CLICKED(IDC_FC1,OnConcreteStrength)
@@ -230,6 +225,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    m_LossMethod = pLossParams->GetLossMethod();
    m_TimeDependentModel = pLossParams->GetTimeDependentModel();
@@ -239,30 +235,6 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
       GetDlgItem(IDC_CONSTRUCTION_EVENT)->EnableWindow(FALSE);
       GetDlgItem(IDC_ERECTION_EVENT)->EnableWindow(FALSE);
    }
-
-   if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotPier )
-   {
-      m_SlabOffsetTypeCache = pgsTypes::sotGirder;
-   }
-   else
-   {
-      m_SlabOffsetTypeCache = pgsTypes::sotBridge;
-   }
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   m_strSlabOffsetCache[pgsTypes::metStart].Format(_T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
-   m_strSlabOffsetCache[pgsTypes::metEnd].Format(  _T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit(),false));
-
-   if ( m_FilletType == pgsTypes::fttBridge || m_FilletType == pgsTypes::fttSpan )
-   {
-      m_FilletTypeCache = pgsTypes::fttGirder;
-   }
-   else
-   {
-      m_FilletTypeCache = pgsTypes::fttBridge;
-   }
-
-   m_strFilletCache.Format(_T("%s"),FormatDimension(m_Fillet, pDisplayUnits->GetComponentDimUnit(),false));
 
    // Initialize the condition factor combo box
    CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
@@ -305,12 +277,64 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    OnConditionFactorTypeChanged();
 
-
-   UpdateGirderTypeHyperLink();
+   CComboBox* pcbSameGirderType = (CComboBox*)GetDlgItem(IDC_GIRDER_NAMEUSE);
+   pcbSameGirderType->AddString(_T("This girder type is used for the entire bridge"));
+   pcbSameGirderType->AddString(_T("This girder type is assigned to this girder"));
+   pcbSameGirderType->SetCurSel(m_bUseSameGirderType ? 0:1);
    UpdateGirderTypeControls();
 
-   UpdateSlabOffsetHyperLink();
-   UpdateFilletHyperLink();
+   if ( m_FilletType == pgsTypes::fttBridge || m_FilletType == pgsTypes::fttSpan )
+   {
+      m_FilletTypeCache = pgsTypes::fttGirder;
+   }
+   else
+   {
+      m_FilletTypeCache = pgsTypes::fttBridge;
+   }
+
+   m_strFilletCache.Format(_T("%s"),FormatDimension(m_Fillet, pDisplayUnits->GetComponentDimUnit(),false));
+
+   CComboBox* pcbFilletType = (CComboBox*)GetDlgItem(IDC_CB_FILLET);
+
+   if ( m_FilletType==pgsTypes::fttBridge || m_FilletType==pgsTypes::fttGirder )
+   {
+      pcbFilletType->AddString(_T("A single Fillet is used for the entire bridge"));
+   }
+   else
+   {
+      pcbFilletType->AddString(_T("A unique Fillet is used in each span"));
+   }
+   pcbFilletType->AddString(_T("Fillets are defined girder by girder"));
+
+   pcbFilletType->SetCurSel(m_FilletType==pgsTypes::fttGirder ? 1:0);
+
+
+   if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotPier )
+   {
+      m_SlabOffsetTypeCache = pgsTypes::sotGirder;
+   }
+   else
+   {
+      m_SlabOffsetTypeCache = pgsTypes::sotBridge;
+   }
+
+   m_strSlabOffsetCache[pgsTypes::metStart].Format(_T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
+   m_strSlabOffsetCache[pgsTypes::metEnd].Format(  _T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit(),false));
+
+   CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_CB_SLABOFFSET);
+
+   if ( m_SlabOffsetType==pgsTypes::sotBridge || m_SlabOffsetType==pgsTypes::sotGirder )
+   {
+      pcbSlabOffsetType->AddString(_T("A single Slab Offset is used for the entire bridge"));
+   }
+   else
+   {
+      pcbSlabOffsetType->AddString(_T("A unique Slab Offset is used in each span"));
+   }
+   pcbSlabOffsetType->AddString(_T("Slab Offsets are defined girder by girder"));
+
+   pcbSlabOffsetType->SetCurSel(m_SlabOffsetType==pgsTypes::sotGirder ? 1:0);
+
    UpdateSlabOffsetControls();
 
    if ( m_strUserEc == _T("") )
@@ -346,7 +370,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    if ( pIBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
    {
       // disable slab offset input if there isn't a deck
-      m_SlabOffsetHyperLink.EnableWindow(FALSE);
+      GetDlgItem(IDC_CB_SLABOFFSET)->EnableWindow(FALSE);
 
       GetDlgItem(IDC_ADIM_START_LABEL)->EnableWindow(FALSE);
       GetDlgItem(IDC_ADIM_START)->EnableWindow(FALSE);
@@ -360,8 +384,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
       GetDlgItem(IDC_ADIM_END)->SetWindowText(_T(""));
 
       // fillet
-      m_FilletHyperLink.EnableWindow(FALSE);
-
+      GetDlgItem(IDC_CB_FILLET)->EnableWindow(FALSE);
       GetDlgItem(IDC_FILLET)->EnableWindow(FALSE);
       GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(FALSE);
       GetDlgItem(IDC_FILLET)->SetWindowText(_T(""));
@@ -975,29 +998,11 @@ void CGirderDescGeneralPage::FillGirderComboBox()
    UpdateGirderTypeControls();
 }
 
-HBRUSH CGirderDescGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
-{
-	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
-	
-   switch( pWnd->GetDlgCtrlID() )
-   {
-   case IDC_GIRDERNAME_NOTE:
-   case IDC_SLABOFFSET_NOTE:
-   case IDC_FILLET_NOTE:
-      pDC->SetTextColor(HYPERLINK_COLOR);
-      break;
-   };
 
-   return hbr;
-}
-
-LRESULT CGirderDescGeneralPage::OnChangeSameGirderType(WPARAM wParam,LPARAM lParam)
+void CGirderDescGeneralPage::OnChangeSameGirderType()
 {
    m_bUseSameGirderType = !m_bUseSameGirderType;
-   UpdateGirderTypeHyperLink();
    UpdateGirderTypeControls();
-
-   return 0;
 }
 
 void CGirderDescGeneralPage::UpdateGirderTypeControls()
@@ -1005,7 +1010,7 @@ void CGirderDescGeneralPage::UpdateGirderTypeControls()
    GetDlgItem(IDC_GIRDER_NAME)->EnableWindow( m_bUseSameGirderType ? FALSE : TRUE );
 }
 
-LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam)
+void CGirderDescGeneralPage::OnChangeSlabOffsetType()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -1013,7 +1018,6 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
    m_SlabOffsetType = m_SlabOffsetTypeCache;
    m_SlabOffsetTypeCache = temp;
 
-   UpdateSlabOffsetHyperLink();
    UpdateSlabOffsetControls();
 
    CWnd* pwndStart = GetDlgItem(IDC_ADIM_START);
@@ -1072,7 +1076,7 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
          }
          else
          {
-            return 0;
+            return;
          }
       }
 
@@ -1082,11 +1086,9 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
       GetDlgItem(IDC_ADIM_START)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
       GetDlgItem(IDC_ADIM_END)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
    }
-
-   return 0;
 }
 
-LRESULT CGirderDescGeneralPage::OnChangeFilletType(WPARAM wParam,LPARAM lParam)
+void CGirderDescGeneralPage::OnChangeFilletType()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -1094,7 +1096,6 @@ LRESULT CGirderDescGeneralPage::OnChangeFilletType(WPARAM wParam,LPARAM lParam)
    m_FilletType = m_FilletTypeCache;
    m_FilletTypeCache = temp;
 
-   UpdateFilletHyperLink();
    UpdateSlabOffsetControls();
 
    CWnd* pwndFillet = GetDlgItem(IDC_FILLET);
@@ -1123,8 +1124,6 @@ LRESULT CGirderDescGeneralPage::OnChangeFilletType(WPARAM wParam,LPARAM lParam)
       GetDlgItem(IDC_FILLET)->GetWindowText(m_strFilletCache);
       GetDlgItem(IDC_FILLET)->SetWindowText( ::FormatDimension(fillet,pDisplayUnits->GetComponentDimUnit(),false) );
    }
-
-   return 0;
 }
 
 void CGirderDescGeneralPage::UpdateSlabOffsetControls()
@@ -1143,66 +1142,6 @@ void CGirderDescGeneralPage::UpdateSlabOffsetControls()
    bEnable = (m_FilletType == pgsTypes::fttGirder ? TRUE : FALSE);
    GetDlgItem(IDC_FILLET)->EnableWindow(bEnable);
    GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(bEnable);
-}
-
-void CGirderDescGeneralPage::UpdateGirderTypeHyperLink()
-{
-   if ( m_bUseSameGirderType )
-   {
-      // girder name is shared with the entire bridge
-      m_GirderTypeHyperLink.SetWindowText(_T("This girder type is used for the entire bridge"));
-      m_GirderTypeHyperLink.SetURL(_T("Click to change the type of this girder"));
-   }
-   else
-   {
-      m_GirderTypeHyperLink.SetWindowText(_T("This girder type is assigned to this girder"));
-      m_GirderTypeHyperLink.SetURL(_T("Click to use this girder type for the entire bridge"));
-   }
-}
-
-void CGirderDescGeneralPage::UpdateSlabOffsetHyperLink()
-{
-   if ( m_SlabOffsetType == pgsTypes::sotGirder )
-   {
-      // slab offset is by girder
-      m_SlabOffsetHyperLink.SetWindowText(_T("Slab Offsets are defined girder by girder"));
-      if ( m_SlabOffsetTypeCache == pgsTypes::sotBridge )
-         m_SlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for the entire bridge"));
-      else
-         m_SlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for this span"));
-   }
-   else if ( m_SlabOffsetType == pgsTypes::sotBridge )
-   {
-      m_SlabOffsetHyperLink.SetWindowText(_T("A single Slab Offset is used for the entire bridge"));
-      m_SlabOffsetHyperLink.SetURL(_T("Click to define Slab Offsets by girder"));
-   }
-   else
-   {
-      m_SlabOffsetHyperLink.SetWindowText(_T("A unique Slab Offset is used in each span"));
-      m_SlabOffsetHyperLink.SetURL(_T("Click to define Slab Offsets by girder"));
-   }
-}
-
-void CGirderDescGeneralPage::UpdateFilletHyperLink()
-{
-   if ( m_FilletType == pgsTypes::fttGirder )
-   {
-      m_FilletHyperLink.SetWindowText(_T("Fillets are defined girder by girder"));
-      if ( m_FilletTypeCache == pgsTypes::fttBridge )
-         m_FilletHyperLink.SetURL(_T("Click to use this Fillet for the entire bridge"));
-      else
-         m_FilletHyperLink.SetURL(_T("Click to use this Fillet for this span"));
-   }
-   else if ( m_FilletType == pgsTypes::fttBridge )
-   {
-      m_FilletHyperLink.SetWindowText(_T("A single Fillet is used for the entire bridge"));
-      m_FilletHyperLink.SetURL(_T("Click to define Fillets by girder"));
-   }
-   else
-   {
-      m_FilletHyperLink.SetWindowText(_T("A unique Fillet is used in each span"));
-      m_FilletHyperLink.SetURL(_T("Click to define Fillets by girder"));
-   }
 }
 
 void CGirderDescGeneralPage::OnBeforeChangeGirderName()
@@ -1252,7 +1191,7 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    pParent->m_Shear.DoRestoreDefaults();
 
    pParent->m_LongRebar.m_CurGrdName = newName;
-   pParent->m_LongRebar.RestoreToLibraryDefaults();
+   pParent->m_LongRebar.RestoreToLibraryDefaults(&(pParent->m_pSegment->LongitudinalRebarData));
 
    // add/remove property pages if needed
    GET_IFACE2( pBroker, ISpecification, pSpec);

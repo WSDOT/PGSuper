@@ -38,14 +38,12 @@
 #include <EAF\EAFInterfaceCache.h>
 
 #include <PgsExt\Keys.h>
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
 #include <PgsExt\LoadFactors.h>
 #include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\LoadManager.h>
 #include <PgsExt\ClosureJointData.h>
 
 #include "LibraryEntryObserver.h"
@@ -157,7 +155,7 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidGirderDescriptionWarning;
    StatusCallbackIDType m_scidBridgeDescriptionWarning;
    StatusCallbackIDType m_scidRebarStrengthWarning;
-
+   StatusCallbackIDType m_scidLoadDescriptionWarning;
 
 // IAgent
 public:
@@ -521,24 +519,24 @@ public:
    virtual bool HasUserDW(const CGirderKey& girderKey);
    virtual bool HasUserLLIM(const CGirderKey& girderKey);
    virtual CollectionIndexType GetPointLoadCount() const;
-   virtual CollectionIndexType AddPointLoad(const CPointLoadData& pld);
+   virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld);
    virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const;
    virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const;
-   virtual void UpdatePointLoad(CollectionIndexType idx, const CPointLoadData& pld);
+   virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld);
    virtual void DeletePointLoad(CollectionIndexType idx);
 
    virtual CollectionIndexType GetDistributedLoadCount() const;
-   virtual CollectionIndexType AddDistributedLoad(const CDistributedLoadData& pld);
+   virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld);
    virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const;
    virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const;
-   virtual void UpdateDistributedLoad(CollectionIndexType idx, const CDistributedLoadData& pld);
+   virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld);
    virtual void DeleteDistributedLoad(CollectionIndexType idx);
 
    virtual CollectionIndexType GetMomentLoadCount() const;
-   virtual CollectionIndexType AddMomentLoad(const CMomentLoadData& pld);
+   virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld);
    virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const;
    virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const;
-   virtual void UpdateMomentLoad(CollectionIndexType idx, const CMomentLoadData& pld);
+   virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld);
    virtual void DeleteMomentLoad(CollectionIndexType idx);
 
    virtual void SetConstructionLoad(Float64 load);
@@ -709,6 +707,8 @@ private:
    // Bridge Description Data
    mutable CBridgeDescription2 m_BridgeDescription;
 
+   mutable CLoadManager m_LoadManager;
+
    // Prestressing Data
    void UpdateJackingForce();
    void UpdateJackingForce(const CSegmentKey& segmentKey);
@@ -792,26 +792,11 @@ private:
    Float64 m_WobbleFriction_TTS;
    Float64 m_FrictionCoefficient_TTS;
 
-   // user defined loads
-   typedef std::vector<CPointLoadData> PointLoadList;
-   typedef PointLoadList::iterator PointLoadListIterator;
-   PointLoadList m_PointLoads;
-
-   typedef std::vector<CDistributedLoadData> DistributedLoadList;
-   typedef DistributedLoadList::iterator DistributedLoadListIterator;
-   DistributedLoadList m_DistributedLoads;
-
-   typedef std::vector<CMomentLoadData> MomentLoadList;
-   typedef MomentLoadList::iterator MomentLoadListIterator;
-   MomentLoadList m_MomentLoads;
 
    Float64 m_ConstructionLoad;
 
-   HRESULT SavePointLoads(IStructuredSave* pSave);
    HRESULT LoadPointLoads(IStructuredLoad* pLoad);
-   HRESULT SaveDistributedLoads(IStructuredSave* pSave);
    HRESULT LoadDistributedLoads(IStructuredLoad* pLoad);
-   HRESULT SaveMomentLoads(IStructuredSave* pSave);
    HRESULT LoadMomentLoads(IStructuredLoad* pLoad);
 
    Uint32 m_PendingEvents;
@@ -924,12 +909,7 @@ private:
    // the specified girder
    bool HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase lcType);
 
-   // Early beta versions of PGS stored the event index with user defined loads
-   // This was problematic because event indexs can change. They should
-   // have been stored with the event ID. When we detect older beta files
-   // use this method to update the event index to an event id
-   bool m_bUpdateUserDefinedLoads; // if true, user defined loads need to be updated
-   void UpdateUserDefinedLoads(bool bFromID);
+   bool m_bUpdateUserDefinedLoads; // if true, the user defined loads came from PGSuper 2.9.x or earlier and the timeline has not yet been updated
 };
 
 #endif //__PROJECTAGENT_H_

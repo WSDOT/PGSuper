@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #include "TexasIBNSParagraphBuilder.h"
@@ -137,7 +137,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
          os <<_T("Debonded Strand Pattern for Span ")<<LABEL_SPAN(m_SegmentKey.groupIndex)<<_T(" Girder ")<<LABEL_GIRDER(m_SegmentKey.girderIndex);
       }
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(num_cols,os.str());
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(num_cols,os.str());
       *pPara << p_table;
 
       // This table has a very special header
@@ -468,7 +468,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
             std::_tostringstream os;
             os <<_T("Non-Standard Strand Pattern for Span ")<<LABEL_SPAN(spanIdx)<<_T(" Girder ")<<LABEL_GIRDER(gdrIdx);
 
-            rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(2, os.str().c_str());
+            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2, os.str().c_str());
             p_table->SetColumnWidth(0,1.0);
             p_table->SetColumnWidth(1,1.8);
             *p << rptNewLine << p_table;
@@ -530,7 +530,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 #endif
 
    CollectionIndexType ng = endIdx-startIdx+1;
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(ng+1,_T("TxDOT Girder Schedule"));
+   rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(ng+1,_T("TxDOT Girder Schedule"));
 
    *p << p_table;
 

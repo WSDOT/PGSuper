@@ -119,20 +119,20 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
    direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
    direction_formatter->put_BearingFormat(VARIANT_TRUE);
 
-   rptParagraph* pPara = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pPara = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pPara;
    *pPara << _T("Pier Layout") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7,_T(""));
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
 
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pTable->SetRowSpan(0,0,2);
    pTable->SetRowSpan(1,0,SKIP_CELL);

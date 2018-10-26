@@ -172,7 +172,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    }
 
    std::_tstring strTitle(bGirderStresses ? _T("Girder Stresses") : _T("Deck Stresses"));
-   pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
+   pTable = rptStyleManager::CreateDefaultTable(nCols,strTitle);
 
    ColumnIndexType col  = 0;
 
@@ -206,8 +206,8 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    *p << pTable << rptNewLine;
@@ -399,11 +399,11 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   rptParagraph* pNote = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   rptParagraph* pNote = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pNote;
    *pNote << LIVELOAD_PER_GIRDER << rptNewLine;
 
@@ -675,7 +675,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
    }
 
    std::_tstring strTitle(bGirderStresses ? _T("Girder Stresses") : _T("Deck Stresses"));
-   p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
+   p_table = rptStyleManager::CreateDefaultTable(nCols,strTitle);
 
    *p << p_table;
 

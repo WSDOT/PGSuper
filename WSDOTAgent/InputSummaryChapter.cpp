@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "InputSummaryChapter.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #include <EAF\EAFDisplayUnits.h>
@@ -92,7 +92,7 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
       CSegmentKey segmentKey(girderKey,segIdx);
       if ( 1 < nSegments )
       {
-         p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << p;
          *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -150,7 +150,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Girder Line Geometry"));
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Girder Line Geometry"));
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
@@ -496,7 +496,7 @@ void concrete(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Concrete"));
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Concrete"));
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
@@ -525,7 +525,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Prestressing"));
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Prestressing"));
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes

@@ -77,7 +77,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
                           IEAFDisplayUnits* pDisplayUnits) const
 {
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Check for Lifting In Casting Yard [5.5.4.3][5.9.4.1]")<<rptNewLine;
    *pTitle << _T("Lifting Stresses and Factor of Safety Against Cracking")<<rptNewLine;
@@ -134,7 +134,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
       if ( 1 < nSegments )
       {
-         p = new rptParagraph( pgsReportStyleHolder::GetSubheadingStyle() );
+         p = new rptParagraph( rptStyleManager::GetSubheadingStyle() );
          *pChapter << p;
          *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -212,7 +212,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
          *p << symbol(INFINITY) << rptNewLine;
       }
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(11,_T(""));
       *p << p_table;
 
       ColumnIndexType col1 = 0;
@@ -372,16 +372,16 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       }
 
       // FS for failure
-      pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
       *pTitle << _T("Factor of Safety Against Failure");
 
-      p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
+      p_table = rptStyleManager::CreateTableNoHeading(2);
 
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
-      p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+      p_table->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
       rptParagraph* p = new rptParagraph;
       *pChapter << p;

@@ -689,6 +689,11 @@ HRESULT CPGSuperDocProxyAgent::OnProjectPropertiesChanged()
 }
 
 // IEAFDisplayUnitsEventSink
+HRESULT CPGSuperDocProxyAgent::OnUnitsChanging()
+{
+   return S_OK;
+}
+
 HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(eafTypes::UnitMode newUnitMode)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());

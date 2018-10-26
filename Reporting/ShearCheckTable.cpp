@@ -67,12 +67,12 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6,_T(" "));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(6,_T(" "));
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    if (ls == pgsTypes::StrengthI)

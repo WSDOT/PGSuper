@@ -62,7 +62,7 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, vsRatio, pDisplayUnits->GetComponentDimUnit(), false );
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -78,11 +78,11 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
    *pPara << rptRcImage(strImagePath + _T("ACI209_HumidityCorrection.png")) << _T("  (Eq. 2-14)") << rptNewLine;
    *pPara << rptRcImage(strImagePath + _T("ACI209_VolumeSurfaceRatioCorrection.png")) << _T("  (Eq. 2-21)") << rptNewLine;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(6);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(6);
    *pPara << pTable << rptNewLine;
 
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
 
    RowIndexType rowIdx = 0;
@@ -153,12 +153,12 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
    }
 
 #if defined _DEBUG || defined _BETA_VERSION
-   pTable = pgsReportStyleHolder::CreateDefaultTable(6*nSegments+1);
+   pTable = rptStyleManager::CreateDefaultTable(6*nSegments+1);
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    rowIdx = 0;
    colIdx = 0;

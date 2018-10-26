@@ -367,17 +367,17 @@ void CDesignOutcomeDlg::OnCbnSelchangeDesignaFrom()
    }
    else
    {
-      if (cursel >= 0 && cursel < m_GirderKeys.size())
+      if (0 <= cursel && cursel < m_GirderKeys.size())
       {
          // Fill To box
          int tosel = m_ADesignToCombo.GetCurSel();
          tosel = tosel==CB_ERR ? 0 : tosel;
 
          m_ADesignToCombo.ResetContent();
-         m_ADesignToCombo.AddString(_T("To the entire bridge"));
+         m_ADesignToCombo.AddString(_T("the entire bridge"));
 
          CString str2;
-         str2.Format(_T("To all girders in Span %d"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex));
+         str2.Format(_T("all girders in Span %d"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex));
          m_ADesignToCombo.AddString(str2);
 
          CString str;

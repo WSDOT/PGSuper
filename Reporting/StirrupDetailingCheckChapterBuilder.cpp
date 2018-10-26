@@ -116,7 +116,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
    {
       if ( 1 < nSegments )
       {
-         pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pParagraph = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pParagraph;
          *pParagraph << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -170,7 +170,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          }
       }
 
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
 
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
@@ -193,7 +193,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          pgsTypes::ConcreteType concType = pMaterial->GetClosureJointConcreteType(closureKey);
          bool bHasAggSplittingStrength = pMaterial->DoesClosureJointConcreteHaveAggSplittingStrength(closureKey);
 
-         pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         pParagraph = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pParagraph;
          *pParagraph << _T("Closure Joint ") << LABEL_SEGMENT(segIdx) << rptNewLine;
 
@@ -235,7 +235,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
             ATLASSERT(false);
          }
 
-         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
 
          IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,pgsTypes::StrengthI );
          psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact(intervalIdx,pgsTypes::StrengthI,nArtifacts-1);
@@ -254,19 +254,19 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Details for Minimum Transverse Reinforcement Check - 5.8.2.5-1");
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(3);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(3);
 
    //if ( span == ALL_SPANS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << table << rptNewLine;
@@ -324,7 +324,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 {
    // Spacing check 5.8.2.7
    rptParagraph* pParagraph;
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
    if ( ls == pgsTypes::StrengthI )
@@ -348,12 +348,12 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    // get a little fancy here with the equation so it lines up
-   rptRcTable* petable = pgsReportStyleHolder::CreateDefaultTable(2);
+   rptRcTable* petable = rptStyleManager::CreateDefaultTable(2);
 
    //if ( span == ALL_SPANS )
    //{
-   //   petable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   petable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   petable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   petable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    *pParagraph << petable << rptNewLine;
@@ -380,7 +380,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 
    (*petable)(2,1) << Sub2(_T("S"),_T("max"))<<_T("= min(") << k2 << Sub2(_T("d"),_T("v"))<<_T(", ")<<dim.SetValue(s2)<<dim.GetUnitTag()<<_T(")");
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(6);
    *pParagraph << table << rptNewLine;
 
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());

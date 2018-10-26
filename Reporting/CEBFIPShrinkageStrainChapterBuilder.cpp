@@ -63,7 +63,7 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, hDim, pDisplayUnits->GetComponentDimUnit(), false );
 
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -75,11 +75,11 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    *pPara << rptRcImage(strImagePath + _T("CEBFIP_Shrinkage.png")) << rptNewLine;
    *pPara << rptNewLine;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(8);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(8);
    *pPara << pTable << rptNewLine;
 
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
 
    RowIndexType rowIdx = 0;
@@ -155,12 +155,12 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    }
 
 #if defined _DEBUG || defined _BETA_VERSION
-   pTable = pgsReportStyleHolder::CreateDefaultTable(8*nSegments+1);
+   pTable = rptStyleManager::CreateDefaultTable(8*nSegments+1);
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    rowIdx = 0;
    colIdx = 0;

@@ -540,7 +540,9 @@ bool CPrecastSegmentData::IsDropIn() const
 {
    std::vector<const CPierData2*> vPiers(GetPiers());
    std::vector<const CTemporarySupportData*> vTS(GetTemporarySupports());
-   if ( vPiers.size() == 0 && vTS.size() == 2 )
+   IndexType nPiers = vPiers.size();
+   IndexType nTS = vTS.size();
+   if ( nPiers == 0 && nTS == 2 )
    {
       // segment is supported by exactly 2 temporary supports... there is a chance it 
       // could be a drop-in segment
@@ -551,6 +553,32 @@ bool CPrecastSegmentData::IsDropIn() const
       if ( pLeftTS->GetSupportType() == pgsTypes::StrongBack && pRightTS->GetSupportType() == pgsTypes::StrongBack )
       {
          // the temporary supports are both strong backs... segment is a drop-in
+         return true;
+      }
+   }
+   else if ( nPiers == 1 && nTS == 1 )
+   {
+      // segment is supported by one pier and one temporary support.... if this is the first or last segment
+      // it could be a "drop-in" in the sense that it is suspended by an adjacent segment
+      const CPierData2* pPier1;
+      const CTemporarySupportData* pTS1;
+      GetSupport(pgsTypes::metStart,&pPier1,&pTS1);
+
+      const CPierData2* pPier2;
+      const CTemporarySupportData* pTS2;
+      GetSupport(pgsTypes::metEnd,&pPier2,&pTS2);
+
+      if ( GetPrevSegment() == NULL && pPier1 && pTS2 && pTS2->GetSupportType() == pgsTypes::StrongBack)
+      {
+         // this is the first segment and it supported by a pier at the start and a TS at the end, and the end is a strong back
+         // then this segment hangs on the next segment so treat it as a drop-in segment
+         return true;
+      }
+
+      if ( GetNextSegment() == NULL && pTS1 && pPier2 && pTS1->GetSupportType() == pgsTypes::StrongBack )
+      {
+         // this is the last segment and it supported by a TS at the start and a pier at the end, and the start is a strong back
+         // then this segment hangs on the previous segment so treat it as a drop-in segment
          return true;
       }
    }

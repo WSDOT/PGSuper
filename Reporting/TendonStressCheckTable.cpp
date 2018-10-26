@@ -83,7 +83,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    
    rptCapacityToDemand cap_demand;
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Tendon Stresses");
    pPara->SetName(_T("Tendon Stresses"));
    *pChapter << pPara;
@@ -98,11 +98,11 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
       CString strTitle;
       strTitle.Format(_T("Duct %d"),LABEL_DUCT(ductIdx));
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,strTitle);
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,strTitle);
       *pPara << p_table;
 
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       (*p_table)(0,0) << _T("");
       if ( pTendonArtifact->IsAtJackingApplicable() )

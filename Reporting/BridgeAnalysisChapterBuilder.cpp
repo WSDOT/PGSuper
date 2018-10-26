@@ -119,7 +119,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
         (m_AnalysisType == pgsTypes::Envelope   && analysisType != pgsTypes::Envelope )
       )
    {
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       *p << _T("The structural analysis method had changed since this report was created. Analysis results are no longer available. Close this report and re-create it to get analysis results.") << rptNewLine;
       return pChapter;
@@ -137,7 +137,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    bool bIndicateControllingLoad = true;
 
-   p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *p << _T("Load Responses - Bridge Site")<<rptNewLine;
    p->SetName(_T("Bridge Site Results"));
    *pChapter << p;
@@ -403,7 +403,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
          continue;
       }
 
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
 
       if ( llType == pgsTypes::lltDesign )
@@ -477,7 +477,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    for ( ; intervalIter != intervalIterEnd; intervalIter++ )
    {
       IntervalIndexType intervalIdx = *intervalIter;
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       CString strName;
       strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
@@ -506,7 +506,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
          if ( liveLoadIntervalIdx <= intervalIdx )
          {
-            p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            p = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << p;
             *p << _T("Live Load Reactions Without Impact") << rptNewLine;
             p->SetName(_T("Live Load Reactions Without Impact"));

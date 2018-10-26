@@ -86,7 +86,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    loc, pDisplayUnits->GetSpanLengthUnit(),   true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    loc2, pDisplayUnits->GetSpanLengthUnit(),   true );
 
-   rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << p;
    *p <<_T("Debonding Limits")<<rptNewLine;
 
@@ -99,7 +99,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
 
       if ( 1 < nSegments )
       {
-         p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << p;
          *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
@@ -167,8 +167,8 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
 
 rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,_T(" "));
-   table->TableCaption().SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(7,_T(" "));
+   table->TableCaption().SetStyleName(rptStyleManager::GetHeadingStyle());
    table->TableCaption() << _T("Requirements for Partially Debonded Strands [5.11.4.3]");
 
    (*table)(0,0) << _T("Row");
@@ -180,7 +180,7 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,I
    (*table)(0,6) << _T("Status");
 
    // Fill up the table
-   table->TableLabel().SetStyleName(pgsReportStyleHolder::GetFootnoteStyle());
+   table->TableLabel().SetStyleName(rptStyleManager::GetFootnoteStyle());
    RowIndexType table_row = table->GetNumberOfHeaderRows();
 
 
@@ -218,12 +218,12 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,I
 
 rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,Float64 segmentLength, IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(4,_T(" "));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(4,_T(" "));
 
    //if ( span == ALL_SPANS )
    //{
-   //   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   //   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    //}
 
    (*table)(0,0) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );

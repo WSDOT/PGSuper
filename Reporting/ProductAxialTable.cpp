@@ -98,12 +98,12 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Axial"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T("Axial"));
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);

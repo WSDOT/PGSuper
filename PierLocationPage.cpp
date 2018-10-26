@@ -76,7 +76,7 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   DDX_Control(pDX, IDC_HYPERLINK,    m_SlabOffsetHyperLink);
+   DDX_Control(pDX, IDC_CB_SLABOFFSETTYPE,    m_ctrlSlabOffsetType);
    DDX_Control(pDX, IDC_BACK_SLAB_OFFSET, m_ctrlBackSlabOffset);
    DDX_Control(pDX, IDC_AHEAD_SLAB_OFFSET,   m_ctrlAheadSlabOffset);
 
@@ -111,94 +111,98 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
 
-      Float64 tslab  = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-      if (pgsTypes::sdtCompositeSIP == pParent->m_BridgeDesc.GetDeckDescription()->DeckType)
+      pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+
+      if (pgsTypes::sdtNone != deckType)
       {
-         tslab += pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
-      }
-         
-
-      cmpdim.SetValue(tslab);
-      CString strMinValError;
-      strMinValError.Format(_T("Slab Offset value must be greater or equal to gross slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str() );
-
-      if (m_SlabOffset[pgsTypes::Back] < tslab)
-      {
-         pDX->PrepareCtrl(IDC_BACK_SLAB_OFFSET);
-         AfxMessageBox(strMinValError);
-         pDX->Fail();
-      }
-
-      if (m_SlabOffset[pgsTypes::Ahead] < tslab)
-      {
-         pDX->PrepareCtrl(IDC_AHEAD_SLAB_OFFSET);
-         AfxMessageBox(strMinValError);
-         pDX->Fail();
-      }
-
-      // Copy the temporary data from this dialog in to actual bridge model
-      pParent->m_BridgeDesc.MovePier(pParent->m_pPier->GetIndex(),m_Station,m_MovePierOption);
-      pParent->m_pPier->SetOrientation(m_strOrientation.c_str());
-
-      if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge )
-      {
-         if ( pParent->m_pPier->GetGirderGroup(pgsTypes::Back) )
+         Float64 tslab  = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
+         if (pgsTypes::sdtCompositeSIP == deckType)
          {
-            pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Back]);
+            tslab += pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
          }
-         else
+
+         cmpdim.SetValue(tslab);
+         CString strMinValError;
+         strMinValError.Format(_T("Slab Offset value must be greater or equal to gross slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str() );
+
+         if (m_SlabOffset[pgsTypes::Back] < tslab)
          {
-            pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Ahead]);
+            pDX->PrepareCtrl(IDC_BACK_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
          }
-      }
-      else if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier )
-      {
-         if ( m_PierFaceCount == 1 )
+
+         if (m_SlabOffset[pgsTypes::Ahead] < tslab)
          {
-            // the UI has only one input parameter
-            if ( pParent->m_pPier->IsAbutment() )
+            pDX->PrepareCtrl(IDC_AHEAD_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
+         }
+
+         // Copy the temporary data from this dialog in to actual bridge model
+         pParent->m_BridgeDesc.MovePier(pParent->m_pPier->GetIndex(),m_Station,m_MovePierOption);
+         pParent->m_pPier->SetOrientation(m_strOrientation.c_str());
+
+         if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge )
+         {
+            if ( pParent->m_pPier->GetGirderGroup(pgsTypes::Back) )
             {
-               // this pier is at an abutment
-
-               if ( pParent->m_pPier->GetPrevSpan() == NULL )
+               pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Back]);
+            }
+            else
+            {
+               pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Ahead]);
+            }
+         }
+         else if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier )
+         {
+            if ( m_PierFaceCount == 1 )
+            {
+               // the UI has only one input parameter
+               if ( pParent->m_pPier->IsAbutment() )
                {
-                  // we are at the start of the bridge so the data is in the ahead controls
-                  pParent->m_pPier->GetGirderGroup(pgsTypes::Ahead)->SetSlabOffset(m_PierIdx,m_SlabOffset[pgsTypes::Ahead]);
+                  // this pier is at an abutment
+
+                  if ( pParent->m_pPier->GetPrevSpan() == NULL )
+                  {
+                     // we are at the start of the bridge so the data is in the ahead controls
+                     pParent->m_pPier->GetGirderGroup(pgsTypes::Ahead)->SetSlabOffset(m_PierIdx,m_SlabOffset[pgsTypes::Ahead]);
+                  }
+                  else
+                  {
+                     // we are at the end of the bridge so the data is in the back controls
+                     pParent->m_pPier->GetGirderGroup(pgsTypes::Back )->SetSlabOffset(m_PierIdx,m_SlabOffset[pgsTypes::Back]);
+                  }
                }
                else
                {
-                  // we are at the end of the bridge so the data is in the back controls
+                  // this is an intermediate pier so data is in the back controls
                   pParent->m_pPier->GetGirderGroup(pgsTypes::Back )->SetSlabOffset(m_PierIdx,m_SlabOffset[pgsTypes::Back]);
                }
             }
             else
             {
-               // this is an intermediate pier so data is in the back controls
                pParent->m_pPier->GetGirderGroup(pgsTypes::Back )->SetSlabOffset(m_PierIdx,m_SlabOffset[pgsTypes::Back]);
+               pParent->m_pPier->GetGirderGroup(pgsTypes::Ahead)->SetSlabOffset(m_PierIdx,m_SlabOffset[pgsTypes::Ahead]);
             }
          }
          else
          {
-            pParent->m_pPier->GetGirderGroup(pgsTypes::Back )->SetSlabOffset(m_PierIdx,m_SlabOffset[pgsTypes::Back]);
-            pParent->m_pPier->GetGirderGroup(pgsTypes::Ahead)->SetSlabOffset(m_PierIdx,m_SlabOffset[pgsTypes::Ahead]);
-         }
-      }
-      else
-      {
-         if ( m_InitialSlabOffsetType != pgsTypes::sotGirder )
-         {
-            // Slab offset started off as Bridge or Pier and now it is Girder... this means the
-            // slab offset applies to all girders at this Pier
-            for ( int i = 0; i < 2; i++ )
+            if ( m_InitialSlabOffsetType != pgsTypes::sotGirder )
             {
-               pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
-               CGirderGroupData* pGroup = pParent->m_pPier->GetGirderGroup(face);
-               if ( pGroup )
+               // Slab offset started off as Bridge or Pier and now it is Girder... this means the
+               // slab offset applies to all girders at this Pier
+               for ( int i = 0; i < 2; i++ )
                {
-                  GirderIndexType nGirders = pGroup->GetGirderCount();
-                  for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+                  pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
+                  CGirderGroupData* pGroup = pParent->m_pPier->GetGirderGroup(face);
+                  if ( pGroup )
                   {
-                     pGroup->SetSlabOffset(m_PierIdx,gdrIdx,m_SlabOffset[pgsTypes::Back]);
+                     GirderIndexType nGirders = pGroup->GetGirderCount();
+                     for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+                     {
+                        pGroup->SetSlabOffset(m_PierIdx,gdrIdx,m_SlabOffset[pgsTypes::Back]);
+                     }
                   }
                }
             }
@@ -217,8 +221,8 @@ BEGIN_MESSAGE_MAP(CPierLocationPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_ERECTION_EVENT, OnErectionStageChanged)
    ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, OnErectionStageChanging)
    ON_WM_CTLCOLOR()
+   ON_CBN_SELCHANGE(IDC_CB_SLABOFFSETTYPE, OnChangeSlabOffset)
 	//}}AFX_MSG_MAP
-   ON_REGISTERED_MESSAGE(MsgChangeSlabOffset,OnChangeSlabOffset)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -226,17 +230,6 @@ END_MESSAGE_MAP()
 
 BOOL CPierLocationPage::OnInitDialog() 
 {
-   if ( m_InitialSlabOffsetType == pgsTypes::sotGirder )
-   {
-      m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(FALSE);
-      m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(FALSE);
-   }
-   else
-   {
-      m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(TRUE);
-      m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(TRUE);
-   }
-
    FillEventList();
 
    CComPtr<IBroker> pBroker;
@@ -247,12 +240,52 @@ BOOL CPierLocationPage::OnInitDialog()
       GetDlgItem(IDC_ERECTION_EVENT)->EnableWindow(FALSE);
    }
 
-   // move options are not available until the station changes
 	CPropertyPage::OnInitDialog();
 
+   // move options are not available until the station changes
    UpdateMoveOptionList();
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+
+   if (deckType != pgsTypes::sdtNone)
+   {
+      if (m_InitialSlabOffsetType == pgsTypes::sotBridge )
+      {
+         m_ctrlSlabOffsetType.AddString(_T("The same slab offset is used for the entire bridge"));
+         m_ctrlSlabOffsetType.AddString(_T("Slab offset is defined pier by pier"));
+      }
+      else if ( m_InitialSlabOffsetType == pgsTypes::sotGirder )
+      {
+         m_ctrlSlabOffsetType.AddString(_T("A unique slab offset is used for every girder"));
+         m_ctrlSlabOffsetType.AddString(_T("Slab offset is defined pier by pier"));
+      }
+      else
+      {
+         m_ctrlSlabOffsetType.AddString(_T("Slab offset is defined pier by pier"));
+         m_ctrlSlabOffsetType.AddString(_T("The same slab offset is used for the entire bridge"));
+      }
+
+      m_ctrlSlabOffsetType.SetCurSel(0);
+
+      if ( m_InitialSlabOffsetType == pgsTypes::sotGirder )
+      {
+         m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(FALSE);
+         m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(FALSE);
+      }
+      else
+      {
+         m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(TRUE);
+         m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(TRUE);
+      }
+   }
+   else
+   {
+      m_ctrlSlabOffsetType.EnableWindow(FALSE);
+      m_ctrlBackSlabOffset.EnableWindow(FALSE);
+      m_ctrlAheadSlabOffset.EnableWindow(FALSE);
+   }
 
    EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetPierErectionEventIndex(m_PierIdx);
    CDataExchange dx(this,FALSE);
@@ -574,9 +607,6 @@ HBRUSH CPierLocationPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
       }
       break;
 
-   case IDC_SLAB_OFFSET_NOTE:
-      pDC->SetTextColor(HYPERLINK_COLOR);
-      break;
    };
 
    return hbr;
@@ -664,7 +694,7 @@ EventIndexType CPierLocationPage::CreateEvent()
    return INVALID_INDEX;
 }
 
-LRESULT CPierLocationPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
+void CPierLocationPage::OnChangeSlabOffset()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -741,7 +771,7 @@ LRESULT CPierLocationPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
          else
          {
             // user cancelled... get the heck outta here
-            return 0;
+            return;
          }
       }
 
@@ -753,39 +783,11 @@ LRESULT CPierLocationPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 
    UpdateSlabOffsetWindowState();
 
-   return 0;
-}
-
-void CPierLocationPage::UpdateSlabOffsetHyperLinkText()
-{
-   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-   pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
-
-   if (slabOffsetType == pgsTypes::sotBridge )
-   {
-      m_SlabOffsetHyperLink.SetWindowText(_T("The same slab offset is used for the entire bridge"));
-      m_SlabOffsetHyperLink.SetURL(_T("Click to define slab offset pier by pier"));
-   }
-   else if ( slabOffsetType == pgsTypes::sotGirder )
-   {
-      m_SlabOffsetHyperLink.SetWindowText(_T("A unique slab offset is used for every girder"));
-      m_SlabOffsetHyperLink.SetURL(_T("Click to define slab offset pier by pier"));
-   }
-   else
-   {
-      m_SlabOffsetHyperLink.SetWindowText(_T("Slab offset is defined pier by pier"));
-
-      if ( m_InitialSlabOffsetType == pgsTypes::sotBridge )
-         m_SlabOffsetHyperLink.SetURL(_T("Click to use this slab offset for the entire bridge"));
-      else if ( m_InitialSlabOffsetType == pgsTypes::sotGirder )
-         m_SlabOffsetHyperLink.SetURL(_T("Click to use this slab offset for every girder at this pier"));
-   }
+   return;
 }
 
 void CPierLocationPage::UpdateSlabOffsetWindowState()
 {
-   UpdateSlabOffsetHyperLinkText();
-
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
    pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
 

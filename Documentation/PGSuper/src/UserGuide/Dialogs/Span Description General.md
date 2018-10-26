@@ -15,7 +15,7 @@ Fillet
 ---------------------------
 Define the Fillet for this span.
 
-If the Fillet is defined by span and you click the hyperlink to change the fillet to be a single value for the entire bridge, the fillet defined for this span will be applied to the entire bridge.
+If the Fillet is defined by span and you use the combo box to change the fillet to be a single value for the entire bridge, the fillet defined for this span will be applied to the entire bridge.
 
 Slab Offset ("A" Dimension)
 ---------------------------
@@ -23,11 +23,11 @@ Define the slab offset for the span.
 
 Item | Description
 -----|------------
-Hyperlink | Click on the hyperlink text to toggle between defining the slab offset for the entire bridge or for this span.
+Type | Click on the combo box to define the slab offset for the entire bridge or only for this span.
 Start | Slab offset at the start of the span
 End | Slab offset at the end of the span
 
-If the slab offset is defined by span and you click the hyperlink to change the slab offset to be a single value for the entire bridge, the slab offset defined for this span will be applied to the entire bridge. If the start and end slab offsets are different, you will be prompted to select one value.
+If the slab offset is defined by span and you click the combo box to change the slab offset to be a single value for the entire bridge: the slab offset defined for this span will be applied to the entire bridge. If the start and end slab offsets are different, you will be prompted to select one value.
 
 Cantilevers
 ------------

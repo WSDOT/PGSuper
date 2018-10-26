@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ConstructabilityCheckTable.h>
 
@@ -109,7 +109,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T(""));
    *p << pTable << rptNewLine;
 
    (*pTable)(0,0)  << _T("Stage");

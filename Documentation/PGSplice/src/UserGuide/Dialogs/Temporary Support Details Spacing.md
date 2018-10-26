@@ -2,7 +2,7 @@ Spacing {#ug_dialogs_temporary_support_spacing}
 ==============================================
 Define the segment spacing at the centerline of the temporary support.
 
-Click on the hyperlink text to toggle between defining parameters for the entire bridge and for each segment.
+Click on the combo box to select if the parameters are for the entire bridge or for each segment.
 
 Item | Description
 -----|--------------
